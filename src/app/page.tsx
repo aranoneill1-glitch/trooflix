@@ -78,7 +78,7 @@ export default function Home() {
     <main className="min-h-screen bg-[#0b0b0f] text-white">
       <TopNav
         activeTab={activeTab}
-        setActiveTab={(t) => { setActiveTab(t); setActiveCategory(null); }}
+        setActiveTab={(t: string) => { setActiveTab(t); setActiveCategory(null); }}
         searchOpen={searchOpen}
         setSearchOpen={setSearchOpen}
         search={search}
