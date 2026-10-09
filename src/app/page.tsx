@@ -90,7 +90,7 @@ export default function Home() {
         <Sidebar
           open={sidebarOpen}
           activeCategory={activeCategory}
-          setActiveCategory={(c) => { setActiveCategory(c); setActiveTab("HOME"); }}
+          setActiveCategory={(c: string | null) => { setActiveCategory(c); setActiveTab("HOME"); }}
         />
 
         <div className="flex-1 min-w-0">
@@ -223,7 +223,7 @@ function Sidebar({ open, activeCategory, setActiveCategory }: any) {
 
       <p className="text-xs font-bold tracking-widest text-white/40 px-3 mb-3">EXPLORE</p>
       <div className="space-y-1">
-        {CATEGORIES.map((cat) => (
+        {CATEGORIES.map((cat: string) => (
           <button
             key={cat}
             onClick={() => setActiveCategory(cat === activeCategory ? null : cat)}
