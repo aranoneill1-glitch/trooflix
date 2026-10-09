@@ -6,12 +6,14 @@ export function middleware(req: NextRequest) {
   const password = process.env.ADMIN_PASSWORD;
   const cookie = req.cookies.get("trooflix_admin")?.value;
 
+  // Only protect /admin (but NOT /admin/login)
   if (pathname.startsWith("/admin") && !pathname.startsWith("/admin/login")) {
     if (!password || cookie !== password) {
       return NextResponse.redirect(new URL("/admin/login", req.url));
     }
   }
 
+  // Only block write operations on the videos API
   if (
     pathname.startsWith("/api/videos") &&
     (req.method === "POST" || req.method === "DELETE")
@@ -24,6 +26,7 @@ export function middleware(req: NextRequest) {
   return NextResponse.next();
 }
 
+// This matcher controls WHAT the middleware runs on
 export const config = {
-  matcher: ["/admin/:path*", "/api/videos/:path*"],
+  matcher: ["/admin", "/admin/:path*", "/api/videos"],
 };
