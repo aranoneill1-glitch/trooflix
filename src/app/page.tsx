@@ -292,7 +292,7 @@ function Hero({ video, onPlay, onMore }: { video: Video; onPlay: () => void; onM
       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
       <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/20 to-transparent" />
 
-      <div className="relative z-10 flex flex-col justify-end h-full px-4 md:px-12 max-w-2xl pb-24 md:pb-32">
+      <div className="relative z-10 flex flex-col justify-center h-full px-4 md:px-12 max-w-2xl pt-24 md:pt-20 pb-12 md:pb-0">
         <motion.p
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           className="text-xs md:text-sm tracking-[0.3em] text-red-500 font-bold mb-3"
