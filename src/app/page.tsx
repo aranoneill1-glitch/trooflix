@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Play, Info, ChevronLeft, ChevronRight, Plus, ThumbsUp, X,
-  Search, User, Home as HomeIcon, Film, FileText, Mic, Tv, Menu,
+  Search, User, Home as HomeIcon, Film, FileText, Mic, Tv, Menu, Compass,
 } from "lucide-react";
 import BitChutePlayer from "@/components/BitChutePlayer";
 import VideoPlayer from "@/components/VideoPlayer";
@@ -72,8 +72,9 @@ export default function Home() {
   const showingFiltered = activeCategory || activeTab !== "HOME" || filtered;
 
   return (
-    <main className="min-h-screen bg-[#0b0b0f] text-white">
-      <TopNav
+    <main className="min-h-screen bg-[#0b0b0f] text-white pb-20 md:pb-0">
+      {/* DESKTOP TOP NAV */}
+      <DesktopNav
         activeTab={activeTab}
         setActiveTab={(t: string) => { setActiveTab(t); setActiveCategory(null); }}
         searchOpen={searchOpen}
@@ -94,10 +95,7 @@ export default function Home() {
       />
 
       {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/60 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
+        <div className="fixed inset-0 bg-black/60 z-40" onClick={() => setSidebarOpen(false)} />
       )}
 
       <div className="w-full">
@@ -105,17 +103,19 @@ export default function Home() {
           <Hero video={hero} onPlay={() => setPlaying(hero)} onMore={() => setSelected(hero)} />
         )}
 
-        <div className={showingFiltered ? "pt-20 sm:pt-24 pb-24 px-4 sm:px-8 space-y-8 sm:space-y-10" : "relative z-20 -mt-16 sm:-mt-24 pb-24 space-y-8 sm:space-y-10"}>
+        <div className={showingFiltered ? "pt-20 md:pt-24 pb-16 px-4 md:px-8 space-y-8" : "relative z-20 -mt-16 md:-mt-24 pb-16 space-y-6 md:space-y-10"}>
           {filtered && (
             <div>
-              <h2 className="text-lg sm:text-xl font-bold mb-4 px-4 sm:px-8">Search results for "{search}" ({filtered.length})</h2>
+              <h2 className="text-base md:text-xl font-bold mb-4 px-4 md:px-8">
+                Search: "{search}" ({filtered.length})
+              </h2>
               <Grid items={filtered} onSelect={setSelected} onPlay={setPlaying} />
             </div>
           )}
 
           {!filtered && showingFiltered && (
-            <div className="px-4 sm:px-8">
-              <h2 className="text-xl sm:text-2xl font-bold mb-6">{activeCategory || activeTab}</h2>
+            <div className="px-4 md:px-8">
+              <h2 className="text-xl md:text-2xl font-bold mb-6">{activeCategory || activeTab}</h2>
               {displayVideos.length === 0 ? (
                 <p className="text-white/40">No videos in this section yet.</p>
               ) : (
@@ -141,6 +141,13 @@ export default function Home() {
         </div>
       </div>
 
+      {/* MOBILE BOTTOM NAV */}
+      <MobileBottomNav
+        activeTab={activeTab}
+        setActiveTab={(t: string) => { setActiveTab(t); setActiveCategory(null); }}
+        onCategories={() => setSidebarOpen(true)}
+      />
+
       <AnimatePresence>
         {selected && <DetailModal item={selected} onClose={() => setSelected(null)} onPlay={(v) => { setSelected(null); setPlaying(v); }} />}
         {playing && playing.bitchuteUrl.includes("bitchute.com") && (
@@ -154,18 +161,19 @@ export default function Home() {
   );
 }
 
-function TopNav({ activeTab, setActiveTab, searchOpen, setSearchOpen, search, setSearch, onMenu }: any) {
+/* ============ DESKTOP NAV ============ */
+function DesktopNav({ activeTab, setActiveTab, searchOpen, setSearchOpen, search, setSearch, onMenu }: any) {
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 flex items-center gap-3 sm:gap-6 px-3 sm:px-6 py-3 bg-black/95 backdrop-blur border-b border-white/5">
-      <button onClick={onMenu} className="text-white/80 hover:text-white shrink-0">
+    <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 items-center gap-6 px-6 py-3 bg-black/95 backdrop-blur border-b border-white/5">
+      <button onClick={onMenu} className="text-white/80 hover:text-white">
         <Menu size={22} />
       </button>
 
-      <a href="/" className="text-lg sm:text-2xl font-black tracking-tight shrink-0">
+      <a href="/" className="text-2xl font-black tracking-tight shrink-0">
         <span className="text-white">TROO</span><span className="text-red-600">FLIX</span>
       </a>
 
-      <div className="hidden lg:flex gap-6 text-sm ml-4">
+      <div className="flex gap-6 text-sm ml-4">
         {NAV_TABS.map((tab: string) => (
           <button
             key={tab}
@@ -177,15 +185,15 @@ function TopNav({ activeTab, setActiveTab, searchOpen, setSearchOpen, search, se
         ))}
       </div>
 
-      <div className="ml-auto flex items-center gap-3 sm:gap-4">
+      <div className="ml-auto flex items-center gap-4">
         {searchOpen ? (
           <input
             autoFocus
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onBlur={() => !search && setSearchOpen(false)}
-            placeholder="Search…"
-            className="bg-white/10 border border-white/20 rounded-full px-3 sm:px-4 py-1.5 text-sm w-40 sm:w-64 outline-none focus:border-red-600"
+            placeholder="Search Trooflix…"
+            className="bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-sm w-64 outline-none focus:border-red-600"
           />
         ) : (
           <button onClick={() => setSearchOpen(true)} className="text-white/80 hover:text-white">
@@ -193,13 +201,59 @@ function TopNav({ activeTab, setActiveTab, searchOpen, setSearchOpen, search, se
           </button>
         )}
         <a href="/admin" className="text-white/80 hover:text-white" title="Admin">
-          <User size={20} />
+          <User size={22} />
         </a>
       </div>
     </nav>
   );
 }
 
+/* ============ MOBILE TOP BAR (just logo) ============ */
+function MobileTopBar() {
+  return (
+    <div className="md:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 bg-black/95 backdrop-blur border-b border-white/5">
+      <a href="/" className="text-xl font-black tracking-tight">
+        <span className="text-white">TROO</span><span className="text-red-600">FLIX</span>
+      </a>
+      <div className="flex items-center gap-4">
+        <button className="text-white/80 hover:text-white"><Search size={20} /></button>
+      </div>
+    </div>
+  );
+}
+
+/* ============ MOBILE BOTTOM NAV ============ */
+function MobileBottomNav({ activeTab, setActiveTab, onCategories }: any) {
+  const items = [
+    { icon: HomeIcon, label: "Home", tab: "HOME" },
+    { icon: Film, label: "Movies", tab: "MOVIES" },
+    { icon: Compass, label: "Explore", action: onCategories },
+    { icon: Mic, label: "Podcasts", tab: "PODCASTS" },
+    { icon: Plus, label: "My List", tab: "MY LIST" },
+  ];
+
+  return (
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur border-t border-white/10">
+      <div className="flex justify-around items-center py-2">
+        {items.map((it) => {
+          const active = activeTab === it.tab;
+          return (
+            <button
+              key={it.label}
+              onClick={() => (it.action ? it.action() : setActiveTab(it.tab))}
+              className="flex flex-col items-center gap-1 px-3 py-1"
+            >
+              <it.icon size={22} className={active ? "text-red-600" : "text-white/60"} />
+              <span className={`text-[10px] ${active ? "text-red-600 font-semibold" : "text-white/60"}`}>{it.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
+
+/* ============ SIDEBAR (desktop drawer / mobile fullscreen) ============ */
 function Sidebar({ open, activeCategory, setActiveCategory }: any) {
   const items = [
     { icon: HomeIcon, label: "Home", action: () => setActiveCategory(null) },
@@ -212,16 +266,16 @@ function Sidebar({ open, activeCategory, setActiveCategory }: any) {
 
   return (
     <aside
-      className={`${open ? "translate-x-0" : "-translate-x-full"} fixed top-0 left-0 z-50 w-64 shrink-0 bg-[#0b0b0f] border-r border-white/5 h-screen pt-20 pb-8 px-4 overflow-y-auto transition-transform duration-200`}
+      className={`${open ? "translate-x-0" : "-translate-x-full"} fixed top-0 left-0 z-50 w-72 md:w-64 shrink-0 bg-[#0b0b0f] border-r border-white/5 h-screen pt-20 pb-8 px-4 overflow-y-auto transition-transform duration-200`}
     >
       <div className="space-y-1 mb-8">
         {items.map((it) => (
           <button
             key={it.label}
             onClick={it.action}
-            className="flex items-center gap-3 w-full px-3 py-2 rounded hover:bg-white/5 text-white/80 hover:text-white transition text-sm"
+            className="flex items-center gap-3 w-full px-3 py-2.5 rounded hover:bg-white/5 text-white/80 hover:text-white transition text-base"
           >
-            <it.icon size={18} />
+            <it.icon size={20} />
             {it.label}
           </button>
         ))}
@@ -233,7 +287,7 @@ function Sidebar({ open, activeCategory, setActiveCategory }: any) {
           <button
             key={cat}
             onClick={() => setActiveCategory(cat === activeCategory ? null : cat)}
-            className={`block w-full text-left px-3 py-1.5 rounded text-sm transition ${activeCategory === cat ? "text-red-600 bg-white/5" : "text-white/70 hover:text-white hover:bg-white/5"}`}
+            className={`block w-full text-left px-3 py-2 rounded text-sm transition ${activeCategory === cat ? "text-red-600 bg-white/5" : "text-white/70 hover:text-white hover:bg-white/5"}`}
           >
             {cat}
           </button>
@@ -247,41 +301,42 @@ function Sidebar({ open, activeCategory, setActiveCategory }: any) {
   );
 }
 
+/* ============ HERO ============ */
 function Hero({ video, onPlay, onMore }: { video: Video; onPlay: () => void; onMore: () => void }) {
   return (
-    <section className="relative h-[55vh] sm:h-[70vh] w-full">
+    <section className="relative h-[70vh] md:h-[70vh] w-full">
       <img src={video.backdropUrl} alt={video.title} className="absolute inset-0 w-full h-full object-cover" />
-      <div className="absolute inset-0 bg-gradient-to-t from-[#0b0b0f] via-[#0b0b0f]/50 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#0b0b0f] via-[#0b0b0f]/60 to-transparent" />
       <div className="absolute inset-0 bg-gradient-to-r from-[#0b0b0f] via-[#0b0b0f]/30 to-transparent" />
 
-      <div className="relative z-10 flex flex-col justify-end sm:justify-center h-full px-4 sm:px-12 max-w-3xl pt-16 pb-8 sm:pb-0">
+      <div className="relative z-10 flex flex-col justify-end h-full px-5 md:px-12 max-w-3xl pt-24 pb-12 md:pb-0 md:justify-center">
         <motion.h1
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-          className="text-4xl sm:text-6xl font-black leading-tight mb-2 sm:mb-3 tracking-tight"
+          className="text-4xl md:text-6xl font-black leading-tight mb-2 md:mb-3 tracking-tight"
         >
           <span className="text-white">TROO</span><span className="text-red-600">FLIX</span>
         </motion.h1>
         <motion.p
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-          className="text-sm sm:text-lg text-white/85 mb-2 font-medium"
+          className="text-sm md:text-lg text-white/85 mb-2 font-medium"
         >
-          The stories they don't want you to see. Now streaming.
+          The stories they don't want you to see.
         </motion.p>
         <motion.p
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-          className="text-[10px] sm:text-xs tracking-[0.3em] sm:tracking-[0.4em] text-white/60 mb-4 sm:mb-6"
+          className="text-[10px] md:text-xs tracking-[0.3em] md:tracking-[0.4em] text-white/60 mb-5 md:mb-6"
         >
           HISTORY / TRUE STORIES / UNCENSORED
         </motion.p>
         <motion.div
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-          className="flex gap-2 sm:gap-3"
+          className="flex gap-2 md:gap-3"
         >
-          <button onClick={onPlay} className="flex items-center gap-2 bg-red-600 text-white font-bold px-5 sm:px-8 py-2.5 sm:py-3 rounded hover:bg-red-500 transition tracking-wide text-sm sm:text-base">
+          <button onClick={onPlay} className="flex items-center gap-2 bg-red-600 text-white font-bold px-6 md:px-8 py-3 rounded hover:bg-red-500 transition tracking-wide text-sm md:text-base">
             <Play size={18} fill="white" /> WATCH NOW
           </button>
-          <button onClick={onMore} className="flex items-center gap-2 bg-white/10 backdrop-blur text-white font-semibold px-4 sm:px-6 py-2.5 sm:py-3 rounded hover:bg-white/20 transition text-sm sm:text-base">
-            <Info size={18} /> <span className="hidden sm:inline">More Info</span>
+          <button onClick={onMore} className="flex items-center gap-2 bg-white/10 backdrop-blur text-white font-semibold px-5 md:px-6 py-3 rounded hover:bg-white/20 transition text-sm md:text-base">
+            <Info size={18} /> More
           </button>
         </motion.div>
       </div>
@@ -289,21 +344,22 @@ function Hero({ video, onPlay, onMore }: { video: Video; onPlay: () => void; onM
   );
 }
 
+/* ============ ROW (desktop only) ============ */
 function Row({ title, items, onSelect, onPlay }: { title: string; items: Video[]; onSelect: (v: Video) => void; onPlay: (v: Video) => void }) {
   const [hovered, setHovered] = useState<number | null>(null);
   return (
     <div className="relative group/row">
-      <h2 className="text-lg sm:text-xl font-bold px-4 sm:px-8 mb-3">{title}</h2>
+      <h2 className="text-lg md:text-xl font-bold px-4 md:px-8 mb-3">{title}</h2>
       <div className="relative">
-        <button className="hidden sm:flex absolute left-0 top-0 bottom-0 z-30 w-12 bg-black/60 opacity-0 group-hover/row:opacity-100 transition items-center justify-center">
+        <button className="hidden md:flex absolute left-0 top-0 bottom-0 z-30 w-12 bg-black/60 opacity-0 group-hover/row:opacity-100 transition items-center justify-center">
           <ChevronLeft size={28} />
         </button>
-        <div className="flex gap-2 sm:gap-3 overflow-x-auto scrollbar-hide px-4 sm:px-8 pb-4">
+        <div className="flex gap-2 md:gap-3 overflow-x-auto scrollbar-hide px-4 md:px-8 pb-4 snap-x snap-mandatory">
           {items.map((item) => (
             <Card key={item.id} item={item} hovered={hovered === item.id} onHover={() => setHovered(item.id)} onLeave={() => setHovered(null)} onSelect={onSelect} onPlay={onPlay} />
           ))}
         </div>
-        <button className="hidden sm:flex absolute right-0 top-0 bottom-0 z-30 w-12 bg-black/60 opacity-0 group-hover/row:opacity-100 transition items-center justify-center">
+        <button className="hidden md:flex absolute right-0 top-0 bottom-0 z-30 w-12 bg-black/60 opacity-0 group-hover/row:opacity-100 transition items-center justify-center">
           <ChevronRight size={28} />
         </button>
       </div>
@@ -311,10 +367,11 @@ function Row({ title, items, onSelect, onPlay }: { title: string; items: Video[]
   );
 }
 
+/* ============ GRID ============ */
 function Grid({ items, onSelect, onPlay }: { items: Video[]; onSelect: (v: Video) => void; onPlay: (v: Video) => void }) {
   const [hovered, setHovered] = useState<number | null>(null);
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 px-4 md:px-8">
       {items.map((item) => (
         <Card key={item.id} item={item} hovered={hovered === item.id} onHover={() => setHovered(item.id)} onLeave={() => setHovered(null)} onSelect={onSelect} onPlay={onPlay} />
       ))}
@@ -322,29 +379,30 @@ function Grid({ items, onSelect, onPlay }: { items: Video[]; onSelect: (v: Video
   );
 }
 
+/* ============ CARD ============ */
 function Card({ item, hovered, onHover, onLeave, onSelect, onPlay }: any) {
   return (
     <motion.div
       onMouseEnter={onHover} onMouseLeave={onLeave} onClick={() => onSelect(item)}
       animate={{ scale: hovered ? 1.08 : 1 }} transition={{ duration: 0.2, ease: "easeOut" }}
-      className="relative flex-shrink-0 w-[130px] sm:w-[140px] md:w-[160px] aspect-[2/3] rounded-md overflow-hidden cursor-pointer z-10 hover:z-40"
+      className="relative flex-shrink-0 w-[145px] md:w-[160px] aspect-[2/3] rounded-md overflow-hidden cursor-pointer z-10 hover:z-40 snap-start"
     >
       <img src={item.posterUrl} alt={item.title} className="w-full h-full object-cover" />
-      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/80 to-transparent p-2">
-        <p className="text-[10px] sm:text-[11px] font-bold leading-tight uppercase tracking-wide">{item.title}</p>
+      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/70 to-transparent p-2">
+        <p className="text-[10px] md:text-[11px] font-bold leading-tight uppercase tracking-wide line-clamp-2">{item.title}</p>
       </div>
       {hovered && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 bg-black/70 backdrop-blur-sm p-2 sm:p-3 flex flex-col justify-end">
-          <p className="text-[10px] sm:text-xs font-bold mb-1 sm:mb-2 leading-tight">{item.title}</p>
-          <div className="flex items-center gap-1 sm:gap-1.5 text-[9px] sm:text-[10px] text-white/80 mb-2 flex-wrap">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="hidden md:flex absolute inset-0 bg-black/70 backdrop-blur-sm p-3 flex-col justify-end">
+          <p className="text-xs font-bold mb-2 leading-tight">{item.title}</p>
+          <div className="flex items-center gap-1.5 text-[10px] text-white/80 mb-2 flex-wrap">
             <span className="text-green-400 font-bold">{item.match}%</span>
             <span className="border border-white/40 px-1">{item.rating}</span>
             <span>{item.year}</span>
           </div>
-          <div className="flex gap-1 sm:gap-1.5">
-            <button onClick={(e) => { e.stopPropagation(); onPlay(item); }} className="bg-white text-black rounded-full p-1 sm:p-1.5 hover:bg-white/80"><Play size={10} fill="black" /></button>
-            <button className="border border-white/60 rounded-full p-1 sm:p-1.5 hover:border-white"><Plus size={10} /></button>
-            <button className="border border-white/60 rounded-full p-1 sm:p-1.5 hover:border-white"><ThumbsUp size={10} /></button>
+          <div className="flex gap-1.5">
+            <button onClick={(e) => { e.stopPropagation(); onPlay(item); }} className="bg-white text-black rounded-full p-1.5 hover:bg-white/80"><Play size={12} fill="black" /></button>
+            <button className="border border-white/60 rounded-full p-1.5 hover:border-white"><Plus size={12} /></button>
+            <button className="border border-white/60 rounded-full p-1.5 hover:border-white"><ThumbsUp size={12} /></button>
           </div>
         </motion.div>
       )}
@@ -352,39 +410,43 @@ function Card({ item, hovered, onHover, onLeave, onSelect, onPlay }: any) {
   );
 }
 
+/* ============ MODAL ============ */
 function DetailModal({ item, onClose, onPlay }: { item: Video; onClose: () => void; onPlay: (v: Video) => void }) {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm overflow-y-auto" onClick={onClose}>
-      <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}
         onClick={(e) => e.stopPropagation()}
-        className="relative max-w-4xl mx-auto my-4 sm:my-12 rounded-lg overflow-hidden bg-[#141418] shadow-2xl w-[calc(100%-1rem)]">
-        <div className="relative h-[200px] sm:h-[400px] w-full">
+        className="relative max-w-4xl mx-auto md:my-12 rounded-lg overflow-hidden bg-[#141418] shadow-2xl md:w-auto w-full">
+        <div className="relative h-[220px] md:h-[400px] w-full">
           <img src={item.backdropUrl} alt={item.title} className="absolute inset-0 w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#141418] via-[#141418]/40 to-transparent" />
-          <button onClick={onClose} className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 bg-black/60 hover:bg-black/80 rounded-full p-1.5 sm:p-2 transition"><X size={18} /></button>
-          <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-8">
-            <h2 className="text-2xl sm:text-5xl font-black mb-3 sm:mb-6 drop-shadow-lg">{item.title}</h2>
-            <div className="flex gap-2 sm:gap-3">
-              <button onClick={() => onPlay(item)} className="flex items-center gap-2 bg-white text-black font-semibold px-5 sm:px-8 py-2 sm:py-3 rounded hover:bg-white/80 transition text-sm sm:text-base">
+          <button onClick={onClose} className="absolute top-3 right-3 md:top-4 md:right-4 z-20 bg-black/60 hover:bg-black/80 rounded-full p-2 transition">
+            <X size={18} />
+          </button>
+          <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8">
+            <h2 className="text-2xl md:text-5xl font-black mb-4 md:mb-6 drop-shadow-lg">{item.title}</h2>
+            <div className="flex gap-2 md:gap-3">
+              <button onClick={() => onPlay(item)} className="flex items-center gap-2 bg-white text-black font-semibold px-5 md:px-8 py-2.5 md:py-3 rounded hover:bg-white/80 transition text-sm md:text-base">
                 <Play size={18} fill="black" /> Play
               </button>
-              <button className="border-2 border-white/60 rounded-full p-2 sm:p-3 hover:border-white transition"><Plus size={16} /></button>
-              <button className="border-2 border-white/60 rounded-full p-2 sm:p-3 hover:border-white transition"><ThumbsUp size={16} /></button>
+              <button className="border-2 border-white/60 rounded-full p-2.5 md:p-3 hover:border-white transition"><Plus size={16} /></button>
+              <button className="border-2 border-white/60 rounded-full p-2.5 md:p-3 hover:border-white transition"><ThumbsUp size={16} /></button>
             </div>
           </div>
         </div>
-        <div className="p-4 sm:p-8 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-8">
-          <div className="sm:col-span-2">
-            <div className="flex items-center gap-3 text-xs sm:text-sm text-white/80 mb-3 sm:mb-4 flex-wrap">
+        <div className="p-4 md:p-8 md:grid md:grid-cols-3 md:gap-8">
+          <div className="md:col-span-2">
+            <div className="flex items-center gap-2 md:gap-3 text-xs md:text-sm text-white/80 mb-3 md:mb-4 flex-wrap">
               <span className="text-green-400 font-bold">{item.match}% Match</span>
               <span>{item.year}</span>
               <span className="border border-white/40 px-2 py-0.5">{item.rating}</span>
               <span className="text-white/50">{item.type}</span>
             </div>
-            <p className="text-white/90 leading-relaxed text-sm sm:text-base">{item.description}</p>
+            <p className="text-white/90 leading-relaxed text-sm md:text-base">{item.description}</p>
           </div>
-          <div className="text-xs sm:text-sm">
+          <div className="text-xs md:text-sm mt-4 md:mt-0">
             <p className="text-white/50 mb-1">Category</p>
             <p className="text-white/90">{item.category}</p>
           </div>
