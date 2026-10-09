@@ -73,6 +73,8 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-[#0b0b0f] text-white pb-20 md:pb-0">
+      <MobileTopBar />
+
       {/* DESKTOP TOP NAV */}
       <DesktopNav
         activeTab={activeTab}
