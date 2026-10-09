@@ -106,9 +106,9 @@ export default function Admin() {
             </div>
 
             <div className="col-span-2">
-              <label className="block text-sm text-white/60 mb-1">BitChute URL *</label>
+              <label className="block text-sm text-white/60 mb-1">Video URL *</label>
               <input required value={form.bitchuteUrl} onChange={(e) => setForm({ ...form, bitchuteUrl: e.target.value })}
-                placeholder="https://www.bitchute.com/video/xxxxx/"
+                placeholder="https://... or /videos/file.mp4"
                 className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none" />
             </div>
 
@@ -128,14 +128,7 @@ export default function Admin() {
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm text-white/60 mb-1">Rating</label>
-              <select value={form.rating} onChange={(e) => setForm({ ...form, rating: e.target.value })}
-                className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none">
-                <option>TV-MA</option><option>TV-14</option><option>TV-PG</option>
-                <option>R</option><option>PG-13</option><option>NR</option>
-              </select>
-            </div>
+            
 
             <div className="flex items-end">
               <label className="flex items-center gap-2 cursor-pointer">
