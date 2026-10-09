@@ -77,7 +77,7 @@ export default function Home() {
   const showingFiltered = activeCategory || activeTab !== "Home" || filtered;
 
   return (
-    <main className="min-h-screen bg-black text-white">
+    <main className="min-h-screen bg-black text-white overflow-x-hidden">
       {/* ============ TOP NAV ============ */}
       <TopNav
         activeTab={activeTab}
@@ -135,13 +135,12 @@ export default function Home() {
       </AnimatePresence>
 
       {/* ============ CONTENT ============ */}
-      {!showingFiltered && hero ? (
+      {!showingFiltered && hero && (
         <Hero video={hero} onPlay={() => setPlaying(hero)} onMore={() => setSelected(hero)} />
-      ) : (
-        <div className="h-16 md:h-20" />
       )}
+      {showingFiltered && <div className="h-20 md:h-24" />}
 
-      <div className="relative z-20 -mt-32 md:-mt-40 pb-32 md:pb-20 space-y-8 md:space-y-12">
+      <div className="relative z-10 pt-8 md:pt-12 pb-32 md:pb-20 space-y-8 md:space-y-12">
         {filtered && (
           <div className="px-4 md:px-12">
             <h2 className="text-xl md:text-2xl font-bold mb-6">Results for "{search}"</h2>
@@ -288,7 +287,7 @@ function MobileBottomNav({ activeTab, setActiveTab, onExplore }: any) {
 /* ============ HERO ============ */
 function Hero({ video, onPlay, onMore }: { video: Video; onPlay: () => void; onMore: () => void }) {
   return (
-    <section className="relative h-[85vh] md:h-screen w-full">
+    <section className="relative h-[70vh] md:h-[85vh] w-full">
       <img src={video.backdropUrl} alt={video.title} className="absolute inset-0 w-full h-full object-cover" />
       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
       <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/20 to-transparent" />
