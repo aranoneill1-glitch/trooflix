@@ -91,6 +91,7 @@ export default function Admin() {
         </a>
         <div className="flex items-center gap-6 text-sm">
           <a href="/" className="text-white/80 hover:text-white transition">← Back to Home</a>
+          <button onClick={async () => { await fetch("/api/admin-logout", { method: "POST" }); window.location.href = "/admin/login"; }} className="text-white/60 hover:text-white transition">Log out</button>
           <span className="text-white/40">Admin</span>
         </div>
       </nav>
