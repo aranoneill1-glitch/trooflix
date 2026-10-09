@@ -9,6 +9,9 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "framer-motion": "^14.0.0",
+    "hls.js": "^1.7.3",
+    "lucide-react": "^1.54.0",
     "next": "16.4.0",
     "react": "19.3.0",
     "react-dom": "19.3.0"
@@ -21,6 +24,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.4.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wrangler": "^4.149.0"
   }
 }
