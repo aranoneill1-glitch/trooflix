@@ -106,7 +106,7 @@ export default function Home() {
             >
               <div className="flex items-center justify-between mb-8">
                 <span className="text-2xl font-black tracking-tight">
-                  <span className="text-white">TROO</span><span className="text-red-600">FLIX</span>
+                  <span className="text-red-600">TROOF</span><span className="text-white">LIX</span>
                 </span>
                 <button onClick={() => setDrawerOpen(false)} className="text-white/60 hover:text-white">
                   <X size={22} />
@@ -209,7 +209,7 @@ function TopNav({ activeTab, setActiveTab, searchOpen, setSearchOpen, search, se
       </button>
 
       <a href="/" className="text-xl md:text-2xl font-black tracking-tight shrink-0">
-        <span className="text-white">TROO</span><span className="text-red-600">FLIX</span>
+        <span className="text-red-600">TROOF</span><span className="text-white">LIX</span>
       </a>
 
       <div className="hidden lg:flex gap-6 text-sm ml-6">
