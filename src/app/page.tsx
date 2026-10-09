@@ -106,7 +106,7 @@ export default function Home() {
             >
               <div className="flex items-center justify-between mb-8">
                 <span className="text-2xl font-black tracking-tight">
-                  <span className="text-red-600">TRU</span><span className="text-white">FLIX</span>
+                  <span className="text-white">TROO</span><span className="text-red-600">FLIX</span>
                 </span>
                 <button onClick={() => setDrawerOpen(false)} className="text-white/60 hover:text-white">
                   <X size={22} />
@@ -127,7 +127,7 @@ export default function Home() {
               </div>
 
               <div className="text-xs leading-relaxed tracking-widest text-red-600 font-bold opacity-80">
-                REAL STORIES.<br />UNCENSORED.<br />TRUFLIX.
+                REAL STORIES.<br />UNCENSORED.<br />TROOFLIX.
               </div>
             </motion.aside>
           </>
@@ -209,7 +209,7 @@ function TopNav({ activeTab, setActiveTab, searchOpen, setSearchOpen, search, se
       </button>
 
       <a href="/" className="text-xl md:text-2xl font-black tracking-tight shrink-0">
-        <span className="text-red-600">TRU</span><span className="text-white">FLIX</span>
+        <span className="text-white">TROO</span><span className="text-red-600">FLIX</span>
       </a>
 
       <div className="hidden lg:flex gap-6 text-sm ml-6">
@@ -297,7 +297,7 @@ function Hero({ video, onPlay, onMore }: { video: Video; onPlay: () => void; onM
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           className="text-xs md:text-sm tracking-[0.3em] text-red-500 font-bold mb-3"
         >
-          TRUFLIX ORIGINAL
+          TROOFLIX ORIGINAL
         </motion.p>
         <motion.h1
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}

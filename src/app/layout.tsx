@@ -5,7 +5,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Truflix",
+  title: "Trooflix",
   description: "Documentaries, films, and podcasts. Uncensored.",
 };
 
