@@ -38,6 +38,7 @@ export default function Admin() {
     featured: false,
     bitchuteUrl: "",
     posterUrl: "",
+    backdropUrl: "",
     year: 2026,
     rating: "TV-MA",
   });
@@ -68,7 +69,7 @@ export default function Admin() {
       });
       if (!res.ok) throw new Error(await res.text());
       await loadVideos();
-      setForm({ ...form, title: "", description: "", bitchuteUrl: "", posterUrl: "", featured: false });
+      setForm({ ...form, title: "", description: "", bitchuteUrl: "", posterUrl: "", backdropUrl: "", featured: false });
       setStatus("✅ Added");
       setTimeout(() => setStatus(""), 2000);
     } catch (err: any) {
@@ -146,8 +147,14 @@ export default function Admin() {
             </div>
 
             <div className="col-span-2">
-              <label className="block text-sm text-white/60 mb-1">Poster URL (optional — auto-generated if blank)</label>
+              <label className="block text-sm text-white/60 mb-1">Poster URL (portrait — optional)</label>
               <input value={form.posterUrl} onChange={(e) => setForm({ ...form, posterUrl: e.target.value })}
+                className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none" />
+            </div>
+
+            <div className="col-span-2">
+              <label className="block text-sm text-white/60 mb-1">Backdrop URL (landscape — for hero)</label>
+              <input value={form.backdropUrl} onChange={(e) => setForm({ ...form, backdropUrl: e.target.value })}
                 className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none" />
             </div>
           </div>
