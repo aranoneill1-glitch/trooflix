@@ -86,8 +86,8 @@ export default function Admin() {
   return (
     <main className="min-h-screen bg-[#0b0b0f] text-white">
       <nav className="sticky top-0 z-50 flex items-center justify-between px-8 py-4 bg-[#0b0b0f]/90 backdrop-blur border-b border-white/10">
-        <a href="/" className="text-2xl font-black tracking-tight">
-          <span className="text-red-600">TROOF</span><span className="text-white">LIX</span>
+        <a href="/" className="text-2xl font-black tracking-tight hover:opacity-80 transition">
+          <span className="text-white">TROO</span><span className="text-red-600">FLIX</span>
         </a>
         <div className="flex items-center gap-6 text-sm">
           <a href="/" className="text-white/80 hover:text-white transition">← Back to Home</a>
