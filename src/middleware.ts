@@ -13,7 +13,7 @@ export function middleware(req: NextRequest) {
   }
 
   if (
-    pathname.startsWith("/api/videos") &&
+    (pathname.startsWith("/api/videos") || pathname.startsWith("/api/upload")) &&
     (req.method === "POST" || req.method === "DELETE" || req.method === "PUT")
   ) {
     if (!password || cookie !== password) {
@@ -25,5 +25,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin", "/admin/:path*", "/api/videos"],
+  matcher: ["/admin", "/admin/:path*", "/api/videos", "/api/upload"],
 };

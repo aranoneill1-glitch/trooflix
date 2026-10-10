@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Video = {
   id: number;
@@ -46,6 +46,12 @@ export default function Admin() {
   });
   const [status, setStatus] = useState("");
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState<string | null>(null);
+  const [progress, setProgress] = useState<number>(0);
+
+  const videoInput = useRef<HTMLInputElement>(null);
+  const posterInput = useRef<HTMLInputElement>(null);
+  const backdropInput = useRef<HTMLInputElement>(null);
 
   const loadVideos = async () => {
     const res = await fetch("/api/videos", { cache: "no-store" });
@@ -72,11 +78,69 @@ export default function Admin() {
       rating: "TV-MA",
     });
     setEditing(null);
+    setProgress(0);
+  };
+
+  // Upload using XMLHttpRequest so we get progress events for large files
+  const uploadFile = (file: File, folder: string, onDone: (url: string) => void) => {
+    setUploading(folder);
+    setProgress(0);
+
+    // Get presigned URL
+    fetch("/api/upload", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        filename: file.name,
+        contentType: file.type || "application/octet-stream",
+        folder,
+      }),
+    })
+      .then((r) => {
+        if (!r.ok) throw new Error("Failed to get upload URL");
+        return r.json();
+      })
+      .then(({ signedUrl, publicUrl }) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", signedUrl, true);
+        xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            setProgress(Math.round((e.loaded / e.total) * 100));
+          }
+        };
+
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            onDone(publicUrl);
+            setStatus("✅ Uploaded");
+            setTimeout(() => setStatus(""), 2000);
+          } else {
+            setStatus("❌ Upload failed: " + xhr.status);
+          }
+          setUploading(null);
+          setProgress(0);
+        };
+
+        xhr.onerror = () => {
+          setStatus("❌ Upload network error");
+          setUploading(null);
+          setProgress(0);
+        };
+
+        xhr.send(file);
+      })
+      .catch((e) => {
+        setStatus("❌ " + e.message);
+        setUploading(null);
+        setProgress(0);
+      });
   };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (saving) return;
+    if (saving || uploading) return;
     setSaving(true);
     setStatus(editing ? "Updating…" : "Saving…");
     try {
@@ -89,8 +153,9 @@ export default function Admin() {
       });
       if (!res.ok) throw new Error(await res.text());
       await loadVideos();
+      const wasEditing = !!editing;
       resetForm();
-      setStatus(editing ? "✅ Updated" : "✅ Added");
+      setStatus(wasEditing ? "✅ Updated" : "✅ Added");
       setTimeout(() => setStatus(""), 2000);
     } catch (err: any) {
       setStatus("❌ " + (err?.message || "Failed"));
@@ -121,6 +186,40 @@ export default function Admin() {
     await fetch(`/api/videos?id=${id}`, { method: "DELETE" });
     await loadVideos();
   };
+
+  const UploadButton = ({
+    label,
+    folder,
+    inputRef,
+    onDone,
+  }: {
+    label: string;
+    folder: string;
+    inputRef: React.RefObject<HTMLInputElement | null>;
+    onDone: (url: string) => void;
+  }) => (
+    <>
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        disabled={uploading === folder}
+        className="bg-red-600 hover:bg-red-500 disabled:opacity-50 px-4 py-2 rounded text-sm font-semibold whitespace-nowrap"
+      >
+        {uploading === folder ? `${progress}%` : label}
+      </button>
+      <input
+        ref={inputRef}
+        type="file"
+        accept={folder === "videos" ? "video/*" : "image/*"}
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) uploadFile(file, folder, onDone);
+          e.target.value = "";
+        }}
+        className="hidden"
+      />
+    </>
+  );
 
   return (
     <main className="min-h-screen bg-[#0b0b0f] text-white">
@@ -156,10 +255,23 @@ export default function Admin() {
             </div>
 
             <div className="col-span-2">
-              <label className="block text-sm text-white/60 mb-1">Video URL *</label>
-              <input required value={form.bitchuteUrl} onChange={(e) => setForm({ ...form, bitchuteUrl: e.target.value })}
-                placeholder="https://... or /videos/file.mp4"
-                className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none" />
+              <label className="block text-sm text-white/60 mb-1">Video File *</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  required
+                  value={form.bitchuteUrl}
+                  onChange={(e) => setForm({ ...form, bitchuteUrl: e.target.value })}
+                  placeholder="Click Upload, or paste a URL"
+                  className="flex-1 bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none text-sm"
+                />
+                <UploadButton
+                  label="Upload Video"
+                  folder="videos"
+                  inputRef={videoInput}
+                  onDone={(url) => setForm((f) => ({ ...f, bitchuteUrl: url }))}
+                />
+              </div>
             </div>
 
             <div>
@@ -193,20 +305,59 @@ export default function Admin() {
             </div>
 
             <div className="col-span-2">
-              <label className="block text-sm text-white/60 mb-1">Poster URL (portrait — optional)</label>
-              <input value={form.posterUrl} onChange={(e) => setForm({ ...form, posterUrl: e.target.value })}
-                className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none" />
+              <label className="block text-sm text-white/60 mb-1">Poster (portrait image)</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={form.posterUrl}
+                  onChange={(e) => setForm({ ...form, posterUrl: e.target.value })}
+                  placeholder="Click Upload, or paste a URL"
+                  className="flex-1 bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none text-sm"
+                />
+                <UploadButton
+                  label="Upload"
+                  folder="posters"
+                  inputRef={posterInput}
+                  onDone={(url) => setForm((f) => ({ ...f, posterUrl: url }))}
+                />
+              </div>
             </div>
 
             <div className="col-span-2">
-              <label className="block text-sm text-white/60 mb-1">Backdrop URL (landscape — for hero)</label>
-              <input value={form.backdropUrl} onChange={(e) => setForm({ ...form, backdropUrl: e.target.value })}
-                className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none" />
+              <label className="block text-sm text-white/60 mb-1">Backdrop (landscape image, for hero)</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={form.backdropUrl}
+                  onChange={(e) => setForm({ ...form, backdropUrl: e.target.value })}
+                  placeholder="Click Upload, or paste a URL"
+                  className="flex-1 bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none text-sm"
+                />
+                <UploadButton
+                  label="Upload"
+                  folder="backdrops"
+                  inputRef={backdropInput}
+                  onDone={(url) => setForm((f) => ({ ...f, backdropUrl: url }))}
+                />
+              </div>
             </div>
           </div>
 
+          {uploading && (
+            <div className="bg-black/40 border border-white/10 rounded p-3">
+              <p className="text-sm text-white/70 mb-2">Uploading {uploading}… {progress}%</p>
+              <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                <div className="h-full bg-red-600 transition-all" style={{ width: `${progress}%` }} />
+              </div>
+            </div>
+          )}
+
           <div className="flex items-center gap-4">
-            <button type="submit" disabled={saving} className="bg-red-600 hover:bg-red-500 disabled:opacity-50 font-semibold px-6 py-2 rounded transition">
+            <button
+              type="submit"
+              disabled={saving || !!uploading}
+              className="bg-red-600 hover:bg-red-500 disabled:opacity-50 font-semibold px-6 py-2 rounded transition"
+            >
               {saving ? (editing ? "Updating…" : "Adding…") : (editing ? "Save Changes" : "Add Video")}
             </button>
             {editing && (
