@@ -282,9 +282,7 @@ function TopNav({ activeTab, setActiveTab, searchOpen, setSearchOpen, search, se
         <button className="hidden md:block text-white/90 hover:text-white">
           <Bell size={20} />
         </button>
-        <a href="/admin" className="text-white/90 hover:text-white" title="Admin">
-          <User size={22} />
-        </a>
+
       </div>
     </nav>
   );
