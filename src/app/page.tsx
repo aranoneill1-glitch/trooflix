@@ -1,5 +1,15 @@
 "use client";
 
+if (typeof window !== "undefined") {
+  window.onerror = function(msg, url, line, col, err) {
+    document.body.innerHTML = '<div style="background:#000;color:#f00;padding:20px;font-family:monospace;font-size:14px;white-space:pre-wrap;">ERROR: ' + msg + '\n\nLine: ' + line + ':' + col + '\n\nURL: ' + url + '</div>';
+    return false;
+  };
+  window.addEventListener("unhandledrejection", function(e) {
+    document.body.innerHTML = '<div style="background:#000;color:#f00;padding:20px;font-family:monospace;font-size:14px;white-space:pre-wrap;">PROMISE ERROR: ' + (e.reason && e.reason.message ? e.reason.message : String(e.reason)) + '</div>';
+  });
+}
+
 import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
