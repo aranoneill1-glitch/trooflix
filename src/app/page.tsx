@@ -64,6 +64,15 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [scrolled, setScrolled] = useState(false);
   const [isTV, setIsTV] = useState(false);
+
+  useEffect(() => {
+    const ua = navigator.userAgent || "";
+    const chromeMatch = ua.match(/Chrome\/(\d+)/);
+    const chromeVersion = chromeMatch ? parseInt(chromeMatch[1]) : 999;
+    const isOldChrome = chromeVersion <= 100;
+    const isTVUA = /AFT|Silk|Android TV|BRAVIA|HbbTV|SmartTV|Tizen|Web0S|FireTV/i.test(ua);
+    setIsTV(isTVUA || isOldChrome || window.location.search.includes("tv=1"));
+  }, []);
   const [introDone, setIntroDone] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [progressList, setProgressList] = useState<any[]>([]);
