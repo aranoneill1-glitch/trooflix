@@ -34,10 +34,10 @@ export default function VideoIntro({ onDone }: { onDone: () => void }) {
           initial={{ clipPath: "inset(0 100% 0 0)" }}
           animate={{ clipPath: "inset(0 0% 0 0)" }}
           transition={{ duration: 1.2, ease: [0.4, 0, 0.2, 1], delay: 0.15 }}
-          className="absolute inset-0 text-5xl md:text-7xl font-black tracking-tight text-red-600"
+          className="absolute inset-0 text-5xl md:text-7xl font-black tracking-tight"
           style={{ letterSpacing: "-0.02em" }}
         >
-          TROOFLIX
+          <span className="text-white">TROO</span><span className="text-red-600">FLIX</span>
         </motion.span>
       </div>
     </motion.div>
