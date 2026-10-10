@@ -111,9 +111,18 @@ export default function VideoPlayer({ src, title, videoId, onClose }: Props) {
   }, []);
 
   useEffect(() => {
-    const onFs = () => setFullscreen(!!document.fullscreenElement);
+    const onFs = () => {
+      const isFs =
+        !!document.fullscreenElement ||
+        !!(document as any).webkitFullscreenElement;
+      setFullscreen(isFs);
+    };
     document.addEventListener("fullscreenchange", onFs);
-    return () => document.removeEventListener("fullscreenchange", onFs);
+    document.addEventListener("webkitfullscreenchange", onFs);
+    return () => {
+      document.removeEventListener("fullscreenchange", onFs);
+      document.removeEventListener("webkitfullscreenchange", onFs);
+    };
   }, []);
 
   useEffect(() => {
@@ -175,11 +184,29 @@ export default function VideoPlayer({ src, title, videoId, onClose }: Props) {
     pokeControls();
   };
 
-  const toggleFullscreen = () => {
+  const toggleFullscreen = async () => {
     const el = containerRef.current;
     if (!el) return;
-    if (document.fullscreenElement) document.exitFullscreen();
-    else el.requestFullscreen();
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else {
+        // Standard
+        if (el.requestFullscreen) {
+          await el.requestFullscreen();
+        }
+        // Safari / iOS fallback
+        else if ((el as any).webkitRequestFullscreen) {
+          await (el as any).webkitRequestFullscreen();
+        }
+        // Older Safari on video element
+        else if ((videoRef.current as any)?.webkitEnterFullscreen) {
+          (videoRef.current as any).webkitEnterFullscreen();
+        }
+      }
+    } catch (err) {
+      console.error("Fullscreen error:", err);
+    }
   };
 
   const fmt = (t: number) => {
@@ -245,7 +272,7 @@ export default function VideoPlayer({ src, title, videoId, onClose }: Props) {
             </div>
 
             <div className="pointer-events-auto p-6 bg-gradient-to-t from-black/90 to-transparent">
-              <div onClick={seek} className="relative h-1.5 bg-white/20 rounded-full cursor-pointer group mb-4 hover:h-2 transition-all">
+              <div onClick={seek} className="relative h-1.5 bg-white/20 rounded-full cursor-pointer group hover:h-2 transition-all">
                 <div className="absolute inset-y-0 left-0 bg-white/40 rounded-full" style={{ width: `${bufferedPct}%` }} />
                 <div className="absolute inset-y-0 left-0 bg-red-600 rounded-full" style={{ width: `${progress}%` }} />
                 <div
@@ -254,7 +281,7 @@ export default function VideoPlayer({ src, title, videoId, onClose }: Props) {
                 />
               </div>
 
-              <div className="flex items-center gap-4 text-white">
+              <div className="flex items-center gap-4 text-white mt-5 h-8">
                 <button onClick={togglePlay} className="hover:text-white/70 transition">
                   {playing ? <Pause size={28} fill="white" /> : <Play size={28} fill="white" />}
                 </button>
@@ -277,7 +304,7 @@ export default function VideoPlayer({ src, title, videoId, onClose }: Props) {
                   />
                 </div>
 
-                <span className="text-sm text-white/80 ml-2">
+                <span className="text-sm text-white/80 ml-2 tabular-nums">
                   {fmt(current)} / {fmt(duration)}
                 </span>
 
