@@ -63,6 +63,7 @@ export default function Home() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [scrolled, setScrolled] = useState(false);
+  const [isTV, setIsTV] = useState(false);
   const [introDone, setIntroDone] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [progressList, setProgressList] = useState<any[]>([]);
@@ -222,11 +223,14 @@ export default function Home() {
       </div>
 
       {/* ============ MOBILE BOTTOM NAV ============ */}
-      <MobileBottomNav
-        activeTab={activeTab}
-        setActiveTab={(t: string) => { setActiveTab(t); setActiveCategory(null); }}
-        onExplore={() => setDrawerOpen(true)}
-      />
+      {/* TV-MODE-BOTTOM-NAV: hide on TV */}
+      {!isTV && (
+        <MobileBottomNav
+          activeTab={activeTab}
+          setActiveTab={(t: string) => { setActiveTab(t); setActiveCategory(null); }}
+          onExplore={() => setDrawerOpen(true)}
+        />
+      )}
 
       {/* ============ MODAL / PLAYER ============ */}
       <AnimatePresence>
@@ -309,7 +313,7 @@ function MobileBottomNav({ activeTab, setActiveTab, onExplore }: any) {
   ];
 
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur border-t border-white/10">
+    <nav data-mobile-nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur border-t border-white/10">
       <div className="flex justify-around items-center py-2">
         {items.map((it) => {
           const active = activeTab === it.tab;
