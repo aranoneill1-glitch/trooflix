@@ -21,7 +21,7 @@ export default function VideoIntro({ onDone }: { onDone: () => void }) {
         <span
           className="text-5xl md:text-7xl font-black tracking-tight"
           style={{
-            WebkitTextStroke: "2px rgba(255,255,255,0.3)",
+            WebkitTextStroke: "0px transparent",
             color: "transparent",
             letterSpacing: "-0.02em",
           }}

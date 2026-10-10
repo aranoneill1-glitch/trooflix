@@ -38,7 +38,7 @@ export default function LoadingIntro({ onDone }: { onDone: () => void }) {
             <span
               className="text-6xl md:text-8xl font-black tracking-tight"
               style={{
-                WebkitTextStroke: "2px rgba(255,255,255,0.35)",
+                WebkitTextStroke: "0px transparent",
                 color: "transparent",
                 letterSpacing: "-0.02em",
               }}
