@@ -24,7 +24,7 @@ const CATEGORIES = [
   "Technology and Control",
   "Religion and Belief",
   "Ancient Civilisations",
-  "Uncensored",
+  "UFO Phenomena",
 ];
 
 const TYPES = ["Movie", "Documentary", "Podcast", "Series"];

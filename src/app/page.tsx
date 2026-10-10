@@ -38,7 +38,7 @@ const CATEGORIES: string[] = [
   "Technology and Control",
   "Religion and Belief",
   "Ancient Civilisations",
-  "Uncensored",
+  "UFO Phenomena",
 ];
 
 const NAV_TABS: string[] = ["Home", "Movies", "Documentaries", "Podcasts", "Series"];
