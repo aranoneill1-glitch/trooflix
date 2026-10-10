@@ -7,14 +7,16 @@ import {
   SkipBack, SkipForward, X, Loader2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { saveProgress, getProgress } from "@/lib/progress";
 
 type Props = {
   src: string;
   title: string;
+  videoId?: number;
   onClose: () => void;
 };
 
-export default function VideoPlayer({ src, title, onClose }: Props) {
+export default function VideoPlayer({ src, title, videoId, onClose }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const hideTimer = useRef<NodeJS.Timeout | null>(null);
@@ -60,10 +62,26 @@ export default function VideoPlayer({ src, title, onClose }: Props) {
 
     const onPlay = () => setPlaying(true);
     const onPause = () => setPlaying(false);
-    const onTime = () => setCurrent(video.currentTime);
+    const onTime = () => {
+      setCurrent(video.currentTime);
+      // Save every ~5 seconds
+      if (videoId && video.duration) {
+        const now = Math.floor(video.currentTime);
+        if (now % 5 === 0) {
+          saveProgress(videoId, now, video.duration);
+        }
+      }
+    };
     const onMeta = () => {
       setDuration(video.duration);
       setLoading(false);
+      // Resume from saved progress
+      if (videoId) {
+        const saved = getProgress(videoId);
+        if (saved && saved.seconds > 5 && saved.seconds < video.duration - 10) {
+          video.currentTime = saved.seconds;
+        }
+      }
     };
     const onProgress = () => {
       if (video.buffered.length > 0) {

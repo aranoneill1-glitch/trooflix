@@ -10,6 +10,7 @@ import {
 import BitChutePlayer from "@/components/BitChutePlayer";
 import VideoPlayer from "@/components/VideoPlayer";
 import LoadingIntro from "@/components/LoadingIntro";
+import { getAllProgress } from "@/lib/progress";
 import SkeletonRow from "@/components/SkeletonRow";
 
 type Video = {
@@ -53,9 +54,14 @@ export default function Home() {
   const [scrolled, setScrolled] = useState(false);
   const [introDone, setIntroDone] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [progressList, setProgressList] = useState<any[]>([]);
 
   useEffect(() => {
     fetch("/api/videos").then((r) => r.json()).then((data) => { setVideos(data); setLoaded(true); });
+    setProgressList(getAllProgress());
+    const onProg = () => setProgressList(getAllProgress());
+    window.addEventListener("progress-changed", onProg);
+    return () => window.removeEventListener("progress-changed", onProg);
     const onScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
@@ -166,7 +172,18 @@ export default function Home() {
 
         {!filtered && !showingFiltered && (
           <>
-            {trending.length > 0 && <Row title="Trending Now" items={trending} onSelect={setSelected} onPlay={setPlaying} />}
+            {progressList.length > 0 && (() => {
+                const cw = progressList
+                  .map((p) => {
+                    const v = videos.find((x) => x.id === p.id);
+                    return v ? { ...v, __progress: p.seconds / p.duration } : null;
+                  })
+                  .filter(Boolean) as any[];
+                return cw.length > 0 ? (
+                  <Row title="Continue Watching" items={cw} onSelect={setSelected} onPlay={setPlaying} />
+                ) : null;
+              })()}
+              {trending.length > 0 && <Row title="Trending Now" items={trending} onSelect={setSelected} onPlay={setPlaying} />}
             {docs.length > 0 && <Row title="Documentaries" items={docs} onSelect={setSelected} onPlay={setPlaying} />}
             {podcasts.length > 0 && <Row title="Podcasts" items={podcasts} onSelect={setSelected} onPlay={setPlaying} />}
             {newReleases.length > 0 && <Row title="New Releases" items={newReleases} onSelect={setSelected} onPlay={setPlaying} />}
@@ -194,7 +211,7 @@ export default function Home() {
           <BitChutePlayer src={playing.bitchuteUrl} title={playing.title} onClose={() => setPlaying(null)} />
         )}
         {playing && !playing.bitchuteUrl.includes("bitchute.com") && (
-          <VideoPlayer src={playing.bitchuteUrl} title={playing.title} onClose={() => setPlaying(null)} />
+          <VideoPlayer src={playing.bitchuteUrl} title={playing.title} videoId={playing.id} onClose={() => setPlaying(null)} />
         )}
       </AnimatePresence>
     </main>
