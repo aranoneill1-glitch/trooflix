@@ -1,12 +1,33 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 
 export default function VideoIntro({ onDone }: { onDone: () => void }) {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
   useEffect(() => {
+    // Play the intro sound
+    try {
+      const audio = new Audio(
+        "https://pub-ce2ee455d2b04abc9964046e3ff970f0.r2.dev/sounds/353206__rhodesmas__intro-01.wav"
+      );
+      audio.volume = 0.5;
+      audioRef.current = audio;
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {});
+      }
+    } catch (_) {}
+
     const t = setTimeout(onDone, 1500);
-    return () => clearTimeout(t);
+    return () => {
+      clearTimeout(t);
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
   }, [onDone]);
 
   return (
@@ -17,7 +38,6 @@ export default function VideoIntro({ onDone }: { onDone: () => void }) {
       className="fixed inset-0 z-[300] bg-black flex items-center justify-center"
     >
       <div className="relative select-none">
-        {/* Base layer: faint outline */}
         <span
           className="text-5xl md:text-7xl font-black tracking-tight"
           style={{
@@ -29,7 +49,6 @@ export default function VideoIntro({ onDone }: { onDone: () => void }) {
           TROOFLIX
         </span>
 
-        {/* Filling layer: red, clip-animated left→right */}
         <motion.span
           initial={{ clipPath: "inset(0 100% 0 0)" }}
           animate={{ clipPath: "inset(0 0% 0 0)" }}
@@ -37,7 +56,8 @@ export default function VideoIntro({ onDone }: { onDone: () => void }) {
           className="absolute inset-0 text-5xl md:text-7xl font-black tracking-tight"
           style={{ letterSpacing: "-0.02em" }}
         >
-          <span className="text-white">TROO</span><span className="text-red-600">FLIX</span>
+          <span className="text-white">TROO</span>
+          <span className="text-red-600">FLIX</span>
         </motion.span>
       </div>
     </motion.div>

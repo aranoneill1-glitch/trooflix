@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function LoadingIntro({ onDone }: { onDone: () => void }) {
   const [visible, setVisible] = useState(true);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
+    // Once per session
     const seen = sessionStorage.getItem("trooflix:intro-seen");
     if (seen) {
       setVisible(false);
@@ -14,13 +16,34 @@ export default function LoadingIntro({ onDone }: { onDone: () => void }) {
       return;
     }
 
+    // Try to play the sound. Browsers may block this until first interaction.
+    try {
+      const audio = new Audio(
+        "https://pub-ce2ee455d2b04abc9964046e3ff970f0.r2.dev/sounds/353206__rhodesmas__intro-01.wav"
+      );
+      audio.volume = 0.5;
+      audioRef.current = audio;
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Autoplay blocked — silent intro. Fine.
+        });
+      }
+    } catch (_) {}
+
     const t = setTimeout(() => {
       sessionStorage.setItem("trooflix:intro-seen", "1");
       setVisible(false);
       setTimeout(onDone, 400);
     }, 2500);
 
-    return () => clearTimeout(t);
+    return () => {
+      clearTimeout(t);
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
   }, [onDone]);
 
   return (
@@ -33,7 +56,7 @@ export default function LoadingIntro({ onDone }: { onDone: () => void }) {
           className="fixed inset-0 z-[300] bg-black flex items-center justify-center"
         >
           <div className="relative select-none">
-            {/* Base layer: invisible outline */}
+            {/* Base layer: invisible */}
             <span
               className="text-6xl md:text-8xl font-black tracking-tight"
               style={{
@@ -53,7 +76,8 @@ export default function LoadingIntro({ onDone }: { onDone: () => void }) {
               className="absolute inset-0 text-6xl md:text-8xl font-black tracking-tight"
               style={{ letterSpacing: "-0.02em" }}
             >
-              <span className="text-white">TROO</span><span className="text-red-600">FLIX</span>
+              <span className="text-white">TROO</span>
+              <span className="text-red-600">FLIX</span>
             </motion.span>
           </div>
         </motion.div>
