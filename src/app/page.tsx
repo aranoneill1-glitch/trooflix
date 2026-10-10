@@ -201,7 +201,7 @@ export default function Home() {
             {docs.length > 0 && <Row title="Documentaries" items={docs} onSelect={setSelected} onPlay={requestPlay} />}
             {podcasts.length > 0 && <Row title="Podcasts" items={podcasts} onSelect={setSelected} onPlay={requestPlay} />}
             {newReleases.length > 0 && <Row title="New Releases" items={newReleases} onSelect={setSelected} onPlay={requestPlay} />}
-            {videos.length === 0 && (
+            {loaded && videos.length === 0 && (
               <div className="px-8 py-20 text-center text-white/50">
                 <p className="text-xl mb-2">No videos yet</p>
                 <a href="/admin" className="text-red-500 hover:underline">Go to /admin to add your first video</a>
