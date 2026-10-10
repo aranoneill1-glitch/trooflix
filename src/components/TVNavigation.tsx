@@ -15,9 +15,13 @@ export default function TVNavigation() {
       let active = false;
 
       const getFocusable = (): HTMLElement[] => {
-        const nodes = document.querySelectorAll<HTMLElement>(
-          'a[href], button:not([disabled]), [role="button"], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-        );
+        // Prefer elements marked with data-tv-focus (video cards, main CTAs)
+        const preferred = document.querySelectorAll<HTMLElement>("[data-tv-focus]");
+        const nodes = preferred.length > 0
+          ? preferred
+          : document.querySelectorAll<HTMLElement>(
+              'a[href], button:not([disabled]), [role="button"], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+            );
         return Array.from(nodes).filter((el) => {
           const r = el.getBoundingClientRect();
           return (
