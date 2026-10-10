@@ -9,6 +9,8 @@ import {
 } from "lucide-react";
 import BitChutePlayer from "@/components/BitChutePlayer";
 import VideoPlayer from "@/components/VideoPlayer";
+import LoadingIntro from "@/components/LoadingIntro";
+import SkeletonRow from "@/components/SkeletonRow";
 
 type Video = {
   id: number;
@@ -49,9 +51,11 @@ export default function Home() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [scrolled, setScrolled] = useState(false);
+  const [introDone, setIntroDone] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    fetch("/api/videos").then((r) => r.json()).then(setVideos);
+    fetch("/api/videos").then((r) => r.json()).then((data) => { setVideos(data); setLoaded(true); });
     const onScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
@@ -78,6 +82,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-black text-white overflow-x-hidden">
+      <LoadingIntro onDone={() => setIntroDone(true)} />
       {/* ============ TOP NAV ============ */}
       <TopNav
         activeTab={activeTab}
