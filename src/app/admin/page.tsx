@@ -46,6 +46,7 @@ export default function Admin() {
   });
   const [status, setStatus] = useState("");
   const [saving, setSaving] = useState(false);
+  const [stats, setStats] = useState<{ totalViews: number; uniqueVisitors: number; today: number; last7Days: number } | null>(null);
   const [uploading, setUploading] = useState<string | null>(null);
   const [progress, setProgress] = useState<number>(0);
 
@@ -62,6 +63,7 @@ export default function Admin() {
   useEffect(() => {
     setForm((f) => ({ ...f, year: new Date().getFullYear() }));
     loadVideos();
+    fetch("/api/track-visit").then((r) => r.json()).then(setStats).catch(() => {});
   }, []);
 
   const resetForm = () => {
@@ -242,9 +244,32 @@ export default function Admin() {
       </nav>
 
       <div className="max-w-4xl mx-auto p-8">
-        <p className="text-white/50 mb-8">
+        <p className="text-white/50 mb-6">
           {editing ? `Editing: ${editing.title}` : "Add videos to your catalog"}
         </p>
+
+        {/* Site Stats */}
+        <div className="mb-10">
+          <h2 className="text-lg font-bold mb-3 text-white/90">📊 Site Stats</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="bg-[#141418] border border-white/5 rounded-lg p-4">
+              <p className="text-xs text-white/50 mb-1">Unique Visitors</p>
+              <p className="text-2xl font-bold text-white">{stats?.uniqueVisitors ?? "—"}</p>
+            </div>
+            <div className="bg-[#141418] border border-white/5 rounded-lg p-4">
+              <p className="text-xs text-white/50 mb-1">Total Page Views</p>
+              <p className="text-2xl font-bold text-white">{stats?.totalViews ?? "—"}</p>
+            </div>
+            <div className="bg-[#141418] border border-white/5 rounded-lg p-4">
+              <p className="text-xs text-white/50 mb-1">Today</p>
+              <p className="text-2xl font-bold text-white">{stats?.today ?? "—"}</p>
+            </div>
+            <div className="bg-[#141418] border border-white/5 rounded-lg p-4">
+              <p className="text-xs text-white/50 mb-1">Last 7 Days</p>
+              <p className="text-2xl font-bold text-white">{stats?.last7Days ?? "—"}</p>
+            </div>
+          </div>
+        </div>
 
         <form onSubmit={submit} className="bg-[#141418] rounded-lg p-6 space-y-4 mb-10">
           <div className="grid grid-cols-2 gap-4">

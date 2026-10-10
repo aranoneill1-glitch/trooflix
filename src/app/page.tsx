@@ -73,6 +73,20 @@ export default function Home() {
     const isTVUA = /AFT|Silk|Android TV|BRAVIA|HbbTV|SmartTV|Tizen|Web0S|FireTV/i.test(ua);
     setIsTV(isTVUA || isOldChrome || window.location.search.includes("tv=1"));
   }, []);
+
+  // Track visitor (fires once per page load)
+  useEffect(() => {
+    try {
+      const seen = localStorage.getItem("trooflix:visited");
+      const isUnique = !seen;
+      if (isUnique) localStorage.setItem("trooflix:visited", "1");
+      fetch("/api/track-visit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isUnique }),
+      }).catch(() => {});
+    } catch (_) {}
+  }, []);
   const [introDone, setIntroDone] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [progressList, setProgressList] = useState<any[]>([]);
