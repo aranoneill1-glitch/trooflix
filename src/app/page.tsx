@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Play, Info, ChevronLeft, ChevronRight, Plus, ThumbsUp, X,
   Search, Bell, Home as HomeIcon, Film, FileText, Mic, Tv, Menu,
-  Compass, Download, User,
+  Compass, Download,
 } from "lucide-react";
 import BitChutePlayer from "@/components/BitChutePlayer";
 import VideoPlayer from "@/components/VideoPlayer";
