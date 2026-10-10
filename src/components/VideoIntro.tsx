@@ -10,7 +10,7 @@ export default function VideoIntro({ onDone }: { onDone: () => void }) {
     // Play the intro sound
     try {
       const audio = new Audio(
-        "https://pub-ce2ee455d2b04abc9964046e3ff970f0.r2.dev/sounds/353206__rhodesmas__intro-01.wav"
+        "https://pub-ce2ee455d2b04abc9964046e3ff970f0.r2.dev/sounds/545263__tairblenn__swish2.mp3"
       );
       audio.volume = 0.5;
       audioRef.current = audio;
