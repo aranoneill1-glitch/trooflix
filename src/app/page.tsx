@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Play, Info, ChevronLeft, ChevronRight, Plus, ThumbsUp, X,
   Search, Bell, Home as HomeIcon, Film, FileText, Mic, Tv, Menu,
-  Compass, Download,
+  Compass,
 } from "lucide-react";
 import BitChutePlayer from "@/components/BitChutePlayer";
 import VideoPlayer from "@/components/VideoPlayer";
@@ -531,9 +531,7 @@ function DetailModal({ item, onClose, onPlay }: { item: Video; onClose: () => vo
               <button className="border-2 border-white/50 rounded-full p-2.5 md:p-3 hover:border-white transition">
                 <ThumbsUp size={18} />
               </button>
-              <button className="border-2 border-white/50 rounded-full p-2.5 md:p-3 hover:border-white transition ml-auto">
-                <Download size={18} />
-              </button>
+
             </div>
           </div>
         </div>
