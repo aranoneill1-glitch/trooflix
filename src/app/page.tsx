@@ -10,6 +10,7 @@ import {
 import BitChutePlayer from "@/components/BitChutePlayer";
 import VideoPlayer from "@/components/VideoPlayer";
 import LoadingIntro from "@/components/LoadingIntro";
+import VideoIntro from "@/components/VideoIntro";
 import { getAllProgress } from "@/lib/progress";
 import SkeletonRow from "@/components/SkeletonRow";
 
@@ -55,6 +56,8 @@ export default function Home() {
   const [introDone, setIntroDone] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [progressList, setProgressList] = useState<any[]>([]);
+  const [showVideoIntro, setShowVideoIntro] = useState(false);
+  const [pendingVideo, setPendingVideo] = useState<Video | null>(null);
 
   useEffect(() => {
     fetch("/api/videos").then((r) => r.json()).then((data) => { setVideos(data); setLoaded(true); });
@@ -84,6 +87,17 @@ export default function Home() {
     : null;
 
   const hero = trending[0] || videos[0];
+
+  const requestPlay = (video: Video) => {
+    setPendingVideo(video);
+    setShowVideoIntro(true);
+  };
+
+  const onIntroDone = () => {
+    setShowVideoIntro(false);
+    if (pendingVideo) setPlaying(pendingVideo);
+    setPendingVideo(null);
+  };
   const showingFiltered = activeCategory || activeTab !== "Home" || filtered;
 
   return (
@@ -147,7 +161,7 @@ export default function Home() {
 
       {/* ============ CONTENT ============ */}
       {!showingFiltered && hero && (
-        <Hero video={hero} onPlay={() => setPlaying(hero)} onMore={() => setSelected(hero)} />
+        <Hero video={hero} onPlay={() => requestPlay(hero)} onMore={() => setSelected(hero)} />
       )}
       {showingFiltered && <div className="h-20 md:h-24" />}
 
@@ -155,7 +169,7 @@ export default function Home() {
         {filtered && (
           <div className="px-4 md:px-12">
             <h2 className="text-xl md:text-2xl font-bold mb-6">Results for "{search}"</h2>
-            <Grid items={filtered} onSelect={setSelected} onPlay={setPlaying} />
+            <Grid items={filtered} onSelect={setSelected} onPlay={requestPlay} />
           </div>
         )}
 
@@ -165,7 +179,7 @@ export default function Home() {
             {displayVideos.length === 0 ? (
               <p className="text-white/40">No videos yet.</p>
             ) : (
-              <Grid items={displayVideos} onSelect={setSelected} onPlay={setPlaying} />
+              <Grid items={displayVideos} onSelect={setSelected} onPlay={requestPlay} />
             )}
           </div>
         )}
@@ -180,13 +194,13 @@ export default function Home() {
                   })
                   .filter(Boolean) as any[];
                 return cw.length > 0 ? (
-                  <Row title="Continue Watching" items={cw} onSelect={setSelected} onPlay={setPlaying} />
+                  <Row title="Continue Watching" items={cw} onSelect={setSelected} onPlay={requestPlay} />
                 ) : null;
               })()}
-              {trending.length > 0 && <Row title="Trending Now" items={trending} onSelect={setSelected} onPlay={setPlaying} />}
-            {docs.length > 0 && <Row title="Documentaries" items={docs} onSelect={setSelected} onPlay={setPlaying} />}
-            {podcasts.length > 0 && <Row title="Podcasts" items={podcasts} onSelect={setSelected} onPlay={setPlaying} />}
-            {newReleases.length > 0 && <Row title="New Releases" items={newReleases} onSelect={setSelected} onPlay={setPlaying} />}
+              {trending.length > 0 && <Row title="Trending Now" items={trending} onSelect={setSelected} onPlay={requestPlay} />}
+            {docs.length > 0 && <Row title="Documentaries" items={docs} onSelect={setSelected} onPlay={requestPlay} />}
+            {podcasts.length > 0 && <Row title="Podcasts" items={podcasts} onSelect={setSelected} onPlay={requestPlay} />}
+            {newReleases.length > 0 && <Row title="New Releases" items={newReleases} onSelect={setSelected} onPlay={requestPlay} />}
             {videos.length === 0 && (
               <div className="px-8 py-20 text-center text-white/50">
                 <p className="text-xl mb-2">No videos yet</p>
@@ -206,7 +220,8 @@ export default function Home() {
 
       {/* ============ MODAL / PLAYER ============ */}
       <AnimatePresence>
-        {selected && <DetailModal item={selected} onClose={() => setSelected(null)} onPlay={(v) => { setSelected(null); setPlaying(v); }} />}
+        {showVideoIntro && <VideoIntro onDone={onIntroDone} />}
+        {selected && <DetailModal item={selected} onClose={() => setSelected(null)} onPlay={(v) => { setSelected(null); requestPlay(v); }} />}
         {playing && playing.bitchuteUrl.includes("bitchute.com") && (
           <BitChutePlayer src={playing.bitchuteUrl} title={playing.title} onClose={() => setPlaying(null)} />
         )}
