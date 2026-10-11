@@ -150,12 +150,24 @@ export default function TVPage() {
   const hero = videos.find((v) => v.featured) || videos[0];
 
   // Which rows to show
-  const rows = activeCategory
-    ? [{ title: activeCategory, items: videos.filter((v) => v.category === activeCategory) }]
-    : CATEGORIES.map((cat) => ({
-        title: cat,
-        items: videos.filter((v) => v.category === cat),
-      })).filter((r) => r.items.length > 0);
+  const rows = (() => {
+    if (activeCategory === "__MOVIES__") {
+      return [{ title: "Movies", items: videos.filter((v) => v.type === "Movie") }];
+    }
+    if (activeCategory === "__DOCS__") {
+      return [{ title: "Documentaries", items: videos.filter((v) => v.type === "Documentary") }];
+    }
+    if (activeCategory === "__PODCASTS__") {
+      return [{ title: "Podcasts", items: videos.filter((v) => v.type === "Podcast") }];
+    }
+    if (activeCategory) {
+      return [{ title: activeCategory, items: videos.filter((v) => v.category === activeCategory) }];
+    }
+    return CATEGORIES.map((cat) => ({
+      title: cat,
+      items: videos.filter((v) => v.category === cat),
+    })).filter((r) => r.items.length > 0);
+  })();
 
   return (
     <main className="min-h-screen bg-black text-white overflow-x-hidden">
@@ -200,21 +212,30 @@ export default function TVPage() {
           </button>
           <button
             data-tv-item
-            onClick={() => setActiveCategory("History Revisionism")}
+            onClick={() => setActiveCategory("__MOVIES__")}
             className={`text-xl font-semibold whitespace-nowrap transition ${
-              activeCategory === "History Revisionism" ? "text-white" : "text-white/50 hover:text-white/80"
+              activeCategory === "__MOVIES__" ? "text-white" : "text-white/50 hover:text-white/80"
             }`}
           >
-            History
+            Movies
           </button>
           <button
             data-tv-item
-            onClick={() => setActiveCategory("Politics and Power")}
+            onClick={() => setActiveCategory("__DOCS__")}
             className={`text-xl font-semibold whitespace-nowrap transition ${
-              activeCategory === "Politics and Power" ? "text-white" : "text-white/50 hover:text-white/80"
+              activeCategory === "__DOCS__" ? "text-white" : "text-white/50 hover:text-white/80"
             }`}
           >
-            Politics
+            Documentaries
+          </button>
+          <button
+            data-tv-item
+            onClick={() => setActiveCategory("__PODCASTS__")}
+            className={`text-xl font-semibold whitespace-nowrap transition ${
+              activeCategory === "__PODCASTS__" ? "text-white" : "text-white/50 hover:text-white/80"
+            }`}
+          >
+            Podcasts
           </button>
         </div>
       </nav>
