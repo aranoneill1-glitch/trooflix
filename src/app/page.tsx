@@ -21,6 +21,7 @@ import BitChutePlayer from "@/components/BitChutePlayer";
 import VideoPlayer from "@/components/VideoPlayer";
 import LoadingIntro from "@/components/LoadingIntro";
 import VideoIntro from "@/components/VideoIntro";
+import UserMenu from "@/components/UserMenu";
 import { getAllProgress } from "@/lib/progress";
 import SkeletonRow from "@/components/SkeletonRow";
 
@@ -319,6 +320,7 @@ function TopNav({ activeTab, setActiveTab, searchOpen, setSearchOpen, search, se
         <button className="hidden md:block text-white/90 hover:text-white">
           <Bell size={20} />
         </button>
+        <UserMenu />
 
       </div>
     </nav>
