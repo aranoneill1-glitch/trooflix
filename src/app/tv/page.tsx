@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Play, Info, ChevronRight, X, ArrowLeft } from "lucide-react";
+import { Play, Info, ChevronRight, X, Menu } from "lucide-react";
 import BitChutePlayer from "@/components/BitChutePlayer";
 import VideoPlayer from "@/components/VideoPlayer";
 
@@ -38,8 +37,10 @@ export default function TVPage() {
   const [selected, setSelected] = useState<Video | null>(null);
   const [playing, setPlaying] = useState<Video | null>(null);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // Fetch videos
   useEffect(() => {
     fetch("/api/videos")
       .then((r) => r.json())
@@ -50,11 +51,19 @@ export default function TVPage() {
       .catch(() => setLoading(false));
   }, []);
 
-  // Keyboard/remote navigation
+  // D-pad navigation
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      // If player or modal is open, let them handle it
-      if (playing || selected) return;
+      if (playing) return;
+
+      // If detail modal is open, handle back
+      if (selected) {
+        if (e.key === "Escape" || e.key === "BrowserBack") {
+          e.preventDefault();
+          setSelected(null);
+        }
+        return;
+      }
 
       const focusables = Array.from(
         document.querySelectorAll<HTMLElement>("[data-tv-item]")
@@ -64,24 +73,33 @@ export default function TVPage() {
       });
 
       const current = document.querySelector<HTMLElement>("[data-tv-item].is-focused");
-      const currentIndex = current ? focusables.indexOf(current) : -1;
-
       const dirMap: Record<string, "up" | "down" | "left" | "right"> = {
         ArrowUp: "up",
         ArrowDown: "down",
         ArrowLeft: "left",
         ArrowRight: "right",
       };
-
       const dir = dirMap[e.key];
+
+      // Close menu on back
+      if (e.key === "Escape" || e.key === "BrowserBack") {
+        if (menuOpen) {
+          e.preventDefault();
+          setMenuOpen(false);
+          return;
+        }
+      }
 
       if (dir) {
         e.preventDefault();
         if (!current) {
-          focusables[0]?.classList.add("is-focused");
-          focusables[0]?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+          if (focusables.length > 0) {
+            focusables[0].classList.add("is-focused");
+            focusables[0].scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+          }
           return;
         }
+
         const curRect = current.getBoundingClientRect();
         const cx = curRect.left + curRect.width / 2;
         const cy = curRect.top + curRect.height / 2;
@@ -125,43 +143,31 @@ export default function TVPage() {
         e.preventDefault();
         current.click();
       }
-
-      if (e.key === "Escape" || e.key === "BrowserBack") {
-        if (activeCategory) {
-          e.preventDefault();
-          setActiveCategory(null);
-        }
-      }
     };
 
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [playing, selected, activeCategory]);
+  }, [playing, selected, menuOpen]);
 
-  // Auto-focus the first item after load
+  // Auto-focus first item
   useEffect(() => {
     if (loading || videos.length === 0) return;
     setTimeout(() => {
       const first = document.querySelector<HTMLElement>("[data-tv-item]");
       first?.classList.add("is-focused");
     }, 500);
-  }, [loading, videos.length, activeCategory]);
+  }, [loading, videos.length, activeCategory, menuOpen]);
 
   const hero = videos.find((v) => v.featured) || videos[0];
 
-  // Which rows to show
   const rows = (() => {
-    if (activeCategory === "__MOVIES__") {
-      return [{ title: "Movies", items: videos.filter((v) => v.type === "Movie") }];
-    }
-    if (activeCategory === "__DOCS__") {
-      return [{ title: "Documentaries", items: videos.filter((v) => v.type === "Documentary") }];
-    }
-    if (activeCategory === "__PODCASTS__") {
-      return [{ title: "Podcasts", items: videos.filter((v) => v.type === "Podcast") }];
-    }
     if (activeCategory) {
-      return [{ title: activeCategory, items: videos.filter((v) => v.category === activeCategory) }];
+      return [
+        {
+          title: activeCategory,
+          items: videos.filter((v) => v.category === activeCategory),
+        },
+      ];
     }
     return CATEGORIES.map((cat) => ({
       title: cat,
@@ -171,7 +177,6 @@ export default function TVPage() {
 
   return (
     <main className="min-h-screen bg-black text-white overflow-x-hidden">
-      {/* TV Navigation CSS */}
       <style jsx global>{`
         [data-tv-item] {
           transition: transform 0.15s ease, box-shadow 0.15s ease;
@@ -181,36 +186,29 @@ export default function TVPage() {
           box-shadow: 0 0 0 4px #dc2626, 0 0 30px rgba(220, 38, 38, 0.6);
           z-index: 40;
         }
-        [data-tv-item].is-focused button,
-        [data-tv-item].is-focused a {
-          outline: none !important;
-        }
-        .tv-nav [data-tv-item].is-focused {
-          transform: none !important;
-          background: transparent !important;
-          text-shadow: 0 0 12px rgba(255, 255, 255, 0.9) !important;
-          color: #ffffff !important;
-        }
         *:focus {
           outline: none !important;
         }
-        html {
-          scroll-behavior: smooth;
-        }
       `}</style>
 
-      {/* Top Nav */}
-      <nav className="sticky top-0 z-50 flex items-center gap-8 px-12 py-5 bg-gradient-to-b from-black via-black/95 to-transparent">
+      {/* Top Bar */}
+      <div className="sticky top-0 z-50 flex items-center gap-6 px-8 py-4 bg-gradient-to-b from-black via-black/95 to-transparent">
+        <button
+          data-tv-item
+          onClick={() => setMenuOpen(true)}
+          className="text-white hover:text-red-500 transition"
+        >
+          <Menu size={32} />
+        </button>
         <a href="/tv" className="text-3xl font-black tracking-tight">
           <span className="text-white">TROO</span>
           <span className="text-red-600">FLIX</span>
         </a>
-
-        <div className="tv-nav flex gap-8 items-center">
+        <div className="flex gap-6 ml-auto">
           <button
             data-tv-item
             onClick={() => setActiveCategory(null)}
-            className={`text-xl font-semibold whitespace-nowrap transition ${
+            className={`text-xl font-semibold transition ${
               activeCategory === null ? "text-white" : "text-white/50 hover:text-white/80"
             }`}
           >
@@ -218,37 +216,75 @@ export default function TVPage() {
           </button>
           <button
             data-tv-item
-            onClick={() => setActiveCategory("__MOVIES__")}
-            className={`text-xl font-semibold whitespace-nowrap transition ${
-              activeCategory === "__MOVIES__" ? "text-white" : "text-white/50 hover:text-white/80"
+            onClick={() => setActiveCategory("History Revisionism")}
+            className={`text-xl font-semibold transition ${
+              activeCategory === "History Revisionism" ? "text-white" : "text-white/50 hover:text-white/80"
             }`}
           >
-            Movies
+            History
           </button>
           <button
             data-tv-item
-            onClick={() => setActiveCategory("__DOCS__")}
-            className={`text-xl font-semibold whitespace-nowrap transition ${
-              activeCategory === "__DOCS__" ? "text-white" : "text-white/50 hover:text-white/80"
+            onClick={() => setActiveCategory("UFO Phenomena")}
+            className={`text-xl font-semibold transition ${
+              activeCategory === "UFO Phenomena" ? "text-white" : "text-white/50 hover:text-white/80"
             }`}
           >
-            Documentaries
-          </button>
-          <button
-            data-tv-item
-            onClick={() => setActiveCategory("__PODCASTS__")}
-            className={`text-xl font-semibold whitespace-nowrap transition ${
-              activeCategory === "__PODCASTS__" ? "text-white" : "text-white/50 hover:text-white/80"
-            }`}
-          >
-            Podcasts
+            UFOs
           </button>
         </div>
-      </nav>
+      </div>
+
+      {/* Sidebar menu */}
+      {menuOpen && (
+        <div
+          className="fixed inset-0 z-[80] bg-black/70"
+          onClick={() => setMenuOpen(false)}
+        >
+          <div
+            className="absolute top-0 left-0 h-full w-80 bg-black border-r border-white/10 pt-8 px-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-8">
+              <span className="text-2xl font-black tracking-tight">
+                <span className="text-white">TROO</span>
+                <span className="text-red-600">FLIX</span>
+              </span>
+              <button
+                data-tv-item
+                onClick={() => setMenuOpen(false)}
+                className="text-white/60 hover:text-white"
+              >
+                <X size={28} />
+              </button>
+            </div>
+            <p className="text-xs tracking-widest text-white/40 mb-4">EXPLORE</p>
+            <div className="space-y-1">
+              {CATEGORIES.map((cat) => (
+                <button
+                  key={cat}
+                  data-tv-item
+                  onClick={() => {
+                    setActiveCategory(cat === activeCategory ? null : cat);
+                    setMenuOpen(false);
+                  }}
+                  className={`block w-full text-left px-4 py-3 rounded text-lg transition ${
+                    activeCategory === cat
+                      ? "text-red-500 bg-white/5"
+                      : "text-white/80 hover:text-white hover:bg-white/5"
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Hero */}
       {!activeCategory && hero && (
-        <section className="relative h-[65vh] w-full">
+        <section className="relative h-[60vh] w-full">
           <img
             src={hero.backdropUrl}
             alt={hero.title}
@@ -257,7 +293,7 @@ export default function TVPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent" />
 
-          <div className="relative z-10 flex flex-col justify-center h-full px-12 max-w-4xl pt-16">
+          <div className="relative z-10 flex flex-col justify-center h-full px-12 max-w-3xl pt-16">
             <p className="text-sm tracking-[0.4em] text-red-500 font-bold mb-4">
               TROOFLIX ORIGINAL
             </p>
@@ -268,23 +304,23 @@ export default function TVPage() {
               <span className="border border-white/40 px-2 py-0.5 text-sm">{hero.rating}</span>
               <span className="text-white/60">{hero.type}</span>
             </div>
-            <p className="text-xl text-white/90 mb-8 max-w-2xl leading-relaxed line-clamp-3">
+            <p className="text-lg text-white/90 mb-8 max-w-2xl leading-relaxed line-clamp-3">
               {hero.description}
             </p>
             <div className="flex gap-4">
               <button
                 data-tv-item
                 onClick={() => setPlaying(hero)}
-                className="flex items-center gap-3 bg-white text-black font-bold px-10 py-4 rounded text-xl"
+                className="flex items-center gap-3 bg-white text-black font-bold px-8 py-3 rounded text-lg"
               >
-                <Play size={26} fill="black" /> Play
+                <Play size={22} fill="black" /> Play
               </button>
               <button
                 data-tv-item
                 onClick={() => setSelected(hero)}
-                className="flex items-center gap-3 bg-white/20 backdrop-blur text-white font-bold px-10 py-4 rounded text-xl"
+                className="flex items-center gap-3 bg-white/20 backdrop-blur text-white font-bold px-8 py-3 rounded text-lg"
               >
-                <Info size={26} /> More Info
+                <Info size={22} /> More Info
               </button>
             </div>
           </div>
@@ -292,7 +328,7 @@ export default function TVPage() {
       )}
 
       {/* Rows */}
-      <div className="relative z-10 pt-8 pb-24 space-y-12">
+      <div className="relative z-10 pt-8 pb-24 space-y-10">
         {rows.map((row) => (
           <Row
             key={row.title}
@@ -303,45 +339,81 @@ export default function TVPage() {
           />
         ))}
         {!loading && videos.length === 0 && (
-          <div className="text-center py-20 text-white/50 text-xl">
-            No videos yet
-          </div>
+          <div className="text-center py-20 text-white/50 text-xl">No videos yet</div>
         )}
         {loading && (
-          <div className="text-center py-20 text-white/50 text-xl">
-            Loading…
-          </div>
+          <div className="text-center py-20 text-white/50 text-xl">Loading…</div>
         )}
       </div>
 
-      {/* Detail overlay */}
-      <AnimatePresence>
-        {selected && (
-          <DetailOverlay
-            item={selected}
-            onClose={() => setSelected(null)}
-            onPlay={(v) => {
-              setSelected(null);
-              setPlaying(v);
-            }}
-          />
-        )}
-        {playing && playing.bitchuteUrl.includes("bitchute.com") && (
-          <BitChutePlayer
-            src={playing.bitchuteUrl}
-            title={playing.title}
-            onClose={() => setPlaying(null)}
-          />
-        )}
-        {playing && !playing.bitchuteUrl.includes("bitchute.com") && (
-          <VideoPlayer
-            src={playing.bitchuteUrl}
-            title={playing.title}
-            videoId={playing.id}
-            onClose={() => setPlaying(null)}
-          />
-        )}
-      </AnimatePresence>
+      {/* Detail modal */}
+      {selected && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/90 overflow-y-auto"
+          onClick={() => setSelected(null)}
+        >
+          <div
+            className="relative max-w-5xl mx-auto my-8 bg-[#141418] rounded-xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="relative h-[50vh] w-full">
+              <img
+                src={selected.backdropUrl}
+                alt={selected.title}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#141418] via-[#141418]/40 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-10">
+                <h2 className="text-4xl font-black mb-6">{selected.title}</h2>
+                <div className="flex gap-4">
+                  <button
+                    data-tv-item
+                    onClick={() => {
+                      setPlaying(selected);
+                      setSelected(null);
+                    }}
+                    className="flex items-center gap-3 bg-white text-black font-bold px-8 py-3 rounded text-lg"
+                  >
+                    <Play size={22} fill="black" /> Play
+                  </button>
+                  <button
+                    data-tv-item
+                    onClick={() => setSelected(null)}
+                    className="flex items-center gap-3 bg-white/20 backdrop-blur text-white font-bold px-8 py-3 rounded text-lg"
+                  >
+                    <X size={22} /> Close
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div className="p-10">
+              <div className="flex items-center gap-4 text-lg mb-4">
+                <span className="text-green-500 font-bold">{selected.match}% Match</span>
+                <span>{selected.year}</span>
+                <span className="border border-white/40 px-2 py-0.5 text-sm">{selected.rating}</span>
+              </div>
+              <p className="text-lg text-white/90 leading-relaxed">{selected.description}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Players */}
+      {playing && playing.bitchuteUrl.includes("bitchute.com") && (
+        <BitChutePlayer
+          src={playing.bitchuteUrl}
+          title={playing.title}
+          onClose={() => setPlaying(null)}
+        />
+      )}
+      {playing && !playing.bitchuteUrl.includes("bitchute.com") && (
+        <VideoPlayer
+          src={playing.bitchuteUrl}
+          title={playing.title}
+          videoId={playing.id}
+          onClose={() => setPlaying(null)}
+        />
+      )}
     </main>
   );
 }
@@ -359,170 +431,36 @@ function Row({
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const scroll = (dir: "left" | "right") => {
-    if (!scrollRef.current) return;
-    const amount = scrollRef.current.clientWidth * 0.8;
-    scrollRef.current.scrollBy({
-      left: dir === "left" ? -amount : amount,
-      behavior: "smooth",
-    });
-  };
-
   return (
     <div>
-      <div className="flex items-center justify-between px-12 mb-4">
-        <h2 className="text-3xl font-bold">{title}</h2>
-        <div className="flex gap-2">
-          <button
-            onClick={() => scroll("left")}
-            className="bg-white/10 hover:bg-white/20 rounded-full p-2 transition"
-          >
-            <ChevronRight size={24} className="rotate-180" />
-          </button>
-          <button
-            onClick={() => scroll("right")}
-            className="bg-white/10 hover:bg-white/20 rounded-full p-2 transition"
-          >
-            <ChevronRight size={24} />
-          </button>
-        </div>
-      </div>
+      <h2 className="text-2xl font-bold px-12 mb-3">{title}</h2>
       <div
         ref={scrollRef}
         className="flex gap-4 overflow-x-auto scrollbar-hide px-12 pb-6"
       >
         {items.map((item) => (
-          <TvCard
+          <div
             key={item.id}
-            item={item}
-            onSelect={onSelect}
-            onPlay={onPlay}
-          />
+            data-tv-item
+            onClick={() => onSelect(item)}
+            className="relative flex-shrink-0 w-[220px] aspect-[2/3] rounded-lg overflow-hidden cursor-pointer bg-[#141418]"
+          >
+            <img
+              src={item.posterUrl}
+              alt={item.title}
+              className="w-full h-full object-cover"
+              loading="lazy"
+            />
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/80 to-transparent p-3">
+              <p className="text-sm font-bold leading-tight line-clamp-2">{item.title}</p>
+              <div className="flex items-center gap-2 text-xs text-white/70 mt-1">
+                <span className="text-green-500 font-bold">{item.match}%</span>
+                <span>{item.year}</span>
+              </div>
+            </div>
+          </div>
         ))}
       </div>
     </div>
-  );
-}
-
-function TvCard({
-  item,
-  onSelect,
-  onPlay,
-}: {
-  item: Video;
-  onSelect: (v: Video) => void;
-  onPlay: (v: Video) => void;
-}) {
-  return (
-    <div
-      data-tv-item
-      onClick={() => onSelect(item)}
-      className="relative flex-shrink-0 w-[240px] aspect-[2/3] rounded-lg overflow-hidden cursor-pointer bg-[#141418]"
-    >
-      <img
-        src={item.posterUrl}
-        alt={item.title}
-        className="w-full h-full object-cover"
-        loading="lazy"
-      />
-      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/80 to-transparent p-4">
-        <p className="text-base font-bold leading-tight line-clamp-2">
-          {item.title}
-        </p>
-        <div className="flex items-center gap-2 text-xs text-white/70 mt-2">
-          <span className="text-green-500 font-bold">{item.match}%</span>
-          <span>{item.year}</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function DetailOverlay({
-  item,
-  onClose,
-  onPlay,
-}: {
-  item: Video;
-  onClose: () => void;
-  onPlay: (v: Video) => void;
-}) {
-  // Handle back / escape
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" || e.key === "BrowserBack") {
-        e.preventDefault();
-        onClose();
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] bg-black/90 overflow-y-auto"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ y: 40, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: 40, opacity: 0 }}
-        onClick={(e) => e.stopPropagation()}
-        className="relative max-w-6xl mx-auto my-8 bg-[#141418] rounded-xl overflow-hidden"
-      >
-        <div className="relative h-[60vh] w-full">
-          <img
-            src={item.backdropUrl}
-            alt={item.title}
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#141418] via-[#141418]/40 to-transparent" />
-          <button
-            data-tv-item
-            onClick={onClose}
-            className="absolute top-6 left-6 z-20 bg-black/70 hover:bg-black rounded-full p-3 transition"
-          >
-            <ArrowLeft size={28} />
-          </button>
-          <div className="absolute bottom-0 left-0 right-0 p-12">
-            <h2 className="text-4xl font-black mb-6">{item.title}</h2>
-            <div className="flex gap-4">
-              <button
-                data-tv-item
-                onClick={() => onPlay(item)}
-                className="flex items-center gap-3 bg-white text-black font-bold px-10 py-4 rounded text-xl"
-              >
-                <Play size={26} fill="black" /> Play
-              </button>
-              <button
-                data-tv-item
-                onClick={onClose}
-                className="flex items-center gap-3 bg-white/20 backdrop-blur text-white font-bold px-10 py-4 rounded text-xl"
-              >
-                <X size={26} /> Close
-              </button>
-            </div>
-          </div>
-        </div>
-        <div className="p-12 grid grid-cols-3 gap-12">
-          <div className="col-span-2">
-            <div className="flex items-center gap-4 text-lg mb-6">
-              <span className="text-green-500 font-bold">{item.match}% Match</span>
-              <span>{item.year}</span>
-              <span className="border border-white/40 px-2 py-0.5 text-sm">{item.rating}</span>
-            </div>
-            <p className="text-xl text-white/90 leading-relaxed">{item.description}</p>
-          </div>
-          <div>
-            <p className="text-white/50 mb-2 text-sm uppercase tracking-wide">Category</p>
-            <p className="text-white/90 text-lg">{item.category}</p>
-          </div>
-        </div>
-      </motion.div>
-    </motion.div>
   );
 }
