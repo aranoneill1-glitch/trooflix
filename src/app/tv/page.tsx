@@ -185,6 +185,18 @@ export default function TVPage() {
         [data-tv-item].is-focused a {
           outline: none !important;
         }
+        .tv-nav [data-tv-item].is-focused {
+          transform: none !important;
+          box-shadow: none !important;
+          background: transparent !important;
+        }
+        .tv-nav [data-tv-item].is-focused::after {
+          content: '';
+          display: block;
+          height: 2px;
+          background: #dc2626;
+          margin-top: 4px;
+        }
         *:focus {
           outline: none !important;
         }
@@ -200,7 +212,7 @@ export default function TVPage() {
           <span className="text-red-600">FLIX</span>
         </a>
 
-        <div className="flex gap-8 items-center">
+        <div className="tv-nav flex gap-8 items-center">
           <button
             data-tv-item
             onClick={() => setActiveCategory(null)}
@@ -286,7 +298,7 @@ export default function TVPage() {
       )}
 
       {/* Rows */}
-      <div className={`relative z-10 ${activeCategory ? "pt-8" : "-mt-24"} pb-24 space-y-12`}>
+      <div className="relative z-10 pt-8 pb-24 space-y-12">
         {rows.map((row) => (
           <Row
             key={row.title}
