@@ -188,28 +188,34 @@ export default function TVPage() {
           <span className="text-red-600">FLIX</span>
         </a>
 
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+        <div className="flex gap-8 items-center">
           <button
             data-tv-item
             onClick={() => setActiveCategory(null)}
-            className={`px-5 py-2 rounded text-lg font-semibold whitespace-nowrap transition ${
-              activeCategory === null ? "bg-white text-black" : "bg-white/10 text-white/80"
+            className={`text-xl font-semibold whitespace-nowrap transition ${
+              activeCategory === null ? "text-white" : "text-white/50 hover:text-white/80"
             }`}
           >
             Home
           </button>
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat}
-              data-tv-item
-              onClick={() => setActiveCategory(cat)}
-              className={`px-5 py-2 rounded text-lg font-semibold whitespace-nowrap transition ${
-                activeCategory === cat ? "bg-white text-black" : "bg-white/10 text-white/80"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+          <button
+            data-tv-item
+            onClick={() => setActiveCategory("History Revisionism")}
+            className={`text-xl font-semibold whitespace-nowrap transition ${
+              activeCategory === "History Revisionism" ? "text-white" : "text-white/50 hover:text-white/80"
+            }`}
+          >
+            History
+          </button>
+          <button
+            data-tv-item
+            onClick={() => setActiveCategory("Politics and Power")}
+            className={`text-xl font-semibold whitespace-nowrap transition ${
+              activeCategory === "Politics and Power" ? "text-white" : "text-white/50 hover:text-white/80"
+            }`}
+          >
+            Politics
+          </button>
         </div>
       </nav>
 
@@ -228,7 +234,7 @@ export default function TVPage() {
             <p className="text-sm tracking-[0.4em] text-red-500 font-bold mb-4">
               TROOFLIX ORIGINAL
             </p>
-            <h1 className="text-6xl font-black mb-4 leading-tight">{hero.title}</h1>
+            <h1 className="text-4xl font-black mb-4 leading-tight">{hero.title}</h1>
             <div className="flex items-center gap-4 text-lg mb-6">
               <span className="text-green-500 font-bold">{hero.match}% Match</span>
               <span>{hero.year}</span>
@@ -456,7 +462,7 @@ function DetailOverlay({
             <ArrowLeft size={28} />
           </button>
           <div className="absolute bottom-0 left-0 right-0 p-12">
-            <h2 className="text-6xl font-black mb-6">{item.title}</h2>
+            <h2 className="text-4xl font-black mb-6">{item.title}</h2>
             <div className="flex gap-4">
               <button
                 data-tv-item
