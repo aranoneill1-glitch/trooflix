@@ -331,7 +331,7 @@ function TopNav({ activeTab, setActiveTab, searchOpen, setSearchOpen, search, se
 function MobileBottomNav({ activeTab, setActiveTab, onExplore }: any) {
   const items = [
     { icon: HomeIcon, label: "Home", tab: "Home" },
-    { icon: Film, label: "Movies", tab: "Movies" },
+    { icon: Film, label: "Documentaries", tab: "Documentaries" },
     { icon: Compass, label: "Explore", action: onExplore },
     { icon: Mic, label: "Podcasts", tab: "Podcasts" },
     { icon: Plus, label: "My List", tab: "My List" },
