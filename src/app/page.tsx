@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import BitChutePlayer from "@/components/BitChutePlayer";
 import VideoPlayer from "@/components/VideoPlayer";
+import OdyseePlayer from "@/components/OdyseePlayer";
 import LoadingIntro from "@/components/LoadingIntro";
 import VideoIntro from "@/components/VideoIntro";
 import UserMenu from "@/components/UserMenu";
@@ -263,7 +264,10 @@ export default function Home() {
         {playing && playing.bitchuteUrl.includes("bitchute.com") && (
           <BitChutePlayer src={playing.bitchuteUrl} title={playing.title} onClose={() => setPlaying(null)} />
         )}
-        {playing && !playing.bitchuteUrl.includes("bitchute.com") && (
+        {playing && playing.bitchuteUrl.includes("odysee.com") && (
+          <OdyseePlayer src={playing.bitchuteUrl} title={playing.title} onClose={() => setPlaying(null)} />
+        )}
+        {playing && !playing.bitchuteUrl.includes("bitchute.com") && !playing.bitchuteUrl.includes("odysee.com") && (
           <VideoPlayer src={playing.bitchuteUrl} title={playing.title} videoId={playing.id} onClose={() => setPlaying(null)} />
         )}
       </AnimatePresence>
