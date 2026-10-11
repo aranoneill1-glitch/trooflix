@@ -293,7 +293,11 @@ export default function VideoPlayer({ src, title, videoId, onClose }: Props) {
                   <SkipForward size={24} />
                 </button>
 
-                <div className="flex items-center gap-2 group/vol">
+                <span className="text-sm text-white/80 ml-2 tabular-nums">
+                  {fmt(current)} / {fmt(duration)}
+                </span>
+
+                <div className="flex items-center gap-2 group/vol ml-4">
                   <button onClick={toggleMute} className="hover:text-white/70 transition">
                     {muted || volume === 0 ? <VolumeX size={24} /> : <Volume2 size={24} />}
                   </button>
@@ -304,10 +308,6 @@ export default function VideoPlayer({ src, title, videoId, onClose }: Props) {
                     className="w-0 group-hover/vol:w-24 transition-all accent-red-600"
                   />
                 </div>
-
-                <span className="text-sm text-white/80 ml-2 tabular-nums">
-                  {fmt(current)} / {fmt(duration)}
-                </span>
 
                 <button onClick={toggleFullscreen} className="ml-auto hover:text-white/70 transition">
                   {fullscreen ? <Minimize size={24} /> : <Maximize size={24} />}
