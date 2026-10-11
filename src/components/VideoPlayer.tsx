@@ -231,6 +231,18 @@ export default function VideoPlayer({ src, title, videoId, onClose }: Props) {
       onMouseMove={pokeControls}
       className="fixed inset-0 z-[200] bg-black flex items-center justify-center"
     >
+      {/* TROOFLIX brand bar — hidden in fullscreen */}
+      {!fullscreen && (
+        <div
+          className="absolute top-2 left-2 right-2 z-[60] h-14 bg-black flex items-center px-6"
+          style={{ pointerEvents: "none" }}
+        >
+          <span className="text-2xl font-black tracking-tight">
+            <span className="text-white">TROO</span>
+            <span className="text-red-600">FLIX</span>
+          </span>
+        </div>
+      )}
       <video ref={videoRef} className="w-full h-full object-contain" onClick={togglePlay} playsInline />
 
       {loading && (
