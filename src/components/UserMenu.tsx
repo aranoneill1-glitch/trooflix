@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, LogOut, Plus } from "lucide-react";
+import { User, LogOut } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 
 type UserInfo = {
@@ -95,13 +95,6 @@ export default function UserMenu() {
             <p className="text-xs text-white/40 mb-0.5">Signed in as</p>
             <p className="text-sm text-white/90 truncate">{user.email}</p>
           </div>
-          <Link
-            href="/account"
-            onClick={() => setOpen(false)}
-            className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 text-white/80 hover:text-white transition text-sm"
-          >
-            <Plus size={16} /> My List
-          </Link>
           <button
             onClick={logout}
             className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 text-white/80 hover:text-white transition text-sm border-t border-white/10"
