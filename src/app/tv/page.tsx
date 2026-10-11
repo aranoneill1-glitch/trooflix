@@ -39,25 +39,28 @@ export default function TVPage() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [debugInfo, setDebugInfo] = useState<string>("");
 
   // Fetch videos
   useEffect(() => {
     const url = "/api/videos";
     console.log("[TV] Fetching:", url);
-    fetch(url, { cache: "no-store" })
-      .then((r) => {
-        console.log("[TV] Response status:", r.status);
-        return r.json();
-      })
-      .then((d) => {
-        console.log("[TV] Got data:", Array.isArray(d) ? d.length + " items" : typeof d);
-        setVideos(Array.isArray(d) ? d : []);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("[TV] Fetch error:", err);
-        setLoading(false);
-      });
+    setDebugInfo("fetching...");
+      fetch("/api/videos", { cache: "no-store" })
+        .then((r) => {
+          setDebugInfo("status: " + r.status);
+          return r.json();
+        })
+        .then((d) => {
+          const count = Array.isArray(d) ? d.length : 0;
+          setDebugInfo("items: " + count);
+          setVideos(Array.isArray(d) ? d : []);
+          setLoading(false);
+        })
+        .catch((err) => {
+          setDebugInfo("error: " + String(err));
+          setLoading(false);
+        });
   }, []);
 
   // D-pad navigation
@@ -357,6 +360,9 @@ export default function TVPage() {
             onPlay={setPlaying}
           />
         ))}
+        {debugInfo && (
+          <div className="text-center py-4 text-yellow-500 text-lg">DEBUG: {debugInfo}</div>
+        )}
         {!loading && videos.length === 0 && (
           <div className="text-center py-20 text-white/50 text-xl">No videos yet</div>
         )}
