@@ -187,15 +187,9 @@ export default function TVPage() {
         }
         .tv-nav [data-tv-item].is-focused {
           transform: none !important;
-          box-shadow: none !important;
           background: transparent !important;
-        }
-        .tv-nav [data-tv-item].is-focused::after {
-          content: '';
-          display: block;
-          height: 2px;
-          background: #dc2626;
-          margin-top: 4px;
+          text-shadow: 0 0 12px rgba(255, 255, 255, 0.9) !important;
+          color: #ffffff !important;
         }
         *:focus {
           outline: none !important;
