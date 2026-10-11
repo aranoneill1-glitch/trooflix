@@ -112,21 +112,6 @@ export default function LoginPage() {
           </p>
         </div>
       </div>
-
-      {/* Footer */}
-      <footer className="relative z-10 bg-black/75 backdrop-blur-sm border-t border-white/10 text-white/50 text-sm px-6 md:px-12 py-8">
-        <div className="max-w-4xl mx-auto">
-          <p className="mb-4">Questions? Call 1-800-TROOFLIX</p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <a href="#" className="hover:underline">FAQ</a>
-            <a href="#" className="hover:underline">Help Centre</a>
-            <a href="#" className="hover:underline">Terms of Use</a>
-            <a href="#" className="hover:underline">Privacy</a>
-            <a href="#" className="hover:underline">Cookie Preferences</a>
-            <a href="#" className="hover:underline">Corporate Information</a>
-          </div>
-        </div>
-      </footer>
     </main>
   );
 }
