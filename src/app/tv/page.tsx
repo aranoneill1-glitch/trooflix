@@ -161,6 +161,15 @@ export default function TVPage() {
   const hero = videos.find((v) => v.featured) || videos[0];
 
   const rows = (() => {
+    if (activeCategory === "__MOVIES__") {
+      return [{ title: "Movies", items: videos.filter((v) => v.type === "Movie") }];
+    }
+    if (activeCategory === "__DOCS__") {
+      return [{ title: "Documentaries", items: videos.filter((v) => v.type === "Documentary") }];
+    }
+    if (activeCategory === "__PODCASTS__") {
+      return [{ title: "Podcasts", items: videos.filter((v) => v.type === "Podcast") }];
+    }
     if (activeCategory) {
       return [
         {
@@ -192,7 +201,7 @@ export default function TVPage() {
       `}</style>
 
       {/* Top Bar */}
-      <div className="sticky top-0 z-50 flex items-center gap-6 px-8 py-4 bg-gradient-to-b from-black via-black/95 to-transparent">
+      <div className="sticky top-0 z-50 flex items-center gap-6 px-8 py-4 bg-gradient-to-b from-black via-black/95 to-transparent relative">
         <button
           data-tv-item
           onClick={() => setMenuOpen(true)}
@@ -204,33 +213,33 @@ export default function TVPage() {
           <span className="text-white">TROO</span>
           <span className="text-red-600">FLIX</span>
         </a>
-        <div className="flex gap-6 ml-auto">
+        <div className="flex gap-8 absolute left-1/2 -translate-x-1/2">
           <button
             data-tv-item
-            onClick={() => setActiveCategory(null)}
+            onClick={() => setActiveCategory("__MOVIES__")}
             className={`text-xl font-semibold transition ${
-              activeCategory === null ? "text-white" : "text-white/50 hover:text-white/80"
+              activeCategory === "__MOVIES__" ? "text-white" : "text-white/50 hover:text-white/80"
             }`}
           >
-            Home
+            Movies
           </button>
           <button
             data-tv-item
-            onClick={() => setActiveCategory("History Revisionism")}
+            onClick={() => setActiveCategory("__DOCS__")}
             className={`text-xl font-semibold transition ${
-              activeCategory === "History Revisionism" ? "text-white" : "text-white/50 hover:text-white/80"
+              activeCategory === "__DOCS__" ? "text-white" : "text-white/50 hover:text-white/80"
             }`}
           >
-            History
+            Documentaries
           </button>
           <button
             data-tv-item
-            onClick={() => setActiveCategory("UFO Phenomena")}
+            onClick={() => setActiveCategory("__PODCASTS__")}
             className={`text-xl font-semibold transition ${
-              activeCategory === "UFO Phenomena" ? "text-white" : "text-white/50 hover:text-white/80"
+              activeCategory === "__PODCASTS__" ? "text-white" : "text-white/50 hover:text-white/80"
             }`}
           >
-            UFOs
+            Podcasts
           </button>
         </div>
       </div>
