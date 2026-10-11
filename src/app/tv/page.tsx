@@ -192,8 +192,9 @@ export default function TVPage() {
         }
         [data-tv-item].is-focused {
           transform: scale(1.06);
-          box-shadow: 0 0 0 4px #dc2626, 0 0 30px rgba(220, 38, 38, 0.6);
+          box-shadow: 0 0 30px rgba(255, 255, 255, 0.55), 0 0 60px rgba(255, 255, 255, 0.25);
           z-index: 40;
+          border-radius: 8px;
         }
         *:focus {
           outline: none !important;
