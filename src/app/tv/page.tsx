@@ -42,13 +42,22 @@ export default function TVPage() {
 
   // Fetch videos
   useEffect(() => {
-    fetch("/api/videos")
-      .then((r) => r.json())
+    const url = "/api/videos";
+    console.log("[TV] Fetching:", url);
+    fetch(url, { cache: "no-store" })
+      .then((r) => {
+        console.log("[TV] Response status:", r.status);
+        return r.json();
+      })
       .then((d) => {
+        console.log("[TV] Got data:", Array.isArray(d) ? d.length + " items" : typeof d);
         setVideos(Array.isArray(d) ? d : []);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch((err) => {
+        console.error("[TV] Fetch error:", err);
+        setLoading(false);
+      });
   }, []);
 
   // D-pad navigation
