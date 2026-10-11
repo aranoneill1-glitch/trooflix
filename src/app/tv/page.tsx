@@ -43,24 +43,35 @@ export default function TVPage() {
 
   // Fetch videos
   useEffect(() => {
-    const url = "/api/videos";
-    console.log("[TV] Fetching:", url);
     setDebugInfo("fetching...");
-      fetch("/api/videos", { cache: "no-store" })
-        .then((r) => {
-          setDebugInfo("status: " + r.status);
-          return r.json();
-        })
-        .then((d) => {
-          const count = Array.isArray(d) ? d.length : 0;
-          setDebugInfo("items: " + count);
-          setVideos(Array.isArray(d) ? d : []);
+    try {
+      const xhr = new XMLHttpRequest();
+      xhr.open("GET", "/api/videos", true);
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+          setDebugInfo("xhr status: " + xhr.status);
+          if (xhr.status === 200) {
+            try {
+              const d = JSON.parse(xhr.responseText);
+              const count = Array.isArray(d) ? d.length : 0;
+              setDebugInfo("xhr items: " + count);
+              setVideos(Array.isArray(d) ? d : []);
+            } catch (e) {
+              setDebugInfo("parse error: " + String(e));
+            }
+          }
           setLoading(false);
-        })
-        .catch((err) => {
-          setDebugInfo("error: " + String(err));
-          setLoading(false);
-        });
+        }
+      };
+      xhr.onerror = function () {
+        setDebugInfo("xhr error");
+        setLoading(false);
+      };
+      xhr.send();
+    } catch (e) {
+      setDebugInfo("exception: " + String(e));
+      setLoading(false);
+    }
   }, []);
 
   // D-pad navigation
