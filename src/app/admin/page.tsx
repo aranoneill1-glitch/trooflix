@@ -47,6 +47,7 @@ export default function Admin() {
   const [status, setStatus] = useState("");
   const [saving, setSaving] = useState(false);
   const [stats, setStats] = useState<{ totalViews: number; uniqueVisitors: number; today: number; last7Days: number } | null>(null);
+  const [subscribers, setSubscribers] = useState<number | null>(null);
   const [uploading, setUploading] = useState<string | null>(null);
   const [progress, setProgress] = useState<number>(0);
 
@@ -64,6 +65,7 @@ export default function Admin() {
     setForm((f) => ({ ...f, year: new Date().getFullYear() }));
     loadVideos();
     fetch("/api/track-visit").then((r) => r.json()).then(setStats).catch(() => {});
+    fetch("/api/subscriber-count").then((r) => r.json()).then((d) => setSubscribers(d.count)).catch(() => {});
   }, []);
 
   const resetForm = () => {
@@ -267,6 +269,14 @@ export default function Admin() {
             <div className="bg-[#141418] border border-white/5 rounded-lg p-4">
               <p className="text-xs text-white/50 mb-1">Last 7 Days</p>
               <p className="text-2xl font-bold text-white">{stats?.last7Days ?? "—"}</p>
+            </div>
+            <div className="bg-[#141418] border border-white/5 rounded-lg p-4">
+              <p className="text-xs text-white/50 mb-1">Subscribers</p>
+              <p className="text-2xl font-bold text-white">{subscribers ?? "—"}</p>
+            </div>
+            <div className="bg-[#141418] border border-white/5 rounded-lg p-4">
+              <p className="text-xs text-white/50 mb-1">Videos</p>
+              <p className="text-2xl font-bold text-white">{videos.length}</p>
             </div>
           </div>
         </div>
