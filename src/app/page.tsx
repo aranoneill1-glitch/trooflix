@@ -43,14 +43,14 @@ type Video = {
 };
 
 const CATEGORIES: string[] = [
-  "History Revisionism",
-  "Politics and Power",
+  "History",
+  "Politics",
   "True Crime",
-  "Health and Science",
-  "Technology and Control",
-  "Religion and Belief",
-  "Ancient Civilisations",
-  "UFO Phenomena",
+  "Science & Health",
+  "Technology",
+  "Religion & Belief",
+  "Ancient History",
+  "The Unknown",
 ];
 
 const NAV_TABS: string[] = ["Home", "Movies", "Documentaries", "Podcasts"];

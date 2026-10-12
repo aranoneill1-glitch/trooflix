@@ -2,13 +2,13 @@ import { NextResponse } from "next/server";
 
 // Category → gradient color palette
 const PALETTES: Record<string, { from: string; to: string; accent: string }> = {
-  "History Revisionism":    { from: "#3d1f00", to: "#0b0b0f", accent: "#f59e0b" },
-  "Politics and Power":     { from: "#1e1b4b", to: "#0b0b0f", accent: "#818cf8" },
+  "History":    { from: "#3d1f00", to: "#0b0b0f", accent: "#f59e0b" },
+  "Politics":     { from: "#1e1b4b", to: "#0b0b0f", accent: "#818cf8" },
   "True Crime":             { from: "#3b0a1e", to: "#0b0b0f", accent: "#f43f5e" },
-  "Health and Science":     { from: "#042f2e", to: "#0b0b0f", accent: "#2dd4bf" },
-  "Technology and Control": { from: "#082f49", to: "#0b0b0f", accent: "#38bdf8" },
-  "Religion and Belief":    { from: "#2e1065", to: "#0b0b0f", accent: "#a78bfa" },
-  "Ancient Civilisations":  { from: "#422006", to: "#0b0b0f", accent: "#eab308" },
+  "Science & Health":     { from: "#042f2e", to: "#0b0b0f", accent: "#2dd4bf" },
+  "Technology": { from: "#082f49", to: "#0b0b0f", accent: "#38bdf8" },
+  "Religion & Belief":    { from: "#2e1065", to: "#0b0b0f", accent: "#a78bfa" },
+  "Ancient History":  { from: "#422006", to: "#0b0b0f", accent: "#eab308" },
   "Uncensored":             { from: "#450a0a", to: "#0b0b0f", accent: "#ef4444" },
 };
 
