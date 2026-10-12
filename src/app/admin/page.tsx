@@ -52,6 +52,7 @@ export default function Admin() {
     backdropUrl: "",
     year: 2026,
     rating: "TV-MA",
+    creatorId: null as number | null,
   });
   const [status, setStatus] = useState("");
   const [saving, setSaving] = useState(false);
@@ -98,6 +99,7 @@ export default function Admin() {
       backdropUrl: "",
       year: new Date().getFullYear(),
       rating: "TV-MA",
+      creatorId: null,
     });
     setEditing(null);
     setProgress(0);
@@ -199,6 +201,7 @@ export default function Admin() {
       backdropUrl: video.backdropUrl || "",
       year: video.year || new Date().getFullYear(),
       rating: video.rating || "TV-MA",
+      creatorId: video.creatorId ?? null,
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -458,6 +461,20 @@ export default function Admin() {
               <label className="block text-sm text-white/60 mb-1">Description</label>
               <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })}
                 rows={3} className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none" />
+            </div>
+
+            <div className="col-span-2">
+              <label className="block text-sm text-white/60 mb-1">Podcaster</label>
+              <select
+                value={form.creatorId ?? ""}
+                onChange={(e) => setForm({ ...form, creatorId: e.target.value ? Number(e.target.value) : null })}
+                className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none"
+              >
+                <option value="">— None —</option>
+                {creators.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
             </div>
 
             <div className="col-span-2">
