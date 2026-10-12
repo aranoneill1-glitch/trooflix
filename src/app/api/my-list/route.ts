@@ -8,6 +8,13 @@ const supabaseAdmin = createServerClient(
   { auth: { autoRefreshToken: false, persistSession: false } }
 );
 
+console.log("[my-list] Key loaded:", {
+  hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+  hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+  keyPrefix: process.env.SUPABASE_SERVICE_ROLE_KEY?.slice(0, 10),
+  keyLength: process.env.SUPABASE_SERVICE_ROLE_KEY?.length,
+});
+
 async function getUserIdFromCookies(): Promise<string | null> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
