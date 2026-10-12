@@ -49,10 +49,12 @@ export default function SaveButton({
   videoId,
   size = 28,
   variant = "icon",
+  onRemoved,
 }: {
   videoId: number;
   size?: number;
   variant?: "icon" | "pill";
+  onRemoved?: () => void;
 }) {
   const [saved, setSaved] = useState<boolean>(false);
   const [checking, setChecking] = useState(true);
@@ -94,6 +96,8 @@ export default function SaveButton({
         setIds(current);
         setSaved(true);
         setShowSignIn(true);
+      } else if (res.ok && onRemoved) {
+        onRemoved();
       }
     } else {
       setSaved(true);

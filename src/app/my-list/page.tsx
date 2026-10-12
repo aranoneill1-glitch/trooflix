@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Play, X } from "lucide-react";
+import SaveButton from "@/components/SaveButton";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import BitChutePlayer from "@/components/BitChutePlayer";
@@ -115,25 +116,38 @@ export default function MyListPage() {
             {videos.map((video) => (
               <div
                 key={video.id}
-                onClick={() => setSelected(video)}
                 className="relative aspect-[2/3] rounded-lg overflow-hidden cursor-pointer bg-[#141418] hover:scale-105 transition group"
               >
-                <img
-                  src={video.posterUrl}
-                  alt={video.title}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-0 group-hover:opacity-100 transition" />
-                <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black via-black/70 to-transparent">
+                <div
+                  onClick={() => setSelected(video)}
+                  className="absolute inset-0"
+                >
+                  <img
+                    src={video.posterUrl}
+                    alt={video.title}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-0 group-hover:opacity-100 transition" />
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                    <div className="bg-white/20 backdrop-blur rounded-full p-4">
+                      <Play size={28} fill="white" className="text-white" />
+                    </div>
+                  </div>
+                </div>
+                <div className="absolute top-2 right-2 z-10">
+                  <SaveButton
+                    videoId={video.id}
+                    size={22}
+                    onRemoved={() => {
+                      setVideos((prev) => prev.filter((v) => v.id !== video.id));
+                    }}
+                  />
+                </div>
+                <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black via-black/70 to-transparent pointer-events-none">
                   <p className="text-xs md:text-sm font-bold leading-tight line-clamp-2">
                     {video.title}
                   </p>
-                </div>
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                  <div className="bg-white/20 backdrop-blur rounded-full p-4">
-                    <Play size={28} fill="white" className="text-white" />
-                  </div>
                 </div>
               </div>
             ))}
