@@ -362,7 +362,15 @@ function MobileBottomNav({ activeTab, setActiveTab, onExplore }: any) {
           return (
             <button
               key={it.label}
-              onClick={() => (it.action ? it.action() : setActiveTab(it.tab))}
+              onClick={() => {
+                if (it.action) {
+                  it.action();
+                } else if (it.tab === "Podcasts") {
+                  window.location.href = "/podcasts";
+                } else {
+                  setActiveTab(it.tab);
+                }
+              }}
               className="flex flex-col items-center gap-0.5 px-3 py-1"
             >
               <it.icon size={22} className={active ? "text-white" : "text-white/50"} />
