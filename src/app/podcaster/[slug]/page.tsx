@@ -25,6 +25,7 @@ type Creator = {
   name: string;
   slug: string;
   photoUrl: string;
+  heroBackdropUrl?: string;
   description: string;
 };
 
@@ -95,7 +96,13 @@ export default function PodcasterProfilePage() {
 
       {/* Hero */}
       <section className="relative h-[60vh] w-full">
-        {heroVideo?.backdropUrl ? (
+        {creator.heroBackdropUrl ? (
+          <img
+            src={creator.heroBackdropUrl}
+            alt={creator.name}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        ) : heroVideo?.backdropUrl ? (
           <img
             src={heroVideo.backdropUrl}
             alt={creator.name}

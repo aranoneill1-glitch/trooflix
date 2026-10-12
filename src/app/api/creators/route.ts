@@ -32,6 +32,7 @@ export async function POST(req: Request) {
       name: body.name || "Untitled Podcaster",
       slug: slugify(body.name || "untitled"),
       photoUrl: body.photoUrl || "",
+      heroBackdropUrl: body.heroBackdropUrl || "",
       description: body.description || "",
       createdAt: new Date().toISOString(),
     };
@@ -62,6 +63,7 @@ export async function PUT(req: Request) {
       name: body.name ?? creators[index].name,
       slug: body.name ? slugify(body.name) : creators[index].slug,
       photoUrl: body.photoUrl ?? creators[index].photoUrl,
+      heroBackdropUrl: body.heroBackdropUrl !== undefined ? body.heroBackdropUrl : (creators[index].heroBackdropUrl ?? ""),
       description: body.description ?? creators[index].description,
     };
 

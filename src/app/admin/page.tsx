@@ -22,6 +22,7 @@ type Creator = {
   name: string;
   slug: string;
   photoUrl: string;
+  heroBackdropUrl?: string;
   description: string;
 };
 
@@ -60,18 +61,18 @@ export default function Admin() {
   const [subscribers, setSubscribers] = useState<number | null>(null);
   const [creators, setCreators] = useState<Creator[]>([]);
   const [editingCreator, setEditingCreator] = useState<Creator | null>(null);
-  const [creatorForm, setCreatorForm] = useState({ name: "", photoUrl: "", description: "" });
+  const [creatorForm, setCreatorForm] = useState({ name: "", photoUrl: "", heroBackdropUrl: "", description: "" });
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoProgress, setPhotoProgress] = useState(0);
   const [creatorStatus, setCreatorStatus] = useState("");
   const [savingCreator, setSavingCreator] = useState(false);
   const photoInput = useRef<HTMLInputElement>(null);
+  const backdropInput = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState<string | null>(null);
   const [progress, setProgress] = useState<number>(0);
 
   const videoInput = useRef<HTMLInputElement>(null);
   const posterInput = useRef<HTMLInputElement>(null);
-  const backdropInput = useRef<HTMLInputElement>(null);
 
   const loadVideos = async () => {
     const res = await fetch("/api/videos", { cache: "no-store" });
@@ -214,7 +215,7 @@ export default function Admin() {
   };
 
   const resetCreatorForm = () => {
-    setCreatorForm({ name: "", photoUrl: "", description: "" });
+    setCreatorForm({ name: "", photoUrl: "", heroBackdropUrl: "", description: "" });
     setEditingCreator(null);
     setPhotoProgress(0);
   };
@@ -250,6 +251,7 @@ export default function Admin() {
     setCreatorForm({
       name: c.name || "",
       photoUrl: c.photoUrl || "",
+      heroBackdropUrl: c.heroBackdropUrl || "",
       description: c.description || "",
     });
     window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
@@ -616,6 +618,84 @@ export default function Admin() {
                     src={creatorForm.photoUrl}
                     alt="preview"
                     className="mt-3 w-20 h-20 object-cover rounded-full border border-white/10"
+                  />
+                )}
+              </div>
+
+              <div className="col-span-2">
+                <label className="block text-sm text-white/60 mb-1">Hero Backdrop (landscape image for profile page)</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={creatorForm.heroBackdropUrl}
+                    onChange={(e) => setCreatorForm({ ...creatorForm, heroBackdropUrl: e.target.value })}
+                    placeholder="Click Upload, or paste a URL"
+                    className="flex-1 bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none text-sm"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => backdropInput.current?.click()}
+                    disabled={uploadingPhoto}
+                    className="bg-red-600 hover:bg-red-500 disabled:opacity-50 px-4 py-2 rounded text-sm font-semibold whitespace-nowrap"
+                  >
+                    Upload
+                  </button>
+                  <input
+                    ref={backdropInput}
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setUploadingPhoto(true);
+                        setPhotoProgress(0);
+                        fetch("/api/upload", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            filename: file.name,
+                            contentType: file.type || "image/jpeg",
+                            folder: "creators",
+                          }),
+                        })
+                          .then((r) => r.json())
+                          .then(({ signedUrl, publicUrl }) => {
+                            const xhr = new XMLHttpRequest();
+                            xhr.open("PUT", signedUrl, true);
+                            xhr.setRequestHeader("Content-Type", file.type || "image/jpeg");
+                            xhr.upload.onprogress = (ev) => {
+                              if (ev.lengthComputable) setPhotoProgress(Math.round((ev.loaded / ev.total) * 100));
+                            };
+                            xhr.onload = () => {
+                              if (xhr.status >= 200 && xhr.status < 300) {
+                                setCreatorForm((f) => ({ ...f, heroBackdropUrl: publicUrl }));
+                                setCreatorStatus("✅ Backdrop uploaded");
+                                setTimeout(() => setCreatorStatus(""), 2000);
+                              }
+                              setUploadingPhoto(false);
+                              setPhotoProgress(0);
+                            };
+                            xhr.onerror = () => {
+                              setUploadingPhoto(false);
+                              setPhotoProgress(0);
+                            };
+                            xhr.send(file);
+                          })
+                          .catch(() => {
+                            setUploadingPhoto(false);
+                            setPhotoProgress(0);
+                          });
+                      }
+                      e.target.value = "";
+                    }}
+                    className="hidden"
+                  />
+                </div>
+                {creatorForm.heroBackdropUrl && (
+                  <img
+                    src={creatorForm.heroBackdropUrl}
+                    alt="backdrop preview"
+                    className="mt-3 w-full max-w-md h-24 object-cover rounded border border-white/10"
                   />
                 )}
               </div>
