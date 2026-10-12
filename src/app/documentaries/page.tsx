@@ -54,7 +54,7 @@ export default function DocumentariesPage() {
 
       {hero && <Hero video={hero} onPlay={() => setPlaying(hero)} onMore={() => setSelected(hero)} />}
 
-      <div className={`relative z-10 ${hero ? "-mt-24" : "pt-24"} pb-24 space-y-10`}>
+      <div className={`relative z-10 ${hero ? "-mt-32 md:-mt-40" : "pt-32"} pb-24 space-y-8 md:space-y-12`}>
         {loaded && videos.length === 0 && (
           <div className="text-center py-20 text-white/50">
             <p className="text-xl mb-2">No documentaries yet</p>
@@ -81,25 +81,25 @@ export default function DocumentariesPage() {
 
 function Hero({ video, onPlay, onMore }: { video: Video; onPlay: () => void; onMore: () => void }) {
   return (
-    <section className="relative h-[70vh] w-full">
+    <section className="relative h-[85vh] md:h-screen w-full">
       <img src={video.backdropUrl} alt={video.title} className="absolute inset-0 w-full h-full object-cover" />
       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
       <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent" />
-      <div className="relative z-10 flex flex-col justify-center h-full px-8 md:px-12 max-w-3xl pt-20">
+      <div className="relative z-10 flex flex-col justify-end h-full px-4 md:px-12 max-w-2xl pb-24 md:pb-32 pt-24 md:pt-20">
         <p className="text-sm tracking-[0.4em] text-red-500 font-bold mb-4">TROOFLIX DOCUMENTARY</p>
-        <h1 className="text-4xl md:text-6xl font-black mb-4 leading-tight">{video.title}</h1>
-        <div className="flex items-center gap-4 text-lg mb-6 flex-wrap">
+        <h1 className="text-4xl md:text-6xl lg:text-7xl font-black leading-[1.05] mb-4 tracking-tight">{video.title}</h1>
+        <div className="flex items-center gap-3 text-sm mb-4 flex-wrap">
           <span className="text-green-500 font-bold">{video.match}% Match</span>
           <span>{video.year}</span>
           <span className="border border-white/40 px-2 py-0.5 text-sm">{video.rating}</span>
         </div>
-        <p className="text-lg text-white/90 mb-8 max-w-2xl leading-relaxed line-clamp-3">{video.description}</p>
+        <p className="text-sm md:text-base text-white/85 mb-6 line-clamp-3 max-w-xl">{video.description}</p>
         <div className="flex gap-4">
-          <button onClick={onPlay} className="flex items-center gap-3 bg-white text-black font-bold px-8 py-3 rounded text-lg hover:bg-white/90 transition">
-            <Play size={22} fill="black" /> Play
+          <button onClick={onPlay} className="flex items-center gap-2 bg-white text-black font-bold px-6 md:px-8 py-2.5 md:py-3 rounded hover:bg-white/80 transition">
+            <Play size={20} fill="black" /> Play
           </button>
-          <button onClick={onMore} className="flex items-center gap-3 bg-white/20 backdrop-blur text-white font-bold px-8 py-3 rounded text-lg hover:bg-white/30 transition">
-            <Info size={22} /> More Info
+          <button onClick={onMore} className="flex items-center gap-2 bg-white/20 backdrop-blur text-white font-semibold px-5 md:px-7 py-2.5 md:py-3 rounded hover:bg-white/30 transition">
+            <Info size={20} /> More Info
           </button>
         </div>
       </div>
