@@ -27,19 +27,6 @@ type Creator = {
   description: string;
 };
 
-const CATEGORIES = [
-  "History",
-  "Politics",
-  "True Crime",
-  "Science & Health",
-  "Technology",
-  "Religion & Belief",
-  "Ancient History",
-  "The Unknown",
-];
-
-const TYPES = ["Podcast", "Documentary", "Movie", "Series"];
-
 export default function PodcasterVideosPage() {
   const params = useParams();
   const slug = params.slug as string;
@@ -53,14 +40,9 @@ export default function PodcasterVideosPage() {
   const [form, setForm] = useState({
     title: "",
     description: "",
-    category: CATEGORIES[0],
-    type: "Podcast",
-    featured: false,
     bitchuteUrl: "",
     posterUrl: "",
     backdropUrl: "",
-    year: 2026,
-    rating: "TV-MA",
   });
 
   const [status, setStatus] = useState("");
@@ -72,7 +54,6 @@ export default function PodcasterVideosPage() {
   const posterInput = useRef<HTMLInputElement>(null);
   const backdropInput = useRef<HTMLInputElement>(null);
 
-  // Load creator and their videos
   useEffect(() => {
     fetch("/api/creators")
       .then((r) => r.json())
@@ -95,18 +76,7 @@ export default function PodcasterVideosPage() {
   }, [slug]);
 
   const resetForm = () => {
-    setForm({
-      title: "",
-      description: "",
-      category: CATEGORIES[0],
-      type: "Podcast",
-      featured: false,
-      bitchuteUrl: "",
-      posterUrl: "",
-      backdropUrl: "",
-      year: new Date().getFullYear(),
-      rating: "TV-MA",
-    });
+    setForm({ title: "", description: "", bitchuteUrl: "", posterUrl: "", backdropUrl: "" });
     setEditing(null);
   };
 
@@ -169,11 +139,23 @@ export default function PodcasterVideosPage() {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, creatorId: creator.id }),
+        body: JSON.stringify({
+          title: form.title,
+          description: form.description,
+          bitchuteUrl: form.bitchuteUrl,
+          posterUrl: form.posterUrl,
+          backdropUrl: form.backdropUrl,
+          creatorId: creator.id,
+          // Silent defaults for podcaster videos
+          type: "Podcast",
+          category: "Podcasts",
+          featured: false,
+          year: new Date().getFullYear(),
+          rating: "TV-MA",
+        }),
       });
       if (!res.ok) throw new Error(await res.text());
 
-      // Reload videos filtered to this creator
       const updated = await fetch("/api/videos", { cache: "no-store" }).then((r) => r.json());
       setVideos(updated.filter((v: Video) => v.creatorId === creator.id));
 
@@ -193,14 +175,9 @@ export default function PodcasterVideosPage() {
     setForm({
       title: v.title || "",
       description: v.description || "",
-      category: v.category || CATEGORIES[0],
-      type: v.type || "Podcast",
-      featured: !!v.featured,
       bitchuteUrl: v.bitchuteUrl || "",
       posterUrl: v.posterUrl || "",
       backdropUrl: v.backdropUrl || "",
-      year: v.year || new Date().getFullYear(),
-      rating: v.rating || "TV-MA",
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -269,9 +246,8 @@ export default function PodcasterVideosPage() {
 
   return (
     <main className="min-h-screen bg-[#0b0b0f] text-white">
-      {/* Header */}
       <div className="sticky top-0 z-50 bg-[#0b0b0f]/95 backdrop-blur border-b border-white/10">
-        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center gap-4">
+        <div className="max-w-3xl mx-auto px-6 py-4 flex items-center gap-4">
           <Link href="/admin" className="text-white/70 hover:text-white text-sm whitespace-nowrap">
             ← Back to Admin
           </Link>
@@ -291,116 +267,88 @@ export default function PodcasterVideosPage() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto p-8">
-        <p className="text-white/50 mb-8">
+      <div className="max-w-3xl mx-auto p-8">
+        <p className="text-white/50 mb-6">
           {editing ? `Editing: ${editing.title}` : `Add videos to ${creator.name}'s profile`}
         </p>
 
         <form onSubmit={submit} className="bg-[#141418] rounded-lg p-6 space-y-4 mb-10">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
-              <label className="block text-sm text-white/60 mb-1">Title *</label>
+          <div>
+            <label className="block text-sm text-white/60 mb-1">Video Name *</label>
+            <input
+              required
+              value={form.title}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm text-white/60 mb-1">Video File *</label>
+            <div className="flex gap-2">
               <input
+                type="text"
                 required
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-                className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none"
+                value={form.bitchuteUrl}
+                onChange={(e) => setForm({ ...form, bitchuteUrl: e.target.value })}
+                placeholder="Click Upload, or paste a URL"
+                className="flex-1 bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none text-sm"
+              />
+              <UploadButton
+                label="Upload Video"
+                folder="videos"
+                inputRef={videoInput}
+                onDone={(url) => setForm((f) => ({ ...f, bitchuteUrl: url }))}
               />
             </div>
+          </div>
 
-            <div className="col-span-2">
-              <label className="block text-sm text-white/60 mb-1">Video File *</label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  required
-                  value={form.bitchuteUrl}
-                  onChange={(e) => setForm({ ...form, bitchuteUrl: e.target.value })}
-                  placeholder="Click Upload, or paste a URL"
-                  className="flex-1 bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none text-sm"
-                />
-                <UploadButton
-                  label="Upload Video"
-                  folder="videos"
-                  inputRef={videoInput}
-                  onDone={(url) => setForm((f) => ({ ...f, bitchuteUrl: url }))}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm text-white/60 mb-1">Type *</label>
-              <select
-                value={form.type}
-                onChange={(e) => setForm({ ...form, type: e.target.value })}
-                className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none"
-              >
-                {TYPES.map((t) => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm text-white/60 mb-1">Category *</label>
-              <select
-                value={form.category}
-                onChange={(e) => setForm({ ...form, category: e.target.value })}
-                className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none"
-              >
-                {CATEGORIES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="col-span-2">
-              <label className="block text-sm text-white/60 mb-1">Description</label>
-              <textarea
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                rows={3}
-                className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none"
+          <div>
+            <label className="block text-sm text-white/60 mb-1">Card Image (Poster)</label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={form.posterUrl}
+                onChange={(e) => setForm({ ...form, posterUrl: e.target.value })}
+                placeholder="Click Upload, or paste a URL"
+                className="flex-1 bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none text-sm"
+              />
+              <UploadButton
+                label="Upload"
+                folder="posters"
+                inputRef={posterInput}
+                onDone={(url) => setForm((f) => ({ ...f, posterUrl: url }))}
               />
             </div>
+          </div>
 
-            <div className="col-span-2">
-              <label className="block text-sm text-white/60 mb-1">Poster (portrait image)</label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={form.posterUrl}
-                  onChange={(e) => setForm({ ...form, posterUrl: e.target.value })}
-                  placeholder="Click Upload, or paste a URL"
-                  className="flex-1 bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none text-sm"
-                />
-                <UploadButton
-                  label="Upload"
-                  folder="posters"
-                  inputRef={posterInput}
-                  onDone={(url) => setForm((f) => ({ ...f, posterUrl: url }))}
-                />
-              </div>
+          <div>
+            <label className="block text-sm text-white/60 mb-1">Card Backdrop</label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={form.backdropUrl}
+                onChange={(e) => setForm({ ...form, backdropUrl: e.target.value })}
+                placeholder="Click Upload, or paste a URL"
+                className="flex-1 bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none text-sm"
+              />
+              <UploadButton
+                label="Upload"
+                folder="backdrops"
+                inputRef={backdropInput}
+                onDone={(url) => setForm((f) => ({ ...f, backdropUrl: url }))}
+              />
             </div>
+          </div>
 
-            <div className="col-span-2">
-              <label className="block text-sm text-white/60 mb-1">Backdrop (landscape image)</label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={form.backdropUrl}
-                  onChange={(e) => setForm({ ...form, backdropUrl: e.target.value })}
-                  placeholder="Click Upload, or paste a URL"
-                  className="flex-1 bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none text-sm"
-                />
-                <UploadButton
-                  label="Upload"
-                  folder="backdrops"
-                  inputRef={backdropInput}
-                  onDone={(url) => setForm((f) => ({ ...f, backdropUrl: url }))}
-                />
-              </div>
-            </div>
+          <div>
+            <label className="block text-sm text-white/60 mb-1">Description</label>
+            <textarea
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              rows={2}
+              className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none"
+            />
           </div>
 
           {uploading && (
@@ -438,10 +386,12 @@ export default function PodcasterVideosPage() {
                 editing?.id === v.id ? "bg-red-950/40 border border-red-600" : "bg-[#141418]"
               }`}
             >
-              <img src={v.posterUrl} alt="" className="w-12 h-16 object-cover rounded" />
+              {v.posterUrl && (
+                <img src={v.posterUrl} alt="" className="w-12 h-16 object-cover rounded" />
+              )}
               <div className="flex-1 min-w-0">
                 <p className="font-semibold truncate">{v.title}</p>
-                <p className="text-sm text-white/50 truncate">{v.type} · {v.category} · {v.year}</p>
+                <p className="text-sm text-white/50 truncate">{v.description || "No description"}</p>
               </div>
               <button
                 onClick={() => startEdit(v)}
