@@ -172,8 +172,8 @@ export default function FeedPage() {
                     >
                       <Info size={16} /> More Info
                     </button>
-                    <div className="ml-auto">
-                      <SaveButton videoId={video.id} size={22} />
+                    <div className="ml-4">
+                      <SaveButton videoId={video.id} size={28} />
                     </div>
                   </div>
                 </div>

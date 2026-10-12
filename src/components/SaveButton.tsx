@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { Plus, Check, X } from "lucide-react";
 
-// Global cache so all buttons share state
 let cachedIds: number[] | null = null;
 let inflight: Promise<number[]> | null = null;
 const listeners = new Set<(ids: number[]) => void>();
@@ -36,7 +35,7 @@ function setIds(ids: number[]) {
 
 export default function SaveButton({
   videoId,
-  size = 20,
+  size = 28,
   variant = "icon",
 }: {
   videoId: number;
@@ -46,18 +45,14 @@ export default function SaveButton({
   const [saved, setSaved] = useState<boolean>(false);
   const [checking, setChecking] = useState(true);
   const [showSignIn, setShowSignIn] = useState(false);
-  const btnRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     let mounted = true;
-
-    // Subscribe to global list updates
     const onUpdate = (ids: number[]) => {
       if (mounted) setSaved(ids.includes(videoId));
     };
     listeners.add(onUpdate);
 
-    // Initial fetch
     fetchIds().then((ids) => {
       if (mounted) {
         setSaved(ids.includes(videoId));
@@ -76,7 +71,6 @@ export default function SaveButton({
     e.preventDefault();
 
     if (saved) {
-      // Remove
       setSaved(false);
       const current = cachedIds || [];
       setIds(current.filter((id) => id !== videoId));
@@ -85,13 +79,11 @@ export default function SaveButton({
         method: "DELETE",
       });
       if (!res.ok && res.status === 401) {
-        // Not signed in
         setIds(current);
         setSaved(true);
         setShowSignIn(true);
       }
     } else {
-      // Add
       setSaved(true);
       const current = cachedIds || [];
       setIds([...current, videoId]);
@@ -103,7 +95,6 @@ export default function SaveButton({
       });
       if (!res.ok) {
         if (res.status === 401) {
-          // Not signed in
           setIds(current);
           setSaved(false);
           setShowSignIn(true);
@@ -116,39 +107,37 @@ export default function SaveButton({
   };
 
   if (checking) {
-    return (
-      <button
-        className="bg-white/20 backdrop-blur border border-white/40 rounded-full p-1.5 opacity-50"
-        disabled
-      >
-        <Plus size={size} />
-      </button>
-    );
+    return <div style={{ width: size, height: size }} />;
   }
 
-  const button = (
-    <button
-      ref={btnRef}
-      onClick={toggle}
-      className={
-        variant === "pill"
-          ? `flex items-center gap-2 border-2 rounded-full px-4 py-2 transition ${
-              saved
-                ? "border-white bg-white/10 text-white"
-                : "border-white/60 hover:border-white text-white"
-            }`
-          : `rounded-full p-1.5 transition ${
-              saved
-                ? "bg-red-600 text-white hover:bg-red-500"
-                : "bg-white/20 backdrop-blur border border-white/40 hover:bg-white/30 text-white"
-            }`
-      }
-      title={saved ? "Remove from My List" : "Add to My List"}
-    >
-      {saved ? <Check size={size} /> : <Plus size={size} />}
-      {variant === "pill" && <span>{saved ? "In My List" : "My List"}</span>}
-    </button>
-  );
+  const button =
+    variant === "pill" ? (
+      <button
+        onClick={toggle}
+        className={`flex items-center gap-2 border-2 rounded-full px-4 py-2 transition ${
+          saved
+            ? "border-white bg-white/10 text-white"
+            : "border-white/60 hover:border-white text-white"
+        }`}
+        title={saved ? "Remove from My List" : "Add to My List"}
+      >
+        {saved ? <Check size={20} /> : <Plus size={20} />}
+        <span>{saved ? "In My List" : "My List"}</span>
+      </button>
+    ) : (
+      <button
+        onClick={toggle}
+        className={`p-1 transition ${
+          saved
+            ? "text-red-500 hover:text-red-400"
+            : "text-white hover:text-white/70"
+        }`}
+        title={saved ? "Remove from My List" : "Add to My List"}
+        style={{ lineHeight: 0 }}
+      >
+        {saved ? <Check size={size} strokeWidth={3} /> : <Plus size={size} strokeWidth={3} />}
+      </button>
+    );
 
   return (
     <>
