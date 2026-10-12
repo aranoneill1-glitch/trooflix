@@ -668,6 +668,12 @@ export default function Admin() {
                   <p className="font-semibold truncate">{c.name}</p>
                   <p className="text-sm text-white/50 truncate">{c.description || "No description"}</p>
                 </div>
+                <a
+                  href={`/admin/podcaster/${c.slug}`}
+                  className="text-white bg-red-600 hover:bg-red-500 text-sm px-3 py-1 rounded transition font-semibold"
+                >
+                  Manage Videos
+                </a>
                 <button
                   onClick={() => startEditCreator(c)}
                   className="text-blue-400 hover:text-blue-300 text-sm px-3 py-1 border border-blue-400/40 rounded hover:border-blue-300 transition"
