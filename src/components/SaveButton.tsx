@@ -2,28 +2,40 @@
 
 import { useEffect, useState } from "react";
 import { Plus, Check, X } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
 
 let cachedIds: number[] | null = null;
 let inflight: Promise<number[]> | null = null;
 const listeners = new Set<(ids: number[]) => void>();
 
+async function getUserId(): Promise<string | null> {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  return user?.id || null;
+}
+
+let cachedUserId: string | null | undefined = undefined;
+
 async function fetchIds(): Promise<number[]> {
   if (cachedIds) return cachedIds;
   if (inflight) return inflight;
 
-  inflight = fetch("/api/my-list")
-    .then((r) => r.json())
-    .then((d) => {
-      const ids = Array.isArray(d.ids) ? d.ids : [];
-      cachedIds = ids;
-      inflight = null;
-      listeners.forEach((fn) => fn(ids));
-      return ids;
-    })
-    .catch(() => {
+  inflight = (async () => {
+    if (cachedUserId === undefined) {
+      cachedUserId = await getUserId();
+    }
+    if (!cachedUserId) {
       inflight = null;
       return [];
-    });
+    }
+    const r = await fetch(`/api/my-list?user_id=${cachedUserId}`);
+    const d = await r.json();
+    const ids = Array.isArray(d.ids) ? d.ids : [];
+    cachedIds = ids;
+    inflight = null;
+    listeners.forEach((fn) => fn(ids));
+    return ids;
+  })();
 
   return inflight;
 }
@@ -75,7 +87,7 @@ export default function SaveButton({
       const current = cachedIds || [];
       setIds(current.filter((id) => id !== videoId));
 
-      const res = await fetch(`/api/my-list?videoId=${videoId}`, {
+      const res = await fetch(`/api/my-list?user_id=${cachedUserId}&videoId=${videoId}`, {
         method: "DELETE",
       });
       if (!res.ok && res.status === 401) {
@@ -88,10 +100,13 @@ export default function SaveButton({
       const current = cachedIds || [];
       setIds([...current, videoId]);
 
+      if (cachedUserId === undefined) {
+        cachedUserId = await getUserId();
+      }
       const res = await fetch("/api/my-list", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ videoId }),
+        body: JSON.stringify({ userId: cachedUserId, videoId }),
       });
       if (!res.ok) {
         if (res.status === 401) {

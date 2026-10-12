@@ -1,69 +1,76 @@
 import { NextResponse } from "next/server";
 import { createClient as createServerClient } from "@supabase/supabase-js";
-import { createClient } from "@/utils/supabase/server";
 
-export async function POST(req: Request) {
+const supabaseAdmin = createServerClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  { auth: { autoRefreshToken: false, persistSession: false } }
+);
+
+export async function GET(req: Request) {
   try {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const { searchParams } = new URL(req.url);
+    const userId = searchParams.get("user_id");
 
-    // 1. Diagnostic: what env vars does this function see?
-    const envCheck = {
-      hasUrl: !!url,
-      urlPrefix: url?.slice(0, 30),
-      hasServiceKey: !!key,
-      keyPrefix: key?.slice(0, 12),
-      keyLength: key?.length,
-    };
-
-    // 2. Who is the user?
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json({ step: "auth", error: "Not signed in", envCheck }, { status: 401 });
+    if (!userId) {
+      return NextResponse.json({ ids: [] });
     }
-
-    const { videoId } = await req.json();
-    if (!videoId) {
-      return NextResponse.json({ step: "parse", error: "videoId required", envCheck }, { status: 400 });
-    }
-
-    // 3. Try the insert with the service role client
-    const supabaseAdmin = createServerClient(url!, key!, {
-      auth: { autoRefreshToken: false, persistSession: false },
-    });
 
     const { data, error } = await supabaseAdmin
       .from("my_list")
-      .insert({ user_id: user.id, video_id: Number(videoId) })
-      .select();
+      .select("video_id")
+      .eq("user_id", userId);
 
-    if (error) {
-      return NextResponse.json({
-        step: "insert",
-        error: error.message,
-        code: error.code,
-        details: error.details,
-        hint: error.hint,
-        envCheck,
-      }, { status: 500 });
-    }
-
-    return NextResponse.json({ step: "success", inserted: data, envCheck });
+    if (error) throw error;
+    return NextResponse.json({ ids: (data || []).map((r: any) => r.video_id) });
   } catch (e: any) {
-    return NextResponse.json({
-      step: "exception",
-      error: String(e),
-      message: e?.message,
-    }, { status: 500 });
+    console.error("GET my-list error:", e);
+    return NextResponse.json({ ids: [] });
   }
 }
 
-export async function GET() {
-  return NextResponse.json({ ids: [] });
+export async function POST(req: Request) {
+  try {
+    const { userId, videoId } = await req.json();
+    if (!userId || !videoId) {
+      return NextResponse.json({ error: "userId and videoId required" }, { status: 400 });
+    }
+
+    const { error } = await supabaseAdmin
+      .from("my_list")
+      .insert({ user_id: userId, video_id: Number(videoId) });
+
+    if (error) {
+      if (error.code === "23505") return NextResponse.json({ ok: true, alreadySaved: true });
+      throw error;
+    }
+    return NextResponse.json({ ok: true });
+  } catch (e: any) {
+    console.error("POST my-list error:", e);
+    return NextResponse.json({ error: String(e) }, { status: 500 });
+  }
 }
 
-export async function DELETE() {
-  return NextResponse.json({ ok: true });
+export async function DELETE(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const userId = searchParams.get("user_id");
+    const videoId = searchParams.get("videoId");
+
+    if (!userId || !videoId) {
+      return NextResponse.json({ error: "userId and videoId required" }, { status: 400 });
+    }
+
+    const { error } = await supabaseAdmin
+      .from("my_list")
+      .delete()
+      .eq("user_id", userId)
+      .eq("video_id", Number(videoId));
+
+    if (error) throw error;
+    return NextResponse.json({ ok: true });
+  } catch (e: any) {
+    console.error("DELETE my-list error:", e);
+    return NextResponse.json({ error: String(e) }, { status: 500 });
+  }
 }

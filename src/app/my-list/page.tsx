@@ -44,7 +44,7 @@ export default function MyListPage() {
       }
 
       const [idsRes, vidsRes] = await Promise.all([
-        fetch("/api/my-list").then((r) => r.json()),
+        fetch(`/api/my-list?user_id=${user.id}`).then((r) => r.json()),
         fetch("/api/videos").then((r) => r.json()),
       ]);
 
