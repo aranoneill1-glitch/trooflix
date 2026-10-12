@@ -95,53 +95,49 @@ export default function PodcasterProfilePage() {
       </nav>
 
       {/* Hero */}
-      <section className="relative h-[60vh] w-full">
-        {creator.heroBackdropUrl ? (
-          <img
-            src={creator.heroBackdropUrl}
-            alt={creator.name}
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-        ) : heroVideo?.backdropUrl ? (
-          <img
-            src={heroVideo.backdropUrl}
-            alt={creator.name}
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-        ) : creator.photoUrl ? (
-          <img
-            src={creator.photoUrl}
-            alt={creator.name}
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-red-900 to-black" />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/20" />
+      <section className="relative w-full overflow-hidden">
+        <div className="relative h-[52vh] md:h-[58vh] w-full">
+          {/* Background layer — hero backdrop, blurred */}
+          {creator.heroBackdropUrl ? (
+            <img
+              src={creator.heroBackdropUrl}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{ filter: "blur(2px)", transform: "scale(1.05)" }}
+            />
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-br from-red-900 via-black to-black" />
+          )}
 
-        <div className="relative z-10 flex flex-col justify-end h-full px-8 md:px-12 pb-16 max-w-3xl">
-          <div className="flex items-center gap-5 mb-5">
-            {creator.photoUrl && (
+          {/* Dark overlay so text is readable */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/40" />
+
+          {/* Centered content */}
+          <div className="relative z-10 flex flex-col items-center justify-end h-full px-6 pb-12 text-center">
+            {creator.photoUrl ? (
               <img
                 src={creator.photoUrl}
                 alt={creator.name}
-                className="w-24 h-24 rounded-full object-cover border-4 border-white/20"
+                className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-white shadow-2xl mb-6"
               />
+            ) : (
+              <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-5xl font-black border-4 border-white shadow-2xl mb-6">
+                {creator.name[0]?.toUpperCase() || "?"}
+              </div>
             )}
-            <div>
-              <p className="text-xs tracking-[0.3em] text-red-500 font-bold mb-1">
-                PODCASTER
-              </p>
-              <h1 className="text-4xl md:text-6xl font-black leading-tight">
-                {creator.name}
-              </h1>
-            </div>
-          </div>
-          {creator.description && (
-            <p className="text-base md:text-lg text-white/85 max-w-2xl">
-              {creator.description}
+
+            <p className="text-xs tracking-[0.4em] text-red-500 font-bold mb-2">
+              PODCASTER
             </p>
-          )}
+            <h1 className="text-4xl md:text-6xl font-black leading-tight mb-4 drop-shadow-lg">
+              {creator.name}
+            </h1>
+            {creator.description && (
+              <p className="text-base md:text-lg text-white/85 max-w-2xl leading-relaxed">
+                {creator.description}
+              </p>
+            )}
+          </div>
         </div>
       </section>
 
