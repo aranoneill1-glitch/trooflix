@@ -7,7 +7,7 @@ import { Home as HomeIcon, Film, FileText, Mic, Plus } from "lucide-react";
 const TABS = [
   { icon: HomeIcon, label: "Home", path: "/" },
   { icon: Film, label: "Movies", path: "/movies" },
-  { icon: FileText, label: "Docs", path: "/documentaries" },
+  { icon: FileText, label: "Documentaries", path: "/documentaries" },
   { icon: Mic, label: "Podcasts", path: "/podcasts" },
   { icon: Plus, label: "My List", path: "/my-list" },
 ];
