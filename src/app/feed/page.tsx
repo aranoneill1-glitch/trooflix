@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Play, Info, X } from "lucide-react";
 import TopBar from "@/components/TopBar";
+import SaveButton from "@/components/SaveButton";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import BitChutePlayer from "@/components/BitChutePlayer";
 import VideoPlayer from "@/components/VideoPlayer";
@@ -126,6 +127,9 @@ export default function FeedPage() {
                       {video.type}
                     </span>
                   )}
+                  <div className="absolute top-3 right-3">
+                    <SaveButton videoId={video.id} size={18} />
+                  </div>
                 </div>
 
                 {/* Body */}
