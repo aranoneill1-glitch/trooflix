@@ -25,6 +25,7 @@ export async function POST(req: Request) {
       category: body.category || "Uncensored",
       type: body.type || "Documentary",
       featured: !!body.featured,
+      creatorId: body.creatorId || null,
       bitchuteUrl: (() => {
         const raw = body.bitchuteUrl || "";
         if (raw.includes("bitchute.com")) {
@@ -77,6 +78,7 @@ export async function PUT(req: Request) {
       category: body.category ?? videos[index].category,
       type: body.type ?? videos[index].type,
       featured: body.featured ?? videos[index].featured,
+      creatorId: body.creatorId !== undefined ? body.creatorId : (videos[index].creatorId ?? null),
       bitchuteUrl: (() => {
         const raw = body.bitchuteUrl ?? videos[index].bitchuteUrl ?? "";
         if (raw.includes("bitchute.com")) {

@@ -15,7 +15,9 @@ export async function middleware(req: NextRequest) {
   }
 
   if (
-    (pathname.startsWith("/api/videos") || pathname.startsWith("/api/upload")) &&
+    (pathname.startsWith("/api/videos") ||
+      pathname.startsWith("/api/upload") ||
+      pathname.startsWith("/api/creators")) &&
     (req.method === "POST" || req.method === "DELETE" || req.method === "PUT")
   ) {
     if (!password || cookie !== password) {
