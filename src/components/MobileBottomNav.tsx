@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home as HomeIcon, Film, Clapperboard, Mic, Plus } from "lucide-react";
+import { Home as HomeIcon, Play, Mic, Clapperboard, Film } from "lucide-react";
 
 const TABS = [
   { icon: HomeIcon, label: "Home", path: "/" },
-  { icon: Film, label: "Movies", path: "/movies" },
-  { icon: Clapperboard, label: "Documentaries", path: "/documentaries" },
+  { icon: Play, label: "Feed", path: "/feed" },
   { icon: Mic, label: "Podcasts", path: "/podcasts" },
-  { icon: Plus, label: "My List", path: "/my-list" },
+  { icon: Clapperboard, label: "Documentaries", path: "/documentaries" },
+  { icon: Film, label: "Movies", path: "/movies" },
 ];
 
 export default function MobileBottomNav() {
@@ -29,11 +29,11 @@ export default function MobileBottomNav() {
             <Link
               key={tab.path}
               href={tab.path}
-              className="flex flex-col items-center gap-0.5 px-3 py-1"
+              className="flex flex-col items-center gap-0.5 px-1 py-1 flex-1 min-w-0"
             >
               <tab.icon size={22} className={active ? "text-white" : "text-white/50"} />
               <span
-                className={`text-[10px] ${
+                className={`text-[9px] leading-tight truncate w-full text-center ${
                   active ? "text-white font-semibold" : "text-white/50"
                 }`}
               >
