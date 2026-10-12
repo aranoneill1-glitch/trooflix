@@ -302,7 +302,13 @@ function TopNav({ activeTab, setActiveTab, searchOpen, setSearchOpen, search, se
         {NAV_TABS.map((tab: string) => (
           <button
             key={tab}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => {
+              if (tab === "Podcasts") {
+                window.location.href = "/podcasts";
+              } else {
+                setActiveTab(tab);
+              }
+            }}
             className={`transition tracking-wide ${activeTab === tab ? "text-white font-semibold" : "text-white/70 hover:text-white"}`}
           >
             {tab}
