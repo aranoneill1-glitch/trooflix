@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home as HomeIcon, Play, Mic, Clapperboard, Film } from "lucide-react";
+import { Home as HomeIcon, Play, Mic, Clapperboard, Plus } from "lucide-react";
 
 const TABS = [
   { icon: HomeIcon, label: "Home", path: "/" },
   { icon: Play, label: "Feed", path: "/feed" },
   { icon: Mic, label: "Podcasts", path: "/podcasts" },
   { icon: Clapperboard, label: "Documentaries", path: "/documentaries" },
-  { icon: Film, label: "Movies", path: "/movies" },
+  { icon: Plus, label: "My List", path: "/my-list" },
 ];
 
 export default function MobileBottomNav() {
