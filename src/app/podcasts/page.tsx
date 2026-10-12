@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import TopBar from "@/components/TopBar";
 
 type Creator = {
   id: number;
@@ -27,18 +28,9 @@ export default function PodcastsPage() {
 
   return (
     <main className="min-h-screen bg-black text-white">
-      <nav className="sticky top-0 z-50 flex items-center gap-6 px-8 py-4 bg-black/95 backdrop-blur border-b border-white/10">
-        <Link href="/" className="text-2xl font-black tracking-tight">
-          <span className="text-white">TROO</span>
-          <span className="text-red-600">FLIX</span>
-        </Link>
-        <div className="flex gap-6 ml-auto text-base">
-          <Link href="/" className="text-white/70 hover:text-white">Home</Link>
-          <Link href="/podcasts" className="text-white font-semibold">Podcasts</Link>
-        </div>
-      </nav>
+      <TopBar />
 
-      <div className="px-8 md:px-12 py-10">
+      <div className="px-8 md:px-12 pt-28 pb-10">
         <h1 className="text-4xl md:text-5xl font-black mb-2">Podcasts</h1>
         <p className="text-white/50 mb-10">Browse shows by podcaster</p>
 

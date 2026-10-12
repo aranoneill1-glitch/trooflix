@@ -23,6 +23,7 @@ import OdyseePlayer from "@/components/OdyseePlayer";
 import LoadingIntro from "@/components/LoadingIntro";
 import VideoIntro from "@/components/VideoIntro";
 import UserMenu from "@/components/UserMenu";
+import TopBar from "@/components/TopBar";
 import { getAllProgress } from "@/lib/progress";
 import SkeletonRow from "@/components/SkeletonRow";
 
@@ -147,16 +148,7 @@ export default function Home() {
     <main className="min-h-screen bg-black text-white overflow-x-hidden">
       <LoadingIntro onDone={() => setIntroDone(true)} />
       {/* ============ TOP NAV ============ */}
-      <TopNav
-        activeTab={activeTab}
-        setActiveTab={(t: string) => { setActiveTab(t); setActiveCategory(null); }}
-        searchOpen={searchOpen}
-        setSearchOpen={setSearchOpen}
-        search={search}
-        setSearch={setSearch}
-        onMenu={() => setDrawerOpen(true)}
-        scrolled={scrolled}
-      />
+      <TopBar onMenu={() => setDrawerOpen(true)} />
 
       {/* ============ DRAWER (categories) ============ */}
       <AnimatePresence>

@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Play, Info, X, ChevronLeft, ChevronRight } from "lucide-react";
+import TopBar from "@/components/TopBar";
 
 type Video = {
   id: number;
@@ -83,19 +84,10 @@ export default function PodcasterProfilePage() {
 
   return (
     <main className="min-h-screen bg-black text-white overflow-x-hidden">
-      <nav className="sticky top-0 z-50 flex items-center gap-6 px-8 py-4 bg-black/95 backdrop-blur border-b border-white/10">
-        <Link href="/" className="text-2xl font-black tracking-tight">
-          <span className="text-white">TROO</span>
-          <span className="text-red-600">FLIX</span>
-        </Link>
-        <div className="flex gap-6 ml-auto text-base">
-          <Link href="/" className="text-white/70 hover:text-white">Home</Link>
-          <Link href="/podcasts" className="text-white font-semibold">Podcasts</Link>
-        </div>
-      </nav>
+      <TopBar />
 
       {/* Hero */}
-      <section className="relative w-full overflow-hidden">
+      <section className="relative w-full overflow-hidden pt-20">
         <div className="relative h-[52vh] md:h-[58vh] w-full">
           {/* Background layer — hero backdrop, blurred */}
           {creator.heroBackdropUrl ? (
