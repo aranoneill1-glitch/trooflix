@@ -40,6 +40,7 @@ type Video = {
   rating: string;
   match: number;
   duration: string;
+  creatorId?: number | null;
 };
 
 const CATEGORIES: string[] = [
@@ -96,7 +97,13 @@ export default function Home() {
   const [pendingVideo, setPendingVideo] = useState<Video | null>(null);
 
   useEffect(() => {
-    fetch("/api/videos").then((r) => r.json()).then((data) => { setVideos(data); setLoaded(true); });
+    fetch("/api/videos")
+      .then((r) => r.json())
+      .then((data) => {
+        const homeOnly = Array.isArray(data) ? data.filter((v: any) => !v.creatorId) : [];
+        setVideos(homeOnly);
+        setLoaded(true);
+      });
     setProgressList(getAllProgress());
     const onProg = () => setProgressList(getAllProgress());
     window.addEventListener("progress-changed", onProg);
