@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home as HomeIcon, Film, FileText, Mic, Plus } from "lucide-react";
+import { Home as HomeIcon, Film, Clapperboard, Mic, Plus } from "lucide-react";
 
 const TABS = [
   { icon: HomeIcon, label: "Home", path: "/" },
   { icon: Film, label: "Movies", path: "/movies" },
-  { icon: FileText, label: "Documentaries", path: "/documentaries" },
+  { icon: Clapperboard, label: "Documentaries", path: "/documentaries" },
   { icon: Mic, label: "Podcasts", path: "/podcasts" },
   { icon: Plus, label: "My List", path: "/my-list" },
 ];
