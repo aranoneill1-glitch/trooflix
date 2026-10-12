@@ -54,7 +54,7 @@ export default function DocumentariesPage() {
 
       {hero && <Hero video={hero} onPlay={() => setPlaying(hero)} onMore={() => setSelected(hero)} />}
 
-      <div className="relative z-10 pt-8 md:pt-12 pb-24 space-y-8 md:space-y-12">
+      <div className="relative z-10 -mt-24 md:-mt-32 pb-24 space-y-8 md:space-y-12">
         {loaded && videos.length === 0 && (
           <div className="text-center py-20 text-white/50">
             <p className="text-xl mb-2">No documentaries yet</p>
@@ -81,20 +81,28 @@ export default function DocumentariesPage() {
 
 function Hero({ video, onPlay, onMore }: { video: Video; onPlay: () => void; onMore: () => void }) {
   return (
-    <section className="relative h-[85vh] md:h-screen w-full">
+    <section className="relative h-[70vh] md:h-[85vh] w-full">
       <img src={video.backdropUrl} alt={video.title} className="absolute inset-0 w-full h-full object-cover" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent" />
-      <div className="relative z-10 flex flex-col justify-end h-full px-4 md:px-12 max-w-2xl pb-24 md:pb-32 pt-24 md:pt-20">
-        <p className="text-sm tracking-[0.4em] text-red-500 font-bold mb-4">TROOFLIX DOCUMENTARY</p>
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-black leading-[1.05] mb-4 tracking-tight">{video.title}</h1>
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/20 to-transparent" />
+
+      <div className="relative z-10 flex flex-col justify-center h-full px-4 md:px-12 max-w-2xl pt-24 md:pt-20 pb-12 md:pb-0">
+        <p className="text-xs md:text-sm tracking-[0.3em] text-red-500 font-bold mb-3">
+          TROOFLIX DOCUMENTARY
+        </p>
+        <h1 className="text-4xl md:text-6xl lg:text-7xl font-black leading-[1.05] mb-4 tracking-tight">
+          {video.title}
+        </h1>
         <div className="flex items-center gap-3 text-sm mb-4 flex-wrap">
           <span className="text-green-500 font-bold">{video.match}% Match</span>
-          <span>{video.year}</span>
-          <span className="border border-white/40 px-2 py-0.5 text-sm">{video.rating}</span>
+          <span className="text-white/70">{video.year}</span>
+          <span className="border border-white/40 px-1.5 py-0.5 text-xs">{video.rating}</span>
+          <span className="text-white/70">{video.type}</span>
         </div>
-        <p className="text-sm md:text-base text-white/85 mb-6 line-clamp-3 max-w-xl">{video.description}</p>
-        <div className="flex gap-4">
+        <p className="text-sm md:text-base text-white/85 mb-6 line-clamp-3 max-w-xl">
+          {video.description}
+        </p>
+        <div className="flex gap-3">
           <button onClick={onPlay} className="flex items-center gap-2 bg-white text-black font-bold px-6 md:px-8 py-2.5 md:py-3 rounded hover:bg-white/80 transition">
             <Play size={20} fill="black" /> Play
           </button>
