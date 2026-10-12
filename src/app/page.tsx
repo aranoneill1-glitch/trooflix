@@ -24,6 +24,7 @@ import LoadingIntro from "@/components/LoadingIntro";
 import VideoIntro from "@/components/VideoIntro";
 import UserMenu from "@/components/UserMenu";
 import TopBar from "@/components/TopBar";
+import MobileBottomNav from "@/components/MobileBottomNav";
 import { getAllProgress } from "@/lib/progress";
 import SkeletonRow from "@/components/SkeletonRow";
 
@@ -145,7 +146,7 @@ export default function Home() {
   const showingFiltered = activeCategory || activeTab !== "Home" || filtered;
 
   return (
-    <main className="min-h-screen bg-black text-white overflow-x-hidden">
+    <main className="min-h-screen bg-black text-white overflow-x-hidden pb-20 lg:pb-0">
       <LoadingIntro onDone={() => setIntroDone(true)} />
       {/* ============ TOP NAV ============ */}
       <TopBar onMenu={() => setDrawerOpen(true)} />
@@ -249,11 +250,7 @@ export default function Home() {
       {/* ============ MOBILE BOTTOM NAV ============ */}
       {/* TV-MODE-BOTTOM-NAV: hide on TV */}
       {!isTV && (
-        <MobileBottomNav
-          activeTab={activeTab}
-          setActiveTab={(t: string) => { setActiveTab(t); setActiveCategory(null); }}
-          onExplore={() => setDrawerOpen(true)}
-        />
+        <MobileBottomNav />
       )}
 
       {/* ============ MODAL / PLAYER ============ */}
@@ -337,43 +334,6 @@ function TopNav({ activeTab, setActiveTab, searchOpen, setSearchOpen, search, se
 }
 
 /* ============ MOBILE BOTTOM NAV ============ */
-function MobileBottomNav({ activeTab, setActiveTab, onExplore }: any) {
-  const items = [
-    { icon: HomeIcon, label: "Home", tab: "Home" },
-    { icon: Film, label: "Documentaries", tab: "Documentaries" },
-    { icon: Compass, label: "Explore", action: onExplore },
-    { icon: Mic, label: "Podcasts", tab: "Podcasts" },
-    { icon: Plus, label: "My List", tab: "My List" },
-  ];
-
-  return (
-    <nav data-mobile-nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur border-t border-white/10">
-      <div className="flex justify-around items-center py-2">
-        {items.map((it) => {
-          const active = activeTab === it.tab;
-          return (
-            <button
-              key={it.label}
-              onClick={() => {
-                if (it.action) {
-                  it.action();
-                } else if (it.tab === "Podcasts") {
-                  window.location.href = "/podcasts";
-                } else {
-                  setActiveTab(it.tab);
-                }
-              }}
-              className="flex flex-col items-center gap-0.5 px-3 py-1"
-            >
-              <it.icon size={22} className={active ? "text-white" : "text-white/50"} />
-              <span className={`text-[10px] ${active ? "text-white font-semibold" : "text-white/50"}`}>{it.label}</span>
-            </button>
-          );
-        })}
-      </div>
-    </nav>
-  );
-}
 
 /* ============ HERO ============ */
 function Hero({ video, onPlay, onMore }: { video: Video; onPlay: () => void; onMore: () => void }) {

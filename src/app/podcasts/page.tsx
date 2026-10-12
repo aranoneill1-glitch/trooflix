@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import TopBar from "@/components/TopBar";
+import MobileBottomNav from "@/components/MobileBottomNav";
 
 type Creator = {
   id: number;
@@ -69,6 +70,7 @@ export default function PodcastsPage() {
           ))}
         </div>
       </div>
+          <MobileBottomNav />
     </main>
   );
 }

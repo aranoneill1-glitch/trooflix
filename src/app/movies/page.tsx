@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Play, Info, ChevronLeft, ChevronRight, Plus, ThumbsUp, X } from "lucide-react";
 import TopBar from "@/components/TopBar";
+import MobileBottomNav from "@/components/MobileBottomNav";
 import BitChutePlayer from "@/components/BitChutePlayer";
 import VideoPlayer from "@/components/VideoPlayer";
 
@@ -50,7 +51,7 @@ export default function MoviesPage() {
   }));
 
   return (
-    <main className="min-h-screen bg-black text-white overflow-x-hidden">
+    <main className="min-h-screen bg-black text-white overflow-x-hidden pb-20 lg:pb-0">
       <TopBar />
 
       {hero && <Hero video={hero} onPlay={() => setPlaying(hero)} onMore={() => setSelected(hero)} />}
@@ -76,6 +77,7 @@ export default function MoviesPage() {
       {playing && !playing.bitchuteUrl.includes("bitchute.com") && (
         <VideoPlayer src={playing.bitchuteUrl} title={playing.title} videoId={playing.id} onClose={() => setPlaying(null)} />
       )}
+          <MobileBottomNav />
     </main>
   );
 }
