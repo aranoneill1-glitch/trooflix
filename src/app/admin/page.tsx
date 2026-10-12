@@ -68,6 +68,7 @@ export default function Admin() {
   const [savingCreator, setSavingCreator] = useState(false);
   const photoInput = useRef<HTMLInputElement>(null);
   const backdropInput = useRef<HTMLInputElement>(null);
+  const heroBackdropInput = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState<string | null>(null);
   const [progress, setProgress] = useState<number>(0);
 
@@ -634,14 +635,14 @@ export default function Admin() {
                   />
                   <button
                     type="button"
-                    onClick={() => backdropInput.current?.click()}
+                    onClick={() => heroBackdropInput.current?.click()}
                     disabled={uploadingPhoto}
                     className="bg-red-600 hover:bg-red-500 disabled:opacity-50 px-4 py-2 rounded text-sm font-semibold whitespace-nowrap"
                   >
                     Upload
                   </button>
                   <input
-                    ref={backdropInput}
+                    ref={heroBackdropInput}
                     type="file"
                     accept="image/*"
                     onChange={(e) => {
