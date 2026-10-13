@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Play, Info, X } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import SaveButton from "@/components/SaveButton";
+import LikeButton from "@/components/LikeButton";
+import ViewCount from "@/components/ViewCount";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import BitChutePlayer from "@/components/BitChutePlayer";
 import VideoPlayer from "@/components/VideoPlayer";

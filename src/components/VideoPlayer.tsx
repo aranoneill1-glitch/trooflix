@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { saveProgress, getProgress } from "@/lib/progress";
+import { trackView } from "@/components/ViewCount";
 
 type Props = {
   src: string;
