@@ -51,10 +51,9 @@ async function fetchLikedIds(): Promise<number[]> {
 }
 
 async function fetchCounts(): Promise<Record<number, number>> {
-  if (cachedCounts) return cachedCounts;
   if (countsInflight) return countsInflight;
 
-  countsInflight = fetch("/api/like-counts")
+  countsInflight = fetch("/api/like-counts", { cache: "no-store" })
     .then((r) => r.json())
     .then((d) => {
       const counts = d.counts && typeof d.counts === "object" ? d.counts : {};
