@@ -111,8 +111,8 @@ export default function PodcasterProfilePage() {
       <TopBar />
 
       {/* Hero */}
-      <section className="relative w-full overflow-hidden pt-16">
-        <div className="relative h-[52vh] md:h-[58vh] w-full">
+      <section className="relative w-full overflow-hidden pt-20 md:pt-16">
+        <div className="relative h-[62vh] md:h-[58vh] w-full">
           {/* Background layer — hero backdrop, blurred */}
           {creator.heroBackdropUrl ? (
             <img
