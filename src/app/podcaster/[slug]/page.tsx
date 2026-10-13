@@ -104,8 +104,8 @@ export default function PodcasterProfilePage() {
           {/* Dark overlay so text is readable */}
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/40" />
 
-          {/* Centered content */}
-          <div className="relative z-10 flex flex-col items-center justify-end h-full px-6 pb-12 text-center">
+          {/* Left-aligned content */}
+          <div className="relative z-10 flex flex-col items-start justify-end h-full px-6 md:px-12 pb-12 text-left max-w-3xl">
             {creator.photoUrl ? (
               <img
                 src={creator.photoUrl}
