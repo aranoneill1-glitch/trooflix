@@ -79,7 +79,7 @@ export default function SignupPage() {
     // Build the internal email from the handle.
     // If the user supplied a recovery email, store it via profile metadata
     // for future password recovery (a real reset flow can be added later).
-    const internalEmail = `${clean}@users.trooflix.local`;
+    const internalEmail = `${clean}@users.trooflixtv.com`;
 
     const { data: signUpData, error } = await supabase.auth.signUp({
       email: internalEmail,
