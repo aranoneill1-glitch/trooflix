@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { Play, Info, X, ChevronLeft, ChevronRight } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import FollowButton from "@/components/FollowButton";
+import MessageComposer from "@/components/MessageComposer";
 import ViewCount from "@/components/ViewCount";
 import BitChutePlayer from "@/components/BitChutePlayer";
 import VideoPlayer from "@/components/VideoPlayer";
@@ -166,6 +167,7 @@ export default function PodcasterProfilePage() {
 
             <div className="flex items-center gap-4 flex-wrap">
               <FollowButton creatorId={creator.id} />
+              <MessageComposer creatorId={creator.id} creatorName={creator.name} />
               {followerCount !== null && (
                 <span className="text-sm text-white/60">
                   {followerCount === 0
