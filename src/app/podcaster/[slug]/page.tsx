@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Play, Info, X, ChevronLeft, ChevronRight } from "lucide-react";
 import TopBar from "@/components/TopBar";
+import BitChutePlayer from "@/components/BitChutePlayer";
+import VideoPlayer from "@/components/VideoPlayer";
 
 type Video = {
   id: number;
@@ -37,6 +39,7 @@ export default function PodcasterProfilePage() {
   const [creator, setCreator] = useState<Creator | null>(null);
   const [videos, setVideos] = useState<Video[]>([]);
   const [selected, setSelected] = useState<Video | null>(null);
+  const [playing, setPlaying] = useState<Video | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
@@ -157,6 +160,23 @@ export default function PodcasterProfilePage() {
         )}
       </div>
 
+      {/* Player — plays the video inline, no new tab */}
+      {playing && playing.bitchuteUrl.includes("bitchute.com") && (
+        <BitChutePlayer
+          src={playing.bitchuteUrl}
+          title={playing.title}
+          onClose={() => setPlaying(null)}
+        />
+      )}
+      {playing && !playing.bitchuteUrl.includes("bitchute.com") && (
+        <VideoPlayer
+          src={playing.bitchuteUrl}
+          title={playing.title}
+          videoId={playing.id}
+          onClose={() => setPlaying(null)}
+        />
+      )}
+
       {/* Detail modal */}
       {selected && (
         <div
@@ -177,14 +197,15 @@ export default function PodcasterProfilePage() {
               <div className="absolute bottom-0 left-0 right-0 p-10">
                 <h2 className="text-4xl font-black mb-6">{selected.title}</h2>
                 <div className="flex gap-4">
-                  <a
-                    href={selected.bitchuteUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 bg-white text-black font-bold px-8 py-3 rounded text-lg"
+                  <button
+                    onClick={() => {
+                      setPlaying(selected);
+                      setSelected(null);
+                    }}
+                    className="flex items-center gap-3 bg-white text-black font-bold px-8 py-3 rounded text-lg hover:bg-white/90 transition"
                   >
                     <Play size={22} fill="black" /> Play
-                  </a>
+                  </button>
                   <button
                     onClick={() => setSelected(null)}
                     className="flex items-center gap-3 bg-white/20 backdrop-blur text-white font-bold px-8 py-3 rounded text-lg"
