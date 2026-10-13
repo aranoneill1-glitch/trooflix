@@ -83,10 +83,10 @@ export default function UserMenu() {
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setOpen(!open)}
-        className="w-8 h-8 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-white font-bold text-sm hover:opacity-90 transition"
+        className="text-white/90 hover:text-white transition"
         title={user.email}
       >
-        {user.initial}
+        <User size={22} />
       </button>
 
       {open && (
