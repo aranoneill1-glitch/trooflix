@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Upload, LogOut, Check } from "lucide-react";
+import { Upload, LogOut, Check, Trash2 } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { createClient } from "@/utils/supabase/client";
@@ -97,6 +97,27 @@ export default function AccountPage() {
         setUploading(false);
         setUploadProgress(0);
       });
+  };
+
+  const removeAvatar = async () => {
+    if (!user) return;
+    if (!confirm("Remove your profile picture?")) return;
+
+    try {
+      // 1. Save empty avatar_url to the profile
+      await fetch("/api/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id, avatarUrl: "" }),
+      });
+
+      // 2. Clear local state
+      setAvatarUrl("");
+      setStatus("✅ Picture removed");
+      setTimeout(() => setStatus(""), 2500);
+    } catch (e) {
+      setStatus("❌ Failed to remove");
+    }
   };
 
   const saveDisplayName = async () => {
