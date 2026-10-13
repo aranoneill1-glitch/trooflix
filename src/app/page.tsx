@@ -24,6 +24,7 @@ import LoadingIntro from "@/components/LoadingIntro";
 import VideoIntro from "@/components/VideoIntro";
 import UserMenu from "@/components/UserMenu";
 import TopBar from "@/components/TopBar";
+import CollectionsRow from "@/components/CollectionsRow";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { getAllProgress } from "@/lib/progress";
 import SkeletonRow from "@/components/SkeletonRow";
