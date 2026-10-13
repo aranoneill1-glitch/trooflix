@@ -27,6 +27,7 @@ import UserMenu from "@/components/UserMenu";
 import { useSearch } from "@/context/SearchContext";
 import TopBar from "@/components/TopBar";
 import CollectionsRow from "@/components/CollectionsRow";
+import SearchResults from "@/components/SearchResults";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { getAllProgress } from "@/lib/progress";
 import SkeletonRow from "@/components/SkeletonRow";
@@ -63,6 +64,7 @@ const NAV_TABS: string[] = ["Home", "Movies", "Documentaries", "Podcasts"];
 
 export default function Home() {
   const [videos, setVideos] = useState<Video[]>([]);
+  const [creators, setCreators] = useState<any[]>([]);
   const { search } = useSearch();
   const [selected, setSelected] = useState<Video | null>(null);
   const [playing, setPlaying] = useState<Video | null>(null);
@@ -105,6 +107,7 @@ export default function Home() {
   const [pendingVideo, setPendingVideo] = useState<Video | null>(null);
 
   useEffect(() => {
+    fetch("/api/creators").then((r) => r.json()).then(setCreators).catch(() => {});
     fetch("/api/videos")
       .then((r) => r.json())
       .then((data) => {
