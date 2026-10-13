@@ -11,6 +11,7 @@ type Video = {
   year?: number;
   rating?: string;
   type?: string;
+  [key: string]: any;
 };
 
 type Creator = {
@@ -19,6 +20,7 @@ type Creator = {
   slug: string;
   photoUrl: string;
   description?: string;
+  [key: string]: any;
 };
 
 export default function SearchResults({
@@ -28,9 +30,9 @@ export default function SearchResults({
   onVideoClick,
 }: {
   search: string;
-  videos: Video[];
-  creators: Creator[];
-  onVideoClick: (v: Video) => void;
+  videos: any[];
+  creators: any[];
+  onVideoClick: (v: any) => void;
 }) {
   const matchingVideos = videos.filter((v) =>
     v.title.toLowerCase().includes(search.toLowerCase())

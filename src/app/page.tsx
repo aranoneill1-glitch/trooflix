@@ -212,10 +212,12 @@ export default function Home() {
 
       <div className="relative z-10 pt-8 md:pt-12 pb-32 md:pb-20 space-y-8 md:space-y-12">
         {filtered && (
-          <div className="px-4 md:px-12">
-            <h2 className="text-xl md:text-2xl font-bold mb-6">Results for "{search}"</h2>
-            <Grid items={filtered} onSelect={setSelected} onPlay={requestPlay} />
-          </div>
+          <SearchResults
+            search={search}
+            videos={videos}
+            creators={creators}
+            onVideoClick={setSelected}
+          />
         )}
 
         {!filtered && showingFiltered && (
