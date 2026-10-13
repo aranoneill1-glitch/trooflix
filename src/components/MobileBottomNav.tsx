@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home as HomeIcon, Play, Mic, Clapperboard, Plus } from "lucide-react";
+import { Home as HomeIcon, Play, Mic, Clapperboard, Plus, MessageCircle } from "lucide-react";
 
 const TABS = [
   { icon: HomeIcon, label: "Home", path: "/" },
@@ -10,6 +10,7 @@ const TABS = [
   { icon: Mic, label: "Podcasts", path: "/podcasts" },
   { icon: Clapperboard, label: "Documentaries", path: "/documentaries" },
   { icon: Plus, label: "My List", path: "/my-list" },
+  { icon: MessageCircle, label: "Messages", path: "/messages" },
 ];
 
 export default function MobileBottomNav() {

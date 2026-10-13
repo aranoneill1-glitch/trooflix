@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSearch } from "@/context/SearchContext";
-import { Search, Bell, Menu, X } from "lucide-react";
+import { Search, Menu, X, MessageCircle } from "lucide-react";
 import UserMenu from "@/components/UserMenu";
 
 const NAV_TABS = [
@@ -122,9 +122,13 @@ export default function TopBar({ onMenu }: Props) {
           </button>
         )}
 
-        <button className="hidden md:block text-white/90 hover:text-white transition" aria-label="Notifications">
-          <Bell size={20} />
-        </button>
+        <Link
+          href="/messages"
+          className="hidden md:block text-white/90 hover:text-white transition"
+          aria-label="Messages"
+        >
+          <MessageCircle size={20} />
+        </Link>
 
         <UserMenu />
       </div>
