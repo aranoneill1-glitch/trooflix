@@ -4,11 +4,16 @@ import { useEffect, useState } from "react";
 import { ThumbsUp, X } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 
-// Global cache — shared across all buttons
+// --- Global liked IDs cache (per-user) ---
 let cachedLikedIds: number[] | null = null;
 let cachedUserId: string | null | undefined = undefined;
 let inflight: Promise<number[]> | null = null;
 const listeners = new Set<(ids: number[]) => void>();
+
+// --- Global like counts cache (all users) ---
+let cachedCounts: Record<number, number> | null = null;
+let countsInflight: Promise<Record<number, number>> | null = null;
+const countListeners = new Set<(counts: Record<number, number>) => void>();
 
 async function getUserId(): Promise<string | null> {
   if (cachedUserId !== undefined) return cachedUserId;
@@ -45,44 +50,84 @@ async function fetchLikedIds(): Promise<number[]> {
   return inflight;
 }
 
+async function fetchCounts(): Promise<Record<number, number>> {
+  if (cachedCounts) return cachedCounts;
+  if (countsInflight) return countsInflight;
+
+  countsInflight = fetch("/api/like-counts")
+    .then((r) => r.json())
+    .then((d) => {
+      const counts = d.counts && typeof d.counts === "object" ? d.counts : {};
+      cachedCounts = counts;
+      countsInflight = null;
+      countListeners.forEach((fn) => fn(counts));
+      return counts;
+    })
+    .catch(() => {
+      countsInflight = null;
+      return {};
+    });
+
+  return countsInflight;
+}
+
 function setLikedIds(ids: number[]) {
   cachedLikedIds = ids;
   listeners.forEach((fn) => fn(ids));
 }
 
+function setCount(videoId: number, value: number) {
+  if (!cachedCounts) cachedCounts = {};
+  cachedCounts[videoId] = value;
+  countListeners.forEach((fn) => fn(cachedCounts!));
+}
+
 export default function LikeButton({
   videoId,
   size = 20,
-  showCount = false,
-  count: initialCount,
+  showCount = true,
 }: {
   videoId: number;
   size?: number;
   showCount?: boolean;
-  count?: number;
 }) {
   const [liked, setLiked] = useState(false);
-  const [count, setCount] = useState(initialCount ?? 0);
+  const [count, setCountState] = useState<number>(0);
   const [checking, setChecking] = useState(true);
   const [showSignIn, setShowSignIn] = useState(false);
 
+  // Subscribe to liked state
   useEffect(() => {
     let mounted = true;
     const onUpdate = (ids: number[]) => {
       if (mounted) setLiked(ids.includes(videoId));
     };
     listeners.add(onUpdate);
-
     fetchLikedIds().then((ids) => {
       if (mounted) {
         setLiked(ids.includes(videoId));
         setChecking(false);
       }
     });
-
     return () => {
       mounted = false;
       listeners.delete(onUpdate);
+    };
+  }, [videoId]);
+
+  // Subscribe to counts
+  useEffect(() => {
+    let mounted = true;
+    const onUpdate = (counts: Record<number, number>) => {
+      if (mounted) setCountState(counts[videoId] ?? 0);
+    };
+    countListeners.add(onUpdate);
+    fetchCounts().then((counts) => {
+      if (mounted) setCountState(counts[videoId] ?? 0);
+    });
+    return () => {
+      mounted = false;
+      countListeners.delete(onUpdate);
     };
   }, [videoId]);
 
@@ -97,12 +142,20 @@ export default function LikeButton({
     }
 
     const wasLiked = liked;
-    // Optimistic
-    setLiked(!wasLiked);
-    setCount((c) => (wasLiked ? Math.max(0, c - 1) : c + 1));
+    const newLiked = !wasLiked;
+    const newCount = wasLiked ? Math.max(0, count - 1) : count + 1;
 
-    const current = cachedLikedIds || [];
-    setLikedIds(wasLiked ? current.filter((id) => id !== videoId) : [...current, videoId]);
+    // Optimistic updates
+    setLiked(newLiked);
+    setCountState(newCount);
+    setCount(videoId, newCount);
+
+    const currentIds = cachedLikedIds || [];
+    setLikedIds(
+      wasLiked
+        ? currentIds.filter((id) => id !== videoId)
+        : [...currentIds, videoId]
+    );
 
     const res = await fetch("/api/likes", {
       method: "POST",
@@ -113,8 +166,9 @@ export default function LikeButton({
     if (!res.ok) {
       // Rollback
       setLiked(wasLiked);
-      setCount((c) => (wasLiked ? c + 1 : Math.max(0, c - 1)));
-      setLikedIds(current);
+      setCountState(count);
+      setCount(videoId, count);
+      setLikedIds(currentIds);
     }
   };
 
@@ -132,7 +186,9 @@ export default function LikeButton({
         title={liked ? "Unlike" : "Like"}
       >
         <ThumbsUp size={size} fill={liked ? "currentColor" : "none"} />
-        {showCount && <span className="text-sm font-semibold">{count}</span>}
+        {showCount && count > 0 && (
+          <span className="text-sm font-semibold tabular-nums">{count}</span>
+        )}
       </button>
 
       {showSignIn && (
