@@ -39,10 +39,24 @@ export async function GET(req: Request) {
       });
     }
 
-    // Attach counts
+    // Fetch profiles (avatars) for these user_ids
+    const userIds = Array.from(new Set((comments || []).map((c: any) => c.user_id)));
+    let profiles: Record<string, string> = {};
+    if (userIds.length > 0) {
+      const { data: profs } = await supabaseAdmin
+        .from("profiles")
+        .select("user_id, avatar_url")
+        .in("user_id", userIds);
+      (profs || []).forEach((p: any) => {
+        if (p.avatar_url) profiles[p.user_id] = p.avatar_url;
+      });
+    }
+
+    // Attach counts + avatar
     const withCounts = (comments || []).map((c: any) => ({
       ...c,
       like_count: likeCounts[c.id] || 0,
+      avatar_url: profiles[c.user_id] || null,
     }));
 
     // Sort

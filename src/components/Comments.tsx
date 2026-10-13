@@ -14,6 +14,7 @@ type Comment = {
   created_at: string;
   parent_id: number | null;
   like_count: number;
+  avatar_url?: string | null;
 };
 
 type SortMode = "newest" | "oldest" | "top";
@@ -294,10 +295,14 @@ export default function Comments({ videoId }: { videoId: number }) {
               {/* Top-level comment */}
               <div className="flex gap-3">
                 <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0"
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 overflow-hidden"
                   style={{ background: avatarColor(c.user_email || "unknown") }}
                 >
-                  {initial(c.user_email)}
+                  {c.avatar_url ? (
+                    <img src={c.avatar_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    initial(c.user_email)
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
@@ -430,10 +435,14 @@ export default function Comments({ videoId }: { videoId: number }) {
                     return (
                       <div key={r.id} className="flex gap-3">
                         <div
-                          className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 text-sm"
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 text-sm overflow-hidden"
                           style={{ background: avatarColor(r.user_email || "unknown") }}
                         >
-                          {initial(r.user_email)}
+                          {r.avatar_url ? (
+                            <img src={r.avatar_url} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            initial(r.user_email)
+                          )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2">
