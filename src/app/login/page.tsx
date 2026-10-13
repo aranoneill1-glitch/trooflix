@@ -6,7 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -17,6 +17,28 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
+
+    // Resolve email-or-handle → email
+    let email = identifier.trim();
+    try {
+      const r = await fetch("/api/resolve-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identifier: email }),
+      });
+      const d = await r.json();
+      if (!r.ok || !d.email) {
+        setError(d.error || "Could not find that account.");
+        setLoading(false);
+        return;
+      }
+      email = d.email;
+    } catch {
+      setError("Network error. Try again.");
+      setLoading(false);
+      return;
+    }
+
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       setError(error.message);
@@ -29,7 +51,6 @@ export default function LoginPage() {
 
   return (
     <main className="relative min-h-screen bg-black text-white">
-      {/* Background image */}
       <div
         className="absolute inset-0 bg-cover bg-center opacity-40"
         style={{
@@ -39,7 +60,6 @@ export default function LoginPage() {
       />
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/70 to-black" />
 
-      {/* Header */}
       <header className="relative z-10 px-6 md:px-12 py-6">
         <Link href="/" className="text-3xl md:text-4xl font-black tracking-tight">
           <span className="text-white">TROO</span>
@@ -47,19 +67,21 @@ export default function LoginPage() {
         </Link>
       </header>
 
-      {/* Form card */}
       <div className="relative z-10 flex items-start justify-center px-4 pt-8 md:pt-16 pb-16">
         <div className="w-full max-w-md bg-black/75 backdrop-blur-sm rounded-md p-10 md:p-14">
           <h1 className="text-3xl font-bold mb-8 text-white">Sign In</h1>
 
           <form onSubmit={submit} className="space-y-4">
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email or phone number"
+              type="text"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
+              placeholder="Email or @handle"
               required
               autoFocus
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
               className="w-full bg-[#333] text-white placeholder-white/50 rounded px-4 py-3.5 outline-none focus:bg-[#454545] transition"
             />
             <input

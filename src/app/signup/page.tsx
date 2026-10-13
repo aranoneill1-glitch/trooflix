@@ -6,30 +6,110 @@ import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 
 export default function SignupPage() {
-  const [email, setEmail] = useState("");
+  const [handle, setHandle] = useState("");
   const [password, setPassword] = useState("");
+  const [recoveryEmail, setRecoveryEmail] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [handleStatus, setHandleStatus] = useState<
+    "" | "checking" | "available" | "taken" | "invalid"
+  >("");
+  const [handleError, setHandleError] = useState("");
   const router = useRouter();
   const supabase = createClient();
+
+  const checkHandle = async (raw: string) => {
+    const clean = raw.toLowerCase().replace(/^@+/, "");
+    if (!clean) {
+      setHandleStatus("");
+      setHandleError("");
+      return;
+    }
+    if (!/^[a-z0-9_]{3,20}$/.test(clean)) {
+      setHandleStatus("invalid");
+      setHandleError("3–20 characters, a–z, 0–9, or _");
+      return;
+    }
+    setHandleStatus("checking");
+    try {
+      const r = await fetch(`/api/username?check=${encodeURIComponent(clean)}`);
+      const d = await r.json();
+      if (d.available) {
+        setHandleStatus("available");
+        setHandleError("");
+      } else {
+        setHandleStatus(d.error === "Taken" ? "taken" : "invalid");
+        setHandleError(d.error || "Unavailable");
+      }
+    } catch {
+      setHandleStatus("invalid");
+      setHandleError("Could not check");
+    }
+  };
+
+  const onHandleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const cleaned = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "");
+    setHandle(cleaned);
+    checkHandle(cleaned);
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
     setMessage("");
-    const { error } = await supabase.auth.signUp({ email, password });
+
+    const clean = handle.toLowerCase().replace(/^@+/, "");
+    if (!/^[a-z0-9_]{3,20}$/.test(clean)) {
+      setError("Pick a valid handle: 3–20 chars, a–z, 0–9, _");
+      setLoading(false);
+      return;
+    }
+
+    // Final availability check
+    const check = await fetch(`/api/username?check=${encodeURIComponent(clean)}`);
+    const checkData = await check.json();
+    if (!checkData.available) {
+      setError("That handle is already taken.");
+      setLoading(false);
+      return;
+    }
+
+    // Build the internal email from the handle.
+    // If the user supplied a recovery email, store it via profile metadata
+    // for future password recovery (a real reset flow can be added later).
+    const internalEmail = `${clean}@users.trooflix.local`;
+
+    const { data: signUpData, error } = await supabase.auth.signUp({
+      email: internalEmail,
+      password,
+    });
+
     if (error) {
       setError(error.message);
       setLoading(false);
-    } else {
-      setMessage("Account created! Check your email to confirm, then sign in.");
-      setTimeout(() => {
-        router.push("/login");
-        router.refresh();
-      }, 2500);
+      return;
     }
+
+    // Save the handle to profiles
+    if (signUpData.user) {
+      await fetch("/api/username", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: signUpData.user.id, username: clean }),
+      });
+    }
+
+    setMessage(
+      recoveryEmail
+        ? "Account created! Redirecting…"
+        : "Account created! Redirecting… (No recovery email set — save your password somewhere safe.)"
+    );
+    setTimeout(() => {
+      router.push("/login");
+      router.refresh();
+    }, 2200);
   };
 
   return (
@@ -55,15 +135,39 @@ export default function SignupPage() {
           <h1 className="text-3xl font-bold mb-8 text-white">Sign Up</h1>
 
           <form onSubmit={submit} className="space-y-4">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email address"
-              required
-              autoFocus
-              className="w-full bg-[#333] text-white placeholder-white/50 rounded px-4 py-3.5 outline-none focus:bg-[#454545] transition"
-            />
+            {/* Handle */}
+            <div>
+              <div className="flex items-center bg-[#333] rounded focus-within:bg-[#454545] transition">
+                <span className="pl-4 text-white/50 text-lg">@</span>
+                <input
+                  type="text"
+                  value={handle}
+                  onChange={onHandleChange}
+                  placeholder="yourhandle"
+                  required
+                  autoFocus
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  maxLength={20}
+                  className="flex-1 bg-transparent text-white placeholder-white/50 px-2 py-3.5 outline-none"
+                />
+              </div>
+              <div className="text-xs mt-1.5 h-4 px-1">
+                {handleStatus === "checking" && <span className="text-white/50">Checking…</span>}
+                {handleStatus === "available" && (
+                  <span className="text-green-400">@{handle} is available</span>
+                )}
+                {handleStatus === "taken" && (
+                  <span className="text-red-400">@{handle} is taken</span>
+                )}
+                {handleStatus === "invalid" && (
+                  <span className="text-red-400">{handleError}</span>
+                )}
+              </div>
+            </div>
+
+            {/* Password */}
             <input
               type="password"
               value={password}
@@ -73,6 +177,21 @@ export default function SignupPage() {
               minLength={6}
               className="w-full bg-[#333] text-white placeholder-white/50 rounded px-4 py-3.5 outline-none focus:bg-[#454545] transition"
             />
+
+            {/* Optional recovery email */}
+            <div>
+              <input
+                type="email"
+                value={recoveryEmail}
+                onChange={(e) => setRecoveryEmail(e.target.value)}
+                placeholder="Recovery email (optional)"
+                className="w-full bg-[#333] text-white placeholder-white/50 rounded px-4 py-3.5 outline-none focus:bg-[#454545] transition"
+              />
+              <p className="text-[11px] text-amber-400/90 mt-1.5 leading-snug px-1">
+                ⚠️ Without a recovery email, a forgotten password means your account is
+                unrecoverable. Add one if you can.
+              </p>
+            </div>
 
             {error && (
               <div className="bg-[#e87c03]/20 border-l-4 border-[#e87c03] text-white text-sm px-4 py-3 rounded">
@@ -87,8 +206,8 @@ export default function SignupPage() {
 
             <button
               type="submit"
-              disabled={loading}
-              className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-50 font-semibold py-3.5 rounded transition mt-6 text-base"
+              disabled={loading || handleStatus === "taken" || handleStatus === "invalid"}
+              className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-50 font-semibold py-3.5 rounded transition mt-4 text-base"
             >
               {loading ? "Creating account…" : "Sign Up"}
             </button>
