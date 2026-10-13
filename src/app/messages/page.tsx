@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, CheckCheck } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { createClient } from "@/utils/supabase/client";
@@ -14,6 +14,7 @@ type Conversation = {
   last_at: string;
   unread_count: number;
   last_from_me: boolean;
+  last_read_at: string | null;
 };
 
 type Profile = {
@@ -23,13 +24,33 @@ type Profile = {
   avatar_url: string | null;
 };
 
-function timeAgo(iso: string): string {
-  const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
-  if (diff < 60) return "now";
-  if (diff < 3600) return `${Math.floor(diff / 60)}m`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
-  if (diff < 604800) return `${Math.floor(diff / 86400)}d`;
-  return `${Math.floor(diff / 604800)}w`;
+function timeLabel(iso: string): string {
+  const d = new Date(iso);
+  const now = new Date();
+  const sameDay =
+    d.getFullYear() === now.getFullYear() &&
+    d.getMonth() === now.getMonth() &&
+    d.getDate() === now.getDate();
+
+  if (sameDay) {
+    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+
+  const yest = new Date();
+  yest.setDate(now.getDate() - 1);
+  if (
+    d.getFullYear() === yest.getFullYear() &&
+    d.getMonth() === yest.getMonth() &&
+    d.getDate() === yest.getDate()
+  ) {
+    return "Yesterday";
+  }
+
+  const diffDays = Math.floor((now.getTime() - d.getTime()) / 86400000);
+  if (diffDays < 7) {
+    return d.toLocaleDateString([], { weekday: "long" });
+  }
+  return d.toLocaleDateString([], { day: "2-digit", month: "2-digit", year: "2-digit" });
 }
 
 export default function MessagesInbox() {
@@ -56,7 +77,23 @@ export default function MessagesInbox() {
     });
   }, [router]);
 
-  const loadInbox = async (uid: string) => {
+  // Poll inbox every 3s while visible
+  useEffect(() => {
+    if (!userId) return;
+    const tick = () => {
+      if (document.hidden) return;
+      loadInbox(userId, true);
+    };
+    const iv = setInterval(tick, 3000);
+    const onVis = () => !document.hidden && tick();
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      clearInterval(iv);
+      document.removeEventListener("visibilitychange", onVis);
+    };
+  }, [userId]);
+
+  const loadInbox = async (uid: string, silent = false) => {
     try {
       const r = await fetch(`/api/dm?user_id=${uid}`);
       const d = await r.json();
@@ -74,11 +111,11 @@ export default function MessagesInbox() {
         setProfiles(map);
       }
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
-  // Debounced search for "start new chat"
+  // Debounced search
   useEffect(() => {
     if (!query || query.trim().length < 2) {
       setResults([]);
@@ -89,9 +126,7 @@ export default function MessagesInbox() {
       fetch(`/api/users?q=${encodeURIComponent(query)}`)
         .then((r) => r.json())
         .then((d) => {
-          setResults(
-            (d.users || []).filter((u: Profile) => u.user_id !== userId)
-          );
+          setResults((d.users || []).filter((u: Profile) => u.user_id !== userId));
         })
         .finally(() => setSearching(false));
     }, 400);
@@ -103,46 +138,48 @@ export default function MessagesInbox() {
       ? conversations.filter((c) => c.unread_count > 0)
       : conversations;
 
+  const totalUnread = conversations.reduce((n, c) => n + c.unread_count, 0);
+
   return (
-    <main className="min-h-screen bg-black text-white pb-24 lg:pb-0">
+    <main className="min-h-screen text-white pb-24 lg:pb-0" style={{ background: "#0b141a" }}>
       <TopBar />
 
-      <div className="pt-20 md:pt-24 max-w-5xl mx-auto px-4 md:px-6">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl md:text-4xl font-black">Messages</h1>
+      <div className="pt-20 md:pt-24 max-w-3xl mx-auto">
+        {/* Title row */}
+        <div className="flex items-center justify-between px-4 md:px-6 mb-3">
+          <h1 className="text-2xl md:text-3xl font-black">Messages</h1>
           <button
             onClick={() => setSearchOpen(true)}
-            className="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full text-sm font-semibold transition"
+            className="flex items-center gap-1.5 bg-[#dc2626] hover:bg-red-500 px-3 py-1.5 rounded-full text-sm font-semibold transition"
           >
             <Plus size={16} /> New
           </button>
         </div>
 
         {/* Filters */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-2 px-4 md:px-6 mb-2">
           {(["all", "unread"] as const).map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`px-4 py-1.5 rounded-full text-sm font-semibold transition ${
+              className={`px-3.5 py-1 rounded-full text-xs font-semibold transition ${
                 filter === f
-                  ? "bg-white/15 text-white"
-                  : "bg-white/5 text-white/60 hover:bg-white/10"
+                  ? "bg-[#dc2626]/20 text-red-300"
+                  : "text-white/60 hover:text-white/90"
               }`}
             >
-              {f === "all" ? "All" : "Unread"}
-              {f === "unread" && conversations.some((c) => c.unread_count > 0) && (
-                <span className="ml-2 inline-block w-2 h-2 rounded-full bg-red-500 align-middle" />
-              )}
+              {f === "all" ? "All" : `Unread${totalUnread ? ` (${totalUnread})` : ""}`}
             </button>
           ))}
         </div>
 
         {/* List */}
-        {loading && <p className="text-white/50 py-12 text-center">Loading…</p>}
+        {loading && (
+          <p className="text-white/50 py-12 text-center px-6">Loading…</p>
+        )}
 
         {!loading && visible.length === 0 && (
-          <div className="text-white/50 py-16 text-center">
+          <div className="text-white/50 py-16 text-center px-6">
             <p className="mb-2">
               {filter === "unread" ? "No unread messages." : "No messages yet."}
             </p>
@@ -156,18 +193,20 @@ export default function MessagesInbox() {
         )}
 
         {!loading && visible.length > 0 && (
-          <div className="bg-[#141418] border border-white/5 rounded-lg divide-y divide-white/5 overflow-hidden">
+          <div>
             {visible.map((c) => {
               const p = profiles[c.other_user_id];
-              const handle = p?.username ? `@${p.username}` : "user";
-              const name = p?.display_name || handle;
+              const name = p?.display_name || (p?.username ? `@${p.username}` : "User");
+              const unread = c.unread_count > 0;
+
               return (
                 <Link
                   key={c.other_user_id}
                   href={`/messages/${c.other_user_id}`}
-                  className="flex items-center gap-3 p-3 md:p-4 hover:bg-white/5 transition"
+                  className="flex items-center gap-3 px-4 md:px-6 py-3 hover:bg-white/[0.03] active:bg-white/[0.05] transition border-b border-white/5"
                 >
-                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center overflow-hidden flex-shrink-0">
+                  {/* Avatar */}
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center overflow-hidden flex-shrink-0">
                     {p?.avatar_url ? (
                       <img src={p.avatar_url} alt="" className="w-full h-full object-cover" />
                     ) : (
@@ -177,22 +216,34 @@ export default function MessagesInbox() {
                     )}
                   </div>
 
+                  {/* Middle */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline gap-2">
-                      <span className="font-semibold truncate">{name}</span>
-                      <span className="text-xs text-white/40 shrink-0">
-                        {timeAgo(c.last_at)}
-                      </span>
-                    </div>
-                    <p className="text-sm text-white/60 truncate">
-                      {c.last_from_me && <span className="text-white/40">You: </span>}
-                      {c.last_message}
+                    <p className="font-semibold text-[15px] leading-tight truncate">
+                      {name}
                     </p>
+                    <div className="flex items-center gap-1 text-[13px] text-white/55 truncate">
+                      {c.last_from_me && (
+                        <CheckCheck size={14} className="text-sky-400 flex-shrink-0" />
+                      )}
+                      <span className="truncate">{c.last_message}</span>
+                    </div>
                   </div>
 
-                  {c.unread_count > 0 && (
-                    <span className="w-2.5 h-2.5 rounded-full bg-blue-500 flex-shrink-0" />
-                  )}
+                  {/* Right: time + unread badge */}
+                  <div className="flex flex-col items-end gap-1 flex-shrink-0 pl-2">
+                    <span
+                      className={`text-xs ${
+                        unread ? "text-[#22c55e] font-semibold" : "text-white/40"
+                      }`}
+                    >
+                      {timeLabel(c.last_at)}
+                    </span>
+                    {unread && (
+                      <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-[#22c55e] text-black text-[11px] font-bold flex items-center justify-center">
+                        {c.unread_count}
+                      </span>
+                    )}
+                  </div>
                 </Link>
               );
             })}
@@ -200,10 +251,10 @@ export default function MessagesInbox() {
         )}
       </div>
 
-      {/* New message search modal */}
+      {/* New message modal */}
       {searchOpen && (
         <div
-          className="fixed inset-0 z-[200] bg-black/90 flex items-start md:items-center justify-center p-4"
+          className="fixed inset-0 z-[200] bg-black/80 flex items-start md:items-center justify-center p-4"
           onClick={() => {
             setSearchOpen(false);
             setQuery("");
@@ -211,17 +262,18 @@ export default function MessagesInbox() {
           }}
         >
           <div
-            className="bg-[#141418] border border-white/10 rounded-lg w-full max-w-lg mt-16 md:mt-0"
+            className="border border-white/10 rounded-2xl w-full max-w-lg mt-16 md:mt-0 overflow-hidden"
+            style={{ background: "#1f2c33" }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center gap-2 border-b border-white/10 px-4 py-3">
+            <div className="flex items-center gap-2 border-b border-black/30 px-4 py-3">
               <Search size={18} className="text-white/50" />
               <input
                 autoFocus
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search by @handle or name…"
-                className="flex-1 bg-transparent outline-none text-white"
+                className="flex-1 bg-transparent outline-none text-white placeholder:text-white/40"
                 style={{ fontSize: "16px" }}
               />
             </div>
@@ -250,7 +302,9 @@ export default function MessagesInbox() {
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="font-semibold truncate">{u.display_name || `@${u.username}`}</p>
+                      <p className="font-semibold truncate">
+                        {u.display_name || `@${u.username}`}
+                      </p>
                       {u.username && (
                         <p className="text-xs text-white/50 truncate">@{u.username}</p>
                       )}
