@@ -1,6 +1,5 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
 
 if (typeof window !== "undefined") {
   window.onerror = function(msg, url, line, col, err) {
@@ -12,7 +11,7 @@ if (typeof window !== "undefined") {
   });
 }
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Play, Info, ChevronLeft, ChevronRight, Plus, ThumbsUp, X,
@@ -68,15 +67,15 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState("Home");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const searchParams = useSearchParams();
   const [searchOpen, setSearchOpen] = useState(false);
   const [search, setSearch] = useState<string>("");
 
   // Sync from URL on mount and when URL changes
   useEffect(() => {
-    const q = searchParams.get("q") || "";
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get("q") || "";
     setSearch(q);
-  }, [searchParams]);
+  }, []);
   const [scrolled, setScrolled] = useState(false);
   const [isTV, setIsTV] = useState(false);
 
