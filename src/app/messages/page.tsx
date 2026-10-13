@@ -221,7 +221,8 @@ export default function MessagesInbox() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search by @handle or name…"
-                className="flex-1 bg-transparent outline-none text-sm text-white"
+                className="flex-1 bg-transparent outline-none text-white"
+                style={{ fontSize: "16px" }}
               />
             </div>
 
