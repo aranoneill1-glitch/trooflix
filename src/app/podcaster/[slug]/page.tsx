@@ -87,7 +87,7 @@ export default function PodcasterProfilePage() {
       <TopBar />
 
       {/* Hero */}
-      <section className="relative w-full overflow-hidden pt-20">
+      <section className="relative w-full overflow-hidden">
         <div className="relative h-[52vh] md:h-[58vh] w-full">
           {/* Background layer — hero backdrop, blurred */}
           {creator.heroBackdropUrl ? (
@@ -102,7 +102,7 @@ export default function PodcasterProfilePage() {
           )}
 
           {/* Dark overlay so text is readable */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/40" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
 
           {/* Left-aligned content */}
           <div className="relative z-10 flex flex-col items-start justify-end h-full px-6 md:px-12 pb-12 text-left max-w-3xl">
