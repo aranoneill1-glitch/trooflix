@@ -7,57 +7,75 @@ const supabaseAdmin = createServerClient(
   { auth: { autoRefreshToken: false, persistSession: false } }
 );
 
+// GET: returns liked video IDs for a given user OR anon_id
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get("user_id");
+    const anonId = searchParams.get("anon_id");
 
-    if (!userId) {
+    if (!userId && !anonId) {
       return NextResponse.json({ ids: [] });
     }
 
-    const { data, error } = await supabaseAdmin
-      .from("likes")
-      .select("video_id")
-      .eq("user_id", userId);
+    let query = supabaseAdmin.from("likes").select("video_id");
 
+    if (userId) {
+      query = query.eq("user_id", userId);
+    } else if (anonId) {
+      query = query.eq("anon_id", anonId);
+    }
+
+    const { data, error } = await query;
     if (error) throw error;
-    return NextResponse.json({ ids: (data || []).map((r: any) => r.video_id) });
+
+    return NextResponse.json({
+      ids: (data || []).map((r: any) => r.video_id),
+    });
   } catch (e: any) {
     console.error("GET likes error:", e);
     return NextResponse.json({ ids: [] });
   }
 }
 
+// POST: toggle a like. Body can include userId (for logged-in) or anonId (for anonymous).
 export async function POST(req: Request) {
   try {
-    const { userId, videoId } = await req.json();
-    if (!userId || !videoId) {
-      return NextResponse.json({ error: "userId and videoId required" }, { status: 400 });
+    const { userId, anonId, videoId } = await req.json();
+    if (!videoId) {
+      return NextResponse.json({ error: "videoId required" }, { status: 400 });
+    }
+    if (!userId && !anonId) {
+      return NextResponse.json({ error: "userId or anonId required" }, { status: 400 });
     }
 
-    // Check if already liked
-    const { data: existing } = await supabaseAdmin
-      .from("likes")
-      .select("id")
-      .eq("user_id", userId)
-      .eq("video_id", Number(videoId))
-      .maybeSingle();
+    const vid = Number(videoId);
+
+    // Look for an existing like by this user OR anon_id on this video
+    let findQuery = supabaseAdmin.from("likes").select("id").eq("video_id", vid);
+    if (userId) {
+      findQuery = findQuery.eq("user_id", userId);
+    } else {
+      findQuery = findQuery.eq("anon_id", anonId);
+    }
+
+    const { data: existing } = await findQuery.maybeSingle();
 
     if (existing) {
-      // Unlike — remove it
+      // Unlike
       const { error } = await supabaseAdmin
         .from("likes")
         .delete()
-        .eq("user_id", userId)
-        .eq("video_id", Number(videoId));
+        .eq("id", existing.id);
       if (error) throw error;
       return NextResponse.json({ ok: true, liked: false });
     } else {
-      // Like — add it
-      const { error } = await supabaseAdmin
-        .from("likes")
-        .insert({ user_id: userId, video_id: Number(videoId) });
+      // Like
+      const insertRow: any = { video_id: vid };
+      if (userId) insertRow.user_id = userId;
+      if (anonId) insertRow.anon_id = anonId;
+
+      const { error } = await supabaseAdmin.from("likes").insert(insertRow);
       if (error) throw error;
       return NextResponse.json({ ok: true, liked: true });
     }
