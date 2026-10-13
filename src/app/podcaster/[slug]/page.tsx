@@ -170,7 +170,7 @@ export default function PodcasterProfilePage() {
           <VideoList
             title="All Videos"
             items={videos}
-            onSelect={setSelected}
+            creatorSlug={slug}
           />
         )}
       </div>
@@ -245,11 +245,11 @@ export default function PodcasterProfilePage() {
 function VideoList({
   title,
   items,
-  onSelect,
+  creatorSlug,
 }: {
   title: string;
   items: Video[];
-  onSelect: (v: Video) => void;
+  creatorSlug: string;
 }) {
   if (items.length === 0) return null;
 
@@ -258,9 +258,9 @@ function VideoList({
       <h2 className="text-xl font-bold mb-4">{title}</h2>
       <div className="space-y-3">
         {items.map((item) => (
-          <div
+          <Link
             key={item.id}
-            onClick={() => onSelect(item)}
+            href={`/podcaster/${creatorSlug}/${item.id}`}
             className="flex gap-3 md:gap-4 p-2 rounded-lg hover:bg-white/5 cursor-pointer transition group"
           >
             {/* Thumbnail */}
@@ -284,7 +284,7 @@ function VideoList({
                 <span>{timeAgo(item.createdAt)}</span>
               </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>
