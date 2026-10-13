@@ -101,11 +101,16 @@ export default function PodcasterProfilePage() {
           )}
 
           {/* Dark overlay so text is readable */}
+          {/* Vertical fade — darkens bottom for text */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+          {/* Horizontal fade — darkens left for text */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/20 to-transparent" />
+          {/* Subtle blue tint layered on top */}
           <div
             className="absolute inset-0"
             style={{
               background:
-                "linear-gradient(to bottom, rgba(10, 30, 60, 0.15) 0%, rgba(5, 20, 50, 0.45) 45%, rgba(0, 0, 0, 0.85) 100%)",
+                "linear-gradient(to bottom, rgba(10, 30, 60, 0.12) 0%, rgba(5, 20, 50, 0.2) 50%, rgba(0, 0, 0, 0) 100%)",
             }}
           />
 
