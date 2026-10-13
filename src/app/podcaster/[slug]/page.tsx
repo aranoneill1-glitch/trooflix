@@ -87,7 +87,7 @@ export default function PodcasterProfilePage() {
       <TopBar />
 
       {/* Hero */}
-      <section className="relative w-full overflow-hidden">
+      <section className="relative w-full overflow-hidden pt-16">
         <div className="relative h-[52vh] md:h-[58vh] w-full">
           {/* Background layer — hero backdrop, blurred */}
           {creator.heroBackdropUrl ? (
@@ -95,7 +95,6 @@ export default function PodcasterProfilePage() {
               src={creator.heroBackdropUrl}
               alt=""
               className="absolute inset-0 w-full h-full object-cover"
-              style={{ filter: "blur(2px)", transform: "scale(1.05)" }}
             />
           ) : (
             <div className="absolute inset-0 bg-gradient-to-br from-red-900 via-black to-black" />
