@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Play, Info, X, ChevronLeft, ChevronRight } from "lucide-react";
 import TopBar from "@/components/TopBar";
+import FollowButton from "@/components/FollowButton";
 import ViewCount from "@/components/ViewCount";
 import BitChutePlayer from "@/components/BitChutePlayer";
 import VideoPlayer from "@/components/VideoPlayer";
@@ -57,6 +58,7 @@ export default function PodcasterProfilePage() {
   const [playing, setPlaying] = useState<Video | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [followerCount, setFollowerCount] = useState<number | null>(null);
 
   useEffect(() => {
     fetch("/api/creators")
@@ -69,6 +71,10 @@ export default function PodcasterProfilePage() {
           return;
         }
         setCreator(found);
+        fetch(`/api/follow-count?creator_id=${found.id}`)
+          .then((r) => r.json())
+          .then((d) => setFollowerCount(d.count ?? 0))
+          .catch(() => {});
         return fetch("/api/videos")
           .then((r) => r.json())
           .then((allVideos: Video[]) => {
@@ -153,10 +159,21 @@ export default function PodcasterProfilePage() {
               {creator.name}
             </h1>
             {creator.description && (
-              <p className="text-base md:text-lg text-white/85 max-w-2xl leading-relaxed">
+              <p className="text-base md:text-lg text-white/85 max-w-2xl leading-relaxed mb-4">
                 {creator.description}
               </p>
             )}
+
+            <div className="flex items-center gap-4 flex-wrap">
+              <FollowButton creatorId={creator.id} />
+              {followerCount !== null && (
+                <span className="text-sm text-white/60">
+                  {followerCount === 0
+                    ? "No followers yet"
+                    : `${followerCount.toLocaleString()} ${followerCount === 1 ? "follower" : "followers"}`}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </section>

@@ -17,6 +17,7 @@ export default function AccountPage() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [status, setStatus] = useState("");
+  const [followedCreators, setFollowedCreators] = useState<any[]>([]);
   const fileInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -39,6 +40,22 @@ export default function AccountPage() {
           setLoading(false);
         })
         .catch(() => setLoading(false));
+
+      // Load followed podcasters
+      fetch(`/api/follows?user_id=${u.id}`)
+        .then((r) => r.json())
+        .then((d) => {
+          const ids = Array.isArray(d.ids) ? d.ids : [];
+          if (ids.length === 0) return;
+          return fetch("/api/creators")
+            .then((r) => r.json())
+            .then((creators: any[]) => {
+              setFollowedCreators(
+                creators.filter((c) => ids.includes(c.id))
+              );
+            });
+        })
+        .catch(() => {});
     });
   }, []);
 
@@ -248,6 +265,47 @@ export default function AccountPage() {
         <div className="bg-[#141418] border border-white/5 rounded-lg p-6 mb-6">
           <h2 className="text-lg font-bold mb-2">Email</h2>
           <p className="text-white/70 text-sm">{user.email}</p>
+        </div>
+
+        {/* Following */}
+        <div className="bg-[#141418] border border-white/5 rounded-lg p-6 mb-6">
+          <h2 className="text-lg font-bold mb-4">
+            Following ({followedCreators.length})
+          </h2>
+          {followedCreators.length === 0 ? (
+            <p className="text-white/50 text-sm">
+              You're not following any podcasters yet.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {followedCreators.map((c) => (
+                <Link
+                  key={c.id}
+                  href={`/podcaster/${c.slug}`}
+                  className="flex items-center gap-3 p-2 rounded hover:bg-white/5 transition"
+                >
+                  {c.photoUrl ? (
+                    <img
+                      src={c.photoUrl}
+                      alt={c.name}
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-white font-bold">
+                      {c.name[0]?.toUpperCase() || "?"}
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold truncate">{c.name}</p>
+                    {c.description && (
+                      <p className="text-xs text-white/50 truncate">{c.description}</p>
+                    )}
+                  </div>
+                  <span className="text-xs text-white/40">View →</span>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
 
         <button
