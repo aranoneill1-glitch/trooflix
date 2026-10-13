@@ -8,7 +8,7 @@ import { createClient } from "@/utils/supabase/client";
 export default function SignupPage() {
   const [handle, setHandle] = useState("");
   const [password, setPassword] = useState("");
-  const [recoveryEmail, setRecoveryEmail] = useState("");
+  const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -76,13 +76,9 @@ export default function SignupPage() {
       return;
     }
 
-    // Build the internal email from the handle.
-    // If the user supplied a recovery email, store it via profile metadata
-    // for future password recovery (a real reset flow can be added later).
-    const internalEmail = `${clean}@users.trooflixtv.com`;
 
     const { data: signUpData, error } = await supabase.auth.signUp({
-      email: internalEmail,
+      email: email.trim().toLowerCase(),
       password,
     });
 
@@ -101,11 +97,7 @@ export default function SignupPage() {
       });
     }
 
-    setMessage(
-      recoveryEmail
-        ? "Account created! Redirecting…"
-        : "Account created! Redirecting… (No recovery email set — save your password somewhere safe.)"
-    );
+    setMessage("Account created! Redirecting…");
     setTimeout(() => {
       router.push("/login");
       router.refresh();
@@ -178,20 +170,15 @@ export default function SignupPage() {
               className="w-full bg-[#333] text-white placeholder-white/50 rounded px-4 py-3.5 outline-none focus:bg-[#454545] transition"
             />
 
-            {/* Optional recovery email */}
-            <div>
-              <input
-                type="email"
-                value={recoveryEmail}
-                onChange={(e) => setRecoveryEmail(e.target.value)}
-                placeholder="Recovery email (optional)"
-                className="w-full bg-[#333] text-white placeholder-white/50 rounded px-4 py-3.5 outline-none focus:bg-[#454545] transition"
-              />
-              <p className="text-[11px] text-amber-400/90 mt-1.5 leading-snug px-1">
-                ⚠️ Without a recovery email, a forgotten password means your account is
-                unrecoverable. Add one if you can.
-              </p>
-            </div>
+            {/* Email (required) */}
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Email address"
+              required
+              className="w-full bg-[#333] text-white placeholder-white/50 rounded px-4 py-3.5 outline-none focus:bg-[#454545] transition"
+            />
 
             {error && (
               <div className="bg-[#e87c03]/20 border-l-4 border-[#e87c03] text-white text-sm px-4 py-3 rounded">
