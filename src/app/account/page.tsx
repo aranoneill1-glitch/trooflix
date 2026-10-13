@@ -185,15 +185,27 @@ export default function AccountPage() {
               )}
             </div>
             <div className="flex-1">
-              <button
-                type="button"
-                onClick={() => fileInput.current?.click()}
-                disabled={uploading}
-                className="flex items-center gap-2 bg-white/10 hover:bg-white/20 disabled:opacity-50 px-4 py-2 rounded text-sm font-semibold transition"
-              >
-                <Upload size={16} />
-                {uploading ? `${uploadProgress}%` : avatarUrl ? "Change picture" : "Upload picture"}
-              </button>
+              <div className="flex gap-2 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => fileInput.current?.click()}
+                  disabled={uploading}
+                  className="flex items-center gap-2 bg-white/10 hover:bg-white/20 disabled:opacity-50 px-4 py-2 rounded text-sm font-semibold transition"
+                >
+                  <Upload size={16} />
+                  {uploading ? `${uploadProgress}%` : avatarUrl ? "Change picture" : "Upload picture"}
+                </button>
+                {avatarUrl && !uploading && (
+                  <button
+                    type="button"
+                    onClick={removeAvatar}
+                    className="flex items-center gap-2 bg-red-600/10 hover:bg-red-600/20 text-red-500 px-4 py-2 rounded text-sm font-semibold transition"
+                  >
+                    <Trash2 size={16} />
+                    Remove
+                  </button>
+                )}
+              </div>
               <p className="text-xs text-white/40 mt-2">Square image works best. JPG or PNG.</p>
               <input
                 ref={fileInput}
