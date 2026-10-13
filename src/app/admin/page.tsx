@@ -1,778 +1,105 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Video, Mic, Upload, UserPlus } from "lucide-react";
 
-type Video = {
-  id: number;
-  title: string;
-  description: string;
-  category: string;
-  type: string;
-  featured: boolean;
-  bitchuteUrl: string;
-  posterUrl: string;
-  backdropUrl: string;
-  year: number;
-  rating: string;
-  creatorId?: number | null;
-};
-
-type Creator = {
-  id: number;
-  name: string;
-  slug: string;
-  photoUrl: string;
-  heroBackdropUrl?: string;
-  description: string;
-};
-
-const CATEGORIES = [
-  "History",
-  "Politics",
-  "True Crime",
-  "Science & Health",
-  "Technology",
-  "Religion & Belief",
-  "Ancient History",
-  "The Unknown",
-];
-
-const TYPES = ["Movie", "Documentary", "Podcast", "Series"];
-
-export default function Admin() {
-  const [videos, setVideos] = useState<Video[]>([]);
-  const [editing, setEditing] = useState<Video | null>(null);
-  const [form, setForm] = useState({
-    title: "",
-    description: "",
-    category: CATEGORIES[0],
-    type: "Documentary",
-    featured: false,
-    bitchuteUrl: "",
-    posterUrl: "",
-    backdropUrl: "",
-    year: 2026,
-    rating: "TV-MA",
-    creatorId: null as number | null,
-  });
-  const [status, setStatus] = useState("");
-  const [saving, setSaving] = useState(false);
+export default function OverviewPage() {
   const [stats, setStats] = useState<{ totalViews: number; uniqueVisitors: number; today: number; last7Days: number } | null>(null);
   const [subscribers, setSubscribers] = useState<number | null>(null);
-  const [creators, setCreators] = useState<Creator[]>([]);
-  const [editingCreator, setEditingCreator] = useState<Creator | null>(null);
-  const [creatorForm, setCreatorForm] = useState({ name: "", photoUrl: "", heroBackdropUrl: "", description: "" });
-  const [uploadingPhoto, setUploadingPhoto] = useState(false);
-  const [photoProgress, setPhotoProgress] = useState(0);
-  const [creatorStatus, setCreatorStatus] = useState("");
-  const [savingCreator, setSavingCreator] = useState(false);
-  const photoInput = useRef<HTMLInputElement>(null);
-  const backdropInput = useRef<HTMLInputElement>(null);
-  const heroBackdropInput = useRef<HTMLInputElement>(null);
-  const [uploading, setUploading] = useState<string | null>(null);
-  const [progress, setProgress] = useState<number>(0);
-
-  const videoInput = useRef<HTMLInputElement>(null);
-  const posterInput = useRef<HTMLInputElement>(null);
-
-  const loadVideos = async () => {
-    const res = await fetch("/api/videos", { cache: "no-store" });
-    const data = await res.json();
-    setVideos(Array.isArray(data) ? data : []);
-  };
+  const [videoCount, setVideoCount] = useState<number>(0);
+  const [podcasterCount, setPodcasterCount] = useState<number>(0);
 
   useEffect(() => {
-    setForm((f) => ({ ...f, year: new Date().getFullYear() }));
-    loadVideos();
     fetch("/api/track-visit").then((r) => r.json()).then(setStats).catch(() => {});
     fetch("/api/subscriber-count").then((r) => r.json()).then((d) => setSubscribers(d.count)).catch(() => {});
-    fetch("/api/creators").then((r) => r.json()).then((d) => setCreators(Array.isArray(d) ? d : [])).catch(() => {});
+    fetch("/api/videos").then((r) => r.json()).then((d) => setVideoCount(Array.isArray(d) ? d.length : 0)).catch(() => {});
+    fetch("/api/creators").then((r) => r.json()).then((d) => setPodcasterCount(Array.isArray(d) ? d.length : 0)).catch(() => {});
   }, []);
 
-  const resetForm = () => {
-    setForm({
-      title: "",
-      description: "",
-      category: CATEGORIES[0],
-      type: "Documentary",
-      featured: false,
-      bitchuteUrl: "",
-      posterUrl: "",
-      backdropUrl: "",
-      year: new Date().getFullYear(),
-      rating: "TV-MA",
-      creatorId: null,
-    });
-    setEditing(null);
-    setProgress(0);
-  };
-
-  // Upload using XMLHttpRequest so we get progress events for large files
-  const uploadFile = (file: File, folder: string, onDone: (url: string) => void) => {
-    setUploading(folder);
-    setProgress(0);
-
-    // Get presigned URL
-    fetch("/api/upload", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        filename: file.name,
-        contentType: file.type || "application/octet-stream",
-        folder,
-      }),
-    })
-      .then((r) => {
-        if (!r.ok) throw new Error("Failed to get upload URL");
-        return r.json();
-      })
-      .then(({ signedUrl, publicUrl }) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open("PUT", signedUrl, true);
-        xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
-
-        xhr.upload.onprogress = (e) => {
-          if (e.lengthComputable) {
-            setProgress(Math.round((e.loaded / e.total) * 100));
-          }
-        };
-
-        xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            onDone(publicUrl);
-            setStatus("✅ Uploaded");
-            setTimeout(() => setStatus(""), 2000);
-          } else {
-            setStatus("❌ Upload failed: " + xhr.status);
-          }
-          setUploading(null);
-          setProgress(0);
-        };
-
-        xhr.onerror = () => {
-          setStatus("❌ Upload network error");
-          setUploading(null);
-          setProgress(0);
-        };
-
-        xhr.send(file);
-      })
-      .catch((e) => {
-        setStatus("❌ " + e.message);
-        setUploading(null);
-        setProgress(0);
-      });
-  };
-
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (saving || uploading) return;
-    setSaving(true);
-    setStatus(editing ? "Updating…" : "Saving…");
-    try {
-      const url = editing ? `/api/videos?id=${editing.id}` : "/api/videos";
-      const method = editing ? "PUT" : "POST";
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      if (!res.ok) throw new Error(await res.text());
-      await loadVideos();
-      const wasEditing = !!editing;
-      resetForm();
-      setStatus(wasEditing ? "✅ Updated" : "✅ Added");
-      setTimeout(() => setStatus(""), 2000);
-    } catch (err: any) {
-      setStatus("❌ " + (err?.message || "Failed"));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const startEdit = (video: Video) => {
-    setEditing(video);
-    setForm({
-      title: video.title || "",
-      description: video.description || "",
-      category: video.category || CATEGORIES[0],
-      type: video.type || "Documentary",
-      featured: !!video.featured,
-      bitchuteUrl: video.bitchuteUrl || "",
-      posterUrl: video.posterUrl || "",
-      backdropUrl: video.backdropUrl || "",
-      year: video.year || new Date().getFullYear(),
-      rating: video.rating || "TV-MA",
-      creatorId: video.creatorId ?? null,
-    });
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  // ---------- Creator handlers ----------
-  const loadCreators = async () => {
-    const res = await fetch("/api/creators", { cache: "no-store" });
-    const d = await res.json();
-    setCreators(Array.isArray(d) ? d : []);
-  };
-
-  const resetCreatorForm = () => {
-    setCreatorForm({ name: "", photoUrl: "", heroBackdropUrl: "", description: "" });
-    setEditingCreator(null);
-    setPhotoProgress(0);
-  };
-
-  const submitCreator = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (savingCreator) return;
-    setSavingCreator(true);
-    setCreatorStatus(editingCreator ? "Updating…" : "Saving…");
-    try {
-      const url = editingCreator ? `/api/creators?id=${editingCreator.id}` : "/api/creators";
-      const method = editingCreator ? "PUT" : "POST";
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(creatorForm),
-      });
-      if (!res.ok) throw new Error(await res.text());
-      await loadCreators();
-      const wasEditing = !!editingCreator;
-      resetCreatorForm();
-      setCreatorStatus(wasEditing ? "✅ Updated" : "✅ Added");
-      setTimeout(() => setCreatorStatus(""), 2000);
-    } catch (err: any) {
-      setCreatorStatus("❌ " + (err?.message || "Failed"));
-    } finally {
-      setSavingCreator(false);
-    }
-  };
-
-  const startEditCreator = (c: Creator) => {
-    setEditingCreator(c);
-    setCreatorForm({
-      name: c.name || "",
-      photoUrl: c.photoUrl || "",
-      heroBackdropUrl: c.heroBackdropUrl || "",
-      description: c.description || "",
-    });
-    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
-  };
-
-  const removeCreator = async (id: number) => {
-    if (!confirm("Delete this podcaster? Videos assigned to them won't be deleted.")) return;
-    await fetch(`/api/creators?id=${id}`, { method: "DELETE" });
-    await loadCreators();
-  };
-
-  const uploadCreatorPhoto = (file: File) => {
-    setUploadingPhoto(true);
-    setPhotoProgress(0);
-    fetch("/api/upload", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        filename: file.name,
-        contentType: file.type || "image/jpeg",
-        folder: "creators",
-      }),
-    })
-      .then((r) => {
-        if (!r.ok) throw new Error("Failed to get upload URL");
-        return r.json();
-      })
-      .then(({ signedUrl, publicUrl }) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open("PUT", signedUrl, true);
-        xhr.setRequestHeader("Content-Type", file.type || "image/jpeg");
-        xhr.upload.onprogress = (ev) => {
-          if (ev.lengthComputable) setPhotoProgress(Math.round((ev.loaded / ev.total) * 100));
-        };
-        xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            setCreatorForm((f) => ({ ...f, photoUrl: publicUrl }));
-            setCreatorStatus("✅ Photo uploaded");
-            setTimeout(() => setCreatorStatus(""), 2000);
-          } else {
-            setCreatorStatus("❌ Upload failed: " + xhr.status);
-          }
-          setUploadingPhoto(false);
-          setPhotoProgress(0);
-        };
-        xhr.onerror = () => {
-          setCreatorStatus("❌ Upload network error");
-          setUploadingPhoto(false);
-          setPhotoProgress(0);
-        };
-        xhr.send(file);
-      })
-      .catch((e) => {
-        setCreatorStatus("❌ " + e.message);
-        setUploadingPhoto(false);
-        setPhotoProgress(0);
-      });
-  };
-
-  const remove = async (id: number) => {
-    if (!confirm("Delete this video?")) return;
-    await fetch(`/api/videos?id=${id}`, { method: "DELETE" });
-    await loadVideos();
-  };
-
-  const UploadButton = ({
-    label,
-    folder,
-    inputRef,
-    onDone,
-  }: {
-    label: string;
-    folder: string;
-    inputRef: React.RefObject<HTMLInputElement | null>;
-    onDone: (url: string) => void;
-  }) => (
-    <>
-      <button
-        type="button"
-        onClick={() => inputRef.current?.click()}
-        disabled={uploading === folder}
-        className="bg-red-600 hover:bg-red-500 disabled:opacity-50 px-4 py-2 rounded text-sm font-semibold whitespace-nowrap"
-      >
-        {uploading === folder ? `${progress}%` : label}
-      </button>
-      <input
-        ref={inputRef}
-        type="file"
-        accept={folder === "videos" ? "video/*" : "image/*"}
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) uploadFile(file, folder, onDone);
-          e.target.value = "";
-        }}
-        className="hidden"
-      />
-    </>
-  );
-
   return (
-    <main className="min-h-screen bg-[#0b0b0f] text-white">
-      <nav className="sticky top-0 z-50 flex items-center justify-between px-8 py-4 bg-[#0b0b0f]/90 backdrop-blur border-b border-white/10">
-        <a href="/" className="text-2xl font-black tracking-tight hover:opacity-80 transition">
-          <span className="text-white">TROO</span><span className="text-red-600">FLIX</span>
-        </a>
-        <div className="flex items-center gap-6 text-sm">
-          <a href="/" className="text-white/80 hover:text-white transition">← Back to Home</a>
-          <button
-            onClick={async () => {
-              await fetch("/api/admin-logout", { method: "POST" });
-              window.location.href = "/admin/login";
-            }}
-            className="text-white/60 hover:text-white transition"
-          >
-            Log out
-          </button>
+    <div className="p-8 max-w-5xl">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-1">Overview</h1>
+        <p className="text-white/50 text-sm">Your site at a glance</p>
+      </div>
+
+      {/* Stats grid */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-10">
+        <StatCard label="Videos" value={videoCount} />
+        <StatCard label="Podcasters" value={podcasterCount} />
+        <StatCard label="Subscribers" value={subscribers ?? "—"} />
+        <StatCard label="Unique Visitors" value={stats?.uniqueVisitors ?? "—"} />
+        <StatCard label="Total Page Views" value={stats?.totalViews ?? "—"} />
+        <StatCard label="Views Today" value={stats?.today ?? "—"} />
+      </div>
+
+      {/* Quick actions */}
+      <h2 className="text-lg font-bold mb-4">Quick Actions</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <ActionCard
+          href="/admin/videos"
+          icon={Upload}
+          title="Add a Video"
+          description="Upload a new film, documentary, or podcast episode"
+        />
+        <ActionCard
+          href="/admin/podcasters"
+          icon={Mic}
+          title="Manage Podcasters"
+          description="Add, edit, or remove podcasters on the platform"
+        />
+        <ActionCard
+          href="/admin/videos"
+          icon={Video}
+          title="View All Videos"
+          description="Browse and edit your video catalog"
+        />
+        <ActionCard
+          href="/admin/settings"
+          icon={UserPlus}
+          title="Settings"
+          description="Admin preferences and account info"
+        />
+      </div>
+    </div>
+  );
+}
+
+function StatCard({ label, value }: { label: string; value: number | string }) {
+  return (
+    <div className="bg-[#141418] border border-white/5 rounded-lg p-5">
+      <p className="text-xs text-white/50 mb-2">{label}</p>
+      <p className="text-3xl font-bold text-white">{value}</p>
+    </div>
+  );
+}
+
+function ActionCard({
+  href,
+  icon: Icon,
+  title,
+  description,
+}: {
+  href: string;
+  icon: any;
+  title: string;
+  description: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="bg-[#141418] border border-white/5 rounded-lg p-5 hover:border-white/20 transition group"
+    >
+      <div className="flex items-start gap-4">
+        <div className="bg-red-600/10 rounded-lg p-3">
+          <Icon size={22} className="text-red-500" />
         </div>
-      </nav>
-
-      <div className="max-w-4xl mx-auto p-8">
-        <p className="text-white/50 mb-6">
-          {editing ? `Editing: ${editing.title}` : "Add videos to your catalog"}
-        </p>
-
-        {/* Site Stats */}
-        <div className="mb-10">
-          <h2 className="text-lg font-bold mb-3 text-white/90">📊 Site Stats</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="bg-[#141418] border border-white/5 rounded-lg p-4">
-              <p className="text-xs text-white/50 mb-1">Unique Visitors</p>
-              <p className="text-2xl font-bold text-white">{stats?.uniqueVisitors ?? "—"}</p>
-            </div>
-            <div className="bg-[#141418] border border-white/5 rounded-lg p-4">
-              <p className="text-xs text-white/50 mb-1">Total Page Views</p>
-              <p className="text-2xl font-bold text-white">{stats?.totalViews ?? "—"}</p>
-            </div>
-            <div className="bg-[#141418] border border-white/5 rounded-lg p-4">
-              <p className="text-xs text-white/50 mb-1">Today</p>
-              <p className="text-2xl font-bold text-white">{stats?.today ?? "—"}</p>
-            </div>
-            <div className="bg-[#141418] border border-white/5 rounded-lg p-4">
-              <p className="text-xs text-white/50 mb-1">Last 7 Days</p>
-              <p className="text-2xl font-bold text-white">{stats?.last7Days ?? "—"}</p>
-            </div>
-            <div className="bg-[#141418] border border-white/5 rounded-lg p-4">
-              <p className="text-xs text-white/50 mb-1">Subscribers</p>
-              <p className="text-2xl font-bold text-white">{subscribers ?? "—"}</p>
-            </div>
-            <div className="bg-[#141418] border border-white/5 rounded-lg p-4">
-              <p className="text-xs text-white/50 mb-1">Videos</p>
-              <p className="text-2xl font-bold text-white">{videos.length}</p>
-            </div>
-          </div>
-        </div>
-
-        <form onSubmit={submit} className="bg-[#141418] rounded-lg p-6 space-y-4 mb-10">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
-              <label className="block text-sm text-white/60 mb-1">Title *</label>
-              <input required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
-                className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none" />
-            </div>
-
-            <div className="col-span-2">
-              <label className="block text-sm text-white/60 mb-1">Video File *</label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  required
-                  value={form.bitchuteUrl}
-                  onChange={(e) => setForm({ ...form, bitchuteUrl: e.target.value })}
-                  placeholder="Click Upload, or paste a URL"
-                  className="flex-1 bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none text-sm"
-                />
-                <UploadButton
-                  label="Upload Video"
-                  folder="videos"
-                  inputRef={videoInput}
-                  onDone={(url) => setForm((f) => ({ ...f, bitchuteUrl: url }))}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm text-white/60 mb-1">Type *</label>
-              <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}
-                className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none">
-                {TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm text-white/60 mb-1">Category *</label>
-              <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}
-                className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none">
-                {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
-
-            <div className="flex items-end">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={form.featured} onChange={(e) => setForm({ ...form, featured: e.target.checked })}
-                  className="accent-red-600 w-4 h-4" />
-                <span className="text-sm text-white/80">Feature in Trending Now</span>
-              </label>
-            </div>
-
-            <div className="col-span-2">
-              <label className="block text-sm text-white/60 mb-1">Description</label>
-              <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })}
-                rows={3} className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none" />
-            </div>
-
-            <div className="col-span-2">
-              <label className="block text-sm text-white/60 mb-1">Podcaster</label>
-              <select
-                value={form.creatorId ?? ""}
-                onChange={(e) => setForm({ ...form, creatorId: e.target.value ? Number(e.target.value) : null })}
-                className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none"
-              >
-                <option value="">— None —</option>
-                {creators.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="col-span-2">
-              <label className="block text-sm text-white/60 mb-1">Poster (portrait image)</label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={form.posterUrl}
-                  onChange={(e) => setForm({ ...form, posterUrl: e.target.value })}
-                  placeholder="Click Upload, or paste a URL"
-                  className="flex-1 bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none text-sm"
-                />
-                <UploadButton
-                  label="Upload"
-                  folder="posters"
-                  inputRef={posterInput}
-                  onDone={(url) => setForm((f) => ({ ...f, posterUrl: url }))}
-                />
-              </div>
-            </div>
-
-            <div className="col-span-2">
-              <label className="block text-sm text-white/60 mb-1">Backdrop (landscape image, for hero)</label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={form.backdropUrl}
-                  onChange={(e) => setForm({ ...form, backdropUrl: e.target.value })}
-                  placeholder="Click Upload, or paste a URL"
-                  className="flex-1 bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none text-sm"
-                />
-                <UploadButton
-                  label="Upload"
-                  folder="backdrops"
-                  inputRef={backdropInput}
-                  onDone={(url) => setForm((f) => ({ ...f, backdropUrl: url }))}
-                />
-              </div>
-            </div>
-          </div>
-
-          {uploading && (
-            <div className="bg-black/40 border border-white/10 rounded p-3">
-              <p className="text-sm text-white/70 mb-2">Uploading {uploading}… {progress}%</p>
-              <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-                <div className="h-full bg-red-600 transition-all" style={{ width: `${progress}%` }} />
-              </div>
-            </div>
-          )}
-
-          <div className="flex items-center gap-4">
-            <button
-              type="submit"
-              disabled={saving || !!uploading}
-              className="bg-red-600 hover:bg-red-500 disabled:opacity-50 font-semibold px-6 py-2 rounded transition"
-            >
-              {saving ? (editing ? "Updating…" : "Adding…") : (editing ? "Save Changes" : "Add Video")}
-            </button>
-            {editing && (
-              <button type="button" onClick={resetForm} className="text-white/60 hover:text-white text-sm transition">
-                Cancel edit
-              </button>
-            )}
-            {status && <span className="text-sm">{status}</span>}
-          </div>
-        </form>
-
-        <h2 className="text-xl font-bold mb-4">Catalog ({videos.length})</h2>
-        <div className="space-y-2">
-          {videos.map((v) => (
-            <div key={v.id} className={`flex items-center gap-4 rounded p-3 transition ${editing?.id === v.id ? "bg-red-950/40 border border-red-600" : "bg-[#141418]"}`}>
-              <img src={v.posterUrl} alt="" className="w-12 h-16 object-cover rounded" />
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold truncate">
-                  {v.title}
-                  {v.featured && <span className="text-red-500 text-xs ml-2">★ FEATURED</span>}
-                </p>
-                <p className="text-sm text-white/50 truncate">{v.type} · {v.category} · {v.year}</p>
-              </div>
-              <button onClick={() => startEdit(v)} className="text-blue-400 hover:text-blue-300 text-sm px-3 py-1 border border-blue-400/40 rounded hover:border-blue-300 transition">
-                Edit
-              </button>
-              <button onClick={() => remove(v.id)} className="text-red-500 hover:text-red-400 text-sm px-3 py-1 border border-red-500/40 rounded hover:border-red-400 transition">
-                Delete
-              </button>
-            </div>
-          ))}
-          {videos.length === 0 && <p className="text-white/40">No videos yet. Add one above.</p>}
-        </div>
-
-        {/* ============ PODCASTERS ============ */}
-        <div className="mt-16 border-t border-white/10 pt-10">
-          <h2 className="text-xl font-bold mb-4">🎙️ Podcasters</h2>
-
-          <form onSubmit={submitCreator} className="bg-[#141418] rounded-lg p-6 space-y-4 mb-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="col-span-2">
-                <label className="block text-sm text-white/60 mb-1">Name *</label>
-                <input
-                  required
-                  value={creatorForm.name}
-                  onChange={(e) => setCreatorForm({ ...creatorForm, name: e.target.value })}
-                  className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none"
-                />
-              </div>
-
-              <div className="col-span-2">
-                <label className="block text-sm text-white/60 mb-1">Photo</label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={creatorForm.photoUrl}
-                    onChange={(e) => setCreatorForm({ ...creatorForm, photoUrl: e.target.value })}
-                    placeholder="Click Upload, or paste a URL"
-                    className="flex-1 bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none text-sm"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => photoInput.current?.click()}
-                    disabled={uploadingPhoto}
-                    className="bg-red-600 hover:bg-red-500 disabled:opacity-50 px-4 py-2 rounded text-sm font-semibold whitespace-nowrap"
-                  >
-                    {uploadingPhoto ? `${photoProgress}%` : "Upload"}
-                  </button>
-                  <input
-                    ref={photoInput}
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) uploadCreatorPhoto(file);
-                      e.target.value = "";
-                    }}
-                    className="hidden"
-                  />
-                </div>
-                {creatorForm.photoUrl && (
-                  <img
-                    src={creatorForm.photoUrl}
-                    alt="preview"
-                    className="mt-3 w-20 h-20 object-cover rounded-full border border-white/10"
-                  />
-                )}
-              </div>
-
-              <div className="col-span-2">
-                <label className="block text-sm text-white/60 mb-1">Hero Backdrop (landscape image for profile page)</label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={creatorForm.heroBackdropUrl}
-                    onChange={(e) => setCreatorForm({ ...creatorForm, heroBackdropUrl: e.target.value })}
-                    placeholder="Click Upload, or paste a URL"
-                    className="flex-1 bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none text-sm"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => heroBackdropInput.current?.click()}
-                    disabled={uploadingPhoto}
-                    className="bg-red-600 hover:bg-red-500 disabled:opacity-50 px-4 py-2 rounded text-sm font-semibold whitespace-nowrap"
-                  >
-                    Upload
-                  </button>
-                  <input
-                    ref={heroBackdropInput}
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        setUploadingPhoto(true);
-                        setPhotoProgress(0);
-                        fetch("/api/upload", {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({
-                            filename: file.name,
-                            contentType: file.type || "image/jpeg",
-                            folder: "creators",
-                          }),
-                        })
-                          .then((r) => r.json())
-                          .then(({ signedUrl, publicUrl }) => {
-                            const xhr = new XMLHttpRequest();
-                            xhr.open("PUT", signedUrl, true);
-                            xhr.setRequestHeader("Content-Type", file.type || "image/jpeg");
-                            xhr.upload.onprogress = (ev) => {
-                              if (ev.lengthComputable) setPhotoProgress(Math.round((ev.loaded / ev.total) * 100));
-                            };
-                            xhr.onload = () => {
-                              if (xhr.status >= 200 && xhr.status < 300) {
-                                setCreatorForm((f) => ({ ...f, heroBackdropUrl: publicUrl }));
-                                setCreatorStatus("✅ Backdrop uploaded");
-                                setTimeout(() => setCreatorStatus(""), 2000);
-                              }
-                              setUploadingPhoto(false);
-                              setPhotoProgress(0);
-                            };
-                            xhr.onerror = () => {
-                              setUploadingPhoto(false);
-                              setPhotoProgress(0);
-                            };
-                            xhr.send(file);
-                          })
-                          .catch(() => {
-                            setUploadingPhoto(false);
-                            setPhotoProgress(0);
-                          });
-                      }
-                      e.target.value = "";
-                    }}
-                    className="hidden"
-                  />
-                </div>
-                {creatorForm.heroBackdropUrl && (
-                  <img
-                    src={creatorForm.heroBackdropUrl}
-                    alt="backdrop preview"
-                    className="mt-3 w-full max-w-md h-24 object-cover rounded border border-white/10"
-                  />
-                )}
-              </div>
-
-              <div className="col-span-2">
-                <label className="block text-sm text-white/60 mb-1">Description</label>
-                <textarea
-                  value={creatorForm.description}
-                  onChange={(e) => setCreatorForm({ ...creatorForm, description: e.target.value })}
-                  rows={3}
-                  className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <button
-                type="submit"
-                disabled={savingCreator || uploadingPhoto}
-                className="bg-red-600 hover:bg-red-500 disabled:opacity-50 font-semibold px-6 py-2 rounded transition"
-              >
-                {savingCreator ? (editingCreator ? "Updating…" : "Adding…") : (editingCreator ? "Save Changes" : "Add Podcaster")}
-              </button>
-              {editingCreator && (
-                <button type="button" onClick={resetCreatorForm} className="text-white/60 hover:text-white text-sm">
-                  Cancel edit
-                </button>
-              )}
-              {creatorStatus && <span className="text-sm">{creatorStatus}</span>}
-            </div>
-          </form>
-
-          <h3 className="text-lg font-bold mb-3">Podcasters ({creators.length})</h3>
-          <div className="space-y-2">
-            {creators.map((c) => (
-              <div
-                key={c.id}
-                className={`flex items-center gap-4 rounded p-3 transition ${
-                  editingCreator?.id === c.id ? "bg-red-950/40 border border-red-600" : "bg-[#141418]"
-                }`}
-              >
-                {c.photoUrl ? (
-                  <img src={c.photoUrl} alt={c.name} className="w-12 h-12 object-cover rounded-full" />
-                ) : (
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-white font-bold">
-                    {c.name[0]?.toUpperCase() || "?"}
-                  </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold truncate">{c.name}</p>
-                  <p className="text-sm text-white/50 truncate">{c.description || "No description"}</p>
-                </div>
-                <a
-                  href={`/admin/podcaster/${c.slug}`}
-                  className="text-white bg-red-600 hover:bg-red-500 text-sm px-3 py-1 rounded transition font-semibold"
-                >
-                  Manage Videos
-                </a>
-                <button
-                  onClick={() => startEditCreator(c)}
-                  className="text-blue-400 hover:text-blue-300 text-sm px-3 py-1 border border-blue-400/40 rounded hover:border-blue-300 transition"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => removeCreator(c.id)}
-                  className="text-red-500 hover:text-red-400 text-sm px-3 py-1 border border-red-500/40 rounded hover:border-red-400 transition"
-                >
-                  Delete
-                </button>
-              </div>
-            ))}
-            {creators.length === 0 && <p className="text-white/40">No podcasters yet. Add one above.</p>}
-          </div>
+        <div>
+          <p className="font-bold mb-1 group-hover:text-red-500 transition">{title}</p>
+          <p className="text-sm text-white/50">{description}</p>
         </div>
       </div>
-    </main>
+    </Link>
   );
 }
