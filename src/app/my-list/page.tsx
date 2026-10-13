@@ -136,13 +136,7 @@ export default function MyListPage() {
                   </div>
                 </div>
                 <div className="absolute top-2 right-2 z-10">
-                  <SaveButton
-                    videoId={video.id}
-                    size={22}
-                    onRemoved={() => {
-                      setVideos((prev) => prev.filter((v) => v.id !== video.id));
-                    }}
-                  />
+                  <SaveButton videoId={video.id} size={22} />
                 </div>
                 <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black via-black/70 to-transparent pointer-events-none">
                   <p className="text-xs md:text-sm font-bold leading-tight line-clamp-2">

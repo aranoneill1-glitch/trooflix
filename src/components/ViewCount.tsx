@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Eye } from "lucide-react";
 
 let cachedCounts: Record<number, number> | null = null;
 let inflight: Promise<Record<number, number>> | null = null;
@@ -46,7 +47,7 @@ function formatCount(n: number): string {
   return String(n);
 }
 
-export default function ViewCount({ videoId }: { videoId: number }) {
+export default function ViewCount({ videoId, showIcon = false }: { videoId: number; showIcon?: boolean }) {
   const [count, setCount] = useState<number | null>(null);
 
   useEffect(() => {
@@ -70,8 +71,11 @@ export default function ViewCount({ videoId }: { videoId: number }) {
   if (count === 0) return null;
 
   return (
-    <span className="text-xs text-white/50">
-      {formatCount(count)} {count === 1 ? "view" : "views"}
+    <span className="flex items-center gap-1.5">
+      {showIcon && <Eye size={14} />}
+      <span>
+        {formatCount(count)} {count === 1 ? "view" : "views"}
+      </span>
     </span>
   );
 }

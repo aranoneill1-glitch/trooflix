@@ -1,34 +1,38 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Check, X } from "lucide-react";
+import { Plus, Check } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 
 let cachedIds: number[] | null = null;
+let cachedUserId: string | null | undefined = undefined;
 let inflight: Promise<number[]> | null = null;
 const listeners = new Set<(ids: number[]) => void>();
 
 async function getUserId(): Promise<string | null> {
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  return user?.id || null;
+  if (cachedUserId !== undefined) return cachedUserId;
+  try {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    cachedUserId = user?.id || null;
+    return cachedUserId;
+  } catch {
+    cachedUserId = null;
+    return null;
+  }
 }
-
-let cachedUserId: string | null | undefined = undefined;
 
 async function fetchIds(): Promise<number[]> {
   if (cachedIds) return cachedIds;
   if (inflight) return inflight;
 
   inflight = (async () => {
-    if (cachedUserId === undefined) {
-      cachedUserId = await getUserId();
-    }
-    if (!cachedUserId) {
+    const userId = await getUserId();
+    if (!userId) {
       inflight = null;
       return [];
     }
-    const r = await fetch(`/api/my-list?user_id=${cachedUserId}`);
+    const r = await fetch(`/api/my-list?user_id=${userId}`);
     const d = await r.json();
     const ids = Array.isArray(d.ids) ? d.ids : [];
     cachedIds = ids;
@@ -47,16 +51,14 @@ function setIds(ids: number[]) {
 
 export default function SaveButton({
   videoId,
-  size = 28,
+  size = 20,
   variant = "icon",
-  onRemoved,
 }: {
   videoId: number;
   size?: number;
-  variant?: "icon" | "pill";
-  onRemoved?: () => void;
+  variant?: "icon" | "labeled";
 }) {
-  const [saved, setSaved] = useState<boolean>(false);
+  const [saved, setSaved] = useState(false);
   const [checking, setChecking] = useState(true);
   const [showSignIn, setShowSignIn] = useState(false);
 
@@ -84,64 +86,68 @@ export default function SaveButton({
     e.stopPropagation();
     e.preventDefault();
 
-    if (saved) {
-      setSaved(false);
-      const current = cachedIds || [];
-      setIds(current.filter((id) => id !== videoId));
+    const userId = await getUserId();
+    if (!userId) {
+      setShowSignIn(true);
+      return;
+    }
 
-      const res = await fetch(`/api/my-list?user_id=${cachedUserId}&videoId=${videoId}`, {
-        method: "DELETE",
-      });
-      if (!res.ok && res.status === 401) {
-        setIds(current);
-        setSaved(true);
-        setShowSignIn(true);
-      } else if (res.ok && onRemoved) {
-        onRemoved();
-      }
-    } else {
-      setSaved(true);
-      const current = cachedIds || [];
-      setIds([...current, videoId]);
+    const wasSaved = saved;
+    setSaved(!wasSaved);
+    const current = cachedIds || [];
+    setIds(
+      wasSaved
+        ? current.filter((id) => id !== videoId)
+        : [...current, videoId]
+    );
 
-      if (cachedUserId === undefined) {
-        cachedUserId = await getUserId();
-      }
-      const res = await fetch("/api/my-list", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: cachedUserId, videoId }),
-      });
-      if (!res.ok) {
-        if (res.status === 401) {
-          setIds(current);
-          setSaved(false);
-          setShowSignIn(true);
-        } else {
-          setIds(current);
-          setSaved(false);
-        }
-      }
+    const url = wasSaved
+      ? `/api/my-list?user_id=${userId}&videoId=${videoId}`
+      : "/api/my-list";
+    const method = wasSaved ? "DELETE" : "POST";
+    const body = wasSaved
+      ? undefined
+      : JSON.stringify({ userId, videoId });
+
+    const res = await fetch(url, {
+      method,
+      headers: body ? { "Content-Type": "application/json" } : undefined,
+      body,
+    });
+
+    if (!res.ok && res.status === 401) {
+      setIds(current);
+      setSaved(wasSaved);
+      setShowSignIn(true);
+    } else if (!res.ok) {
+      setIds(current);
+      setSaved(wasSaved);
     }
   };
 
   if (checking) {
-    return <div style={{ width: size, height: size }} />;
+    return variant === "labeled" ? (
+      <button className="bg-white/10 text-white/50 px-5 py-2 rounded text-sm">
+        Add to My List
+      </button>
+    ) : (
+      <div style={{ width: size, height: size }} />
+    );
   }
 
   const button =
-    variant === "pill" ? (
+    variant === "labeled" ? (
       <button
         onClick={toggle}
-        className={`flex items-center gap-2 border-2 rounded-full px-4 py-2 transition ${
+        className={`flex items-center gap-2 px-5 py-2 rounded text-sm font-semibold transition ${
           saved
-            ? "border-white bg-white/10 text-white"
-            : "border-white/60 hover:border-white text-white"
+            ? "bg-white/10 text-white"
+            : "bg-white/10 text-white hover:bg-white/20"
         }`}
         title={saved ? "Remove from My List" : "Add to My List"}
       >
-        {saved ? <Check size={20} /> : <Plus size={20} />}
-        <span>{saved ? "In My List" : "My List"}</span>
+        {saved ? <Check size={16} /> : <Plus size={16} />}
+        {saved ? "In My List" : "Add to My List"}
       </button>
     ) : (
       <button
@@ -154,7 +160,11 @@ export default function SaveButton({
         title={saved ? "Remove from My List" : "Add to My List"}
         style={{ lineHeight: 0 }}
       >
-        {saved ? <Check size={size} strokeWidth={3} /> : <Plus size={size} strokeWidth={3} />}
+        {saved ? (
+          <Check size={size} strokeWidth={3} />
+        ) : (
+          <Plus size={size} strokeWidth={3} />
+        )}
       </button>
     );
 
@@ -170,18 +180,10 @@ export default function SaveButton({
             className="bg-[#141418] border border-white/10 rounded-lg p-8 max-w-sm w-full"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-start justify-between mb-4">
-              <h3 className="text-xl font-bold">Sign in to save</h3>
-              <button
-                onClick={() => setShowSignIn(false)}
-                className="text-white/50 hover:text-white"
-              >
-                <X size={20} />
-              </button>
-            </div>
+            <h3 className="text-xl font-bold mb-4">Sign in to save</h3>
             <p className="text-white/70 mb-6 text-sm leading-relaxed">
-              Create an account or sign in to save videos to your list. Your
-              list syncs across all your devices.
+              Sign in to save videos to your list. Your list syncs across all
+              your devices.
             </p>
             <div className="flex gap-3">
               <a

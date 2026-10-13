@@ -174,16 +174,14 @@ export default function FeedPage() {
                     >
                       <Info size={16} /> More Info
                     </button>
-                    <div className="ml-auto flex items-center gap-3">
-                      <LikeButton videoId={video.id} size={20} />
-                    </div>
-                    <div className="ml-4">
-                      <SaveButton videoId={video.id} size={28} />
-                    </div>
+                    <SaveButton videoId={video.id} variant="labeled" />
                   </div>
 
-                  <div className="flex items-center gap-3 text-xs text-white/50 mt-3">
-                    <ViewCount videoId={video.id} />
+                  {/* Metadata footer */}
+                  <div className="flex items-center gap-4 text-xs text-white/50 mt-4 pt-4 border-t border-white/5">
+                    <ViewCount videoId={video.id} showIcon />
+                    <span className="text-white/20">·</span>
+                    <LikeButton videoId={video.id} size={16} showCount />
                   </div>
                 </div>
               </article>
