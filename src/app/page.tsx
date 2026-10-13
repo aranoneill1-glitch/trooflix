@@ -223,6 +223,7 @@ export default function Home() {
 
         {!filtered && !showingFiltered && (
           <>
+            <CollectionsRow />
             {progressList.length > 0 && (() => {
                 const cw = progressList
                   .map((p) => {
