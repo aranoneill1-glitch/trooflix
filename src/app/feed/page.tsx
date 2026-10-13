@@ -161,7 +161,7 @@ export default function FeedPage() {
                     </p>
                   )}
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <button
                       onClick={() => setPlaying(video)}
                       className="flex items-center gap-2 bg-white text-black font-bold px-5 py-2 rounded text-sm hover:bg-white/80 transition"
@@ -174,9 +174,16 @@ export default function FeedPage() {
                     >
                       <Info size={16} /> More Info
                     </button>
+                    <div className="ml-auto flex items-center gap-3">
+                      <LikeButton videoId={video.id} size={20} />
+                    </div>
                     <div className="ml-4">
                       <SaveButton videoId={video.id} size={28} />
                     </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 text-xs text-white/50 mt-3">
+                    <ViewCount videoId={video.id} />
                   </div>
                 </div>
               </article>
