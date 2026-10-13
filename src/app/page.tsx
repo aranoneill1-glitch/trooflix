@@ -1,5 +1,7 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
+
 if (typeof window !== "undefined") {
   window.onerror = function(msg, url, line, col, err) {
     document.body.innerHTML = '<div style="background:#000;color:#f00;padding:20px;font-family:monospace;font-size:14px;white-space:pre-wrap;">ERROR: ' + msg + '\n\nLine: ' + line + ':' + col + '\n\nURL: ' + url + '</div>';
@@ -66,8 +68,15 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState("Home");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const searchParams = useSearchParams();
   const [searchOpen, setSearchOpen] = useState(false);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState<string>("");
+
+  // Sync from URL on mount and when URL changes
+  useEffect(() => {
+    const q = searchParams.get("q") || "";
+    setSearch(q);
+  }, [searchParams]);
   const [scrolled, setScrolled] = useState(false);
   const [isTV, setIsTV] = useState(false);
 
