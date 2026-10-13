@@ -83,7 +83,7 @@ export default function UserMenu() {
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setOpen(!open)}
-        className="text-white/90 hover:text-white transition"
+        className="text-red-500 hover:text-red-400 transition"
         title={user.email}
       >
         <User size={22} />
