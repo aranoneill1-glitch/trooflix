@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Play, Info, ChevronLeft, ChevronRight, Plus, ThumbsUp, X } from "lucide-react";
 import TopBar from "@/components/TopBar";
+import { useSearch } from "@/context/SearchContext";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import BitChutePlayer from "@/components/BitChutePlayer";
 import VideoPlayer from "@/components/VideoPlayer";
@@ -27,6 +28,7 @@ type Video = {
 
 export default function MoviesPage() {
   const [videos, setVideos] = useState<Video[]>([]);
+  const { search } = useSearch();
   const [selected, setSelected] = useState<Video | null>(null);
   const [playing, setPlaying] = useState<Video | null>(null);
   const [loaded, setLoaded] = useState(false);
@@ -43,11 +45,15 @@ export default function MoviesPage() {
       });
   }, []);
 
-  const hero = videos.find((v) => v.featured) || videos[0];
-  const newReleases = [...videos].sort((a, b) => b.id - a.id).slice(0, 20);
-  const byCategory = Array.from(new Set(videos.map((v) => v.category))).map((cat) => ({
+  const searchFiltered = search
+    ? videos.filter((v) => v.title.toLowerCase().includes(search.toLowerCase()))
+    : videos;
+
+  const hero = search ? searchFiltered[0] : videos.find((v) => v.featured) || videos[0];
+  const newReleases = [...searchFiltered].sort((a, b) => b.id - a.id).slice(0, 20);
+  const byCategory = Array.from(new Set(searchFiltered.map((v) => v.category))).map((cat) => ({
     title: cat,
-    items: videos.filter((v) => v.category === cat),
+    items: searchFiltered.filter((v) => v.category === cat),
   }));
 
   return (

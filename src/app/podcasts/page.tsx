@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import TopBar from "@/components/TopBar";
+import { useSearch } from "@/context/SearchContext";
 import MobileBottomNav from "@/components/MobileBottomNav";
 
 type Creator = {
@@ -15,6 +16,7 @@ type Creator = {
 
 export default function PodcastsPage() {
   const [creators, setCreators] = useState<Creator[]>([]);
+  const { search } = useSearch();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -41,7 +43,9 @@ export default function PodcastsPage() {
         )}
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-          {creators.map((c) => (
+          {creators
+            .filter((c) => !search || c.name.toLowerCase().includes(search.toLowerCase()))
+            .map((c) => (
             <Link
               key={c.id}
               href={`/podcaster/${c.slug}`}
