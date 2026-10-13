@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Search, Bell, Menu } from "lucide-react";
+import { useSearch } from "@/context/SearchContext";
+import { Search, Bell, Menu, X } from "lucide-react";
 import UserMenu from "@/components/UserMenu";
 
 const NAV_TABS = [
@@ -20,10 +21,10 @@ type Props = {
 export default function TopBar({ onMenu }: Props) {
   const pathname = usePathname();
   const router = useRouter();
+  const { search, setSearch, clearSearch } = useSearch();
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [search, setSearch] = useState("");
-
+  
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", onScroll);
@@ -98,6 +99,18 @@ export default function TopBar({ onMenu }: Props) {
               placeholder="Titles, categories"
               className="bg-transparent outline-none text-sm w-32 md:w-64 text-white"
             />
+            {search && (
+              <button
+                onClick={() => {
+                  clearSearch();
+                  setSearchOpen(false);
+                }}
+                className="text-white/60 hover:text-white transition"
+                aria-label="Clear search"
+              >
+                <X size={16} />
+              </button>
+            )}
           </div>
         ) : (
           <button
