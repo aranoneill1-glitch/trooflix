@@ -259,7 +259,9 @@ export default function Home() {
             )}
           </>
         )}
-      </div>
+          </div>
+        </>
+      )}
 
       {/* ============ MOBILE BOTTOM NAV ============ */}
       {/* TV-MODE-BOTTOM-NAV: hide on TV */}
