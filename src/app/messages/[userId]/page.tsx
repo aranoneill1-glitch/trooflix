@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, Send } from "lucide-react";
+import { ChevronLeft, Send, Smile, Check, CheckCheck } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 
 type Message = {
@@ -22,17 +22,31 @@ type Profile = {
   avatar_url: string | null;
 };
 
-function timeShort(iso: string): string {
+const POLL_MS = 3000;
+
+function dayKey(iso: string): string {
   const d = new Date(iso);
-  const now = new Date();
-  const sameDay =
-    d.getFullYear() === now.getFullYear() &&
-    d.getMonth() === now.getMonth() &&
-    d.getDate() === now.getDate();
-  if (sameDay) {
-    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  }
-  return d.toLocaleDateString([], { month: "short", day: "numeric" });
+  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+}
+
+function dayLabel(iso: string): string {
+  const d = new Date(iso);
+  const today = new Date();
+  const yest = new Date();
+  yest.setDate(today.getDate() - 1);
+
+  if (dayKey(iso) === dayKey(today.toISOString())) return "TODAY";
+  if (dayKey(iso) === dayKey(yest.toISOString())) return "YESTERDAY";
+  return d
+    .toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" })
+    .toUpperCase();
+}
+
+function timeShort(iso: string): string {
+  return new Date(iso).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 export default function ThreadPage() {
@@ -49,7 +63,9 @@ export default function ThreadPage() {
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const scrollerRef = useRef<HTMLDivElement>(null);
 
+  // Auth
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
@@ -61,6 +77,7 @@ export default function ThreadPage() {
     });
   }, [router]);
 
+  // Initial load: profile + messages
   useEffect(() => {
     if (!me || !otherId) return;
 
@@ -74,6 +91,41 @@ export default function ThreadPage() {
     });
   }, [me, otherId]);
 
+  // Poll every 3s while visible — updates list only
+  useEffect(() => {
+    if (!me || !otherId) return;
+
+    const tick = () => {
+      if (document.hidden) return;
+      fetch(`/api/dm?user_id=${me}&with=${otherId}`)
+        .then((r) => r.json())
+        .then((d) => {
+          const incoming: Message[] = Array.isArray(d.messages) ? d.messages : [];
+          setMessages((prev) => {
+            // Merge: keep optimistic (negative ids) that aren't yet in incoming
+            const incomingIds = new Set(incoming.map((m) => m.id));
+            const stillPending = prev.filter(
+              (m) => m.id < 0 && !incomingIds.has(m.id)
+            );
+            return [...incoming, ...stillPending];
+          });
+        })
+        .catch(() => {});
+    };
+
+    const interval = setInterval(tick, POLL_MS);
+    const onVisible = () => {
+      if (!document.hidden) tick();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [me, otherId]);
+
+  // Auto-scroll on new messages
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "auto" });
   }, [messages.length]);
@@ -128,11 +180,42 @@ export default function ThreadPage() {
   const handle = other?.username ? `@${other.username}` : "User";
   const name = other?.display_name || handle;
 
+  // Build render list with date separators
+  const blocks: Array<
+    | { kind: "day"; key: string; label: string }
+    | { kind: "msg"; msg: Message; firstOfGroup: boolean; lastOfGroup: boolean }
+  > = [];
+  let lastDay = "";
+  messages.forEach((m, i) => {
+    const k = dayKey(m.created_at);
+    if (k !== lastDay) {
+      blocks.push({ kind: "day", key: k, label: dayLabel(m.created_at) });
+      lastDay = k;
+    }
+    const prev = messages[i - 1];
+    const next = messages[i + 1];
+    const firstOfGroup = !prev || prev.sender_id !== m.sender_id || dayKey(prev.created_at) !== k;
+    const lastOfGroup = !next || next.sender_id !== m.sender_id || dayKey(next.created_at) !== k;
+    blocks.push({ kind: "msg", msg: m, firstOfGroup, lastOfGroup });
+  });
+
+  // Determine last outgoing message (to render ticks only there)
+  let lastMineId: number | null = null;
+  for (let i = messages.length - 1; i >= 0; i--) {
+    if (messages[i].sender_id === me) {
+      lastMineId = messages[i].id;
+      break;
+    }
+  }
+
   return (
-    <main className="min-h-screen bg-black text-white flex flex-col">
+    <main className="min-h-screen text-white flex flex-col" style={{ background: "#0b141a" }}>
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-black/95 backdrop-blur border-b border-white/10">
-        <div className="flex items-center gap-3 px-3 py-3 md:px-6">
+      <header
+        className="fixed top-0 left-0 right-0 z-50 border-b border-black/40"
+        style={{ background: "#1f2c33" }}
+      >
+        <div className="flex items-center gap-3 px-3 py-2.5 md:px-6">
           <button
             onClick={() => router.push("/messages")}
             className="p-1.5 -ml-1.5 rounded-full hover:bg-white/10 transition"
@@ -142,7 +225,7 @@ export default function ThreadPage() {
           </button>
 
           <Link href={`/u/${otherId}`} className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center overflow-hidden flex-shrink-0">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center overflow-hidden flex-shrink-0">
               {other?.avatar_url ? (
                 <img src={other.avatar_url} alt="" className="w-full h-full object-cover" />
               ) : (
@@ -153,97 +236,151 @@ export default function ThreadPage() {
             </div>
             <div className="min-w-0">
               <p className="font-semibold text-sm truncate">{name}</p>
-              <p className="text-xs text-white/50 truncate">{handle}</p>
+              <p className="text-xs text-white/50 truncate">
+                {other?.username ? `@${other.username}` : "last seen recently"}
+              </p>
             </div>
           </Link>
         </div>
       </header>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto pt-20 pb-28 px-3 md:px-6 max-w-3xl w-full mx-auto">
-        {loading && <p className="text-white/40 text-center py-12">Loading…</p>}
+      <div
+        ref={scrollerRef}
+        className="flex-1 overflow-y-auto pt-20 pb-24 px-3 md:px-6"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 20% 30%, rgba(255,255,255,0.02) 0, transparent 40%), radial-gradient(circle at 80% 70%, rgba(255,255,255,0.02) 0, transparent 40%)",
+        }}
+      >
+        <div className="max-w-3xl w-full mx-auto">
+          {loading && (
+            <p className="text-white/40 text-center py-12">Loading…</p>
+          )}
 
-        {!loading && messages.length === 0 && (
-          <div className="text-center py-16">
-            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center overflow-hidden">
-              {other?.avatar_url ? (
-                <img src={other.avatar_url} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-white font-black text-2xl">
-                  {(name[0] || "?").toUpperCase()}
-                </span>
-              )}
+          {!loading && messages.length === 0 && (
+            <div className="text-center py-16">
+              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center overflow-hidden">
+                {other?.avatar_url ? (
+                  <img src={other.avatar_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-white font-black text-2xl">
+                    {(name[0] || "?").toUpperCase()}
+                  </span>
+                )}
+              </div>
+              <p className="font-semibold mb-1">{name}</p>
+              <p className="text-white/50 text-sm">
+                Say hi — this is the start of your conversation.
+              </p>
             </div>
-            <p className="font-semibold mb-1">{name}</p>
-            <p className="text-white/50 text-sm">
-              Say hi — this is the start of your conversation.
-            </p>
-          </div>
-        )}
+          )}
 
-        {messages.map((m, i) => {
-          const mine = m.sender_id === me;
-          const showAvatar =
-            !mine &&
-            (i === 0 || messages[i - 1].sender_id !== m.sender_id);
-          return (
-            <div
-              key={m.id}
-              className={`flex items-end gap-2 mb-1 ${mine ? "justify-end" : "justify-start"}`}
-            >
-              {!mine && (
-                <div className="w-7 h-7 flex-shrink-0">
-                  {showAvatar && (
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center overflow-hidden">
-                      {other?.avatar_url ? (
-                        <img src={other.avatar_url} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-white text-[10px] font-bold">
-                          {(name[0] || "?").toUpperCase()}
-                        </span>
-                      )}
-                    </div>
-                  )}
+          {blocks.map((b) => {
+            if (b.kind === "day") {
+              return (
+                <div key={`d-${b.key}`} className="flex justify-center my-4">
+                  <span className="text-[10px] font-semibold tracking-wider text-white/60 bg-white/5 px-3 py-1 rounded-full">
+                    {b.label}
+                  </span>
                 </div>
-              )}
+              );
+            }
 
+            const m = b.msg;
+            const mine = m.sender_id === me;
+            const showTicks = mine && m.id === lastMineId;
+            const read = !!m.read_at;
+            const tailCorner = mine
+              ? b.firstOfGroup
+                ? "rounded-tr-sm"
+                : ""
+              : b.firstOfGroup
+              ? "rounded-tl-sm"
+              : "";
+
+            return (
               <div
-                className={`max-w-[75%] md:max-w-[65%] px-3.5 py-2 rounded-2xl text-sm leading-relaxed break-words ${
-                  mine
-                    ? "bg-red-600 text-white rounded-br-sm"
-                    : "bg-white/10 text-white rounded-bl-sm"
+                key={m.id}
+                className={`flex ${mine ? "justify-end" : "justify-start"} ${
+                  b.lastOfGroup ? "mb-1.5" : "mb-0.5"
                 }`}
               >
-                {m.body}
-                <span className="block text-[10px] opacity-60 mt-1 text-right">
-                  {timeShort(m.created_at)}
-                </span>
-              </div>
-            </div>
-          );
-        })}
+                <div
+                  className={`relative max-w-[78%] md:max-w-[65%] px-2.5 py-1.5 text-[14px] leading-[1.35] break-words shadow-sm ${
+                    mine
+                      ? "bg-[#dc2626] text-white"
+                      : "bg-[#202c33] text-white"
+                  } rounded-md ${tailCorner}`}
+                >
+                  {/* Bubble tail */}
+                  {b.firstOfGroup && (
+                    <span
+                      className={`absolute top-0 w-2 h-3 ${
+                        mine
+                          ? "-right-[6px] bg-[#dc2626]"
+                          : "-left-[6px] bg-[#202c33]"
+                      }`}
+                      style={{
+                        clipPath: mine
+                          ? "polygon(0 0, 100% 0, 0 100%)"
+                          : "polygon(0 0, 100% 0, 100% 100%)",
+                      }}
+                    />
+                  )}
 
-        <div ref={bottomRef} />
+                  <span className="whitespace-pre-wrap">{m.body}</span>
+
+                  {/* Timestamp + ticks — inline bottom-right */}
+                  <span className="inline-flex items-center gap-1 float-right ml-2 mt-1 text-[10px] text-white/70 translate-y-[2px]">
+                    {timeShort(m.created_at)}
+                    {showTicks && (
+                      read ? (
+                        <CheckCheck size={14} className="text-sky-300" />
+                      ) : (
+                        <CheckCheck size={14} className="text-white/70" />
+                      )
+                    )}
+                  </span>
+                  <span className="clear-both" />
+                </div>
+              </div>
+            );
+          })}
+
+          <div ref={bottomRef} />
+        </div>
       </div>
 
       {/* Composer */}
-      <div className="fixed bottom-0 left-0 right-0 bg-black/95 backdrop-blur border-t border-white/10">
-        <div className="max-w-3xl mx-auto px-3 md:px-6 py-3 flex items-end gap-2">
+      <div
+        className="fixed bottom-0 left-0 right-0 border-t border-black/40"
+        style={{ background: "#1f2c33" }}
+      >
+        <div className="max-w-3xl mx-auto px-2 md:px-4 py-2 flex items-end gap-2">
+          <button
+            className="p-2 text-white/70 hover:text-white transition flex-shrink-0"
+            aria-label="Emoji"
+          >
+            <Smile size={22} />
+          </button>
+
           <textarea
             ref={inputRef}
             value={body}
             onChange={(e) => setBody(e.target.value)}
             onKeyDown={onKeyDown}
-            placeholder="Message…"
+            placeholder="Message"
             rows={1}
             maxLength={2000}
-            className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-2.5 outline-none focus:border-white/30 resize-none max-h-32"
+            className="flex-1 bg-[#2a3942] border-none rounded-2xl px-3.5 py-2.5 outline-none resize-none max-h-32 placeholder:text-white/40"
             style={{ minHeight: "40px", fontSize: "16px" }}
           />
+
           <button
             onClick={send}
             disabled={sending || !body.trim()}
-            className="bg-red-600 hover:bg-red-500 disabled:opacity-40 disabled:hover:bg-red-600 rounded-full p-2.5 transition flex-shrink-0"
+            className="w-11 h-11 flex items-center justify-center bg-[#dc2626] hover:bg-red-500 disabled:opacity-40 disabled:hover:bg-[#dc2626] rounded-full transition flex-shrink-0"
             aria-label="Send"
           >
             <Send size={18} />
