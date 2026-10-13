@@ -1,15 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Play, Plus } from "lucide-react";
+import { ArrowLeft, Play } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import BitChutePlayer from "@/components/BitChutePlayer";
-import VideoPlayer from "@/components/VideoPlayer";
 import LikeButton from "@/components/LikeButton";
-import ViewCount from "@/components/ViewCount";
+import ViewCount, { trackView } from "@/components/ViewCount";
 import SaveButton from "@/components/SaveButton";
 
 type Video = {
@@ -48,6 +46,15 @@ function timeAgo(iso?: string): string {
   return new Date(iso).toLocaleDateString();
 }
 
+function isBitChute(url: string): boolean {
+  return url.includes("bitchute.com");
+}
+
+function toBitChuteEmbed(url: string): string {
+  if (url.includes("/embed/")) return url;
+  return url.replace("/video/", "/embed/");
+}
+
 export default function WatchPage() {
   const params = useParams();
   const router = useRouter();
@@ -59,7 +66,9 @@ export default function WatchPage() {
   const [otherVideos, setOtherVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [playing, setPlaying] = useState(false);
+  const [playingInline, setPlayingInline] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const trackedRef = useRef(false);
 
   useEffect(() => {
     Promise.all([
@@ -87,10 +96,17 @@ export default function WatchPage() {
             .slice(0, 8)
         );
         setLoading(false);
-        setPlaying(true); // auto-play
       })
       .catch(() => setLoading(false));
   }, [slug, videoId]);
+
+  const handlePlay = () => {
+    setPlayingInline(true);
+    if (video && !trackedRef.current) {
+      trackedRef.current = true;
+      trackView(video.id);
+    }
+  };
 
   if (loading) {
     return (
@@ -118,7 +134,6 @@ export default function WatchPage() {
       <TopBar />
 
       <div className="pt-20 md:pt-24 max-w-5xl mx-auto px-4 md:px-6">
-        {/* Back button */}
         <button
           onClick={() => router.push(`/podcaster/${slug}`)}
           className="flex items-center gap-2 text-white/70 hover:text-white transition mb-4 text-sm"
@@ -126,25 +141,29 @@ export default function WatchPage() {
           <ArrowLeft size={18} /> Back to {creator.name}
         </button>
 
-        {/* Video player */}
+        {/* Inline video player */}
         <div className="w-full aspect-video rounded-lg overflow-hidden bg-black">
-          {playing && video.bitchuteUrl.includes("bitchute.com") ? (
-            <BitChutePlayer
-              src={video.bitchuteUrl}
-              title={video.title}
-              onClose={() => setPlaying(false)}
+          {isBitChute(video.bitchuteUrl) ? (
+            <iframe
+              src={toBitChuteEmbed(video.bitchuteUrl)}
+              allowFullScreen
+              allow="autoplay; fullscreen; encrypted-media"
+              className="w-full h-full"
+              style={{ border: "none" }}
             />
-          ) : playing ? (
-            <VideoPlayer
+          ) : playingInline ? (
+            <video
+              ref={videoRef}
               src={video.bitchuteUrl}
-              title={video.title}
-              videoId={video.id}
-              onClose={() => setPlaying(false)}
+              controls
+              autoPlay
+              playsInline
+              className="w-full h-full"
             />
           ) : (
             <div
               className="relative w-full h-full cursor-pointer group"
-              onClick={() => setPlaying(true)}
+              onClick={handlePlay}
             >
               <img
                 src={video.backdropUrl || video.posterUrl}
@@ -166,7 +185,6 @@ export default function WatchPage() {
             {video.title}
           </h1>
 
-          {/* Creator line */}
           <div className="flex items-center gap-3 mb-4">
             {creator.photoUrl && (
               <img
@@ -187,7 +205,6 @@ export default function WatchPage() {
             </span>
           </div>
 
-          {/* Action row */}
           <div className="flex items-center gap-4 flex-wrap py-4 border-y border-white/10">
             <LikeButton videoId={video.id} size={22} />
             <ViewCount videoId={video.id} showIcon />
@@ -196,7 +213,6 @@ export default function WatchPage() {
             </div>
           </div>
 
-          {/* Description */}
           {video.description && (
             <div className="mt-6 p-4 bg-white/5 rounded-lg">
               <p className="text-sm md:text-base text-white/80 leading-relaxed whitespace-pre-wrap">
@@ -206,7 +222,6 @@ export default function WatchPage() {
           )}
         </div>
 
-        {/* More from this podcaster */}
         {otherVideos.length > 0 && (
           <div className="mt-12 mb-8">
             <h2 className="text-lg md:text-xl font-bold mb-4">
