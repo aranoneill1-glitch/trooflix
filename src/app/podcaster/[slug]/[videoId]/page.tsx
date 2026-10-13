@@ -9,6 +9,7 @@ import MobileBottomNav from "@/components/MobileBottomNav";
 import LikeButton from "@/components/LikeButton";
 import ViewCount, { trackView } from "@/components/ViewCount";
 import SaveButton from "@/components/SaveButton";
+import Comments from "@/components/Comments";
 
 type Video = {
   id: number;
@@ -220,6 +221,9 @@ export default function WatchPage() {
               </p>
             </div>
           )}
+
+          {/* Comments */}
+          <Comments videoId={video.id} />
         </div>
 
         {otherVideos.length > 0 && (
