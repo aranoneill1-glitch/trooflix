@@ -44,13 +44,12 @@ export default function CollectionsRow() {
             <Link
               key={col.slug}
               href={`/collections/${col.slug}`}
-              className="flex-shrink-0 w-[140px] md:w-[160px] aspect-[3/4] rounded-lg flex flex-col items-center justify-center gap-3 transition border bg-[#0d0d12] border-white/10 hover:border-white/40 hover:bg-[#141418]"
+              className="flex-shrink-0 w-[110px] md:w-[130px] aspect-[4/5] rounded-lg flex flex-col items-center justify-center gap-2 transition border bg-[#0d0d12] border-white/10 hover:border-white/40 hover:bg-[#141418]"
             >
-              <Icon size={32} className="text-white" strokeWidth={1.5} />
-              <span className="text-xs md:text-sm font-bold tracking-wider text-center px-2 leading-tight">
+              <Icon size={26} className="text-white" strokeWidth={1.5} />
+              <span className="text-[10px] md:text-xs font-bold tracking-wider text-center px-2 leading-tight">
                 {col.name.toUpperCase()}
               </span>
-              <div className="h-0.5 w-8 rounded bg-white/40" />
             </Link>
           );
         })}
