@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Play, Info, X, ChevronLeft, ChevronRight } from "lucide-react";
 import TopBar from "@/components/TopBar";
+import ViewCount from "@/components/ViewCount";
 import BitChutePlayer from "@/components/BitChutePlayer";
 import VideoPlayer from "@/components/VideoPlayer";
 
@@ -20,7 +21,8 @@ type Video = {
   year: number;
   rating: string;
   match: number;
-  creatorId?: number | null;
+  creatorId?: number | null
+  createdAt?: string;
 };
 
 type Creator = {
@@ -31,6 +33,19 @@ type Creator = {
   heroBackdropUrl?: string;
   description: string;
 };
+
+function timeAgo(iso?: string): string {
+  if (!iso) return "";
+  const then = new Date(iso).getTime();
+  const now = Date.now();
+  const diff = Math.floor((now - then) / 1000);
+  if (diff < 60) return "just now";
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
+  if (diff < 2592000) return `${Math.floor(diff / 604800)}w ago`;
+  return new Date(iso).toLocaleDateString();
+}
 
 export default function PodcasterProfilePage() {
   const params = useParams();
@@ -152,7 +167,7 @@ export default function PodcasterProfilePage() {
           <p className="px-12 text-white/40">No videos yet.</p>
         )}
         {videos.length > 0 && (
-          <ProfileRow
+          <VideoList
             title="All Videos"
             items={videos}
             onSelect={setSelected}
@@ -227,7 +242,7 @@ export default function PodcasterProfilePage() {
   );
 }
 
-function ProfileRow({
+function VideoList({
   title,
   items,
   onSelect,
@@ -236,52 +251,41 @@ function ProfileRow({
   items: Video[];
   onSelect: (v: Video) => void;
 }) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  const scroll = (dir: "left" | "right") => {
-    if (!scrollRef.current) return;
-    const amount = scrollRef.current.clientWidth * 0.8;
-    scrollRef.current.scrollBy({ left: dir === "left" ? -amount : amount, behavior: "smooth" });
-  };
+  if (items.length === 0) return null;
 
   return (
-    <div className="relative group/row">
-      <h2 className="text-xl font-bold px-8 md:px-12 mb-3">{title}</h2>
-      <div className="relative">
-        <button
-          onClick={() => scroll("left")}
-          className="hidden md:flex absolute left-0 top-0 bottom-0 z-30 w-12 bg-black/60 hover:bg-black/80 opacity-0 group-hover/row:opacity-100 transition items-center justify-center"
-        >
-          <ChevronLeft size={28} />
-        </button>
-        <div
-          ref={scrollRef}
-          className="flex gap-3 overflow-x-auto scrollbar-hide px-8 md:px-12 pb-6"
-        >
-          {items.map((item) => (
-            <div
-              key={item.id}
-              onClick={() => onSelect(item)}
-              className="relative flex-shrink-0 w-[160px] md:w-[200px] aspect-[2/3] rounded-md overflow-hidden cursor-pointer bg-[#141418] hover:scale-105 transition"
-            >
+    <div className="px-4 md:px-12">
+      <h2 className="text-xl font-bold mb-4">{title}</h2>
+      <div className="space-y-3">
+        {items.map((item) => (
+          <div
+            key={item.id}
+            onClick={() => onSelect(item)}
+            className="flex gap-3 md:gap-4 p-2 rounded-lg hover:bg-white/5 cursor-pointer transition group"
+          >
+            {/* Thumbnail */}
+            <div className="relative w-[140px] md:w-[180px] aspect-video rounded-md overflow-hidden flex-shrink-0 bg-[#141418]">
               <img
-                src={item.posterUrl}
+                src={item.posterUrl || item.backdropUrl}
                 alt={item.title}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                 loading="lazy"
               />
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/70 to-transparent p-2">
-                <p className="text-xs font-bold leading-tight line-clamp-2">{item.title}</p>
+            </div>
+
+            {/* Text */}
+            <div className="flex-1 min-w-0 py-1">
+              <h3 className="text-sm md:text-base font-semibold leading-snug line-clamp-2 mb-2">
+                {item.title}
+              </h3>
+              <div className="flex items-center gap-2 text-xs md:text-sm text-white/50">
+                <ViewCount videoId={item.id} />
+                <span>·</span>
+                <span>{timeAgo(item.createdAt)}</span>
               </div>
             </div>
-          ))}
-        </div>
-        <button
-          onClick={() => scroll("right")}
-          className="hidden md:flex absolute right-0 top-0 bottom-0 z-30 w-12 bg-black/60 hover:bg-black/80 opacity-0 group-hover/row:opacity-100 transition items-center justify-center"
-        >
-          <ChevronRight size={28} />
-        </button>
+          </div>
+        ))}
       </div>
     </div>
   );
