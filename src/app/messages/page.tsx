@@ -141,39 +141,42 @@ export default function MessagesInbox() {
   const totalUnread = conversations.reduce((n, c) => n + c.unread_count, 0);
 
   return (
-    <main className="min-h-screen text-white pb-24 lg:pb-0" style={{ background: "#0b141a" }}>
+    <main className="h-screen flex flex-col text-white overflow-hidden" style={{ background: "#0b141a" }}>
       <TopBar />
 
-      <div className="pt-20 md:pt-24 max-w-3xl mx-auto">
-        {/* Title row */}
-        <div className="flex items-center justify-between px-4 md:px-6 mb-3">
-          <h1 className="text-2xl md:text-3xl font-black">Messages</h1>
-          <button
-            onClick={() => setSearchOpen(true)}
-            className="flex items-center gap-1.5 bg-[#dc2626] hover:bg-red-500 px-3 py-1.5 rounded-full text-sm font-semibold transition"
-          >
-            <Plus size={16} /> New
-          </button>
-        </div>
-
-        {/* Filters */}
-        <div className="flex gap-2 px-4 md:px-6 mb-2">
-          {(["all", "unread"] as const).map((f) => (
+      {/* Pinned title + filters (below TopBar) */}
+      <div className="pt-16 md:pt-20 flex-shrink-0 border-b border-white/5" style={{ background: "#0b141a" }}>
+        <div className="max-w-3xl mx-auto">
+          <div className="flex items-center justify-between px-4 md:px-6 py-3">
+            <h1 className="text-2xl md:text-3xl font-black">Messages</h1>
             <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-3.5 py-1 rounded-full text-xs font-semibold transition ${
-                filter === f
-                  ? "bg-[#dc2626]/20 text-red-300"
-                  : "text-white/60 hover:text-white/90"
-              }`}
+              onClick={() => setSearchOpen(true)}
+              className="flex items-center gap-1.5 bg-[#dc2626] hover:bg-red-500 px-3 py-1.5 rounded-full text-sm font-semibold transition"
             >
-              {f === "all" ? "All" : `Unread${totalUnread ? ` (${totalUnread})` : ""}`}
+              <Plus size={16} /> New
             </button>
-          ))}
+          </div>
+          <div className="flex gap-2 px-4 md:px-6 pb-3">
+            {(["all", "unread"] as const).map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`px-3.5 py-1 rounded-full text-xs font-semibold transition ${
+                  filter === f
+                    ? "bg-[#dc2626]/20 text-red-300"
+                    : "text-white/60 hover:text-white/90"
+                }`}
+              >
+                {f === "all" ? "All" : `Unread${totalUnread ? ` (${totalUnread})` : ""}`}
+              </button>
+            ))}
+          </div>
         </div>
+      </div>
 
-        {/* List */}
+      {/* Scrollable list */}
+      <div className="flex-1 overflow-y-auto pb-24 lg:pb-4">
+        <div className="max-w-3xl mx-auto">
         {loading && (
           <p className="text-white/50 py-12 text-center px-6">Loading…</p>
         )}
@@ -249,6 +252,7 @@ export default function MessagesInbox() {
             })}
           </div>
         )}
+        </div>
       </div>
 
       {/* New message modal */}
