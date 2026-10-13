@@ -39,24 +39,28 @@ export async function GET(req: Request) {
       });
     }
 
-    // Fetch profiles (avatars) for these user_ids
+    // Fetch profiles (avatars + display names) for these user_ids
     const userIds = Array.from(new Set((comments || []).map((c: any) => c.user_id)));
-    let profiles: Record<string, string> = {};
+    const profiles: Record<string, { avatar_url: string | null; display_name: string | null }> = {};
     if (userIds.length > 0) {
       const { data: profs } = await supabaseAdmin
         .from("profiles")
-        .select("user_id, avatar_url")
+        .select("user_id, avatar_url, display_name")
         .in("user_id", userIds);
       (profs || []).forEach((p: any) => {
-        if (p.avatar_url) profiles[p.user_id] = p.avatar_url;
+        profiles[p.user_id] = {
+          avatar_url: p.avatar_url || null,
+          display_name: p.display_name || null,
+        };
       });
     }
 
-    // Attach counts + avatar
+    // Attach counts + avatar + display name
     const withCounts = (comments || []).map((c: any) => ({
       ...c,
       like_count: likeCounts[c.id] || 0,
-      avatar_url: profiles[c.user_id] || null,
+      avatar_url: profiles[c.user_id]?.avatar_url || null,
+      display_name: profiles[c.user_id]?.display_name || null,
     }));
 
     // Sort

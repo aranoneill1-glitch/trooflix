@@ -15,6 +15,7 @@ type Comment = {
   parent_id: number | null;
   like_count: number;
   avatar_url?: string | null;
+  display_name?: string | null;
 };
 
 type SortMode = "newest" | "oldest" | "top";
@@ -46,7 +47,8 @@ function avatarColor(email: string): string {
 function initial(email?: string) {
   return (email || "?").trim()[0]?.toUpperCase() || "?";
 }
-function username(email?: string) {
+function username(email?: string, displayName?: string | null) {
+  if (displayName && displayName.trim()) return displayName.trim();
   return (email || "user").split("@")[0];
 }
 
@@ -307,7 +309,7 @@ export default function Comments({ videoId }: { videoId: number }) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2 text-sm flex-wrap">
-                      <span className="font-semibold">@{username(c.user_email)}</span>
+                      <span className="font-semibold">@{username(c.user_email, c.display_name)}</span>
                       <span className="text-white/50 text-xs">
                         {timeAgo(c.created_at)}
                       </span>
@@ -384,7 +386,7 @@ export default function Comments({ videoId }: { videoId: number }) {
                         <textarea
                           value={replyText}
                           onChange={(e) => setReplyText(e.target.value)}
-                          placeholder={`Reply to @${username(c.user_email)}...`}
+                          placeholder={`Reply to @${username(c.user_email, c.display_name)}...`}
                           rows={1}
                           maxLength={500}
                           autoFocus
@@ -448,7 +450,7 @@ export default function Comments({ videoId }: { videoId: number }) {
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex items-center gap-2 text-xs flex-wrap">
                               <span className="font-semibold">
-                                @{username(r.user_email)}
+                                @{username(r.user_email, r.display_name)}
                               </span>
                               <span className="text-white/50">
                                 {timeAgo(r.created_at)}
