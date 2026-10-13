@@ -101,7 +101,13 @@ export default function PodcasterProfilePage() {
           )}
 
           {/* Dark overlay so text is readable */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(to bottom, rgba(10, 30, 60, 0.15) 0%, rgba(5, 20, 50, 0.45) 45%, rgba(0, 0, 0, 0.85) 100%)",
+            }}
+          />
 
           {/* Left-aligned content */}
           <div className="relative z-10 flex flex-col items-start justify-end h-full px-6 md:px-12 pb-12 text-left max-w-3xl">
