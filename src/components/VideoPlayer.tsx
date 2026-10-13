@@ -36,6 +36,7 @@ export default function VideoPlayer({ src, title, videoId, onClose }: Props) {
   const isHls = src.includes(".m3u8");
 
   useEffect(() => {
+    if (videoId) trackView(videoId);
     const video = videoRef.current;
     if (!video) return;
 
