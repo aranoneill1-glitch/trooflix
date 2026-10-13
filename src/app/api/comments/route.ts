@@ -7,35 +7,68 @@ const supabaseAdmin = createServerClient(
   { auth: { autoRefreshToken: false, persistSession: false } }
 );
 
-// GET /api/comments?video_id=X
+// GET /api/comments?video_id=X&sort=newest|oldest|top
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const videoId = searchParams.get("video_id");
+    const sort = searchParams.get("sort") || "newest";
 
     if (!videoId) {
       return NextResponse.json({ comments: [] });
     }
 
-    const { data, error } = await supabaseAdmin
+    // Fetch all comments for this video
+    const { data: comments, error } = await supabaseAdmin
       .from("comments")
-      .select("id, video_id, user_id, user_email, text, created_at")
-      .eq("video_id", Number(videoId))
-      .order("created_at", { ascending: false });
+      .select("id, video_id, user_id, user_email, text, created_at, parent_id")
+      .eq("video_id", Number(videoId));
 
     if (error) throw error;
-    return NextResponse.json({ comments: data || [] });
+
+    // Fetch like counts for these comments
+    const commentIds = (comments || []).map((c: any) => c.id);
+    let likeCounts: Record<number, number> = {};
+    if (commentIds.length > 0) {
+      const { data: likes } = await supabaseAdmin
+        .from("comment_likes")
+        .select("comment_id")
+        .in("comment_id", commentIds);
+      (likes || []).forEach((row: any) => {
+        likeCounts[row.comment_id] = (likeCounts[row.comment_id] || 0) + 1;
+      });
+    }
+
+    // Attach counts
+    const withCounts = (comments || []).map((c: any) => ({
+      ...c,
+      like_count: likeCounts[c.id] || 0,
+    }));
+
+    // Sort
+    if (sort === "oldest") {
+      withCounts.sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+    } else if (sort === "top") {
+      withCounts.sort((a: any, b: any) => {
+        if (b.like_count !== a.like_count) return b.like_count - a.like_count;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
+    } else {
+      // newest
+      withCounts.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    }
+
+    return NextResponse.json({ comments: withCounts });
   } catch (e: any) {
     console.error("GET comments error:", e);
     return NextResponse.json({ comments: [] });
   }
 }
 
-// POST /api/comments
-// body: { videoId, userId, userEmail, text }
+// POST /api/comments — { videoId, userId, userEmail, text, parentId? }
 export async function POST(req: Request) {
   try {
-    const { videoId, userId, userEmail, text } = await req.json();
+    const { videoId, userId, userEmail, text, parentId } = await req.json();
 
     if (!videoId || !userId || !text) {
       return NextResponse.json(
@@ -52,21 +85,62 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Comment too long (max 500)" }, { status: 400 });
     }
 
+    const insertRow: any = {
+      video_id: Number(videoId),
+      user_id: userId,
+      user_email: userEmail || "",
+      text: trimmed,
+    };
+    if (parentId) insertRow.parent_id = Number(parentId);
+
     const { data, error } = await supabaseAdmin
       .from("comments")
-      .insert({
-        video_id: Number(videoId),
-        user_id: userId,
-        user_email: userEmail || "",
-        text: trimmed,
-      })
+      .insert(insertRow)
       .select()
       .single();
 
     if (error) throw error;
-    return NextResponse.json({ ok: true, comment: data });
+    return NextResponse.json({ ok: true, comment: { ...data, like_count: 0 } });
   } catch (e: any) {
     console.error("POST comments error:", e);
+    return NextResponse.json({ error: String(e) }, { status: 500 });
+  }
+}
+
+// DELETE /api/comments?id=X&userId=Y
+export async function DELETE(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+    const userId = searchParams.get("userId");
+
+    if (!id || !userId) {
+      return NextResponse.json({ error: "id and userId required" }, { status: 400 });
+    }
+
+    // Only allow delete if the comment belongs to the user
+    const { data: existing } = await supabaseAdmin
+      .from("comments")
+      .select("user_id")
+      .eq("id", Number(id))
+      .maybeSingle();
+
+    if (!existing) {
+      return NextResponse.json({ error: "Comment not found" }, { status: 404 });
+    }
+    if (existing.user_id !== userId) {
+      return NextResponse.json({ error: "You can only delete your own comments" }, { status: 403 });
+    }
+
+    const { error } = await supabaseAdmin
+      .from("comments")
+      .delete()
+      .eq("id", Number(id));
+
+    if (error) throw error;
+    return NextResponse.json({ ok: true });
+  } catch (e: any) {
+    console.error("DELETE comments error:", e);
     return NextResponse.json({ error: String(e) }, { status: 500 });
   }
 }
