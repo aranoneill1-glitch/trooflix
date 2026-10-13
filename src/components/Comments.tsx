@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Send } from "lucide-react";
+import { ThumbsUp, MoreVertical, Trash2, Send } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 
 type Comment = {
@@ -12,34 +12,28 @@ type Comment = {
   user_email: string;
   text: string;
   created_at: string;
+  parent_id: number | null;
+  like_count: number;
 };
+
+type SortMode = "newest" | "oldest" | "top";
 
 function timeAgo(iso: string): string {
   const then = new Date(iso).getTime();
   const now = Date.now();
   const diff = Math.floor((now - then) / 1000);
   if (diff < 60) return "just now";
-  if (diff < 3600) return `${Math.floor(diff / 60)} minute${Math.floor(diff / 60) === 1 ? "" : "s"} ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)} hour${Math.floor(diff / 3600) === 1 ? "" : "s"} ago`;
-  if (diff < 604800) return `${Math.floor(diff / 86400)} day${Math.floor(diff / 86400) === 1 ? "" : "s"} ago`;
-  if (diff < 2592000) return `${Math.floor(diff / 604800)} week${Math.floor(diff / 604800) === 1 ? "" : "s"} ago`;
-  if (diff < 31536000) return `${Math.floor(diff / 2592000)} month${Math.floor(diff / 2592000) === 1 ? "" : "s"} ago`;
-  return `${Math.floor(diff / 31536000)} year${Math.floor(diff / 31536000) === 1 ? "" : "s"} ago`;
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
+  if (diff < 2592000) return `${Math.floor(diff / 604800)}w ago`;
+  return new Date(iso).toLocaleDateString();
 }
 
-// Deterministic color per user based on email
 function avatarColor(email: string): string {
   const colors = [
-    "#e11d48", // rose
-    "#dc2626", // red
-    "#ea580c", // orange
-    "#d97706", // amber
-    "#65a30d", // lime
-    "#059669", // emerald
-    "#0891b2", // cyan
-    "#2563eb", // blue
-    "#7c3aed", // violet
-    "#c026d3", // fuchsia
+    "#e11d48", "#dc2626", "#ea580c", "#d97706", "#65a30d",
+    "#059669", "#0891b2", "#2563eb", "#7c3aed", "#c026d3",
   ];
   let hash = 0;
   for (let i = 0; i < email.length; i++) {
@@ -48,37 +42,67 @@ function avatarColor(email: string): string {
   return colors[hash % colors.length];
 }
 
+function initial(email?: string) {
+  return (email || "?").trim()[0]?.toUpperCase() || "?";
+}
+function username(email?: string) {
+  return (email || "user").split("@")[0];
+}
+
 export default function Comments({ videoId }: { videoId: number }) {
   const [comments, setComments] = useState<Comment[]>([]);
+  const [likedCommentIds, setLikedCommentIds] = useState<number[]>([]);
   const [text, setText] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [sort, setSort] = useState<SortMode>("newest");
   const [user, setUser] = useState<{ id: string; email: string } | null>(null);
+  const [replyTo, setReplyTo] = useState<number | null>(null);
+  const [replyText, setReplyText] = useState("");
+  const [menuOpen, setMenuOpen] = useState<number | null>(null);
 
-  // Load user + comments
+  // Load user + comments + liked comment IDs
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) {
-        setUser({
-          id: data.user.id,
-          email: data.user.email || "",
-        });
+        setUser({ id: data.user.id, email: data.user.email || "" });
+        // Fetch liked comment IDs
+        fetch(`/api/comment-likes?user_id=${data.user.id}&video_id=${videoId}`)
+          .then((r) => r.json())
+          .then((d) => setLikedCommentIds(Array.isArray(d.ids) ? d.ids : []))
+          .catch(() => {});
       }
     });
+  }, [videoId]);
 
-    fetch(`/api/comments?video_id=${videoId}`)
+  // Fetch comments whenever sort changes
+  useEffect(() => {
+    setLoading(true);
+    fetch(`/api/comments?video_id=${videoId}&sort=${sort}`)
       .then((r) => r.json())
       .then((d) => {
         setComments(Array.isArray(d.comments) ? d.comments : []);
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, [videoId]);
+  }, [videoId, sort]);
 
-  const submit = async (e: React.FormEvent) => {
+  // Close menu when clicking outside
+  useEffect(() => {
+    const onClick = () => setMenuOpen(null);
+    if (menuOpen !== null) {
+      document.addEventListener("click", onClick);
+      return () => document.removeEventListener("click", onClick);
+    }
+  }, [menuOpen]);
+
+  const submit = async (e: React.FormEvent, parentId?: number) => {
     e.preventDefault();
-    if (!user || !text.trim() || submitting) return;
+    if (!user || submitting) return;
+
+    const body = parentId ? replyText : text;
+    if (!body.trim()) return;
 
     setSubmitting(true);
     try {
@@ -89,13 +113,19 @@ export default function Comments({ videoId }: { videoId: number }) {
           videoId,
           userId: user.id,
           userEmail: user.email,
-          text: text.trim(),
+          text: body.trim(),
+          parentId: parentId || null,
         }),
       });
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
       setComments((prev) => [data.comment, ...prev]);
-      setText("");
+      if (parentId) {
+        setReplyTo(null);
+        setReplyText("");
+      } else {
+        setText("");
+      }
     } catch (err) {
       console.error("Comment failed:", err);
     } finally {
@@ -103,19 +133,94 @@ export default function Comments({ videoId }: { videoId: number }) {
     }
   };
 
-  const initial = (email?: string) => (email || "?").trim()[0]?.toUpperCase() || "?";
-  const username = (email?: string) => (email || "user").split("@")[0];
+  const deleteComment = async (commentId: number) => {
+    if (!user) return;
+    setMenuOpen(null);
+    if (!confirm("Delete this comment?")) return;
+
+    // Optimistic remove — includes replies (they cascade in DB)
+    const idsToRemove = [commentId, ...comments.filter((c) => c.parent_id === commentId).map((c) => c.id)];
+    setComments((prev) => prev.filter((c) => !idsToRemove.includes(c.id)));
+
+    const res = await fetch(`/api/comments?id=${commentId}&userId=${user.id}`, {
+      method: "DELETE",
+    });
+    if (!res.ok) {
+      // Re-fetch to restore
+      fetch(`/api/comments?video_id=${videoId}&sort=${sort}`)
+        .then((r) => r.json())
+        .then((d) => setComments(Array.isArray(d.comments) ? d.comments : []));
+    }
+  };
+
+  const toggleCommentLike = async (commentId: number) => {
+    if (!user) return;
+
+    const wasLiked = likedCommentIds.includes(commentId);
+    // Optimistic
+    setLikedCommentIds((prev) =>
+      wasLiked ? prev.filter((id) => id !== commentId) : [...prev, commentId]
+    );
+    setComments((prev) =>
+      prev.map((c) =>
+        c.id === commentId
+          ? { ...c, like_count: wasLiked ? Math.max(0, c.like_count - 1) : c.like_count + 1 }
+          : c
+      )
+    );
+
+    const res = await fetch("/api/comment-likes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ commentId, userId: user.id }),
+    });
+    if (!res.ok) {
+      // Rollback
+      setLikedCommentIds((prev) =>
+        wasLiked ? [...prev, commentId] : prev.filter((id) => id !== commentId)
+      );
+      setComments((prev) =>
+        prev.map((c) =>
+          c.id === commentId
+            ? { ...c, like_count: wasLiked ? c.like_count + 1 : Math.max(0, c.like_count - 1) }
+            : c
+        )
+      );
+    }
+  };
+
+  // Group top-level comments + replies
+  const topLevel = comments.filter((c) => !c.parent_id);
+  const repliesFor = (id: number) =>
+    comments
+      .filter((c) => c.parent_id === id)
+      .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
   return (
     <div className="mt-12 mb-8">
-      <h2 className="text-lg md:text-xl font-bold mb-6">
-        Comments <span className="text-white/40">·</span>{" "}
-        <span className="text-white/60 text-base">{comments.length}</span>
-      </h2>
+      {/* Header with count + sort */}
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+        <h2 className="text-lg md:text-xl font-bold">
+          Comments <span className="text-white/40">·</span>{" "}
+          <span className="text-white/60 text-base">
+            {comments.filter((c) => !c.parent_id).length}
+          </span>
+        </h2>
 
-      {/* Comment input — only if signed in */}
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value as SortMode)}
+          className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-red-600"
+        >
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="top">Top comments</option>
+        </select>
+      </div>
+
+      {/* New comment form */}
       {user ? (
-        <form onSubmit={submit} className="flex gap-3 mb-8">
+        <form onSubmit={(e) => submit(e)} className="flex gap-3 mb-8">
           <div
             className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0"
             style={{ background: avatarColor(user.email) }}
@@ -137,9 +242,7 @@ export default function Comments({ videoId }: { videoId: number }) {
               }}
             />
             <div className="flex items-center justify-between mt-3">
-              <span className="text-xs text-white/40">
-                {text.length}/500
-              </span>
+              <span className="text-xs text-white/40">{text.length}/500</span>
               <div className="flex gap-2">
                 <button
                   type="button"
@@ -162,9 +265,7 @@ export default function Comments({ videoId }: { videoId: number }) {
         </form>
       ) : (
         <div className="mb-8 p-4 bg-white/5 rounded-lg flex items-center justify-between gap-4">
-          <p className="text-sm text-white/70">
-            Sign in to join the conversation
-          </p>
+          <p className="text-sm text-white/70">Sign in to join the conversation</p>
           <Link
             href="/login"
             className="flex-shrink-0 bg-red-600 hover:bg-red-500 text-white font-semibold px-4 py-1.5 rounded-full text-sm transition"
@@ -174,41 +275,226 @@ export default function Comments({ videoId }: { videoId: number }) {
         </div>
       )}
 
-      {/* Comment list */}
-      {loading && (
-        <p className="text-white/40 text-sm py-4">Loading comments…</p>
-      )}
-
-      {!loading && comments.length === 0 && (
+      {/* Comments list */}
+      {loading && <p className="text-white/40 text-sm py-4">Loading comments…</p>}
+      {!loading && topLevel.length === 0 && (
         <p className="text-white/40 text-sm py-4">
           No comments yet. Be the first.
         </p>
       )}
 
       <div className="space-y-6">
-        {comments.map((c) => (
-          <div key={c.id} className="flex gap-3">
-            <div
-              className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0"
-              style={{ background: avatarColor(c.user_email || "unknown") }}
-            >
-              {initial(c.user_email)}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 text-sm mb-1">
-                <span className="font-semibold">
-                  @{username(c.user_email)}
-                </span>
-                <span className="text-white/50 text-xs">
-                  {timeAgo(c.created_at)}
-                </span>
+        {topLevel.map((c) => {
+          const replies = repliesFor(c.id);
+          const isOwn = user?.id === c.user_id;
+          const isLiked = likedCommentIds.includes(c.id);
+
+          return (
+            <div key={c.id}>
+              {/* Top-level comment */}
+              <div className="flex gap-3">
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0"
+                  style={{ background: avatarColor(c.user_email || "unknown") }}
+                >
+                  {initial(c.user_email)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2 text-sm flex-wrap">
+                      <span className="font-semibold">@{username(c.user_email)}</span>
+                      <span className="text-white/50 text-xs">
+                        {timeAgo(c.created_at)}
+                      </span>
+                    </div>
+                    {isOwn && (
+                      <div className="relative">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setMenuOpen(menuOpen === c.id ? null : c.id);
+                          }}
+                          className="text-white/50 hover:text-white p-1"
+                        >
+                          <MoreVertical size={16} />
+                        </button>
+                        {menuOpen === c.id && (
+                          <div className="absolute right-0 top-8 bg-[#1a1a1e] border border-white/10 rounded-lg shadow-xl z-20 min-w-[140px]">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                deleteComment(c.id);
+                              }}
+                              className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-white/5 flex items-center gap-2 rounded-lg"
+                            >
+                              <Trash2 size={14} /> Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <p className="text-sm md:text-base text-white/90 leading-relaxed whitespace-pre-wrap break-words mt-1">
+                    {c.text}
+                  </p>
+
+                  {/* Like + Reply buttons */}
+                  <div className="flex items-center gap-4 mt-2">
+                    <button
+                      onClick={() => toggleCommentLike(c.id)}
+                      className={`flex items-center gap-1.5 text-xs transition ${
+                        isLiked ? "text-red-500" : "text-white/60 hover:text-white"
+                      }`}
+                    >
+                      <ThumbsUp size={14} fill={isLiked ? "currentColor" : "none"} />
+                      {c.like_count > 0 && <span>{c.like_count}</span>}
+                    </button>
+                    {user && (
+                      <button
+                        onClick={() => {
+                          setReplyTo(replyTo === c.id ? null : c.id);
+                          setReplyText("");
+                        }}
+                        className="text-xs text-white/60 hover:text-white transition font-semibold"
+                      >
+                        Reply
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Reply input */}
+                  {replyTo === c.id && user && (
+                    <form
+                      onSubmit={(e) => submit(e, c.id)}
+                      className="flex gap-3 mt-4"
+                    >
+                      <div
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 text-sm"
+                        style={{ background: avatarColor(user.email) }}
+                      >
+                        {initial(user.email)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <textarea
+                          value={replyText}
+                          onChange={(e) => setReplyText(e.target.value)}
+                          placeholder={`Reply to @${username(c.user_email)}...`}
+                          rows={1}
+                          maxLength={500}
+                          autoFocus
+                          className="w-full bg-transparent border-b border-white/20 focus:border-white outline-none pb-2 text-sm resize-none"
+                          onInput={(e) => {
+                            const target = e.target as HTMLTextAreaElement;
+                            target.style.height = "auto";
+                            target.style.height = target.scrollHeight + "px";
+                          }}
+                        />
+                        <div className="flex items-center justify-between mt-2">
+                          <span className="text-xs text-white/40">
+                            {replyText.length}/500
+                          </span>
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setReplyTo(null);
+                                setReplyText("");
+                              }}
+                              className="px-3 py-1 rounded-full text-xs text-white/70 hover:text-white hover:bg-white/10 transition"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              type="submit"
+                              disabled={!replyText.trim() || submitting}
+                              className="flex items-center gap-1.5 bg-white text-black font-semibold px-3 py-1 rounded-full text-xs hover:bg-white/90 disabled:opacity-40 transition"
+                            >
+                              <Send size={12} />
+                              {submitting ? "Posting…" : "Reply"}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </form>
+                  )}
+                </div>
               </div>
-              <p className="text-sm md:text-base text-white/90 leading-relaxed whitespace-pre-wrap break-words">
-                {c.text}
-              </p>
+
+              {/* Replies */}
+              {replies.length > 0 && (
+                <div className="mt-4 ml-13 space-y-4 pl-6 border-l border-white/10">
+                  {replies.map((r) => {
+                    const isOwnReply = user?.id === r.user_id;
+                    const isLikedReply = likedCommentIds.includes(r.id);
+                    return (
+                      <div key={r.id} className="flex gap-3">
+                        <div
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 text-sm"
+                          style={{ background: avatarColor(r.user_email || "unknown") }}
+                        >
+                          {initial(r.user_email)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-center gap-2 text-xs flex-wrap">
+                              <span className="font-semibold">
+                                @{username(r.user_email)}
+                              </span>
+                              <span className="text-white/50">
+                                {timeAgo(r.created_at)}
+                              </span>
+                            </div>
+                            {isOwnReply && (
+                              <div className="relative">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setMenuOpen(menuOpen === r.id ? null : r.id);
+                                  }}
+                                  className="text-white/50 hover:text-white p-1"
+                                >
+                                  <MoreVertical size={14} />
+                                </button>
+                                {menuOpen === r.id && (
+                                  <div className="absolute right-0 top-7 bg-[#1a1a1e] border border-white/10 rounded-lg shadow-xl z-20 min-w-[120px]">
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        deleteComment(r.id);
+                                      }}
+                                      className="w-full text-left px-3 py-2 text-xs text-red-400 hover:bg-white/5 flex items-center gap-2 rounded-lg"
+                                    >
+                                      <Trash2 size={12} /> Delete
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                          <p className="text-sm text-white/85 leading-relaxed whitespace-pre-wrap break-words mt-1">
+                            {r.text}
+                          </p>
+                          <div className="flex items-center gap-4 mt-1.5">
+                            <button
+                              onClick={() => toggleCommentLike(r.id)}
+                              className={`flex items-center gap-1.5 text-xs transition ${
+                                isLikedReply ? "text-red-500" : "text-white/60 hover:text-white"
+                              }`}
+                            >
+                              <ThumbsUp size={12} fill={isLikedReply ? "currentColor" : "none"} />
+                              {r.like_count > 0 && <span>{r.like_count}</span>}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
