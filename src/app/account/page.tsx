@@ -13,6 +13,11 @@ export default function AccountPage() {
   const [user, setUser] = useState<{ id: string; email: string } | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string>("");
   const [displayName, setDisplayName] = useState<string>("");
+  const [username, setUsername] = useState<string>("");
+  const [savedUsername, setSavedUsername] = useState<string>("");
+  const [usernameStatus, setUsernameStatus] = useState<"" | "checking" | "available" | "taken" | "invalid">("");
+  const [usernameError, setUsernameError] = useState<string>("");
+  const [savingUsername, setSavingUsername] = useState(false);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -36,6 +41,8 @@ export default function AccountPage() {
           if (d.profile) {
             setAvatarUrl(d.profile.avatar_url || "");
             setDisplayName(d.profile.display_name || "");
+            setUsername(d.profile.username || "");
+            setSavedUsername(d.profile.username || "");
           }
           setLoading(false);
         })
@@ -148,6 +155,67 @@ export default function AccountPage() {
     setTimeout(() => setStatus(""), 2500);
   };
 
+  // Live availability check for username (debounced 500ms)
+  useEffect(() => {
+    if (!user) return;
+    const raw = username.trim().toLowerCase().replace(/^@+/, "");
+    if (raw === "") {
+      setUsernameStatus("");
+      setUsernameError("");
+      return;
+    }
+    if (raw === savedUsername) {
+      setUsernameStatus("");
+      setUsernameError("");
+      return;
+    }
+    setUsernameStatus("checking");
+    const t = setTimeout(() => {
+      fetch(`/api/username?check=${encodeURIComponent(raw)}&for=${user.id}`)
+        .then((r) => r.json())
+        .then((d) => {
+          if (d.available) {
+            setUsernameStatus("available");
+            setUsernameError("");
+          } else {
+            setUsernameStatus(d.error === "Taken" ? "taken" : "invalid");
+            setUsernameError(d.error || "Unavailable");
+          }
+        })
+        .catch(() => setUsernameStatus("invalid"));
+    }, 500);
+    return () => clearTimeout(t);
+  }, [username, savedUsername, user]);
+
+  const saveUsername = async () => {
+    if (!user) return;
+    const raw = username.trim().toLowerCase().replace(/^@+/, "");
+    if (!raw) {
+      setStatus("❌ Username required");
+      setTimeout(() => setStatus(""), 2500);
+      return;
+    }
+    setSavingUsername(true);
+    const res = await fetch("/api/username", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: user.id, username: raw }),
+    });
+    const d = await res.json();
+    setSavingUsername(false);
+    if (!res.ok) {
+      setUsernameStatus("taken");
+      setUsernameError(d.error || "Could not save");
+      return;
+    }
+    setUsername(d.username);
+    setSavedUsername(d.username);
+    setUsernameStatus("");
+    setUsernameError("");
+    setStatus("✅ Username saved");
+    setTimeout(() => setStatus(""), 2500);
+  };
+
   const logout = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
@@ -236,6 +304,42 @@ export default function AccountPage() {
                 className="hidden"
               />
             </div>
+          </div>
+        </div>
+
+        <div className="bg-[#141418] border border-white/5 rounded-lg p-6 mb-6">
+          <h2 className="text-lg font-bold mb-4">Username</h2>
+          <p className="text-xs text-white/50 mb-3">
+            Your unique @handle. 3–20 characters, a–z, 0–9, or _.
+          </p>
+          <div className="flex gap-2">
+            <div className="flex-1 flex items-center bg-black/40 border border-white/10 rounded focus-within:border-red-600">
+              <span className="pl-3 text-white/50">@</span>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
+                placeholder="yourhandle"
+                maxLength={20}
+                className="flex-1 bg-transparent px-2 py-2 outline-none"
+              />
+            </div>
+            <button
+              onClick={saveUsername}
+              disabled={savingUsername || usernameStatus === "taken" || usernameStatus === "invalid"}
+              className="flex items-center gap-2 bg-red-600 hover:bg-red-500 disabled:opacity-50 font-semibold px-4 py-2 rounded transition"
+            >
+              <Check size={16} /> {savingUsername ? "Saving…" : "Save"}
+            </button>
+          </div>
+          <div className="mt-2 text-xs h-4">
+            {usernameStatus === "checking" && <span className="text-white/50">Checking…</span>}
+            {usernameStatus === "available" && <span className="text-green-400">@{username} is available</span>}
+            {usernameStatus === "taken" && <span className="text-red-400">@{username} is taken</span>}
+            {usernameStatus === "invalid" && <span className="text-red-400">{usernameError}</span>}
+            {usernameStatus === "" && savedUsername && (
+              <span className="text-white/40">Current: @{savedUsername}</span>
+            )}
           </div>
         </div>
 
