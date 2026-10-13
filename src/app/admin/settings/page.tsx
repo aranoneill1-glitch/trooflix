@@ -4,7 +4,7 @@ import { ExternalLink, KeyRound, Database, Cloud, Code } from "lucide-react";
 
 export default function SettingsPage() {
   return (
-    <div className="p-8 max-w-3xl">
+    <div className="p-4 md:p-8 max-w-3xl">
       <div className="mb-8">
         <h1 className="text-2xl font-bold mb-1">Settings</h1>
         <p className="text-white/50 text-sm">Admin tools and quick links</p>

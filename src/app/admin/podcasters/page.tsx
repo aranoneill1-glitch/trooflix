@@ -170,7 +170,7 @@ export default function PodcastersPage() {
   );
 
   return (
-    <div className="p-8 max-w-4xl">
+    <div className="p-4 md:p-8 max-w-4xl">
       <div className="mb-8">
         <h1 className="text-2xl font-bold mb-1">Podcasters</h1>
         <p className="text-white/50 text-sm">
@@ -180,7 +180,7 @@ export default function PodcastersPage() {
 
       {/* Add/Edit form */}
       <form onSubmit={submitCreator} className="bg-[#141418] rounded-lg p-6 space-y-4 mb-10">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="col-span-2">
             <label className="block text-sm text-white/60 mb-1">Name *</label>
             <input

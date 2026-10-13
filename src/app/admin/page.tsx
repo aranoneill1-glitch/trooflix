@@ -18,14 +18,14 @@ export default function OverviewPage() {
   }, []);
 
   return (
-    <div className="p-8 max-w-5xl">
+    <div className="p-4 md:p-8 max-w-5xl">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-1">Overview</h1>
         <p className="text-white/50 text-sm">Your site at a glance</p>
       </div>
 
       {/* Stats grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-10">
         <StatCard label="Videos" value={videoCount} />
         <StatCard label="Podcasters" value={podcasterCount} />
         <StatCard label="Subscribers" value={subscribers ?? "—"} />

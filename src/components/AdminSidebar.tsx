@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -10,6 +11,8 @@ import {
   Settings,
   LogOut,
   Home,
+  Menu,
+  X,
 } from "lucide-react";
 
 const ITEMS = [
@@ -22,6 +25,7 @@ const ITEMS = [
 
 export default function AdminSidebar() {
   const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const isActive = (item: { path: string; exact?: boolean }) => {
     if (item.exact) return pathname === item.path;
@@ -33,15 +37,22 @@ export default function AdminSidebar() {
     window.location.href = "/admin/login";
   };
 
-  return (
-    <aside className="hidden md:flex flex-col w-64 shrink-0 h-screen sticky top-0 bg-[#0a0a0c] border-r border-white/5">
+  const sidebarContent = (
+    <>
       {/* Logo */}
-      <div className="px-6 py-6 border-b border-white/5">
+      <div className="px-6 py-6 border-b border-white/5 flex items-center justify-between">
         <Link href="/admin" className="text-2xl font-black tracking-tight block">
           <span className="text-white">TROO</span>
           <span className="text-red-600">FLIX</span>
         </Link>
-        <p className="text-[10px] tracking-[0.3em] text-white/40 font-semibold mt-1">
+        <button
+          onClick={() => setMobileOpen(false)}
+          className="md:hidden text-white/60 hover:text-white"
+          aria-label="Close menu"
+        >
+          <X size={22} />
+        </button>
+        <p className="hidden md:block absolute text-[10px] tracking-[0.3em] text-white/40 font-semibold mt-8">
           ADMIN
         </p>
       </div>
@@ -55,6 +66,7 @@ export default function AdminSidebar() {
             <Link
               key={item.path}
               href={item.path}
+              onClick={() => setMobileOpen(false)}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition ${
                 active
                   ? "bg-white/5 text-white"
@@ -85,6 +97,45 @@ export default function AdminSidebar() {
           Log Out
         </button>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile top bar */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-[#0a0a0c]/95 backdrop-blur border-b border-white/5 flex items-center justify-between px-4 py-3">
+        <Link href="/admin" className="text-xl font-black tracking-tight">
+          <span className="text-white">TROO</span>
+          <span className="text-red-600">FLIX</span>
+        </Link>
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="text-white/80 hover:text-white"
+          aria-label="Open menu"
+        >
+          <Menu size={22} />
+        </button>
+      </div>
+
+      {/* Mobile drawer */}
+      {mobileOpen && (
+        <div
+          className="md:hidden fixed inset-0 z-50 bg-black/70"
+          onClick={() => setMobileOpen(false)}
+        >
+          <div
+            className="absolute top-0 left-0 h-full w-72 bg-[#0a0a0c] border-r border-white/5 flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {sidebarContent}
+          </div>
+        </div>
+      )}
+
+      {/* Desktop sidebar */}
+      <aside className="hidden md:flex flex-col w-64 shrink-0 h-screen sticky top-0 bg-[#0a0a0c] border-r border-white/5 relative">
+        {sidebarContent}
+      </aside>
+    </>
   );
 }
