@@ -24,6 +24,7 @@ import OdyseePlayer from "@/components/OdyseePlayer";
 import LoadingIntro from "@/components/LoadingIntro";
 import VideoIntro from "@/components/VideoIntro";
 import UserMenu from "@/components/UserMenu";
+import { useSearch } from "@/context/SearchContext";
 import TopBar from "@/components/TopBar";
 import CollectionsRow from "@/components/CollectionsRow";
 import MobileBottomNav from "@/components/MobileBottomNav";
@@ -62,20 +63,16 @@ const NAV_TABS: string[] = ["Home", "Movies", "Documentaries", "Podcasts"];
 
 export default function Home() {
   const [videos, setVideos] = useState<Video[]>([]);
+  const { search } = useSearch();
   const [selected, setSelected] = useState<Video | null>(null);
   const [playing, setPlaying] = useState<Video | null>(null);
   const [activeTab, setActiveTab] = useState("Home");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [search, setSearch] = useState<string>("");
-
+  
   // Sync from URL on mount and when URL changes
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const q = params.get("q") || "";
-    setSearch(q);
-  }, []);
+
   const [scrolled, setScrolled] = useState(false);
   const [isTV, setIsTV] = useState(false);
 
