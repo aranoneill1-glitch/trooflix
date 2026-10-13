@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Search } from "lucide-react";
 
 type Creator = {
   id: number;
@@ -13,6 +14,7 @@ type Creator = {
 
 export default function PodcastersPage() {
   const [creators, setCreators] = useState<Creator[]>([]);
+  const [podcasterSearch, setPodcasterSearch] = useState("");
   const [editingCreator, setEditingCreator] = useState<Creator | null>(null);
   const [creatorForm, setCreatorForm] = useState({
     name: "",
@@ -163,6 +165,10 @@ export default function PodcastersPage() {
     );
   };
 
+  const filteredCreators = creators.filter((c) =>
+    c.name.toLowerCase().includes(podcasterSearch.toLowerCase())
+  );
+
   return (
     <div className="p-8 max-w-4xl">
       <div className="mb-8">
@@ -302,9 +308,35 @@ export default function PodcastersPage() {
       </form>
 
       {/* Podcaster list */}
-      <h2 className="text-lg font-bold mb-4">All Podcasters ({creators.length})</h2>
+      <div className="flex items-center justify-between mb-4 gap-4">
+        <h2 className="text-lg font-bold">
+          All Podcasters ({creators.length})
+        </h2>
+        <div className="relative">
+          <Search
+            size={16}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none"
+          />
+          <input
+            type="text"
+            value={podcasterSearch}
+            onChange={(e) => setPodcasterSearch(e.target.value)}
+            placeholder="Search podcasters…"
+            className="bg-black/40 border border-white/10 rounded-lg pl-9 pr-9 py-2 text-sm focus:border-red-600 outline-none w-64"
+          />
+          {podcasterSearch && (
+            <button
+              onClick={() => setPodcasterSearch("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition text-xs"
+              aria-label="Clear search"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+      </div>
       <div className="space-y-2">
-        {creators.map((c) => (
+        {filteredCreators.map((c) => (
           <div
             key={c.id}
             className={`flex items-center gap-4 rounded p-3 transition ${
@@ -344,6 +376,11 @@ export default function PodcastersPage() {
         ))}
         {creators.length === 0 && (
           <p className="text-white/40">No podcasters yet. Add one above.</p>
+        )}
+        {creators.length > 0 && filteredCreators.length === 0 && (
+          <p className="text-white/40">
+            No podcasters match "{podcasterSearch}".
+          </p>
         )}
       </div>
     </div>
