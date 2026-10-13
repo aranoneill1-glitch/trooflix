@@ -205,12 +205,14 @@ export default function Home() {
       </AnimatePresence>
 
       {/* ============ CONTENT ============ */}
-      {!showingFiltered && hero && (
-        <Hero video={hero} onPlay={() => requestPlay(hero)} onMore={() => setSelected(hero)} />
-      )}
-      {showingFiltered && <div className="h-20 md:h-24" />}
+      {loaded && (
+        <>
+          {!showingFiltered && hero && (
+            <Hero video={hero} onPlay={() => requestPlay(hero)} onMore={() => setSelected(hero)} />
+          )}
+          {showingFiltered && <div className="h-20 md:h-24" />}
 
-      <div className="relative z-10 pt-8 md:pt-12 pb-32 md:pb-20 space-y-8 md:space-y-12">
+          <div className="relative z-10 pt-8 md:pt-12 pb-32 md:pb-20 space-y-8 md:space-y-12">
         {filtered && (
           <SearchResults
             search={search}
@@ -231,7 +233,7 @@ export default function Home() {
           </div>
         )}
 
-        {!filtered && !showingFiltered && (
+        {loaded && !filtered && !showingFiltered && (
           <>
             <CollectionsRow />
             {progressList.length > 0 && (() => {
