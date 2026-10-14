@@ -239,7 +239,7 @@ export default function FeedFullscreenPlayer({
         </AnimatePresence>
 
         {/* Right rail */}
-        <div className="absolute right-3 bottom-24 z-20 flex flex-col items-center gap-5">
+        <div className="absolute right-3 bottom-56 z-20 flex flex-col items-center gap-6">
           <div data-like-button>
             <LikeButton videoId={video.id} size={28} />
           </div>
