@@ -3,6 +3,14 @@
 import { useEffect, useState } from "react";
 import { ThumbsUp } from "lucide-react";
 
+// --- Global external like trigger (used by feed double-tap) ---
+const likeBusListeners = new Map<number, Set<() => void>>();
+export function externalLike(videoId: number) {
+  const set = likeBusListeners.get(videoId);
+  if (set) set.forEach((fn) => fn());
+}
+
+
 // --- Anonymous browser ID (per-device, stored in localStorage) ---
 // Cache in-memory so private mode / blocked localStorage still works this session
 let _anonId: string | null = null;
@@ -106,6 +114,21 @@ export default function LikeButton({
   const [liked, setLiked] = useState(false);
   const [count, setCountState] = useState<number>(0);
   const [checking, setChecking] = useState(true);
+
+  // Listen for external like triggers (feed double-tap)
+  useEffect(() => {
+    const fn = () => {
+      // Fire the same toggle path as a click, ignoring the event arg
+      const fakeEvent = { stopPropagation: () => {}, preventDefault: () => {} } as any;
+      toggle(fakeEvent);
+    };
+    if (!likeBusListeners.has(videoId)) likeBusListeners.set(videoId, new Set());
+    likeBusListeners.get(videoId)!.add(fn);
+    return () => {
+      likeBusListeners.get(videoId)?.delete(fn);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [videoId]);
 
   // Subscribe to liked IDs
   useEffect(() => {

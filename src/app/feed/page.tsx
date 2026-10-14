@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import SaveButton from "@/components/SaveButton";
-import LikeButton from "@/components/LikeButton";
+import LikeButton, { externalLike } from "@/components/LikeButton";
 import ViewCount from "@/components/ViewCount";
 import FollowButton from "@/components/FollowButton";
 import CommentDrawer from "@/components/CommentDrawer";
@@ -146,16 +146,8 @@ function FeedCard({
         });
         setTimeout(() => setHeartBurst(null), 900);
       }
-      // Fire the LikeButton — dispatch a non-bubbling click so it doesn't
-      // re-trigger our own container onClick handler
-      const likeBtn = containerRef.current?.querySelector<HTMLButtonElement>(
-        "[data-feed-like] button"
-      );
-      if (likeBtn) {
-        likeBtn.dispatchEvent(
-          new MouseEvent("click", { bubbles: false, cancelable: true })
-        );
-      }
+      // Fire the like via the shared bus (no DOM querying, no synthetic click)
+      externalLike(video.id);
     } else {
       // Single tap → fullscreen (deferred so double-tap wins)
       lastTapRef.current = now;
