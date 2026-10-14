@@ -14,6 +14,9 @@ import CommentDrawer from "@/components/CommentDrawer";
 import FeedFullscreenPlayer from "@/components/FeedFullscreenPlayer";
 import { MessageCircle } from "lucide-react";
 
+// ---- Global single-playback lock: only ONE feed video plays at a time ----
+let currentPlayer: HTMLVideoElement | null = null;
+
 type Video = {
   id: number;
   title: string;
@@ -168,7 +171,7 @@ function FeedCard({
     const io = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
-          setShouldPlay(entry.intersectionRatio >= 0.5);
+          setShouldPlay(entry.intersectionRatio >= 0.85);
         }
       },
       { threshold: [0, 0.5, 1] }
@@ -183,12 +186,20 @@ function FeedCard({
     if (!v) return;
     // Pause inline video if fullscreen player is open, or user manually paused
     if (shouldPlay && !userPaused && !isFullscreenOpen) {
+      // Enforce single-playback — pause any other feed video first
+      if (currentPlayer && currentPlayer !== v) {
+        try {
+          currentPlayer.pause();
+        } catch {}
+      }
+      currentPlayer = v;
       v.play().catch(() => {
         v.muted = true;
         v.play().catch(() => {});
       });
     } else {
       v.pause();
+      if (currentPlayer === v) currentPlayer = null;
     }
   }, [shouldPlay, userPaused, isFullscreenOpen]);
 
