@@ -209,11 +209,11 @@ export default function ThreadPage() {
   }
 
   return (
-    <main className="min-h-screen text-white flex flex-col" style={{ background: "#0b141a" }}>
+    <main className="min-h-screen text-white flex flex-col" style={{ background: "#000000" }}>
       {/* Header */}
       <header
         className="fixed top-0 left-0 right-0 z-50 border-b border-black/40"
-        style={{ background: "#1f2c33" }}
+        style={{ background: "#000000" }}
       >
         <div className="flex items-center gap-3 px-3 py-2.5 md:px-6">
           <button
@@ -310,7 +310,7 @@ export default function ThreadPage() {
                   className={`relative max-w-[78%] md:max-w-[65%] px-2.5 py-1.5 text-[14px] leading-[1.35] break-words shadow-sm ${
                     mine
                       ? "bg-[#dc2626] text-white"
-                      : "bg-[#202c33] text-white"
+                      : "bg-white/10 text-white"
                   } rounded-md ${tailCorner}`}
                 >
                   {/* Bubble tail */}
@@ -319,7 +319,7 @@ export default function ThreadPage() {
                       className={`absolute top-0 w-2 h-3 ${
                         mine
                           ? "-right-[6px] bg-[#dc2626]"
-                          : "-left-[6px] bg-[#202c33]"
+                          : "-left-[6px] bg-white/10"
                       }`}
                       style={{
                         clipPath: mine
@@ -355,7 +355,7 @@ export default function ThreadPage() {
       {/* Composer */}
       <div
         className="fixed bottom-0 left-0 right-0 border-t border-black/40"
-        style={{ background: "#1f2c33" }}
+        style={{ background: "#000000" }}
       >
         <div className="max-w-3xl mx-auto px-2 md:px-4 py-2 flex items-end gap-2">
           <button

@@ -141,11 +141,11 @@ export default function MessagesInbox() {
   const totalUnread = conversations.reduce((n, c) => n + c.unread_count, 0);
 
   return (
-    <main className="flex flex-col text-white overflow-hidden" style={{ background: "#0b141a", height: "100dvh" }}>
+    <main className="flex flex-col text-white overflow-hidden" style={{ background: "#000000", height: "100dvh" }}>
       <TopBar />
 
       {/* Pinned title + filters (below TopBar) */}
-      <div className="pt-16 md:pt-20 flex-shrink-0 border-b border-white/5" style={{ background: "#0b141a" }}>
+      <div className="pt-16 md:pt-20 flex-shrink-0 border-b border-white/5" style={{ background: "#000000" }}>
         <div className="max-w-3xl mx-auto">
           <div className="flex items-center justify-between px-4 md:px-6 py-3">
             <h1 className="text-2xl md:text-3xl font-black">Messages</h1>
@@ -267,7 +267,7 @@ export default function MessagesInbox() {
         >
           <div
             className="border border-white/10 rounded-2xl w-full max-w-lg mt-16 md:mt-0 overflow-hidden"
-            style={{ background: "#1f2c33" }}
+            style={{ background: "#000000" }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center gap-2 border-b border-black/30 px-4 py-3">
