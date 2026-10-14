@@ -114,6 +114,7 @@ function FeedCard({
   const [userPaused, setUserPaused] = useState(false);
   const [heartBurst, setHeartBurst] = useState<{ x: number; y: number; id: number } | null>(null);
   const lastTapRef = useRef(0);
+  const [videoAspect, setVideoAspect] = useState<string>("16 / 9"); // default until loaded
 
   const handleVideoTap = (e: React.MouseEvent | React.TouchEvent) => {
     // Ignore taps that landed on interactive elements (like button, mute, follow)
@@ -249,7 +250,8 @@ function FeedCard({
       {/* Video — inline autoplay, no play button */}
       <div
         ref={containerRef}
-        className="relative w-full aspect-video bg-black md:rounded-xl overflow-hidden group cursor-pointer"
+        className="relative w-full bg-black md:rounded-xl overflow-hidden group cursor-pointer"
+        style={{ aspectRatio: videoAspect, maxHeight: "80vh" }}
         onClick={handleVideoTap}
       >
         {/* Play overlay when paused */}
@@ -269,6 +271,12 @@ function FeedCard({
           loop
           playsInline
           preload="metadata"
+          onLoadedMetadata={(e) => {
+            const v = e.currentTarget;
+            if (v.videoWidth && v.videoHeight) {
+              setVideoAspect(`${v.videoWidth} / ${v.videoHeight}`);
+            }
+          }}
           className="w-full h-full object-cover"
         />
 
