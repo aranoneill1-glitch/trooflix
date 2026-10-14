@@ -365,12 +365,7 @@ export default function FeedFullscreenPlayer({
             </p>
           )}
 
-          <button
-            onClick={() => setCommentOpen(true)}
-            className="w-full text-left bg-white/10 hover:bg-white/15 border border-white/15 rounded-full px-4 py-2.5 text-sm text-white/60 transition"
-          >
-            Add comment…
-          </button>
+
         </div>
       </motion.div>
 
