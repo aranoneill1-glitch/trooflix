@@ -10,7 +10,7 @@ import LikeButton from "@/components/LikeButton";
 import ViewCount from "@/components/ViewCount";
 import FollowButton from "@/components/FollowButton";
 import CommentDrawer from "@/components/CommentDrawer";
-import VideoPlayer from "@/components/VideoPlayer";
+import FeedFullscreenPlayer from "@/components/FeedFullscreenPlayer";
 import { MessageCircle } from "lucide-react";
 
 type Video = {
@@ -323,10 +323,9 @@ export default function FeedPage() {
       />
 
       {playing && (
-        <VideoPlayer
-          src={playing.bitchuteUrl}
-          title={playing.title}
-          videoId={playing.id}
+        <FeedFullscreenPlayer
+          video={playing}
+          creator={creatorById(playing.creatorId)}
           onClose={() => setPlaying(null)}
         />
       )}
