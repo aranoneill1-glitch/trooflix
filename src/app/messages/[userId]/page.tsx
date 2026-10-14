@@ -532,10 +532,35 @@ export default function ThreadPage() {
       <GifPicker
         open={gifOpen}
         onClose={() => setGifOpen(false)}
-        onPick={(url) => {
-          setBody(url);
-          // Auto-send after picking
-          setTimeout(() => send(), 50);
+        onPick={async (url) => {
+          setGifOpen(false);
+          if (!me) return;
+          const optimistic: Message = {
+            id: -Date.now(),
+            sender_id: me,
+            recipient_id: otherId,
+            body: url,
+            created_at: new Date().toISOString(),
+            read_at: null,
+          };
+          setMessages((prev) => [...prev, optimistic]);
+          try {
+            const res = await fetch("/api/dm", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ senderId: me, recipientId: otherId, body: url }),
+            });
+            const data = await res.json();
+            if (res.ok && data.message) {
+              setMessages((prev) =>
+                prev.map((m) => (m.id === optimistic.id ? data.message : m))
+              );
+            } else {
+              setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
+            }
+          } catch {
+            setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
+          }
         }}
       />
     </main>
