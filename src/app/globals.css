@@ -20,3 +20,15 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+
+/* --- Block iOS pinch zoom everywhere --- */
+html, body {
+  touch-action: pan-x pan-y;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Keep pinch-zoom disabled on any element that had it working */
+input, textarea, select, button {
+  touch-action: manipulation;
+}

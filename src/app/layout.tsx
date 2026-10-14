@@ -24,6 +24,25 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                // Block iOS Safari pinch-zoom via gesture events
+                ['gesturestart', 'gesturechange', 'gestureend'].forEach(function(evt) {
+                  document.addEventListener(evt, function(e) { e.preventDefault(); }, { passive: false });
+                });
+                // Block double-tap zoom
+                var lastTouch = 0;
+                document.addEventListener('touchend', function(e) {
+                  var now = Date.now();
+                  if (now - lastTouch <= 300) { e.preventDefault(); }
+                  lastTouch = now;
+                }, { passive: false });
+              })();
+            `,
+          }}
+        />
         <SearchProvider>
         <TVNavigation />
         {children}
