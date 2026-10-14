@@ -20,7 +20,7 @@ export async function GET(req: Request) {
     if (id) {
       const { data, error } = await supabaseAdmin
         .from("profiles")
-        .select("user_id, username, display_name, avatar_url")
+        .select("user_id, username, display_name, avatar_url, bio")
         .eq("user_id", id)
         .maybeSingle();
       if (error) throw error;
@@ -37,7 +37,7 @@ export async function GET(req: Request) {
 
       const { data, error } = await supabaseAdmin
         .from("profiles")
-        .select("user_id, username, display_name, avatar_url")
+        .select("user_id, username, display_name, avatar_url, bio")
         .in("user_id", list);
       if (error) throw error;
       return NextResponse.json({ users: data || [] });
@@ -49,7 +49,7 @@ export async function GET(req: Request) {
 
       const { data, error } = await supabaseAdmin
         .from("profiles")
-        .select("user_id, username, display_name, avatar_url")
+        .select("user_id, username, display_name, avatar_url, bio")
         .or(`username.ilike.%${raw}%,display_name.ilike.%${raw}%`)
         .not("username", "is", null)
         .limit(20);
