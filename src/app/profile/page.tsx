@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Camera, LogOut, Bookmark, Check, X } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import FollowStats from "@/components/FollowStats";
 import { createClient } from "@/utils/supabase/client";
 
 type Profile = {
@@ -232,6 +233,7 @@ export default function ProfilePage() {
                       {handle && (
                         <p className="text-white/50 text-sm mb-2">{handle}</p>
                       )}
+                      {userId && <FollowStats userId={userId} />}
                       {profile?.bio ? (
                         <p className="text-sm text-white/80 whitespace-pre-wrap">
                           {profile.bio}
