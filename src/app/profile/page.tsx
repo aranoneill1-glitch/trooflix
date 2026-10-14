@@ -276,15 +276,17 @@ export default function ProfilePage() {
               </div>
             )}
             {appStatus === "approved" && (
-              <div className="bg-green-950/40 border border-green-600/40 rounded-xl px-5 py-4 mb-4">
+              <a
+                href="/creator"
+                className="block bg-green-950/40 border border-green-600/40 rounded-xl px-5 py-4 mb-4 hover:bg-green-950/60 transition"
+              >
                 <p className="font-semibold text-green-400 text-sm mb-1">
                   You&apos;re a creator ✓
                 </p>
                 <p className="text-xs text-white/70">
-                  Post videos from your{" "}
-                  <a href="/admin" className="underline">admin dashboard</a>.
+                  Go to your creator dashboard to upload and manage videos →
                 </p>
-              </div>
+              </a>
             )}
             {appStatus !== "pending" && appStatus !== "approved" && (
               <a

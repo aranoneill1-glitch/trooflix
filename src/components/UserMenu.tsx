@@ -19,6 +19,7 @@ export default function UserMenu() {
   const [user, setUser] = useState<UserInfo>(null);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isCreator, setIsCreator] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -48,6 +49,12 @@ export default function UserMenu() {
               displayName: d.profile.display_name || null,
             });
           }
+          // Check creator status
+          try {
+            const cr = await fetch(`/api/me/creator?user_id=${data.user.id}`);
+            const cd = await cr.json();
+            setIsCreator(!!cd.creator);
+          } catch {}
         } catch {}
       } else {
         setUser(null);
@@ -127,10 +134,19 @@ export default function UserMenu() {
             <p className="text-xs text-white/40 mb-0.5">Signed in as</p>
             <p className="text-sm text-white/90 truncate">{user.email}</p>
           </div>
+          {isCreator && (
+            <Link
+              href="/creator"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 text-green-400 hover:text-green-300 transition text-sm border-t border-white/10"
+            >
+              Creator Dashboard
+            </Link>
+          )}
           <Link
             href="/profile"
             onClick={() => setOpen(false)}
-            className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 text-white/80 hover:text-white transition text-sm"
+            className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 text-white/80 hover:text-white transition text-sm border-t border-white/10"
           >
             My Profile
           </Link>
