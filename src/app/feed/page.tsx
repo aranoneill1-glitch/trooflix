@@ -113,6 +113,16 @@ function FeedCard({
   const lastTapRef = useRef(0);
 
   const handleVideoTap = (e: React.MouseEvent | React.TouchEvent) => {
+    // Ignore taps that landed on interactive elements (like button, mute, follow)
+    const target = e.target as HTMLElement;
+    if (
+      target.closest("button") ||
+      target.closest("a") ||
+      target.closest("[data-feed-like]")
+    ) {
+      return;
+    }
+
     const now = Date.now();
     const delta = now - lastTapRef.current;
 
@@ -136,11 +146,16 @@ function FeedCard({
         });
         setTimeout(() => setHeartBurst(null), 900);
       }
-      // Fire the LikeButton
+      // Fire the LikeButton — dispatch a non-bubbling click so it doesn't
+      // re-trigger our own container onClick handler
       const likeBtn = containerRef.current?.querySelector<HTMLButtonElement>(
         "[data-feed-like] button"
       );
-      if (likeBtn) likeBtn.click();
+      if (likeBtn) {
+        likeBtn.dispatchEvent(
+          new MouseEvent("click", { bubbles: false, cancelable: true })
+        );
+      }
     } else {
       // Single tap → fullscreen (deferred so double-tap wins)
       lastTapRef.current = now;
