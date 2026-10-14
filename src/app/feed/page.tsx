@@ -262,6 +262,26 @@ export default function FeedPage() {
   const [loading, setLoading] = useState(true);
   const [commentVideo, setCommentVideo] = useState<Video | null>(null);
   const [playing, setPlaying] = useState<Video | null>(null);
+
+  const playingIndex = playing
+    ? videos.findIndex((v) => v.id === playing.id)
+    : -1;
+
+  const goNext = () => {
+    if (videos.length === 0) return;
+    const nextIdx = playingIndex < 0 || playingIndex >= videos.length - 1
+      ? 0
+      : playingIndex + 1;
+    setPlaying(videos[nextIdx]);
+  };
+
+  const goPrev = () => {
+    if (videos.length === 0) return;
+    const prevIdx = playingIndex <= 0
+      ? videos.length - 1
+      : playingIndex - 1;
+    setPlaying(videos[prevIdx]);
+  };
   const [muted, setMuted] = useState(true);
 
   useEffect(() => {
@@ -327,6 +347,8 @@ export default function FeedPage() {
           video={playing}
           creator={creatorById(playing.creatorId)}
           onClose={() => setPlaying(null)}
+          onNext={goNext}
+          onPrev={goPrev}
         />
       )}
     </main>
