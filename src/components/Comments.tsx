@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ThumbsUp, MoreVertical, Trash2, Send } from "lucide-react";
+import { ThumbsUp, MoreVertical, Trash2, Send, Image as ImageIcon } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
+import GifPicker from "@/components/GifPicker";
 
 type Comment = {
   id: number;
@@ -52,6 +53,15 @@ function username(email?: string, displayName?: string | null) {
   return (email || "user").split("@")[0];
 }
 
+const MEDIA_EXT = /\.(gif|png|jpe?g|webp|avif)(\?|$)/i;
+
+function isMediaUrl(text: string): boolean {
+  if (!text) return false;
+  const t = text.trim();
+  if (!t.startsWith("http")) return false;
+  return MEDIA_EXT.test(t);
+}
+
 export default function Comments({ videoId }: { videoId: number }) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [likedCommentIds, setLikedCommentIds] = useState<number[]>([]);
@@ -63,6 +73,9 @@ export default function Comments({ videoId }: { videoId: number }) {
   const [replyTo, setReplyTo] = useState<number | null>(null);
   const [replyText, setReplyText] = useState("");
   const [menuOpen, setMenuOpen] = useState<number | null>(null);
+  const [gifOpen, setGifOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load user + comments + liked comment IDs
   useEffect(() => {
@@ -99,6 +112,70 @@ export default function Comments({ videoId }: { videoId: number }) {
       return () => document.removeEventListener("click", onClick);
     }
   }, [menuOpen]);
+
+  const submitMedia = async (url: string) => {
+    if (!user) return;
+    setGifOpen(false);
+    const optimistic: Comment = {
+      id: -Date.now(),
+      video_id: videoId,
+      user_id: user.id,
+      user_email: user.email,
+      text: url,
+      created_at: new Date().toISOString(),
+      parent_id: null,
+      like_count: 0,
+    };
+    setComments((prev) => [optimistic, ...prev]);
+    try {
+      const res = await fetch("/api/comments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          videoId,
+          userId: user.id,
+          userEmail: user.email,
+          text: url,
+        }),
+      });
+      if (!res.ok) {
+        setComments((prev) => prev.filter((c) => c.id !== optimistic.id));
+      }
+    } catch {
+      setComments((prev) => prev.filter((c) => c.id !== optimistic.id));
+    }
+  };
+
+  const uploadCommentImage = async (file: File) => {
+    if (!user) return;
+    setUploading(true);
+    try {
+      const presign = await fetch("/api/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          filename: file.name,
+          contentType: file.type || "image/jpeg",
+          folder: "comment-images",
+        }),
+      });
+      if (!presign.ok) throw new Error("Upload failed");
+      const { signedUrl, publicUrl } = await presign.json();
+
+      const put = await fetch(signedUrl, {
+        method: "PUT",
+        headers: { "Content-Type": file.type || "image/jpeg" },
+        body: file,
+      });
+      if (!put.ok) throw new Error("Upload failed");
+      await submitMedia(publicUrl);
+    } catch {
+      alert("Couldn't upload image");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   const submit = async (e: React.FormEvent, parentId?: number) => {
     e.preventDefault();
@@ -234,27 +311,66 @@ export default function Comments({ videoId }: { videoId: number }) {
             >
               {initial(user.email)}
             </div>
-            <div className="flex-1 flex items-end gap-2 bg-white/5 border border-white/10 rounded-2xl px-3 py-2 focus-within:border-white/25 transition">
+            <div className="flex-1 flex items-center gap-2 bg-white/5 border border-white/10 rounded-full pl-4 pr-2 py-2 focus-within:border-white/25 transition">
               <textarea
                 value={text}
                 onChange={(e) => setText(e.target.value)}
-                placeholder="What do you think of this?"
+                placeholder="Add a comment…"
                 rows={1}
                 maxLength={500}
-                className="flex-1 bg-transparent outline-none text-sm resize-none max-h-24 placeholder:text-white/40"
+                className="flex-1 bg-transparent outline-none text-sm resize-none max-h-24 placeholder:text-white/40 py-0.5"
                 onInput={(e) => {
                   const target = e.target as HTMLTextAreaElement;
                   target.style.height = "auto";
                   target.style.height = Math.min(target.scrollHeight, 96) + "px";
                 }}
               />
+
+              {/* Image upload icon */}
               <button
-                type="submit"
-                disabled={!text.trim() || submitting}
-                className="flex-shrink-0 text-sm font-bold text-red-500 hover:text-red-400 disabled:opacity-30 disabled:hover:text-red-500 transition"
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="w-7 h-7 flex items-center justify-center text-white/70 hover:text-white transition flex-shrink-0 disabled:opacity-50"
+                aria-label="Add image"
               >
-                {submitting ? "…" : "Post"}
+                {uploading ? (
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <ImageIcon size={20} />
+                )}
               </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) uploadCommentImage(f);
+                }}
+              />
+
+              {/* GIF button */}
+              <button
+                type="button"
+                onClick={() => setGifOpen(true)}
+                className="flex-shrink-0 border border-white/40 rounded-md px-1.5 py-0.5 text-[10px] font-black tracking-tight text-white/80 hover:text-white hover:border-white transition"
+                aria-label="Add GIF"
+              >
+                GIF
+              </button>
+
+              {/* Post button — only shows when text is present */}
+              {text.trim() && (
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="flex-shrink-0 text-sm font-bold text-red-500 hover:text-red-400 disabled:opacity-30 transition px-1"
+                >
+                  {submitting ? "…" : "Post"}
+                </button>
+              )}
             </div>
           </div>
         </form>
@@ -269,6 +385,12 @@ export default function Comments({ videoId }: { videoId: number }) {
           </Link>
         </div>
       )}
+
+      <GifPicker
+        open={gifOpen}
+        onClose={() => setGifOpen(false)}
+        onPick={(url) => submitMedia(url)}
+      />
 
       {/* Comments list */}
       {loading && <p className="text-white/40 text-sm py-4">Loading comments…</p>}
@@ -334,9 +456,18 @@ export default function Comments({ videoId }: { videoId: number }) {
                     )}
                   </div>
 
-                  <p className="text-sm md:text-base text-white/90 leading-relaxed whitespace-pre-wrap break-words mt-1">
-                    {c.text}
-                  </p>
+                  {isMediaUrl(c.text) ? (
+                    <img
+                      src={c.text}
+                      alt=""
+                      className="rounded-lg max-w-xs max-h-64 object-cover mt-2"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <p className="text-sm md:text-base text-white/90 leading-relaxed whitespace-pre-wrap break-words mt-1">
+                      {c.text}
+                    </p>
+                  )}
 
                   {/* Like + Reply buttons */}
                   <div className="flex items-center gap-4 mt-2">
