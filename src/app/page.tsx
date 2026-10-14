@@ -239,7 +239,7 @@ export default function Home() {
             <CollectionsRow />
             {newReleases.length > 0 && <Row title="New Releases" items={newReleases} onSelect={setSelected} onPlay={requestPlay} />}
             {trending.length > 0 && <Row title="Trending Now" items={trending} onSelect={setSelected} onPlay={requestPlay} />}
-            {podcasts.length > 0 && <Row title="Podcasts" items={podcasts} onSelect={setSelected} onPlay={requestPlay} />}
+            {podcasts.length > 0 && <Row title="Podcasts" items={podcasts} onSelect={setSelected} onPlay={requestPlay} showCreator creators={creators} />}
             {docs.length > 0 && <Row title="Documentaries" items={docs} onSelect={setSelected} onPlay={requestPlay} />}
             {loaded && videos.length === 0 && (
               <div className="px-8 py-20 text-center text-white/50">
@@ -396,7 +396,7 @@ function Hero({ video, onPlay, onMore }: { video: Video; onPlay: () => void; onM
 }
 
 /* ============ ROW ============ */
-function Row({ title, items, onSelect, onPlay }: { title: string; items: Video[]; onSelect: (v: Video) => void; onPlay: (v: Video) => void }) {
+function Row({ title, items, onSelect, onPlay, showCreator, creators }: { title: string; items: Video[]; onSelect: (v: Video) => void; onPlay: (v: Video) => void; showCreator?: boolean; creators?: any[] }) {
   const ref = useRef<HTMLDivElement>(null);
   const [hovered, setHovered] = useState<number | null>(null);
 
@@ -430,6 +430,12 @@ function Row({ title, items, onSelect, onPlay }: { title: string; items: Video[]
               onLeave={() => setHovered(null)}
               onSelect={onSelect}
               onPlay={onPlay}
+              showCreator={showCreator}
+              creator={
+                showCreator && creators && item.creatorId
+                  ? creators.find((c: any) => c.id === item.creatorId) || null
+                  : null
+              }
             />
           ))}
         </div>
@@ -466,7 +472,7 @@ function Grid({ items, onSelect, onPlay }: { items: Video[]; onSelect: (v: Video
 }
 
 /* ============ CARD ============ */
-function Card({ item, hovered, onHover, onLeave, onSelect, onPlay }: any) {
+function Card({ item, hovered, onHover, onLeave, onSelect, onPlay, showCreator, creator }: any) {
   return (
     <motion.div
       onMouseEnter={onHover}
@@ -479,10 +485,29 @@ function Card({ item, hovered, onHover, onLeave, onSelect, onPlay }: any) {
     >
       <img src={item.posterUrl} alt={item.title} className="w-full h-full object-cover" loading="lazy" />
 
-      {/* Netflix-style bottom label */}
-      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/60 to-transparent p-2 md:p-2.5">
-        <p className="text-[11px] md:text-xs font-bold leading-tight line-clamp-2">{item.title}</p>
-      </div>
+      {/* Bottom label — title OR creator badge */}
+      {showCreator && creator ? (
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/70 to-transparent p-2 md:p-2.5 flex items-center gap-2">
+          {creator.photoUrl ? (
+            <img
+              src={creator.photoUrl}
+              alt=""
+              className="w-6 h-6 md:w-7 md:h-7 rounded-full object-cover flex-shrink-0 border border-white/20"
+            />
+          ) : (
+            <div className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-[10px] font-bold flex-shrink-0">
+              {(creator.name?.[0] || "?").toUpperCase()}
+            </div>
+          )}
+          <p className="text-[11px] md:text-xs font-semibold leading-tight line-clamp-1">
+            {creator.name}
+          </p>
+        </div>
+      ) : (
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/60 to-transparent p-2 md:p-2.5">
+          <p className="text-[11px] md:text-xs font-bold leading-tight line-clamp-2">{item.title}</p>
+        </div>
+      )}
 
       {/* Hover info panel (desktop only) */}
       {hovered && (
