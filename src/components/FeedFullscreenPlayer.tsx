@@ -17,6 +17,35 @@ import CommentDrawer from "@/components/CommentDrawer";
 import SaveButton from "@/components/SaveButton";
 import LikeButton from "@/components/LikeButton";
 
+// ---- Global comment count cache (same pattern as LikeButton) ----
+let cachedCommentCounts: Record<number, number> | null = null;
+let commentCountsInflight: Promise<Record<number, number>> | null = null;
+const commentCountListeners = new Set<(counts: Record<number, number>) => void>();
+
+async function fetchCommentCounts(): Promise<Record<number, number>> {
+  if (cachedCommentCounts) return cachedCommentCounts;
+  if (commentCountsInflight) return commentCountsInflight;
+
+  commentCountsInflight = (async () => {
+    try {
+      const r = await fetch("/api/comment-counts", { cache: "no-store" });
+      const d = await r.json();
+      const counts =
+        d.counts && typeof d.counts === "object" ? d.counts : {};
+      cachedCommentCounts = counts;
+      commentCountListeners.forEach((fn) => fn(counts));
+      return counts;
+    } catch {
+      cachedCommentCounts = {};
+      return {};
+    } finally {
+      commentCountsInflight = null;
+    }
+  })();
+
+  return commentCountsInflight;
+}
+
 function CommentCountStacked({
   videoId,
   onClick,
@@ -24,19 +53,22 @@ function CommentCountStacked({
   videoId: number;
   onClick: () => void;
 }) {
-  const [count, setCount] = useState<number | null>(null);
+  const [count, setCount] = useState<number | null>(() =>
+    cachedCommentCounts ? cachedCommentCounts[videoId] ?? 0 : null
+  );
+
   useEffect(() => {
     let mounted = true;
-    fetch(`/api/comments?video_id=${videoId}`)
-      .then((r) => r.json())
-      .then((d) => {
-        if (!mounted) return;
-        const list = Array.isArray(d) ? d : Array.isArray(d.comments) ? d.comments : [];
-        setCount(list.length);
-      })
-      .catch(() => {});
+    const onUpdate = (counts: Record<number, number>) => {
+      if (mounted) setCount(counts[videoId] ?? 0);
+    };
+    commentCountListeners.add(onUpdate);
+    fetchCommentCounts().then((counts) => {
+      if (mounted) setCount(counts[videoId] ?? 0);
+    });
     return () => {
       mounted = false;
+      commentCountListeners.delete(onUpdate);
     };
   }, [videoId]);
 
