@@ -7,6 +7,7 @@ import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import SaveButton from "@/components/SaveButton";
 import FollowButton from "@/components/FollowButton";
+import CommentDrawer from "@/components/CommentDrawer";
 import LikeButton from "@/components/LikeButton";
 import ViewCount from "@/components/ViewCount";
 import BitChutePlayer from "@/components/BitChutePlayer";
@@ -50,7 +51,13 @@ function timeAgo(iso?: string): string {
 }
 
 
-function CommentCount({ videoId }: { videoId: number }) {
+function CommentCount({
+  videoId,
+  onClick,
+}: {
+  videoId: number;
+  onClick?: () => void;
+}) {
   const [count, setCount] = useState<number | null>(null);
   useEffect(() => {
     let mounted = true;
@@ -68,10 +75,14 @@ function CommentCount({ videoId }: { videoId: number }) {
   }, [videoId]);
 
   return (
-    <span className="inline-flex items-center gap-1.5 text-white/70">
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex items-center gap-1.5 text-white/70 hover:text-white transition"
+    >
       <MessageCircle size={18} />
       {count !== null && <span className="text-sm">{count}</span>}
-    </span>
+    </button>
   );
 }
 
@@ -80,6 +91,7 @@ export default function FeedPage() {
   const [creators, setCreators] = useState<Creator[]>([]);
   const [playingIndex, setPlayingIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [commentVideo, setCommentVideo] = useState<Video | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -207,7 +219,7 @@ export default function FeedPage() {
                 {/* Action rail (X-style: reply · like · bookmark · views) */}
                 <div className="flex items-center gap-6 px-3 md:px-2 pb-3 md:pb-4 pt-1">
                   <LikeButton videoId={video.id} size={18} showCount />
-                  <CommentCount videoId={video.id} />
+                  <CommentCount videoId={video.id} onClick={() => setCommentVideo(video)} />
                   <SaveButton videoId={video.id} variant="icon" />
                   <ViewCount videoId={video.id} showIcon />
                 </div>
@@ -218,6 +230,12 @@ export default function FeedPage() {
       </div>
 
       <MobileBottomNav />
+
+      <CommentDrawer
+        videoId={commentVideo?.id ?? null}
+        title={commentVideo?.title}
+        onClose={() => setCommentVideo(null)}
+      />
 
       {/* Fullscreen player with swipe/arrow navigation */}
       {playing && playing.bitchuteUrl.includes("bitchute.com") && (
