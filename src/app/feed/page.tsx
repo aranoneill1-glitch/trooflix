@@ -1,15 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Play, Info, X } from "lucide-react";
+import { Play, Heart, Bookmark, Volume2, VolumeX } from "lucide-react";
 import TopBar from "@/components/TopBar";
+import MobileBottomNav from "@/components/MobileBottomNav";
 import SaveButton from "@/components/SaveButton";
 import LikeButton from "@/components/LikeButton";
 import ViewCount from "@/components/ViewCount";
-import MobileBottomNav from "@/components/MobileBottomNav";
 import BitChutePlayer from "@/components/BitChutePlayer";
 import VideoPlayer from "@/components/VideoPlayer";
+import OdyseePlayer from "@/components/OdyseePlayer";
 
 type Video = {
   id: number;
@@ -33,13 +34,12 @@ type Creator = {
   id: number;
   name: string;
   slug: string;
+  photoUrl?: string;
 };
 
 function timeAgo(iso?: string): string {
   if (!iso) return "";
-  const then = new Date(iso).getTime();
-  const now = Date.now();
-  const diff = Math.floor((now - then) / 1000);
+  const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
   if (diff < 60) return "just now";
   if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
   if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
@@ -51,9 +51,11 @@ function timeAgo(iso?: string): string {
 export default function FeedPage() {
   const [videos, setVideos] = useState<Video[]>([]);
   const [creators, setCreators] = useState<Creator[]>([]);
-  const [selected, setSelected] = useState<Video | null>(null);
   const [playing, setPlaying] = useState<Video | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [muted, setMuted] = useState(true);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     Promise.all([
@@ -62,7 +64,6 @@ export default function FeedPage() {
     ])
       .then(([vids, creats]) => {
         const list: Video[] = Array.isArray(vids) ? vids : [];
-        // Sort by createdAt descending (newest first)
         list.sort((a, b) => {
           const aTime = a.createdAt ? new Date(a.createdAt).getTime() : a.id;
           const bTime = b.createdAt ? new Date(b.createdAt).getTime() : b.id;
@@ -75,179 +76,157 @@ export default function FeedPage() {
       .catch(() => setLoading(false));
   }, []);
 
-  const creatorById = (id?: number | null) => {
-    if (!id) return null;
-    return creators.find((c) => c.id === id) || null;
-  };
+  // Track which card is centered as user scrolls
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const h = el.clientHeight;
+      const idx = Math.round(el.scrollTop / h);
+      setActiveIndex(idx);
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const creatorById = (id?: number | null) =>
+    id ? creators.find((c) => c.id === id) || null : null;
 
   return (
-    <main className="min-h-screen bg-black text-white overflow-x-hidden pb-20 lg:pb-0">
+    <main className="h-screen bg-black text-white overflow-hidden flex flex-col">
       <TopBar />
 
-      <div className="pt-24 pb-16 max-w-3xl mx-auto px-4 md:px-6">
-        <h1 className="text-3xl md:text-4xl font-black mb-1">Feed</h1>
-        <p className="text-white/50 mb-8">The newest from Trooflix</p>
-
+      {/* Vertical snap scroller */}
+      <div
+        ref={containerRef}
+        className="flex-1 overflow-y-scroll snap-y snap-mandatory scrollbar-hide"
+        style={{ scrollSnapType: "y mandatory" }}
+      >
         {loading && (
-          <p className="text-white/50 text-center py-12">Loading…</p>
+          <div className="h-full flex items-center justify-center">
+            <p className="text-white/50">Loading…</p>
+          </div>
         )}
 
         {!loading && videos.length === 0 && (
-          <p className="text-white/50 text-center py-12">Nothing here yet.</p>
+          <div className="h-full flex items-center justify-center">
+            <p className="text-white/50">Nothing here yet.</p>
+          </div>
         )}
 
-        <div className="space-y-6">
-          {videos.map((video) => {
-            const creator = creatorById(video.creatorId);
-            const label = creator ? creator.name : "TROOFLIX";
-            const labelHref = creator ? `/podcaster/${creator.slug}` : null;
+        {videos.map((video, i) => {
+          const creator = creatorById(video.creatorId);
+          const creatorName = creator ? creator.name : "TROOFLIX";
+          const creatorSlug = creator?.slug;
+          const isActive = i === activeIndex;
 
-            return (
-              <article
-                key={video.id}
-                className="bg-[#141418] border border-white/5 rounded-xl overflow-hidden hover:border-white/20 transition"
-              >
-                {/* Image / backdrop */}
-                <div
-                  onClick={() => setSelected(video)}
-                  className="relative aspect-video cursor-pointer overflow-hidden group"
-                >
-                  <img
-                    src={video.backdropUrl || video.posterUrl}
-                    alt={video.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                    <div className="bg-white/20 backdrop-blur rounded-full p-5">
-                      <Play size={36} fill="white" className="text-white" />
+          return (
+            <section
+              key={video.id}
+              className="relative w-full h-full snap-start snap-always flex items-center justify-center"
+              style={{ scrollSnapAlign: "start" }}
+            >
+              {/* Poster/backdrop background */}
+              <img
+                src={video.backdropUrl || video.posterUrl}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
+
+              {/* Top overlay: creator + follow */}
+              <div className="absolute top-20 md:top-24 left-0 right-0 px-4 md:px-6 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {creator?.photoUrl ? (
+                    <img
+                      src={creator.photoUrl}
+                      alt=""
+                      className="w-10 h-10 rounded-full object-cover border border-white/20"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-sm font-bold">
+                      {creatorName[0]?.toUpperCase() || "T"}
                     </div>
-                  </div>
-                  {video.type && (
-                    <span className="absolute top-3 left-3 bg-black/70 backdrop-blur text-xs font-bold uppercase tracking-wide px-2 py-1 rounded">
-                      {video.type}
-                    </span>
                   )}
-                </div>
-
-                {/* Body */}
-                <div className="p-5">
-                  <div className="flex items-center gap-2 text-sm text-white/60 mb-2">
-                    {labelHref ? (
+                  <div>
+                    {creatorSlug ? (
                       <Link
-                        href={labelHref}
-                        className="font-semibold text-red-500 hover:underline"
+                        href={`/podcaster/${creatorSlug}`}
+                        className="font-semibold text-sm hover:underline"
                       >
-                        {label}
+                        {creatorName}
                       </Link>
                     ) : (
-                      <span className="font-semibold text-red-500">{label}</span>
+                      <span className="font-semibold text-sm">{creatorName}</span>
                     )}
-                    <span>·</span>
-                    <span>{timeAgo(video.createdAt)}</span>
+                    <p className="text-[11px] text-white/60">{timeAgo(video.createdAt)}</p>
                   </div>
+                </div>
 
-                  <h2
-                    onClick={() => setSelected(video)}
-                    className="text-xl md:text-2xl font-bold leading-tight mb-2 cursor-pointer hover:text-red-500 transition"
-                  >
+                {/* Mute toggle (visual only for now) */}
+                <button
+                  onClick={() => setMuted((m) => !m)}
+                  className="w-10 h-10 rounded-full bg-black/40 backdrop-blur flex items-center justify-center"
+                  aria-label={muted ? "Unmute" : "Mute"}
+                >
+                  {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                </button>
+              </div>
+
+              {/* Play button */}
+              <button
+                onClick={() => setPlaying(video)}
+                className="relative z-10 w-20 h-20 md:w-24 md:h-24 rounded-full bg-white/15 backdrop-blur-md flex items-center justify-center hover:bg-white/25 transition"
+                aria-label="Play"
+              >
+                <Play size={32} fill="white" className="text-white" />
+              </button>
+
+              {/* Bottom info */}
+              <div className="absolute left-0 right-0 bottom-24 md:bottom-10 px-4 md:px-6 flex items-end justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-xl md:text-2xl font-bold leading-tight mb-1 line-clamp-2">
                     {video.title}
                   </h2>
-
                   {video.description && (
-                    <p className="text-sm text-white/70 leading-relaxed mb-4 line-clamp-2">
+                    <p className="text-sm text-white/70 line-clamp-2">
                       {video.description}
                     </p>
                   )}
-
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <button
-                      onClick={() => setPlaying(video)}
-                      className="flex items-center gap-2 bg-white text-black font-bold px-5 py-2 rounded text-sm hover:bg-white/80 transition"
-                    >
-                      <Play size={16} fill="black" /> Play
-                    </button>
-                    <button
-                      onClick={() => setSelected(video)}
-                      className="flex items-center gap-2 bg-white/10 text-white font-semibold px-5 py-2 rounded text-sm hover:bg-white/20 transition"
-                    >
-                      <Info size={16} /> More Info
-                    </button>
-                    <SaveButton videoId={video.id} variant="labeled" />
-                  </div>
-
-                  {/* Metadata footer */}
-                  <div className="flex items-center gap-4 text-xs text-white/50 mt-4 pt-4 border-t border-white/5">
+                  <div className="flex items-center gap-3 mt-2 text-xs text-white/60">
                     <ViewCount videoId={video.id} showIcon />
                     <span className="text-white/20">·</span>
-                    <LikeButton videoId={video.id} size={16} showCount />
+                    <LikeButton videoId={video.id} size={14} showCount />
+                    {video.category && (
+                      <>
+                        <span className="text-white/20">·</span>
+                        <span>{video.category}</span>
+                      </>
+                    )}
                   </div>
                 </div>
-              </article>
-            );
-          })}
-        </div>
+
+                {/* Right action rail */}
+                <div className="flex flex-col items-center gap-4 flex-shrink-0">
+                  <LikeButton videoId={video.id} size={26} />
+                  <SaveButton videoId={video.id} variant="icon" />
+                  <button
+                    onClick={() => setPlaying(video)}
+                    className="w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition"
+                    aria-label="Play"
+                  >
+                    <Play size={20} fill="white" className="text-white" />
+                  </button>
+                </div>
+              </div>
+            </section>
+          );
+        })}
       </div>
 
       <MobileBottomNav />
 
-      {/* Detail modal */}
-      {selected && (
-        <div
-          className="fixed inset-0 z-[100] bg-black/90 overflow-y-auto"
-          onClick={() => setSelected(null)}
-        >
-          <div
-            className="relative max-w-4xl mx-auto my-8 bg-[#141418] rounded-xl overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="relative h-[50vh] w-full">
-              <img
-                src={selected.backdropUrl || selected.posterUrl}
-                alt={selected.title}
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#141418] via-[#141418]/40 to-transparent" />
-              <button
-                onClick={() => setSelected(null)}
-                className="absolute top-4 right-4 z-20 bg-black/60 hover:bg-black/80 rounded-full p-2"
-              >
-                <X size={20} />
-              </button>
-              <div className="absolute bottom-0 left-0 right-0 p-8">
-                <h2 className="text-3xl md:text-5xl font-black mb-6 drop-shadow-lg">
-                  {selected.title}
-                </h2>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => {
-                      setPlaying(selected);
-                      setSelected(null);
-                    }}
-                    className="flex items-center gap-2 bg-white text-black font-bold px-8 py-3 rounded hover:bg-white/80 transition"
-                  >
-                    <Play size={20} fill="black" /> Play
-                  </button>
-                  <button
-                    onClick={() => setSelected(null)}
-                    className="flex items-center gap-2 bg-white/20 backdrop-blur text-white font-semibold px-6 py-3 rounded hover:bg-white/30 transition"
-                  >
-                    <X size={20} /> Close
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div className="p-8">
-              {selected.description && (
-                <p className="text-white/90 leading-relaxed">{selected.description}</p>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Players */}
+      {/* Fullscreen player */}
       {playing && playing.bitchuteUrl.includes("bitchute.com") && (
         <BitChutePlayer
           src={playing.bitchuteUrl}
@@ -255,14 +234,23 @@ export default function FeedPage() {
           onClose={() => setPlaying(null)}
         />
       )}
-      {playing && !playing.bitchuteUrl.includes("bitchute.com") && (
-        <VideoPlayer
+      {playing && playing.bitchuteUrl.includes("odysee.com") && (
+        <OdyseePlayer
           src={playing.bitchuteUrl}
           title={playing.title}
-          videoId={playing.id}
           onClose={() => setPlaying(null)}
         />
       )}
+      {playing &&
+        !playing.bitchuteUrl.includes("bitchute.com") &&
+        !playing.bitchuteUrl.includes("odysee.com") && (
+          <VideoPlayer
+            src={playing.bitchuteUrl}
+            title={playing.title}
+            videoId={playing.id}
+            onClose={() => setPlaying(null)}
+          />
+        )}
     </main>
   );
 }
