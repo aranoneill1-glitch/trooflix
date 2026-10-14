@@ -100,7 +100,7 @@ function FeedCard({
   video: Video;
   creator: Creator | null;
   onOpenComments: () => void;
-  onOpenFullscreen: () => void;
+  onOpenFullscreen: (startTime?: number) => void;
   muted: boolean;
   onToggleMute: () => void;
   isFullscreenOpen: boolean;
@@ -146,7 +146,8 @@ function FeedCard({
       lastTapRef.current = now;
       setTimeout(() => {
         if (lastTapRef.current === now) {
-          onOpenFullscreen();
+          const t = videoRef.current?.currentTime || 0;
+          onOpenFullscreen(t);
         }
       }, 300);
     }
@@ -243,6 +244,7 @@ function FeedCard({
         )}
         <video
           ref={videoRef}
+          data-video-id={video.id}
           src={video.bitchuteUrl}
           poster={video.backdropUrl || video.posterUrl}
           muted={muted}
@@ -317,6 +319,7 @@ export default function FeedPage() {
   const [loading, setLoading] = useState(true);
   const [commentVideo, setCommentVideo] = useState<Video | null>(null);
   const [playing, setPlaying] = useState<Video | null>(null);
+  const [startTime, setStartTime] = useState(0);
 
   const playingIndex = playing
     ? videos.findIndex((v) => v.id === playing.id)
@@ -364,7 +367,11 @@ export default function FeedPage() {
               video={video}
               creator={creatorById(video.creatorId)}
               onOpenComments={() => setCommentVideo(video)}
-              onOpenFullscreen={() => setPlaying(video)}
+              onOpenFullscreen={(startTime) => {
+                if (typeof startTime === "number") setStartTime(startTime);
+                else setStartTime(0);
+                setPlaying(video);
+              }}
               muted={muted}
               onToggleMute={() => setMuted((m) => !m)}
               isFullscreenOpen={playing?.id === video.id}
@@ -386,8 +393,24 @@ export default function FeedPage() {
           videos={videos}
           index={playingIndex < 0 ? 0 : playingIndex}
           creators={creators}
-          onClose={() => setPlaying(null)}
-          onIndexChange={(i) => setPlaying(videos[i])}
+          startTime={startTime}
+          onClose={(endTime) => {
+            // Carry back the time into the feed card so inline playback resumes
+            if (typeof endTime === "number" && playing) {
+              const v = document.querySelector<HTMLVideoElement>(
+                `video[data-video-id="${playing.id}"]`
+              );
+              if (v) {
+                try { v.currentTime = endTime; } catch {}
+              }
+            }
+            setPlaying(null);
+            setStartTime(0);
+          }}
+          onIndexChange={(i) => {
+            setStartTime(0);
+            setPlaying(videos[i]);
+          }}
         />
       )}
     </main>

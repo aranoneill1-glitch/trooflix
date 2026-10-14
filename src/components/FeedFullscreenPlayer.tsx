@@ -110,8 +110,9 @@ type Props = {
   videos: Video[];
   index: number;
   creators: Creator[];
-  onClose: () => void;
+  onClose: (endTime?: number) => void;
   onIndexChange: (i: number) => void;
+  startTime?: number;
 };
 
 function VideoCard({
@@ -123,6 +124,8 @@ function VideoCard({
   muted,
   onToggleMute,
   flashSignalRef,
+  initialSeek = 0,
+  cardIndex,
 }: {
   video: Video;
   creator: Creator | null;
@@ -132,6 +135,8 @@ function VideoCard({
   muted: boolean;
   onToggleMute: () => void;
   flashSignalRef: React.MutableRefObject<(() => void) | null>;
+  initialSeek?: number;
+  cardIndex: number;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [paused, setPaused] = useState(false);
@@ -170,11 +175,19 @@ function VideoCard({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActive]);
 
+  const seekedRef = useRef(false);
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
     if (isActive) {
       v.muted = muted;
+      // Apply initial seek ONCE on first activation
+      if (!seekedRef.current && initialSeek > 0) {
+        try {
+          v.currentTime = initialSeek;
+        } catch {}
+      }
+      seekedRef.current = true;
       v.play().catch(() => {
         v.muted = true;
         v.play().catch(() => {});
@@ -182,11 +195,13 @@ function VideoCard({
       setPaused(false);
     } else {
       v.pause();
+      // Only reset time when fully leaving — keep if re-entering
       v.currentTime = 0;
+      seekedRef.current = false;
       setPaused(false);
       setShowControls(false);
     }
-  }, [isActive, muted]);
+  }, [isActive, muted, initialSeek]);
 
   useEffect(() => {
     const v = videoRef.current;
@@ -224,6 +239,7 @@ function VideoCard({
         muted={muted}
         loop
         preload="auto"
+        data-fullscreen-video={cardIndex}
       />
 
       {isActive && (
@@ -357,6 +373,7 @@ export default function FeedFullscreenPlayer({
   creators,
   onClose,
   onIndexChange,
+  startTime = 0,
 }: Props) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [commentOpen, setCommentOpen] = useState(false);
@@ -364,6 +381,7 @@ export default function FeedFullscreenPlayer({
   const tapRef = useRef<(() => void) | null>(null);
   const lastTapRef = useRef(0);
   const touchStartYRef = useRef<number | null>(null);
+  const touchStartXRef = useRef<number | null>(null);
 
   // Which video is centered — derived from scroll position, not prop
   const [activeIndex, setActiveIndex] = useState(index);
@@ -421,13 +439,35 @@ export default function FeedFullscreenPlayer({
     };
   }, []);
 
+
+  const closeWithTime = () => {
+    // Read current active video's time
+    const activeVideo = scrollerRef.current?.querySelector<HTMLVideoElement>(
+      `video[data-fullscreen-video="${activeIndex}"]`
+    );
+    const t = activeVideo?.currentTime || 0;
+    onClose(t);
+  };
+
   const onTouchEnd = (e: React.TouchEvent) => {
-    // If the finger moved significantly, this is a swipe — not a tap
+    // Horizontal swipe to the right → close fullscreen
+    if (touchStartXRef.current !== null) {
+      const dx = e.changedTouches[0].clientX - touchStartXRef.current;
+      const dy = Math.abs(e.changedTouches[0].clientY - (touchStartYRef.current || 0));
+      touchStartXRef.current = null;
+      if (dx > 80 && dy < 60) {
+        lastTapRef.current = 0;
+        touchStartYRef.current = null;
+        closeWithTime();
+        return;
+      }
+    }
+
+    // Vertical swipe check
     if (touchStartYRef.current !== null) {
       const dy = Math.abs(e.changedTouches[0].clientY - touchStartYRef.current);
       touchStartYRef.current = null;
       if (dy > 10) {
-        // Reset tap tracking so a stale timestamp doesn't combine with the next tap
         lastTapRef.current = 0;
         return;
       }
@@ -472,6 +512,7 @@ export default function FeedFullscreenPlayer({
           ref={scrollerRef}
           onTouchStart={(e) => {
             touchStartYRef.current = e.touches[0].clientY;
+            touchStartXRef.current = e.touches[0].clientX;
           }}
           onTouchEnd={onTouchEnd}
           className="h-full w-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide"
@@ -483,11 +524,13 @@ export default function FeedFullscreenPlayer({
               video={v}
               creator={creatorFor(v.creatorId)}
               isActive={i === activeIndex}
-              onClose={onClose}
+              onClose={closeWithTime}
               onOpenComments={() => setCommentOpen(true)}
               muted={muted}
               onToggleMute={() => setMuted((m) => !m)}
               flashSignalRef={tapRef}
+              initialSeek={i === index ? startTime : 0}
+              cardIndex={i}
             />
           ))}
         </div>
