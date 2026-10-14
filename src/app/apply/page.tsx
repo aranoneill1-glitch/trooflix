@@ -43,7 +43,6 @@ export default function ApplyPage() {
 
   const [creatorName, setCreatorName] = useState("");
   const [bio, setBio] = useState("");
-  const [category, setCategory] = useState(CATEGORIES[0]);
   const [photoUrl, setPhotoUrl] = useState<string>("");
   const [uploading, setUploading] = useState(false);
 
@@ -66,7 +65,6 @@ export default function ApplyPage() {
           if (d.application) {
             setCreatorName(d.application.creator_name);
             setBio(d.application.bio);
-            setCategory(d.application.category);
             setPhotoUrl(d.application.photo_url || "");
           }
           setLoading(false);
@@ -123,7 +121,7 @@ export default function ApplyPage() {
           userId,
           creatorName: creatorName.trim(),
           bio: bio.trim(),
-          category,
+          category: "Other",
           photoUrl: photoUrl || null,
         }),
       });
@@ -284,24 +282,6 @@ export default function ApplyPage() {
               <p className="text-[11px] text-white/40 mt-1 text-right">
                 {bio.length}/500
               </p>
-            </div>
-
-            {/* Category */}
-            <div>
-              <label className="text-xs text-white/50 block mb-2">
-                Main category
-              </label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full bg-black/40 border border-white/10 rounded px-3 py-2.5 outline-none focus:border-red-600"
-              >
-                {CATEGORIES.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
             </div>
 
             {error && (

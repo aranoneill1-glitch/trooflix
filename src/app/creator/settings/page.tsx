@@ -41,7 +41,6 @@ export default function CreatorSettings() {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [bio, setBio] = useState("");
-  const [category, setCategory] = useState(CATEGORIES[0]);
   const [photoUrl, setPhotoUrl] = useState("");
   const [heroBackdropUrl, setHeroBackdropUrl] = useState("");
 
@@ -66,7 +65,6 @@ export default function CreatorSettings() {
             setName(d.creator.name || "");
             setSlug(d.creator.slug || "");
             setBio(d.creator.description || "");
-            setCategory(d.creator.category || CATEGORIES[0]);
             setPhotoUrl(d.creator.photoUrl || "");
             setHeroBackdropUrl(d.creator.heroBackdropUrl || "");
           }
@@ -140,7 +138,7 @@ export default function CreatorSettings() {
           name: name.trim(),
           slug: slug.trim(),
           bio: bio.trim(),
-          category,
+
           photoUrl,
           heroBackdropUrl,
         }),
@@ -319,20 +317,6 @@ export default function CreatorSettings() {
           </p>
         </div>
 
-        <div>
-          <label className="text-xs text-white/50 block mb-2">Main category</label>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="w-full bg-black/40 border border-white/10 rounded px-3 py-2.5 outline-none focus:border-red-600"
-          >
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-        </div>
       </section>
 
       {status && (
