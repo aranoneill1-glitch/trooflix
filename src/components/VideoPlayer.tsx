@@ -15,11 +15,14 @@ type Props = {
   title: string;
   videoId?: number;
   onClose: () => void;
+  onPrev?: () => void;
+  onNext?: () => void;
 };
 
-export default function VideoPlayer({ src, title, videoId, onClose }: Props) {
+export default function VideoPlayer({ src, title, videoId, onClose, onPrev, onNext }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const touchStartY = useRef<number | null>(null);
   const hideTimer = useRef<NodeJS.Timeout | null>(null);
 
   const [playing, setPlaying] = useState(false);
@@ -137,6 +140,8 @@ export default function VideoPlayer({ src, title, videoId, onClose }: Props) {
       if (e.key === "m") { v.muted = !v.muted; setMuted(v.muted); }
       if (e.key === "f") toggleFullscreen();
       if (e.key === "Escape" && !document.fullscreenElement) onClose();
+      if (e.key === "ArrowUp" && onPrev) onPrev();
+      if (e.key === "ArrowDown" && onNext) onNext();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -224,6 +229,18 @@ export default function VideoPlayer({ src, title, videoId, onClose }: Props) {
   const progress = duration ? (current / duration) * 100 : 0;
   const bufferedPct = duration ? (buffered / duration) * 100 : 0;
 
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartY.current === null) return;
+    const deltaY = e.changedTouches[0].clientY - touchStartY.current;
+    touchStartY.current = null;
+    if (Math.abs(deltaY) < 60) return;
+    if (deltaY < 0 && onNext) onNext();  // swipe up → next
+    if (deltaY > 0 && onPrev) onPrev();  // swipe down → prev
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -231,6 +248,8 @@ export default function VideoPlayer({ src, title, videoId, onClose }: Props) {
       exit={{ opacity: 0 }}
       ref={containerRef}
       onMouseMove={pokeControls}
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
       className="fixed inset-0 z-[200] bg-black flex items-center justify-center"
     >
 

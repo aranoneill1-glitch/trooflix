@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Play, Heart, Bookmark, Volume2, VolumeX } from "lucide-react";
+import { Play } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import SaveButton from "@/components/SaveButton";
@@ -40,22 +40,19 @@ type Creator = {
 function timeAgo(iso?: string): string {
   if (!iso) return "";
   const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
-  if (diff < 60) return "just now";
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
-  if (diff < 2592000) return `${Math.floor(diff / 604800)}w ago`;
+  if (diff < 60) return "now";
+  if (diff < 3600) return `${Math.floor(diff / 60)}m`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
+  if (diff < 604800) return `${Math.floor(diff / 86400)}d`;
+  if (diff < 2592000) return `${Math.floor(diff / 604800)}w`;
   return new Date(iso).toLocaleDateString();
 }
 
 export default function FeedPage() {
   const [videos, setVideos] = useState<Video[]>([]);
   const [creators, setCreators] = useState<Creator[]>([]);
-  const [playing, setPlaying] = useState<Video | null>(null);
+  const [playingIndex, setPlayingIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [muted, setMuted] = useState(true);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     Promise.all([
@@ -76,169 +73,136 @@ export default function FeedPage() {
       .catch(() => setLoading(false));
   }, []);
 
-  // Track which card is centered as user scrolls
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const onScroll = () => {
-      const h = el.clientHeight;
-      const idx = Math.round(el.scrollTop / h);
-      setActiveIndex(idx);
-    };
-    el.addEventListener("scroll", onScroll, { passive: true });
-    return () => el.removeEventListener("scroll", onScroll);
-  }, []);
-
   const creatorById = (id?: number | null) =>
     id ? creators.find((c) => c.id === id) || null : null;
 
+  const playing = playingIndex !== null ? videos[playingIndex] : null;
+
+  const next = () => {
+    if (playingIndex === null) return;
+    if (playingIndex < videos.length - 1) setPlayingIndex(playingIndex + 1);
+  };
+  const prev = () => {
+    if (playingIndex === null) return;
+    if (playingIndex > 0) setPlayingIndex(playingIndex - 1);
+  };
+
   return (
-    <main className="h-screen bg-black text-white overflow-hidden flex flex-col">
+    <main className="min-h-screen bg-black text-white pb-24 lg:pb-0">
       <TopBar />
 
-      {/* Vertical snap scroller */}
-      <div
-        ref={containerRef}
-        className="flex-1 overflow-y-scroll snap-y snap-mandatory scrollbar-hide"
-        style={{ scrollSnapType: "y mandatory" }}
-      >
+      <div className="pt-20 md:pt-24 max-w-2xl mx-auto px-3 md:px-0">
+        <h1 className="text-2xl md:text-3xl font-black mb-4 px-2">Feed</h1>
+
         {loading && (
-          <div className="h-full flex items-center justify-center">
-            <p className="text-white/50">Loading…</p>
-          </div>
+          <p className="text-white/50 text-center py-12">Loading…</p>
         )}
-
         {!loading && videos.length === 0 && (
-          <div className="h-full flex items-center justify-center">
-            <p className="text-white/50">Nothing here yet.</p>
-          </div>
+          <p className="text-white/50 text-center py-12">Nothing here yet.</p>
         )}
 
-        {videos.map((video, i) => {
-          const creator = creatorById(video.creatorId);
-          const creatorName = creator ? creator.name : "TROOFLIX";
-          const creatorSlug = creator?.slug;
-          const isActive = i === activeIndex;
+        <div className="space-y-3 md:space-y-5">
+          {videos.map((video, i) => {
+            const creator = creatorById(video.creatorId);
+            const name = creator?.name || "TROOFLIX";
+            const slug = creator?.slug;
+            const handle = slug ? `@${slug.replace(/-/g, "")}` : "@trooflix";
 
-          return (
-            <section
-              key={video.id}
-              className="relative w-full h-full snap-start snap-always flex items-center justify-center"
-              style={{ scrollSnapAlign: "start" }}
-            >
-              {/* Poster/backdrop background */}
-              <img
-                src={video.backdropUrl || video.posterUrl}
-                alt=""
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
-
-              {/* Top overlay: creator + follow */}
-              <div className="absolute top-20 md:top-24 left-0 right-0 px-4 md:px-6 flex items-center justify-between">
-                <div className="flex items-center gap-3">
+            return (
+              <article
+                key={video.id}
+                className="bg-[#0d0d10] md:bg-transparent border border-white/5 md:border-0 md:border-b md:border-white/10 md:rounded-none rounded-xl overflow-hidden"
+              >
+                {/* Author row (top) */}
+                <div className="flex items-center gap-3 p-3 md:px-2 md:py-3">
                   {creator?.photoUrl ? (
                     <img
                       src={creator.photoUrl}
                       alt=""
-                      className="w-10 h-10 rounded-full object-cover border border-white/20"
+                      className="w-10 h-10 rounded-full object-cover flex-shrink-0"
                     />
                   ) : (
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-sm font-bold">
-                      {creatorName[0]?.toUpperCase() || "T"}
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center font-bold flex-shrink-0">
+                      {name[0]?.toUpperCase() || "T"}
                     </div>
                   )}
-                  <div>
-                    {creatorSlug ? (
+                  <div className="flex-1 min-w-0">
+                    {slug ? (
                       <Link
-                        href={`/podcaster/${creatorSlug}`}
-                        className="font-semibold text-sm hover:underline"
+                        href={`/podcaster/${slug}`}
+                        className="font-semibold text-[15px] hover:underline block truncate"
                       >
-                        {creatorName}
+                        {name}
                       </Link>
                     ) : (
-                      <span className="font-semibold text-sm">{creatorName}</span>
+                      <span className="font-semibold text-[15px] block truncate">{name}</span>
                     )}
-                    <p className="text-[11px] text-white/60">{timeAgo(video.createdAt)}</p>
+                    <p className="text-xs text-white/50 truncate">
+                      {handle} · {timeAgo(video.createdAt)}
+                    </p>
                   </div>
                 </div>
 
-                {/* Mute toggle (visual only for now) */}
+                {/* Video card */}
                 <button
-                  onClick={() => setMuted((m) => !m)}
-                  className="w-10 h-10 rounded-full bg-black/40 backdrop-blur flex items-center justify-center"
-                  aria-label={muted ? "Unmute" : "Mute"}
+                  onClick={() => setPlayingIndex(i)}
+                  className="relative block w-full bg-black group"
+                  aria-label="Play"
                 >
-                  {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                  <div className="relative w-full aspect-video md:aspect-video overflow-hidden md:rounded-xl">
+                    <img
+                      src={video.backdropUrl || video.posterUrl}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center group-hover:bg-white/30 transition">
+                        <Play size={28} fill="white" className="text-white ml-1" />
+                      </div>
+                    </div>
+                  </div>
                 </button>
-              </div>
 
-              {/* Play button */}
-              <button
-                onClick={() => setPlaying(video)}
-                className="relative z-10 w-20 h-20 md:w-24 md:h-24 rounded-full bg-white/15 backdrop-blur-md flex items-center justify-center hover:bg-white/25 transition"
-                aria-label="Play"
-              >
-                <Play size={32} fill="white" className="text-white" />
-              </button>
-
-              {/* Bottom info */}
-              <div className="absolute left-0 right-0 bottom-24 md:bottom-10 px-4 md:px-6 flex items-end justify-between gap-4">
-                <div className="flex-1 min-w-0">
-                  <h2 className="text-xl md:text-2xl font-bold leading-tight mb-1 line-clamp-2">
+                {/* Title + description */}
+                <div className="px-3 md:px-2 py-3">
+                  <h2 className="font-semibold text-[15px] leading-snug mb-1">
                     {video.title}
                   </h2>
                   {video.description && (
-                    <p className="text-sm text-white/70 line-clamp-2">
+                    <p className="text-sm text-white/60 leading-snug line-clamp-3">
                       {video.description}
                     </p>
                   )}
-                  <div className="flex items-center gap-3 mt-2 text-xs text-white/60">
-                    <ViewCount videoId={video.id} showIcon />
-                    <span className="text-white/20">·</span>
-                    <LikeButton videoId={video.id} size={14} showCount />
-                    {video.category && (
-                      <>
-                        <span className="text-white/20">·</span>
-                        <span>{video.category}</span>
-                      </>
-                    )}
-                  </div>
                 </div>
 
-                {/* Right action rail */}
-                <div className="flex flex-col items-center gap-4 flex-shrink-0">
-                  <LikeButton videoId={video.id} size={26} />
+                {/* Action rail (X-style: reply · like · bookmark · views) */}
+                <div className="flex items-center gap-6 px-3 md:px-2 pb-3 md:pb-4 pt-1 text-white/70">
+                  <LikeButton videoId={video.id} size={18} showCount />
                   <SaveButton videoId={video.id} variant="icon" />
-                  <button
-                    onClick={() => setPlaying(video)}
-                    className="w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition"
-                    aria-label="Play"
-                  >
-                    <Play size={20} fill="white" className="text-white" />
-                  </button>
+                  <ViewCount videoId={video.id} showIcon />
                 </div>
-              </div>
-            </section>
-          );
-        })}
+              </article>
+            );
+          })}
+        </div>
       </div>
 
       <MobileBottomNav />
 
-      {/* Fullscreen player */}
+      {/* Fullscreen player with swipe/arrow navigation */}
       {playing && playing.bitchuteUrl.includes("bitchute.com") && (
         <BitChutePlayer
           src={playing.bitchuteUrl}
           title={playing.title}
-          onClose={() => setPlaying(null)}
+          onClose={() => setPlayingIndex(null)}
         />
       )}
       {playing && playing.bitchuteUrl.includes("odysee.com") && (
         <OdyseePlayer
           src={playing.bitchuteUrl}
           title={playing.title}
-          onClose={() => setPlaying(null)}
+          onClose={() => setPlayingIndex(null)}
         />
       )}
       {playing &&
@@ -248,7 +212,11 @@ export default function FeedPage() {
             src={playing.bitchuteUrl}
             title={playing.title}
             videoId={playing.id}
-            onClose={() => setPlaying(null)}
+            onClose={() => setPlayingIndex(null)}
+            onPrev={playingIndex !== null && playingIndex > 0 ? prev : undefined}
+            onNext={
+              playingIndex !== null && playingIndex < videos.length - 1 ? next : undefined
+            }
           />
         )}
     </main>
