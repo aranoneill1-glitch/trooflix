@@ -90,10 +90,15 @@ function VideoCard({
     }
   };
 
-  // Expose togglePlay to parent via shared ref
+  // Expose togglePlay to parent via shared ref — ONLY when this card is active
   useEffect(() => {
+    if (!isActive) return;
     (flashSignalRef as any).current = togglePlay;
-  }, [flashSignalRef]);
+    return () => {
+      // Don't overwrite other cards' handlers on deactivate — leave for the next active
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isActive]);
 
   useEffect(() => {
     const v = videoRef.current;
@@ -136,6 +141,7 @@ function VideoCard({
   return (
     <div
       ref={containerRef}
+      data-feed-card
       className="relative w-screen h-screen flex-shrink-0 overflow-hidden bg-black snap-start snap-always"
       style={{ scrollSnapAlign: "start", height: "100dvh" }}
     >
@@ -356,7 +362,12 @@ export default function FeedFullscreenPlayer({
 
     if (delta < 300 && delta > 0) {
       lastTapRef.current = 0;
-      const likeBtn = scrollerRef.current?.querySelector<HTMLButtonElement>(
+      // Find the currently visible card's like button
+      const cards = scrollerRef.current?.querySelectorAll<HTMLElement>(
+        "[data-feed-card]"
+      );
+      const visibleCard = cards?.[activeIndex];
+      const likeBtn = visibleCard?.querySelector<HTMLButtonElement>(
         "[data-like-button] button"
       );
       if (likeBtn) likeBtn.click();
