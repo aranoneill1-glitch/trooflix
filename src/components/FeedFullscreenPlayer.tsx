@@ -296,6 +296,7 @@ export default function FeedFullscreenPlayer({
   const [muted, setMuted] = useState(true);
   const tapRef = useRef<(() => void) | null>(null);
   const lastTapRef = useRef(0);
+  const touchStartYRef = useRef<number | null>(null);
 
   // Which video is centered — derived from scroll position, not prop
   const [activeIndex, setActiveIndex] = useState(index);
@@ -354,6 +355,17 @@ export default function FeedFullscreenPlayer({
   }, []);
 
   const onTouchEnd = (e: React.TouchEvent) => {
+    // If the finger moved significantly, this is a swipe — not a tap
+    if (touchStartYRef.current !== null) {
+      const dy = Math.abs(e.changedTouches[0].clientY - touchStartYRef.current);
+      touchStartYRef.current = null;
+      if (dy > 10) {
+        // Reset tap tracking so a stale timestamp doesn't combine with the next tap
+        lastTapRef.current = 0;
+        return;
+      }
+    }
+
     const now = Date.now();
     const target = e.target as HTMLElement;
     if (target.closest("button") || target.closest("a")) return;
@@ -391,6 +403,9 @@ export default function FeedFullscreenPlayer({
       <div className="fixed inset-0 z-[250] bg-black">
         <div
           ref={scrollerRef}
+          onTouchStart={(e) => {
+            touchStartYRef.current = e.touches[0].clientY;
+          }}
           onTouchEnd={onTouchEnd}
           className="h-full w-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide"
           style={{ scrollSnapType: "y mandatory", height: "100dvh" }}
