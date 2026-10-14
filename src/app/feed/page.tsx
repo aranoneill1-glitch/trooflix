@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Volume2, VolumeX } from "lucide-react";
+import { Volume2, VolumeX, Maximize2 } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import SaveButton from "@/components/SaveButton";
@@ -94,6 +94,7 @@ function FeedCard({
   onOpenFullscreen,
   muted,
   onToggleMute,
+  isFullscreenOpen,
 }: {
   video: Video;
   creator: Creator | null;
@@ -101,10 +102,12 @@ function FeedCard({
   onOpenFullscreen: () => void;
   muted: boolean;
   onToggleMute: () => void;
+  isFullscreenOpen: boolean;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [shouldPlay, setShouldPlay] = useState(false);
+  const [userPaused, setUserPaused] = useState(false);
 
   // IntersectionObserver — play when >50% visible, pause otherwise
   useEffect(() => {
@@ -127,16 +130,16 @@ function FeedCard({
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
-    if (shouldPlay) {
+    // Pause inline video if fullscreen player is open, or user manually paused
+    if (shouldPlay && !userPaused && !isFullscreenOpen) {
       v.play().catch(() => {
-        // Autoplay with sound can be blocked — fall back to muted
         v.muted = true;
         v.play().catch(() => {});
       });
     } else {
       v.pause();
     }
-  }, [shouldPlay]);
+  }, [shouldPlay, userPaused, isFullscreenOpen]);
 
   // Sync muted prop
   useEffect(() => {
@@ -185,8 +188,16 @@ function FeedCard({
       <div
         ref={containerRef}
         className="relative w-full aspect-video bg-black md:rounded-xl overflow-hidden group cursor-pointer"
-        onClick={onOpenFullscreen}
+        onClick={() => setUserPaused((p) => !p)}
       >
+        {/* Play overlay when paused */}
+        {userPaused && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+            <div className="w-16 h-16 rounded-full bg-black/60 backdrop-blur flex items-center justify-center">
+              <div className="w-0 h-0 border-l-[18px] border-l-white border-y-[12px] border-y-transparent ml-1" />
+            </div>
+          </div>
+        )}
         <video
           ref={videoRef}
           src={video.bitchuteUrl}
@@ -207,6 +218,18 @@ function FeedCard({
           aria-label={muted ? "Unmute" : "Mute"}
         >
           {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+        </button>
+
+        {/* Fullscreen button */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpenFullscreen();
+          }}
+          className="absolute top-3 right-14 w-9 h-9 rounded-full bg-black/50 backdrop-blur flex items-center justify-center hover:bg-black/70 transition"
+          aria-label="Fullscreen"
+        >
+          <Maximize2 size={16} />
         </button>
       </div>
 
@@ -285,6 +308,7 @@ export default function FeedPage() {
               onOpenFullscreen={() => setPlaying(video)}
               muted={muted}
               onToggleMute={() => setMuted((m) => !m)}
+              isFullscreenOpen={playing?.id === video.id}
             />
           ))}
         </div>
