@@ -131,8 +131,10 @@ export default function FeedFullscreenPlayer({
     // Ignore taps on buttons/links/interactive
     if (target.closest("button") || target.closest("a")) return;
 
-    if (now - lastTapRef.current < 300) {
-      // Double tap — trigger like
+    const delta = now - lastTapRef.current;
+
+    if (delta < 300 && delta > 0) {
+      // Double tap — like + heart burst
       lastTapRef.current = 0;
       const rect = containerRef.current?.getBoundingClientRect();
       if (rect) {
@@ -144,14 +146,18 @@ export default function FeedFullscreenPlayer({
         });
         setTimeout(() => setHeartBurst(null), 900);
       }
-      // Fire a like via the LikeButton's pattern — dispatch click on the like button
       const likeBtn = containerRef.current?.querySelector<HTMLButtonElement>(
-        "[data-like-button]"
+        "[data-like-button] button"
       );
       if (likeBtn) likeBtn.click();
     } else {
-      // Single tap → toggle play (only if not a swipe)
+      // Single tap — schedule togglePlay after double-tap window
       lastTapRef.current = now;
+      setTimeout(() => {
+        if (lastTapRef.current === now) {
+          togglePlay();
+        }
+      }, 300);
     }
   };
 
@@ -186,6 +192,14 @@ export default function FeedFullscreenPlayer({
         exit={{ opacity: 0 }}
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
+        onClick={(e) => {
+          // Desktop-only: touch devices handle via onTouchEnd (avoid double-fire)
+          const isTouch = typeof window !== "undefined" && "ontouchstart" in window;
+          if (isTouch) return;
+          const target = e.target as HTMLElement;
+          if (target.closest("button") || target.closest("a")) return;
+          togglePlay();
+        }}
         className="fixed inset-0 z-[250] bg-black flex items-center justify-center select-none"
       >
         {/* Video */}
