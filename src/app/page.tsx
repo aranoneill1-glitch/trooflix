@@ -262,7 +262,7 @@ export default function Home() {
       {/* ============ MODAL / PLAYER ============ */}
       <AnimatePresence>
         {showVideoIntro && <VideoIntro onDone={onIntroDone} />}
-        {selected && <DetailModal item={selected} onClose={() => setSelected(null)} onPlay={(v) => { setSelected(null); requestPlay(v); }} />}
+        {selected && <DetailModal item={selected} onClose={() => setSelected(null)} onPlay={(v) => { setSelected(null); requestPlay(v); }} creators={creators} />}
         {playing && playing.bitchuteUrl.includes("bitchute.com") && (
           <BitChutePlayer src={playing.bitchuteUrl} title={playing.title} onClose={() => setPlaying(null)} />
         )}
@@ -544,7 +544,11 @@ function Card({ item, hovered, onHover, onLeave, onSelect, onPlay, showCreator, 
 }
 
 /* ============ MODAL ============ */
-function DetailModal({ item, onClose, onPlay }: { item: Video; onClose: () => void; onPlay: (v: Video) => void }) {
+function DetailModal({ item, onClose, onPlay, creators }: { item: Video; onClose: () => void; onPlay: (v: Video) => void; creators?: any[] }) {
+  const modalCreator =
+    item.creatorId && item.type === "Podcast"
+      ? (creators || []).find((c: any) => c.id === item.creatorId) || null
+      : null;
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -593,6 +597,31 @@ function DetailModal({ item, onClose, onPlay }: { item: Video; onClose: () => vo
               <span className="border border-white/40 px-2 py-0.5 text-xs">{item.rating}</span>
               <span className="text-white/70 text-xs">HD</span>
             </div>
+
+            {modalCreator && (
+              <div className="flex items-center gap-3 mb-4">
+                {modalCreator.photoUrl ? (
+                  <img
+                    src={modalCreator.photoUrl}
+                    alt={modalCreator.name}
+                    className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover border border-white/20"
+                  />
+                ) : (
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center font-bold">
+                    {(modalCreator.name?.[0] || "?").toUpperCase()}
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <p className="text-xs text-white/50">Podcaster</p>
+                  <a
+                    href={`/podcaster/${modalCreator.slug}`}
+                    className="font-semibold hover:underline block truncate"
+                  >
+                    {modalCreator.name}
+                  </a>
+                </div>
+              </div>
+            )}
             <p className="text-white/90 leading-relaxed text-sm md:text-base">{item.description}</p>
           </div>
           <div className="text-sm mt-4 md:mt-0">
