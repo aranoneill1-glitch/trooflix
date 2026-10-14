@@ -236,21 +236,10 @@ export default function Home() {
         {loaded && !filtered && !showingFiltered && (
           <>
             <CollectionsRow />
-            {progressList.length > 0 && (() => {
-                const cw = progressList
-                  .map((p) => {
-                    const v = videos.find((x) => x.id === p.id);
-                    return v ? { ...v, __progress: p.seconds / p.duration } : null;
-                  })
-                  .filter(Boolean) as any[];
-                return cw.length > 0 ? (
-                  <Row title="Continue Watching" items={cw} onSelect={setSelected} onPlay={requestPlay} />
-                ) : null;
-              })()}
-              {trending.length > 0 && <Row title="Trending Now" items={trending} onSelect={setSelected} onPlay={requestPlay} />}
-            {docs.length > 0 && <Row title="Documentaries" items={docs} onSelect={setSelected} onPlay={requestPlay} />}
-            {podcasts.length > 0 && <Row title="Podcasts" items={podcasts} onSelect={setSelected} onPlay={requestPlay} />}
             {newReleases.length > 0 && <Row title="New Releases" items={newReleases} onSelect={setSelected} onPlay={requestPlay} />}
+            {trending.length > 0 && <Row title="Trending Now" items={trending} onSelect={setSelected} onPlay={requestPlay} />}
+            {podcasts.length > 0 && <Row title="Podcasts" items={podcasts} onSelect={setSelected} onPlay={requestPlay} />}
+            {docs.length > 0 && <Row title="Documentaries" items={docs} onSelect={setSelected} onPlay={requestPlay} />}
             {loaded && videos.length === 0 && (
               <div className="px-8 py-20 text-center text-white/50">
                 <p className="text-xl mb-2">No videos yet</p>
