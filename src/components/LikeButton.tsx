@@ -81,10 +81,12 @@ export default function LikeButton({
   videoId,
   size = 20,
   showCount = true,
+  stacked = false,
 }: {
   videoId: number;
   size?: number;
   showCount?: boolean;
+  stacked?: boolean;
 }) {
   const [liked, setLiked] = useState(false);
   const [count, setCountState] = useState<number>(0);
@@ -165,6 +167,25 @@ export default function LikeButton({
 
   if (checking) {
     return <div style={{ width: size, height: size }} />;
+  }
+
+  if (stacked) {
+    return (
+      <button
+        onClick={toggle}
+        className={`flex flex-col items-center gap-0.5 transition ${
+          liked ? "text-red-500" : "text-white"
+        }`}
+        title={liked ? "Unlike" : "Like"}
+      >
+        <ThumbsUp size={size} fill={liked ? "currentColor" : "none"} />
+        {showCount && (
+          <span className="text-[11px] font-semibold tabular-nums text-white/90">
+            {count > 0 ? count.toLocaleString() : ""}
+          </span>
+        )}
+      </button>
+    );
   }
 
   return (

@@ -17,6 +17,43 @@ import CommentDrawer from "@/components/CommentDrawer";
 import SaveButton from "@/components/SaveButton";
 import LikeButton from "@/components/LikeButton";
 
+function CommentCountStacked({
+  videoId,
+  onClick,
+}: {
+  videoId: number;
+  onClick: () => void;
+}) {
+  const [count, setCount] = useState<number | null>(null);
+  useEffect(() => {
+    let mounted = true;
+    fetch(`/api/comments?video_id=${videoId}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (!mounted) return;
+        const list = Array.isArray(d) ? d : Array.isArray(d.comments) ? d.comments : [];
+        setCount(list.length);
+      })
+      .catch(() => {});
+    return () => {
+      mounted = false;
+    };
+  }, [videoId]);
+
+  return (
+    <button
+      onClick={onClick}
+      className="flex flex-col items-center gap-0.5 text-white"
+      aria-label="Comments"
+    >
+      <MessageCircle size={26} />
+      <span className="text-[11px] font-semibold tabular-nums text-white/90">
+        {count !== null && count > 0 ? count.toLocaleString() : ""}
+      </span>
+    </button>
+  );
+}
+
 type Video = {
   id: number;
   title: string;
@@ -227,17 +264,14 @@ function VideoCard({
       </AnimatePresence>
 
       {isActive && (
-        <div className="absolute right-3 bottom-56 z-20 flex flex-col items-center gap-6">
+        <div className="absolute right-3 bottom-56 z-20 flex flex-col items-center gap-5">
           <div data-like-button>
-            <LikeButton videoId={video.id} size={28} />
+            <LikeButton videoId={video.id} size={26} stacked />
           </div>
-          <button
+          <CommentCountStacked
+            videoId={video.id}
             onClick={onOpenComments}
-            className="flex flex-col items-center text-white"
-            aria-label="Comments"
-          >
-            <MessageCircle size={28} />
-          </button>
+          />
           <button
             onClick={share}
             className="flex flex-col items-center text-white"
