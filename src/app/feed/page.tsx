@@ -266,22 +266,6 @@ export default function FeedPage() {
   const playingIndex = playing
     ? videos.findIndex((v) => v.id === playing.id)
     : -1;
-
-  const goNext = () => {
-    if (videos.length === 0) return;
-    const nextIdx = playingIndex < 0 || playingIndex >= videos.length - 1
-      ? 0
-      : playingIndex + 1;
-    setPlaying(videos[nextIdx]);
-  };
-
-  const goPrev = () => {
-    if (videos.length === 0) return;
-    const prevIdx = playingIndex <= 0
-      ? videos.length - 1
-      : playingIndex - 1;
-    setPlaying(videos[prevIdx]);
-  };
   const [muted, setMuted] = useState(true);
 
   useEffect(() => {
@@ -344,11 +328,11 @@ export default function FeedPage() {
 
       {playing && (
         <FeedFullscreenPlayer
-          video={playing}
-          creator={creatorById(playing.creatorId)}
+          videos={videos}
+          index={playingIndex < 0 ? 0 : playingIndex}
+          creators={creators}
           onClose={() => setPlaying(null)}
-          onNext={goNext}
-          onPrev={goPrev}
+          onIndexChange={(i) => setPlaying(videos[i])}
         />
       )}
     </main>
