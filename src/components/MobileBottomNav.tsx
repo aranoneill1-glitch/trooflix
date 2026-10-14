@@ -8,8 +8,8 @@ const TABS = [
   { icon: HomeIcon, label: "Home", path: "/" },
   { icon: Play, label: "Feed", path: "/feed" },
   { icon: Mic, label: "Podcasts", path: "/podcasts" },
-  { icon: Plus, label: "My List", path: "/my-list" },
   { icon: MessageCircle, label: "Messages", path: "/messages" },
+  { icon: Plus, label: "My List", path: "/my-list" },
 ];
 
 export default function MobileBottomNav() {
