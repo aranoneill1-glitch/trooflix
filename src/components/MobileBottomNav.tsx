@@ -78,7 +78,7 @@ export default function MobileBottomNav() {
         <Link
           href={signedIn === false ? "/login" : "/profile"}
           onClick={onAvatarTab}
-          className="flex flex-col items-center gap-0.5 px-1 py-1 flex-1 min-w-0 -translate-y-1"
+          className="flex flex-col items-center gap-0.5 px-1 py-1 flex-1 min-w-0 -translate-y-0.5"
         >
           {avatarUrl ? (
             <img
