@@ -70,6 +70,8 @@ export default function FeedFullscreenPlayer({
   const [paused, setPaused] = useState(false);
   const [commentOpen, setCommentOpen] = useState(false);
   const [heartBurst, setHeartBurst] = useState<{ x: number; y: number; id: number } | null>(null);
+  const [showControls, setShowControls] = useState(false);
+  const controlsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const lastTapRef = useRef(0);
   const touchStartY = useRef<number | null>(null);
@@ -103,6 +105,12 @@ export default function FeedFullscreenPlayer({
   }, []);
 
   // Toggle play/pause silently
+  const flashControls = () => {
+    setShowControls(true);
+    if (controlsTimer.current) clearTimeout(controlsTimer.current);
+    controlsTimer.current = setTimeout(() => setShowControls(false), 2000);
+  };
+
   const togglePlay = () => {
     const v = videoRef.current;
     if (!v) return;
@@ -113,6 +121,7 @@ export default function FeedFullscreenPlayer({
       v.pause();
       setPaused(true);
     }
+    flashControls();
   };
 
   // Double-tap to like
@@ -192,8 +201,8 @@ export default function FeedFullscreenPlayer({
           preload="auto"
         />
 
-        {/* Top bar */}
-        <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between p-4 bg-gradient-to-b from-black/60 to-transparent">
+        {/* Top bar — close only */}
+        <div className="absolute top-0 left-0 right-0 z-20 flex items-center p-4 bg-gradient-to-b from-black/60 to-transparent">
           <button
             onClick={onClose}
             className="w-10 h-10 rounded-full bg-black/40 backdrop-blur flex items-center justify-center hover:bg-black/70 transition"
@@ -201,25 +210,58 @@ export default function FeedFullscreenPlayer({
           >
             <X size={22} />
           </button>
-
-          {/* Mute */}
-          <button
-            onClick={() => setMuted((m) => !m)}
-            className="w-10 h-10 rounded-full bg-black/40 backdrop-blur flex items-center justify-center hover:bg-black/70 transition"
-            aria-label={muted ? "Unmute" : "Mute"}
-          >
-            {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
-          </button>
         </div>
 
-        {/* Center play icon when paused */}
-        {paused && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-            <div className="w-20 h-20 rounded-full bg-black/50 backdrop-blur flex items-center justify-center">
-              <Play size={36} fill="white" className="text-white ml-1" />
-            </div>
-          </div>
-        )}
+        {/* Reels-style center controls (fade after 2s) */}
+        <AnimatePresence>
+          {showControls && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="absolute inset-0 flex flex-col items-center justify-center gap-6 pointer-events-none z-10"
+            >
+              {/* Mute button (like Reels) */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMuted((m) => !m);
+                  flashControls();
+                }}
+                className="pointer-events-auto w-14 h-14 rounded-full bg-black/50 backdrop-blur flex items-center justify-center hover:bg-black/70 transition"
+                aria-label={muted ? "Unmute" : "Mute"}
+              >
+                {muted ? <VolumeX size={24} /> : <Volume2 size={24} />}
+              </button>
+
+              {/* Play / pause button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  togglePlay();
+                }}
+                className="pointer-events-auto w-16 h-16 rounded-full bg-black/50 backdrop-blur flex items-center justify-center hover:bg-black/70 transition"
+                aria-label={paused ? "Play" : "Pause"}
+              >
+                {paused ? (
+                  <Play size={30} fill="white" className="text-white ml-1" />
+                ) : (
+                  <svg
+                    width="26"
+                    height="26"
+                    viewBox="0 0 24 24"
+                    fill="white"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <rect x="6" y="5" width="4" height="14" rx="1" />
+                    <rect x="14" y="5" width="4" height="14" rx="1" />
+                  </svg>
+                )}
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Heart burst animation */}
         <AnimatePresence>
