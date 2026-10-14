@@ -7,6 +7,7 @@ import { Search, Plus, CheckCheck } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { createClient } from "@/utils/supabase/client";
+import { useRealtimeDMs } from "@/hooks/useRealtimeDMs";
 
 type Conversation = {
   other_user_id: string;
@@ -77,14 +78,22 @@ export default function MessagesInbox() {
     });
   }, [router]);
 
-  // Poll inbox every 3s while visible
+  // --- Realtime: refresh inbox on every new incoming message ---
+  useRealtimeDMs({
+    userId,
+    onMessage: () => {
+      if (userId) loadInbox(userId, true);
+    },
+  });
+
+  // --- Fallback poll every 30s (insurance if Realtime drops) ---
   useEffect(() => {
     if (!userId) return;
     const tick = () => {
       if (document.hidden) return;
       loadInbox(userId, true);
     };
-    const iv = setInterval(tick, 3000);
+    const iv = setInterval(tick, 30_000);
     const onVis = () => !document.hidden && tick();
     document.addEventListener("visibilitychange", onVis);
     return () => {

@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, Send, Smile, Check, CheckCheck } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
+import { useRealtimeDMs } from "@/hooks/useRealtimeDMs";
 
 type Message = {
   id: number;
@@ -22,7 +23,6 @@ type Profile = {
   avatar_url: string | null;
 };
 
-const POLL_MS = 3000;
 
 function dayKey(iso: string): string {
   const d = new Date(iso);
@@ -91,7 +91,45 @@ export default function ThreadPage() {
     });
   }, [me, otherId]);
 
-  // Poll every 3s while visible — updates list only
+  // --- Realtime: instant updates via Supabase WebSocket ---
+  useRealtimeDMs({
+    userId: me,
+    withUserId: otherId,
+    onMessage: (incoming: any) => {
+      setMessages((prev) => {
+        // If we already have this message id, replace it (read_at updates)
+        const idx = prev.findIndex((m) => m.id === incoming.id);
+        if (idx !== -1) {
+          const next = [...prev];
+          next[idx] = incoming;
+          return next;
+        }
+        // Otherwise append (but skip our own optimistic dupes)
+        const existsAsOptimistic = prev.some(
+          (m) => m.id < 0 && m.body === incoming.body && m.sender_id === incoming.sender_id
+        );
+        if (existsAsOptimistic) {
+          // Replace the first matching optimistic entry with the real one
+          let replaced = false;
+          return prev.map((m) => {
+            if (
+              !replaced &&
+              m.id < 0 &&
+              m.body === incoming.body &&
+              m.sender_id === incoming.sender_id
+            ) {
+              replaced = true;
+              return incoming;
+            }
+            return m;
+          });
+        }
+        return [...prev, incoming];
+      });
+    },
+  });
+
+  // --- Fallback poll every 30s (insurance if Realtime connection drops) ---
   useEffect(() => {
     if (!me || !otherId) return;
 
@@ -102,7 +140,6 @@ export default function ThreadPage() {
         .then((d) => {
           const incoming: Message[] = Array.isArray(d.messages) ? d.messages : [];
           setMessages((prev) => {
-            // Merge: keep optimistic (negative ids) that aren't yet in incoming
             const incomingIds = new Set(incoming.map((m) => m.id));
             const stillPending = prev.filter(
               (m) => m.id < 0 && !incomingIds.has(m.id)
@@ -113,7 +150,7 @@ export default function ThreadPage() {
         .catch(() => {});
     };
 
-    const interval = setInterval(tick, POLL_MS);
+    const interval = setInterval(tick, 30_000);
     const onVisible = () => {
       if (!document.hidden) tick();
     };
