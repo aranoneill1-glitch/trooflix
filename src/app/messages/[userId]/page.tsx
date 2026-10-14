@@ -3,9 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, Send, Smile, Check, CheckCheck } from "lucide-react";
+import { ChevronLeft, Send, Plus, Check, CheckCheck } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { useRealtimeDMs } from "@/hooks/useRealtimeDMs";
+import GifPicker from "@/components/GifPicker";
 
 type Message = {
   id: number;
@@ -49,6 +50,15 @@ function timeShort(iso: string): string {
   });
 }
 
+const MEDIA_EXT = /\.(gif|png|jpe?g|webp|avif)(\?|$)/i;
+
+function isMediaUrl(text: string): boolean {
+  if (!text) return false;
+  const t = text.trim();
+  if (!t.startsWith("http")) return false;
+  return MEDIA_EXT.test(t);
+}
+
 export default function ThreadPage() {
   const params = useParams();
   const router = useRouter();
@@ -60,6 +70,9 @@ export default function ThreadPage() {
   const [loading, setLoading] = useState(true);
   const [body, setBody] = useState("");
   const [sending, setSending] = useState(false);
+  const [gifOpen, setGifOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -166,6 +179,60 @@ export default function ThreadPage() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "auto" });
   }, [messages.length]);
+
+  const uploadAndSendImage = async (file: File) => {
+    if (!me) return;
+    setUploading(true);
+    try {
+      const presign = await fetch("/api/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          filename: file.name,
+          contentType: file.type || "image/jpeg",
+          folder: "dm-images",
+        }),
+      });
+      if (!presign.ok) throw new Error("Upload failed");
+      const { signedUrl, publicUrl } = await presign.json();
+
+      const put = await fetch(signedUrl, {
+        method: "PUT",
+        headers: { "Content-Type": file.type || "image/jpeg" },
+        body: file,
+      });
+      if (!put.ok) throw new Error("Upload failed");
+
+      // Send the URL as the message body
+      const optimistic: Message = {
+        id: -Date.now(),
+        sender_id: me,
+        recipient_id: otherId,
+        body: publicUrl,
+        created_at: new Date().toISOString(),
+        read_at: null,
+      };
+      setMessages((prev) => [...prev, optimistic]);
+      const res = await fetch("/api/dm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ senderId: me, recipientId: otherId, body: publicUrl }),
+      });
+      if (!res.ok) {
+        setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
+      } else {
+        const data = await res.json();
+        if (data.message) {
+          setMessages((prev) => prev.map((m) => (m.id === optimistic.id ? data.message : m)));
+        }
+      }
+    } catch (e) {
+      alert("Couldn't send image");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   const send = async () => {
     const trimmed = body.trim();
@@ -366,7 +433,16 @@ export default function ThreadPage() {
                     />
                   )}
 
-                  <span className="whitespace-pre-wrap">{m.body}</span>
+                  {isMediaUrl(m.body) ? (
+                    <img
+                      src={m.body}
+                      alt=""
+                      className="rounded-lg max-w-full max-h-72 object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <span className="whitespace-pre-wrap">{m.body}</span>
+                  )}
 
                   {/* Timestamp + ticks — inline bottom-right */}
                   <span className="inline-flex items-center gap-1 float-right ml-2 mt-1 text-[10px] text-white/70 translate-y-[2px]">
@@ -395,24 +471,52 @@ export default function ThreadPage() {
         style={{ background: "#000000" }}
       >
         <div className="max-w-3xl mx-auto px-2 md:px-4 py-2 flex items-end gap-2">
+          {/* + button — image upload */}
           <button
-            className="p-2 text-white/70 hover:text-white transition flex-shrink-0"
-            aria-label="Emoji"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="p-2 text-white/70 hover:text-white transition flex-shrink-0 disabled:opacity-50"
+            aria-label="Add image"
           >
-            <Smile size={22} />
+            {uploading ? (
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <Plus size={22} />
+            )}
           </button>
-
-          <textarea
-            ref={inputRef}
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            onKeyDown={onKeyDown}
-            placeholder="Message"
-            rows={1}
-            maxLength={2000}
-            className="flex-1 bg-[#2a3942] border-none rounded-2xl px-3.5 py-2.5 outline-none resize-none max-h-32 placeholder:text-white/40"
-            style={{ minHeight: "40px", fontSize: "16px" }}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) uploadAndSendImage(f);
+            }}
           />
+
+          {/* Input pill with GIF inside */}
+          <div className="flex-1 flex items-end gap-2 bg-[#2a3942] rounded-2xl px-3 py-2">
+            <textarea
+              ref={inputRef}
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              onKeyDown={onKeyDown}
+              placeholder="Message"
+              rows={1}
+              maxLength={2000}
+              className="flex-1 bg-transparent border-none outline-none resize-none max-h-32 placeholder:text-white/40"
+              style={{ minHeight: "24px", fontSize: "16px" }}
+            />
+            <button
+              type="button"
+              onClick={() => setGifOpen(true)}
+              className="text-xs font-bold tracking-wider text-white/70 hover:text-white transition flex-shrink-0 px-1"
+              aria-label="Send a GIF"
+            >
+              GIF
+            </button>
+          </div>
 
           <button
             onClick={send}
@@ -424,6 +528,16 @@ export default function ThreadPage() {
           </button>
         </div>
       </div>
+
+      <GifPicker
+        open={gifOpen}
+        onClose={() => setGifOpen(false)}
+        onPick={(url) => {
+          setBody(url);
+          // Auto-send after picking
+          setTimeout(() => send(), 50);
+        }}
+      />
     </main>
   );
 }
