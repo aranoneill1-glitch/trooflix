@@ -2,10 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Play } from "lucide-react";
+import { Play, MessageCircle } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import SaveButton from "@/components/SaveButton";
+import FollowButton from "@/components/FollowButton";
 import LikeButton from "@/components/LikeButton";
 import ViewCount from "@/components/ViewCount";
 import BitChutePlayer from "@/components/BitChutePlayer";
@@ -46,6 +47,32 @@ function timeAgo(iso?: string): string {
   if (diff < 604800) return `${Math.floor(diff / 86400)}d`;
   if (diff < 2592000) return `${Math.floor(diff / 604800)}w`;
   return new Date(iso).toLocaleDateString();
+}
+
+
+function CommentCount({ videoId }: { videoId: number }) {
+  const [count, setCount] = useState<number | null>(null);
+  useEffect(() => {
+    let mounted = true;
+    fetch(`/api/comments?video_id=${videoId}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (!mounted) return;
+        const list = Array.isArray(d) ? d : Array.isArray(d.comments) ? d.comments : [];
+        setCount(list.length);
+      })
+      .catch(() => {});
+    return () => {
+      mounted = false;
+    };
+  }, [videoId]);
+
+  return (
+    <span className="inline-flex items-center gap-1.5 text-white/70">
+      <MessageCircle size={18} />
+      {count !== null && <span className="text-sm">{count}</span>}
+    </span>
+  );
 }
 
 export default function FeedPage() {
@@ -141,6 +168,7 @@ export default function FeedPage() {
                       {handle} · {timeAgo(video.createdAt)}
                     </p>
                   </div>
+                  {creator && <FollowButton creatorId={creator.id} />}
                 </div>
 
                 {/* Video card */}
@@ -177,8 +205,9 @@ export default function FeedPage() {
                 </div>
 
                 {/* Action rail (X-style: reply · like · bookmark · views) */}
-                <div className="flex items-center gap-6 px-3 md:px-2 pb-3 md:pb-4 pt-1 text-white/70">
+                <div className="flex items-center gap-6 px-3 md:px-2 pb-3 md:pb-4 pt-1">
                   <LikeButton videoId={video.id} size={18} showCount />
+                  <CommentCount videoId={video.id} />
                   <SaveButton videoId={video.id} variant="icon" />
                   <ViewCount videoId={video.id} showIcon />
                 </div>
