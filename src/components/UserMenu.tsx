@@ -7,8 +7,12 @@ import { User, LogOut } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 
 type UserInfo = {
+  id: string;
   email: string;
   initial: string;
+  avatarUrl?: string | null;
+  username?: string | null;
+  displayName?: string | null;
 } | null;
 
 export default function UserMenu() {
@@ -24,14 +28,31 @@ export default function UserMenu() {
     const loadUser = async () => {
       const { data } = await supabase.auth.getUser();
       if (data.user) {
-        setUser({
+        const base: UserInfo = {
+          id: data.user.id,
           email: data.user.email || "",
           initial: (data.user.email || "?")[0].toUpperCase(),
-        });
+        };
+        setUser(base);
+        setLoading(false);
+
+        // Fetch profile pic / handle in background
+        try {
+          const r = await fetch(`/api/profile?user_id=${data.user.id}`);
+          const d = await r.json();
+          if (d.profile) {
+            setUser({
+              ...base,
+              avatarUrl: d.profile.avatar_url || null,
+              username: d.profile.username || null,
+              displayName: d.profile.display_name || null,
+            });
+          }
+        } catch {}
       } else {
         setUser(null);
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     loadUser();
@@ -61,12 +82,14 @@ export default function UserMenu() {
     setUser(null);
     setOpen(false);
     router.refresh();
+    router.push("/");
   };
 
   if (loading) {
-    return <div className="w-8 h-8" />;
+    return <div className="w-7 h-7" />;
   }
 
+  // Signed out → person icon, links to /login
   if (!user) {
     return (
       <Link
@@ -79,22 +102,38 @@ export default function UserMenu() {
     );
   }
 
+  const displayName =
+    user.displayName || (user.username ? `@${user.username}` : user.email);
+
   return (
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setOpen(!open)}
-        className="text-red-500 hover:text-red-400 transition"
-        title={user.email}
+        className="flex items-center justify-center w-7 h-7 rounded-full overflow-hidden border border-white/20 hover:border-white/50 transition"
+        title={displayName}
       >
-        <User size={22} />
+        {user.avatarUrl ? (
+          <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-[11px] font-bold">
+            {user.initial}
+          </div>
+        )}
       </button>
 
       {open && (
-        <div className="absolute right-0 top-12 w-56 bg-[#141418] border border-white/10 rounded-lg shadow-xl overflow-hidden z-[60]">
+        <div className="absolute right-0 top-11 w-60 bg-[#141418] border border-white/10 rounded-lg shadow-xl overflow-hidden z-[60]">
           <div className="px-4 py-3 border-b border-white/10">
             <p className="text-xs text-white/40 mb-0.5">Signed in as</p>
             <p className="text-sm text-white/90 truncate">{user.email}</p>
           </div>
+          <Link
+            href="/profile"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 text-white/80 hover:text-white transition text-sm"
+          >
+            My Profile
+          </Link>
           <Link
             href="/account"
             onClick={() => setOpen(false)}

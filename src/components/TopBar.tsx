@@ -115,7 +115,7 @@ export default function TopBar({ onMenu }: Props) {
         ) : (
           <button
             onClick={() => setSearchOpen(true)}
-            className="text-white/90 hover:text-white transition"
+            className="hidden md:flex text-white/90 hover:text-white transition"
             aria-label="Search"
           >
             <Search size={20} />

@@ -1,54 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { Home as HomeIcon, Play, Mic, MessageCircle, User } from "lucide-react";
-import { createClient } from "@/utils/supabase/client";
+import { usePathname } from "next/navigation";
+import { Home as HomeIcon, Play, Mic, MessageCircle, Search } from "lucide-react";
 
 const TABS = [
   { icon: HomeIcon, label: "Home", path: "/" },
   { icon: Play, label: "Feed", path: "/feed" },
   { icon: Mic, label: "Podcasts", path: "/podcasts" },
   { icon: MessageCircle, label: "Messages", path: "/messages" },
+  { icon: Search, label: "Search", path: "/search" },
 ];
 
 export default function MobileBottomNav() {
   const pathname = usePathname();
-  const router = useRouter();
-
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [signedIn, setSignedIn] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) {
-        setSignedIn(false);
-        return;
-      }
-      setSignedIn(true);
-      fetch(`/api/profile?user_id=${data.user.id}`)
-        .then((r) => r.json())
-        .then((d) => {
-          if (d.profile?.avatar_url) setAvatarUrl(d.profile.avatar_url);
-        })
-        .catch(() => {});
-    });
-  }, [pathname]); // refresh on route change so avatar stays current
 
   const isActive = (path: string) => {
     if (path === "/") return pathname === "/";
     return pathname === path || pathname.startsWith(path + "/");
-  };
-
-  const profileActive = pathname === "/profile" || pathname.startsWith("/profile");
-
-  const onAvatarTab = (e: React.MouseEvent) => {
-    if (signedIn === false) {
-      e.preventDefault();
-      router.push("/login");
-    }
   };
 
   return (
@@ -73,34 +42,6 @@ export default function MobileBottomNav() {
             </Link>
           );
         })}
-
-        {/* Avatar tab (replaces My List) */}
-        <Link
-          href={signedIn === false ? "/login" : "/profile"}
-          onClick={onAvatarTab}
-          className="flex flex-col items-center gap-0.5 px-1 py-1 flex-1 min-w-0 -translate-y-0.5"
-        >
-          {avatarUrl ? (
-            <img
-              src={avatarUrl}
-              alt=""
-              className={`w-7 h-7 rounded-full object-cover ${
-                profileActive ? "ring-2 ring-white" : "ring-1 ring-white/30"
-              }`}
-            />
-          ) : signedIn === false ? (
-            <User size={28} className={profileActive ? "text-white" : "text-white/50"} />
-          ) : (
-            // Signed in but no avatar yet — show initial letter
-            <div
-              className={`w-7 h-7 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-[10px] font-bold ${
-                profileActive ? "ring-2 ring-white" : ""
-              }`}
-            >
-              •
-            </div>
-          )}
-        </Link>
       </div>
     </nav>
   );
