@@ -43,7 +43,7 @@ function CommentCountStacked({
   return (
     <button
       onClick={onClick}
-      className="flex flex-col items-center gap-0.5 text-white"
+      className="flex flex-col items-center gap-1.5 text-white"
       aria-label="Comments"
     >
       <MessageCircle size={26} />

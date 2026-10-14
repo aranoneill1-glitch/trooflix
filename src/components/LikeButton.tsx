@@ -173,7 +173,7 @@ export default function LikeButton({
     return (
       <button
         onClick={toggle}
-        className={`flex flex-col items-center gap-0.5 transition ${
+        className={`flex flex-col items-center gap-1.5 transition ${
           liked ? "text-red-500" : "text-white"
         }`}
         title={liked ? "Unlike" : "Like"}
