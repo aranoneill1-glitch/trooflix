@@ -111,8 +111,8 @@ export default function Home() {
     fetch("/api/videos")
       .then((r) => r.json())
       .then((data) => {
-        const homeOnly = Array.isArray(data) ? data.filter((v: any) => !v.creatorId) : [];
-        setVideos(homeOnly);
+        const all = Array.isArray(data) ? data : [];
+        setVideos(all);
         setLoaded(true);
       });
     setProgressList(getAllProgress());
@@ -124,10 +124,11 @@ export default function Home() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const trending = videos.filter((v) => v.featured);
-  const docs = videos.filter((v) => v.type === "Documentary");
-  const podcasts = videos.filter((v) => v.type === "Podcast");
-  const newReleases = [...videos].sort((a, b) => b.id - a.id).slice(0, 20);
+  const nonPodcaster = videos.filter((v) => !v.creatorId);
+  const trending = nonPodcaster.filter((v) => v.featured);
+  const docs = nonPodcaster.filter((v) => v.type === "Documentary");
+  const podcasts = videos.filter((v) => v.creatorId && v.type === "Podcast");
+  const newReleases = [...nonPodcaster].sort((a, b) => b.id - a.id).slice(0, 20);
 
   let displayVideos = videos;
   if (activeCategory) displayVideos = videos.filter((v) => v.category === activeCategory);
