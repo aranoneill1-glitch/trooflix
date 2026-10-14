@@ -26,7 +26,7 @@ const COLLECTIONS = [
 export default function CollectionsRow() {
   return (
     <div className="relative">
-      <div className="flex items-center justify-between px-4 md:px-12 mb-4">
+      <div className="flex items-center justify-between px-4 md:px-12 mb-3">
         <div>
           <p className="text-[10px] md:text-xs tracking-[0.4em] text-white/50 font-semibold mb-1">
             EXPLORE OUR COLLECTIONS
@@ -37,16 +37,16 @@ export default function CollectionsRow() {
         </div>
       </div>
 
-      <div className="flex gap-3 md:gap-4 overflow-x-auto scrollbar-hide px-4 md:px-12 pb-4">
+      <div className="flex gap-3 md:gap-4 overflow-x-auto scrollbar-hide px-4 md:px-12 pb-2">
         {COLLECTIONS.map((col) => {
           const Icon = col.icon;
           return (
             <Link
               key={col.slug}
               href={`/collections/${col.slug}`}
-              className="flex-shrink-0 w-[110px] md:w-[130px] aspect-[4/5] rounded-lg flex flex-col items-center justify-center gap-2 transition border bg-[#0d0d12] border-white/10 hover:border-white/40 hover:bg-[#141418]"
+              className="flex-shrink-0 w-[110px] md:w-[130px] aspect-[5/3] rounded-lg flex flex-col items-center justify-center gap-1.5 transition border bg-[#0d0d12] border-white/10 hover:border-white/40 hover:bg-[#141418]"
             >
-              <Icon size={26} className="text-white" strokeWidth={1.5} />
+              <Icon size={22} className="text-white" strokeWidth={1.5} />
               <span className="text-[10px] md:text-xs font-bold tracking-wider text-center px-2 leading-tight">
                 {col.name.toUpperCase()}
               </span>
