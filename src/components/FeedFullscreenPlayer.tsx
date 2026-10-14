@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
   Heart,
@@ -44,7 +44,6 @@ type Props = {
   onIndexChange: (i: number) => void;
 };
 
-// ---------- Inner card: one video + its own controls ----------
 function VideoCard({
   video,
   creator,
@@ -53,7 +52,7 @@ function VideoCard({
   onOpenComments,
   muted,
   onToggleMute,
-  registerTapHandler,
+  flashSignalRef,
 }: {
   video: Video;
   creator: Creator | null;
@@ -62,7 +61,7 @@ function VideoCard({
   onOpenComments: () => void;
   muted: boolean;
   onToggleMute: () => void;
-  registerTapHandler: (fn: () => void) => void;
+  flashSignalRef: React.MutableRefObject<(() => void) | null>;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [paused, setPaused] = useState(false);
@@ -91,22 +90,26 @@ function VideoCard({
     }
   };
 
-  // Expose tap handler to parent (for double-tap / single-tap logic)
+  // Expose togglePlay to parent via shared ref
   useEffect(() => {
-    registerTapHandler(togglePlay);
-  }, [registerTapHandler]);
+    (flashSignalRef as any).current = togglePlay;
+  }, [flashSignalRef]);
 
-  // Autoplay when active, pause when not
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
     if (isActive) {
-      v.currentTime = 0;
       v.muted = muted;
-      v.play().catch(() => {});
+      v.play().catch(() => {
+        v.muted = true;
+        v.play().catch(() => {});
+      });
       setPaused(false);
     } else {
       v.pause();
+      v.currentTime = 0;
+      setPaused(false);
+      setShowControls(false);
     }
   }, [isActive, muted]);
 
@@ -126,17 +129,15 @@ function VideoCard({
 
   const share = () => {
     const url = `${window.location.origin}/podcaster/${creator?.slug || ""}/${video.id}`;
-    if (navigator.share) {
-      navigator.share({ title: video.title, url }).catch(() => {});
-    } else {
-      navigator.clipboard.writeText(url);
-    }
+    if (navigator.share) navigator.share({ title: video.title, url }).catch(() => {});
+    else navigator.clipboard.writeText(url);
   };
 
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-full flex-shrink-0 overflow-hidden bg-black"
+      className="relative w-screen h-screen flex-shrink-0 overflow-hidden bg-black snap-start snap-always"
+      style={{ scrollSnapAlign: "start", height: "100dvh" }}
     >
       <video
         ref={videoRef}
@@ -146,10 +147,9 @@ function VideoCard({
         playsInline
         muted={muted}
         loop
-        preload={isActive ? "auto" : "metadata"}
+        preload="auto"
       />
 
-      {/* Top bar — X close (only on active card so multiple X's don't appear) */}
       {isActive && (
         <div className="absolute top-0 left-0 right-0 z-20 flex items-center p-4 bg-gradient-to-b from-black/60 to-transparent">
           <button
@@ -162,7 +162,6 @@ function VideoCard({
         </div>
       )}
 
-      {/* Reels-style center controls (fade after 2s) */}
       <AnimatePresence>
         {isActive && showControls && (
           <motion.div
@@ -205,7 +204,6 @@ function VideoCard({
         )}
       </AnimatePresence>
 
-      {/* Heart burst */}
       <AnimatePresence>
         {heartBurst && (
           <motion.div
@@ -222,7 +220,6 @@ function VideoCard({
         )}
       </AnimatePresence>
 
-      {/* Right rail */}
       {isActive && (
         <div className="absolute right-3 bottom-56 z-20 flex flex-col items-center gap-6">
           <div data-like-button>
@@ -246,25 +243,15 @@ function VideoCard({
         </div>
       )}
 
-      {/* Bottom overlay */}
       {isActive && (
         <div className="absolute bottom-0 left-0 right-0 z-20 p-4 pb-6 bg-gradient-to-t from-black via-black/60 to-transparent pointer-events-none">
           <div className="flex items-center gap-3 mb-3 pointer-events-auto">
-            <Link
-              href={creator ? `/podcaster/${creator.slug}` : "#"}
-              className="flex-shrink-0"
-            >
+            <Link href={creator ? `/podcaster/${creator.slug}` : "#"} className="flex-shrink-0">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center overflow-hidden">
                 {creator?.photoUrl ? (
-                  <img
-                    src={creator.photoUrl}
-                    alt=""
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" />
                 ) : (
-                  <span className="font-bold text-sm">
-                    {name[0]?.toUpperCase() || "?"}
-                  </span>
+                  <span className="font-bold text-sm">{name[0]?.toUpperCase() || "?"}</span>
                 )}
               </div>
             </Link>
@@ -291,7 +278,6 @@ function VideoCard({
   );
 }
 
-// ---------- Wrapper: 3-video vertical carousel with drag ----------
 export default function FeedFullscreenPlayer({
   videos,
   index,
@@ -299,49 +285,60 @@ export default function FeedFullscreenPlayer({
   onClose,
   onIndexChange,
 }: Props) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const scrollerRef = useRef<HTMLDivElement>(null);
   const [commentOpen, setCommentOpen] = useState(false);
   const [muted, setMuted] = useState(true);
-
-  // Strip is 300% tall (3 slots). We shift it up by one slot
-  // so the MIDDLE slot aligns with the viewport (the "current" video).
-  const y = useMotionValue(0);
-  const slotHeightPx = () => {
-    if (typeof window === "undefined") return 0;
-    return window.innerHeight;
-  };
-
-  // Keep one tap handler reference (each active video registers its own)
-  const tapHandlerRef = useRef<(() => void) | null>(null);
+  const tapRef = useRef<(() => void) | null>(null);
   const lastTapRef = useRef(0);
 
-  const n = videos.length;
+  // Which video is centered — derived from scroll position, not prop
+  const [activeIndex, setActiveIndex] = useState(index);
 
-  // Wrap index for 3-video loop
-  const prevIdx = (index - 1 + n) % n;
-  const nextIdx = (index + 1) % n;
-
-  const prevVideo = videos[prevIdx];
-  const currentVideo = videos[index];
-  const nextVideo = videos[nextIdx];
-
-  // Reset drag position on index change
+  // Jump to the passed index on mount (once)
   useEffect(() => {
-    y.set(0);
-  }, [index, y]);
+    const el = scrollerRef.current;
+    if (!el) return;
+    el.scrollTop = index * el.clientHeight;
+    setActiveIndex(index);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // Escape + arrows
+  // Track which card is centered as user scrolls
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const h = el.clientHeight || 1;
+      const i = Math.round(el.scrollTop / h);
+      if (i !== activeIndex && i >= 0 && i < videos.length) {
+        setActiveIndex(i);
+        onIndexChange(i);
+      }
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, [activeIndex, videos.length, onIndexChange]);
+
+  // Escape / arrows
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape" && !commentOpen) onClose();
-      if (e.key === "ArrowDown") onIndexChange((index + 1) % n);
-      if (e.key === "ArrowUp") onIndexChange((index - 1 + n) % n);
+      const el = scrollerRef.current;
+      if (!el) return;
+      if (e.key === "ArrowDown") {
+        el.scrollTo({ top: (activeIndex + 1) * el.clientHeight, behavior: "smooth" });
+      }
+      if (e.key === "ArrowUp") {
+        el.scrollTo({
+          top: Math.max(0, (activeIndex - 1) * el.clientHeight),
+          behavior: "smooth",
+        });
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose, onIndexChange, index, n, commentOpen]);
+  }, [onClose, commentOpen, activeIndex]);
 
-  // Lock scroll
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -350,8 +347,7 @@ export default function FeedFullscreenPlayer({
     };
   }, []);
 
-  // Tap / double-tap handling on the entire container
-  const onContainerTouchEnd = (e: React.TouchEvent) => {
+  const onTouchEnd = (e: React.TouchEvent) => {
     const now = Date.now();
     const target = e.target as HTMLElement;
     if (target.closest("button") || target.closest("a")) return;
@@ -359,14 +355,8 @@ export default function FeedFullscreenPlayer({
     const delta = now - lastTapRef.current;
 
     if (delta < 300 && delta > 0) {
-      // Double-tap → like
       lastTapRef.current = 0;
-      const rect = containerRef.current?.getBoundingClientRect();
-      if (rect) {
-        const touch = e.changedTouches[0];
-        // heart burst visual goes on the active card
-      }
-      const likeBtn = containerRef.current?.querySelector<HTMLButtonElement>(
+      const likeBtn = scrollerRef.current?.querySelector<HTMLButtonElement>(
         "[data-like-button] button"
       );
       if (likeBtn) likeBtn.click();
@@ -374,105 +364,45 @@ export default function FeedFullscreenPlayer({
       lastTapRef.current = now;
       setTimeout(() => {
         if (lastTapRef.current === now) {
-          tapHandlerRef.current?.();
+          tapRef.current?.();
         }
       }, 300);
     }
   };
 
-  const registerTapHandler = (fn: () => void) => {
-    tapHandlerRef.current = fn;
-  };
-
   const creatorFor = (id?: number | null) =>
     id ? creators.find((c) => c.id === id) || null : null;
 
-  // Compute slot positions
-  const H = "100%"; // each card is fullscreen
+  const current = videos[activeIndex];
 
   return (
     <>
-      <motion.div
-        ref={containerRef}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        onTouchEnd={onContainerTouchEnd}
-        onClick={(e) => {
-          const isTouch = typeof window !== "undefined" && "ontouchstart" in window;
-          if (isTouch) return;
-          const target = e.target as HTMLElement;
-          if (target.closest("button") || target.closest("a")) return;
-          tapHandlerRef.current?.();
-        }}
-        className="fixed inset-0 z-[250] bg-black overflow-hidden select-none"
-      >
-        {/* Draggable 3-video strip */}
-        <motion.div
-          drag="y"
-          dragConstraints={{ top: 0, bottom: 0 }}
-          dragElastic={0.4}
-          onDragEnd={(_, info) => {
-            const threshold = 100;
-            const velocity = info.velocity.y;
-            const offset = info.offset.y;
-            if (offset < -threshold || velocity < -500) {
-              onIndexChange((index + 1) % n);
-            } else if (offset > threshold || velocity > 500) {
-              onIndexChange((index - 1 + n) % n);
-            }
-          }}
-          className="absolute left-0 right-0 flex flex-col"
-          style={{ y, height: "300vh", top: "-100vh" }}
+      <div className="fixed inset-0 z-[250] bg-black">
+        <div
+          ref={scrollerRef}
+          onTouchEnd={onTouchEnd}
+          className="h-full w-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide"
+          style={{ scrollSnapType: "y mandatory", height: "100dvh" }}
         >
-          {/* Prev slot (above) */}
-          <div style={{ height: "33.333%" }}>
+          {videos.map((v, i) => (
             <VideoCard
-              video={prevVideo}
-              creator={creatorFor(prevVideo.creatorId)}
-              isActive={false}
+              key={v.id}
+              video={v}
+              creator={creatorFor(v.creatorId)}
+              isActive={i === activeIndex}
               onClose={onClose}
               onOpenComments={() => setCommentOpen(true)}
               muted={muted}
               onToggleMute={() => setMuted((m) => !m)}
-              registerTapHandler={() => {}}
+              flashSignalRef={tapRef}
             />
-          </div>
+          ))}
+        </div>
+      </div>
 
-          {/* Current slot */}
-          <div style={{ height: "33.333%" }}>
-            <VideoCard
-              video={currentVideo}
-              creator={creatorFor(currentVideo.creatorId)}
-              isActive={true}
-              onClose={onClose}
-              onOpenComments={() => setCommentOpen(true)}
-              muted={muted}
-              onToggleMute={() => setMuted((m) => !m)}
-              registerTapHandler={registerTapHandler}
-            />
-          </div>
-
-          {/* Next slot (below) */}
-          <div style={{ height: "33.333%" }}>
-            <VideoCard
-              video={nextVideo}
-              creator={creatorFor(nextVideo.creatorId)}
-              isActive={false}
-              onClose={onClose}
-              onOpenComments={() => setCommentOpen(true)}
-              muted={muted}
-              onToggleMute={() => setMuted((m) => !m)}
-              registerTapHandler={() => {}}
-            />
-          </div>
-        </motion.div>
-      </motion.div>
-
-      {/* Comment drawer on top */}
       <CommentDrawer
-        videoId={commentOpen ? currentVideo.id : null}
-        title={currentVideo.title}
+        videoId={commentOpen && current ? current.id : null}
+        title={current?.title}
         onClose={() => setCommentOpen(false)}
       />
     </>
