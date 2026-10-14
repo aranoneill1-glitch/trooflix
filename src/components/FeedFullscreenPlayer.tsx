@@ -47,8 +47,8 @@ function CommentCountStacked({
       aria-label="Comments"
     >
       <MessageCircle size={26} />
-      <span className="text-[11px] font-semibold tabular-nums text-white/90">
-        {count !== null && count > 0 ? count.toLocaleString() : ""}
+      <span className="text-[11px] font-semibold tabular-nums text-white/90 leading-none h-3">
+        {count !== null && count > 0 ? count.toLocaleString() : "\u00A0"}
       </span>
     </button>
   );

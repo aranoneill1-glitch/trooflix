@@ -180,8 +180,8 @@ export default function LikeButton({
       >
         <ThumbsUp size={size} fill={liked ? "currentColor" : "none"} />
         {showCount && (
-          <span className="text-[11px] font-semibold tabular-nums text-white/90">
-            {count > 0 ? count.toLocaleString() : ""}
+          <span className="text-[11px] font-semibold tabular-nums text-white/90 leading-none h-3">
+            {count > 0 ? count.toLocaleString() : "\u00A0"}
           </span>
         )}
       </button>
