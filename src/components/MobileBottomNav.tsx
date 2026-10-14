@@ -84,29 +84,22 @@ export default function MobileBottomNav() {
             <img
               src={avatarUrl}
               alt=""
-              className={`w-[22px] h-[22px] rounded-full object-cover ${
+              className={`w-7 h-7 rounded-full object-cover ${
                 profileActive ? "ring-2 ring-white" : "ring-1 ring-white/30"
               }`}
             />
           ) : signedIn === false ? (
-            <User size={22} className={profileActive ? "text-white" : "text-white/50"} />
+            <User size={28} className={profileActive ? "text-white" : "text-white/50"} />
           ) : (
             // Signed in but no avatar yet — show initial letter
             <div
-              className={`w-[22px] h-[22px] rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-[10px] font-bold ${
+              className={`w-7 h-7 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-[10px] font-bold ${
                 profileActive ? "ring-2 ring-white" : ""
               }`}
             >
               •
             </div>
           )}
-          <span
-            className={`text-[9px] leading-tight truncate w-full text-center ${
-              profileActive ? "text-white font-semibold" : "text-white/50"
-            }`}
-          >
-            Profile
-          </span>
         </Link>
       </div>
     </nav>
