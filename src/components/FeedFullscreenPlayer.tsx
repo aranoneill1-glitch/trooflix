@@ -189,7 +189,9 @@ function VideoCard({
       }
       seekedRef.current = true;
       v.play().catch(() => {
+        // Autoplay with sound blocked → fall back to muted
         v.muted = true;
+        setPaused(false);
         v.play().catch(() => {});
       });
       setPaused(false);
@@ -377,7 +379,7 @@ export default function FeedFullscreenPlayer({
 }: Props) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [commentOpen, setCommentOpen] = useState(false);
-  const [muted, setMuted] = useState(true);
+  const [muted, setMuted] = useState(false);  // unmuted by default — user just tapped to enter
   const tapRef = useRef<(() => void) | null>(null);
   const lastTapRef = useRef(0);
   const touchStartYRef = useRef<number | null>(null);
