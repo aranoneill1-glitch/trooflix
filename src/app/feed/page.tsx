@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Volume2, VolumeX, Maximize2 } from "lucide-react";
+import { Volume2, VolumeX, Heart } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import SaveButton from "@/components/SaveButton";
@@ -108,6 +109,48 @@ function FeedCard({
   const containerRef = useRef<HTMLDivElement>(null);
   const [shouldPlay, setShouldPlay] = useState(false);
   const [userPaused, setUserPaused] = useState(false);
+  const [heartBurst, setHeartBurst] = useState<{ x: number; y: number; id: number } | null>(null);
+  const lastTapRef = useRef(0);
+
+  const handleVideoTap = (e: React.MouseEvent | React.TouchEvent) => {
+    const now = Date.now();
+    const delta = now - lastTapRef.current;
+
+    if (delta < 300 && delta > 0) {
+      // Double-tap → like
+      lastTapRef.current = 0;
+      const rect = containerRef.current?.getBoundingClientRect();
+      const clientX =
+        "changedTouches" in e
+          ? e.changedTouches[0].clientX
+          : (e as React.MouseEvent).clientX;
+      const clientY =
+        "changedTouches" in e
+          ? e.changedTouches[0].clientY
+          : (e as React.MouseEvent).clientY;
+      if (rect) {
+        setHeartBurst({
+          x: clientX - rect.left,
+          y: clientY - rect.top,
+          id: Date.now(),
+        });
+        setTimeout(() => setHeartBurst(null), 900);
+      }
+      // Fire the LikeButton
+      const likeBtn = containerRef.current?.querySelector<HTMLButtonElement>(
+        "[data-feed-like] button"
+      );
+      if (likeBtn) likeBtn.click();
+    } else {
+      // Single tap → fullscreen (deferred so double-tap wins)
+      lastTapRef.current = now;
+      setTimeout(() => {
+        if (lastTapRef.current === now) {
+          onOpenFullscreen();
+        }
+      }, 300);
+    }
+  };
 
   // IntersectionObserver — play when >50% visible, pause otherwise
   useEffect(() => {
@@ -188,7 +231,7 @@ function FeedCard({
       <div
         ref={containerRef}
         className="relative w-full aspect-video bg-black md:rounded-xl overflow-hidden group cursor-pointer"
-        onClick={() => setUserPaused((p) => !p)}
+        onClick={handleVideoTap}
       >
         {/* Play overlay when paused */}
         {userPaused && (
@@ -208,6 +251,23 @@ function FeedCard({
           preload="metadata"
           className="w-full h-full object-cover"
         />
+
+        {/* Heart burst on double-tap */}
+        <AnimatePresence>
+          {heartBurst && (
+            <motion.div
+              key={heartBurst.id}
+              initial={{ scale: 0.3, opacity: 0 }}
+              animate={{ scale: 1.3, opacity: 1 }}
+              exit={{ scale: 1.6, opacity: 0 }}
+              transition={{ duration: 0.6 }}
+              className="absolute pointer-events-none z-30"
+              style={{ left: heartBurst.x - 40, top: heartBurst.y - 40 }}
+            >
+              <Heart size={80} fill="white" className="text-white drop-shadow-2xl" />
+            </motion.div>
+          )}
+        </AnimatePresence>
         {/* Mute toggle */}
         <button
           onClick={(e) => {
@@ -220,22 +280,12 @@ function FeedCard({
           {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
         </button>
 
-        {/* Fullscreen button */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onOpenFullscreen();
-          }}
-          className="absolute top-3 right-14 w-9 h-9 rounded-full bg-black/50 backdrop-blur flex items-center justify-center hover:bg-black/70 transition"
-          aria-label="Fullscreen"
-        >
-          <Maximize2 size={16} />
-        </button>
+
       </div>
 
       {/* Action rail: Like · Comment · Save · Views */}
       <div className="flex items-center gap-6 px-3 md:px-0 pt-3 pb-2">
-        <LikeButton videoId={video.id} size={18} showCount />
+        <span data-feed-like><LikeButton videoId={video.id} size={18} showCount /></span>
         <CommentCount videoId={video.id} onClick={onOpenComments} />
         <SaveButton videoId={video.id} variant="icon" />
         <ViewCount videoId={video.id} showIcon />
@@ -299,8 +349,8 @@ export default function FeedPage() {
     <main className="min-h-screen bg-black text-white pb-24 lg:pb-0">
       <TopBar />
 
-      <div className="pt-20 md:pt-24 max-w-2xl mx-auto px-3 md:px-0">
-        <h1 className="text-2xl md:text-3xl font-black mb-4 px-2">Feed</h1>
+      <div className="pt-20 md:pt-24 max-w-2xl mx-auto md:px-0">
+        <h1 className="text-2xl md:text-3xl font-black mb-4 px-3 md:px-2">Feed</h1>
 
         {loading && <p className="text-white/50 text-center py-12">Loading…</p>}
         {!loading && videos.length === 0 && (
