@@ -152,9 +152,9 @@ function FeedCard({
   const handle = slug ? `@${slug.replace(/-/g, "")}` : "@trooflix";
 
   return (
-    <article className="bg-[#0d0d10] md:bg-transparent border border-white/5 md:border-0 md:border-b md:border-white/10 rounded-xl md:rounded-none overflow-hidden">
+    <article className="border-b border-white/5 pb-2 mb-2 md:pb-4 md:mb-4">
       {/* Author row */}
-      <div className="flex items-center gap-3 p-3 md:px-2 md:py-3">
+      <div className="flex items-center gap-3 px-3 md:px-0 py-2.5">
         {creator?.photoUrl ? (
           <img
             src={creator.photoUrl}
@@ -233,24 +233,29 @@ function FeedCard({
         </button>
       </div>
 
-      {/* Title + description */}
-      <div className="px-3 md:px-2 py-3">
-        <h2 className="font-semibold text-[15px] leading-snug mb-1">
-          {video.title}
-        </h2>
-        {video.description && (
-          <p className="text-sm text-white/60 leading-snug line-clamp-3">
-            {video.description}
-          </p>
-        )}
-      </div>
-
       {/* Action rail: Like · Comment · Save · Views */}
-      <div className="flex items-center gap-6 px-3 md:px-2 pb-3 md:pb-4 pt-1">
+      <div className="flex items-center gap-6 px-3 md:px-0 pt-3 pb-2">
         <LikeButton videoId={video.id} size={18} showCount />
         <CommentCount videoId={video.id} onClick={onOpenComments} />
         <SaveButton videoId={video.id} variant="icon" />
         <ViewCount videoId={video.id} showIcon />
+      </div>
+
+      {/* Caption — IG-style: @handle + title + description */}
+      <div className="px-3 md:px-0 pb-2">
+        {video.title && (
+          <p className="text-sm leading-snug">
+            <span className="font-semibold text-white/95">
+              {slug ? `@${slug.replace(/-/g, "")}` : "@trooflix"}
+            </span>{" "}
+            <span className="text-white/90">{video.title}</span>
+          </p>
+        )}
+        {video.description && (
+          <p className="text-sm text-white/60 leading-snug line-clamp-3 mt-1">
+            {video.description}
+          </p>
+        )}
       </div>
     </article>
   );
@@ -302,7 +307,7 @@ export default function FeedPage() {
           <p className="text-white/50 text-center py-12">Nothing here yet.</p>
         )}
 
-        <div className="space-y-3 md:space-y-5">
+        <div>
           {videos.map((video) => (
             <FeedCard
               key={video.id}
