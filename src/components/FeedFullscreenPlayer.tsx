@@ -105,10 +105,10 @@ export default function FeedFullscreenPlayer({
   }, []);
 
   // Toggle play/pause silently
-  const flashControls = () => {
+  const flashControls = (durationMs: number = 2000) => {
     setShowControls(true);
     if (controlsTimer.current) clearTimeout(controlsTimer.current);
-    controlsTimer.current = setTimeout(() => setShowControls(false), 2000);
+    controlsTimer.current = setTimeout(() => setShowControls(false), durationMs);
   };
 
   const togglePlay = () => {
@@ -117,11 +117,12 @@ export default function FeedFullscreenPlayer({
     if (v.paused) {
       v.play().catch(() => {});
       setPaused(false);
+      flashControls(400);   // quick fade when resuming
     } else {
       v.pause();
       setPaused(true);
+      flashControls(2000);  // linger while paused
     }
-    flashControls();
   };
 
   // Double-tap to like
