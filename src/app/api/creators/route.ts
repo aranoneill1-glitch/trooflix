@@ -12,9 +12,12 @@ function slugify(name: string): string {
     .replace(/-+/g, "-");
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const creators = (await kv.get<any[]>(KEY)) || [];
+    const { searchParams } = new URL(req.url);
+    const includeHidden = searchParams.get("includeHidden") === "1";
+    const all = (await kv.get<any[]>(KEY)) || [];
+    const creators = includeHidden ? all : all.filter((c: any) => !c.hidden);
     return NextResponse.json(creators);
   } catch (e) {
     console.error("GET creators error:", e);
