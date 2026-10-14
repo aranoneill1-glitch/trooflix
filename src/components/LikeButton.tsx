@@ -4,14 +4,29 @@ import { useEffect, useState } from "react";
 import { ThumbsUp } from "lucide-react";
 
 // --- Anonymous browser ID (per-device, stored in localStorage) ---
+// Cache in-memory so private mode / blocked localStorage still works this session
+let _anonId: string | null = null;
+
 function getAnonId(): string {
   if (typeof window === "undefined") return "";
-  let id = localStorage.getItem("trooflix:anon_id");
-  if (!id) {
-    id = "anon_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
-    localStorage.setItem("trooflix:anon_id", id);
+  if (_anonId) return _anonId;
+  try {
+    const stored = localStorage.getItem("trooflix:anon_id");
+    if (stored && stored.length > 5) {
+      _anonId = stored;
+      return _anonId;
+    }
+  } catch {
+    // localStorage blocked — fall through and generate in-memory
   }
-  return id;
+  const id = "anon_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+  try {
+    localStorage.setItem("trooflix:anon_id", id);
+  } catch {
+    // ignore — memory cache will keep it for this session
+  }
+  _anonId = id;
+  return _anonId;
 }
 
 // --- Global liked IDs cache (per-browser, from localStorage + API) ---
@@ -132,7 +147,6 @@ export default function LikeButton({
     e.preventDefault();
 
     const anonId = getAnonId();
-    if (!anonId) return;
 
     const wasLiked = liked;
     const newLiked = !wasLiked;
