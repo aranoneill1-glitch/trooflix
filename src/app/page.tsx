@@ -60,7 +60,7 @@ const CATEGORIES: string[] = [
   "The Unknown",
 ];
 
-const NAV_TABS: string[] = ["Home", "Movies", "Documentaries", "Podcasts"];
+const NAV_TABS: string[] = ["Home", "Documentaries", "Podcasts", "Feed"];
 
 export default function Home() {
   const [videos, setVideos] = useState<Video[]>([]);
@@ -310,6 +310,8 @@ function TopNav({ activeTab, setActiveTab, searchOpen, setSearchOpen, search, se
             onClick={() => {
               if (tab === "Podcasts") {
                 window.location.href = "/podcasts";
+              } else if (tab === "Feed") {
+                window.location.href = "/feed";
               } else {
                 setActiveTab(tab);
               }
