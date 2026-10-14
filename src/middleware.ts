@@ -14,23 +14,6 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  // Uploads: allow either admin cookie OR a signed-in user (avatar + creator uploads)
-  if (
-    pathname.startsWith("/api/upload") &&
-    (req.method === "POST" || req.method === "DELETE" || req.method === "PUT")
-  ) {
-    const hasAdminCookie = password && cookie === password;
-    if (!hasAdminCookie) {
-      // Check for a Supabase session cookie — if present, allow
-      const hasSession = Object.keys(req.cookies).some((k) =>
-        k.startsWith("sb-") && k.endsWith("-auth-token")
-      );
-      if (!hasSession) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      }
-    }
-  }
-
   // Videos / creators: keep hard admin gate (creators use /api/creator/videos)
   if (
     (pathname.startsWith("/api/videos") || pathname.startsWith("/api/creators")) &&

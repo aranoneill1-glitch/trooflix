@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
@@ -13,6 +14,23 @@ const s3 = new S3Client({
 
 export async function POST(req: Request) {
   try {
+    // Auth: allow admin OR any signed-in user
+    const adminPassword = process.env.ADMIN_PASSWORD;
+    const cookieStore = await cookies();
+    const adminCookie = cookieStore.get("trooflix_admin")?.value;
+    const isAdmin = adminPassword && adminCookie === adminPassword;
+
+    if (!isAdmin) {
+      // Check for a Supabase session cookie (name contains sb- and -auth-token)
+      const all = cookieStore.getAll();
+      const hasSession = all.some(
+        (c) => c.name.includes("sb-") && c.name.includes("-auth-token")
+      );
+      if (!hasSession) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+    }
+
     const { filename, contentType, folder } = await req.json();
     if (!filename || !contentType) {
       return NextResponse.json(
