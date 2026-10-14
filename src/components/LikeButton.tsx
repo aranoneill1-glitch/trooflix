@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ThumbsUp } from "lucide-react";
 
 // --- Global external like trigger (used by feed double-tap) ---
@@ -114,13 +114,24 @@ export default function LikeButton({
   const [liked, setLiked] = useState(false);
   const [count, setCountState] = useState<number>(0);
   const [checking, setChecking] = useState(true);
+  const latestLikedRef = useRef(false);
+  const latestCountRef = useRef(0);
+  useEffect(() => {
+    latestLikedRef.current = liked;
+  }, [liked]);
+  useEffect(() => {
+    latestCountRef.current = count;
+  }, [count]);
 
   // Listen for external like triggers (feed double-tap)
   useEffect(() => {
     const fn = () => {
-      // Fire the same toggle path as a click, ignoring the event arg
-      const fakeEvent = { stopPropagation: () => {}, preventDefault: () => {} } as any;
-      toggle(fakeEvent);
+      const fakeEvent = {
+        stopPropagation: () => {},
+        preventDefault: () => {},
+      } as any;
+      // Call the LATEST toggle closure via ref so count state is fresh
+      toggleRef.current?.(fakeEvent);
     };
     if (!likeBusListeners.has(videoId)) likeBusListeners.set(videoId, new Set());
     likeBusListeners.get(videoId)!.add(fn);
@@ -128,7 +139,13 @@ export default function LikeButton({
       likeBusListeners.get(videoId)?.delete(fn);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [videoId]);
+  }, [videoId, liked, count]);
+
+  // Keep the fn reference fresh via a ref so bus calls always see latest state
+  const toggleRef = useRef<((e: React.MouseEvent) => void) | null>(null);
+  useEffect(() => {
+    toggleRef.current = toggle;
+  });
 
   // Subscribe to liked IDs
   useEffect(() => {
@@ -171,14 +188,17 @@ export default function LikeButton({
 
     const anonId = getAnonId();
 
-    const wasLiked = liked;
+    const wasLiked = latestLikedRef.current;
+    const currentCount = latestCountRef.current;
     const newLiked = !wasLiked;
-    const newCount = wasLiked ? Math.max(0, count - 1) : count + 1;
+    const newCount = wasLiked ? Math.max(0, currentCount - 1) : currentCount + 1;
 
     // Optimistic
     setLiked(newLiked);
     setCountState(newCount);
     setCount(videoId, newCount);
+    latestLikedRef.current = newLiked;
+    latestCountRef.current = newCount;
 
     const currentIds = cachedLikedIds || [];
     setLikedIds(
@@ -196,9 +216,11 @@ export default function LikeButton({
     if (!res.ok) {
       // Rollback
       setLiked(wasLiked);
-      setCountState(count);
-      setCount(videoId, count);
+      setCountState(currentCount);
+      setCount(videoId, currentCount);
       setLikedIds(currentIds);
+      latestLikedRef.current = wasLiked;
+      latestCountRef.current = currentCount;
     }
   };
 
