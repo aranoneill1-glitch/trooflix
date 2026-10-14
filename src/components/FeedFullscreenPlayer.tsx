@@ -303,8 +303,13 @@ export default function FeedFullscreenPlayer({
   const [commentOpen, setCommentOpen] = useState(false);
   const [muted, setMuted] = useState(true);
 
-  // Motion value for drag — starts at -100% (index shifted up by 1 slot)
+  // Strip is 300% tall (3 slots). We shift it up by one slot
+  // so the MIDDLE slot aligns with the viewport (the "current" video).
   const y = useMotionValue(0);
+  const slotHeightPx = () => {
+    if (typeof window === "undefined") return 0;
+    return window.innerHeight;
+  };
 
   // Keep one tap handler reference (each active video registers its own)
   const tapHandlerRef = useRef<(() => void) | null>(null);
@@ -412,16 +417,13 @@ export default function FeedFullscreenPlayer({
             const velocity = info.velocity.y;
             const offset = info.offset.y;
             if (offset < -threshold || velocity < -500) {
-              // Swipe up → next
               onIndexChange((index + 1) % n);
             } else if (offset > threshold || velocity > 500) {
-              // Swipe down → prev
               onIndexChange((index - 1 + n) % n);
             }
-            // Otherwise snap back to current position
           }}
-          className="absolute inset-0 flex flex-col"
-          style={{ y, height: "300%" }}
+          className="absolute left-0 right-0 flex flex-col"
+          style={{ y, height: "300vh", top: "-100vh" }}
         >
           {/* Prev slot (above) */}
           <div style={{ height: "33.333%" }}>
