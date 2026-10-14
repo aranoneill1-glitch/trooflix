@@ -2,17 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Play, MessageCircle } from "lucide-react";
+import { Volume2, VolumeX } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import SaveButton from "@/components/SaveButton";
-import FollowButton from "@/components/FollowButton";
-import CommentDrawer from "@/components/CommentDrawer";
 import LikeButton from "@/components/LikeButton";
 import ViewCount from "@/components/ViewCount";
-import BitChutePlayer from "@/components/BitChutePlayer";
+import FollowButton from "@/components/FollowButton";
+import CommentDrawer from "@/components/CommentDrawer";
 import VideoPlayer from "@/components/VideoPlayer";
-import OdyseePlayer from "@/components/OdyseePlayer";
+import { MessageCircle } from "lucide-react";
 
 type Video = {
   id: number;
@@ -50,7 +49,6 @@ function timeAgo(iso?: string): string {
   return new Date(iso).toLocaleDateString();
 }
 
-
 function CommentCount({
   videoId,
   onClick,
@@ -86,12 +84,162 @@ function CommentCount({
   );
 }
 
+/**
+ * Video card with autoplay when mostly visible in viewport.
+ */
+function FeedCard({
+  video,
+  creator,
+  onOpenComments,
+  onOpenFullscreen,
+  muted,
+  onToggleMute,
+}: {
+  video: Video;
+  creator: Creator | null;
+  onOpenComments: () => void;
+  onOpenFullscreen: () => void;
+  muted: boolean;
+  onToggleMute: () => void;
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [shouldPlay, setShouldPlay] = useState(false);
+
+  // IntersectionObserver — play when >50% visible, pause otherwise
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          setShouldPlay(entry.intersectionRatio >= 0.5);
+        }
+      },
+      { threshold: [0, 0.5, 1] }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  // Play/pause based on visibility
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (shouldPlay) {
+      v.play().catch(() => {
+        // Autoplay with sound can be blocked — fall back to muted
+        v.muted = true;
+        v.play().catch(() => {});
+      });
+    } else {
+      v.pause();
+    }
+  }, [shouldPlay]);
+
+  // Sync muted prop
+  useEffect(() => {
+    const v = videoRef.current;
+    if (v) v.muted = muted;
+  }, [muted]);
+
+  const name = creator?.name || "TROOFLIX";
+  const slug = creator?.slug;
+  const handle = slug ? `@${slug.replace(/-/g, "")}` : "@trooflix";
+
+  return (
+    <article className="bg-[#0d0d10] md:bg-transparent border border-white/5 md:border-0 md:border-b md:border-white/10 rounded-xl md:rounded-none overflow-hidden">
+      {/* Author row */}
+      <div className="flex items-center gap-3 p-3 md:px-2 md:py-3">
+        {creator?.photoUrl ? (
+          <img
+            src={creator.photoUrl}
+            alt=""
+            className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+          />
+        ) : (
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center font-bold flex-shrink-0">
+            {name[0]?.toUpperCase() || "T"}
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          {slug ? (
+            <Link
+              href={`/podcaster/${slug}`}
+              className="font-semibold text-[15px] hover:underline block truncate"
+            >
+              {name}
+            </Link>
+          ) : (
+            <span className="font-semibold text-[15px] block truncate">{name}</span>
+          )}
+          <p className="text-xs text-white/50 truncate">
+            {handle} · {timeAgo(video.createdAt)}
+          </p>
+        </div>
+        {creator && <FollowButton creatorId={creator.id} />}
+      </div>
+
+      {/* Video — inline autoplay, no play button */}
+      <div
+        ref={containerRef}
+        className="relative w-full aspect-video bg-black md:rounded-xl overflow-hidden group cursor-pointer"
+        onClick={onOpenFullscreen}
+      >
+        <video
+          ref={videoRef}
+          src={video.bitchuteUrl}
+          poster={video.backdropUrl || video.posterUrl}
+          muted={muted}
+          loop
+          playsInline
+          preload="metadata"
+          className="w-full h-full object-cover"
+        />
+        {/* Mute toggle */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleMute();
+          }}
+          className="absolute top-3 right-3 w-9 h-9 rounded-full bg-black/50 backdrop-blur flex items-center justify-center hover:bg-black/70 transition"
+          aria-label={muted ? "Unmute" : "Mute"}
+        >
+          {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+        </button>
+      </div>
+
+      {/* Title + description */}
+      <div className="px-3 md:px-2 py-3">
+        <h2 className="font-semibold text-[15px] leading-snug mb-1">
+          {video.title}
+        </h2>
+        {video.description && (
+          <p className="text-sm text-white/60 leading-snug line-clamp-3">
+            {video.description}
+          </p>
+        )}
+      </div>
+
+      {/* Action rail: Like · Comment · Save · Views */}
+      <div className="flex items-center gap-6 px-3 md:px-2 pb-3 md:pb-4 pt-1">
+        <LikeButton videoId={video.id} size={18} showCount />
+        <CommentCount videoId={video.id} onClick={onOpenComments} />
+        <SaveButton videoId={video.id} variant="icon" />
+        <ViewCount videoId={video.id} showIcon />
+      </div>
+    </article>
+  );
+}
+
 export default function FeedPage() {
   const [videos, setVideos] = useState<Video[]>([]);
   const [creators, setCreators] = useState<Creator[]>([]);
-  const [playingIndex, setPlayingIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [commentVideo, setCommentVideo] = useState<Video | null>(null);
+  const [playing, setPlaying] = useState<Video | null>(null);
+  const [muted, setMuted] = useState(true);
 
   useEffect(() => {
     Promise.all([
@@ -115,17 +263,6 @@ export default function FeedPage() {
   const creatorById = (id?: number | null) =>
     id ? creators.find((c) => c.id === id) || null : null;
 
-  const playing = playingIndex !== null ? videos[playingIndex] : null;
-
-  const next = () => {
-    if (playingIndex === null) return;
-    if (playingIndex < videos.length - 1) setPlayingIndex(playingIndex + 1);
-  };
-  const prev = () => {
-    if (playingIndex === null) return;
-    if (playingIndex > 0) setPlayingIndex(playingIndex - 1);
-  };
-
   return (
     <main className="min-h-screen bg-black text-white pb-24 lg:pb-0">
       <TopBar />
@@ -133,99 +270,23 @@ export default function FeedPage() {
       <div className="pt-20 md:pt-24 max-w-2xl mx-auto px-3 md:px-0">
         <h1 className="text-2xl md:text-3xl font-black mb-4 px-2">Feed</h1>
 
-        {loading && (
-          <p className="text-white/50 text-center py-12">Loading…</p>
-        )}
+        {loading && <p className="text-white/50 text-center py-12">Loading…</p>}
         {!loading && videos.length === 0 && (
           <p className="text-white/50 text-center py-12">Nothing here yet.</p>
         )}
 
         <div className="space-y-3 md:space-y-5">
-          {videos.map((video, i) => {
-            const creator = creatorById(video.creatorId);
-            const name = creator?.name || "TROOFLIX";
-            const slug = creator?.slug;
-            const handle = slug ? `@${slug.replace(/-/g, "")}` : "@trooflix";
-
-            return (
-              <article
-                key={video.id}
-                className="bg-[#0d0d10] md:bg-transparent border border-white/5 md:border-0 md:border-b md:border-white/10 md:rounded-none rounded-xl overflow-hidden"
-              >
-                {/* Author row (top) */}
-                <div className="flex items-center gap-3 p-3 md:px-2 md:py-3">
-                  {creator?.photoUrl ? (
-                    <img
-                      src={creator.photoUrl}
-                      alt=""
-                      className="w-10 h-10 rounded-full object-cover flex-shrink-0"
-                    />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center font-bold flex-shrink-0">
-                      {name[0]?.toUpperCase() || "T"}
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    {slug ? (
-                      <Link
-                        href={`/podcaster/${slug}`}
-                        className="font-semibold text-[15px] hover:underline block truncate"
-                      >
-                        {name}
-                      </Link>
-                    ) : (
-                      <span className="font-semibold text-[15px] block truncate">{name}</span>
-                    )}
-                    <p className="text-xs text-white/50 truncate">
-                      {handle} · {timeAgo(video.createdAt)}
-                    </p>
-                  </div>
-                  {creator && <FollowButton creatorId={creator.id} />}
-                </div>
-
-                {/* Video card */}
-                <button
-                  onClick={() => setPlayingIndex(i)}
-                  className="relative block w-full bg-black group"
-                  aria-label="Play"
-                >
-                  <div className="relative w-full aspect-video md:aspect-video overflow-hidden md:rounded-xl">
-                    <img
-                      src={video.backdropUrl || video.posterUrl}
-                      alt=""
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center group-hover:bg-white/30 transition">
-                        <Play size={28} fill="white" className="text-white ml-1" />
-                      </div>
-                    </div>
-                  </div>
-                </button>
-
-                {/* Title + description */}
-                <div className="px-3 md:px-2 py-3">
-                  <h2 className="font-semibold text-[15px] leading-snug mb-1">
-                    {video.title}
-                  </h2>
-                  {video.description && (
-                    <p className="text-sm text-white/60 leading-snug line-clamp-3">
-                      {video.description}
-                    </p>
-                  )}
-                </div>
-
-                {/* Action rail (X-style: reply · like · bookmark · views) */}
-                <div className="flex items-center gap-6 px-3 md:px-2 pb-3 md:pb-4 pt-1">
-                  <LikeButton videoId={video.id} size={18} showCount />
-                  <CommentCount videoId={video.id} onClick={() => setCommentVideo(video)} />
-                  <SaveButton videoId={video.id} variant="icon" />
-                  <ViewCount videoId={video.id} showIcon />
-                </div>
-              </article>
-            );
-          })}
+          {videos.map((video) => (
+            <FeedCard
+              key={video.id}
+              video={video}
+              creator={creatorById(video.creatorId)}
+              onOpenComments={() => setCommentVideo(video)}
+              onOpenFullscreen={() => setPlaying(video)}
+              muted={muted}
+              onToggleMute={() => setMuted((m) => !m)}
+            />
+          ))}
         </div>
       </div>
 
@@ -237,35 +298,14 @@ export default function FeedPage() {
         onClose={() => setCommentVideo(null)}
       />
 
-      {/* Fullscreen player with swipe/arrow navigation */}
-      {playing && playing.bitchuteUrl.includes("bitchute.com") && (
-        <BitChutePlayer
+      {playing && (
+        <VideoPlayer
           src={playing.bitchuteUrl}
           title={playing.title}
-          onClose={() => setPlayingIndex(null)}
+          videoId={playing.id}
+          onClose={() => setPlaying(null)}
         />
       )}
-      {playing && playing.bitchuteUrl.includes("odysee.com") && (
-        <OdyseePlayer
-          src={playing.bitchuteUrl}
-          title={playing.title}
-          onClose={() => setPlayingIndex(null)}
-        />
-      )}
-      {playing &&
-        !playing.bitchuteUrl.includes("bitchute.com") &&
-        !playing.bitchuteUrl.includes("odysee.com") && (
-          <VideoPlayer
-            src={playing.bitchuteUrl}
-            title={playing.title}
-            videoId={playing.id}
-            onClose={() => setPlayingIndex(null)}
-            onPrev={playingIndex !== null && playingIndex > 0 ? prev : undefined}
-            onNext={
-              playingIndex !== null && playingIndex < videos.length - 1 ? next : undefined
-            }
-          />
-        )}
     </main>
   );
 }
