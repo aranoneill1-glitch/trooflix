@@ -33,6 +33,7 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [status, setStatus] = useState("");
+  const [appStatus, setAppStatus] = useState<"pending" | "approved" | "rejected" | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -52,6 +53,11 @@ export default function ProfilePage() {
           setLoading(false);
         })
         .catch(() => setLoading(false));
+
+      fetch(`/api/creator-applications?user_id=${data.user.id}`)
+        .then((r) => r.json())
+        .then((d) => setAppStatus(d.application?.status || null))
+        .catch(() => {});
     });
   }, [router]);
 
@@ -257,6 +263,42 @@ export default function ProfilePage() {
                 </div>
               </div>
             </div>
+
+            {/* Creator status */}
+            {appStatus === "pending" && (
+              <div className="bg-yellow-950/30 border border-yellow-600/40 rounded-xl px-5 py-4 mb-4">
+                <p className="font-semibold text-yellow-400 text-sm mb-1">
+                  Creator application under review
+                </p>
+                <p className="text-xs text-white/70">
+                  We&apos;ll let you know when it&apos;s approved.
+                </p>
+              </div>
+            )}
+            {appStatus === "approved" && (
+              <div className="bg-green-950/40 border border-green-600/40 rounded-xl px-5 py-4 mb-4">
+                <p className="font-semibold text-green-400 text-sm mb-1">
+                  You&apos;re a creator ✓
+                </p>
+                <p className="text-xs text-white/70">
+                  Post videos from your{" "}
+                  <a href="/admin" className="underline">admin dashboard</a>.
+                </p>
+              </div>
+            )}
+            {appStatus !== "pending" && appStatus !== "approved" && (
+              <a
+                href="/apply"
+                className="block bg-[#0d0d10] border border-white/5 hover:border-white/20 rounded-xl px-5 py-4 mb-4 transition"
+              >
+                <p className="font-semibold text-sm mb-1">
+                  {appStatus === "rejected" ? "Reapply to be a creator" : "Become a creator"}
+                </p>
+                <p className="text-xs text-white/60">
+                  Apply to post videos on Trooflix. Applications reviewed personally.
+                </p>
+              </a>
+            )}
 
             {/* Quick links */}
             <div className="bg-[#0d0d10] border border-white/5 rounded-xl divide-y divide-white/5 mb-4">

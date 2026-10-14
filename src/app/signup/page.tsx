@@ -16,6 +16,7 @@ export default function SignupPage() {
     "" | "checking" | "available" | "taken" | "invalid"
   >("");
   const [handleError, setHandleError] = useState("");
+  const [role, setRole] = useState<"viewer" | "creator">("viewer");
   const router = useRouter();
   const supabase = createClient();
 
@@ -99,7 +100,7 @@ export default function SignupPage() {
 
     setMessage("Account created! Redirecting…");
     setTimeout(() => {
-      router.push("/login");
+      router.push(role === "creator" ? "/apply" : "/login");
       router.refresh();
     }, 2200);
   };
@@ -127,6 +128,47 @@ export default function SignupPage() {
           <h1 className="text-3xl font-bold mb-8 text-white">Sign Up</h1>
 
           <form onSubmit={submit} className="space-y-4">
+            {/* Account type */}
+            <div>
+              <p className="text-xs text-white/50 mb-2">I&apos;m signing up as a…</p>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setRole("viewer")}
+                  className={`py-3 rounded text-sm font-semibold transition border ${
+                    role === "viewer"
+                      ? "bg-red-600 border-red-600 text-white"
+                      : "bg-[#333] border-transparent text-white/70 hover:bg-[#3d3d3d]"
+                  }`}
+                >
+                  Viewer
+                  <span className="block text-[10px] font-normal opacity-80 mt-0.5">
+                    Watch &amp; comment
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRole("creator")}
+                  className={`py-3 rounded text-sm font-semibold transition border ${
+                    role === "creator"
+                      ? "bg-red-600 border-red-600 text-white"
+                      : "bg-[#333] border-transparent text-white/70 hover:bg-[#3d3d3d]"
+                  }`}
+                >
+                  Creator
+                  <span className="block text-[10px] font-normal opacity-80 mt-0.5">
+                    Apply to post
+                  </span>
+                </button>
+              </div>
+              {role === "creator" && (
+                <p className="text-[11px] text-white/50 mt-2 leading-snug">
+                  After signing up you&apos;ll be taken to a short application.
+                  Creators are added after admin approval.
+                </p>
+              )}
+            </div>
+
             {/* Handle */}
             <div>
               <div className="flex items-center bg-[#333] rounded focus-within:bg-[#454545] transition">
