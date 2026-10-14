@@ -141,7 +141,7 @@ export default function MessagesInbox() {
   const totalUnread = conversations.reduce((n, c) => n + c.unread_count, 0);
 
   return (
-    <main className="h-screen flex flex-col text-white overflow-hidden" style={{ background: "#0b141a" }}>
+    <main className="flex flex-col text-white overflow-hidden" style={{ background: "#0b141a", height: "100dvh" }}>
       <TopBar />
 
       {/* Pinned title + filters (below TopBar) */}
