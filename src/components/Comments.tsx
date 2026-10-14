@@ -215,7 +215,7 @@ export default function Comments({ videoId }: { videoId: number }) {
           onChange={(e) => setSort(e.target.value as SortMode)}
           className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-red-600"
         >
-          <option value="newest">Newest first</option>
+          <option value="newest">For you first</option>
           <option value="oldest">Oldest first</option>
           <option value="top">Top comments</option>
         </select>
@@ -223,46 +223,38 @@ export default function Comments({ videoId }: { videoId: number }) {
 
       {/* New comment form */}
       {user ? (
-        <form onSubmit={(e) => submit(e)} className="flex gap-3 mb-8">
-          <div
-            className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0"
-            style={{ background: avatarColor(user.email) }}
-          >
-            {initial(user.email)}
-          </div>
-          <div className="flex-1 min-w-0">
-            <textarea
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder="Add a comment..."
-              rows={1}
-              maxLength={500}
-              className="w-full bg-transparent border-b border-white/20 focus:border-white outline-none pb-2 text-sm md:text-base resize-none"
-              onInput={(e) => {
-                const target = e.target as HTMLTextAreaElement;
-                target.style.height = "auto";
-                target.style.height = target.scrollHeight + "px";
-              }}
-            />
-            <div className="flex items-center justify-between mt-3">
-              <span className="text-xs text-white/40">{text.length}/500</span>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setText("")}
-                  className="px-4 py-1.5 rounded-full text-sm text-white/70 hover:text-white hover:bg-white/10 transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={!text.trim() || submitting}
-                  className="flex items-center gap-1.5 bg-white text-black font-semibold px-4 py-1.5 rounded-full text-sm hover:bg-white/90 disabled:opacity-40 disabled:cursor-not-allowed transition"
-                >
-                  <Send size={14} />
-                  {submitting ? "Posting…" : "Comment"}
-                </button>
-              </div>
+        <form
+          onSubmit={(e) => submit(e)}
+          className="sticky bottom-0 bg-[#0f0f12] border-t border-white/10 pt-3 pb-4 -mx-2 px-2 mt-auto"
+        >
+          <div className="flex items-end gap-2.5">
+            <div
+              className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 overflow-hidden"
+              style={{ background: avatarColor(user.email) }}
+            >
+              {initial(user.email)}
+            </div>
+            <div className="flex-1 flex items-end gap-2 bg-white/5 border border-white/10 rounded-2xl px-3 py-2 focus-within:border-white/25 transition">
+              <textarea
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                placeholder="What do you think of this?"
+                rows={1}
+                maxLength={500}
+                className="flex-1 bg-transparent outline-none text-sm resize-none max-h-24 placeholder:text-white/40"
+                onInput={(e) => {
+                  const target = e.target as HTMLTextAreaElement;
+                  target.style.height = "auto";
+                  target.style.height = Math.min(target.scrollHeight, 96) + "px";
+                }}
+              />
+              <button
+                type="submit"
+                disabled={!text.trim() || submitting}
+                className="flex-shrink-0 text-sm font-bold text-red-500 hover:text-red-400 disabled:opacity-30 disabled:hover:text-red-500 transition"
+              >
+                {submitting ? "…" : "Post"}
+              </button>
             </div>
           </div>
         </form>
