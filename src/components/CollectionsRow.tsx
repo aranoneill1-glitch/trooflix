@@ -44,42 +44,12 @@ export default function CollectionsRow() {
             <Link
               key={col.slug}
               href={`/collections/${col.slug}`}
-              className="group flex-shrink-0 w-[180px] md:w-[240px] aspect-[2.6/1] rounded-2xl overflow-hidden relative transition-all duration-300 hover:scale-[1.04]"
-              style={{
-                background:
-                  "linear-gradient(135deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.03) 60%, rgba(255,255,255,0.06) 100%)",
-                backdropFilter: "blur(12px)",
-                WebkitBackdropFilter: "blur(12px)",
-                boxShadow:
-                  "inset 0 1px 0 0 rgba(255,255,255,0.10), 0 4px 20px -8px rgba(0,0,0,0.6)",
-                border: "1px solid rgba(255,255,255,0.08)",
-              }}
+              className="flex-shrink-0 w-[110px] md:w-[130px] aspect-[5/3] rounded-lg flex flex-col items-center justify-center gap-1.5 transition border bg-[#0d0d12] border-white/10 hover:border-white/40 hover:bg-[#141418]"
             >
-              {/* Subtle red glow ring on hover */}
-              <div
-                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-2xl"
-                style={{
-                  boxShadow:
-                    "inset 0 0 0 1px rgba(220,38,38,0.4), 0 0 30px -6px rgba(220,38,38,0.35)",
-                }}
-              />
-
-              <div className="relative h-full w-full flex flex-col items-center justify-center gap-1.5 px-3">
-                <Icon
-                  size={22}
-                  className="text-white/85 group-hover:text-white transition"
-                  strokeWidth={1.5}
-                />
-                <span
-                  className="text-[11px] md:text-[13px] font-black uppercase text-white/95 group-hover:text-white transition text-center leading-tight"
-                  style={{
-                    letterSpacing: "0.14em",
-                    textShadow: "0 1px 12px rgba(255,255,255,0.15)",
-                  }}
-                >
-                  {col.name}
-                </span>
-              </div>
+              <Icon size={22} className="text-white" strokeWidth={1.5} />
+              <span className="text-[10px] md:text-xs font-bold tracking-wider text-center px-2 leading-tight">
+                {col.name.toUpperCase()}
+              </span>
             </Link>
           );
         })}
