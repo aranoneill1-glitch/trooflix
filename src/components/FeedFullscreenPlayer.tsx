@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -17,7 +17,42 @@ import CommentDrawer from "@/components/CommentDrawer";
 import SaveButton from "@/components/SaveButton";
 import LikeButton from "@/components/LikeButton";
 
-// ---- Global comment count cache (same pattern as LikeButton) ----
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+type Video = {
+  id: number;
+  title: string;
+  description: string;
+  category: string;
+  type: string;
+  bitchuteUrl: string;
+  posterUrl: string;
+  backdropUrl: string;
+  creatorId?: number | null;
+};
+
+type Creator = {
+  id: number;
+  name: string;
+  slug: string;
+  photoUrl?: string;
+};
+
+type Props = {
+  videos: Video[];
+  index: number;
+  creators: Creator[];
+  onClose: (endTime?: number) => void;
+  onIndexChange: (i: number) => void;
+  startTime?: number;
+};
+
+// ---------------------------------------------------------------------------
+// Comment count cache
+// ---------------------------------------------------------------------------
+
 let cachedCommentCounts: Record<number, number> | null = null;
 let commentCountsInflight: Promise<Record<number, number>> | null = null;
 const commentCountListeners = new Set<(counts: Record<number, number>) => void>();
@@ -30,8 +65,7 @@ async function fetchCommentCounts(): Promise<Record<number, number>> {
     try {
       const r = await fetch("/api/comment-counts", { cache: "no-store" });
       const d = await r.json();
-      const counts =
-        d.counts && typeof d.counts === "object" ? d.counts : {};
+      const counts = d.counts && typeof d.counts === "object" ? d.counts : {};
       cachedCommentCounts = counts;
       commentCountListeners.forEach((fn) => fn(counts));
       return counts;
@@ -87,131 +121,56 @@ function CommentCountStacked({
   );
 }
 
-type Video = {
-  id: number;
-  title: string;
-  description: string;
-  category: string;
-  type: string;
-  bitchuteUrl: string;
-  posterUrl: string;
-  backdropUrl: string;
-  creatorId?: number | null;
-};
+// ---------------------------------------------------------------------------
+// VideoCard — one reel. Video element size is FIXED; the parent animates.
+// ---------------------------------------------------------------------------
 
-type Creator = {
-  id: number;
-  name: string;
-  slug: string;
-  photoUrl?: string;
-};
-
-type Props = {
-  videos: Video[];
-  index: number;
-  creators: Creator[];
-  onClose: (endTime?: number) => void;
-  onIndexChange: (i: number) => void;
-  startTime?: number;
+type VideoCardProps = {
+  video: Video;
+  creator: Creator | null;
+  isActive: boolean;
+  isNext: boolean;      // next neighbor — silent preload
+  compact: boolean;     // comments open → smaller chrome
+  muted: boolean;
+  onToggleMute: () => void;
+  onClose: () => void;
+  onOpenComments: () => void;
+  registerTap: (fn: () => void) => void;
+  initialSeek: number;
+  cardIndex: number;
 };
 
 function VideoCard({
   video,
   creator,
   isActive,
-  onClose,
-  onOpenComments,
+  isNext,
+  compact,
   muted,
   onToggleMute,
-  flashSignalRef,
-  initialSeek = 0,
+  onClose,
+  onOpenComments,
+  registerTap,
+  initialSeek,
   cardIndex,
-  compact = false,
-  isNeighbor = false,
-}: {
-  video: Video;
-  creator: Creator | null;
-  isActive: boolean;
-  onClose: () => void;
-  onOpenComments: () => void;
-  muted: boolean;
-  onToggleMute: () => void;
-  flashSignalRef: React.MutableRefObject<(() => void) | null>;
-  initialSeek?: number;
-  cardIndex: number;
-  compact?: boolean;
-  isNeighbor?: boolean;
-}) {
+}: VideoCardProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const seekAppliedRef = useRef(false);
   const [paused, setPaused] = useState(false);
   const [showControls, setShowControls] = useState(false);
   const [heartBurst, setHeartBurst] = useState<{ x: number; y: number; id: number } | null>(null);
   const controlsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
 
-  const flashControls = (ms: number = 2000) => {
-    setShowControls(true);
-    if (controlsTimer.current) clearTimeout(controlsTimer.current);
-    controlsTimer.current = setTimeout(() => setShowControls(false), ms);
-  };
-
-  const togglePlay = () => {
-    const v = videoRef.current;
-    if (!v) return;
-    if (v.paused) {
-      v.play().catch(() => {});
-      setPaused(false);
-      flashControls(400);
-    } else {
-      v.pause();
-      setPaused(true);
-      flashControls(2000);
-    }
-  };
-
-  // Expose togglePlay to parent via shared ref — ONLY when this card is active
-  useEffect(() => {
-    if (!isActive) return;
-    (flashSignalRef as any).current = togglePlay;
-    return () => {
-      // Don't overwrite other cards' handlers on deactivate — leave for the next active
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isActive]);
-
-  // Capture initialSeek ONCE per mounted card — never re-evaluate
-  const initialSeekRef = useRef(initialSeek);
-  const initialSeekAppliedRef = useRef(false);
-
-  // Warmup: if this card is the "next" neighbor of the active one, silently
-  // pre-play it (muted) so its first frame is decoded. When it becomes active,
-  // the transition is instant — no poster flash.
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    if (isActive) return;        // active card is handled by the main effect below
-    if (!isNeighbor) {
-      try { v.pause(); } catch {}
-      return;
-    }
-    v.muted = true;
-    v.play().catch(() => {});
-  }, [isNeighbor, isActive]);
-
-  // Play / pause — the ONLY effect that runs when isActive changes
+  // ---- Play / pause on active change ----
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
 
     if (isActive) {
-      // Apply the initial seek ONCE (very first activation only)
-      if (!initialSeekAppliedRef.current && initialSeekRef.current > 0) {
-        try {
-          v.currentTime = initialSeekRef.current;
-        } catch {}
+      if (!seekAppliedRef.current && initialSeek > 0) {
+        try { v.currentTime = initialSeek; } catch {}
       }
-      initialSeekAppliedRef.current = true;
-
+      seekAppliedRef.current = true;
       v.muted = muted;
       v.play().catch(() => {
         v.muted = true;
@@ -223,22 +182,55 @@ function VideoCard({
       setPaused(false);
       setShowControls(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isActive]);
+  }, [isActive]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Track whether we've applied the initial seek
+  // ---- Neighbor preload (muted) so first frame is decoded before we arrive ----
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (isActive) return;      // handled above
+    if (!isNext) {
+      try { v.pause(); } catch {}
+      return;
+    }
+    v.muted = true;
+    v.play().catch(() => {});
+  }, [isNext, isActive]);
 
-  // Mute sync — separate effect so it never triggers pause/reset
+  // ---- Mute sync (does NOT retrigger play/pause) ----
   useEffect(() => {
     const v = videoRef.current;
     if (v && isActive) v.muted = muted;
   }, [muted, isActive]);
 
-  useEffect(() => {
-    return () => {
-      if (controlsTimer.current) clearTimeout(controlsTimer.current);
-    };
+  // ---- Controls auto-hide timer cleanup ----
+  useEffect(() => () => {
+    if (controlsTimer.current) clearTimeout(controlsTimer.current);
   }, []);
+
+  // ---- Register tap handler with parent (only when active) ----
+  useEffect(() => {
+    if (!isActive) return;
+    registerTap(() => {
+      const v = videoRef.current;
+      if (!v) return;
+      if (v.paused) {
+        v.play().catch(() => {});
+        setPaused(false);
+        flashControls(400);
+      } else {
+        v.pause();
+        setPaused(true);
+        flashControls(2000);
+      }
+    });
+  }, [isActive]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const flashControls = (ms: number) => {
+    setShowControls(true);
+    if (controlsTimer.current) clearTimeout(controlsTimer.current);
+    controlsTimer.current = setTimeout(() => setShowControls(false), ms);
+  };
 
   const name = creator?.name || "TROOFLIX";
   const handle = creator?.slug ? `@${creator.slug.replace(/-/g, "")}` : "@trooflix";
@@ -251,19 +243,28 @@ function VideoCard({
 
   return (
     <div
-      ref={containerRef}
       data-feed-card
       className="relative w-screen flex-shrink-0 overflow-hidden bg-black snap-start snap-always flex items-center justify-center"
-      style={{ scrollSnapAlign: "start", height: compact ? "35dvh" : "100dvh" }}
+      style={{
+        height: compact ? "35dvh" : "100dvh",
+        scrollSnapAlign: "start",
+        transition: "height 0.35s ease-out",
+      }}
     >
+      {/*
+        Video element: fixed 100% × 100% of its parent.
+        The parent above changes size. The video uses object-contain,
+        so the visible frame is centered and letterboxed. NO React re-render
+        of the video element itself during the shrink — no flash.
+      */}
       <video
         ref={videoRef}
         src={video.bitchuteUrl}
-        className={
-          compact
-            ? "relative max-h-full max-w-full h-full object-contain rounded-xl"
-            : "relative w-full h-full object-contain"
-        }
+        className="w-full h-full object-contain"
+        style={{
+          borderRadius: compact ? "12px" : 0,
+          transition: "border-radius 0.35s ease-out",
+        }}
         playsInline
         muted={muted}
         loop
@@ -271,6 +272,7 @@ function VideoCard({
         data-fullscreen-video={cardIndex}
       />
 
+      {/* Top bar — only when NOT compact */}
       {isActive && !compact && (
         <div className="absolute top-0 left-0 right-0 z-20 flex items-center p-4 bg-gradient-to-b from-black/60 to-transparent">
           <button
@@ -283,6 +285,7 @@ function VideoCard({
         </div>
       )}
 
+      {/* Center controls (play / mute) — fade in on tap */}
       <AnimatePresence>
         {isActive && !compact && showControls && (
           <motion.div
@@ -296,7 +299,7 @@ function VideoCard({
               onClick={(e) => {
                 e.stopPropagation();
                 onToggleMute();
-                flashControls();
+                flashControls(2000);
               }}
               className="pointer-events-auto w-14 h-14 rounded-full bg-black/50 backdrop-blur flex items-center justify-center hover:bg-black/70 transition"
               aria-label={muted ? "Unmute" : "Mute"}
@@ -307,7 +310,17 @@ function VideoCard({
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                togglePlay();
+                const v = videoRef.current;
+                if (!v) return;
+                if (v.paused) {
+                  v.play().catch(() => {});
+                  setPaused(false);
+                  flashControls(400);
+                } else {
+                  v.pause();
+                  setPaused(true);
+                  flashControls(2000);
+                }
               }}
               className="pointer-events-auto w-16 h-16 rounded-full bg-black/50 backdrop-blur flex items-center justify-center hover:bg-black/70 transition"
               aria-label={paused ? "Play" : "Pause"}
@@ -325,6 +338,7 @@ function VideoCard({
         )}
       </AnimatePresence>
 
+      {/* Heart burst */}
       <AnimatePresence>
         {heartBurst && (
           <motion.div
@@ -341,15 +355,13 @@ function VideoCard({
         )}
       </AnimatePresence>
 
+      {/* Right rail */}
       {isActive && !compact && (
         <div className="absolute right-3 bottom-56 z-20 flex flex-col items-center gap-5">
           <div data-like-button>
             <LikeButton videoId={video.id} size={26} stacked />
           </div>
-          <CommentCountStacked
-            videoId={video.id}
-            onClick={onOpenComments}
-          />
+          <CommentCountStacked videoId={video.id} onClick={onOpenComments} />
           <button
             onClick={share}
             className="flex flex-col items-center text-white"
@@ -361,6 +373,7 @@ function VideoCard({
         </div>
       )}
 
+      {/* Bottom overlay (creator, title, description) */}
       {isActive && !compact && (
         <div className="absolute bottom-0 left-0 right-0 z-20 p-4 pb-6 bg-gradient-to-t from-black via-black/60 to-transparent pointer-events-none">
           <div className="flex items-center gap-3 mb-3 pointer-events-auto">
@@ -396,6 +409,10 @@ function VideoCard({
   );
 }
 
+// ---------------------------------------------------------------------------
+// FeedFullscreenPlayer — outer shell
+// ---------------------------------------------------------------------------
+
 export default function FeedFullscreenPlayer({
   videos,
   index,
@@ -406,113 +423,133 @@ export default function FeedFullscreenPlayer({
 }: Props) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [commentOpen, setCommentOpen] = useState(false);
-  const [muted, setMuted] = useState(false);  // unmuted by default — user just tapped to enter
+  const [muted, setMuted] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(index);
+
   const tapRef = useRef<(() => void) | null>(null);
   const lastTapRef = useRef(0);
   const touchStartYRef = useRef<number | null>(null);
   const touchStartXRef = useRef<number | null>(null);
+  const scrollLockRef = useRef(false);
 
-  // Which video is centered — derived from scroll position, not prop
-  const [activeIndex, setActiveIndex] = useState(index);
-
-  // Jump to the passed index on mount (once)
+  // ---- Initial scroll to index ----
   useEffect(() => {
     const el = scrollerRef.current;
     if (!el) return;
-    el.scrollTop = index * el.clientHeight;
+    const card = el.querySelector<HTMLElement>("[data-feed-card]");
+    const cardH = card?.clientHeight || el.clientHeight || 1;
+    el.style.scrollBehavior = "auto";
+    el.scrollTop = index * cardH;
     setActiveIndex(index);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Track which card is centered as user scrolls
+  // ---- Scroll tracker (paused during comment transition) ----
   useEffect(() => {
     const el = scrollerRef.current;
     if (!el) return;
+
     const onScroll = () => {
-      if (commentOpen) return; // don't recompute while comments are open
-      const firstCard = el.querySelector<HTMLElement>("[data-feed-card]");
-      const h = firstCard?.clientHeight || el.clientHeight || 1;
+      if (commentOpen || scrollLockRef.current) return;
+      const card = el.querySelector<HTMLElement>("[data-feed-card]");
+      const h = card?.clientHeight || el.clientHeight || 1;
       const i = Math.round(el.scrollTop / h);
       if (i !== activeIndex && i >= 0 && i < videos.length) {
         setActiveIndex(i);
         onIndexChange(i);
-        // Warm up the neighbor videos so switching is instant
-        [i + 1, i - 1].forEach((n) => {
-          if (n < 0 || n >= videos.length) return;
-          const el2 = el.querySelector<HTMLVideoElement>(
-            `video[data-fullscreen-video="${n}"]`
-          );
-          if (el2 && el2.readyState < 2) {
-            try { el2.load(); } catch {}
-          }
-        });
       }
     };
     el.addEventListener("scroll", onScroll, { passive: true });
     return () => el.removeEventListener("scroll", onScroll);
   }, [activeIndex, videos.length, onIndexChange, commentOpen]);
 
-  // Escape / arrows
+  // ---- Keyboard controls ----
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && !commentOpen) onClose();
+      if (e.key === "Escape" && !commentOpen) {
+        closeWithTime();
+        return;
+      }
       const el = scrollerRef.current;
       if (!el) return;
+      const card = el.querySelector<HTMLElement>("[data-feed-card]");
+      const h = card?.clientHeight || el.clientHeight || 1;
       if (e.key === "ArrowDown") {
-        el.scrollTo({ top: (activeIndex + 1) * el.clientHeight, behavior: "smooth" });
+        el.scrollTo({ top: (activeIndex + 1) * h, behavior: "smooth" });
       }
       if (e.key === "ArrowUp") {
-        el.scrollTo({
-          top: Math.max(0, (activeIndex - 1) * el.clientHeight),
-          behavior: "smooth",
-        });
+        el.scrollTo({ top: Math.max(0, (activeIndex - 1) * h), behavior: "smooth" });
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose, commentOpen, activeIndex]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [commentOpen, activeIndex]);
 
+  // ---- Body scroll lock ----
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
+    return () => { document.body.style.overflow = prev; };
   }, []);
 
+  // ---- Live index (from actual scroll position) ----
+  const liveIndex = () => {
+    const el = scrollerRef.current;
+    if (!el) return activeIndex;
+    const card = el.querySelector<HTMLElement>("[data-feed-card]");
+    const h = card?.clientHeight || el.clientHeight || 1;
+    return Math.max(0, Math.min(Math.round(el.scrollTop / h), videos.length - 1));
+  };
 
-  // Snap scroll to the current card BEFORE the container shrinks,
-  // so the shrunken viewport still shows the current video.
+  // ---- Open comments: freeze scroll, then shrink ----
   const openComments = () => {
     const el = scrollerRef.current;
     if (el) {
-      const firstCard = el.querySelector<HTMLElement>("[data-feed-card]");
-      const cardH = firstCard?.clientHeight || el.clientHeight || 1;
-      // Read the LIVE scroll position — don't trust state that might be stale
-      const liveIndex = Math.round(el.scrollTop / cardH);
-      const safeIndex = Math.max(0, Math.min(liveIndex, videos.length - 1));
+      const idx = liveIndex();
+      const card = el.querySelector<HTMLElement>("[data-feed-card]");
+      const h = card?.clientHeight || el.clientHeight || 1;
+      scrollLockRef.current = true;
       el.style.scrollBehavior = "auto";
-      el.scrollTop = safeIndex * cardH;
-      if (safeIndex !== activeIndex) {
-        setActiveIndex(safeIndex);
-        onIndexChange(safeIndex);
+      el.scrollTop = idx * h;
+      if (idx !== activeIndex) {
+        setActiveIndex(idx);
+        onIndexChange(idx);
       }
     }
     setCommentOpen(true);
   };
 
+  // ---- Re-snap after shrink transition ----
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const t = setTimeout(() => {
+      const card = el.querySelector<HTMLElement>("[data-feed-card]");
+      const h = card?.clientHeight || el.clientHeight || 1;
+      el.style.scrollBehavior = "auto";
+      el.scrollTop = activeIndex * h;
+      scrollLockRef.current = false;
+    }, 380); // slightly longer than transition
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [commentOpen]);
+
+  // ---- Close with time ----
   const closeWithTime = () => {
-    // Read current active video's time
-    const activeVideo = scrollerRef.current?.querySelector<HTMLVideoElement>(
-      `video[data-fullscreen-video="${activeIndex}"]`
+    const el = scrollerRef.current;
+    const idx = liveIndex();
+    const v = el?.querySelector<HTMLVideoElement>(
+      `video[data-fullscreen-video="${idx}"]`
     );
-    const t = activeVideo?.currentTime || 0;
-    onClose(t);
+    onClose(v?.currentTime || 0);
   };
 
+  // ---- Tap / double-tap / swipe ----
   const onTouchEnd = (e: React.TouchEvent) => {
-    if (commentOpen) return;  // no taps/swipes while comments are open
-    // Horizontal swipe to the right → close fullscreen
+    if (commentOpen) return;
+
+    // Horizontal → close
     if (touchStartXRef.current !== null) {
       const dx = e.changedTouches[0].clientX - touchStartXRef.current;
       const dy = Math.abs(e.changedTouches[0].clientY - (touchStartYRef.current || 0));
@@ -525,7 +562,7 @@ export default function FeedFullscreenPlayer({
       }
     }
 
-    // Vertical swipe check
+    // Vertical → ignore (handled by scroll)
     if (touchStartYRef.current !== null) {
       const dy = Math.abs(e.changedTouches[0].clientY - touchStartYRef.current);
       touchStartYRef.current = null;
@@ -542,55 +579,19 @@ export default function FeedFullscreenPlayer({
     const delta = now - lastTapRef.current;
 
     if (delta < 300 && delta > 0) {
+      // double-tap → like
       lastTapRef.current = 0;
-      // Find the currently visible card's like button
-      const cards = scrollerRef.current?.querySelectorAll<HTMLElement>(
-        "[data-feed-card]"
-      );
-      const visibleCard = cards?.[activeIndex];
-      const likeBtn = visibleCard?.querySelector<HTMLButtonElement>(
-        "[data-like-button] button"
-      );
+      const cards = scrollerRef.current?.querySelectorAll<HTMLElement>("[data-feed-card]");
+      const visible = cards?.[activeIndex];
+      const likeBtn = visible?.querySelector<HTMLButtonElement>("[data-like-button] button");
       if (likeBtn) likeBtn.click();
     } else {
       lastTapRef.current = now;
       setTimeout(() => {
-        if (lastTapRef.current === now) {
-          tapRef.current?.();
-        }
+        if (lastTapRef.current === now) tapRef.current?.();
       }, 300);
     }
   };
-
-  // After the shrink completes, re-normalize scroll to the compact card height
-  // (this is the "safety" pass — the initial snap already ran in openComments).
-  useEffect(() => {
-    if (!commentOpen) return;
-    const el = scrollerRef.current;
-    if (!el) return;
-    const t = setTimeout(() => {
-      const firstCard = el.querySelector<HTMLElement>("[data-feed-card]");
-      const cardH = firstCard?.clientHeight || el.clientHeight || 1;
-      el.style.scrollBehavior = "auto";
-      el.scrollTop = activeIndex * cardH;
-    }, 320);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [commentOpen]);
-
-  // When comments close, re-snap to the same active video (card height changes back to 100dvh)
-  useEffect(() => {
-    if (commentOpen) return;
-    const el = scrollerRef.current;
-    if (!el) return;
-    const t = setTimeout(() => {
-      const firstCard = el.querySelector<HTMLElement>("[data-feed-card]");
-      const cardH = firstCard?.clientHeight || el.clientHeight || 1;
-      el.scrollTop = activeIndex * cardH;
-    }, 320);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [commentOpen]);
 
   const creatorFor = (id?: number | null) =>
     id ? creators.find((c) => c.id === id) || null : null;
@@ -599,11 +600,12 @@ export default function FeedFullscreenPlayer({
 
   return (
     <>
+      {/* Strip — height animates; video elements inside do NOT re-render */}
       <div
-        className="fixed left-0 right-0 z-[250] bg-black transition-[height] duration-300 ease-out"
+        className="fixed left-0 right-0 top-0 z-[250] bg-black"
         style={{
-          top: 0,
           height: commentOpen ? "35dvh" : "100dvh",
+          transition: "height 0.35s ease-out",
         }}
       >
         <div
@@ -627,20 +629,21 @@ export default function FeedFullscreenPlayer({
               video={v}
               creator={creatorFor(v.creatorId)}
               isActive={i === activeIndex}
-              onClose={closeWithTime}
-              onOpenComments={openComments}
+              isNext={i === activeIndex + 1}
+              compact={commentOpen}
               muted={muted}
               onToggleMute={() => setMuted((m) => !m)}
-              flashSignalRef={tapRef}
+              onClose={closeWithTime}
+              onOpenComments={openComments}
+              registerTap={(fn) => { tapRef.current = fn; }}
               initialSeek={i === index ? startTime : 0}
               cardIndex={i}
-              compact={commentOpen}
-              isNeighbor={i === activeIndex + 1}
             />
           ))}
         </div>
       </div>
 
+      {/* Comment drawer (below the strip) */}
       <CommentDrawer
         videoId={commentOpen && current ? current.id : null}
         title={current?.title}
