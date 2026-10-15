@@ -110,7 +110,7 @@ function CommentCountStacked({
     <button
       onClick={onClick}
       className="flex flex-col items-center justify-center gap-1.5 text-white"
-      style={{ minHeight: 46 }}
+      style={{ minHeight: 38 }}
       aria-label="Comments"
     >
       <MessageCircle size={26} />
@@ -355,7 +355,7 @@ function VideoCard({
 
       {/* Right rail */}
       {isActive && !compact && (
-        <div className="absolute right-3 bottom-56 z-20 flex flex-col items-center gap-5">
+        <div className="absolute right-3 bottom-56 z-20 flex flex-col items-center gap-3">
           <div data-like-button>
             <LikeButton videoId={video.id} size={26} stacked />
           </div>
