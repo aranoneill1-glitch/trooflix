@@ -141,6 +141,12 @@ export async function PATCH(req: Request) {
     if (!app) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
     if (action === "reject") {
+      // Clear verified flag when un-approving
+      await supabaseAdmin
+        .from("profiles")
+        .update({ is_verified: false })
+        .eq("user_id", app.user_id);
+
       const { error } = await supabaseAdmin
         .from("creator_applications")
         .update({
@@ -154,6 +160,12 @@ export async function PATCH(req: Request) {
     }
 
     if (action === "approve") {
+      // 0. Flag the user's profile as verified (drives the red badge)
+      await supabaseAdmin
+        .from("profiles")
+        .update({ is_verified: true })
+        .eq("user_id", app.user_id);
+
       // 1. Add to creators KV
       const creators = (await kv.get<any[]>(CREATORS_KEY)) || [];
       const newCreator = {
@@ -164,6 +176,7 @@ export async function PATCH(req: Request) {
         heroBackdropUrl: "",
         description: app.bio,
         ownerUserId: app.user_id,
+        isVerified: true,
         createdAt: new Date().toISOString(),
       };
       creators.push(newCreator);

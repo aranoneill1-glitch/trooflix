@@ -16,7 +16,7 @@ export async function GET(req: Request) {
 
     const { data, error } = await supabaseAdmin
       .from("profiles")
-      .select("user_id, avatar_url, display_name, username, bio, updated_at")
+      .select("user_id, avatar_url, display_name, username, bio, is_verified, updated_at")
       .eq("user_id", userId)
       .maybeSingle();
 

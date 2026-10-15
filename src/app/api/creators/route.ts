@@ -1,5 +1,12 @@
 import { NextResponse } from "next/server";
 import { kv } from "@vercel/kv";
+import { createClient as createServerClient } from "@supabase/supabase-js";
+
+const supabaseAdmin = createServerClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  { auth: { autoRefreshToken: false, persistSession: false } }
+);
 
 const KEY = "trooflix:creators";
 
@@ -18,6 +25,31 @@ export async function GET(req: Request) {
     const includeHidden = searchParams.get("includeHidden") === "1";
     const all = (await kv.get<any[]>(KEY)) || [];
     const creators = includeHidden ? all : all.filter((c: any) => !c.hidden);
+
+    // Enrich with is_verified from profiles
+    const userIds = creators
+      .map((c: any) => c.ownerUserId)
+      .filter(Boolean) as string[];
+
+    if (userIds.length > 0) {
+      const { data: profiles } = await supabaseAdmin
+        .from("profiles")
+        .select("user_id, is_verified")
+        .in("user_id", userIds);
+
+      const verifiedMap: Record<string, boolean> = {};
+      (profiles || []).forEach((p: any) => {
+        verifiedMap[p.user_id] = !!p.is_verified;
+      });
+
+      const enriched = creators.map((c: any) => ({
+        ...c,
+        isVerified: c.ownerUserId ? !!verifiedMap[c.ownerUserId] : false,
+      }));
+
+      return NextResponse.json(enriched);
+    }
+
     return NextResponse.json(creators);
   } catch (e) {
     console.error("GET creators error:", e);

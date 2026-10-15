@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { Play, Info, X, ChevronLeft, ChevronRight } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import FollowButton from "@/components/FollowButton";
+import VerifiedBadge from "@/components/VerifiedBadge";
 import MessageComposer from "@/components/MessageComposer";
 import ViewCount from "@/components/ViewCount";
 import BitChutePlayer from "@/components/BitChutePlayer";
@@ -34,6 +35,7 @@ type Creator = {
   photoUrl: string;
   heroBackdropUrl?: string;
   description: string;
+  isVerified?: boolean;
 };
 
 function timeAgo(iso?: string): string {
@@ -156,8 +158,9 @@ export default function PodcasterProfilePage() {
             <p className="text-xs tracking-[0.4em] text-red-500 font-bold mb-2">
               PODCASTER
             </p>
-            <h1 className="text-4xl md:text-6xl font-black leading-tight mb-4 drop-shadow-lg">
+            <h1 className="text-4xl md:text-6xl font-black leading-tight mb-4 drop-shadow-lg flex items-center gap-3 flex-wrap">
               {creator.name}
+              {creator.isVerified && <VerifiedBadge size={36} className="md:mt-1" />}
             </h1>
             {creator.description && (
               <p className="text-base md:text-lg text-white/85 max-w-2xl leading-relaxed mb-4">
