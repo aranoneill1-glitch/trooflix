@@ -45,7 +45,7 @@ type Creator = {
 };
 
 const TROOFLIX_LOGO =
-  "https://pub-ce2ee455d2b04abc9964046e3ff970f0.r2.dev/creators/1792092793283-trooflix-logo.png";
+  "https://pub-ce2ee455d2b04abc9964046e3ff970f0.r2.dev/creators/1792093646889-trooflix-logo.jpg";
 
 function timeAgo(iso?: string): string {
   if (!iso) return "";
@@ -230,13 +230,11 @@ function FeedCard({
             className="w-10 h-10 rounded-full object-cover flex-shrink-0"
           />
         ) : !creator ? (
-          <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-black flex items-center justify-center">
-            <img
-              src={TROOFLIX_LOGO}
-              alt=""
-              className="w-full h-full object-contain"
-            />
-          </div>
+          <img
+            src={TROOFLIX_LOGO}
+            alt=""
+            className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+          />
         ) : (
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center font-bold flex-shrink-0">
             {name[0]?.toUpperCase() || "T"}
