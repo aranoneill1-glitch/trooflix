@@ -2,10 +2,27 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Video, Mic, Upload, UserPlus } from "lucide-react";
+import {
+  Video,
+  Mic,
+  Upload,
+  UserPlus,
+  Users,
+  Eye,
+  TrendingUp,
+  Film,
+  Mic2,
+  Bell,
+  Settings,
+} from "lucide-react";
 
 export default function OverviewPage() {
-  const [stats, setStats] = useState<{ totalViews: number; uniqueVisitors: number; today: number; last7Days: number } | null>(null);
+  const [stats, setStats] = useState<{
+    totalViews: number;
+    uniqueVisitors: number;
+    today: number;
+    last7Days: number;
+  } | null>(null);
   const [subscribers, setSubscribers] = useState<number | null>(null);
   const [videoCount, setVideoCount] = useState<number>(0);
   const [podcasterCount, setPodcasterCount] = useState<number>(0);
@@ -19,87 +36,148 @@ export default function OverviewPage() {
 
   return (
     <div className="p-4 md:p-8 max-w-5xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-1">Overview</h1>
+      <div className="mb-6">
+        <h1 className="text-2xl md:text-3xl font-black mb-1">Overview</h1>
         <p className="text-white/50 text-sm">Your site at a glance</p>
       </div>
 
-      {/* Stats grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-10">
-        <StatCard label="Videos" value={videoCount} />
-        <StatCard label="Podcasters" value={podcasterCount} />
-        <StatCard label="Subscribers" value={subscribers ?? "—"} />
-        <StatCard label="Unique Visitors" value={stats?.uniqueVisitors ?? "—"} />
-        <StatCard label="Total Page Views" value={stats?.totalViews ?? "—"} />
-        <StatCard label="Views Today" value={stats?.today ?? "—"} />
-      </div>
+      {/* === CONTENT === */}
+      <section className="mb-6">
+        <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3">
+          CONTENT
+        </h2>
+        <div className="grid grid-cols-3 gap-2 md:gap-3">
+          <StatCard
+            icon={Film}
+            label="Videos"
+            value={videoCount}
+          />
+          <StatCard
+            icon={Mic2}
+            label="Podcasters"
+            value={podcasterCount}
+          />
+          <StatCard
+            icon={Users}
+            label="Subscribers"
+            value={subscribers ?? "—"}
+          />
+        </div>
+      </section>
 
-      {/* Quick actions */}
-      <h2 className="text-lg font-bold mb-4">Quick Actions</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <ActionCard
-          href="/admin/videos"
-          icon={Upload}
-          title="Add a Video"
-          description="Upload a new film, documentary, or podcast episode"
-        />
-        <ActionCard
-          href="/admin/podcasters"
-          icon={Mic}
-          title="Manage Podcasters"
-          description="Add, edit, or remove podcasters on the platform"
-        />
-        <ActionCard
-          href="/admin/videos"
-          icon={Video}
-          title="View All Videos"
-          description="Browse and edit your video catalog"
-        />
-        <ActionCard
-          href="/admin/settings"
-          icon={UserPlus}
-          title="Settings"
-          description="Admin preferences and account info"
-        />
-      </div>
+      {/* === TRAFFIC === */}
+      <section className="mb-6">
+        <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3">
+          TRAFFIC
+        </h2>
+        <div className="grid grid-cols-3 gap-2 md:gap-3">
+          <StatCard
+            icon={Eye}
+            label="Visitors"
+            value={stats?.uniqueVisitors ?? "—"}
+          />
+          <StatCard
+            icon={TrendingUp}
+            label="Page Views"
+            value={stats?.totalViews ?? "—"}
+          />
+          <StatCard
+            icon={Bell}
+            label="Today"
+            value={stats?.today ?? "—"}
+            highlight
+          />
+        </div>
+      </section>
+
+      {/* === QUICK ACTIONS === */}
+      <section>
+        <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3">
+          QUICK ACTIONS
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
+          <ActionTile
+            href="/admin/videos"
+            icon={Upload}
+            label="Add Video"
+          />
+          <ActionTile
+            href="/admin/podcasters"
+            icon={Mic}
+            label="Podcasters"
+          />
+          <ActionTile
+            href="/admin/videos"
+            icon={Video}
+            label="All Videos"
+          />
+          <ActionTile
+            href="/admin/settings"
+            icon={Settings}
+            label="Settings"
+          />
+        </div>
+      </section>
     </div>
   );
 }
 
-function StatCard({ label, value }: { label: string; value: number | string }) {
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+  highlight = false,
+}: {
+  icon: any;
+  label: string;
+  value: number | string;
+  highlight?: boolean;
+}) {
   return (
-    <div className="bg-[#141418] border border-white/5 rounded-lg p-5">
-      <p className="text-xs text-white/50 mb-2">{label}</p>
-      <p className="text-3xl font-bold text-white">{value}</p>
+    <div
+      className={`rounded-xl p-3 md:p-4 transition ${
+        highlight
+          ? "bg-red-600/10 border border-red-600/20"
+          : "bg-[#141418] border border-white/5"
+      }`}
+    >
+      <div className="flex items-center gap-1.5 mb-2">
+        <Icon
+          size={13}
+          className={highlight ? "text-red-500" : "text-white/40"}
+        />
+        <p className="text-[10px] md:text-[11px] font-semibold tracking-wide text-white/50 uppercase truncate">
+          {label}
+        </p>
+      </div>
+      <p className="text-2xl md:text-3xl font-black text-white tabular-nums leading-none">
+        {value}
+      </p>
     </div>
   );
 }
 
-function ActionCard({
+function ActionTile({
   href,
   icon: Icon,
-  title,
-  description,
+  label,
 }: {
   href: string;
   icon: any;
-  title: string;
-  description: string;
+  label: string;
 }) {
   return (
     <Link
       href={href}
-      className="bg-[#141418] border border-white/5 rounded-lg p-5 hover:border-white/20 transition group"
+      className="bg-[#141418] border border-white/5 rounded-xl p-3 md:p-4 flex flex-col items-center justify-center gap-2 hover:border-red-600/40 hover:bg-red-600/5 transition group"
     >
-      <div className="flex items-start gap-4">
-        <div className="bg-red-600/10 rounded-lg p-3">
-          <Icon size={22} className="text-red-500" />
-        </div>
-        <div>
-          <p className="font-bold mb-1 group-hover:text-red-500 transition">{title}</p>
-          <p className="text-sm text-white/50">{description}</p>
-        </div>
-      </div>
+      <Icon
+        size={20}
+        className="text-red-500 group-hover:scale-110 transition"
+      />
+      <p className="text-xs md:text-sm font-semibold text-white text-center">
+        {label}
+      </p>
     </Link>
   );
 }
