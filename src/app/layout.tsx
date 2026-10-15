@@ -9,6 +9,16 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Trooflix",
   description: "Documentaries, films, and podcasts. Uncensored.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Trooflix",
+  },
+  icons: {
+    icon: "/icon-192.png",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export const viewport: Viewport = {
@@ -16,6 +26,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  themeColor: "#dc2626",
 };
 
 export default function RootLayout({
@@ -39,14 +50,20 @@ export default function RootLayout({
                   if (now - lastTouch <= 300) { e.preventDefault(); }
                   lastTouch = now;
                 }, { passive: false });
+                // Register PWA service worker
+                if ('serviceWorker' in navigator) {
+                  window.addEventListener('load', function () {
+                    navigator.serviceWorker.register('/sw.js').catch(function () {});
+                  });
+                }
               })();
             `,
           }}
         />
         <SearchProvider>
-        <TVNavigation />
-        {children}
-              </SearchProvider>
+          <TVNavigation />
+          {children}
+        </SearchProvider>
       </body>
     </html>
   );
