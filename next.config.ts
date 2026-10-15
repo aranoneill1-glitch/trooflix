@@ -1,4 +1,3 @@
-// cache-bust 1792070366.102103
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -10,4 +9,3 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
-// force rebuild 1792071343
