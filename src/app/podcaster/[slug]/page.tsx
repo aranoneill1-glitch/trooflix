@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Play, Info, X, ChevronLeft, ChevronRight } from "lucide-react";
 import TopBar from "@/components/TopBar";
+import MobileBottomNav from "@/components/MobileBottomNav";
 import FollowButton from "@/components/FollowButton";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import MessageComposer from "@/components/MessageComposer";
@@ -260,6 +261,7 @@ export default function PodcasterProfilePage() {
           </div>
         </div>
       )}
+      <MobileBottomNav />
     </main>
   );
 }
