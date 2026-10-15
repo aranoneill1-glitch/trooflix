@@ -58,6 +58,7 @@ export default function ProfilePage() {
 
   const [tab, setTab] = useState<"grid" | "reels">("grid");
   const [editOpen, setEditOpen] = useState(false);
+  const [dashOpen, setDashOpen] = useState(false);
 
   // Edit-modal fields (temporary home for the edit form)
   const [editName, setEditName] = useState("");
@@ -260,10 +261,10 @@ export default function ProfilePage() {
                 Edit profile
               </button>
               <button
-                onClick={share}
+                onClick={() => setDashOpen(true)}
                 className="bg-white/10 hover:bg-white/20 py-2 rounded-lg text-sm font-semibold transition"
               >
-                Share profile
+                Dashboard
               </button>
             </div>
 
@@ -441,49 +442,87 @@ export default function ProfilePage() {
                   <Check size={16} /> {savingEdit ? "Saving…" : "Save"}
                 </button>
 
-                {/* Divider */}
-                <div className="border-t border-white/10 pt-4 mt-2 space-y-1">
-                  {isCreator && (
-                    <Link
-                      href="/creator"
-                      onClick={() => setEditOpen(false)}
-                      className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-white/5 transition text-green-400"
-                    >
-                      <Check size={18} />
-                      <span className="font-semibold">Creator Dashboard</span>
-                    </Link>
-                  )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* ---- Dashboard sheet ---- */}
+      <AnimatePresence>
+        {dashOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setDashOpen(false)}
+              className="fixed inset-0 z-[300] bg-black/70"
+            />
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 32, stiffness: 320 }}
+              className="fixed left-0 right-0 bottom-0 z-[301] bg-[#0f0f12] rounded-t-2xl md:max-w-md md:mx-auto md:rounded-2xl md:bottom-4"
+            >
+              <div className="flex justify-center pt-2.5">
+                <div className="w-10 h-1 rounded-full bg-white/25" />
+              </div>
+              <div className="flex items-center justify-between px-4 py-2 border-b border-white/10">
+                <h2 className="text-base font-bold">Dashboard</h2>
+                <button
+                  onClick={() => setDashOpen(false)}
+                  className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-white/10"
+                  aria-label="Close"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="p-4 space-y-1">
+                {isCreator && (
                   <Link
-                    href="/account"
-                    onClick={() => setEditOpen(false)}
-                    className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-white/5 transition"
+                    href="/creator"
+                    onClick={() => setDashOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition text-green-400"
                   >
-                    <Settings size={18} className="text-white/70" />
-                    <span className="font-semibold">Account settings</span>
+                    <Check size={18} />
+                    <span className="font-semibold">Creator Dashboard</span>
                   </Link>
-                  <Link
-                    href="/my-list"
-                    onClick={() => setEditOpen(false)}
-                    className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-white/5 transition"
-                  >
-                    <Bookmark size={18} className="text-white/70" />
-                    <span className="font-semibold">My List</span>
-                  </Link>
-                  <button
-                    onClick={share}
-                    className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-white/5 transition text-left"
-                  >
-                    <Share2 size={18} className="text-white/70" />
-                    <span className="font-semibold">Share profile</span>
-                  </button>
-                  <button
-                    onClick={logout}
-                    className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-white/5 transition text-red-400 text-left"
-                  >
-                    <LogOut size={18} />
-                    <span className="font-semibold">Log out</span>
-                  </button>
-                </div>
+                )}
+                <Link
+                  href="/account"
+                  onClick={() => setDashOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition"
+                >
+                  <Settings size={18} className="text-white/70" />
+                  <span className="font-semibold">Account settings</span>
+                </Link>
+                <Link
+                  href="/my-list"
+                  onClick={() => setDashOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition"
+                >
+                  <Bookmark size={18} className="text-white/70" />
+                  <span className="font-semibold">My List</span>
+                </Link>
+                <button
+                  onClick={() => {
+                    share();
+                    setDashOpen(false);
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition text-left"
+                >
+                  <Share2 size={18} className="text-white/70" />
+                  <span className="font-semibold">Share profile</span>
+                </button>
+                <button
+                  onClick={logout}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition text-red-400 text-left"
+                >
+                  <LogOut size={18} />
+                  <span className="font-semibold">Log out</span>
+                </button>
               </div>
             </motion.div>
           </>
