@@ -24,6 +24,13 @@ export async function middleware(req: NextRequest) {
     }
   }
 
+  // Admin API routes: always gated
+  if (pathname.startsWith("/api/admin")) {
+    if (!password || cookie !== password) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+  }
+
   // --- Supabase session refresh (new) ---
   return await updateSession(req);
 }
