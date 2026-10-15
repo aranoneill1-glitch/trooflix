@@ -239,14 +239,24 @@ function VideoCard({
       className="relative w-screen flex-shrink-0 overflow-hidden bg-black snap-start snap-always flex items-center justify-center"
       style={{ scrollSnapAlign: "start", height: compact ? "35dvh" : "100dvh" }}
     >
+      {/* Poster layer behind the video — shows until first frame is ready */}
+      <img
+        src={video.backdropUrl || video.posterUrl}
+        alt=""
+        className={
+          compact
+            ? "absolute max-h-full max-w-full h-full object-contain rounded-xl"
+            : "absolute inset-0 w-full h-full object-cover"
+        }
+        aria-hidden
+      />
       <video
         ref={videoRef}
         src={video.bitchuteUrl}
-        poster={video.backdropUrl || video.posterUrl}
         className={
           compact
-            ? "max-h-full max-w-full h-full object-contain rounded-xl"
-            : "w-full h-full object-contain"
+            ? "relative max-h-full max-w-full h-full object-contain rounded-xl"
+            : "relative w-full h-full object-contain"
         }
         playsInline
         muted={muted}
@@ -420,6 +430,16 @@ export default function FeedFullscreenPlayer({
       if (i !== activeIndex && i >= 0 && i < videos.length) {
         setActiveIndex(i);
         onIndexChange(i);
+        // Warm up the neighbor videos so switching is instant
+        [i + 1, i - 1].forEach((n) => {
+          if (n < 0 || n >= videos.length) return;
+          const el2 = el.querySelector<HTMLVideoElement>(
+            `video[data-fullscreen-video="${n}"]`
+          );
+          if (el2 && el2.readyState < 2) {
+            try { el2.load(); } catch {}
+          }
+        });
       }
     };
     el.addEventListener("scroll", onScroll, { passive: true });
@@ -462,9 +482,15 @@ export default function FeedFullscreenPlayer({
     if (el) {
       const firstCard = el.querySelector<HTMLElement>("[data-feed-card]");
       const cardH = firstCard?.clientHeight || el.clientHeight || 1;
-      // Snap instantly (no transition on the scroll itself)
+      // Read the LIVE scroll position — don't trust state that might be stale
+      const liveIndex = Math.round(el.scrollTop / cardH);
+      const safeIndex = Math.max(0, Math.min(liveIndex, videos.length - 1));
       el.style.scrollBehavior = "auto";
-      el.scrollTop = activeIndex * cardH;
+      el.scrollTop = safeIndex * cardH;
+      if (safeIndex !== activeIndex) {
+        setActiveIndex(safeIndex);
+        onIndexChange(safeIndex);
+      }
     }
     setCommentOpen(true);
   };
