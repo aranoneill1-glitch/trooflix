@@ -1,5 +1,16 @@
 import AdminSidebar from "@/components/AdminSidebar";
 
+export const metadata = {
+  title: "Trooflix Admin",
+  manifest: "/manifest-admin.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "TF Admin",
+  },
+};
+
+
 export default function AdminLayout({
   children,
 }: {
