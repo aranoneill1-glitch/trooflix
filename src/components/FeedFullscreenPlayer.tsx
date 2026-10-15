@@ -458,6 +458,7 @@ export default function FeedFullscreenPlayer({
   };
 
   const onTouchEnd = (e: React.TouchEvent) => {
+    if (commentOpen) return;  // no taps/swipes while comments are open
     // Horizontal swipe to the right → close fullscreen
     if (touchStartXRef.current !== null) {
       const dx = e.changedTouches[0].clientX - touchStartXRef.current;
@@ -508,6 +509,17 @@ export default function FeedFullscreenPlayer({
     }
   };
 
+  // Snap scroller to current video BEFORE opening comments, so it stays centered
+  useEffect(() => {
+    if (!commentOpen) return;
+    const el = scrollerRef.current;
+    if (!el) return;
+    // Ensure the scroller is snapped to the active index at the moment we shrink
+    const h = el.clientHeight || 1;
+    el.scrollTop = activeIndex * h;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [commentOpen]);
+
   const creatorFor = (id?: number | null) =>
     id ? creators.find((c) => c.id === id) || null : null;
 
@@ -529,8 +541,13 @@ export default function FeedFullscreenPlayer({
             touchStartXRef.current = e.touches[0].clientX;
           }}
           onTouchEnd={onTouchEnd}
-          className="h-full w-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide"
-          style={{ scrollSnapType: "y mandatory" }}
+          className={`h-full w-full snap-y snap-mandatory scrollbar-hide ${
+            commentOpen ? "overflow-hidden" : "overflow-y-scroll"
+          }`}
+          style={{
+            scrollSnapType: commentOpen ? "none" : "y mandatory",
+            pointerEvents: commentOpen ? "none" : "auto",
+          }}
         >
           {videos.map((v, i) => (
             <VideoCard
