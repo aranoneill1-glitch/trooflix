@@ -1,3 +1,4 @@
+// cache-bust 1792070366.102103
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
