@@ -24,8 +24,12 @@ export async function proxy(req: NextRequest) {
     }
   }
 
-  // Admin API routes: always gated
-  if (pathname.startsWith("/api/admin")) {
+  // Admin API routes: gated — but NOT the login/logout endpoints themselves
+  if (
+    pathname.startsWith("/api/admin") &&
+    !pathname.startsWith("/api/admin-login") &&
+    !pathname.startsWith("/api/admin-logout")
+  ) {
     if (!password || cookie !== password) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
