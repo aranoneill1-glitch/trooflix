@@ -127,6 +127,7 @@ function VideoCard({
   initialSeek = 0,
   cardIndex,
   compact = false,
+  isNeighbor = false,
 }: {
   video: Video;
   creator: Creator | null;
@@ -139,6 +140,7 @@ function VideoCard({
   initialSeek?: number;
   cardIndex: number;
   compact?: boolean;
+  isNeighbor?: boolean;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [paused, setPaused] = useState(false);
@@ -180,6 +182,21 @@ function VideoCard({
   // Capture initialSeek ONCE per mounted card — never re-evaluate
   const initialSeekRef = useRef(initialSeek);
   const initialSeekAppliedRef = useRef(false);
+
+  // Warmup: if this card is the "next" neighbor of the active one, silently
+  // pre-play it (muted) so its first frame is decoded. When it becomes active,
+  // the transition is instant — no poster flash.
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (isActive) return;        // active card is handled by the main effect below
+    if (!isNeighbor) {
+      try { v.pause(); } catch {}
+      return;
+    }
+    v.muted = true;
+    v.play().catch(() => {});
+  }, [isNeighbor, isActive]);
 
   // Play / pause — the ONLY effect that runs when isActive changes
   useEffect(() => {
@@ -618,6 +635,7 @@ export default function FeedFullscreenPlayer({
               initialSeek={i === index ? startTime : 0}
               cardIndex={i}
               compact={commentOpen}
+              isNeighbor={i === activeIndex + 1}
             />
           ))}
         </div>
