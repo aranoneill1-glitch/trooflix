@@ -126,6 +126,7 @@ function VideoCard({
   flashSignalRef,
   initialSeek = 0,
   cardIndex,
+  compact = false,
 }: {
   video: Video;
   creator: Creator | null;
@@ -137,6 +138,7 @@ function VideoCard({
   flashSignalRef: React.MutableRefObject<(() => void) | null>;
   initialSeek?: number;
   cardIndex: number;
+  compact?: boolean;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [paused, setPaused] = useState(false);
@@ -229,14 +231,18 @@ function VideoCard({
     <div
       ref={containerRef}
       data-feed-card
-      className="relative w-screen h-screen flex-shrink-0 overflow-hidden bg-black snap-start snap-always"
-      style={{ scrollSnapAlign: "start", height: "100dvh" }}
+      className="relative w-screen flex-shrink-0 overflow-hidden bg-black snap-start snap-always flex items-center justify-center"
+      style={{ scrollSnapAlign: "start", height: compact ? "35dvh" : "100dvh" }}
     >
       <video
         ref={videoRef}
         src={video.bitchuteUrl}
         poster={video.backdropUrl || video.posterUrl}
-        className="w-full h-full object-contain"
+        className={
+          compact
+            ? "max-h-full max-w-full h-full object-contain rounded-xl"
+            : "w-full h-full object-contain"
+        }
         playsInline
         muted={muted}
         loop
@@ -244,7 +250,7 @@ function VideoCard({
         data-fullscreen-video={cardIndex}
       />
 
-      {isActive && (
+      {isActive && !compact && (
         <div className="absolute top-0 left-0 right-0 z-20 flex items-center p-4 bg-gradient-to-b from-black/60 to-transparent">
           <button
             onClick={onClose}
@@ -257,7 +263,7 @@ function VideoCard({
       )}
 
       <AnimatePresence>
-        {isActive && showControls && (
+        {isActive && !compact && showControls && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -314,7 +320,7 @@ function VideoCard({
         )}
       </AnimatePresence>
 
-      {isActive && (
+      {isActive && !compact && (
         <div className="absolute right-3 bottom-56 z-20 flex flex-col items-center gap-5">
           <div data-like-button>
             <LikeButton videoId={video.id} size={26} stacked />
@@ -334,7 +340,7 @@ function VideoCard({
         </div>
       )}
 
-      {isActive && (
+      {isActive && !compact && (
         <div className="absolute bottom-0 left-0 right-0 z-20 p-4 pb-6 bg-gradient-to-t from-black via-black/60 to-transparent pointer-events-none">
           <div className="flex items-center gap-3 mb-3 pointer-events-auto">
             <Link href={creator ? `/podcaster/${creator.slug}` : "#"} className="flex-shrink-0">
@@ -509,7 +515,13 @@ export default function FeedFullscreenPlayer({
 
   return (
     <>
-      <div className="fixed inset-0 z-[250] bg-black">
+      <div
+        className="fixed left-0 right-0 z-[250] bg-black transition-all duration-300"
+        style={{
+          top: 0,
+          height: commentOpen ? "35dvh" : "100dvh",
+        }}
+      >
         <div
           ref={scrollerRef}
           onTouchStart={(e) => {
@@ -518,7 +530,7 @@ export default function FeedFullscreenPlayer({
           }}
           onTouchEnd={onTouchEnd}
           className="h-full w-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide"
-          style={{ scrollSnapType: "y mandatory", height: "100dvh" }}
+          style={{ scrollSnapType: "y mandatory" }}
         >
           {videos.map((v, i) => (
             <VideoCard
@@ -533,6 +545,7 @@ export default function FeedFullscreenPlayer({
               flashSignalRef={tapRef}
               initialSeek={i === index ? startTime : 0}
               cardIndex={i}
+              compact={commentOpen}
             />
           ))}
         </div>
@@ -541,6 +554,7 @@ export default function FeedFullscreenPlayer({
       <CommentDrawer
         videoId={commentOpen && current ? current.id : null}
         title={current?.title}
+        topOffset={commentOpen ? "35dvh" : undefined}
         onClose={() => setCommentOpen(false)}
       />
     </>

@@ -9,9 +9,11 @@ type Props = {
   videoId: number | null;
   title?: string;
   onClose: () => void;
+  /** When set, sheet positions itself starting at this top offset (e.g. "35dvh") */
+  topOffset?: string;
 };
 
-export default function CommentDrawer({ videoId, title, onClose }: Props) {
+export default function CommentDrawer({ videoId, title, onClose, topOffset }: Props) {
   // Lock body scroll while open
   useEffect(() => {
     if (videoId === null) return;
@@ -31,14 +33,16 @@ export default function CommentDrawer({ videoId, title, onClose }: Props) {
     <AnimatePresence>
       {videoId !== null && (
         <>
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 z-[300] bg-black/70"
-          />
+          {/* Backdrop — only dim if we're a full-screen overlay */}
+          {!topOffset && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={onClose}
+              className="fixed inset-0 z-[300] bg-black/70"
+            />
+          )}
 
           {/* Drawer */}
           <motion.div
@@ -53,7 +57,11 @@ export default function CommentDrawer({ videoId, title, onClose }: Props) {
               if (info.offset.y > 120) onClose();
             }}
             className="fixed left-0 right-0 bottom-0 z-[301] bg-[#0f0f12] md:max-w-2xl md:mx-auto rounded-t-2xl"
-            style={{ height: "78vh", maxHeight: "78vh" }}
+            style={
+              topOffset
+                ? { top: topOffset, height: "auto", bottom: 0 }
+                : { height: "78vh", maxHeight: "78vh" }
+            }
           >
             {/* Handle bar */}
             <div className="flex justify-center pt-2.5 pb-1">
@@ -75,7 +83,11 @@ export default function CommentDrawer({ videoId, title, onClose }: Props) {
             {/* Comments body — scrolls */}
             <div
               className="overflow-y-auto"
-              style={{ height: "calc(78vh - 64px)" }}
+              style={
+                topOffset
+                  ? { height: "calc(100dvh - 35dvh - 64px)" }
+                  : { height: "calc(78vh - 64px)" }
+              }
             >
               <Comments videoId={videoId} />
             </div>
