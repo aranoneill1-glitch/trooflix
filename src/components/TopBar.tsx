@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSearch } from "@/context/SearchContext";
 import { Search, Menu, X, MessageCircle } from "lucide-react";
-import UserMenu from "@/components/UserMenu";
 
 const NAV_TABS = [
   { label: "Home", path: "/" },
@@ -130,7 +129,13 @@ export default function TopBar({ onMenu }: Props) {
           <MessageCircle size={20} />
         </Link>
 
-        <UserMenu />
+        <Link
+          href="/search"
+          className="text-white/90 hover:text-white transition"
+          aria-label="Search"
+        >
+          <Search size={20} />
+        </Link>
       </div>
     </nav>
   );

@@ -196,12 +196,8 @@ export default function ProfilePage() {
 
         {!loading && (
           <>
-            {/* ---- Header row ---- */}
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-2 min-w-0">
-                <span className="text-lg font-bold truncate">{handle || name}</span>
-                <Menu size={16} className="text-white/60 flex-shrink-0" />
-              </div>
+            {/* ---- Header row (burger only) ---- */}
+            <div className="flex items-center justify-end mb-5">
               <button
                 onClick={() => setMenuOpen(true)}
                 className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition"
