@@ -4,12 +4,17 @@ export async function POST(req: Request) {
   const { password } = await req.json();
   const correct = process.env.ADMIN_PASSWORD;
 
-  // Temporary debug response — remove after fix
-  return NextResponse.json({
-    received: password,
-    received_len: typeof password === "string" ? password.length : 0,
-    env_exists: !!correct,
-    env_len: correct ? correct.length : 0,
-    match: password === correct,
+  if (!correct || password !== correct) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const res = NextResponse.json({ ok: true });
+  res.cookies.set("trooflix_admin", correct, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 60 * 60 * 24 * 30,
+    path: "/",
   });
+  return res;
 }
