@@ -6,7 +6,6 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Camera,
-  Menu,
   Grid3x3,
   Play,
   Eye,
@@ -58,7 +57,6 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
 
   const [tab, setTab] = useState<"grid" | "reels">("grid");
-  const [menuOpen, setMenuOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
 
   // Edit-modal fields (temporary home for the edit form)
@@ -196,21 +194,6 @@ export default function ProfilePage() {
 
         {!loading && (
           <>
-            {/* ---- Header row (burger only) ---- */}
-            <div className="flex items-center justify-end mb-5">
-              <button
-                onClick={() => setMenuOpen(true)}
-                className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition"
-                aria-label="Menu"
-              >
-                <div className="flex flex-col gap-1">
-                  <span className="block w-5 h-0.5 bg-white" />
-                  <span className="block w-5 h-0.5 bg-white" />
-                  <span className="block w-5 h-0.5 bg-white" />
-                </div>
-              </button>
-            </div>
-
             {/* ---- Avatar + stats ---- */}
             <div className="flex items-center gap-6 mb-4">
               <button
@@ -352,74 +335,6 @@ export default function ProfilePage() {
         )}
       </div>
 
-      {/* ---- Kebab menu (bottom sheet) ---- */}
-      <AnimatePresence>
-        {menuOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setMenuOpen(false)}
-              className="fixed inset-0 z-[300] bg-black/70"
-            />
-            <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 32, stiffness: 320 }}
-              className="fixed left-0 right-0 bottom-0 z-[301] bg-[#0f0f12] rounded-t-2xl md:max-w-md md:mx-auto md:rounded-2xl md:bottom-4"
-            >
-              <div className="flex justify-center pt-2.5">
-                <div className="w-10 h-1 rounded-full bg-white/25" />
-              </div>
-              <div className="p-4 space-y-1">
-                {isCreator && (
-                  <Link
-                    href="/creator"
-                    onClick={() => setMenuOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition text-green-400"
-                  >
-                    <Check size={18} />
-                    <span className="font-semibold">Creator Dashboard</span>
-                  </Link>
-                )}
-                <Link
-                  href="/account"
-                  onClick={() => setMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition"
-                >
-                  <Settings size={18} className="text-white/70" />
-                  <span className="font-semibold">Account settings</span>
-                </Link>
-                <Link
-                  href="/my-list"
-                  onClick={() => setMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition"
-                >
-                  <Bookmark size={18} className="text-white/70" />
-                  <span className="font-semibold">My List</span>
-                </Link>
-                <button
-                  onClick={share}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition"
-                >
-                  <Share2 size={18} className="text-white/70" />
-                  <span className="font-semibold">Share profile</span>
-                </button>
-                <button
-                  onClick={logout}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition text-red-400"
-                >
-                  <LogOut size={18} />
-                  <span className="font-semibold">Log out</span>
-                </button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
       {/* ---- Edit profile (bottom sheet, temporary) ---- */}
       <AnimatePresence>
         {editOpen && (
@@ -525,6 +440,50 @@ export default function ProfilePage() {
                 >
                   <Check size={16} /> {savingEdit ? "Saving…" : "Save"}
                 </button>
+
+                {/* Divider */}
+                <div className="border-t border-white/10 pt-4 mt-2 space-y-1">
+                  {isCreator && (
+                    <Link
+                      href="/creator"
+                      onClick={() => setEditOpen(false)}
+                      className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-white/5 transition text-green-400"
+                    >
+                      <Check size={18} />
+                      <span className="font-semibold">Creator Dashboard</span>
+                    </Link>
+                  )}
+                  <Link
+                    href="/account"
+                    onClick={() => setEditOpen(false)}
+                    className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-white/5 transition"
+                  >
+                    <Settings size={18} className="text-white/70" />
+                    <span className="font-semibold">Account settings</span>
+                  </Link>
+                  <Link
+                    href="/my-list"
+                    onClick={() => setEditOpen(false)}
+                    className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-white/5 transition"
+                  >
+                    <Bookmark size={18} className="text-white/70" />
+                    <span className="font-semibold">My List</span>
+                  </Link>
+                  <button
+                    onClick={share}
+                    className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-white/5 transition text-left"
+                  >
+                    <Share2 size={18} className="text-white/70" />
+                    <span className="font-semibold">Share profile</span>
+                  </button>
+                  <button
+                    onClick={logout}
+                    className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-white/5 transition text-red-400 text-left"
+                  >
+                    <LogOut size={18} />
+                    <span className="font-semibold">Log out</span>
+                  </button>
+                </div>
               </div>
             </motion.div>
           </>
