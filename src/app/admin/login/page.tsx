@@ -19,8 +19,10 @@ export default function LoginPage() {
       body: JSON.stringify({ password }),
     });
     if (res.ok) {
-      router.push("/admin");
-      router.refresh();
+      // Hard navigation so the Set-Cookie from the fetch is committed
+      // before the browser requests /admin. router.push() runs before
+      // the cookie is written, causing a bounce back to login.
+      window.location.href = "/admin";
     } else {
       setError("Wrong password");
       setLoading(false);
