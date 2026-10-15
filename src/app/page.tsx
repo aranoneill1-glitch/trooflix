@@ -213,7 +213,7 @@ export default function Home() {
           )}
           {showingFiltered && <div className="h-20 md:h-24" />}
 
-          <div className="relative z-10 pt-2 md:pt-12 pb-32 md:pb-20 space-y-4 md:space-y-12">
+          <div className="relative z-10 pt-0 md:pt-12 pb-32 md:pb-20 space-y-4 md:space-y-12">
         {filtered && (
           <SearchResults
             search={search}
