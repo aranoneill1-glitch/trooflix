@@ -172,7 +172,7 @@ function FeedCard({
     const io = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
-          setShouldPlay(entry.intersectionRatio >= 0.85);
+          setShouldPlay(entry.intersectionRatio >= 0.5);
         }
       },
       { threshold: [0, 0.5, 1] }
@@ -262,22 +262,28 @@ function FeedCard({
             </div>
           </div>
         )}
+        {/* Poster layer behind video — shows until first frame is ready */}
+        <img
+          src={video.backdropUrl || video.posterUrl}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+          aria-hidden
+        />
         <video
           ref={videoRef}
           data-video-id={video.id}
           src={video.bitchuteUrl}
-          poster={video.backdropUrl || video.posterUrl}
           muted={muted}
           loop
           playsInline
-          preload="metadata"
+          preload="auto"
           onLoadedMetadata={(e) => {
             const v = e.currentTarget;
             if (v.videoWidth && v.videoHeight) {
               setVideoAspect(`${v.videoWidth} / ${v.videoHeight}`);
             }
           }}
-          className="w-full h-full object-cover"
+          className="relative w-full h-full object-cover"
         />
 
         {/* Heart burst on double-tap */}
