@@ -10,6 +10,7 @@ import SaveButton from "@/components/SaveButton";
 import LikeButton, { externalLike } from "@/components/LikeButton";
 import ViewCount from "@/components/ViewCount";
 import FollowButton from "@/components/FollowButton";
+import VerifiedBadge from "@/components/VerifiedBadge";
 import CommentDrawer from "@/components/CommentDrawer";
 import FeedFullscreenPlayer from "@/components/FeedFullscreenPlayer";
 import { MessageCircle } from "lucide-react";
@@ -40,6 +41,7 @@ type Creator = {
   name: string;
   slug: string;
   photoUrl?: string;
+  isVerified?: boolean;
 };
 
 function timeAgo(iso?: string): string {
@@ -233,12 +235,16 @@ function FeedCard({
           {slug ? (
             <Link
               href={`/podcaster/${slug}`}
-              className="font-semibold text-[15px] hover:underline block truncate"
+              className="font-semibold text-[15px] hover:underline inline-flex items-center gap-1.5 max-w-full"
             >
-              {name}
+              <span className="truncate">{name}</span>
+              {creator?.isVerified && <VerifiedBadge size={14} />}
             </Link>
           ) : (
-            <span className="font-semibold text-[15px] block truncate">{name}</span>
+            <span className="font-semibold text-[15px] inline-flex items-center gap-1.5 max-w-full">
+              <span className="truncate">{name}</span>
+              {creator?.isVerified && <VerifiedBadge size={14} />}
+            </span>
           )}
           <p className="text-xs text-white/50 truncate">
             {handle} · {timeAgo(video.createdAt)}
