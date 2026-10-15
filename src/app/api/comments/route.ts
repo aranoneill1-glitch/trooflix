@@ -41,7 +41,10 @@ export async function GET(req: Request) {
 
     // Fetch profiles (avatars + display names) for these user_ids
     const userIds = Array.from(new Set((comments || []).map((c: any) => c.user_id)));
-    const profiles: Record<string, { avatar_url: string | null; display_name: string | null }> = {};
+    const profiles: Record<
+      string,
+      { avatar_url: string | null; display_name: string | null; is_verified: boolean }
+    > = {};
     if (userIds.length > 0) {
       const { data: profs } = await supabaseAdmin
         .from("profiles")
@@ -51,17 +54,18 @@ export async function GET(req: Request) {
         profiles[p.user_id] = {
           avatar_url: p.avatar_url || null,
           display_name: p.display_name || null,
-      is_verified: profiles[c.user_id]?.is_verified ?? false,
+          is_verified: !!p.is_verified,
         };
       });
     }
 
-    // Attach counts + avatar + display name
+    // Attach counts + avatar + display name + verified flag
     const withCounts = (comments || []).map((c: any) => ({
       ...c,
       like_count: likeCounts[c.id] || 0,
       avatar_url: profiles[c.user_id]?.avatar_url || null,
       display_name: profiles[c.user_id]?.display_name || null,
+      is_verified: profiles[c.user_id]?.is_verified ?? false,
     }));
 
     // Sort
