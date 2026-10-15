@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Search as SearchIcon, X, Play } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import VerifiedBadge from "@/components/VerifiedBadge";
 
 type Video = {
   id: number;
@@ -23,6 +24,7 @@ type Podcaster = {
   slug: string;
   photoUrl?: string;
   description?: string;
+  isVerified?: boolean;
 };
 
 type User = {
@@ -193,7 +195,10 @@ export default function SearchPage() {
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold truncate">{p.name}</p>
+                        <p className="font-semibold inline-flex items-center gap-1.5 max-w-full">
+                          <span className="truncate">{p.name}</span>
+                          {p.isVerified && <VerifiedBadge size={14} />}
+                        </p>
                         {p.description && (
                           <p className="text-xs text-white/50 truncate">{p.description}</p>
                         )}

@@ -45,12 +45,13 @@ export async function GET(req: Request) {
     if (userIds.length > 0) {
       const { data: profs } = await supabaseAdmin
         .from("profiles")
-        .select("user_id, avatar_url, display_name")
+        .select("user_id, avatar_url, display_name, is_verified")
         .in("user_id", userIds);
       (profs || []).forEach((p: any) => {
         profiles[p.user_id] = {
           avatar_url: p.avatar_url || null,
           display_name: p.display_name || null,
+      is_verified: profiles[c.user_id]?.is_verified ?? false,
         };
       });
     }

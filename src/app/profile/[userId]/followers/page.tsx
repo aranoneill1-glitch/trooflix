@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import VerifiedBadge from "@/components/VerifiedBadge";
 
 type User = {
   user_id: string;
@@ -13,6 +14,7 @@ type User = {
   display_name: string | null;
   avatar_url: string | null;
   bio: string | null;
+  is_verified?: boolean;
 };
 
 export default function FollowersPage() {
@@ -81,7 +83,10 @@ export default function FollowersPage() {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold truncate">{name}</p>
+                  <p className="font-semibold inline-flex items-center gap-1.5 max-w-full">
+                    <span className="truncate">{name}</span>
+                    {u.is_verified && <VerifiedBadge size={13} />}
+                  </p>
                   {u.username && (
                     <p className="text-xs text-white/50 truncate">@{u.username}</p>
                   )}

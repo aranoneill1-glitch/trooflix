@@ -7,6 +7,7 @@ import { ChevronLeft, Send, Plus, Check, CheckCheck } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { useRealtimeDMs } from "@/hooks/useRealtimeDMs";
 import GifPicker from "@/components/GifPicker";
+import VerifiedBadge from "@/components/VerifiedBadge";
 
 type Message = {
   id: number;
@@ -22,6 +23,7 @@ type Profile = {
   username: string | null;
   display_name: string | null;
   avatar_url: string | null;
+  is_verified?: boolean;
 };
 
 
@@ -339,7 +341,10 @@ export default function ThreadPage() {
               )}
             </div>
             <div className="min-w-0">
-              <p className="font-semibold text-sm truncate">{name}</p>
+              <p className="font-semibold text-sm inline-flex items-center gap-1.5 max-w-full">
+                <span className="truncate">{name}</span>
+                {other?.is_verified && <VerifiedBadge size={13} />}
+              </p>
               <p className="text-xs text-white/50 truncate">
                 {other?.username ? `@${other.username}` : "last seen recently"}
               </p>
@@ -373,7 +378,10 @@ export default function ThreadPage() {
                   </span>
                 )}
               </div>
-              <p className="font-semibold mb-1">{name}</p>
+              <p className="font-semibold mb-1 inline-flex items-center gap-1.5">
+                {name}
+                {other?.is_verified && <VerifiedBadge size={14} />}
+              </p>
               <p className="text-white/50 text-sm">
                 Say hi — this is the start of your conversation.
               </p>

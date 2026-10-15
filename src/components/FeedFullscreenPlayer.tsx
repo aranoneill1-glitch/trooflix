@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import FollowButton from "@/components/FollowButton";
+import VerifiedBadge from "@/components/VerifiedBadge";
 import CommentDrawer from "@/components/CommentDrawer";
 import SaveButton from "@/components/SaveButton";
 import LikeButton from "@/components/LikeButton";
@@ -38,6 +39,7 @@ type Creator = {
   name: string;
   slug: string;
   photoUrl?: string;
+  isVerified?: boolean;
 };
 
 type Props = {
@@ -385,7 +387,10 @@ function VideoCard({
               </div>
             </Link>
             <div className="min-w-0 flex-1">
-              <p className="font-semibold text-sm truncate">{name}</p>
+              <p className="font-semibold text-sm inline-flex items-center gap-1.5 max-w-full">
+                <span className="truncate">{name}</span>
+                {creator?.isVerified && <VerifiedBadge size={13} />}
+              </p>
               <p className="text-xs text-white/60 truncate">{handle}</p>
             </div>
             {creator && (

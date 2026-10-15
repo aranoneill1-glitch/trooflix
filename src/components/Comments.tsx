@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ThumbsUp, MoreVertical, Trash2, Send, Image as ImageIcon } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import GifPicker from "@/components/GifPicker";
+import VerifiedBadge from "@/components/VerifiedBadge";
 
 type Comment = {
   id: number;
@@ -17,6 +18,7 @@ type Comment = {
   like_count: number;
   avatar_url?: string | null;
   display_name?: string | null;
+  is_verified?: boolean;
 };
 
 type SortMode = "newest" | "oldest" | "top";
@@ -423,7 +425,10 @@ export default function Comments({ videoId }: { videoId: number }) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2 text-sm flex-wrap">
-                      <span className="font-semibold">@{username(c.user_email, c.display_name)}</span>
+                      <span className="font-semibold">@<span className="inline-flex items-center gap-1">
+                        {username(c.user_email, c.display_name)}
+                        {c.is_verified && <VerifiedBadge size={12} />}
+                      </span></span>
                       <span className="text-white/50 text-xs">
                         {timeAgo(c.created_at)}
                       </span>
@@ -509,7 +514,10 @@ export default function Comments({ videoId }: { videoId: number }) {
                         <textarea
                           value={replyText}
                           onChange={(e) => setReplyText(e.target.value)}
-                          placeholder={`Reply to @${username(c.user_email, c.display_name)}...`}
+                          placeholder={`Reply to @$<span className="inline-flex items-center gap-1">
+                        {username(c.user_email, c.display_name)}
+                        {c.is_verified && <VerifiedBadge size={12} />}
+                      </span>...`}
                           rows={1}
                           maxLength={500}
                           autoFocus
