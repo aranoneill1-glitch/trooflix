@@ -239,17 +239,6 @@ function VideoCard({
       className="relative w-screen flex-shrink-0 overflow-hidden bg-black snap-start snap-always flex items-center justify-center"
       style={{ scrollSnapAlign: "start", height: compact ? "35dvh" : "100dvh" }}
     >
-      {/* Poster layer behind the video — shows until first frame is ready */}
-      <img
-        src={video.backdropUrl || video.posterUrl}
-        alt=""
-        className={
-          compact
-            ? "absolute max-h-full max-w-full h-full object-contain rounded-xl"
-            : "absolute inset-0 w-full h-full object-cover"
-        }
-        aria-hidden
-      />
       <video
         ref={videoRef}
         src={video.bitchuteUrl}
