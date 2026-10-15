@@ -230,11 +230,13 @@ function FeedCard({
             className="w-10 h-10 rounded-full object-cover flex-shrink-0"
           />
         ) : !creator ? (
-          <img
-            src={TROOFLIX_LOGO}
-            alt=""
-            className="w-10 h-10 rounded-full object-cover flex-shrink-0"
-          />
+          <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-black flex items-center justify-center">
+            <img
+              src={TROOFLIX_LOGO}
+              alt=""
+              className="w-full h-full object-contain"
+            />
+          </div>
         ) : (
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center font-bold flex-shrink-0">
             {name[0]?.toUpperCase() || "T"}
