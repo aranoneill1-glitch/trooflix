@@ -44,6 +44,9 @@ type Creator = {
   isVerified?: boolean;
 };
 
+const TROOFLIX_LOGO =
+  "https://pub-ce2ee455d2b04abc9964046e3ff970f0.r2.dev/creators/1792092793283-trooflix-logo.png";
+
 function timeAgo(iso?: string): string {
   if (!iso) return "";
   const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
@@ -223,6 +226,12 @@ function FeedCard({
         {creator?.photoUrl ? (
           <img
             src={creator.photoUrl}
+            alt=""
+            className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+          />
+        ) : !creator ? (
+          <img
+            src={TROOFLIX_LOGO}
             alt=""
             className="w-10 h-10 rounded-full object-cover flex-shrink-0"
           />
