@@ -54,6 +54,7 @@ export default function ProfilePage() {
   const [following, setFollowing] = useState(0);
   const [posts, setPosts] = useState<Post[]>([]);
   const [postsKind, setPostsKind] = useState<"creator" | "user" | "none">("none");
+  const [isCreator, setIsCreator] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const [tab, setTab] = useState<"grid" | "reels">("grid");
@@ -91,6 +92,7 @@ export default function ProfilePage() {
           setFollowing(follows.following || 0);
           setPosts(posts.posts || []);
           setPostsKind(posts.kind || "none");
+          setIsCreator(posts.kind === "creator");
         })
         .catch(() => {})
         .finally(() => setLoading(false));
@@ -376,6 +378,16 @@ export default function ProfilePage() {
                 <div className="w-10 h-1 rounded-full bg-white/25" />
               </div>
               <div className="p-4 space-y-1">
+                {isCreator && (
+                  <Link
+                    href="/creator"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition text-green-400"
+                  >
+                    <Check size={18} />
+                    <span className="font-semibold">Creator Dashboard</span>
+                  </Link>
+                )}
                 <Link
                   href="/account"
                   onClick={() => setMenuOpen(false)}
