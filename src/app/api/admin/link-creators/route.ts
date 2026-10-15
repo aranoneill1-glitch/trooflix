@@ -26,15 +26,26 @@ export async function POST() {
     const byUsername: Record<string, string> = {};
     const byDisplay: Record<string, string> = {};
     (profiles || []).forEach((p: any) => {
-      if (p.username) byUsername[p.username.toLowerCase()] = p.user_id;
-      if (p.display_name) byDisplay[p.display_name.toLowerCase()] = p.user_id;
+      if (p.username) byUsername[p.username.trim().toLowerCase()] = p.user_id;
+      if (p.display_name) byDisplay[p.display_name.trim().toLowerCase()] = p.user_id;
     });
 
     let linked = 0;
+    const debug: any[] = [];
     const updated = creators.map((c: any) => {
-      if (c.ownerUserId) return c; // already linked
-      const name = (c.name || "").toLowerCase();
+      const info: any = {
+        kv_name: c.name,
+        already_linked: !!c.ownerUserId,
+        matched_uid: null,
+      };
+      if (c.ownerUserId) {
+        debug.push(info);
+        return c; // already linked
+      }
+      const name = (c.name || "").trim().toLowerCase();
       const uid = byUsername[name] || byDisplay[name];
+      info.matched_uid = uid || null;
+      debug.push(info);
       if (uid) {
         linked++;
         return { ...c, ownerUserId: uid };
@@ -43,7 +54,14 @@ export async function POST() {
     });
 
     await kv.set(CREATORS_KEY, updated);
-    return NextResponse.json({ ok: true, linked, total: creators.length });
+    return NextResponse.json({
+      ok: true,
+      linked,
+      total: creators.length,
+      debug,
+      available_usernames: Object.keys(byUsername),
+      available_displays: Object.keys(byDisplay),
+    });
   } catch (e: any) {
     console.error("link-creators error:", e);
     return NextResponse.json({ error: String(e) }, { status: 500 });
