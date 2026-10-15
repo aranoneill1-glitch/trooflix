@@ -248,7 +248,6 @@ function VideoCard({
       style={{
         height: compact ? "35dvh" : "100dvh",
         scrollSnapAlign: "start",
-        transition: "height 0.35s ease-out",
       }}
     >
       {/*
@@ -263,7 +262,6 @@ function VideoCard({
         className="w-full h-full object-contain"
         style={{
           borderRadius: compact ? "12px" : 0,
-          transition: "border-radius 0.35s ease-out",
         }}
         playsInline
         muted={muted}
@@ -530,7 +528,7 @@ export default function FeedFullscreenPlayer({
       el.style.scrollBehavior = "auto";
       el.scrollTop = activeIndex * h;
       scrollLockRef.current = false;
-    }, 380); // slightly longer than transition
+    }, 20); // instant — just enough for layout to settle
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [commentOpen]);
@@ -605,7 +603,6 @@ export default function FeedFullscreenPlayer({
         className="fixed left-0 right-0 top-0 z-[250] bg-black"
         style={{
           height: commentOpen ? "35dvh" : "100dvh",
-          transition: "height 0.35s ease-out",
         }}
       >
         <div
