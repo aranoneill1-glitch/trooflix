@@ -194,6 +194,27 @@ export default function PodcastersPage() {
       {/* Add/Edit form — only when opened */}
       {(showForm || editingCreator) && (
         <form onSubmit={submitCreator} className="bg-[#141418] rounded-lg p-6 space-y-4 mb-6">
+        {/* Form header with close button */}
+        <div className="flex items-center justify-between pb-3 border-b border-white/10 -mt-1">
+          <h2 className="text-lg font-bold">
+            {editingCreator ? `Edit ${editingCreator.name}` : "New Podcaster"}
+          </h2>
+          <button
+            type="button"
+            onClick={() => {
+              setShowForm(false);
+              setEditingCreator(null);
+            }}
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition text-white/60 hover:text-white"
+            aria-label="Close"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="col-span-2">
             <label className="block text-sm text-white/60 mb-1">Name *</label>
