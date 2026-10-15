@@ -455,6 +455,20 @@ export default function FeedFullscreenPlayer({
   }, []);
 
 
+  // Snap scroll to the current card BEFORE the container shrinks,
+  // so the shrunken viewport still shows the current video.
+  const openComments = () => {
+    const el = scrollerRef.current;
+    if (el) {
+      const firstCard = el.querySelector<HTMLElement>("[data-feed-card]");
+      const cardH = firstCard?.clientHeight || el.clientHeight || 1;
+      // Snap instantly (no transition on the scroll itself)
+      el.style.scrollBehavior = "auto";
+      el.scrollTop = activeIndex * cardH;
+    }
+    setCommentOpen(true);
+  };
+
   const closeWithTime = () => {
     // Read current active video's time
     const activeVideo = scrollerRef.current?.querySelector<HTMLVideoElement>(
@@ -516,25 +530,18 @@ export default function FeedFullscreenPlayer({
     }
   };
 
-  // When comments open, snap to the current video AND keep it aligned even
-  // after the container height animates. Because each card is `compact ? 35dvh : 100dvh`,
-  // the new scrollTop must use the compact card height.
+  // After the shrink completes, re-normalize scroll to the compact card height
+  // (this is the "safety" pass — the initial snap already ran in openComments).
   useEffect(() => {
     if (!commentOpen) return;
     const el = scrollerRef.current;
     if (!el) return;
-
-    // Card height after compact transition = the shrunken container's height.
-    // Compute from the actual DOM after the CSS transition kicks in (50ms delay).
-    const snap = () => {
+    const t = setTimeout(() => {
       const firstCard = el.querySelector<HTMLElement>("[data-feed-card]");
       const cardH = firstCard?.clientHeight || el.clientHeight || 1;
+      el.style.scrollBehavior = "auto";
       el.scrollTop = activeIndex * cardH;
-    };
-
-    // Do it twice — immediately, and after the container finish animating
-    snap();
-    const t = setTimeout(snap, 350);
+    }, 320);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [commentOpen]);
@@ -561,7 +568,7 @@ export default function FeedFullscreenPlayer({
   return (
     <>
       <div
-        className="fixed left-0 right-0 z-[250] bg-black transition-all duration-300"
+        className="fixed left-0 right-0 z-[250] bg-black transition-[height] duration-300 ease-out"
         style={{
           top: 0,
           height: commentOpen ? "35dvh" : "100dvh",
@@ -589,7 +596,7 @@ export default function FeedFullscreenPlayer({
               creator={creatorFor(v.creatorId)}
               isActive={i === activeIndex}
               onClose={closeWithTime}
-              onOpenComments={() => setCommentOpen(true)}
+              onOpenComments={openComments}
               muted={muted}
               onToggleMute={() => setMuted((m) => !m)}
               flashSignalRef={tapRef}
