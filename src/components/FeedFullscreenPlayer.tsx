@@ -177,40 +177,45 @@ function VideoCard({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActive]);
 
-  const seekedRef = useRef(false);
+  // Capture initialSeek ONCE per mounted card — never re-evaluate
+  const initialSeekRef = useRef(initialSeek);
+  const initialSeekAppliedRef = useRef(false);
+
+  // Play / pause — the ONLY effect that runs when isActive changes
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
+
     if (isActive) {
-      v.muted = muted;
-      // Apply initial seek ONCE on first activation
-      if (!seekedRef.current && initialSeek > 0) {
+      // Apply the initial seek ONCE (very first activation only)
+      if (!initialSeekAppliedRef.current && initialSeekRef.current > 0) {
         try {
-          v.currentTime = initialSeek;
+          v.currentTime = initialSeekRef.current;
         } catch {}
       }
-      seekedRef.current = true;
+      initialSeekAppliedRef.current = true;
+
+      v.muted = muted;
       v.play().catch(() => {
-        // Autoplay with sound blocked → fall back to muted
         v.muted = true;
-        setPaused(false);
         v.play().catch(() => {});
       });
       setPaused(false);
     } else {
       v.pause();
-      // Only reset time when fully leaving — keep if re-entering
-      v.currentTime = 0;
-      seekedRef.current = false;
       setPaused(false);
       setShowControls(false);
     }
-  }, [isActive, muted, initialSeek]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isActive]);
 
+  // Track whether we've applied the initial seek
+
+  // Mute sync — separate effect so it never triggers pause/reset
   useEffect(() => {
     const v = videoRef.current;
-    if (v) v.muted = muted;
-  }, [muted]);
+    if (v && isActive) v.muted = muted;
+  }, [muted, isActive]);
 
   useEffect(() => {
     return () => {
@@ -408,7 +413,9 @@ export default function FeedFullscreenPlayer({
     const el = scrollerRef.current;
     if (!el) return;
     const onScroll = () => {
-      const h = el.clientHeight || 1;
+      if (commentOpen) return; // don't recompute while comments are open
+      const firstCard = el.querySelector<HTMLElement>("[data-feed-card]");
+      const h = firstCard?.clientHeight || el.clientHeight || 1;
       const i = Math.round(el.scrollTop / h);
       if (i !== activeIndex && i >= 0 && i < videos.length) {
         setActiveIndex(i);
@@ -417,7 +424,7 @@ export default function FeedFullscreenPlayer({
     };
     el.addEventListener("scroll", onScroll, { passive: true });
     return () => el.removeEventListener("scroll", onScroll);
-  }, [activeIndex, videos.length, onIndexChange]);
+  }, [activeIndex, videos.length, onIndexChange, commentOpen]);
 
   // Escape / arrows
   useEffect(() => {
@@ -509,14 +516,40 @@ export default function FeedFullscreenPlayer({
     }
   };
 
-  // Snap scroller to current video BEFORE opening comments, so it stays centered
+  // When comments open, snap to the current video AND keep it aligned even
+  // after the container height animates. Because each card is `compact ? 35dvh : 100dvh`,
+  // the new scrollTop must use the compact card height.
   useEffect(() => {
     if (!commentOpen) return;
     const el = scrollerRef.current;
     if (!el) return;
-    // Ensure the scroller is snapped to the active index at the moment we shrink
-    const h = el.clientHeight || 1;
-    el.scrollTop = activeIndex * h;
+
+    // Card height after compact transition = the shrunken container's height.
+    // Compute from the actual DOM after the CSS transition kicks in (50ms delay).
+    const snap = () => {
+      const firstCard = el.querySelector<HTMLElement>("[data-feed-card]");
+      const cardH = firstCard?.clientHeight || el.clientHeight || 1;
+      el.scrollTop = activeIndex * cardH;
+    };
+
+    // Do it twice — immediately, and after the container finish animating
+    snap();
+    const t = setTimeout(snap, 350);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [commentOpen]);
+
+  // When comments close, re-snap to the same active video (card height changes back to 100dvh)
+  useEffect(() => {
+    if (commentOpen) return;
+    const el = scrollerRef.current;
+    if (!el) return;
+    const t = setTimeout(() => {
+      const firstCard = el.querySelector<HTMLElement>("[data-feed-card]");
+      const cardH = firstCard?.clientHeight || el.clientHeight || 1;
+      el.scrollTop = activeIndex * cardH;
+    }, 320);
+    return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [commentOpen]);
 
