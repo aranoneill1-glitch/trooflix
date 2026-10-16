@@ -185,25 +185,49 @@ function ReelCard({
   }, [registerTap]);
 
   // Autoplay when this card is centered; pause + reset when it's not
-  // shouldRenderVideo in deps → re-runs when the <video> mounts after remount
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
+
+    // HARD mute before ANY other operation
+    v.muted = true;
+    if (isActive && !muted) {
+      // User unmuted globally → only now allow sound
+      v.muted = false;
+    }
+
     if (isActive) {
-      v.muted = muted;
       const promise = v.play();
       if (promise) {
         promise.catch(() => {
+          // Autoplay-with-sound blocked → force muted + retry
           v.muted = true;
           v.play().catch(() => {});
         });
       }
     } else {
       v.pause();
-      v.muted = true;
       try { v.currentTime = 0; } catch {}
       setProgress(0);
     }
+  }, [isActive, muted, shouldRenderVideo]);
+
+  // Sound guard — if the video ever starts playing while we expect muted,
+  // slam it back to muted immediately. Runs on every 'playing' event.
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    const onPlaying = () => {
+      if (!isActive || muted) {
+        v.muted = true;
+      }
+    };
+    v.addEventListener("playing", onPlaying);
+    v.addEventListener("play", onPlaying);
+    return () => {
+      v.removeEventListener("playing", onPlaying);
+      v.removeEventListener("play", onPlaying);
+    };
   }, [isActive, muted, shouldRenderVideo]);
 
   const onTap = (e: React.MouseEvent | React.TouchEvent) => {
@@ -291,7 +315,13 @@ function ReelCard({
       {/* Video — only rendered for cards in the active window */}
       {shouldRenderVideo ? (
         <video
-          ref={videoRef}
+          ref={(el) => {
+            videoRef.current = el;
+            if (el) {
+              // Set muted IMMEDIATELY on mount, before React applies props
+              el.muted = muted;
+            }
+          }}
           data-video-id={video.id}
           src={video.bitchuteUrl}
           muted={muted}
