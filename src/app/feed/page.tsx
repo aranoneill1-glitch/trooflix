@@ -12,7 +12,6 @@ import ViewCount from "@/components/ViewCount";
 import FollowButton from "@/components/FollowButton";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import CommentDrawer from "@/components/CommentDrawer";
-import FeedFullscreenPlayer from "@/components/FeedFullscreenPlayer";
 import { MessageCircle } from "lucide-react";
 import { getCachedVideos, getCachedCreators } from "@/lib/cache";
 
@@ -101,25 +100,20 @@ function FeedCard({
   video,
   creator,
   onOpenComments,
-  onOpenFullscreen,
   muted,
   onToggleMute,
-  isFullscreenOpen,
   isNext = false,
 }: {
   video: Video;
   creator: Creator | null;
   onOpenComments: () => void;
-  onOpenFullscreen: (startTime?: number) => void;
   muted: boolean;
   onToggleMute: () => void;
-  isFullscreenOpen: boolean;
   isNext?: boolean;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [shouldPlay, setShouldPlay] = useState(false);
-  const [userPaused, setUserPaused] = useState(false);
   const [heartBurst, setHeartBurst] = useState<{ x: number; y: number; id: number } | null>(null);
   const lastTapRef = useRef(0);
   const [videoAspect, setVideoAspect] = useState<string>("16 / 9"); // default until loaded
@@ -165,8 +159,14 @@ function FeedCard({
       lastTapRef.current = now;
       setTimeout(() => {
         if (lastTapRef.current === now) {
-          const t = videoRef.current?.currentTime || 0;
-          onOpenFullscreen(t);
+          // Single-tap: toggle play/pause silently (no overlay)
+          const v = videoRef.current;
+          if (!v) return;
+          if (v.paused) {
+            v.play().catch(() => {});
+          } else {
+            v.pause();
+          }
         }
       }, 300);
     }
@@ -194,7 +194,7 @@ function FeedCard({
     const v = videoRef.current;
     if (!v) return;
     // Pause inline video if fullscreen player is open, or user manually paused
-    if (shouldPlay && !userPaused && !isFullscreenOpen) {
+    if (shouldPlay) {
       // Enforce single-playback — pause any other feed video first
       if (currentPlayer && currentPlayer !== v) {
         try {
@@ -210,7 +210,7 @@ function FeedCard({
       v.pause();
       if (currentPlayer === v) currentPlayer = null;
     }
-  }, [shouldPlay, userPaused, isFullscreenOpen]);
+  }, [shouldPlay]);
 
   // Sync muted prop
   useEffect(() => {
@@ -272,14 +272,6 @@ function FeedCard({
         style={{ aspectRatio: videoAspect, maxHeight: "80vh" }}
         onClick={handleVideoTap}
       >
-        {/* Play overlay when paused */}
-        {userPaused && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-            <div className="w-16 h-16 rounded-full bg-black/60 backdrop-blur flex items-center justify-center">
-              <div className="w-0 h-0 border-l-[18px] border-l-white border-y-[12px] border-y-transparent ml-1" />
-            </div>
-          </div>
-        )}
         <video
           ref={videoRef}
           data-video-id={video.id}
@@ -362,14 +354,11 @@ export default function FeedPage() {
   const [creators, setCreators] = useState<Creator[]>([]);
   const [loading, setLoading] = useState(true);
   const [commentVideo, setCommentVideo] = useState<Video | null>(null);
-  const [playing, setPlaying] = useState<Video | null>(null);
-  const [startTime, setStartTime] = useState(0);
+
   const [activeIndex, setActiveIndex] = useState(0);
   const sentinelRefs = useRef<(HTMLElement | null)[]>([]);
 
-  const playingIndex = playing
-    ? videos.findIndex((v) => v.id === playing.id)
-    : -1;
+
   const [muted, setMuted] = useState(true);
 
   useEffect(() => {
@@ -442,14 +431,10 @@ export default function FeedPage() {
                 video={video}
                 creator={creatorById(video.creatorId)}
                 onOpenComments={() => setCommentVideo(video)}
-                onOpenFullscreen={(startTime) => {
-                  if (typeof startTime === "number") setStartTime(startTime);
-                  else setStartTime(0);
-                  setPlaying(video);
-                }}
+
                 muted={muted}
                 onToggleMute={() => setMuted((m) => !m)}
-                isFullscreenOpen={playing?.id === video.id}
+
                 isNext={i === activeIndex + 1}
               />
             </div>
@@ -465,31 +450,6 @@ export default function FeedPage() {
         onClose={() => setCommentVideo(null)}
       />
 
-      {playing && (
-        <FeedFullscreenPlayer
-          videos={videos}
-          index={playingIndex < 0 ? 0 : playingIndex}
-          creators={creators}
-          startTime={startTime}
-          onClose={(endTime) => {
-            // Carry back the time into the feed card so inline playback resumes
-            if (typeof endTime === "number" && playing) {
-              const v = document.querySelector<HTMLVideoElement>(
-                `video[data-video-id="${playing.id}"]`
-              );
-              if (v) {
-                try { v.currentTime = endTime; } catch {}
-              }
-            }
-            setPlaying(null);
-            setStartTime(0);
-          }}
-          onIndexChange={(i) => {
-            setStartTime(0);
-            setPlaying(videos[i]);
-          }}
-        />
-      )}
     </main>
   );
 }
