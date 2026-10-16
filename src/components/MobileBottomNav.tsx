@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Home as HomeIcon, Play, Mic, MessageCircle } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
+import { usePrefetch } from "@/lib/usePrefetch";
 import { getCachedUser } from "@/lib/cache";
 
 const TABS = [
@@ -37,6 +38,15 @@ export default function MobileBottomNav() {
     });
   }, [pathname]);
 
+  const router = useRouter();
+
+  const prefetchTab = (path: string) => {
+    try {
+      // @ts-ignore
+      router.prefetch?.(path);
+    } catch {}
+  };
+
   const isActive = (path: string) => {
     if (path === "/") return pathname === "/";
     return pathname === path || pathname.startsWith(path + "/");
@@ -53,6 +63,8 @@ export default function MobileBottomNav() {
             <Link
               key={tab.path}
               href={tab.path}
+              onMouseEnter={() => prefetchTab(tab.path)}
+              onTouchStart={() => prefetchTab(tab.path)}
               className="flex flex-col items-center gap-0.5 px-1 py-1 flex-1 min-w-0"
             >
               <tab.icon size={22} className={active ? "text-white" : "text-white/50"} />
@@ -70,6 +82,8 @@ export default function MobileBottomNav() {
         {/* Profile (avatar) tab */}
         <Link
           href={signedIn === false ? "/login" : "/profile"}
+          onMouseEnter={() => prefetchTab(signedIn === false ? "/login" : "/profile")}
+          onTouchStart={() => prefetchTab(signedIn === false ? "/login" : "/profile")}
           className="flex flex-col items-center gap-0.5 px-1 py-1 flex-1 min-w-0 -translate-y-0.5"
         >
           {avatarUrl ? (
