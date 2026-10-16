@@ -507,11 +507,18 @@ export default function FeedPage() {
                 video={video}
                 creator={creatorById(video.creatorId)}
                 onOpenComments={() => setCommentVideo(video)}
-
                 muted={muted}
                 onToggleMute={() => setMuted((m) => !m)}
-
                 isActive={i === activeIndex}
+                windowPosition={
+                  i === activeIndex
+                    ? "active"
+                    : i === activeIndex + 1
+                    ? "next"
+                    : i === activeIndex - 1
+                    ? "prev"
+                    : "off"
+                }
               />
             </div>
           ))}
