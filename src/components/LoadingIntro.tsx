@@ -59,7 +59,7 @@ export default function LoadingIntro({ onDone }: { onDone: () => void }) {
               src="/truth.png"
               alt=""
               draggable={false}
-              className="w-[70vw] max-w-[420px] md:max-w-[560px] invisible"
+              className="w-[82vw] max-w-[520px] md:max-w-[680px] invisible"
             />
 
             {/* Filling layer: full-color logo revealed left → right */}
@@ -70,7 +70,7 @@ export default function LoadingIntro({ onDone }: { onDone: () => void }) {
               initial={{ clipPath: "inset(0 100% 0 0)" }}
               animate={{ clipPath: "inset(0 0% 0 0)" }}
               transition={{ duration: 2, ease: [0.4, 0, 0.2, 1], delay: 0.3 }}
-              className="absolute inset-0 w-[70vw] max-w-[420px] md:max-w-[560px]"
+              className="absolute inset-0 w-[82vw] max-w-[520px] md:max-w-[680px]"
             />
           </div>
         </motion.div>
