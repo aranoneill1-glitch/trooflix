@@ -314,16 +314,16 @@ export default function ThreadPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#fafafa] text-black flex flex-col">
+    <main className="min-h-screen bg-black text-white flex flex-col">
       {/* Header — white bar */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-black/5">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-black border-b border-white/10">
         <div className="flex items-center gap-3 px-3 py-2.5 md:px-6">
           <button
             onClick={() => router.push("/messages")}
-            className="w-9 h-9 -ml-1 flex items-center justify-center rounded-full bg-white shadow-sm hover:bg-black/5 transition"
+            className="w-9 h-9 -ml-1 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition"
             aria-label="Back"
           >
-            <ChevronLeft size={22} className="text-black" />
+            <ChevronLeft size={22} className="text-white" />
           </button>
 
           <Link
@@ -340,11 +340,11 @@ export default function ThreadPage() {
               )}
             </div>
             <div className="min-w-0">
-              <p className="font-semibold text-sm inline-flex items-center gap-1.5 max-w-full text-black">
+              <p className="font-semibold text-sm inline-flex items-center gap-1.5 max-w-full text-white">
                 <span className="truncate">{name}</span>
                 {other?.is_verified && <VerifiedBadge size={13} />}
               </p>
-              <p className="text-xs text-black/50 truncate">
+              <p className="text-xs text-white/50 truncate">
                 {other?.username ? `@${other.username}` : "last seen recently"}
               </p>
             </div>
@@ -355,13 +355,13 @@ export default function ThreadPage() {
             className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-black/5 transition"
             aria-label="Voice call"
           >
-            <Phone size={20} className="text-black" />
+            <Phone size={20} className="text-white/80" />
           </button>
           <button
             className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-black/5 transition"
             aria-label="Video call"
           >
-            <Video size={22} className="text-black" />
+            <Video size={22} className="text-white/80" />
           </button>
         </div>
       </header>
@@ -370,7 +370,7 @@ export default function ThreadPage() {
       <div className="flex-1 overflow-y-auto pt-20 pb-24 px-4 md:px-6">
         <div className="max-w-2xl w-full mx-auto">
           {loading && (
-            <p className="text-black/40 text-center py-12">Loading…</p>
+            <p className="text-white/40 text-center py-12">Loading…</p>
           )}
 
           {!loading && messages.length === 0 && (
@@ -384,11 +384,11 @@ export default function ThreadPage() {
                   </span>
                 )}
               </div>
-              <p className="font-semibold mb-1 inline-flex items-center gap-1.5 text-black">
+              <p className="font-semibold mb-1 inline-flex items-center gap-1.5 text-white">
                 {name}
                 {other?.is_verified && <VerifiedBadge size={14} />}
               </p>
-              <p className="text-black/50 text-sm">
+              <p className="text-white/50 text-sm">
                 Say hi — this is the start of your conversation.
               </p>
             </div>
@@ -398,7 +398,7 @@ export default function ThreadPage() {
             if (b.kind === "day") {
               return (
                 <div key={`d-${b.key}`} className="flex justify-center my-4">
-                  <span className="text-[10px] font-semibold tracking-wider text-black/40">
+                  <span className="text-[10px] font-semibold tracking-wider text-white/40">
                     {b.label}
                   </span>
                 </div>
@@ -426,8 +426,8 @@ export default function ThreadPage() {
               >
                 <div
                   className={`relative max-w-[78%] md:max-w-[65%] px-3 py-2 text-[15px] leading-[1.35] break-words ${
-                    mine ? "bg-[#d9fdd3]" : "bg-white shadow-sm"
-                  } text-black rounded-3xl ${tailCorner}`}
+                    mine ? "bg-[#dc2626]" : "bg-white/10"
+                  } text-white rounded-3xl ${tailCorner}`}
                 >
                   {isMediaUrl(m.body) ? (
                     <img
@@ -440,13 +440,13 @@ export default function ThreadPage() {
                     <span className="whitespace-pre-wrap">{m.body}</span>
                   )}
 
-                  <span className="inline-flex items-center gap-1 float-right ml-2 mt-1 text-[10px] text-black/40 translate-y-[2px]">
+                  <span className="inline-flex items-center gap-1 float-right ml-2 mt-1 text-[10px] text-white/50 translate-y-[2px]">
                     {timeShort(m.created_at)}
                     {showTicks &&
                       (read ? (
-                        <CheckCheck size={14} className="text-[#0095f6]" />
+                        <CheckCheck size={14} className="text-sky-300" />
                       ) : (
-                        <Check size={14} className="text-black/40" />
+                        <Check size={14} className="text-white/70" />
                       ))}
                   </span>
                   <span className="clear-both" />
@@ -460,7 +460,7 @@ export default function ThreadPage() {
       </div>
 
       {/* Composer */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-black/5">
+      <div className="fixed bottom-0 left-0 right-0 bg-black border-t border-white/10 pb-[env(safe-area-inset-bottom)]">
         <div className="max-w-2xl mx-auto px-3 md:px-4 py-2 flex items-center gap-2">
           <input
             ref={fileInputRef}
@@ -478,7 +478,7 @@ export default function ThreadPage() {
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
-            className="w-10 h-10 rounded-full bg-black flex items-center justify-center flex-shrink-0 disabled:opacity-50"
+            className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0 disabled:opacity-50"
             aria-label="Camera"
           >
             {uploading ? (
@@ -489,7 +489,7 @@ export default function ThreadPage() {
           </button>
 
           {/* Input pill */}
-          <div className="flex-1 flex items-center gap-3 bg-[#efefef] rounded-full px-4 py-2.5 min-w-0">
+          <div className="flex-1 flex items-center gap-3 bg-white/10 rounded-full px-4 py-2.5 min-w-0">
             <textarea
               ref={inputRef}
               value={body}
@@ -498,13 +498,13 @@ export default function ThreadPage() {
               placeholder="Message..."
               rows={1}
               maxLength={2000}
-              className="flex-1 bg-transparent border-none outline-none resize-none max-h-32 placeholder:text-black/40 text-black py-0.5"
+              className="flex-1 bg-transparent border-none outline-none resize-none max-h-32 placeholder:text-white/40 text-white py-0.5"
               style={{ minHeight: "20px", fontSize: "16px" }}
             />
             {/* Placeholder mic */}
             <button
               type="button"
-              className="flex-shrink-0 text-black/60 hover:text-black transition"
+              className="flex-shrink-0 text-white/60 hover:text-white transition"
               aria-label="Voice message"
             >
               <Mic size={20} />
@@ -514,7 +514,7 @@ export default function ThreadPage() {
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-              className="flex-shrink-0 text-black/60 hover:text-black transition disabled:opacity-50"
+              className="flex-shrink-0 text-white/60 hover:text-white transition disabled:opacity-50"
               aria-label="Send image"
             >
               <ImageIcon size={20} />
@@ -523,7 +523,7 @@ export default function ThreadPage() {
             <button
               type="button"
               onClick={() => setGifOpen(true)}
-              className="flex-shrink-0 text-black/60 hover:text-black transition"
+              className="flex-shrink-0 text-white/60 hover:text-white transition"
               aria-label="Sticker"
             >
               <Smile size={20} />
@@ -535,7 +535,7 @@ export default function ThreadPage() {
             <button
               onClick={send}
               disabled={sending}
-              className="flex-shrink-0 text-[#0095f6] font-semibold text-sm px-1 disabled:opacity-40"
+              className="flex-shrink-0 text-[#dc2626] font-semibold text-sm px-1 disabled:opacity-40"
               aria-label="Send"
             >
               Send
@@ -543,7 +543,7 @@ export default function ThreadPage() {
           ) : (
             <button
               type="button"
-              className="w-10 h-10 rounded-full bg-black flex items-center justify-center flex-shrink-0"
+              className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0"
               aria-label="More"
             >
               <Plus size={20} className="text-white" />
