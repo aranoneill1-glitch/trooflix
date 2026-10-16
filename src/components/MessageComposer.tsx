@@ -20,10 +20,8 @@ export default function MessageComposer({ creatorId, creatorName }: Props) {
   const [sent, setSent] = useState(false);
 
   useEffect(() => {
-    const supabase = createClient();
-    supabase.auth
-      .getUser()
-      .then(({ data }) => {
+    getCachedUser()
+      .then((user) => {
         setUserId(user?.id || null);
         setChecked(true);
       })
