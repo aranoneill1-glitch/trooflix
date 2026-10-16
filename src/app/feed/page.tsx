@@ -161,6 +161,10 @@ function ReelCard({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [heartBurst, setHeartBurst] = useState<{ x: number; y: number; id: number } | null>(null);
   const [isLandscape, setIsLandscape] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [scrubbing, setScrubbing] = useState(false);
+  const progressBarRef = useRef<HTMLDivElement>(null);
   const lastTapRef = useRef(0);
 
   const name = creator?.name || "TROOFLIX";
@@ -239,6 +243,39 @@ function ReelCard({
     else navigator.clipboard.writeText(url);
   };
 
+  // Seek on click or drag across the progress bar
+  const seekFromClientX = (clientX: number) => {
+    const bar = progressBarRef.current;
+    const v = videoRef.current;
+    if (!bar || !v || !v.duration) return;
+    const rect = bar.getBoundingClientRect();
+    const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    v.currentTime = ratio * v.duration;
+    setProgress(ratio);
+  };
+
+  const onProgressClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    seekFromClientX(e.clientX);
+  };
+
+  const onProgressTouchStart = (e: React.TouchEvent) => {
+    e.stopPropagation();
+    setScrubbing(true);
+    seekFromClientX(e.touches[0].clientX);
+  };
+
+  const onProgressTouchMove = (e: React.TouchEvent) => {
+    e.stopPropagation();
+    if (!scrubbing) return;
+    seekFromClientX(e.touches[0].clientX);
+  };
+
+  const onProgressTouchEnd = (e: React.TouchEvent) => {
+    e.stopPropagation();
+    setScrubbing(false);
+  };
+
   return (
     <section
       data-reel-index={video.id}
@@ -314,6 +351,27 @@ function ReelCard({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Progress bar — Instagram-style, tappable + draggable */}
+      <div
+        ref={progressBarRef}
+        onClick={onProgressClick}
+        onTouchStart={onProgressTouchStart}
+        onTouchMove={onProgressTouchMove}
+        onTouchEnd={onProgressTouchEnd}
+        className="absolute left-0 right-0 bottom-0 z-30 h-6 flex items-end cursor-pointer"
+        style={{ pointerEvents: "auto" }}
+      >
+        <div className="w-full h-[3px] bg-white/25 relative">
+          <div
+            className="h-full bg-white"
+            style={{
+              width: `${progress * 100}%`,
+              transition: scrubbing ? "none" : "width 0.15s linear",
+            }}
+          />
+        </div>
+      </div>
 
       {/* Bottom info — creator, caption, views */}
       <div className="absolute bottom-0 left-0 right-0 z-20 p-4 pb-6 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none">
