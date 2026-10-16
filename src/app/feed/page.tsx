@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import SaveButton from "@/components/SaveButton";
-import LikeButton from "@/components/LikeButton";
+import LikeButton, { externalLike } from "@/components/LikeButton";
 import ViewCount, { trackView } from "@/components/ViewCount";
 import CommentDrawer from "@/components/CommentDrawer";
 import VerifiedBadge from "@/components/VerifiedBadge";
@@ -245,12 +245,7 @@ function ReelCard({
       const cy = "changedTouches" in e ? e.changedTouches[0].clientY : (e as React.MouseEvent).clientY;
       setHeartBurst({ x: cx - rect.left, y: cy - rect.top, id: Date.now() });
       setTimeout(() => setHeartBurst(null), 900);
-      const likeBtn = document.querySelector<HTMLButtonElement>(
-        `[data-reel-like="${video.id}"] button`
-      );
-      if (likeBtn) {
-        likeBtn.dispatchEvent(new MouseEvent("click", { bubbles: false, cancelable: true }));
-      }
+      externalLike(video.id);
     } else {
       lastTapRef.current = now;
       setTimeout(() => {
