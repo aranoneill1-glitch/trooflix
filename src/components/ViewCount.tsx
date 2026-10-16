@@ -28,16 +28,23 @@ async function fetchCounts(): Promise<Record<number, number>> {
   return inflight;
 }
 
-// Public helper to increment a view (called by the player)
+// Public helper to increment a view (called when a reel becomes active)
 export async function trackView(videoId: number) {
   try {
+    // Optimistic bump so the UI updates instantly
+    if (cachedCounts) {
+      cachedCounts[videoId] = (cachedCounts[videoId] || 0) + 1;
+      const snapshot = { ...cachedCounts };
+      listeners.forEach((fn) => fn(snapshot));
+    }
     await fetch("/api/track-view", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ videoId }),
     });
-    // Bust cache so next fetch sees the new count
+    // Bust cache and refetch to reconcile with the server
     cachedCounts = null;
+    fetchCounts();
   } catch {}
 }
 

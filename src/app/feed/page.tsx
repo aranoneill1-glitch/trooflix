@@ -15,7 +15,7 @@ import {
 import MobileBottomNav from "@/components/MobileBottomNav";
 import SaveButton from "@/components/SaveButton";
 import LikeButton from "@/components/LikeButton";
-import ViewCount from "@/components/ViewCount";
+import ViewCount, { trackView } from "@/components/ViewCount";
 import FollowButton from "@/components/FollowButton";
 import CommentDrawer from "@/components/CommentDrawer";
 import VerifiedBadge from "@/components/VerifiedBadge";
@@ -417,6 +417,15 @@ export default function FeedPage() {
     cards.forEach((c) => observer.observe(c));
     return () => observer.disconnect();
   }, [videos.length]);
+
+  // Count a view every time a reel becomes active (including first load)
+  useEffect(() => {
+    const active = videos[activeIndex];
+    if (active?.id) {
+      trackView(active.id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeIndex, videos.length]);
 
   const creatorById = (id?: number | null) =>
     id ? creators.find((c) => c.id === id) || null : null;
