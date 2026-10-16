@@ -3,13 +3,18 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Home as HomeIcon, Play, Mic, MessageCircle } from "lucide-react";
+import { Play, Mic, MessageCircle } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { usePrefetch } from "@/lib/usePrefetch";
 import { getCachedUser } from "@/lib/cache";
 
-const TABS = [
-  { icon: HomeIcon, label: "Home", path: "/" },
+const TABS: {
+  icon?: any;
+  customImage?: string;
+  label: string;
+  path: string;
+}[] = [
+  { customImage: "/icons/home.png", label: "Home", path: "/" },
   { icon: Play, label: "Feed", path: "/feed" },
   { icon: Mic, label: "Podcasts", path: "/podcasts" },
   { icon: MessageCircle, label: "Messages", path: "/messages" },
@@ -67,7 +72,20 @@ export default function MobileBottomNav() {
               onTouchStart={() => prefetchTab(tab.path)}
               className="flex flex-col items-center gap-0.5 px-1 py-1 flex-1 min-w-0"
             >
-              <tab.icon size={22} className={active ? "text-white" : "text-white/50"} />
+              {tab.customImage ? (
+                <img
+                  src={tab.customImage}
+                  alt=""
+                  className={`w-[22px] h-[22px] object-contain transition-opacity ${
+                    active ? "opacity-100" : "opacity-50"
+                  }`}
+                />
+              ) : (
+                <tab.icon
+                  size={22}
+                  className={active ? "text-white" : "text-white/50"}
+                />
+              )}
               <span
                 className={`text-[9px] leading-tight truncate w-full text-center ${
                   active ? "text-white font-semibold" : "text-white/50"
