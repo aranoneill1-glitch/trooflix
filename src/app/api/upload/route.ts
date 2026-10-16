@@ -42,10 +42,14 @@ export async function POST(req: Request) {
     const safeName = filename.replace(/[^a-zA-Z0-9.\-_]/g, "-");
     const key = `${folder || "videos"}/${Date.now()}-${safeName}`;
 
+    // 1-year browser cache for uploaded assets (videos, images).
+    // Combined with filenames that include a timestamp, this is safe:
+    // any new upload gets a new key, so browser cache never goes stale.
     const command = new PutObjectCommand({
       Bucket: process.env.R2_BUCKET_NAME,
       Key: key,
       ContentType: contentType,
+      CacheControl: "public, max-age=31536000, immutable",
     });
 
     const signedUrl = await getSignedUrl(s3, command, { expiresIn: 3600 });
