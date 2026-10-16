@@ -271,32 +271,6 @@ function ReelCard({
         onClick={onTap}
       />
 
-      {/* Top gradient + creator info */}
-      <div className="absolute top-0 left-0 right-0 z-20 p-4 bg-gradient-to-b from-black/70 via-black/30 to-transparent pointer-events-none">
-        <div className="flex items-center gap-3 pointer-events-auto">
-          <Link href={slug ? `/podcaster/${slug}` : "/"} className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-600 to-red-900 overflow-hidden flex-shrink-0 flex items-center justify-center">
-              {creator?.photoUrl ? (
-                <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" />
-              ) : !creator ? (
-                <img src={TROOFLIX_LOGO} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-white font-bold text-sm">
-                  {name[0]?.toUpperCase() || "?"}
-                </span>
-              )}
-            </div>
-            <div className="min-w-0">
-              <p className="font-semibold text-sm inline-flex items-center gap-1 text-white">
-                <span className="truncate max-w-[140px]">{name}</span>
-                {creator?.isVerified && <VerifiedBadge size={13} />}
-              </p>
-              <p className="text-xs text-white/70 truncate">{handle} · {timeAgo(video.createdAt)}</p>
-            </div>
-          </Link>
-        </div>
-      </div>
-
       {/* Right rail */}
       <div className="absolute right-3 bottom-24 z-20 flex flex-col items-center gap-5">
         <button
@@ -341,8 +315,32 @@ function ReelCard({
         )}
       </AnimatePresence>
 
-      {/* Bottom info — caption + views */}
+      {/* Bottom info — creator, caption, views */}
       <div className="absolute bottom-0 left-0 right-0 z-20 p-4 pb-6 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none">
+        {/* Creator row */}
+        <div className="flex items-center gap-3 mb-3 pointer-events-auto">
+          <Link href={slug ? `/podcaster/${slug}` : "/"} className="flex items-center gap-2 min-w-0">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-600 to-red-900 overflow-hidden flex-shrink-0 flex items-center justify-center">
+              {creator?.photoUrl ? (
+                <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" />
+              ) : !creator ? (
+                <img src={TROOFLIX_LOGO} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-white font-bold text-sm">
+                  {name[0]?.toUpperCase() || "?"}
+                </span>
+              )}
+            </div>
+            <div className="min-w-0">
+              <p className="font-semibold text-sm inline-flex items-center gap-1 text-white">
+                <span className="truncate max-w-[160px]">{name}</span>
+                {creator?.isVerified && <VerifiedBadge size={13} />}
+              </p>
+              <p className="text-xs text-white/70 truncate">{handle} · {timeAgo(video.createdAt)}</p>
+            </div>
+          </Link>
+        </div>
+
         <div className="max-w-[80%] pointer-events-auto">
           {video.title && (
             <p className="text-sm font-semibold text-white leading-snug mb-1 line-clamp-2">
