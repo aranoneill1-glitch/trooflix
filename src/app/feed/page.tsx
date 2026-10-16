@@ -317,6 +317,13 @@ function ReelCard({
             // Portrait → cover (fill wall-to-wall)
             setIsLandscape(v.videoWidth / v.videoHeight >= 1);
           }
+          setDuration(v.duration || 0);
+        }}
+        onTimeUpdate={(e) => {
+          // Fallback in case RAF is throttled (background tab, low power mode)
+          if (scrubbing) return;
+          const v = e.currentTarget;
+          if (v.duration) setProgress(v.currentTime / v.duration);
         }}
         className={`absolute inset-0 w-full h-full bg-black ${
           isLandscape ? "object-contain" : "object-cover"
