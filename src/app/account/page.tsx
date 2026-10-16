@@ -7,6 +7,7 @@ import { Upload, LogOut, Check, Trash2 } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { createClient } from "@/utils/supabase/client";
+import { clearUserCache } from "@/lib/cache";
 
 export default function AccountPage() {
   const router = useRouter();
@@ -219,6 +220,7 @@ export default function AccountPage() {
   const logout = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
+    clearUserCache();
     router.push("/");
     router.refresh();
   };

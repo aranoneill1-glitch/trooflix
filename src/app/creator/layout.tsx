@@ -12,6 +12,7 @@ import {
   ChevronLeft,
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
+import { clearUserCache } from "@/lib/cache";
 
 type Creator = {
   id: number;
@@ -135,6 +136,7 @@ export default function CreatorLayout({
           onClick={async () => {
             const supabase = createClient();
             await supabase.auth.signOut();
+            clearUserCache();
             router.push("/");
           }}
           className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-red-400 hover:bg-white/5 transition mt-4"

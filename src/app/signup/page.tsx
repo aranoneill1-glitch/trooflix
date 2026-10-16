@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
+import { clearUserCache } from "@/lib/cache";
 
 export default function SignupPage() {
   const [handle, setHandle] = useState("");
@@ -91,6 +92,7 @@ export default function SignupPage() {
 
     // Save the handle to profiles
     if (signUpData.user) {
+      clearUserCache();
       await fetch("/api/username", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

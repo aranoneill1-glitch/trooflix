@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
+import { clearUserCache } from "@/lib/cache";
 
 export default function LoginPage() {
   const [identifier, setIdentifier] = useState("");
@@ -44,6 +45,7 @@ export default function LoginPage() {
       setError(error.message);
       setLoading(false);
     } else {
+      clearUserCache();
       router.push("/");
       router.refresh();
     }

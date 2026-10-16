@@ -20,6 +20,7 @@ import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import { createClient } from "@/utils/supabase/client";
+import { clearUserCache } from "@/lib/cache";
 
 type Profile = {
   user_id: string;
@@ -169,6 +170,7 @@ export default function ProfilePage() {
   const logout = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
+    clearUserCache();
     router.push("/");
   };
 
