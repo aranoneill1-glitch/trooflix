@@ -160,6 +160,7 @@ function ReelCard({
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [heartBurst, setHeartBurst] = useState<{ x: number; y: number; id: number } | null>(null);
+  const [isLandscape, setIsLandscape] = useState(false);
   const lastTapRef = useRef(0);
 
   const name = creator?.name || "TROOFLIX";
@@ -242,7 +243,10 @@ function ReelCard({
     <section
       data-reel-index={video.id}
       className="relative w-full snap-start snap-always flex items-center justify-center overflow-hidden bg-black"
-      style={{ scrollSnapAlign: "start", height: "calc(100dvh - 64px)" }}
+      style={{
+        scrollSnapAlign: "start",
+        height: "calc(100dvh - 64px - env(safe-area-inset-bottom))",
+      }}
     >
       {/* Video */}
       <video
@@ -253,7 +257,17 @@ function ReelCard({
         loop
         playsInline
         preload="auto"
-        className="absolute inset-0 w-full h-full object-contain bg-black"
+        onLoadedMetadata={(e) => {
+          const v = e.currentTarget;
+          if (v.videoWidth && v.videoHeight) {
+            // Landscape or square → contain (letterbox)
+            // Portrait → cover (fill wall-to-wall)
+            setIsLandscape(v.videoWidth / v.videoHeight >= 1);
+          }
+        }}
+        className={`absolute inset-0 w-full h-full bg-black ${
+          isLandscape ? "object-contain" : "object-cover"
+        }`}
         onClick={onTap}
       />
 
@@ -429,8 +443,11 @@ export default function FeedPage() {
       {!loading && videos.length > 0 && (
         <div
           ref={scrollerRef}
-          className="h-full w-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide"
-          style={{ scrollSnapType: "y mandatory" }}
+          className="w-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide"
+          style={{
+            height: "calc(100dvh - 64px - env(safe-area-inset-bottom))",
+            scrollSnapType: "y mandatory",
+          }}
         >
           {videos.map((video, i) => (
             <ReelCard
