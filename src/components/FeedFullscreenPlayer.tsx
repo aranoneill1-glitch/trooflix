@@ -355,9 +355,18 @@ function VideoCard({
         )}
       </AnimatePresence>
 
-      {/* Right rail */}
+      {/* Left rail */}
       {isActive && !compact && (
-        <div className="absolute right-3 bottom-56 z-20 flex flex-col items-center gap-3">
+        <div className="absolute left-3 bottom-56 z-20 flex flex-col items-center gap-3">
+          {/* Mute toggle */}
+          <button
+            onClick={onToggleMute}
+            className="flex flex-col items-center text-white"
+            aria-label={muted ? "Unmute" : "Mute"}
+          >
+            {muted ? <VolumeX size={24} /> : <Volume2 size={24} />}
+          </button>
+
           <div data-like-button>
             <LikeButton videoId={video.id} size={26} stacked />
           </div>
