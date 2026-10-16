@@ -102,18 +102,17 @@ function FeedCard({
   onOpenComments,
   muted,
   onToggleMute,
-  isNext = false,
+  isActive = false,
 }: {
   video: Video;
   creator: Creator | null;
   onOpenComments: () => void;
   muted: boolean;
   onToggleMute: () => void;
-  isNext?: boolean;
+  isActive?: boolean;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [shouldPlay, setShouldPlay] = useState(false);
   const [heartBurst, setHeartBurst] = useState<{ x: number; y: number; id: number } | null>(null);
   const lastTapRef = useRef(0);
   const [videoAspect, setVideoAspect] = useState<string>("16 / 9"); // default until loaded
@@ -172,51 +171,35 @@ function FeedCard({
     }
   };
 
-  // IntersectionObserver — play when >50% visible, pause otherwise
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
 
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          setShouldPlay(entry.intersectionRatio >= 0.85);
-        }
-      },
-      { threshold: [0, 0.5, 1] }
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-
-  // Play/pause based on visibility
+  // Play/pause — driven purely by isActive prop (single source of truth)
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
-    // Pause inline video if fullscreen player is open, or user manually paused
-    if (shouldPlay) {
-      // Enforce single-playback — pause any other feed video first
+
+    if (isActive) {
+      // Belt-and-braces: pause any other video still running
       if (currentPlayer && currentPlayer !== v) {
-        try {
-          currentPlayer.pause();
-        } catch {}
+        try { currentPlayer.pause(); } catch {}
       }
       currentPlayer = v;
+      // Set mute BEFORE play — never start unmuted by accident
+      v.muted = muted;
       v.play().catch(() => {
+        // Autoplay-with-sound blocked: fall back to muted, sync state
         v.muted = true;
         v.play().catch(() => {});
       });
     } else {
       v.pause();
+      // Reset time so next visit starts fresh
+      try { v.currentTime = 0; } catch {}
+      // Non-active videos are ALWAYS muted
+      v.muted = true;
       if (currentPlayer === v) currentPlayer = null;
     }
-  }, [shouldPlay]);
+  }, [isActive, muted]);
 
-  // Sync muted prop
-  useEffect(() => {
-    const v = videoRef.current;
-    if (v) v.muted = muted;
-  }, [muted]);
 
   const name = creator?.name || "TROOFLIX";
   const slug = creator?.slug;
@@ -280,7 +263,7 @@ function FeedCard({
           muted={muted}
           loop
           playsInline
-          preload={isNext || shouldPlay ? "auto" : "metadata"}
+          preload={isActive ? "auto" : "none"}
           onLoadedMetadata={(e) => {
             const v = e.currentTarget;
             if (v.videoWidth && v.videoHeight) {
@@ -440,7 +423,7 @@ export default function FeedPage() {
                 muted={muted}
                 onToggleMute={() => setMuted((m) => !m)}
 
-                isNext={i === activeIndex + 1}
+                isActive={i === activeIndex}
               />
             </div>
           ))}
