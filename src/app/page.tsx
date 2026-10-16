@@ -587,11 +587,11 @@ function DetailModal({ item, onClose, onPlay, creators }: { item: Video; onClose
               >
                 <Play size={18} fill="black" /> Play
               </button>
-              <div className="border-2 border-white/50 rounded-full p-2.5 md:p-3 hover:border-white transition">
-                <SaveButton videoId={item.id} variant="icon" size={18} />
+              <div className="w-11 h-11 md:w-12 md:h-12 flex items-center justify-center rounded-full bg-white/15 backdrop-blur hover:bg-white/25 transition">
+                <SaveButton videoId={item.id} variant="icon" size={20} />
               </div>
-              <div className="border-2 border-white/50 rounded-full p-2.5 md:p-3 hover:border-white transition">
-                <LikeButton videoId={item.id} size={18} showCount={false} />
+              <div className="w-11 h-11 md:w-12 md:h-12 flex items-center justify-center rounded-full bg-white/15 backdrop-blur hover:bg-white/25 transition">
+                <LikeButton videoId={item.id} size={20} showCount={false} />
               </div>
 
             </div>
