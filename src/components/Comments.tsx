@@ -72,6 +72,7 @@ export default function Comments({ videoId }: { videoId: number }) {
   const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState<SortMode>("newest");
   const [user, setUser] = useState<{ id: string; email: string } | null>(null);
+  const [userAvatar, setUserAvatar] = useState<string | null>(null);
   const [replyTo, setReplyTo] = useState<number | null>(null);
   const [replyText, setReplyText] = useState("");
   const [menuOpen, setMenuOpen] = useState<number | null>(null);
@@ -309,9 +310,13 @@ export default function Comments({ videoId }: { videoId: number }) {
           <div className="flex items-end gap-2.5">
             <div
               className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 overflow-hidden"
-              style={{ background: avatarColor(user.email) }}
+              style={{ background: userAvatar ? "transparent" : avatarColor(user.email) }}
             >
-              {initial(user.email)}
+              {userAvatar ? (
+                <img src={userAvatar} alt="" className="w-full h-full object-cover rounded-full" />
+              ) : (
+                initial(user.email)
+              )}
             </div>
             <div className="flex-1 flex items-center gap-2 bg-white/5 border border-white/10 rounded-full pl-4 pr-2 py-2 focus-within:border-white/25 transition">
               <textarea
@@ -506,9 +511,13 @@ export default function Comments({ videoId }: { videoId: number }) {
                     >
                       <div
                         className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 text-sm"
-                        style={{ background: avatarColor(user.email) }}
+                        style={{ background: userAvatar ? "transparent" : avatarColor(user.email) }}
                       >
-                        {initial(user.email)}
+                        {userAvatar ? (
+                          <img src={userAvatar} alt="" className="w-full h-full object-cover rounded-full" />
+                        ) : (
+                          initial(user.email)
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <textarea
