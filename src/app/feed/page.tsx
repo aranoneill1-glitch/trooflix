@@ -400,7 +400,7 @@ function ReelCard({
             <p className="text-sm font-semibold text-white leading-snug mb-1 line-clamp-2">{video.title}</p>
           )}
           {video.description && (
-            <p className="text-xs text-white/80 leading-snug line-clamp-2">{video.description}</p>
+            <ExpandableDescription text={video.description} />
           )}
           <div className="flex items-center gap-3 mt-2 text-xs text-white/60">
             <ViewCount videoId={video.id} showIcon />
@@ -408,6 +408,73 @@ function ReelCard({
         </div>
       </div>
     </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// ExpandableDescription — Instagram-style "... more" on long text
+// ---------------------------------------------------------------------------
+function ExpandableDescription({ text }: { text: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const [overflowing, setOverflowing] = useState(false);
+  const ref = useRef<HTMLParagraphElement>(null);
+
+  // Measure whether the text overflows the 2-line clamp
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const check = () => {
+      if (expanded) return;
+      setOverflowing(el.scrollHeight > el.clientHeight + 1);
+    };
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, [text, expanded]);
+
+  return (
+    <p
+      ref={ref}
+      className={`text-xs text-white/80 leading-snug relative ${
+        expanded ? "" : "line-clamp-2"
+      }`}
+      style={{ wordBreak: "break-word" }}
+    >
+      {text}
+      {/* Inline "... more" or " ... less" */}
+      {!expanded && overflowing && (
+        <>
+          {" "}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setExpanded(true);
+            }}
+            className="text-white/50 font-medium hover:text-white/90 transition"
+            aria-label="Show more"
+          >
+            ... more
+          </button>
+        </>
+      )}
+      {expanded && (
+        <>
+          {" "}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setExpanded(false);
+            }}
+            className="text-white/50 font-medium hover:text-white/90 transition"
+            aria-label="Show less"
+          >
+            ... less
+          </button>
+        </>
+      )}
+    </p>
   );
 }
 
