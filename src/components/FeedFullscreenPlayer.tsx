@@ -160,6 +160,7 @@ function VideoCard({
   const seekAppliedRef = useRef(false);
   const [paused, setPaused] = useState(false);
   const [showControls, setShowControls] = useState(false);
+  const [railOpen, setRailOpen] = useState(false);
   const [heartBurst, setHeartBurst] = useState<{ x: number; y: number; id: number } | null>(null);
   const controlsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -183,6 +184,7 @@ function VideoCard({
       v.pause();
       setPaused(false);
       setShowControls(false);
+      setRailOpen(false);
     }
   }, [isActive]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -216,6 +218,8 @@ function VideoCard({
     registerTap(() => {
       const v = videoRef.current;
       if (!v) return;
+      // Tapping the video closes the rail (if open) and toggles play
+      setRailOpen(false);
       if (v.paused) {
         v.play().catch(() => {});
         setPaused(false);
@@ -355,10 +359,10 @@ function VideoCard({
         )}
       </AnimatePresence>
 
-      {/* Left rail */}
+      {/* Left rail — collapsed shows + and mute, expanded shows full rail */}
       {isActive && !compact && (
         <div className="absolute left-3 bottom-56 z-20 flex flex-col items-center gap-3">
-          {/* Mute toggle */}
+          {/* Mute toggle — always visible */}
           <button
             onClick={onToggleMute}
             className="flex flex-col items-center text-white"
@@ -367,18 +371,42 @@ function VideoCard({
             {muted ? <VolumeX size={24} /> : <Volume2 size={24} />}
           </button>
 
-          <div data-like-button>
-            <LikeButton videoId={video.id} size={26} stacked />
-          </div>
-          <CommentCountStacked videoId={video.id} onClick={onOpenComments} />
+          {/* Expanded items */}
+          {railOpen && (
+            <>
+              <div data-like-button>
+                <LikeButton videoId={video.id} size={26} stacked />
+              </div>
+              <CommentCountStacked videoId={video.id} onClick={onOpenComments} />
+              <button
+                onClick={share}
+                className="flex flex-col items-center text-white"
+                aria-label="Share"
+              >
+                <Send size={26} />
+              </button>
+              <SaveButton videoId={video.id} variant="icon" />
+            </>
+          )}
+
+          {/* + / × toggle at the bottom of the stack */}
           <button
-            onClick={share}
-            className="flex flex-col items-center text-white"
-            aria-label="Share"
+            onClick={() => setRailOpen((o) => !o)}
+            className="w-10 h-10 flex items-center justify-center text-white"
+            aria-label={railOpen ? "Close menu" : "Open menu"}
           >
-            <Send size={26} />
+            {railOpen ? (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            ) : (
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            )}
           </button>
-          <SaveButton videoId={video.id} variant="icon" />
         </div>
       )}
 
