@@ -312,23 +312,103 @@ function FeedCard({
         <ViewCount videoId={video.id} showIcon />
       </div>
 
-      {/* Caption — IG-style: @handle + title + description */}
-      <div className="px-3 md:px-0 pb-2">
-        {video.title && (
-          <p className="text-sm leading-snug">
-            <span className="font-semibold text-white/95">
-              {slug ? `@${slug.replace(/-/g, "")}` : "@trooflix"}
-            </span>{" "}
-            <span className="text-white/90">{video.title}</span>
-          </p>
-        )}
-        {video.description && (
-          <p className="text-sm text-white/60 leading-snug line-clamp-3 mt-1">
-            {video.description}
-          </p>
-        )}
-      </div>
+      {/* Caption — IG-style with ... more */}
+      <Caption
+        username={slug ? `@${slug.replace(/-/g, "")}` : "@trooflix"}
+        title={video.title}
+        description={video.description}
+      />
     </article>
+  );
+}
+
+function Caption({
+  username,
+  title,
+  description,
+}: {
+  username: string;
+  title?: string;
+  description?: string;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const [needsMore, setNeedsMore] = useState(false);
+  const textRef = useRef<HTMLParagraphElement>(null);
+
+  const body = description || "";
+
+  // Detect if the text actually overflows the 3-line clamp.
+  useEffect(() => {
+    const el = textRef.current;
+    if (!el) return;
+    const check = () => {
+      if (expanded) return;
+      setNeedsMore(el.scrollHeight > el.clientHeight + 2);
+    };
+    check();
+    // Re-check on resize (mobile orientation, etc)
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, [body, expanded]);
+
+  if (!title && !description) return null;
+
+  return (
+    <div className="px-3 md:px-0 pb-2">
+      {/* Title — always shown, never clamped */}
+      {title && (
+        <p className="text-sm leading-snug">
+          <span className="font-semibold text-white/95">{username}</span>{" "}
+          <span className="text-white/90">{title}</span>
+        </p>
+      )}
+
+      {/* Description — clamped with ... more */}
+      {description && (
+        <div className="relative mt-1">
+          <p
+            ref={textRef}
+            className={`text-sm text-white/60 leading-snug whitespace-pre-wrap break-words ${
+              expanded ? "" : "line-clamp-3"
+            }`}
+          >
+            {description}
+          </p>
+
+          {needsMore && !expanded && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setExpanded(true);
+              }}
+              className="absolute bottom-0 right-0 pl-4 pr-1 text-sm text-white/50 hover:text-white/90 transition"
+              style={{
+                background:
+                  "linear-gradient(to right, transparent 0%, #000 30%, #000 100%)",
+              }}
+              aria-label="Show more"
+            >
+              ... more
+            </button>
+          )}
+
+          {expanded && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setExpanded(false);
+              }}
+              className="mt-1 text-sm text-white/50 hover:text-white/90 transition"
+              aria-label="Show less"
+            >
+              show less
+            </button>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
