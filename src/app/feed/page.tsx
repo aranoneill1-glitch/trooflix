@@ -130,6 +130,7 @@ function ReelCard({
   onOpenComments,
   registerTap,
   isActive,
+  shouldRenderVideo,
 }: {
   video: Video;
   creator: Creator | null;
@@ -138,6 +139,7 @@ function ReelCard({
   onOpenComments: () => void;
   registerTap: (fn: () => void) => void;
   isActive: boolean;
+  shouldRenderVideo: boolean;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [heartBurst, setHeartBurst] = useState<{ x: number; y: number; id: number } | null>(null);
@@ -161,6 +163,27 @@ function ReelCard({
     });
   }, [registerTap]);
 
+  // Source management — load only when in window, clear otherwise, keep element alive
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+
+    if (shouldRenderVideo) {
+      const current = v.src || "";
+      if (!current.includes(video.bitchuteUrl)) {
+        v.src = video.bitchuteUrl;
+        v.preload = "auto";
+        v.load();
+      }
+    } else {
+      v.pause();
+      try {
+        v.removeAttribute("src");
+        v.load();
+      } catch {}
+    }
+  }, [shouldRenderVideo, video.bitchuteUrl]);
+
   // Play/pause — driven purely by isActive + muted
   useEffect(() => {
     const v = videoRef.current;
@@ -168,20 +191,44 @@ function ReelCard({
 
     if (isActive) {
       v.muted = muted;
+      v.volume = muted ? 0 : 1;
       const p = v.play();
       if (p && p.catch) {
         p.catch(() => {
           v.muted = true;
+          v.volume = 0;
           v.play().catch(() => {});
         });
       }
     } else {
       v.pause();
       v.muted = true;
+      v.volume = 0;
       try { v.currentTime = 0; } catch {}
       setProgress(0);
     }
-  }, [isActive, muted]);
+  }, [isActive, muted, shouldRenderVideo]);
+
+  // Audio guard — if the video starts playing while we don't want sound, mute it
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    const guard = () => {
+      if (!isActive) {
+        v.muted = true;
+        v.volume = 0;
+      } else {
+        v.muted = muted;
+        v.volume = muted ? 0 : 1;
+      }
+    };
+    v.addEventListener("play", guard);
+    v.addEventListener("playing", guard);
+    return () => {
+      v.removeEventListener("play", guard);
+      v.removeEventListener("playing", guard);
+    };
+  }, [isActive, muted, shouldRenderVideo]);
 
   const onTap = (e: React.MouseEvent | React.TouchEvent) => {
     const target = e.target as HTMLElement;
@@ -472,6 +519,7 @@ export default function FeedPage() {
               onToggleMute={() => setMuted((m) => !m)}
               onOpenComments={() => setCommentVideo(video)}
               isActive={i === activeIndex}
+              shouldRenderVideo={Math.abs(i - activeIndex) <= 1}
               registerTap={(fn) => {
                 if (i === activeIndex) tapHandlerRef.current = fn;
               }}
