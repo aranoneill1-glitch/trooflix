@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Volume2, VolumeX, Heart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import SaveButton from "@/components/SaveButton";
 import LikeButton, { externalLike } from "@/components/LikeButton";
@@ -487,12 +486,9 @@ export default function FeedPage() {
     id ? creators.find((c) => c.id === id) || null : null;
 
   return (
-    <main className="min-h-screen bg-black text-white pb-24 lg:pb-0">
-      <TopBar />
+    <main className="min-h-screen bg-black text-white pb-24 lg:pb-0 pt-[env(safe-area-inset-top)]">
 
-      <div className="pt-20 md:pt-24 max-w-2xl mx-auto md:px-0">
-        <h1 className="text-2xl md:text-3xl font-black mb-4 px-3 md:px-2">Feed</h1>
-
+      <div className="pt-4 md:pt-6 max-w-2xl mx-auto md:px-0">
         {loading && <p className="text-white/50 text-center py-12">Loading…</p>}
         {!loading && videos.length === 0 && (
           <p className="text-white/50 text-center py-12">Nothing here yet.</p>
