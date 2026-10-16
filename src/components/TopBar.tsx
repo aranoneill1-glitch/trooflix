@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSearch } from "@/context/SearchContext";
 import { Search, Menu, X, MessageCircle } from "lucide-react";
+import UserMenu from "@/components/UserMenu";
 
 const NAV_TABS = [
   { label: "Home", path: "/" },
@@ -112,30 +113,36 @@ export default function TopBar({ onMenu }: Props) {
             )}
           </div>
         ) : (
-          <button
-            onClick={() => setSearchOpen(true)}
-            className="hidden md:flex text-white/90 hover:text-white transition"
-            aria-label="Search"
-          >
-            <Search size={20} />
-          </button>
+          <>
+            {/* Desktop: open inline search */}
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="hidden md:flex text-white/90 hover:text-white transition"
+              aria-label="Search"
+            >
+              <Search size={20} />
+            </button>
+            {/* Mobile: navigate to /search page */}
+            <Link
+              href="/search"
+              className="md:hidden text-white/90 hover:text-white transition"
+              aria-label="Search"
+            >
+              <Search size={20} />
+            </Link>
+          </>
         )}
 
         <Link
           href="/messages"
-          className="hidden md:block text-white/90 hover:text-white transition"
+          className="text-white/90 hover:text-white transition"
           aria-label="Messages"
         >
           <MessageCircle size={20} />
         </Link>
 
-        <Link
-          href="/search"
-          className="text-white/90 hover:text-white transition"
-          aria-label="Search"
-        >
-          <Search size={20} />
-        </Link>
+        {/* Avatar / user menu */}
+        <UserMenu />
       </div>
     </nav>
   );
