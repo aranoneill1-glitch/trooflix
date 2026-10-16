@@ -104,6 +104,7 @@ function FeedCard({
   muted,
   onToggleMute,
   isFullscreenOpen,
+  isNext = false,
 }: {
   video: Video;
   creator: Creator | null;
@@ -112,6 +113,7 @@ function FeedCard({
   muted: boolean;
   onToggleMute: () => void;
   isFullscreenOpen: boolean;
+  isNext?: boolean;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -285,7 +287,7 @@ function FeedCard({
           muted={muted}
           loop
           playsInline
-          preload="metadata"
+          preload={isNext || shouldPlay ? "auto" : "metadata"}
           onLoadedMetadata={(e) => {
             const v = e.currentTarget;
             if (v.videoWidth && v.videoHeight) {
@@ -361,6 +363,8 @@ export default function FeedPage() {
   const [commentVideo, setCommentVideo] = useState<Video | null>(null);
   const [playing, setPlaying] = useState<Video | null>(null);
   const [startTime, setStartTime] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const sentinelRefs = useRef<(HTMLElement | null)[]>([]);
 
   const playingIndex = playing
     ? videos.findIndex((v) => v.id === playing.id)
@@ -386,6 +390,29 @@ export default function FeedPage() {
       .catch(() => setLoading(false));
   }, []);
 
+  // Track which card is most in viewport → drives neighbor preload
+  useEffect(() => {
+    if (videos.length === 0) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // Pick the entry with the highest intersectionRatio
+        let best = { idx: activeIndex, ratio: 0 };
+        for (const entry of entries) {
+          const idx = Number((entry.target as HTMLElement).dataset.index || -1);
+          if (idx >= 0 && entry.intersectionRatio > best.ratio) {
+            best = { idx, ratio: entry.intersectionRatio };
+          }
+        }
+        if (best.ratio > 0 && best.idx !== activeIndex) {
+          setActiveIndex(best.idx);
+        }
+      },
+      { threshold: [0, 0.25, 0.5, 0.75, 1] }
+    );
+    sentinelRefs.current.forEach((el) => el && observer.observe(el));
+    return () => observer.disconnect();
+  }, [videos.length, activeIndex]);
+
   const creatorById = (id?: number | null) =>
     id ? creators.find((c) => c.id === id) || null : null;
 
@@ -402,21 +429,29 @@ export default function FeedPage() {
         )}
 
         <div>
-          {videos.map((video) => (
-            <FeedCard
+          {videos.map((video, i) => (
+            <div
               key={video.id}
-              video={video}
-              creator={creatorById(video.creatorId)}
-              onOpenComments={() => setCommentVideo(video)}
-              onOpenFullscreen={(startTime) => {
-                if (typeof startTime === "number") setStartTime(startTime);
-                else setStartTime(0);
-                setPlaying(video);
+              data-index={i}
+              ref={(el) => {
+                sentinelRefs.current[i] = el;
               }}
-              muted={muted}
-              onToggleMute={() => setMuted((m) => !m)}
-              isFullscreenOpen={playing?.id === video.id}
-            />
+            >
+              <FeedCard
+                video={video}
+                creator={creatorById(video.creatorId)}
+                onOpenComments={() => setCommentVideo(video)}
+                onOpenFullscreen={(startTime) => {
+                  if (typeof startTime === "number") setStartTime(startTime);
+                  else setStartTime(0);
+                  setPlaying(video);
+                }}
+                muted={muted}
+                onToggleMute={() => setMuted((m) => !m)}
+                isFullscreenOpen={playing?.id === video.id}
+                isNext={i === activeIndex + 1}
+              />
+            </div>
           ))}
         </div>
       </div>
