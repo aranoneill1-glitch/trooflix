@@ -103,6 +103,7 @@ function FeedCard({
   muted,
   onToggleMute,
   isActive = false,
+  windowPosition = "off",
 }: {
   video: Video;
   creator: Creator | null;
@@ -110,6 +111,7 @@ function FeedCard({
   muted: boolean;
   onToggleMute: () => void;
   isActive?: boolean;
+  windowPosition?: "active" | "next" | "prev" | "off";
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -172,33 +174,43 @@ function FeedCard({
   };
 
 
-  // Play/pause — driven purely by isActive prop (single source of truth)
+  // Playback + source lifecycle — driven by windowPosition
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
 
-    if (isActive) {
-      // Belt-and-braces: pause any other video still running
+    if (windowPosition === "active") {
+      // Ensure src is loaded (in case we came back into the window)
+      if (!v.src || v.src === window.location.href) {
+        v.src = video.bitchuteUrl;
+        v.load();
+      }
+      // Pause any other playing video
       if (currentPlayer && currentPlayer !== v) {
         try { currentPlayer.pause(); } catch {}
       }
       currentPlayer = v;
-      // Set mute BEFORE play — never start unmuted by accident
       v.muted = muted;
       v.play().catch(() => {
-        // Autoplay-with-sound blocked: fall back to muted, sync state
         v.muted = true;
         v.play().catch(() => {});
       });
-    } else {
+    } else if (windowPosition === "next" || windowPosition === "prev") {
+      // Preload window — paused, muted, ready
       v.pause();
-      // Reset time so next visit starts fresh
-      try { v.currentTime = 0; } catch {}
-      // Non-active videos are ALWAYS muted
       v.muted = true;
+      try { v.currentTime = 0; } catch {}
+      if (currentPlayer === v) currentPlayer = null;
+    } else {
+      // OFF — dispose the video element's src to free memory
+      v.pause();
+      try {
+        v.removeAttribute("src");
+        v.load();
+      } catch {}
       if (currentPlayer === v) currentPlayer = null;
     }
-  }, [isActive, muted]);
+  }, [windowPosition, muted, video.bitchuteUrl]);
 
 
   const name = creator?.name || "TROOFLIX";
