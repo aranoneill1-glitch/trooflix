@@ -8,10 +8,7 @@ import {
   Send,
   Check,
   CheckCheck,
-  Mic,
   Image as ImageIcon,
-  Smile,
-  Plus,
   Camera,
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
@@ -486,14 +483,6 @@ export default function ThreadPage() {
               className="flex-1 bg-transparent border-none outline-none resize-none max-h-32 placeholder:text-white/40 text-white py-0.5"
               style={{ minHeight: "20px", fontSize: "16px" }}
             />
-            {/* Placeholder mic */}
-            <button
-              type="button"
-              className="flex-shrink-0 text-white/60 hover:text-white transition"
-              aria-label="Voice message"
-            >
-              <Mic size={20} />
-            </button>
             {/* Image picker */}
             <button
               type="button"
@@ -504,14 +493,14 @@ export default function ThreadPage() {
             >
               <ImageIcon size={20} />
             </button>
-            {/* GIF / sticker — opens GifPicker for now */}
+            {/* GIF badge */}
             <button
               type="button"
               onClick={() => setGifOpen(true)}
-              className="flex-shrink-0 text-white/60 hover:text-white transition"
-              aria-label="Sticker"
+              className="flex-shrink-0 border border-white/40 rounded-md px-1.5 py-0.5 text-[10px] font-black tracking-tight text-white/80 hover:text-white hover:border-white transition"
+              aria-label="Send a GIF"
             >
-              <Smile size={20} />
+              GIF
             </button>
           </div>
 
@@ -525,15 +514,7 @@ export default function ThreadPage() {
             >
               Send
             </button>
-          ) : (
-            <button
-              type="button"
-              className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0"
-              aria-label="More"
-            >
-              <Plus size={20} className="text-white" />
-            </button>
-          )}
+          ) : null}
         </div>
       </div>
 
