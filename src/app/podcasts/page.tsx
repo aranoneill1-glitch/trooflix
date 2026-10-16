@@ -22,7 +22,6 @@ export default function PodcastsPage() {
 
   useEffect(() => {
     getCachedCreators()
-      .then((r) => r.json())
       .then((d) => {
         setCreators(Array.isArray(d) ? d : []);
         setLoading(false);

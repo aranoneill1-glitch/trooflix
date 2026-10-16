@@ -43,7 +43,6 @@ export default function FollowingPage() {
         .then((r) => r.json())
         .catch(() => ({ ids: [] })),
       getCachedCreators()
-        .then((r) => r.json())
         .catch(() => []),
     ]).then(async ([userFollows, podcasterFollows, creators]) => {
       const userIds: string[] = userFollows.user_ids || [];

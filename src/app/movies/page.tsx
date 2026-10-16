@@ -36,7 +36,6 @@ export default function MoviesPage() {
 
   useEffect(() => {
     getCachedVideos()
-      .then((r) => r.json())
       .then((data) => {
         const movies = Array.isArray(data)
           ? data.filter((v: any) => v.type === "Movie" && !v.creatorId)

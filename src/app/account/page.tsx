@@ -58,7 +58,6 @@ export default function AccountPage() {
           const ids = Array.isArray(d.ids) ? d.ids : [];
           if (ids.length === 0) return;
           return getCachedCreators()
-            .then((r) => r.json())
             .then((creators: any[]) => {
               setFollowedCreators(
                 creators.filter((c) => ids.includes(c.id))

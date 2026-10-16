@@ -35,7 +35,6 @@ export default function DocumentariesPage() {
 
   useEffect(() => {
     getCachedVideos()
-      .then((r) => r.json())
       .then((data) => {
         const docs = Array.isArray(data)
           ? data.filter((v: any) => v.type === "Documentary" && !v.creatorId)

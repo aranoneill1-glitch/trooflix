@@ -67,7 +67,6 @@ export default function PodcasterProfilePage() {
 
   useEffect(() => {
     getCachedCreators()
-      .then((r) => r.json())
       .then((all: Creator[]) => {
         const found = all.find((c) => c.slug === slug);
         if (!found) {
@@ -81,7 +80,6 @@ export default function PodcasterProfilePage() {
           .then((d) => setFollowerCount(d.count ?? 0))
           .catch(() => {});
         return getCachedVideos()
-          .then((r) => r.json())
           .then((allVideos: Video[]) => {
             setVideos(allVideos.filter((v) => v.creatorId === found.id));
             setLoading(false);

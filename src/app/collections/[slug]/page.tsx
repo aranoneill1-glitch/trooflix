@@ -49,7 +49,6 @@ export default function CollectionPage() {
 
   useEffect(() => {
     getCachedVideos()
-      .then((r) => r.json())
       .then((data) => {
         const filtered = Array.isArray(data)
           ? data.filter((v: any) => v.category === categoryName && !v.creatorId)
