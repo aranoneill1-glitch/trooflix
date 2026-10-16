@@ -54,12 +54,12 @@ export default function LoadingIntro({ onDone }: { onDone: () => void }) {
           className="fixed inset-0 z-[300] bg-black flex items-start justify-center pt-[28vh] md:items-center md:pt-0"
         >
           <div className="relative select-none">
-            {/* Base layer: dimmed logo (visible behind the reveal) */}
+            {/* Invisible base layer — reserves layout space only */}
             <img
               src="/truth.png"
               alt=""
               draggable={false}
-              className="w-[70vw] max-w-[420px] md:max-w-[560px] opacity-15"
+              className="w-[70vw] max-w-[420px] md:max-w-[560px] invisible"
             />
 
             {/* Filling layer: full-color logo revealed left → right */}
