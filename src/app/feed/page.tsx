@@ -20,6 +20,7 @@ import FollowButton from "@/components/FollowButton";
 import CommentDrawer from "@/components/CommentDrawer";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import { getCachedVideos, getCachedCreators } from "@/lib/cache";
+import { preloadWindow, releaseVideo } from "@/lib/videoPreloader";
 
 const TROOFLIX_LOGO =
   "https://pub-ce2ee455d2b04abc9964046e3ff970f0.r2.dev/creators/1792093646889-trooflix-logo.jpg";
@@ -149,6 +150,7 @@ function ReelCard({
   onOpenComments,
   registerTap,
   isActive,
+  shouldRenderVideo,
 }: {
   video: Video;
   creator: Creator | null;
@@ -157,6 +159,7 @@ function ReelCard({
   onOpenComments: () => void;
   registerTap: (fn: () => void) => void;
   isActive: boolean;
+  shouldRenderVideo: boolean;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [heartBurst, setHeartBurst] = useState<{ x: number; y: number; id: number } | null>(null);
@@ -182,16 +185,15 @@ function ReelCard({
   }, [registerTap]);
 
   // Autoplay when this card is centered; pause + reset when it's not
+  // shouldRenderVideo in deps → re-runs when the <video> mounts after remount
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
     if (isActive) {
-      // Mute synchronously BEFORE calling play — avoids any sound flash
       v.muted = muted;
       const promise = v.play();
       if (promise) {
         promise.catch(() => {
-          // Autoplay-with-sound blocked → retry muted
           v.muted = true;
           v.play().catch(() => {});
         });
@@ -202,7 +204,7 @@ function ReelCard({
       try { v.currentTime = 0; } catch {}
       setProgress(0);
     }
-  }, [isActive, muted]);
+  }, [isActive, muted, shouldRenderVideo]);
 
   const onTap = (e: React.MouseEvent | React.TouchEvent) => {
     const target = e.target as HTMLElement;
@@ -286,15 +288,16 @@ function ReelCard({
         height: "calc(100dvh - 64px - env(safe-area-inset-bottom))",
       }}
     >
-      {/* Video */}
-      <video
-        ref={videoRef}
-        data-video-id={video.id}
-        src={video.bitchuteUrl}
-        muted={muted}
-        loop
-        playsInline
-        preload="auto"
+      {/* Video — only rendered for cards in the active window */}
+      {shouldRenderVideo ? (
+        <video
+          ref={videoRef}
+          data-video-id={video.id}
+          src={video.bitchuteUrl}
+          muted={muted}
+          loop
+          playsInline
+          preload="auto"
         onLoadedMetadata={(e) => {
           const v = e.currentTarget;
           if (v.videoWidth && v.videoHeight) {
@@ -310,11 +313,14 @@ function ReelCard({
           const v = e.currentTarget;
           if (v.duration) setProgress(v.currentTime / v.duration);
         }}
-        className={`absolute inset-0 w-full h-full bg-black ${
-          isLandscape ? "object-contain" : "object-cover"
-        }`}
-        onClick={onTap}
-      />
+          className={`absolute inset-0 w-full h-full bg-black ${
+            isLandscape ? "object-contain" : "object-cover"
+          }`}
+          onClick={onTap}
+        />
+      ) : (
+        <div className="absolute inset-0 bg-black" onClick={onTap} />
+      )}
 
       {/* Right rail */}
       <div className="absolute right-3 bottom-24 z-20 flex flex-col items-center gap-5">
@@ -484,11 +490,15 @@ export default function FeedPage() {
     return () => observer.disconnect();
   }, [videos.length]);
 
-  // Count a view every time a reel becomes active (including first load)
+  // On active change: count view + preload the surrounding window
   useEffect(() => {
     const active = videos[activeIndex];
     if (active?.id) {
       trackView(active.id);
+    }
+    // Instagram-style adjacent preload: next 2 + previous 1
+    if (videos.length > 0) {
+      preloadWindow(videos, activeIndex, 2, 1);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeIndex, videos.length]);
@@ -531,6 +541,7 @@ export default function FeedPage() {
               onToggleMute={() => setMuted((m) => !m)}
               onOpenComments={() => setCommentVideo(video)}
               isActive={i === activeIndex}
+              shouldRenderVideo={Math.abs(i - activeIndex) <= 1}
               registerTap={(fn) => {
                 if (i === activeIndex) tapHandlerRef.current = fn;
               }}
