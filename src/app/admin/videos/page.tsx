@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { grabVideoPoster } from "@/lib/grabVideoPoster";
 
 type Video = {
   id: number;
@@ -58,10 +59,69 @@ export default function VideosPage() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<string | null>(null);
   const [progress, setProgress] = useState<number>(0);
+  const [regenStatus, setRegenStatus] = useState<string>("");
+  const [regenerating, setRegenerating] = useState(false);
 
   const videoInput = useRef<HTMLInputElement>(null);
   const posterInput = useRef<HTMLInputElement>(null);
   const backdropInput = useRef<HTMLInputElement>(null);
+
+  const uploadPosterFile = async (file: File): Promise<string> => {
+    const presignRes = await fetch("/api/upload", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        filename: file.name,
+        contentType: file.type || "image/jpeg",
+        folder: "posters",
+      }),
+    });
+    if (!presignRes.ok) throw new Error("Presign failed");
+    const { signedUrl, publicUrl } = await presignRes.json();
+    const putRes = await fetch(signedUrl, {
+      method: "PUT",
+      headers: { "Content-Type": file.type || "image/jpeg" },
+      body: file,
+    });
+    if (!putRes.ok) throw new Error("Upload failed");
+    return publicUrl;
+  };
+
+  const regenerateThumbnails = async () => {
+    const targets = videos.filter(
+      (v) => (v.videoUrl ?? v.bitchuteUrl) && v.posterUrl.startsWith("/api/poster")
+    );
+    if (targets.length === 0) {
+      setRegenStatus("No placeholder posters to fix.");
+      return;
+    }
+    setRegenerating(true);
+    let done = 0;
+    let failed = 0;
+    for (const v of targets) {
+      const src = v.videoUrl ?? v.bitchuteUrl ?? "";
+      setRegenStatus(`Generating ${done + 1}/${targets.length}… (${v.title})`);
+      try {
+        const posterFile = await grabVideoPoster(src, 0.5);
+        const posterUrl = await uploadPosterFile(posterFile);
+        const res = await fetch(`/api/videos?id=${v.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ posterUrl }),
+        });
+        if (!res.ok) throw new Error("Save failed");
+        done++;
+      } catch (e) {
+        console.warn("Regen failed for", v.title, e);
+        failed++;
+      }
+    }
+    await loadVideos();
+    setRegenerating(false);
+    setRegenStatus(
+      `Done — ${done} fixed${failed ? `, ${failed} failed` : ""}.`
+    );
+  };
 
   const loadVideos = async () => {
     const res = await fetch("/api/videos", { cache: "no-store" });
@@ -371,7 +431,20 @@ export default function VideosPage() {
         </div>
       </form>
 
-      <h2 className="text-lg font-bold mb-4">Catalog ({videos.length})</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-bold">Catalog ({videos.length})</h2>
+        <div className="flex items-center gap-3">
+          {regenStatus && <span className="text-xs text-white/60">{regenStatus}</span>}
+          <button
+            type="button"
+            onClick={regenerateThumbnails}
+            disabled={regenerating}
+            className="bg-white/10 hover:bg-white/20 disabled:opacity-50 text-sm font-semibold px-4 py-2 rounded transition"
+          >
+            {regenerating ? "Regenerating…" : "Regenerate thumbnails"}
+          </button>
+        </div>
+      </div>
       <div className="space-y-2">
         {videos.map((v) => (
           <div key={v.id} className={`flex items-center gap-4 rounded p-3 transition ${editing?.id === v.id ? "bg-red-950/40 border border-red-600" : "bg-[#141418]"}`}>

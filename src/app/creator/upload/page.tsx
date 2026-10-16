@@ -6,6 +6,7 @@ import { Upload, Image as ImageIcon, Check, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 import { getCachedUser } from "@/lib/cache";
+import { grabVideoPoster } from "@/lib/grabVideoPoster";
 
 const CATEGORIES = [
   "History",
@@ -35,6 +36,7 @@ export default function UploadVideoPage() {
   const [uploadingPoster, setUploadingPoster] = useState(false);
   const [uploadingBackdrop, setUploadingBackdrop] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [generatingPoster, setGeneratingPoster] = useState(false);
   const [videoProgress, setVideoProgress] = useState(0);
 
   const [submitting, setSubmitting] = useState(false);
@@ -110,6 +112,21 @@ export default function UploadVideoPage() {
     try {
       const url = await presignAndPut(f, "videos", setVideoProgress);
       setVideoUrl(url);
+
+      // Auto-generate a poster from the first frame — only if the user
+      // hasn't manually uploaded one. Non-fatal if it fails.
+      if (!posterUrl) {
+        setGeneratingPoster(true);
+        try {
+          const posterFile = await grabVideoPoster(url, 0.5);
+          const posterPublicUrl = await presignAndPut(posterFile, "posters");
+          setPosterUrl(posterPublicUrl);
+        } catch (err) {
+          console.warn("Auto poster failed:", err);
+        } finally {
+          setGeneratingPoster(false);
+        }
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -289,6 +306,8 @@ export default function UploadVideoPage() {
               />
               {uploadingPoster ? (
                 <p className="text-sm">Uploading…</p>
+              ) : generatingPoster ? (
+                <p className="text-sm text-white/60">Generating thumbnail…</p>
               ) : posterUrl ? (
                 <img
                   src={posterUrl}
