@@ -528,20 +528,28 @@ export default function FeedPage() {
         </div>
       )}
 
-      {/* Sound prompt */}
+      {/* Sound prompt — centered on viewport */}
       <AnimatePresence>
         {showSoundPrompt && !loading && videos.length > 0 && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
-            onClick={enableSound}
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 flex items-center gap-2.5 bg-black/40 backdrop-blur-md border border-white/25 text-white font-semibold text-[15px] px-6 py-3 rounded-full shadow-2xl hover:bg-black/60 hover:border-white/50 active:scale-95 transition"
+            className="fixed inset-0 z-40 flex items-center justify-center pointer-events-none"
           >
-            <VolumeX size={18} className="opacity-90" />
-            <span>Tap for sound</span>
-          </motion.button>
+            <motion.button
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.9 }}
+              transition={{ duration: 0.25 }}
+              onClick={enableSound}
+              className="pointer-events-auto flex items-center gap-2.5 bg-black/40 backdrop-blur-md border border-white/25 text-white font-semibold text-[15px] px-6 py-3 rounded-full shadow-2xl hover:bg-black/60 hover:border-white/50 active:scale-95 transition"
+            >
+              <VolumeX size={18} className="opacity-90" />
+              <span>Tap for sound</span>
+            </motion.button>
+          </motion.div>
         )}
       </AnimatePresence>
 

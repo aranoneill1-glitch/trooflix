@@ -57,10 +57,20 @@ export default function CommentDrawer({ videoId, title, onClose, topOffset }: Pr
                 : { height: "78vh", maxHeight: "78vh" }
             }
           >
-            {/* Handle bar — visual only, no drag */}
-            <div className="flex justify-center pt-2.5 pb-1 flex-shrink-0">
+            {/* Handle bar — draggable to close */}
+            <motion.div
+              drag="y"
+              dragConstraints={{ top: 0, bottom: 0 }}
+              dragElastic={{ top: 0, bottom: 0.5 }}
+              onDragEnd={(_, info) => {
+                if (info.offset.y > 100 || info.velocity.y > 500) {
+                  onClose();
+                }
+              }}
+              className="flex justify-center pt-2.5 pb-1 flex-shrink-0 cursor-grab active:cursor-grabbing touch-none"
+            >
               <div className="w-10 h-1 rounded-full bg-white/25" />
-            </div>
+            </motion.div>
 
             {/* Header — pinned */}
             <div className="relative flex items-center justify-center px-4 py-3 border-b border-white/10 flex-shrink-0">

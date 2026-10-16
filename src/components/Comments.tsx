@@ -283,10 +283,10 @@ export default function Comments({ videoId }: { videoId: number }) {
   return (
     <div className="mt-12 mb-8">
       {/* Header with count + sort */}
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+      <div className="flex items-center justify-between mb-3 md:mb-6 flex-wrap gap-2 md:gap-3">
         <h2 className="text-lg md:text-xl font-bold">
           Comments <span className="text-white/40">·</span>{" "}
-          <span className="text-white/60 text-base">
+          <span className="text-white/60 text-sm md:text-base">
             {comments.filter((c) => !c.parent_id).length}
           </span>
         </h2>
@@ -306,7 +306,7 @@ export default function Comments({ videoId }: { videoId: number }) {
       {user ? (
         <form
           onSubmit={(e) => submit(e)}
-          className="sticky bottom-0 bg-[#0f0f12] border-t border-white/10 pt-3 pb-4 -mx-2 px-2 mt-auto"
+          className="sticky bottom-0 bg-[#0f0f12] border-t border-white/10 pt-2.5 pb-3 md:pt-3 md:pb-4 -mx-2 px-2 mt-auto"
         >
           <div className="flex items-end gap-2.5">
             <div
@@ -319,7 +319,7 @@ export default function Comments({ videoId }: { videoId: number }) {
                 initial(user.email)
               )}
             </div>
-            <div className="flex-1 flex items-center gap-2 bg-white/5 border border-white/10 rounded-full pl-4 pr-2 py-2 focus-within:border-white/25 transition">
+            <div className="flex-1 flex items-center gap-2 bg-white/5 border border-white/10 rounded-full pl-3 md:pl-4 pr-2 py-1.5 md:py-2 focus-within:border-white/25 transition">
               <textarea
                 value={text}
                 onChange={(e) => setText(e.target.value)}
@@ -383,7 +383,7 @@ export default function Comments({ videoId }: { videoId: number }) {
           </div>
         </form>
       ) : (
-        <div className="mb-8 p-4 bg-white/5 rounded-lg flex items-center justify-between gap-4">
+        <div className="mb-5 md:mb-8 p-3 md:p-4 bg-white/5 rounded-lg flex items-center justify-between gap-3 md:gap-4">
           <p className="text-sm text-white/70">Sign in to join the conversation</p>
           <Link
             href="/login"
