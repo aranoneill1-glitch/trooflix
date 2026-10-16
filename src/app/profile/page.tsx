@@ -37,6 +37,7 @@ type Post = {
   title?: string;
   posterUrl?: string;
   backdropUrl?: string;
+  videoUrl?: string;
   bitchuteUrl?: string;
   type?: string;
   viewCount?: number;

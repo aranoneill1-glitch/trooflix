@@ -14,7 +14,8 @@ type Video = {
   type: string;
   posterUrl: string;
   backdropUrl: string;
-  bitchuteUrl: string;
+  videoUrl?: string;
+  bitchuteUrl?: string;
   creatorId?: number | null;
   createdAt?: string;
 };

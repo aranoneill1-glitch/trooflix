@@ -5,7 +5,6 @@ import { Play, Info, ChevronLeft, ChevronRight, Plus, ThumbsUp, X } from "lucide
 import TopBar from "@/components/TopBar";
 import { useSearch } from "@/context/SearchContext";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import BitChutePlayer from "@/components/BitChutePlayer";
 import VideoPlayer from "@/components/VideoPlayer";
 import { getCachedVideos, getCachedCreators } from "@/lib/cache";
 
@@ -16,7 +15,8 @@ type Video = {
   category: string;
   type: string;
   featured: boolean;
-  bitchuteUrl: string;
+  videoUrl?: string;
+  bitchuteUrl?: string;
   posterUrl: string;
   backdropUrl: string;
   year: number;
@@ -76,11 +76,13 @@ export default function DocumentariesPage() {
       </div>
 
       {selected && <DetailModal item={selected} onClose={() => setSelected(null)} onPlay={(v) => { setSelected(null); setPlaying(v); }} />}
-      {playing && playing.bitchuteUrl.includes("bitchute.com") && (
-        <BitChutePlayer src={playing.bitchuteUrl} title={playing.title} onClose={() => setPlaying(null)} />
-      )}
-      {playing && !playing.bitchuteUrl.includes("bitchute.com") && (
-        <VideoPlayer src={playing.bitchuteUrl} title={playing.title} videoId={playing.id} onClose={() => setPlaying(null)} />
+      {playing && (
+        <VideoPlayer
+          src={playing.videoUrl ?? playing.bitchuteUrl ?? ""}
+          title={playing.title}
+          videoId={playing.id}
+          onClose={() => setPlaying(null)}
+        />
       )}
           <MobileBottomNav />
     </main>

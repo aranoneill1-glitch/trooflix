@@ -77,7 +77,7 @@ export function releaseVideo(videoId: number) {
  * @param ahead - how many forward to preload (default 2)
  * @param behind - how many backward to preload (default 1)
  */
-export function preloadWindow<T extends { id: number; bitchuteUrl: string }>(
+export function preloadWindow<T extends { id: number; videoUrl?: string; bitchuteUrl?: string }>(
   videos: T[],
   activeIndex: number,
   ahead = 2,
@@ -86,11 +86,11 @@ export function preloadWindow<T extends { id: number; bitchuteUrl: string }>(
   // Preload ahead
   for (let i = 1; i <= ahead; i++) {
     const v = videos[activeIndex + i];
-    if (v) preloadVideo(v.id, v.bitchuteUrl);
+    if (v) preloadVideo(v.id, v.videoUrl ?? v.bitchuteUrl ?? "");
   }
   // Preload behind
   for (let i = 1; i <= behind; i++) {
     const v = videos[activeIndex - i];
-    if (v) preloadVideo(v.id, v.bitchuteUrl);
+    if (v) preloadVideo(v.id, v.videoUrl ?? v.bitchuteUrl ?? "");
   }
 }

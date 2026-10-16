@@ -142,7 +142,7 @@ export default function UploadVideoPage() {
           category,
           type: "Podcast",
           rating,
-          bitchuteUrl: videoUrl,
+          videoUrl: videoUrl,
           posterUrl,
           backdropUrl,
         }),

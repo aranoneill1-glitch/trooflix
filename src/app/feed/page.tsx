@@ -27,7 +27,8 @@ type Video = {
   description: string;
   category: string;
   type: string;
-  bitchuteUrl: string;
+  videoUrl?: string;
+  bitchuteUrl?: string;
   posterUrl: string;
   backdropUrl: string;
   creatorId?: number | null;
@@ -169,9 +170,10 @@ function ReelCard({
     if (!v) return;
 
     if (shouldRenderVideo) {
+      const src = video.videoUrl ?? video.bitchuteUrl ?? "";
       const current = v.src || "";
-      if (!current.includes(video.bitchuteUrl)) {
-        v.src = video.bitchuteUrl;
+      if (!current.includes(src)) {
+        v.src = src;
         v.preload = "auto";
         v.load();
       }
@@ -182,7 +184,7 @@ function ReelCard({
         v.load();
       } catch {}
     }
-  }, [shouldRenderVideo, video.bitchuteUrl]);
+  }, [shouldRenderVideo, video.videoUrl, video.bitchuteUrl]);
 
   // Play/pause — driven purely by isActive + muted
   useEffect(() => {
@@ -287,7 +289,7 @@ function ReelCard({
       <video
         ref={videoRef}
         data-video-id={video.id}
-        src={video.bitchuteUrl}
+        src={video.videoUrl ?? video.bitchuteUrl ?? ""}
         muted
         loop
         playsInline

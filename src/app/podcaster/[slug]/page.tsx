@@ -10,7 +10,6 @@ import FollowButton from "@/components/FollowButton";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import MessageComposer from "@/components/MessageComposer";
 import ViewCount from "@/components/ViewCount";
-import BitChutePlayer from "@/components/BitChutePlayer";
 import VideoPlayer from "@/components/VideoPlayer";
 import { getCachedVideos, getCachedCreators } from "@/lib/cache";
 
@@ -20,7 +19,8 @@ type Video = {
   description: string;
   category: string;
   type: string;
-  bitchuteUrl: string;
+  videoUrl?: string;
+  bitchuteUrl?: string;
   posterUrl: string;
   backdropUrl: string;
   year: number;
@@ -198,16 +198,9 @@ export default function PodcasterProfilePage() {
       </div>
 
       {/* Player — plays the video inline, no new tab */}
-      {playing && playing.bitchuteUrl.includes("bitchute.com") && (
-        <BitChutePlayer
-          src={playing.bitchuteUrl}
-          title={playing.title}
-          onClose={() => setPlaying(null)}
-        />
-      )}
-      {playing && !playing.bitchuteUrl.includes("bitchute.com") && (
+      {playing && (
         <VideoPlayer
-          src={playing.bitchuteUrl}
+          src={playing.videoUrl ?? playing.bitchuteUrl ?? ""}
           title={playing.title}
           videoId={playing.id}
           onClose={() => setPlaying(null)}

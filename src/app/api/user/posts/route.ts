@@ -18,7 +18,7 @@ const VIDEOS_KEY = "trooflix:videos";
  *  - If the user is an approved creator → their uploaded videos
  *  - Otherwise → videos they've saved to My List
  *
- * Each post has: id, title, posterUrl, backdropUrl, bitchuteUrl,
+ * Each post has: id, title, posterUrl, backdropUrl, videoUrl,
  * type, viewCount, creatorId, createdAt
  */
 export async function GET(req: Request) {

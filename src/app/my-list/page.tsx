@@ -6,7 +6,6 @@ import { Play, X } from "lucide-react";
 import SaveButton from "@/components/SaveButton";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import BitChutePlayer from "@/components/BitChutePlayer";
 import VideoPlayer from "@/components/VideoPlayer";
 import { createClient } from "@/utils/supabase/client";
 import { getCachedUser } from "@/lib/cache";
@@ -18,7 +17,8 @@ type Video = {
   description: string;
   category: string;
   type: string;
-  bitchuteUrl: string;
+  videoUrl?: string;
+  bitchuteUrl?: string;
   posterUrl: string;
   backdropUrl: string;
   year: number;
@@ -209,16 +209,9 @@ export default function MyListPage() {
       )}
 
       {/* Players */}
-      {playing && playing.bitchuteUrl.includes("bitchute.com") && (
-        <BitChutePlayer
-          src={playing.bitchuteUrl}
-          title={playing.title}
-          onClose={() => setPlaying(null)}
-        />
-      )}
-      {playing && !playing.bitchuteUrl.includes("bitchute.com") && (
+      {playing && (
         <VideoPlayer
-          src={playing.bitchuteUrl}
+          src={playing.videoUrl ?? playing.bitchuteUrl ?? ""}
           title={playing.title}
           videoId={playing.id}
           onClose={() => setPlaying(null)}

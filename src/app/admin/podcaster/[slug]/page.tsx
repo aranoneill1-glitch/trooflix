@@ -11,7 +11,8 @@ type Video = {
   category: string;
   type: string;
   featured: boolean;
-  bitchuteUrl: string;
+  videoUrl?: string;
+  bitchuteUrl?: string;
   posterUrl: string;
   backdropUrl: string;
   year: number;
@@ -40,7 +41,7 @@ export default function PodcasterVideosPage() {
   const [form, setForm] = useState({
     title: "",
     description: "",
-    bitchuteUrl: "",
+    videoUrl: "",
     posterUrl: "",
     backdropUrl: "",
   });
@@ -76,7 +77,7 @@ export default function PodcasterVideosPage() {
   }, [slug]);
 
   const resetForm = () => {
-    setForm({ title: "", description: "", bitchuteUrl: "", posterUrl: "", backdropUrl: "" });
+    setForm({ title: "", description: "", videoUrl: "", posterUrl: "", backdropUrl: "" });
     setEditing(null);
   };
 
@@ -142,7 +143,7 @@ export default function PodcasterVideosPage() {
         body: JSON.stringify({
           title: form.title,
           description: form.description,
-          bitchuteUrl: form.bitchuteUrl,
+          videoUrl: form.videoUrl,
           posterUrl: form.posterUrl,
           backdropUrl: form.backdropUrl,
           creatorId: creator.id,
@@ -175,7 +176,7 @@ export default function PodcasterVideosPage() {
     setForm({
       title: v.title || "",
       description: v.description || "",
-      bitchuteUrl: v.bitchuteUrl || "",
+      videoUrl: v.videoUrl ?? v.bitchuteUrl ?? "",
       posterUrl: v.posterUrl || "",
       backdropUrl: v.backdropUrl || "",
     });
@@ -289,8 +290,8 @@ export default function PodcasterVideosPage() {
               <input
                 type="text"
                 required
-                value={form.bitchuteUrl}
-                onChange={(e) => setForm({ ...form, bitchuteUrl: e.target.value })}
+                value={form.videoUrl}
+                onChange={(e) => setForm({ ...form, videoUrl: e.target.value })}
                 placeholder="Click Upload, or paste a URL"
                 className="flex-1 bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none text-sm"
               />
@@ -298,7 +299,7 @@ export default function PodcasterVideosPage() {
                 label="Upload Video"
                 folder="videos"
                 inputRef={videoInput}
-                onDone={(url) => setForm((f) => ({ ...f, bitchuteUrl: url }))}
+                onDone={(url) => setForm((f) => ({ ...f, videoUrl: url }))}
               />
             </div>
           </div>

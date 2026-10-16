@@ -18,9 +18,7 @@ import {
   Search, Bell, Home as HomeIcon, Film, FileText, Mic, Tv, Menu,
   Compass,
 } from "lucide-react";
-import BitChutePlayer from "@/components/BitChutePlayer";
 import VideoPlayer from "@/components/VideoPlayer";
-import OdyseePlayer from "@/components/OdyseePlayer";
 import LoadingIntro from "@/components/LoadingIntro";
 import VideoIntro from "@/components/VideoIntro";
 import UserMenu from "@/components/UserMenu";
@@ -42,7 +40,8 @@ type Video = {
   category: string;
   type: string;
   featured: boolean;
-  bitchuteUrl: string;
+  videoUrl?: string;
+  bitchuteUrl?: string;
   posterUrl: string;
   backdropUrl: string;
   year: number;
@@ -265,14 +264,13 @@ export default function Home() {
       <AnimatePresence>
         {showVideoIntro && <VideoIntro onDone={onIntroDone} />}
         {selected && <DetailModal item={selected} onClose={() => setSelected(null)} onPlay={(v) => { setSelected(null); requestPlay(v); }} creators={creators} />}
-        {playing && playing.bitchuteUrl.includes("bitchute.com") && (
-          <BitChutePlayer src={playing.bitchuteUrl} title={playing.title} onClose={() => setPlaying(null)} />
-        )}
-        {playing && playing.bitchuteUrl.includes("odysee.com") && (
-          <OdyseePlayer src={playing.bitchuteUrl} title={playing.title} onClose={() => setPlaying(null)} />
-        )}
-        {playing && !playing.bitchuteUrl.includes("bitchute.com") && !playing.bitchuteUrl.includes("odysee.com") && (
-          <VideoPlayer src={playing.bitchuteUrl} title={playing.title} videoId={playing.id} onClose={() => setPlaying(null)} />
+        {playing && (
+          <VideoPlayer
+            src={playing.videoUrl ?? playing.bitchuteUrl ?? ""}
+            title={playing.title}
+            videoId={playing.id}
+            onClose={() => setPlaying(null)}
+          />
         )}
       </AnimatePresence>
     </main>

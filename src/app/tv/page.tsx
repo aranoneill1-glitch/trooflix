@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Play, Info, ChevronRight, X, Menu } from "lucide-react";
-import BitChutePlayer from "@/components/BitChutePlayer";
 import VideoPlayer from "@/components/VideoPlayer";
 
 type Video = {
@@ -12,7 +11,8 @@ type Video = {
   category: string;
   type: string;
   featured: boolean;
-  bitchuteUrl: string;
+  videoUrl?: string;
+  bitchuteUrl?: string;
   posterUrl: string;
   backdropUrl: string;
   year: number;
@@ -435,16 +435,9 @@ export default function TVPage() {
       )}
 
       {/* Players */}
-      {playing && playing.bitchuteUrl.includes("bitchute.com") && (
-        <BitChutePlayer
-          src={playing.bitchuteUrl}
-          title={playing.title}
-          onClose={() => setPlaying(null)}
-        />
-      )}
-      {playing && !playing.bitchuteUrl.includes("bitchute.com") && (
+      {playing && (
         <VideoPlayer
-          src={playing.bitchuteUrl}
+          src={playing.videoUrl ?? playing.bitchuteUrl ?? ""}
           title={playing.title}
           videoId={playing.id}
           onClose={() => setPlaying(null)}

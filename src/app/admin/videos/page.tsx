@@ -9,7 +9,8 @@ type Video = {
   category: string;
   type: string;
   featured: boolean;
-  bitchuteUrl: string;
+  videoUrl?: string;
+  bitchuteUrl?: string;
   posterUrl: string;
   backdropUrl: string;
   year: number;
@@ -46,7 +47,7 @@ export default function VideosPage() {
     category: CATEGORIES[0],
     type: "Documentary",
     featured: false,
-    bitchuteUrl: "",
+    videoUrl: "",
     posterUrl: "",
     backdropUrl: "",
     year: 2026,
@@ -81,7 +82,7 @@ export default function VideosPage() {
       category: CATEGORIES[0],
       type: "Documentary",
       featured: false,
-      bitchuteUrl: "",
+      videoUrl: "",
       posterUrl: "",
       backdropUrl: "",
       year: new Date().getFullYear(),
@@ -174,7 +175,7 @@ export default function VideosPage() {
       category: video.category || CATEGORIES[0],
       type: video.type || "Documentary",
       featured: !!video.featured,
-      bitchuteUrl: video.bitchuteUrl || "",
+      videoUrl: video.videoUrl ?? video.bitchuteUrl ?? "",
       posterUrl: video.posterUrl || "",
       backdropUrl: video.backdropUrl || "",
       year: video.year || new Date().getFullYear(),
@@ -247,8 +248,8 @@ export default function VideosPage() {
               <input
                 type="text"
                 required
-                value={form.bitchuteUrl}
-                onChange={(e) => setForm({ ...form, bitchuteUrl: e.target.value })}
+                value={form.videoUrl}
+                onChange={(e) => setForm({ ...form, videoUrl: e.target.value })}
                 placeholder="Click Upload, or paste a URL"
                 className="flex-1 bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none text-sm"
               />
@@ -256,7 +257,7 @@ export default function VideosPage() {
                 label="Upload Video"
                 folder="videos"
                 inputRef={videoInput}
-                onDone={(url) => setForm((f) => ({ ...f, bitchuteUrl: url }))}
+                onDone={(url) => setForm((f) => ({ ...f, videoUrl: url }))}
               />
             </div>
           </div>

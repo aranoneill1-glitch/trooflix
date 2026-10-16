@@ -27,7 +27,7 @@ async function getCallerCreator(userId: string) {
   return creators.find((c: any) => c.ownerUserId === userId) || null;
 }
 
-// POST /api/creator/videos — { userId, title, description, category, type, bitchuteUrl, posterUrl, backdropUrl }
+// POST /api/creator/videos — { userId, title, description, category, type, videoUrl, posterUrl, backdropUrl }
 // creatorId is FORCED to the caller's creator record — can't be forged.
 export async function POST(req: Request) {
   try {
@@ -47,7 +47,7 @@ export async function POST(req: Request) {
       type: body.type || "Podcast",
       featured: false,
       creatorId: creator.id,          // ← forced, cannot be tampered with
-      bitchuteUrl: body.bitchuteUrl || "",
+      videoUrl: body.videoUrl ?? body.bitchuteUrl ?? "",
       posterUrl: body.posterUrl || "",
       backdropUrl: body.backdropUrl || "",
       year: new Date().getFullYear(),
@@ -82,7 +82,11 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: "Not your video" }, { status: 403 });
     }
 
-    const allowed = ["title", "description", "category", "type", "bitchuteUrl", "posterUrl", "backdropUrl", "rating", "duration"];
+    // Accept both field names on PATCH for backwards compat
+    if (body.videoUrl === undefined && body.bitchuteUrl !== undefined) {
+      body.videoUrl = body.bitchuteUrl;
+    }
+    const allowed = ["title", "description", "category", "type", "videoUrl", "posterUrl", "backdropUrl", "rating", "duration"];
     for (const k of allowed) {
       if (body[k] !== undefined) videos[idx][k] = body[k];
     }

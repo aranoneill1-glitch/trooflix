@@ -18,7 +18,8 @@ type Video = {
   description: string;
   category: string;
   type: string;
-  bitchuteUrl: string;
+  videoUrl?: string;
+  bitchuteUrl?: string;
   posterUrl: string;
   backdropUrl: string;
   year: number;
@@ -46,15 +47,6 @@ function timeAgo(iso?: string): string {
   if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
   if (diff < 2592000) return `${Math.floor(diff / 604800)}w ago`;
   return new Date(iso).toLocaleDateString();
-}
-
-function isBitChute(url: string): boolean {
-  return url.includes("bitchute.com");
-}
-
-function toBitChuteEmbed(url: string): string {
-  if (url.includes("/embed/")) return url;
-  return url.replace("/video/", "/embed/");
 }
 
 export default function WatchPage() {
@@ -145,18 +137,10 @@ export default function WatchPage() {
 
         {/* Inline video player */}
         <div className="w-full aspect-video rounded-lg overflow-hidden bg-black">
-          {isBitChute(video.bitchuteUrl) ? (
-            <iframe
-              src={toBitChuteEmbed(video.bitchuteUrl)}
-              allowFullScreen
-              allow="autoplay; fullscreen; encrypted-media"
-              className="w-full h-full"
-              style={{ border: "none" }}
-            />
-          ) : playingInline ? (
+          {playingInline ? (
             <video
               ref={videoRef}
-              src={video.bitchuteUrl}
+              src={video.videoUrl ?? video.bitchuteUrl ?? ""}
               controls
               autoPlay
               playsInline

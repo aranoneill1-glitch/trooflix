@@ -26,17 +26,7 @@ export async function POST(req: Request) {
       type: body.type || "Documentary",
       featured: !!body.featured,
       creatorId: body.creatorId || null,
-      bitchuteUrl: (() => {
-        const raw = body.bitchuteUrl || "";
-        if (raw.includes("bitchute.com")) {
-          return raw.replace("/video/", "/embed/");
-        }
-        if (raw.includes("odysee.com")) {
-          if (raw.includes("/$/embed/")) return raw;
-          return raw.replace("odysee.com/", "odysee.com/$/embed/");
-        }
-        return raw;
-      })(),
+      videoUrl: body.videoUrl ?? body.bitchuteUrl ?? "",
       posterUrl:
         body.posterUrl ||
         `/api/poster?title=${encodeURIComponent(body.title || "Untitled")}&category=${encodeURIComponent(body.category || "Uncensored")}`,
@@ -79,17 +69,7 @@ export async function PUT(req: Request) {
       type: body.type ?? videos[index].type,
       featured: body.featured ?? videos[index].featured,
       creatorId: body.creatorId !== undefined ? body.creatorId : (videos[index].creatorId ?? null),
-      bitchuteUrl: (() => {
-        const raw = body.bitchuteUrl ?? videos[index].bitchuteUrl ?? "";
-        if (raw.includes("bitchute.com")) {
-          return raw.replace("/video/", "/embed/");
-        }
-        if (raw.includes("odysee.com")) {
-          if (raw.includes("/$/embed/")) return raw;
-          return raw.replace("odysee.com/", "odysee.com/$/embed/");
-        }
-        return raw;
-      })(),
+      videoUrl: body.videoUrl ?? body.bitchuteUrl ?? videos[index].videoUrl ?? videos[index].bitchuteUrl ?? "",
       posterUrl: body.posterUrl ?? videos[index].posterUrl,
       backdropUrl: body.backdropUrl ?? videos[index].backdropUrl,
       year: body.year ?? videos[index].year,
