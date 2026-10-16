@@ -16,7 +16,7 @@ export default function LoadingIntro({ onDone }: { onDone: () => void }) {
       return;
     }
 
-    // Try to play the sound. Browsers may block this until first interaction.
+    // Sound (may be blocked until first interaction — that's fine)
     try {
       const audio = new Audio(
         "https://pub-ce2ee455d2b04abc9964046e3ff970f0.r2.dev/sounds/545263__tairblenn__swish2.mp3"
@@ -25,9 +25,7 @@ export default function LoadingIntro({ onDone }: { onDone: () => void }) {
       audioRef.current = audio;
       const playPromise = audio.play();
       if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          // Autoplay blocked — silent intro. Fine.
-        });
+        playPromise.catch(() => {});
       }
     } catch (_) {}
 
@@ -53,32 +51,27 @@ export default function LoadingIntro({ onDone }: { onDone: () => void }) {
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.4 }}
-          className="fixed inset-0 z-[300] bg-black flex items-start justify-center pt-[18vh] md:items-center md:pt-0"
+          className="fixed inset-0 z-[300] bg-black flex items-start justify-center pt-[28vh] md:items-center md:pt-0"
         >
           <div className="relative select-none">
-            {/* Base layer: invisible */}
-            <span
-              className="text-6xl md:text-8xl font-black tracking-tight"
-              style={{
-                WebkitTextStroke: "0px transparent",
-                color: "transparent",
-                letterSpacing: "-0.02em",
-              }}
-            >
-              TROOFLIX
-            </span>
+            {/* Base layer: dimmed logo (visible behind the reveal) */}
+            <img
+              src="/truth.png"
+              alt=""
+              draggable={false}
+              className="w-[70vw] max-w-[420px] md:max-w-[560px] opacity-15"
+            />
 
-            {/* Filling layer: TROO white, FLIX red */}
-            <motion.span
+            {/* Filling layer: full-color logo revealed left → right */}
+            <motion.img
+              src="/truth.png"
+              alt=""
+              draggable={false}
               initial={{ clipPath: "inset(0 100% 0 0)" }}
               animate={{ clipPath: "inset(0 0% 0 0)" }}
               transition={{ duration: 2, ease: [0.4, 0, 0.2, 1], delay: 0.3 }}
-              className="absolute inset-0 text-6xl md:text-8xl font-black tracking-tight"
-              style={{ letterSpacing: "-0.02em" }}
-            >
-              <span className="text-white">TROO</span>
-              <span className="text-red-600">FLIX</span>
-            </motion.span>
+              className="absolute inset-0 w-[70vw] max-w-[420px] md:max-w-[560px]"
+            />
           </div>
         </motion.div>
       )}
