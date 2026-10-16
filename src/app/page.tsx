@@ -27,6 +27,8 @@ import UserMenu from "@/components/UserMenu";
 import { useSearch } from "@/context/SearchContext";
 import TopBar from "@/components/TopBar";
 import CollectionsRow from "@/components/CollectionsRow";
+import SaveButton from "@/components/SaveButton";
+import LikeButton from "@/components/LikeButton";
 import SearchResults from "@/components/SearchResults";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { getAllProgress } from "@/lib/progress";
@@ -530,12 +532,18 @@ function Card({ item, hovered, onHover, onLeave, onSelect, onPlay, showCreator, 
             >
               <Play size={12} fill="black" />
             </button>
-            <button className="border border-white/60 rounded-full p-1.5 hover:border-white">
-              <Plus size={12} />
-            </button>
-            <button className="border border-white/60 rounded-full p-1.5 hover:border-white">
-              <ThumbsUp size={12} />
-            </button>
+            <div
+              className="border border-white/60 rounded-full p-1.5 hover:border-white"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <SaveButton videoId={item.id} variant="icon" size={12} />
+            </div>
+            <div
+              className="border border-white/60 rounded-full p-1.5 hover:border-white"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <LikeButton videoId={item.id} size={12} showCount={false} />
+            </div>
           </div>
         </motion.div>
       )}
@@ -579,12 +587,12 @@ function DetailModal({ item, onClose, onPlay, creators }: { item: Video; onClose
               >
                 <Play size={18} fill="black" /> Play
               </button>
-              <button className="border-2 border-white/50 rounded-full p-2.5 md:p-3 hover:border-white transition">
-                <Plus size={18} />
-              </button>
-              <button className="border-2 border-white/50 rounded-full p-2.5 md:p-3 hover:border-white transition">
-                <ThumbsUp size={18} />
-              </button>
+              <div className="border-2 border-white/50 rounded-full p-2.5 md:p-3 hover:border-white transition">
+                <SaveButton videoId={item.id} variant="icon" size={18} />
+              </div>
+              <div className="border-2 border-white/50 rounded-full p-2.5 md:p-3 hover:border-white transition">
+                <LikeButton videoId={item.id} size={18} showCount={false} />
+              </div>
 
             </div>
           </div>
