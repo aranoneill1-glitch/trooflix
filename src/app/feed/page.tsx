@@ -200,8 +200,24 @@ function ReelCard({
       v.pause();
       v.muted = true;
       try { v.currentTime = 0; } catch {}
+      setProgress(0);
     }
   }, [isActive, muted]);
+
+  // Live progress — RAF loop that reads the video's currentTime each frame
+  useEffect(() => {
+    if (!isActive) return;
+    let raf = 0;
+    const tick = () => {
+      const v = videoRef.current;
+      if (v && v.duration && !scrubbing) {
+        setProgress(v.currentTime / v.duration);
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [isActive, scrubbing]);
 
   const onTap = (e: React.MouseEvent | React.TouchEvent) => {
     const target = e.target as HTMLElement;
