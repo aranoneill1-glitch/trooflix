@@ -278,8 +278,7 @@ export default function ThreadPage() {
     }
   };
 
-  const handle = other?.username ? `@${other.username}` : "User";
-  const name = other?.display_name || handle;
+  const name = other?.display_name || other?.username || "User";
 
   const blocks: Array<
     | { kind: "day"; key: string; label: string }
@@ -339,7 +338,7 @@ export default function ThreadPage() {
                 {other?.is_verified && <VerifiedBadge size={13} />}
               </p>
               <p className="text-xs text-white/50 truncate">
-                {other?.username ? `@${other.username}` : "last seen recently"}
+                {other?.username ? other.username : ""}
               </p>
             </div>
           </Link>

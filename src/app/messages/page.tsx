@@ -196,7 +196,7 @@ export default function MessagesInbox() {
           <div>
             {visible.map((c) => {
               const p = profiles[c.other_user_id];
-              const name = p?.display_name || (p?.username ? `@${p.username}` : "User");
+              const name = p?.display_name || p?.username || "User";
               const unread = c.unread_count > 0;
 
               return (
@@ -302,7 +302,7 @@ export default function MessagesInbox() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="font-semibold truncate">
-                        {u.display_name || `@${u.username}`}
+                        {u.display_name || u.username}
                       </p>
                       {u.username && (
                         <p className="text-xs text-white/50 truncate">@{u.username}</p>
