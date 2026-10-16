@@ -8,27 +8,12 @@ import { createClient } from "@/utils/supabase/client";
 import { getCachedUser } from "@/lib/cache";
 import { grabVideoPoster } from "@/lib/grabVideoPoster";
 
-const CATEGORIES = [
-  "History",
-  "Politics",
-  "True Crime",
-  "Science & Health",
-  "Technology",
-  "Religion & Belief",
-  "Ancient History",
-  "The Unknown",
-  "Comedy",
-  "News",
-  "Other",
-];
-
 export default function UploadVideoPage() {
   const router = useRouter();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState(CATEGORIES[0]);
-  const [rating, setRating] = useState("TV-MA");
+  const [type, setType] = useState<"Reel" | "Podcast">("Reel");
   const [videoUrl, setVideoUrl] = useState("");
   const [posterUrl, setPosterUrl] = useState("");
   const [backdropUrl, setBackdropUrl] = useState("");
@@ -156,9 +141,8 @@ export default function UploadVideoPage() {
           userId: user.id,
           title: title.trim(),
           description: description.trim(),
-          category,
-          type: "Podcast",
-          rating,
+          category: "Uncategorized",
+          type,
           videoUrl: videoUrl,
           posterUrl,
           backdropUrl,
@@ -257,37 +241,35 @@ export default function UploadVideoPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Category */}
+          {/* Type — Reel or Podcast */}
           <div>
-            <label className="text-xs text-white/50 block mb-2">Category</label>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="w-full bg-black/40 border border-white/10 rounded px-3 py-2.5 outline-none focus:border-red-600"
-            >
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
+            <label className="text-xs text-white/50 block mb-2">Type</label>
+            <div className="flex gap-2">
+              {(["Reel", "Podcast"] as const).map((t) => {
+                const active = type === t;
+                return (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setType(t)}
+                    className={`flex-1 py-2.5 rounded font-semibold text-sm transition border ${
+                      active
+                        ? "bg-red-600 border-red-600 text-white"
+                        : "bg-black/40 border-white/10 text-white/60 hover:text-white hover:border-white/30"
+                    }`}
+                  >
+                    {t}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-[11px] text-white/40 mt-2">
+              {type === "Reel"
+                ? "Short-form — appears in the Feed"
+                : "Long-form — appears on your podcaster page"}
+            </p>
           </div>
 
-          {/* Rating */}
-          <div>
-            <label className="text-xs text-white/50 block mb-2">Rating</label>
-            <select
-              value={rating}
-              onChange={(e) => setRating(e.target.value)}
-              className="w-full bg-black/40 border border-white/10 rounded px-3 py-2.5 outline-none focus:border-red-600"
-            >
-              {["G", "PG", "PG-13", "TV-14", "TV-MA", "R"].map((r) => (
-                <option key={r} value={r}>
-                  {r}
-                </option>
-              ))}
-            </select>
-          </div>
         </div>
 
         {/* Poster + Backdrop */}
