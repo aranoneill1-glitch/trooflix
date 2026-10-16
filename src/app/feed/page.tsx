@@ -381,19 +381,23 @@ export default function FeedPage() {
   }, []);
 
   // Track which card is most in viewport → drives neighbor preload
+  // NOTE: we use a ref to track activeIndex inside the callback so the
+  // observer doesn't need to re-attach on every scroll position change.
+  const activeIndexRef = useRef(activeIndex);
+  activeIndexRef.current = activeIndex;
+
   useEffect(() => {
     if (videos.length === 0) return;
     const observer = new IntersectionObserver(
       (entries) => {
-        // Pick the entry with the highest intersectionRatio
-        let best = { idx: activeIndex, ratio: 0 };
+        let best = { idx: activeIndexRef.current, ratio: 0 };
         for (const entry of entries) {
           const idx = Number((entry.target as HTMLElement).dataset.index || -1);
           if (idx >= 0 && entry.intersectionRatio > best.ratio) {
             best = { idx, ratio: entry.intersectionRatio };
           }
         }
-        if (best.ratio > 0 && best.idx !== activeIndex) {
+        if (best.ratio > 0 && best.idx !== activeIndexRef.current) {
           setActiveIndex(best.idx);
         }
       },
@@ -401,7 +405,8 @@ export default function FeedPage() {
     );
     sentinelRefs.current.forEach((el) => el && observer.observe(el));
     return () => observer.disconnect();
-  }, [videos.length, activeIndex]);
+    // Only re-create the observer when the videos list itself changes
+  }, [videos.length]);
 
   const creatorById = (id?: number | null) =>
     id ? creators.find((c) => c.id === id) || null : null;
