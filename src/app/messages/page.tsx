@@ -154,33 +154,20 @@ export default function MessagesInbox() {
     <main className="flex flex-col text-white overflow-hidden" style={{ background: "#000000", height: "100dvh" }}>
       <TopBar />
 
-      {/* Pinned title + filters (below TopBar) */}
-      <div className="pt-16 md:pt-20 flex-shrink-0 border-b border-white/5" style={{ background: "#000000" }}>
-        <div className="max-w-3xl mx-auto">
-          <div className="flex items-center justify-between px-4 md:px-6 py-3">
-            <h1 className="text-2xl md:text-3xl font-black">Messages</h1>
-            <button
-              onClick={() => setSearchOpen(true)}
-              className="flex items-center gap-1.5 bg-[#dc2626] hover:bg-red-500 px-3 py-1.5 rounded-full text-sm font-semibold transition"
-            >
-              <Plus size={16} /> New
-            </button>
-          </div>
-          <div className="flex gap-2 px-4 md:px-6 pb-3">
-            {(["all", "unread"] as const).map((f) => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`px-3.5 py-1 rounded-full text-xs font-semibold transition ${
-                  filter === f
-                    ? "bg-[#dc2626]/20 text-red-300"
-                    : "text-white/60 hover:text-white/90"
-                }`}
-              >
-                {f === "all" ? "All" : `Unread${totalUnread ? ` (${totalUnread})` : ""}`}
-              </button>
-            ))}
-          </div>
+      {/* Instagram-style header */}
+      <div
+        className="pt-16 md:pt-20 flex-shrink-0 border-b border-white/5"
+        style={{ background: "#000000" }}
+      >
+        <div className="max-w-3xl mx-auto flex items-center justify-between px-4 md:px-6 py-3">
+          <h1 className="text-2xl md:text-3xl font-black">Messages</h1>
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition"
+            aria-label="New message"
+          >
+            <Plus size={24} className="text-white" />
+          </button>
         </div>
       </div>
 
@@ -216,14 +203,14 @@ export default function MessagesInbox() {
                 <Link
                   key={c.other_user_id}
                   href={`/messages/${c.other_user_id}`}
-                  className="flex items-center gap-3 px-4 md:px-6 py-3 hover:bg-white/[0.03] active:bg-white/[0.05] transition border-b border-white/5"
+                  className="flex items-center gap-4 px-4 md:px-6 py-3.5 hover:bg-white/[0.04] active:bg-white/[0.06] transition"
                 >
-                  {/* Avatar */}
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center overflow-hidden flex-shrink-0">
+                  {/* Bigger avatar — 64px */}
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center overflow-hidden flex-shrink-0">
                     {p?.avatar_url ? (
                       <img src={p.avatar_url} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <span className="text-white font-bold text-lg">
+                      <span className="text-white font-bold text-2xl">
                         {(name[0] || "?").toUpperCase()}
                       </span>
                     )}
@@ -231,32 +218,30 @@ export default function MessagesInbox() {
 
                   {/* Middle */}
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-[15px] leading-tight truncate">
+                    <p
+                      className={`text-[16px] leading-tight truncate ${
+                        unread ? "font-bold text-white" : "font-medium text-white"
+                      }`}
+                    >
                       {name}
                     </p>
-                    <div className="flex items-center gap-1 text-[13px] text-white/55 truncate">
+                    <div className="flex items-center gap-1 text-[14px] text-white/55 truncate mt-0.5">
                       {c.last_from_me && (
-                        <CheckCheck size={14} className="text-sky-400 flex-shrink-0" />
+                        <CheckCheck size={15} className="text-sky-400 flex-shrink-0" />
                       )}
-                      <span className="truncate">{c.last_message}</span>
+                      <span className={`truncate ${unread ? "text-white/80" : ""}`}>
+                        {c.last_message}
+                      </span>
+                      <span className="text-white/40 flex-shrink-0">
+                        · {timeLabel(c.last_at)}
+                      </span>
                     </div>
                   </div>
 
-                  {/* Right: time + unread badge */}
-                  <div className="flex flex-col items-end gap-1 flex-shrink-0 pl-2">
-                    <span
-                      className={`text-xs ${
-                        unread ? "text-[#22c55e] font-semibold" : "text-white/40"
-                      }`}
-                    >
-                      {timeLabel(c.last_at)}
-                    </span>
-                    {unread && (
-                      <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-[#22c55e] text-black text-[11px] font-bold flex items-center justify-center">
-                        {c.unread_count}
-                      </span>
-                    )}
-                  </div>
+                  {/* Blue unread dot (Instagram-style) */}
+                  {unread && (
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#3797f0] flex-shrink-0" />
+                  )}
                 </Link>
               );
             })}
