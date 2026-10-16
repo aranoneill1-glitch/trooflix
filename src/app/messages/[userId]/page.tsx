@@ -8,7 +8,6 @@ import {
   Send,
   Check,
   CheckCheck,
-  Image as ImageIcon,
   Camera,
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
@@ -483,16 +482,6 @@ export default function ThreadPage() {
               className="flex-1 bg-transparent border-none outline-none resize-none max-h-32 placeholder:text-white/40 text-white py-0.5"
               style={{ minHeight: "20px", fontSize: "16px" }}
             />
-            {/* Image picker */}
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              className="flex-shrink-0 text-white/60 hover:text-white transition disabled:opacity-50"
-              aria-label="Send image"
-            >
-              <ImageIcon size={20} />
-            </button>
             {/* GIF badge */}
             <button
               type="button"
