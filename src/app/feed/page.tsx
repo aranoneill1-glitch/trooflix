@@ -248,7 +248,7 @@ function ReelCard({
         playsInline
         autoPlay
         preload="auto"
-        className="absolute inset-0 w-full h-full object-cover bg-black"
+        className="absolute inset-0 w-full h-full object-contain bg-black"
         onClick={onTap}
       />
 
