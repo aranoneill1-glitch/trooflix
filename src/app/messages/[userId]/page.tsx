@@ -491,47 +491,49 @@ export default function ThreadPage() {
             }}
           />
 
-          {/* Instagram-style input pill: input + camera + GIF inside */}
-          <div className="flex-1 flex items-end gap-2 bg-[#2a3942] rounded-full px-3 py-1.5">
+          {/* + button outside the pill (WhatsApp-style attach) */}
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="flex-shrink-0 w-10 h-10 flex items-center justify-center text-white/80 hover:text-white transition disabled:opacity-50"
+            aria-label="Attach image"
+          >
+            {uploading ? (
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            )}
+          </button>
+
+          {/* Input pill */}
+          <div className="flex-1 flex items-end gap-2 bg-[#2a3942] rounded-full px-4 py-2">
             <textarea
               ref={inputRef}
               value={body}
               onChange={(e) => setBody(e.target.value)}
               onKeyDown={onKeyDown}
-              placeholder="Message..."
+              placeholder="Message"
               rows={1}
               maxLength={2000}
-              className="flex-1 bg-transparent border-none outline-none resize-none max-h-32 placeholder:text-white/40 py-1"
-              style={{ minHeight: "24px", fontSize: "16px" }}
+              className="flex-1 bg-transparent border-none outline-none resize-none max-h-32 placeholder:text-white/50 py-1"
+              style={{ minHeight: "22px", fontSize: "16px" }}
             />
-            {/* Camera / image upload inside the pill */}
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              className="flex-shrink-0 text-white/70 hover:text-white transition disabled:opacity-50"
-              aria-label="Add image"
-            >
-              {uploading ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M3 7a2 2 0 0 1 2-2h2l2-2h6l2 2h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                  <circle cx="12" cy="12" r="3.5" />
-                </svg>
-              )}
-            </button>
-            {/* GIF inside the pill */}
+            {/* GIF badge inside pill */}
             <button
               type="button"
               onClick={() => setGifOpen(true)}
-              className="flex-shrink-0 border border-white/40 rounded-md px-1.5 py-0.5 text-[10px] font-black tracking-tight text-white/80 hover:text-white hover:border-white transition"
+              className="flex-shrink-0 border border-white/50 rounded px-1.5 py-0.5 text-[10px] font-black tracking-tight text-white/80 hover:text-white hover:border-white transition"
               aria-label="Send a GIF"
             >
               GIF
             </button>
           </div>
 
+          {/* Red send circle */}
           <button
             onClick={send}
             disabled={sending || !body.trim()}
