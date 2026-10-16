@@ -9,6 +9,7 @@ import MobileBottomNav from "@/components/MobileBottomNav";
 import UserFollowButton from "@/components/UserFollowButton";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import { createClient } from "@/utils/supabase/client";
+import { getCachedUser } from "@/lib/cache";
 
 type User = {
   user_id: string;
@@ -41,8 +42,8 @@ export default function UserProfilePage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => {
-      setMeId(data.user?.id || null);
+    getCachedUser().then((user) => {
+      setMeId(user?.id || null);
     });
   }, []);
 

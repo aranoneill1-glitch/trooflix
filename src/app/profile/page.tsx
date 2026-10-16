@@ -21,6 +21,7 @@ import MobileBottomNav from "@/components/MobileBottomNav";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import { createClient } from "@/utils/supabase/client";
 import { clearUserCache } from "@/lib/cache";
+import { getCachedUser } from "@/lib/cache";
 
 type Profile = {
   user_id: string;
@@ -70,14 +71,14 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) {
+    getCachedUser().then((user) => {
+      if (!user) {
         router.push("/login");
         return;
       }
-      const uid = data.user.id;
+      const uid = user.id;
       setUserId(uid);
-      setEmail(data.user.email || "");
+      setEmail(user.email || "");
 
       Promise.all([
         fetch(`/api/profile?user_id=${uid}`).then((r) => r.json()),

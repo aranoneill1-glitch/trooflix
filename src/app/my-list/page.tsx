@@ -9,6 +9,7 @@ import MobileBottomNav from "@/components/MobileBottomNav";
 import BitChutePlayer from "@/components/BitChutePlayer";
 import VideoPlayer from "@/components/VideoPlayer";
 import { createClient } from "@/utils/supabase/client";
+import { getCachedUser } from "@/lib/cache";
 
 type Video = {
   id: number;
@@ -36,7 +37,7 @@ export default function MyListPage() {
   useEffect(() => {
     const load = async () => {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await getCachedUser();
       setSignedIn(!!user);
 
       if (!user) {

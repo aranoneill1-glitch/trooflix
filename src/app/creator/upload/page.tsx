@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Upload, Image as ImageIcon, Check, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
+import { getCachedUser } from "@/lib/cache";
 
 const CATEGORIES = [
   "History",
@@ -124,8 +125,8 @@ export default function UploadVideoPage() {
     setSubmitting(true);
     try {
       const supabase = createClient();
-      const { data } = await supabase.auth.getUser();
-      if (!data.user) {
+      const user = await getCachedUser();
+      if (!user) {
         setError("Not signed in.");
         setSubmitting(false);
         return;
@@ -135,7 +136,7 @@ export default function UploadVideoPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId: data.user.id,
+          userId: user.id,
           title: title.trim(),
           description: description.trim(),
           category,

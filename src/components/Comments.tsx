@@ -6,6 +6,7 @@ import { ThumbsUp, MoreVertical, Trash2, Send, Image as ImageIcon } from "lucide
 import { createClient } from "@/utils/supabase/client";
 import GifPicker from "@/components/GifPicker";
 import VerifiedBadge from "@/components/VerifiedBadge";
+import { getCachedUser } from "@/lib/cache";
 
 type Comment = {
   id: number;
@@ -83,11 +84,11 @@ export default function Comments({ videoId }: { videoId: number }) {
   // Load user + comments + liked comment IDs
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user) {
-        setUser({ id: data.user.id, email: data.user.email || "" });
+    getCachedUser().then((user) => {
+      if (user) {
+        setUser({ id: user.id, email: user.email || "" });
         // Fetch liked comment IDs
-        fetch(`/api/comment-likes?user_id=${data.user.id}&video_id=${videoId}`)
+        fetch(`/api/comment-likes?user_id=${user.id}&video_id=${videoId}`)
           .then((r) => r.json())
           .then((d) => setLikedCommentIds(Array.isArray(d.ids) ? d.ids : []))
           .catch(() => {});

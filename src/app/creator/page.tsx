@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Plus, Edit3, Trash2, Play } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
+import { getCachedUser } from "@/lib/cache";
 
 type Video = {
   id: number;
@@ -25,10 +26,10 @@ export default function CreatorDashboard() {
 
   const load = async () => {
     const supabase = createClient();
-    const { data } = await supabase.auth.getUser();
-    if (!data.user) return;
+    const user = await getCachedUser();
+    if (!user) return;
 
-    const cr = await fetch(`/api/me/creator?user_id=${data.user.id}`).then((r) =>
+    const cr = await fetch(`/api/me/creator?user_id=${user.id}`).then((r) =>
       r.json()
     );
     if (!cr.creator) {

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Home as HomeIcon, Play, Mic, MessageCircle } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
+import { getCachedUser } from "@/lib/cache";
 
 const TABS = [
   { icon: HomeIcon, label: "Home", path: "/" },
@@ -21,13 +22,13 @@ export default function MobileBottomNav() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) {
+    getCachedUser().then((user) => {
+      if (!user) {
         setSignedIn(false);
         return;
       }
       setSignedIn(true);
-      fetch(`/api/profile?user_id=${data.user.id}`)
+      fetch(`/api/profile?user_id=${user.id}`)
         .then((r) => r.json())
         .then((d) => {
           if (d.profile?.avatar_url) setAvatarUrl(d.profile.avatar_url);

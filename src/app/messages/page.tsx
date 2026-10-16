@@ -8,6 +8,7 @@ import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { createClient } from "@/utils/supabase/client";
 import { useRealtimeDMs } from "@/hooks/useRealtimeDMs";
+import { getCachedUser } from "@/lib/cache";
 
 type Conversation = {
   other_user_id: string;
@@ -68,13 +69,13 @@ export default function MessagesInbox() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) {
+    getCachedUser().then((user) => {
+      if (!user) {
         router.push("/login");
         return;
       }
-      setUserId(data.user.id);
-      loadInbox(data.user.id);
+      setUserId(user.id);
+      loadInbox(user.id);
     });
   }, [router]);
 

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Check, Plus, X } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
+import { getCachedUser } from "@/lib/cache";
 
 // Global cache
 let cachedIds: number[] | null = null;
@@ -14,7 +15,7 @@ async function getUserId(): Promise<string | null> {
   if (cachedUserId !== undefined) return cachedUserId;
   try {
     const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getCachedUser();
     cachedUserId = user?.id || null;
     return cachedUserId;
   } catch {

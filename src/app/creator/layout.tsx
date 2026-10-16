@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { clearUserCache } from "@/lib/cache";
+import { getCachedUser } from "@/lib/cache";
 
 type Creator = {
   id: number;
@@ -42,13 +43,13 @@ export default function CreatorLayout({
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) {
+    getCachedUser().then((user) => {
+      if (!user) {
         router.replace("/login");
         setState("unauth");
         return;
       }
-      fetch(`/api/me/creator?user_id=${data.user.id}`)
+      fetch(`/api/me/creator?user_id=${user.id}`)
         .then((r) => r.json())
         .then((d) => {
           if (!d.creator) {

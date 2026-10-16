@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Send, X, MessageSquare } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
+import { getCachedUser } from "@/lib/cache";
 
 type Props = {
   creatorId: number;
@@ -23,7 +24,7 @@ export default function MessageComposer({ creatorId, creatorName }: Props) {
     supabase.auth
       .getUser()
       .then(({ data }) => {
-        setUserId(data.user?.id || null);
+        setUserId(user?.id || null);
         setChecked(true);
       })
       .catch(() => setChecked(true));

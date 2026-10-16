@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Check, Plus, X } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
+import { getCachedUser } from "@/lib/cache";
 
 // Global cache: "me|target" → boolean
 const cache = new Map<string, boolean>();
@@ -12,7 +13,7 @@ async function getMyId(): Promise<string | null> {
   if (myId !== undefined) return myId;
   try {
     const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getCachedUser();
     myId = user?.id || null;
     return myId;
   } catch {

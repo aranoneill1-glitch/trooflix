@@ -7,6 +7,7 @@ import { Camera, Check, X, ChevronLeft } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { createClient } from "@/utils/supabase/client";
+import { getCachedUser } from "@/lib/cache";
 
 const CATEGORIES = [
   "History",
@@ -52,13 +53,13 @@ export default function ApplyPage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) {
+    getCachedUser().then((user) => {
+      if (!user) {
         router.push("/login");
         return;
       }
-      setUserId(data.user.id);
-      fetch(`/api/creator-applications?user_id=${data.user.id}`)
+      setUserId(user.id);
+      fetch(`/api/creator-applications?user_id=${user.id}`)
         .then((r) => r.json())
         .then((d) => {
           setExisting(d.application || null);

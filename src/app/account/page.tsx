@@ -8,6 +8,7 @@ import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { createClient } from "@/utils/supabase/client";
 import { clearUserCache } from "@/lib/cache";
+import { getCachedUser } from "@/lib/cache";
 
 export default function AccountPage() {
   const router = useRouter();
@@ -28,12 +29,12 @@ export default function AccountPage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) {
+    getCachedUser().then((user) => {
+      if (!user) {
         setLoading(false);
         return;
       }
-      const u = { id: data.user.id, email: data.user.email || "" };
+      const u = { id: user.id, email: user.email || "" };
       setUser(u);
 
       fetch(`/api/profile?user_id=${u.id}`)

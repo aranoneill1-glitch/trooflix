@@ -8,6 +8,7 @@ import { createClient } from "@/utils/supabase/client";
 import { useRealtimeDMs } from "@/hooks/useRealtimeDMs";
 import GifPicker from "@/components/GifPicker";
 import VerifiedBadge from "@/components/VerifiedBadge";
+import { getCachedUser } from "@/lib/cache";
 
 type Message = {
   id: number;
@@ -83,12 +84,12 @@ export default function ThreadPage() {
   // Auth
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) {
+    getCachedUser().then((user) => {
+      if (!user) {
         router.push("/login");
         return;
       }
-      setMe(data.user.id);
+      setMe(user.id);
     });
   }, [router]);
 

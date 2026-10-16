@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { User } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
+import { getCachedUser } from "@/lib/cache";
 
 type UserInfo = {
   id: string;
@@ -20,18 +21,18 @@ export default function UserMenu() {
     const supabase = createClient();
 
     const loadUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (data.user) {
+      const user = await getCachedUser();
+      if (user) {
         const base: UserInfo = {
-          id: data.user.id,
-          email: data.user.email || "",
-          initial: (data.user.email || "?")[0].toUpperCase(),
+          id: user.id,
+          email: user.email || "",
+          initial: (user.email || "?")[0].toUpperCase(),
         };
         setUser(base);
         setLoading(false);
 
         try {
-          const r = await fetch(`/api/profile?user_id=${data.user.id}`);
+          const r = await fetch(`/api/profile?user_id=${user.id}`);
           const d = await r.json();
           if (d.profile) {
             setUser({ ...base, avatarUrl: d.profile.avatar_url || null });
