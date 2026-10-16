@@ -537,7 +537,7 @@ export default function FeedPage() {
             exit={{ opacity: 0, scale: 0.9 }}
             transition={{ duration: 0.25 }}
             onClick={enableSound}
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 flex items-center gap-2.5 bg-black/40 backdrop-blur-md border border-white/25 text-white font-semibold text-[15px] px-6 py-3 rounded-full shadow-2xl hover:bg-black/60 hover:border-white/50 active:scale-95 transition"
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 flex items-center gap-2.5 bg-black/40 backdrop-blur-md border border-white/25 text-white font-semibold text-[15px] px-6 py-3 rounded-full shadow-2xl hover:bg-black/60 hover:border-white/50 active:scale-95 transition"
           >
             <VolumeX size={18} className="opacity-90" />
             <span>Tap for sound</span>
