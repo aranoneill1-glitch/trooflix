@@ -419,17 +419,41 @@ function ExpandableDescription({ text }: { text: string }) {
   const [overflowing, setOverflowing] = useState(false);
   const ref = useRef<HTMLParagraphElement>(null);
 
-  // Measure whether the text overflows the 2-line clamp
+  // Measure overflow reliably — temporarily unclamp and compare heights.
+  // (Safari's -webkit-line-clamp breaks the simpler scrollHeight check.)
   useEffect(() => {
     const el = ref.current;
-    if (!el) return;
-    const check = () => {
-      if (expanded) return;
-      setOverflowing(el.scrollHeight > el.clientHeight + 1);
+    if (!el || expanded) return;
+
+    const measure = () => {
+      const original = el.style.cssText;
+      const wasClass = el.className;
+
+      // Temporarily remove the clamp to read full height
+      el.style.display = "block";
+      el.style.webkitLineClamp = "unset";
+      (el.style as any).WebkitLineClamp = "unset";
+      el.classList.remove("line-clamp-2");
+
+      const fullHeight = el.scrollHeight;
+
+      // Restore
+      el.style.cssText = original;
+      el.className = wasClass;
+
+      // 2-line height ≈ line-height * 2. If full > that, it overflows.
+      const lineHeight = parseFloat(getComputedStyle(el).lineHeight) || 16;
+      const clamped = lineHeight * 2;
+      setOverflowing(fullHeight > clamped + 2);
     };
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
+
+    // Run after fonts + layout settle
+    const t = setTimeout(measure, 50);
+    window.addEventListener("resize", measure);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener("resize", measure);
+    };
   }, [text, expanded]);
 
   return (
