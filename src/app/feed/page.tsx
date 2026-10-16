@@ -419,17 +419,15 @@ function ExpandableDescription({ text }: { text: string }) {
   const [overflowing, setOverflowing] = useState(false);
   const ref = useRef<HTMLParagraphElement>(null);
 
-  // Measure overflow reliably — temporarily unclamp and compare heights.
-  // (Safari's -webkit-line-clamp breaks the simpler scrollHeight check.)
   useEffect(() => {
     const el = ref.current;
-    if (!el || expanded) return;
+    if (!el) return;
 
     const measure = () => {
-      const original = el.style.cssText;
-      const wasClass = el.className;
+      const prevDisplay = el.style.display;
+      const prevClamp = el.style.webkitLineClamp;
+      const prevClass = el.className;
 
-      // Temporarily remove the clamp to read full height
       el.style.display = "block";
       el.style.webkitLineClamp = "unset";
       (el.style as any).WebkitLineClamp = "unset";
@@ -437,17 +435,14 @@ function ExpandableDescription({ text }: { text: string }) {
 
       const fullHeight = el.scrollHeight;
 
-      // Restore
-      el.style.cssText = original;
-      el.className = wasClass;
+      el.style.display = prevDisplay;
+      el.style.webkitLineClamp = prevClamp;
+      el.className = prevClass;
 
-      // 2-line height ≈ line-height * 2. If full > that, it overflows.
       const lineHeight = parseFloat(getComputedStyle(el).lineHeight) || 16;
-      const clamped = lineHeight * 2;
-      setOverflowing(fullHeight > clamped + 2);
+      setOverflowing(fullHeight > lineHeight * 2 + 2);
     };
 
-    // Run after fonts + layout settle
     const t = setTimeout(measure, 50);
     window.addEventListener("resize", measure);
     return () => {
@@ -457,48 +452,45 @@ function ExpandableDescription({ text }: { text: string }) {
   }, [text, expanded]);
 
   return (
-    <p
-      ref={ref}
-      className={`text-xs text-white/80 leading-snug relative ${
-        expanded ? "" : "line-clamp-2"
-      }`}
-      style={{ wordBreak: "break-word" }}
-    >
-      {text}
-      {/* Inline "... more" or " ... less" */}
+    <div className="relative">
+      <p
+        ref={ref}
+        className={`text-xs text-white/80 leading-snug ${
+          expanded ? "" : "line-clamp-2"
+        }`}
+        style={{ wordBreak: "break-word" }}
+      >
+        {text}
+      </p>
+
       {!expanded && overflowing && (
-        <>
-          {" "}
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setExpanded(true);
-            }}
-            className="text-white/50 font-medium hover:text-white/90 transition"
-            aria-label="Show more"
-          >
-            ... more
-          </button>
-        </>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setExpanded(true);
+          }}
+          className="absolute bottom-0 right-0 pl-6 text-xs text-white/60 font-medium bg-gradient-to-l from-black via-black to-transparent hover:text-white"
+          aria-label="Show more"
+        >
+          ... more
+        </button>
       )}
+
       {expanded && (
-        <>
-          {" "}
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setExpanded(false);
-            }}
-            className="text-white/50 font-medium hover:text-white/90 transition"
-            aria-label="Show less"
-          >
-            ... less
-          </button>
-        </>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setExpanded(false);
+          }}
+          className="mt-0.5 text-xs text-white/50 font-medium hover:text-white/90 transition"
+          aria-label="Show less"
+        >
+          ... less
+        </button>
       )}
-    </p>
+    </div>
   );
 }
 
