@@ -14,6 +14,7 @@ import VerifiedBadge from "@/components/VerifiedBadge";
 import CommentDrawer from "@/components/CommentDrawer";
 import FeedFullscreenPlayer from "@/components/FeedFullscreenPlayer";
 import { MessageCircle } from "lucide-react";
+import { getCachedVideos, getCachedCreators } from "@/lib/cache";
 
 // ---- Global single-playback lock: only ONE feed video plays at a time ----
 let currentPlayer: HTMLVideoElement | null = null;
@@ -373,8 +374,8 @@ export default function FeedPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch("/api/videos").then((r) => r.json()),
-      fetch("/api/creators").then((r) => r.json()),
+      getCachedVideos(),
+      getCachedCreators(),
     ])
       .then(([vids, creats]) => {
         const list: Video[] = Array.isArray(vids) ? vids : [];

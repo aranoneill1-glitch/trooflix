@@ -12,6 +12,7 @@ import MessageComposer from "@/components/MessageComposer";
 import ViewCount from "@/components/ViewCount";
 import BitChutePlayer from "@/components/BitChutePlayer";
 import VideoPlayer from "@/components/VideoPlayer";
+import { getCachedVideos, getCachedCreators } from "@/lib/cache";
 
 type Video = {
   id: number;
@@ -65,7 +66,7 @@ export default function PodcasterProfilePage() {
   const [followerCount, setFollowerCount] = useState<number | null>(null);
 
   useEffect(() => {
-    fetch("/api/creators")
+    getCachedCreators()
       .then((r) => r.json())
       .then((all: Creator[]) => {
         const found = all.find((c) => c.slug === slug);
@@ -79,7 +80,7 @@ export default function PodcasterProfilePage() {
           .then((r) => r.json())
           .then((d) => setFollowerCount(d.count ?? 0))
           .catch(() => {});
-        return fetch("/api/videos")
+        return getCachedVideos()
           .then((r) => r.json())
           .then((allVideos: Video[]) => {
             setVideos(allVideos.filter((v) => v.creatorId === found.id));

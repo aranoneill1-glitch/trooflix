@@ -9,6 +9,7 @@ import MobileBottomNav from "@/components/MobileBottomNav";
 import { createClient } from "@/utils/supabase/client";
 import { clearUserCache } from "@/lib/cache";
 import { getCachedUser } from "@/lib/cache";
+import { getCachedVideos, getCachedCreators } from "@/lib/cache";
 
 export default function AccountPage() {
   const router = useRouter();
@@ -56,7 +57,7 @@ export default function AccountPage() {
         .then((d) => {
           const ids = Array.isArray(d.ids) ? d.ids : [];
           if (ids.length === 0) return;
-          return fetch("/api/creators")
+          return getCachedCreators()
             .then((r) => r.json())
             .then((creators: any[]) => {
               setFollowedCreators(

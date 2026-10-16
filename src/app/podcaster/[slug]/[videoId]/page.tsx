@@ -10,6 +10,7 @@ import LikeButton from "@/components/LikeButton";
 import ViewCount, { trackView } from "@/components/ViewCount";
 import SaveButton from "@/components/SaveButton";
 import Comments from "@/components/Comments";
+import { getCachedVideos, getCachedCreators } from "@/lib/cache";
 
 type Video = {
   id: number;
@@ -73,8 +74,8 @@ export default function WatchPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch("/api/videos").then((r) => r.json()),
-      fetch("/api/creators").then((r) => r.json()),
+      getCachedVideos(),
+      getCachedCreators(),
     ])
       .then(([vids, creats]) => {
         const allVideos: Video[] = Array.isArray(vids) ? vids : [];

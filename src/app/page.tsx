@@ -33,6 +33,7 @@ import SearchResults from "@/components/SearchResults";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { getAllProgress } from "@/lib/progress";
 import SkeletonRow from "@/components/SkeletonRow";
+import { getCachedVideos, getCachedCreators } from "@/lib/cache";
 
 type Video = {
   id: number;
@@ -109,9 +110,8 @@ export default function Home() {
   const [pendingVideo, setPendingVideo] = useState<Video | null>(null);
 
   useEffect(() => {
-    fetch("/api/creators").then((r) => r.json()).then(setCreators).catch(() => {});
-    fetch("/api/videos")
-      .then((r) => r.json())
+    getCachedCreators().then(setCreators).catch(() => {});
+    getCachedVideos()
       .then((data) => {
         const all = Array.isArray(data) ? data : [];
         setVideos(all);

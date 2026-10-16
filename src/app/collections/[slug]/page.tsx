@@ -7,6 +7,7 @@ import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import BitChutePlayer from "@/components/BitChutePlayer";
 import VideoPlayer from "@/components/VideoPlayer";
+import { getCachedVideos, getCachedCreators } from "@/lib/cache";
 
 type Video = {
   id: number;
@@ -47,7 +48,7 @@ export default function CollectionPage() {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    fetch("/api/videos")
+    getCachedVideos()
       .then((r) => r.json())
       .then((data) => {
         const filtered = Array.isArray(data)

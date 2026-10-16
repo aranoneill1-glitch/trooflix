@@ -10,6 +10,7 @@ import BitChutePlayer from "@/components/BitChutePlayer";
 import VideoPlayer from "@/components/VideoPlayer";
 import { createClient } from "@/utils/supabase/client";
 import { getCachedUser } from "@/lib/cache";
+import { getCachedVideos, getCachedCreators } from "@/lib/cache";
 
 type Video = {
   id: number;
@@ -47,7 +48,7 @@ export default function MyListPage() {
 
       const [idsRes, vidsRes] = await Promise.all([
         fetch(`/api/my-list?user_id=${user.id}`).then((r) => r.json()),
-        fetch("/api/videos").then((r) => r.json()),
+        getCachedVideos(),
       ]);
 
       const ids: number[] = Array.isArray(idsRes.ids) ? idsRes.ids : [];

@@ -5,6 +5,7 @@ import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import { useSearch } from "@/context/SearchContext";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import { getCachedVideos, getCachedCreators } from "@/lib/cache";
 
 type Creator = {
   id: number;
@@ -20,7 +21,7 @@ export default function PodcastsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/creators")
+    getCachedCreators()
       .then((r) => r.json())
       .then((d) => {
         setCreators(Array.isArray(d) ? d : []);

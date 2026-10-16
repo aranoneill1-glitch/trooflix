@@ -7,6 +7,7 @@ import { ChevronLeft } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import VerifiedBadge from "@/components/VerifiedBadge";
+import { getCachedVideos, getCachedCreators } from "@/lib/cache";
 
 type Podcaster = {
   id: number;
@@ -41,7 +42,7 @@ export default function FollowingPage() {
       fetch(`/api/follows?user_id=${userId}`)
         .then((r) => r.json())
         .catch(() => ({ ids: [] })),
-      fetch("/api/creators")
+      getCachedCreators()
         .then((r) => r.json())
         .catch(() => []),
     ]).then(async ([userFollows, podcasterFollows, creators]) => {
