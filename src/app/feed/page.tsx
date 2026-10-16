@@ -7,20 +7,16 @@ import {
   Heart,
   MessageCircle,
   Send,
-  Bookmark,
   Volume2,
   VolumeX,
-  Play,
 } from "lucide-react";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import SaveButton from "@/components/SaveButton";
 import LikeButton from "@/components/LikeButton";
 import ViewCount, { trackView } from "@/components/ViewCount";
-import FollowButton from "@/components/FollowButton";
 import CommentDrawer from "@/components/CommentDrawer";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import { getCachedVideos, getCachedCreators } from "@/lib/cache";
-import { preloadWindow, releaseVideo } from "@/lib/videoPreloader";
 
 const TROOFLIX_LOGO =
   "https://pub-ce2ee455d2b04abc9964046e3ff970f0.r2.dev/creators/1792093646889-trooflix-logo.jpg";
@@ -31,14 +27,9 @@ type Video = {
   description: string;
   category: string;
   type: string;
-  featured: boolean;
   bitchuteUrl: string;
   posterUrl: string;
   backdropUrl: string;
-  year: number;
-  rating: string;
-  match: number;
-  duration: string;
   creatorId?: number | null;
   createdAt?: string;
 };
@@ -61,18 +52,7 @@ function timeAgo(iso?: string): string {
   return `${Math.floor(diff / 604800)}w`;
 }
 
-const MEDIA_EXT = /\.(gif|png|jpe?g|webp|avif)(\?|$)/i;
-function isMediaUrl(text: string): boolean {
-  if (!text) return false;
-  const t = text.trim();
-  if (!t.startsWith("http")) return false;
-  return MEDIA_EXT.test(t);
-}
-
-// ---------------------------------------------------------------------------
 // Comment count cache
-// ---------------------------------------------------------------------------
-
 let cachedCommentCounts: Record<number, number> | null = null;
 let commentCountsInflight: Promise<Record<number, number>> | null = null;
 const commentCountListeners = new Set<(counts: Record<number, number>) => void>();
@@ -139,7 +119,7 @@ function CommentCountStacked({
 }
 
 // ---------------------------------------------------------------------------
-// Reel card — full-screen, snap, one at a time
+// ReelCard — pure presentational, driven by parent's active index
 // ---------------------------------------------------------------------------
 
 function ReelCard({
@@ -150,7 +130,6 @@ function ReelCard({
   onOpenComments,
   registerTap,
   isActive,
-  shouldRenderVideo,
 }: {
   video: Video;
   creator: Creator | null;
@@ -159,13 +138,11 @@ function ReelCard({
   onOpenComments: () => void;
   registerTap: (fn: () => void) => void;
   isActive: boolean;
-  shouldRenderVideo: boolean;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [heartBurst, setHeartBurst] = useState<{ x: number; y: number; id: number } | null>(null);
   const [isLandscape, setIsLandscape] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [duration, setDuration] = useState(0);
   const [scrubbing, setScrubbing] = useState(false);
   const progressBarRef = useRef<HTMLDivElement>(null);
   const lastTapRef = useRef(0);
@@ -174,7 +151,7 @@ function ReelCard({
   const slug = creator?.slug;
   const handle = slug ? `@${slug.replace(/-/g, "")}` : "@trooflix";
 
-  // Register play/pause handler for parent-driven taps
+  // Register tap
   useEffect(() => {
     registerTap(() => {
       const v = videoRef.current;
@@ -184,51 +161,27 @@ function ReelCard({
     });
   }, [registerTap]);
 
-  // Autoplay when this card is centered; pause + reset when it's not
+  // Play/pause — driven purely by isActive + muted
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
 
-    // HARD mute before ANY other operation
-    v.muted = true;
-    if (isActive && !muted) {
-      // User unmuted globally → only now allow sound
-      v.muted = false;
-    }
-
     if (isActive) {
-      const promise = v.play();
-      if (promise) {
-        promise.catch(() => {
-          // Autoplay-with-sound blocked → force muted + retry
+      v.muted = muted;
+      const p = v.play();
+      if (p && p.catch) {
+        p.catch(() => {
           v.muted = true;
           v.play().catch(() => {});
         });
       }
     } else {
       v.pause();
+      v.muted = true;
       try { v.currentTime = 0; } catch {}
       setProgress(0);
     }
-  }, [isActive, muted, shouldRenderVideo]);
-
-  // Sound guard — if the video ever starts playing while we expect muted,
-  // slam it back to muted immediately. Runs on every 'playing' event.
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    const onPlaying = () => {
-      if (!isActive || muted) {
-        v.muted = true;
-      }
-    };
-    v.addEventListener("playing", onPlaying);
-    v.addEventListener("play", onPlaying);
-    return () => {
-      v.removeEventListener("playing", onPlaying);
-      v.removeEventListener("play", onPlaying);
-    };
-  }, [isActive, muted, shouldRenderVideo]);
+  }, [isActive, muted]);
 
   const onTap = (e: React.MouseEvent | React.TouchEvent) => {
     const target = e.target as HTMLElement;
@@ -238,7 +191,7 @@ function ReelCard({
     const delta = now - lastTapRef.current;
 
     if (delta < 300 && delta > 0) {
-      // Double-tap → like + heart burst
+      // Double-tap → like
       lastTapRef.current = 0;
       const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
       const cx = "changedTouches" in e ? e.changedTouches[0].clientX : (e as React.MouseEvent).clientX;
@@ -270,7 +223,6 @@ function ReelCard({
     else navigator.clipboard.writeText(url);
   };
 
-  // Seek on click or drag across the progress bar
   const seekFromClientX = (clientX: number) => {
     const bar = progressBarRef.current;
     const v = videoRef.current;
@@ -279,28 +231,6 @@ function ReelCard({
     const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
     v.currentTime = ratio * v.duration;
     setProgress(ratio);
-  };
-
-  const onProgressClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    seekFromClientX(e.clientX);
-  };
-
-  const onProgressTouchStart = (e: React.TouchEvent) => {
-    e.stopPropagation();
-    setScrubbing(true);
-    seekFromClientX(e.touches[0].clientX);
-  };
-
-  const onProgressTouchMove = (e: React.TouchEvent) => {
-    e.stopPropagation();
-    if (!scrubbing) return;
-    seekFromClientX(e.touches[0].clientX);
-  };
-
-  const onProgressTouchEnd = (e: React.TouchEvent) => {
-    e.stopPropagation();
-    setScrubbing(false);
   };
 
   return (
@@ -312,45 +242,32 @@ function ReelCard({
         height: "calc(100dvh - 64px - env(safe-area-inset-bottom))",
       }}
     >
-      {/* Video — only rendered for cards in the active window */}
-      {shouldRenderVideo ? (
-        <video
-          ref={(el) => {
-            videoRef.current = el;
-            if (el) {
-              // Set muted IMMEDIATELY on mount, before React applies props
-              el.muted = muted;
-            }
-          }}
-          data-video-id={video.id}
-          src={video.bitchuteUrl}
-          muted={muted}
-          loop
-          playsInline
-          preload="auto"
+      <video
+        ref={videoRef}
+        data-video-id={video.id}
+        src={video.bitchuteUrl}
+        muted
+        loop
+        playsInline
+        preload="auto"
         onLoadedMetadata={(e) => {
           const v = e.currentTarget;
           if (v.videoWidth && v.videoHeight) {
-            // Landscape or square → contain (letterbox)
-            // Portrait → cover (fill wall-to-wall)
             setIsLandscape(v.videoWidth / v.videoHeight >= 1);
           }
-          setDuration(v.duration || 0);
         }}
         onTimeUpdate={(e) => {
-          // Fallback in case RAF is throttled (background tab, low power mode)
           if (scrubbing) return;
           const v = e.currentTarget;
-          if (v.duration) setProgress(v.currentTime / v.duration);
+          if (v.duration && isFinite(v.duration)) {
+            setProgress(v.currentTime / v.duration);
+          }
         }}
-          className={`absolute inset-0 w-full h-full bg-black ${
-            isLandscape ? "object-contain" : "object-cover"
-          }`}
-          onClick={onTap}
-        />
-      ) : (
-        <div className="absolute inset-0 bg-black" onClick={onTap} />
-      )}
+        className={`absolute inset-0 w-full h-full bg-black ${
+          isLandscape ? "object-contain" : "object-cover"
+        }`}
+        onClick={onTap}
+      />
 
       {/* Right rail */}
       <div className="absolute right-3 bottom-24 z-20 flex flex-col items-center gap-5">
@@ -361,25 +278,16 @@ function ReelCard({
         >
           {muted ? <VolumeX size={28} /> : <Volume2 size={28} />}
         </button>
-
         <div data-reel-like={video.id}>
           <LikeButton videoId={video.id} size={30} stacked />
         </div>
-
         <CommentCountStacked videoId={video.id} onClick={onOpenComments} />
-
-        <button
-          onClick={share}
-          className="flex flex-col items-center text-white"
-          aria-label="Share"
-        >
+        <button onClick={share} className="flex flex-col items-center text-white" aria-label="Share">
           <Send size={28} />
         </button>
-
         <SaveButton videoId={video.id} variant="icon" />
       </div>
 
-      {/* Heart burst */}
       <AnimatePresence>
         {heartBurst && (
           <motion.div
@@ -396,13 +304,13 @@ function ReelCard({
         )}
       </AnimatePresence>
 
-      {/* Progress bar — Instagram-style, tappable + draggable */}
+      {/* Progress bar */}
       <div
         ref={progressBarRef}
-        onClick={onProgressClick}
-        onTouchStart={onProgressTouchStart}
-        onTouchMove={onProgressTouchMove}
-        onTouchEnd={onProgressTouchEnd}
+        onClick={(e) => { e.stopPropagation(); seekFromClientX(e.clientX); }}
+        onTouchStart={(e) => { e.stopPropagation(); setScrubbing(true); seekFromClientX(e.touches[0].clientX); }}
+        onTouchMove={(e) => { e.stopPropagation(); if (scrubbing) seekFromClientX(e.touches[0].clientX); }}
+        onTouchEnd={(e) => { e.stopPropagation(); setScrubbing(false); }}
         className="absolute left-0 right-0 bottom-0 z-30 h-6 flex items-end cursor-pointer"
         style={{ pointerEvents: "auto" }}
       >
@@ -417,9 +325,8 @@ function ReelCard({
         </div>
       </div>
 
-      {/* Bottom info — creator, caption, views */}
+      {/* Bottom info */}
       <div className="absolute bottom-0 left-0 right-0 z-20 p-4 pb-6 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none">
-        {/* Creator row */}
         <div className="flex items-center gap-3 mb-3 pointer-events-auto">
           <Link href={slug ? `/podcaster/${slug}` : "/"} className="flex items-center gap-2 min-w-0">
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-600 to-red-900 overflow-hidden flex-shrink-0 flex items-center justify-center">
@@ -428,9 +335,7 @@ function ReelCard({
               ) : !creator ? (
                 <img src={TROOFLIX_LOGO} alt="" className="w-full h-full object-cover" />
               ) : (
-                <span className="text-white font-bold text-sm">
-                  {name[0]?.toUpperCase() || "?"}
-                </span>
+                <span className="text-white font-bold text-sm">{name[0]?.toUpperCase() || "?"}</span>
               )}
             </div>
             <div className="min-w-0">
@@ -445,14 +350,10 @@ function ReelCard({
 
         <div className="max-w-[80%] pointer-events-auto">
           {video.title && (
-            <p className="text-sm font-semibold text-white leading-snug mb-1 line-clamp-2">
-              {video.title}
-            </p>
+            <p className="text-sm font-semibold text-white leading-snug mb-1 line-clamp-2">{video.title}</p>
           )}
           {video.description && (
-            <p className="text-xs text-white/80 leading-snug line-clamp-2">
-              {video.description}
-            </p>
+            <p className="text-xs text-white/80 leading-snug line-clamp-2">{video.description}</p>
           )}
           <div className="flex items-center gap-3 mt-2 text-xs text-white/60">
             <ViewCount videoId={video.id} showIcon />
@@ -473,11 +374,13 @@ export default function FeedPage() {
   const [loading, setLoading] = useState(true);
   const [commentVideo, setCommentVideo] = useState<Video | null>(null);
   const [muted, setMuted] = useState(true);
+  const [showSoundPrompt, setShowSoundPrompt] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
 
   const scrollerRef = useRef<HTMLDivElement>(null);
   const tapHandlerRef = useRef<(() => void) | null>(null);
 
+  // Load videos + creators
   useEffect(() => {
     Promise.all([getCachedVideos(), getCachedCreators()])
       .then(([vids, creats]) => {
@@ -490,15 +393,23 @@ export default function FeedPage() {
         setVideos(list);
         setCreators(Array.isArray(creats) ? creats : []);
         setLoading(false);
+        // Show "tap for sound" prompt once per session
+        if (list.length > 0) {
+          try {
+            const dismissed = sessionStorage.getItem("trooflix:sound-prompt");
+            if (!dismissed) setShowSoundPrompt(true);
+          } catch {
+            setShowSoundPrompt(true);
+          }
+        }
       })
       .catch(() => setLoading(false));
   }, []);
 
-  // Track which card is centered — using IntersectionObserver on the sections
+  // Track active index via IntersectionObserver
   useEffect(() => {
     const el = scrollerRef.current;
     if (!el || videos.length === 0) return;
-
     const cards = el.querySelectorAll<HTMLElement>("[data-reel-index]");
     const observer = new IntersectionObserver(
       (entries) => {
@@ -510,46 +421,36 @@ export default function FeedPage() {
           }
         }
       },
-      {
-        root: el,
-        threshold: [0.25, 0.5, 0.75, 1.0],
-      }
+      { root: el, threshold: [0.25, 0.5, 0.75, 1.0] }
     );
-
     cards.forEach((c) => observer.observe(c));
     return () => observer.disconnect();
   }, [videos.length]);
 
-  // On active change: count view + preload the surrounding window
+  // Count views + preload neighbors on active change
   useEffect(() => {
     const active = videos[activeIndex];
-    if (active?.id) {
-      trackView(active.id);
-    }
-    // Instagram-style adjacent preload: next 2 + previous 1
-    if (videos.length > 0) {
-      preloadWindow(videos, activeIndex, 2, 1);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (active?.id) trackView(active.id);
   }, [activeIndex, videos.length]);
+
+  // Enable sound on first user tap (browser requirement)
+  const enableSound = () => {
+    setMuted(false);
+    setShowSoundPrompt(false);
+    try { sessionStorage.setItem("trooflix:sound-prompt", "1"); } catch {}
+  };
 
   const creatorById = (id?: number | null) =>
     id ? creators.find((c) => c.id === id) || null : null;
 
   return (
     <main
-      className="bg-black text-white overflow-hidden"
+      className="bg-black text-white overflow-hidden relative"
       style={{ height: "100dvh" }}
     >
       {loading && (
         <div className="h-full flex items-center justify-center">
           <p className="text-white/50">Loading…</p>
-        </div>
-      )}
-
-      {!loading && videos.length === 0 && (
-        <div className="h-full flex items-center justify-center">
-          <p className="text-white/50">Nothing here yet.</p>
         </div>
       )}
 
@@ -571,7 +472,6 @@ export default function FeedPage() {
               onToggleMute={() => setMuted((m) => !m)}
               onOpenComments={() => setCommentVideo(video)}
               isActive={i === activeIndex}
-              shouldRenderVideo={Math.abs(i - activeIndex) <= 1}
               registerTap={(fn) => {
                 if (i === activeIndex) tapHandlerRef.current = fn;
               }}
@@ -579,6 +479,21 @@ export default function FeedPage() {
           ))}
         </div>
       )}
+
+      {/* Sound prompt */}
+      <AnimatePresence>
+        {showSoundPrompt && !loading && videos.length > 0 && (
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            onClick={enableSound}
+            className="absolute top-[max(env(safe-area-inset-top),16px)] left-1/2 -translate-x-1/2 z-40 bg-white text-black font-semibold text-sm px-5 py-2.5 rounded-full shadow-lg hover:scale-105 transition"
+          >
+            🔊 Tap for sound
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       <MobileBottomNav />
 
