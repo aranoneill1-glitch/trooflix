@@ -181,14 +181,19 @@ function ReelCard({
     const v = videoRef.current;
     if (!v) return;
     if (isActive) {
+      // Mute synchronously BEFORE calling play — avoids any sound flash
       v.muted = muted;
-      v.play().catch(() => {
-        // Fallback: force muted to satisfy autoplay policies
-        v.muted = true;
-        v.play().catch(() => {});
-      });
+      const promise = v.play();
+      if (promise) {
+        promise.catch(() => {
+          // Autoplay-with-sound blocked → retry muted
+          v.muted = true;
+          v.play().catch(() => {});
+        });
+      }
     } else {
       v.pause();
+      v.muted = true;
       try { v.currentTime = 0; } catch {}
     }
   }, [isActive, muted]);
@@ -235,7 +240,8 @@ function ReelCard({
 
   return (
     <section
-      className="relative w-full h-full snap-start snap-always flex items-center justify-center overflow-hidden bg-black"
+      data-reel-index={video.id}
+      className="relative w-full snap-start snap-always flex items-center justify-center overflow-hidden bg-black"
       style={{ scrollSnapAlign: "start", height: "calc(100dvh - 64px)" }}
     >
       {/* Video */}
@@ -246,7 +252,6 @@ function ReelCard({
         muted={muted}
         loop
         playsInline
-        autoPlay
         preload="auto"
         className="absolute inset-0 w-full h-full object-contain bg-black"
         onClick={onTap}
@@ -375,17 +380,30 @@ export default function FeedPage() {
       .catch(() => setLoading(false));
   }, []);
 
-  // Track which card is centered
+  // Track which card is centered — using IntersectionObserver on the sections
   useEffect(() => {
     const el = scrollerRef.current;
-    if (!el) return;
-    const onScroll = () => {
-      const h = el.clientHeight || 1;
-      const i = Math.round(el.scrollTop / h);
-      setActiveIndex(Math.max(0, Math.min(i, videos.length - 1)));
-    };
-    el.addEventListener("scroll", onScroll, { passive: true });
-    return () => el.removeEventListener("scroll", onScroll);
+    if (!el || videos.length === 0) return;
+
+    const cards = el.querySelectorAll<HTMLElement>("[data-reel-index]");
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.intersectionRatio >= 0.6) {
+            const id = Number((entry.target as HTMLElement).dataset.reelIndex);
+            const idx = videos.findIndex((v) => v.id === id);
+            if (idx >= 0) setActiveIndex(idx);
+          }
+        }
+      },
+      {
+        root: el,
+        threshold: [0.25, 0.5, 0.75, 1.0],
+      }
+    );
+
+    cards.forEach((c) => observer.observe(c));
+    return () => observer.disconnect();
   }, [videos.length]);
 
   const creatorById = (id?: number | null) =>
