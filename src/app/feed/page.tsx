@@ -148,6 +148,7 @@ function ReelCard({
   onToggleMute,
   onOpenComments,
   registerTap,
+  isActive,
 }: {
   video: Video;
   creator: Creator | null;
@@ -155,6 +156,7 @@ function ReelCard({
   onToggleMute: () => void;
   onOpenComments: () => void;
   registerTap: (fn: () => void) => void;
+  isActive: boolean;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [heartBurst, setHeartBurst] = useState<{ x: number; y: number; id: number } | null>(null);
@@ -173,6 +175,23 @@ function ReelCard({
       else v.pause();
     });
   }, [registerTap]);
+
+  // Autoplay when this card is centered; pause + reset when it's not
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (isActive) {
+      v.muted = muted;
+      v.play().catch(() => {
+        // Fallback: force muted to satisfy autoplay policies
+        v.muted = true;
+        v.play().catch(() => {});
+      });
+    } else {
+      v.pause();
+      try { v.currentTime = 0; } catch {}
+    }
+  }, [isActive, muted]);
 
   const onTap = (e: React.MouseEvent | React.TouchEvent) => {
     const target = e.target as HTMLElement;
@@ -224,12 +243,12 @@ function ReelCard({
         ref={videoRef}
         data-video-id={video.id}
         src={video.bitchuteUrl}
-        poster={video.backdropUrl || video.posterUrl}
         muted={muted}
         loop
         playsInline
+        autoPlay
         preload="auto"
-        className="absolute inset-0 w-full h-full object-contain"
+        className="absolute inset-0 w-full h-full object-cover bg-black"
         onClick={onTap}
       />
 
@@ -403,6 +422,7 @@ export default function FeedPage() {
               muted={muted}
               onToggleMute={() => setMuted((m) => !m)}
               onOpenComments={() => setCommentVideo(video)}
+              isActive={i === activeIndex}
               registerTap={(fn) => {
                 if (i === activeIndex) tapHandlerRef.current = fn;
               }}
