@@ -53,7 +53,7 @@ export default function LoadingIntro({ onDone }: { onDone: () => void }) {
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.4 }}
-          className="fixed inset-0 z-[300] bg-black flex items-center justify-center"
+          className="fixed inset-0 z-[300] bg-black flex items-start justify-center pt-[18vh] md:items-center md:pt-0"
         >
           <div className="relative select-none">
             {/* Base layer: invisible */}
