@@ -8,8 +8,6 @@ import {
   Send,
   Check,
   CheckCheck,
-  Phone,
-  Video,
   Mic,
   Image as ImageIcon,
   Smile,
@@ -350,19 +348,6 @@ export default function ThreadPage() {
             </div>
           </Link>
 
-          {/* Placeholder call + video icons */}
-          <button
-            className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-black/5 transition"
-            aria-label="Voice call"
-          >
-            <Phone size={20} className="text-white/80" />
-          </button>
-          <button
-            className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-black/5 transition"
-            aria-label="Video call"
-          >
-            <Video size={22} className="text-white/80" />
-          </button>
         </div>
       </header>
 
