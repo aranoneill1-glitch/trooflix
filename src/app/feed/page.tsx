@@ -532,13 +532,15 @@ export default function FeedPage() {
       <AnimatePresence>
         {showSoundPrompt && !loading && videos.length > 0 && (
           <motion.button
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ duration: 0.25 }}
             onClick={enableSound}
-            className="absolute top-[max(env(safe-area-inset-top),16px)] left-1/2 -translate-x-1/2 z-40 bg-white text-black font-semibold text-sm px-5 py-2.5 rounded-full shadow-lg hover:scale-105 transition"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 flex items-center gap-2.5 bg-black/40 backdrop-blur-md border border-white/25 text-white font-semibold text-[15px] px-6 py-3 rounded-full shadow-2xl hover:bg-black/60 hover:border-white/50 active:scale-95 transition"
           >
-            🔊 Tap for sound
+            <VolumeX size={18} className="opacity-90" />
+            <span>Tap for sound</span>
           </motion.button>
         )}
       </AnimatePresence>
