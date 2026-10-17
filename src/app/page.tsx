@@ -29,6 +29,7 @@ import SaveButton from "@/components/SaveButton";
 import LikeButton from "@/components/LikeButton";
 import SearchResults from "@/components/SearchResults";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import TextOverlayRenderer from "@/components/TextOverlay";
 import { getAllProgress } from "@/lib/progress";
 import SkeletonRow from "@/components/SkeletonRow";
 import { getCachedVideos, getCachedCreators } from "@/lib/cache";
@@ -50,6 +51,7 @@ type Video = {
   duration: string;
   creatorId?: number | null;
   uploaderUserId?: string | null;
+  textOverlays?: any[];
 };
 
 const CATEGORIES: string[] = [
@@ -280,6 +282,7 @@ export default function Home() {
             src={playing.videoUrl ?? playing.bitchuteUrl ?? ""}
             title={playing.title}
             videoId={playing.id}
+            textOverlays={playing?.textOverlays}
             onClose={() => setPlaying(null)}
           />
         )}
@@ -631,16 +634,19 @@ function DetailModal({ item, onClose, onPlay, creators }: { item: Video; onClose
             }`}
           />
           {videoSrc && (
-            <video
-              ref={previewRef}
-              src={videoSrc}
-              muted
-              playsInline
-              preload="metadata"
-              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
-                previewReady ? "opacity-100" : "opacity-0"
-              }`}
-            />
+            <>
+              <video
+                ref={previewRef}
+                src={videoSrc}
+                muted
+                playsInline
+                preload="metadata"
+                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
+                  previewReady ? "opacity-100" : "opacity-0"
+                }`}
+              />
+              <TextOverlayRenderer overlays={item.textOverlays} />
+            </>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-[#141414]/30 to-transparent" />
           <button

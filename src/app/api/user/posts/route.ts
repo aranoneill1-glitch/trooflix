@@ -113,6 +113,7 @@ export async function POST(req: Request) {
       type: "Reel",
       featured: false,
       videoUrl,
+      textOverlays: Array.isArray(body.textOverlays) ? body.textOverlays : [],
       uploaderUserId: userId,
       posterUrl:
         posterUrl ||

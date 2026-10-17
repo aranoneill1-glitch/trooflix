@@ -17,6 +17,7 @@ type Video = {
   featured: boolean;
   videoUrl?: string;
   bitchuteUrl?: string;
+  textOverlays?: any[];
   posterUrl: string;
   backdropUrl: string;
   year: number;
@@ -81,6 +82,7 @@ export default function DocumentariesPage() {
           src={playing.videoUrl ?? playing.bitchuteUrl ?? ""}
           title={playing.title}
           videoId={playing.id}
+            textOverlays={playing?.textOverlays}
           onClose={() => setPlaying(null)}
         />
       )}

@@ -76,6 +76,7 @@ export async function PUT(req: Request) {
       rating: body.rating ?? videos[index].rating,
       pinned: body.pinned ?? videos[index].pinned ?? false,
       order: body.order ?? videos[index].order ?? 0,
+      textOverlays: Array.isArray(body.textOverlays) ? body.textOverlays : (videos[index].textOverlays || []),
     };
 
     await kv.set(KEY, videos);

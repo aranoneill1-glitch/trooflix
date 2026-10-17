@@ -19,6 +19,7 @@ type Video = {
   type: string;
   videoUrl?: string;
   bitchuteUrl?: string;
+  textOverlays?: any[];
   posterUrl: string;
   backdropUrl: string;
   year: number;
@@ -214,6 +215,7 @@ export default function MyListPage() {
           src={playing.videoUrl ?? playing.bitchuteUrl ?? ""}
           title={playing.title}
           videoId={playing.id}
+            textOverlays={playing?.textOverlays}
           onClose={() => setPlaying(null)}
         />
       )}

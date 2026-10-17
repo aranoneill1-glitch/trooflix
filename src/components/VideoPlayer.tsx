@@ -17,9 +17,10 @@ type Props = {
   onClose: () => void;
   onPrev?: () => void;
   onNext?: () => void;
+  textOverlays?: any[];
 };
 
-export default function VideoPlayer({ src, title, videoId, onClose, onPrev, onNext }: Props) {
+export default function VideoPlayer({ src, title, videoId, onClose, onPrev, onNext, textOverlays }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const touchStartY = useRef<number | null>(null);

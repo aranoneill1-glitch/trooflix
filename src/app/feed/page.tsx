@@ -14,6 +14,7 @@ import MobileBottomNav from "@/components/MobileBottomNav";
 import SaveButton from "@/components/SaveButton";
 import LikeButton, { externalLike } from "@/components/LikeButton";
 import ShareReelSheet from "@/components/ShareReelSheet";
+import TextOverlayRenderer from "@/components/TextOverlay";
 import ViewCount, { trackView } from "@/components/ViewCount";
 import CommentDrawer from "@/components/CommentDrawer";
 import VerifiedBadge from "@/components/VerifiedBadge";
@@ -34,6 +35,7 @@ type Video = {
   backdropUrl: string;
   creatorId?: number | null;
   createdAt?: string;
+  textOverlays?: any[];
 };
 
 type Creator = {
@@ -311,6 +313,12 @@ function ReelCard({
           isLandscape ? "object-contain" : "object-cover"
         }`}
         onClick={onTap}
+      />
+
+      <TextOverlayRenderer
+        overlays={video.textOverlays}
+        videoWidth={(videoRef.current as any)?.videoWidth}
+        videoHeight={(videoRef.current as any)?.videoHeight}
       />
 
       {/* Right rail */}
