@@ -74,6 +74,8 @@ export async function PUT(req: Request) {
       backdropUrl: body.backdropUrl ?? videos[index].backdropUrl,
       year: body.year ?? videos[index].year,
       rating: body.rating ?? videos[index].rating,
+      pinned: body.pinned ?? videos[index].pinned ?? false,
+      order: body.order ?? videos[index].order ?? 0,
     };
 
     await kv.set(KEY, videos);

@@ -17,6 +17,11 @@ import {
   Share2,
   Mic,
   Plus,
+  ThumbsUp,
+  Image,
+  Pin,
+  Trash2,
+  BarChart3,
 } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
@@ -45,6 +50,8 @@ type Post = {
   viewCount?: number;
   creatorId?: number | null;
   createdAt?: string;
+  pinned?: boolean;
+  order?: number;
 };
 
 export default function ProfilePage() {
@@ -62,6 +69,12 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
 
   const [tab, setTab] = useState<"grid" | "reels">("grid");
+  const [actionSheetFor, setActionSheetFor] = useState<Post | null>(null);
+  const [insightsFor, setInsightsFor] = useState<Post | null>(null);
+  const [reorderFor, setReorderFor] = useState<Post | null>(null);
+  const [previewFor, setPreviewFor] = useState<Post | null>(null);
+  const [posterUploading, setPosterUploading] = useState(false);
+  const longPressRef = useRef<{ timer: any; fired: boolean } | null>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [dashOpen, setDashOpen] = useState(false);
 
@@ -191,6 +204,129 @@ export default function ProfilePage() {
     tab === "reels"
       ? posts.filter((p) => p.type === "Reel" || p.type === "Short")
       : posts;
+
+  // ---- Long press / right click on grid tiles ----
+  const startLongPress = (post: Post) => {
+    longPressRef.current = {
+      timer: setTimeout(() => {
+        if (longPressRef.current) longPressRef.current.fired = true;
+        setActionSheetFor(post);
+      }, 500),
+      fired: false,
+    };
+  };
+
+  const cancelLongPress = () => {
+    if (longPressRef.current) {
+      clearTimeout(longPressRef.current.timer);
+      longPressRef.current = null;
+    }
+  };
+
+  const handleTileClick = (post: Post, e: React.MouseEvent) => {
+    if (longPressRef.current?.fired) {
+      e.preventDefault();
+      longPressRef.current = null;
+      return;
+    }
+  };
+
+  const handleDelete = async (post: Post) => {
+    if (!confirm(`Delete "${post.title}"? This cannot be undone.`)) return;
+    const res = await fetch(`/api/videos?id=${post.id}`, { method: "DELETE" });
+    if (res.ok) {
+      setPosts((prev) => prev.filter((x) => x.id !== post.id));
+      setActionSheetFor(null);
+    } else {
+      alert("Could not delete.");
+    }
+  };
+
+  const handleShare = async (post: Post) => {
+    const url = `${window.location.origin}/podcaster/_/${post.id}`;
+    if (navigator.share) {
+      navigator.share({ title: post.title, url }).catch(() => {});
+    } else {
+      await navigator.clipboard.writeText(url);
+      setStatusMsg("Link copied");
+      setTimeout(() => setStatusMsg(""), 2000);
+    }
+    setActionSheetFor(null);
+  };
+
+  const handlePin = async (post: Post) => {
+    const newPinned = !post.pinned;
+    const res = await fetch(`/api/videos?id=${post.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pinned: newPinned }),
+    });
+    if (res.ok) {
+      setPosts((prev) =>
+        prev.map((x) => (x.id === post.id ? { ...x, pinned: newPinned } : x))
+      );
+      setActionSheetFor(null);
+    } else {
+      alert("Could not pin.");
+    }
+  };
+
+  const handleReorder = async (post: Post, delta: number) => {
+    const currentOrder = post.order ?? 0;
+    const newOrder = currentOrder + delta;
+    const res = await fetch(`/api/videos?id=${post.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ order: newOrder }),
+    });
+    if (res.ok) {
+      setPosts((prev) =>
+        prev.map((x) => (x.id === post.id ? { ...x, order: newOrder } : x))
+      );
+    } else {
+      alert("Could not reorder.");
+    }
+  };
+
+  const handleAdjustPreview = async (post: Post, file: File) => {
+    setPosterUploading(true);
+    try {
+      const presign = await fetch("/api/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          filename: file.name,
+          contentType: file.type || "image/jpeg",
+          folder: "posters",
+        }),
+      });
+      if (!presign.ok) throw new Error("Upload prep failed");
+      const { signedUrl, publicUrl } = await presign.json();
+
+      const put = await fetch(signedUrl, {
+        method: "PUT",
+        headers: { "Content-Type": file.type || "image/jpeg" },
+        body: file,
+      });
+      if (!put.ok) throw new Error("Upload failed");
+
+      const res = await fetch(`/api/videos?id=${post.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ posterUrl: publicUrl }),
+      });
+      if (!res.ok) throw new Error("Save failed");
+
+      setPosts((prev) =>
+        prev.map((x) => (x.id === post.id ? { ...x, posterUrl: publicUrl } : x))
+      );
+      setPreviewFor(null);
+    } catch (err: any) {
+      alert(err.message || "Could not update preview");
+    } finally {
+      setPosterUploading(false);
+    }
+  };
 
   return (
     <main className="min-h-screen bg-black text-white pb-24 lg:pb-0">
@@ -329,6 +465,15 @@ export default function ProfilePage() {
                         : `/feed`
                     }
                     className="relative aspect-[4/5] bg-[#141418] overflow-hidden group"
+                    onPointerDown={() => startLongPress(p)}
+                    onPointerUp={cancelLongPress}
+                    onPointerLeave={cancelLongPress}
+                    onPointerCancel={cancelLongPress}
+                    onClick={(e) => handleTileClick(p, e)}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      setActionSheetFor(p);
+                    }}
                   >
                     <img
                       src={p.posterUrl || p.backdropUrl}
@@ -554,6 +699,232 @@ export default function ProfilePage() {
       </AnimatePresence>
 
       <MobileBottomNav />
+      {/* ---- Long-press action sheet ---- */}
+      <AnimatePresence>
+        {actionSheetFor && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setActionSheetFor(null)}
+              className="fixed inset-0 z-[400] bg-black/70"
+            />
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 32, stiffness: 320 }}
+              className="fixed left-0 right-0 bottom-0 z-[401] bg-[#0f0f12] rounded-t-2xl md:max-w-md md:mx-auto md:rounded-2xl md:bottom-4"
+            >
+              <div className="flex justify-center pt-2.5">
+                <div className="w-10 h-1 rounded-full bg-white/25" />
+              </div>
+              <div className="p-2">
+                <button
+                  onClick={() => { setInsightsFor(actionSheetFor); setActionSheetFor(null); }}
+                  className="w-full flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-white/5 transition text-left"
+                >
+                  <BarChart3 size={20} className="text-white/80" />
+                  <span className="font-medium">Insights</span>
+                </button>
+                <button
+                  onClick={() => handleDelete(actionSheetFor)}
+                  className="w-full flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-red-500/10 transition text-left text-red-400"
+                >
+                  <Trash2 size={20} />
+                  <span className="font-medium">Delete</span>
+                </button>
+                <button
+                  onClick={() => handlePin(actionSheetFor)}
+                  className="w-full flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-white/5 transition text-left"
+                >
+                  <Pin size={20} className="text-white/80" />
+                  <span className="font-medium">{actionSheetFor.pinned ? "Unpin" : "Pin to main grid"}</span>
+                </button>
+                <button
+                  onClick={() => { setReorderFor(actionSheetFor); setActionSheetFor(null); }}
+                  className="w-full flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-white/5 transition text-left"
+                >
+                  <Grid3x3 size={20} className="text-white/80" />
+                  <span className="font-medium">Reorder grid</span>
+                </button>
+                <button
+                  onClick={() => { setPreviewFor(actionSheetFor); setActionSheetFor(null); }}
+                  className="w-full flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-white/5 transition text-left"
+                >
+                  <Image size={20} className="text-white/80" />
+                  <span className="font-medium">Adjust preview</span>
+                </button>
+                <button
+                  onClick={() => handleShare(actionSheetFor)}
+                  className="w-full flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-white/5 transition text-left"
+                >
+                  <Share2 size={20} className="text-white/80" />
+                  <span className="font-medium">Share</span>
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* ---- Insights modal ---- */}
+      <AnimatePresence>
+        {insightsFor && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setInsightsFor(null)}
+              className="fixed inset-0 z-[500] bg-black/80"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[501] bg-[#0f0f12] rounded-2xl p-6 w-[90vw] max-w-sm border border-white/10"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold">Insights</h3>
+                <button
+                  onClick={() => setInsightsFor(null)}
+                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              <p className="text-sm text-white/60 mb-4 truncate">{insightsFor.title}</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-black/40 rounded-lg p-4 text-center">
+                  <Eye size={20} className="mx-auto mb-2 text-white/50" />
+                  <p className="text-2xl font-bold">{(insightsFor.viewCount ?? 0).toLocaleString()}</p>
+                  <p className="text-xs text-white/50">views</p>
+                </div>
+                <div className="bg-black/40 rounded-lg p-4 text-center">
+                  <ThumbsUp size={20} className="mx-auto mb-2 text-white/50" />
+                  <p className="text-2xl font-bold">—</p>
+                  <p className="text-xs text-white/50">likes</p>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* ---- Reorder grid sheet ---- */}
+      <AnimatePresence>
+        {reorderFor && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setReorderFor(null)}
+              className="fixed inset-0 z-[500] bg-black/70"
+            />
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 32, stiffness: 320 }}
+              className="fixed left-0 right-0 bottom-0 z-[501] bg-[#0f0f12] rounded-t-2xl md:max-w-md md:mx-auto md:rounded-2xl md:bottom-4"
+            >
+              <div className="flex justify-center pt-2.5">
+                <div className="w-10 h-1 rounded-full bg-white/25" />
+              </div>
+              <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
+                <h3 className="font-bold">Reorder</h3>
+                <button
+                  onClick={() => setReorderFor(null)}
+                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="p-4 space-y-2">
+                <p className="text-xs text-white/50 mb-2 truncate">{reorderFor.title}</p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleReorder(reorderFor, -1)}
+                    className="flex-1 bg-white/10 hover:bg-white/20 rounded-lg py-3 font-semibold transition"
+                  >
+                    ← Move earlier
+                  </button>
+                  <button
+                    onClick={() => handleReorder(reorderFor, 1)}
+                    className="flex-1 bg-white/10 hover:bg-white/20 rounded-lg py-3 font-semibold transition"
+                  >
+                    Move later →
+                  </button>
+                </div>
+                <p className="text-[11px] text-white/40 text-center mt-2">
+                  Current position: {reorderFor.order ?? 0}
+                </p>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* ---- Adjust preview sheet ---- */}
+      <AnimatePresence>
+        {previewFor && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => !posterUploading && setPreviewFor(null)}
+              className="fixed inset-0 z-[500] bg-black/70"
+            />
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 32, stiffness: 320 }}
+              className="fixed left-0 right-0 bottom-0 z-[501] bg-[#0f0f12] rounded-t-2xl md:max-w-md md:mx-auto md:rounded-2xl md:bottom-4"
+            >
+              <div className="flex justify-center pt-2.5">
+                <div className="w-10 h-1 rounded-full bg-white/25" />
+              </div>
+              <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
+                <h3 className="font-bold">Adjust preview</h3>
+                <button
+                  onClick={() => !posterUploading && setPreviewFor(null)}
+                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="p-4 space-y-3">
+                <div className="aspect-[4/5] bg-black/40 rounded-lg overflow-hidden max-w-[200px] mx-auto">
+                  <img
+                    src={previewFor.posterUrl || previewFor.backdropUrl}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <label className="block w-full bg-white/10 hover:bg-white/20 rounded-lg py-3 text-center font-semibold cursor-pointer transition">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    disabled={posterUploading}
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) handleAdjustPreview(previewFor, f);
+                    }}
+                  />
+                  {posterUploading ? "Uploading…" : "Choose new preview"}
+                </label>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
     </main>
   );
 }
