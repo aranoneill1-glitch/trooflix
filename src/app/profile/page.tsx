@@ -474,6 +474,14 @@ export default function ProfilePage() {
                       e.preventDefault();
                       setActionSheetFor(p);
                     }}
+                    onDragStart={(e) => e.preventDefault()}
+                    style={{
+                      WebkitTouchCallout: "none",
+                      WebkitUserSelect: "none",
+                      userSelect: "none",
+                      touchAction: "manipulation",
+                    }}
+                    draggable={false}
                   >
                     <img
                       src={p.posterUrl || p.backdropUrl}
