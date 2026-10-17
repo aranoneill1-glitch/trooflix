@@ -66,6 +66,7 @@ const NAV_TABS: string[] = ["Home", "Documentaries", "Podcasts", "Feed"];
 
 export default function Home() {
   const [videos, setVideos] = useState<Video[]>([]);
+  const [likeCounts, setLikeCounts] = useState<Record<number, number>>({});
   const [creators, setCreators] = useState<any[]>([]);
   const { search } = useSearch();
   const [selected, setSelected] = useState<Video | null>(null);
@@ -125,11 +126,18 @@ export default function Home() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const nonPodcaster = videos.filter((v) => !v.creatorId);
-  const trending = nonPodcaster.filter((v) => v.featured);
-  const docs = nonPodcaster.filter((v) => v.type === "Documentary");
-  const podcasts = videos.filter((v) => v.creatorId && v.type === "Podcast");
-  const newReleases = [...nonPodcaster].sort((a, b) => b.id - a.id).slice(0, 20);
+  // New Releases + Trending — Documentaries and Podcasts only
+  const isDocOrPodcast = (v: Video) => v.type === "Documentary" || v.type === "Podcast";
+
+  const newReleases = videos
+    .filter(isDocOrPodcast)
+    .sort((a, b) => b.id - a.id)
+    .slice(0, 20);
+
+  const trending = videos
+    .filter(isDocOrPodcast)
+    .sort((a, b) => (likeCounts[b.id] || 0) - (likeCounts[a.id] || 0))
+    .slice(0, 20);
 
   let displayVideos = videos;
   if (activeCategory) displayVideos = videos.filter((v) => v.category === activeCategory);
@@ -240,8 +248,6 @@ export default function Home() {
             <CollectionsRow />
             {newReleases.length > 0 && <Row title="New Releases" items={newReleases} onSelect={setSelected} onPlay={requestPlay} />}
             {trending.length > 0 && <Row title="Trending Now" items={trending} onSelect={setSelected} onPlay={requestPlay} />}
-            {podcasts.length > 0 && <Row title="Podcasts" items={podcasts} onSelect={setSelected} onPlay={requestPlay} showCreator creators={creators} />}
-            {docs.length > 0 && <Row title="Documentaries" items={docs} onSelect={setSelected} onPlay={requestPlay} />}
             {loaded && videos.length === 0 && (
               <div className="px-8 py-20 text-center text-white/50">
                 <p className="text-xl mb-2">No videos yet</p>
