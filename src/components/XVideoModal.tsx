@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, MoreHorizontal, Play, Pause, Volume2, VolumeX, MessageCircle, Heart, Bookmark, Share } from "lucide-react";
+import { X, MoreHorizontal, Play, Pause, Volume2, VolumeX, MessageCircle, Heart, Plus, Share } from "lucide-react";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import TextOverlayRenderer from "@/components/TextOverlay";
 
@@ -127,22 +127,19 @@ export default function XVideoModal({
         )}
 
         {/* Pill Action Bar */}
-        <div className="flex items-center justify-around bg-black/70 backdrop-blur-md border border-white/10 rounded-full px-4 py-2.5 pointer-events-auto">
+        <div className="flex items-center justify-around bg-black/60 backdrop-blur-md border border-white/20 rounded-full px-4 py-2.5 pointer-events-auto">
           <button onClick={onOpenComments} className="flex items-center gap-1.5 text-white hover:text-white/80 transition">
-            <MessageCircle size={20} />
+            <MessageCircle size={22} strokeWidth={1.5} />
           </button>
           <button className="flex items-center gap-1.5 text-white hover:text-white/80 transition">
-            <Share size={20} />
+            <Share size={22} strokeWidth={1.5} />
           </button>
           <button className="flex items-center gap-1.5 text-white hover:text-white/80 transition">
-            <Heart size={20} />
-            <span className="text-xs font-semibold">1</span>
+            <Heart size={22} strokeWidth={1.5} />
+            <span className="text-sm font-semibold">1</span>
           </button>
           <button className="flex items-center gap-1.5 text-white hover:text-white/80 transition">
-            <Bookmark size={20} />
-          </button>
-          <button className="flex items-center gap-1.5 text-white hover:text-white/80 transition">
-            <Share size={20} />
+            <Plus size={22} strokeWidth={1.5} />
           </button>
         </div>
       </div>

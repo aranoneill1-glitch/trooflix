@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {Heart, MessageCircle, Send, Bookmark, Play, VolumeX, Volume2} from "lucide-react";
+import {Heart, MessageCircle, Send, Bookmark, Play, VolumeX, Volume2, Plus, Share} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import ShareReelSheet from "@/components/ShareReelSheet";
@@ -443,31 +443,30 @@ function PostCard({
         />
       )}
 
-      {/* Action bar */}
-      <div className="flex items-center gap-1 px-2 py-2 border-t border-white/5">
-        <div className="flex items-center ml-1">
-          <LikeButton videoId={post.id} size={22} />
-        </div>
-        <div className="flex items-center ml-2">
+      {/* Pill Action Bar */}
+      <div className="px-3 pb-3 pt-1">
+        <div className="flex items-center justify-around bg-black/40 border border-white/10 rounded-full px-4 py-2.5">
           <button
             onClick={onOpenComments}
-            className="flex items-center gap-1 p-2 text-white/80 hover:text-white transition"
-            aria-label="Comment"
+            className="flex items-center gap-1.5 text-white hover:text-white/80 transition"
           >
-            <MessageCircle size={22} />
-            <span className="text-xs font-semibold tabular-nums">
+            <MessageCircle size={22} strokeWidth={1.5} />
+            <span className="text-sm font-semibold">
               <CommentCountInline videoId={post.id} />
             </span>
           </button>
-        </div>
-        <div className="ml-2">
-          <ShareReelTrigger videoId={post.id} videoTitle={post.title || ""} />
-        </div>
-        <div className="ml-2 text-xs text-white/60 flex items-center">
-          <ViewCount videoId={post.id} showIcon />
-        </div>
-        <div className="ml-auto">
-          <SaveButton videoId={post.id} variant="icon" />
+          
+          <div className="flex items-center text-white hover:text-white/80 transition">
+            <ShareReelTrigger videoId={post.id} videoTitle={post.title || ""} />
+          </div>
+          
+          <div className="flex items-center text-white hover:text-white/80 transition">
+            <LikeButton videoId={post.id} size={22} showCount />
+          </div>
+
+          <div className="flex items-center text-white hover:text-white/80 transition">
+            <SaveButton videoId={post.id} variant="icon" />
+          </div>
         </div>
       </div>
     </article>

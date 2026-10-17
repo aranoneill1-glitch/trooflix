@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ThumbsUp } from "lucide-react";
+import { Heart } from "lucide-react";
 
 // --- Global external like trigger (used by feed double-tap) ---
 const likeBusListeners = new Map<number, Set<() => void>>();
@@ -238,7 +238,7 @@ export default function LikeButton({
         style={{ minHeight: size + 20 }}
         title={liked ? "Unlike" : "Like"}
       >
-        <ThumbsUp size={size} fill={liked ? "currentColor" : "none"} />
+        <Heart size={size} fill={liked ? "currentColor" : "none"} />
         {showCount && (
           <span className="text-[11px] font-semibold tabular-nums text-white/90 leading-none h-3">
             {count > 0 ? count.toLocaleString() : "\u00A0"}
@@ -256,7 +256,7 @@ export default function LikeButton({
       }`}
       title={liked ? "Unlike" : "Like"}
     >
-      <ThumbsUp size={size} fill={liked ? "currentColor" : "none"} />
+      <Heart size={size} fill={liked ? "currentColor" : "none"} />
       {showCount && count > 0 && (
         <span className="text-sm font-semibold tabular-nums">{count}</span>
       )}
