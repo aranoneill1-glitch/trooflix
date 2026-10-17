@@ -194,7 +194,7 @@ export default function FeedPage() {
 
       {/* Toggle */}
       <div className="sticky top-0 z-40 bg-black border-b border-white/5 pt-[env(safe-area-inset-top)]">
-        <div className="max-w-lg mx-auto flex">
+        <div className="flex">
           <button
             onClick={() => setFilter("all")}
             className={`flex-1 py-3 text-sm font-semibold transition border-b-2 ${
@@ -218,7 +218,7 @@ export default function FeedPage() {
         </div>
       </div>
 
-      <div className="max-w-lg mx-auto pt-2 px-2 md:px-0 space-y-4">
+      <div className="pt-2 space-y-4">
         {loading && (
           <p className="text-center text-white/50 py-12">Loading…</p>
         )}
@@ -331,7 +331,7 @@ function PostCard({
     <article
       ref={(el) => registerRef(el as HTMLElement | null)}
       data-post-id={post.id}
-      className="bg-[#0f0f12] md:rounded-xl overflow-hidden border border-white/5"
+      className="bg-[#0f0f12] overflow-hidden"
     >
       {/* Author row */}
       <div className="flex items-center gap-3 px-3 py-2.5">
