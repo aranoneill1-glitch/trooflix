@@ -34,8 +34,18 @@ export default function PodcastsPage() {
       <TopBar />
 
       <div className="px-8 md:px-12 pt-28 pb-10">
-        <h1 className="text-4xl md:text-5xl font-black mb-2">Podcasts</h1>
-        <p className="text-white/50 mb-10">Browse shows by podcaster</p>
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-10">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-black mb-2">Podcasts</h1>
+            <p className="text-white/50">Browse shows by podcaster</p>
+          </div>
+          <Link
+            href="/apply"
+            className="self-start md:self-auto bg-red-600 hover:bg-red-500 text-white font-semibold px-5 py-2.5 rounded-lg transition"
+          >
+            Become a Podcaster
+          </Link>
+        </div>
 
         {loading && <p className="text-white/40">Loading…</p>}
         {!loading && creators.length === 0 && (

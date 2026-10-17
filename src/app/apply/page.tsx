@@ -169,10 +169,10 @@ export default function ApplyPage() {
         </button>
 
         <h1 className="text-2xl md:text-3xl font-black mb-1">
-          Become a creator
+          Become a Podcaster
         </h1>
         <p className="text-white/50 text-sm mb-6">
-          Tell us about yourself. We review every application personally.
+          Apply to host your own show on Trooflix. We review every application personally.
         </p>
 
         {isApproved && (
@@ -296,7 +296,7 @@ export default function ApplyPage() {
               disabled={submitting}
               className="w-full bg-red-600 hover:bg-red-500 disabled:opacity-50 font-semibold py-3 rounded-lg transition"
             >
-              {submitting ? "Submitting…" : isRejected ? "Resubmit application" : "Submit application"}
+              {submitting ? "Submitting…" : isRejected ? "Resubmit application" : "Apply to become a Podcaster"}
             </button>
           </div>
         )}
