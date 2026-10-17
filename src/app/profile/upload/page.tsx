@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Upload, Check, ChevronLeft, AlertTriangle } from "lucide-react";
@@ -117,6 +117,17 @@ export default function UserUploadPage() {
       setUploading(false);
     }
   };
+
+  // After video + poster are ready, redirect to the full-screen editor
+  useEffect(() => {
+    if (!videoUrl || !posterUrl || generatingPoster || uploading) return;
+    const params = new URLSearchParams({
+      v: videoUrl,
+      p: posterUrl,
+      d: duration !== null ? String(Math.round(duration)) : "",
+    });
+    router.push(`/profile/upload/editor?${params.toString()}`);
+  }, [videoUrl, posterUrl, generatingPoster, uploading, duration, router]);
 
   // ---- Pinch to scale ----
   const SIZE_ORDER: ("sm" | "md" | "lg")[] = ["sm", "md", "lg"];
