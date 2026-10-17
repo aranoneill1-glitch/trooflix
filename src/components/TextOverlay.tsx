@@ -11,17 +11,11 @@ export type FontStyle =
 export type TextOverlay = {
   id: string;
   text: string;
-  x: number;      // 0..1, fraction of video width
-  y: number;      // 0..1, fraction of video height
-  size: "sm" | "md" | "lg";
-  color: string;  // hex
+  x: number;
+  y: number;
+  scale: number;   // base size multiplier, default 1.0
+  color: string;
   font?: FontStyle;
-};
-
-const SIZE_MAP: Record<TextOverlay["size"], string> = {
-  sm: "text-sm md:text-base",
-  md: "text-lg md:text-xl",
-  lg: "text-2xl md:text-3xl",
 };
 
 export function fontStyle(font?: FontStyle) {
@@ -41,6 +35,11 @@ export function fontStyle(font?: FontStyle) {
       return { fontFamily: "system-ui, -apple-system, sans-serif", fontWeight: 700 };
   }
 }
+
+// Base font size in px, multiplied by the overlay's `scale` to get the
+// actual size. Adjust BASE for smaller/larger default. Since scale is free,
+// the size is fully driven by pinch.
+const BASE_SIZE_PX = 24;
 
 export default function TextOverlayRenderer({
   overlays,
@@ -63,10 +62,11 @@ export default function TextOverlayRenderer({
     >
       {overlays.map((o) => {
         const fs = fontStyle(o.font);
+        const scale = o.scale || 1.0;
         return (
           <div
             key={o.id}
-            className={`absolute whitespace-nowrap leading-tight px-2 py-0.5 ${SIZE_MAP[o.size] || SIZE_MAP.md}`}
+            className="absolute whitespace-nowrap leading-tight px-2 py-0.5"
             style={{
               left: `${o.x * 100}%`,
               top: `${o.y * 100}%`,
@@ -74,6 +74,7 @@ export default function TextOverlayRenderer({
               color: o.color || "#ffffff",
               textShadow: "0 2px 6px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,0.9)",
               maxWidth: "90%",
+              fontSize: `${BASE_SIZE_PX * scale}px`,
               ...fs,
             }}
           >
