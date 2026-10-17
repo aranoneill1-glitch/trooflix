@@ -114,6 +114,7 @@ export default function EditorPage() {
 
   // ---- Pinch ----
   const onTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) e.preventDefault();
     if (e.touches.length !== 2) return;
     if (!editingOverlay) return;
     const [a, b] = [e.touches[0], e.touches[1]];
@@ -130,6 +131,7 @@ export default function EditorPage() {
   };
 
   const onTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) e.preventDefault();
     if (!pinchRef.current || e.touches.length !== 2) return;
     const [a, b] = [e.touches[0], e.touches[1]];
     const dx = a.clientX - b.clientX;
@@ -171,7 +173,13 @@ export default function EditorPage() {
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
           className="relative bg-black select-none h-full"
-          style={{ aspectRatio: "9 / 16", maxWidth: "100vw" }}
+          style={{
+            aspectRatio: "9 / 16",
+            maxWidth: "100vw",
+            touchAction: "none",
+            WebkitUserSelect: "none",
+            WebkitTouchCallout: "none",
+          }}
         >
           <video
             src={videoUrl}
