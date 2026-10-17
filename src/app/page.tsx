@@ -126,6 +126,9 @@ export default function Home() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Hero — featured non-podcaster video (Loose Change etc.)
+  const heroPool = videos.filter((v) => v.featured && !v.creatorId);
+
   // New Releases + Trending — Documentaries and Podcasts only
   const isDocOrPodcast = (v: Video) => v.type === "Documentary" || v.type === "Podcast";
 
@@ -150,7 +153,7 @@ export default function Home() {
     ? videos.filter((v) => v.title.toLowerCase().includes(search.toLowerCase()))
     : null;
 
-  const hero = trending[0] || videos[0];
+  const hero = heroPool[0] || videos[0];
 
   const requestPlay = (video: Video) => {
     setPendingVideo(video);
