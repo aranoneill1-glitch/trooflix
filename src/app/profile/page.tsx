@@ -389,7 +389,7 @@ export default function ProfilePage() {
                   )}
                 </button>
                 <Link
-                    href="/profile/upload"
+                    href="/profile/compose"
                     className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-red-600 border-2 border-black flex items-center justify-center hover:bg-red-500 transition"
                     aria-label="Upload reel"
                   >
