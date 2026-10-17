@@ -560,10 +560,21 @@ function Card({ item, hovered, onHover, onLeave, onSelect, onPlay, showCreator, 
 
 /* ============ MODAL ============ */
 function DetailModal({ item, onClose, onPlay, creators }: { item: Video; onClose: () => void; onPlay: (v: Video) => void; creators?: any[] }) {
-  const modalCreator =
-    item.creatorId && item.type === "Podcast"
+  const uploader =
+    item.creatorId
       ? (creators || []).find((c: any) => c.id === item.creatorId) || null
       : null;
+
+  const uploaderName = uploader?.name || "TROOFLIX";
+  const uploaderPhoto = uploader?.photoUrl || "";
+  const uploaderSlug = uploader?.slug || "";
+  const uploaderInitial = uploaderName.charAt(0).toUpperCase();
+
+  const metaParts: string[] = [item.category];
+  if (item.duration && item.duration.trim()) metaParts.push(item.duration);
+  if (item.year) metaParts.push(String(item.year));
+  if (item.rating) metaParts.push(item.rating);
+
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -571,79 +582,86 @@ function DetailModal({ item, onClose, onPlay, creators }: { item: Video; onClose
       onClick={onClose}
     >
       <motion.div
-        initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }}
+        initial={{ scale: 0.95, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.95, opacity: 0, y: 20 }}
         transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
         onClick={(e) => e.stopPropagation()}
         className="relative max-w-4xl mx-auto md:my-16 bg-[#141414] rounded-lg overflow-hidden shadow-2xl w-full"
       >
-        <div className="relative h-[240px] md:h-[440px] w-full">
-          <img src={item.backdropUrl} alt={item.title} className="absolute inset-0 w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-[#141414]/40 to-transparent" />
+        <div className="relative h-[260px] md:h-[420px] w-full">
+          <img
+            src={item.backdropUrl}
+            alt={item.title}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-[#141414]/30 to-transparent" />
           <button
             onClick={onClose}
             className="absolute top-3 right-3 md:top-4 md:right-4 z-20 bg-black/70 hover:bg-black/90 rounded-full p-2 transition"
+            aria-label="Close"
           >
             <X size={20} />
           </button>
+
           <div className="absolute bottom-0 left-0 right-0 p-5 md:p-10">
-            <h2 className="text-3xl md:text-5xl font-black mb-4 md:mb-6 drop-shadow-lg">{item.title}</h2>
-            <div className="flex gap-2 md:gap-3">
+            <h2 className="text-3xl md:text-5xl font-black mb-2 md:mb-3 drop-shadow-lg">
+              {item.title}
+            </h2>
+            <p className="text-sm md:text-base text-white/70 mb-4 md:mb-5">
+              {metaParts.join(" · ")}
+            </p>
+
+            <div className="flex gap-2 md:gap-3 flex-wrap">
               <button
                 onClick={() => onPlay(item)}
                 className="flex items-center gap-2 bg-white text-black font-bold px-6 md:px-8 py-2.5 md:py-3 rounded hover:bg-white/80 transition"
               >
                 <Play size={18} fill="black" /> Play
               </button>
-              <div className="w-11 h-11 md:w-12 md:h-12 flex items-center justify-center rounded-full bg-white/15 backdrop-blur hover:bg-white/25 transition">
-                <SaveButton videoId={item.id} variant="icon" size={20} />
-              </div>
-              <div className="w-11 h-11 md:w-12 md:h-12 flex items-center justify-center rounded-full bg-white/15 backdrop-blur hover:bg-white/25 transition">
-                <LikeButton videoId={item.id} size={20} showCount={false} />
-              </div>
-
+              <SaveButton videoId={item.id} variant="labeled" size={18} />
             </div>
           </div>
         </div>
-        <div className="p-5 md:p-10 md:grid md:grid-cols-3 md:gap-8">
-          <div className="md:col-span-2">
-            <div className="flex items-center gap-2 md:gap-3 text-sm md:text-base mb-4 flex-wrap">
-              <span className="text-green-500 font-bold">{item.match}% Match</span>
-              <span className="text-white/70">{item.year}</span>
-              <span className="border border-white/40 px-2 py-0.5 text-xs">{item.rating}</span>
-              <span className="text-white/70 text-xs">HD</span>
-            </div>
 
-            {modalCreator && (
-              <div className="flex items-center gap-3 mb-4">
-                {modalCreator.photoUrl ? (
-                  <img
-                    src={modalCreator.photoUrl}
-                    alt={modalCreator.name}
-                    className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover border border-white/20"
-                  />
-                ) : (
-                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center font-bold">
-                    {(modalCreator.name?.[0] || "?").toUpperCase()}
-                  </div>
-                )}
-                <div className="min-w-0">
-                  <p className="text-xs text-white/50">Podcaster</p>
-                  <a
-                    href={`/podcaster/${modalCreator.slug}`}
-                    className="font-semibold hover:underline block truncate"
-                  >
-                    {modalCreator.name}
-                  </a>
-                </div>
+        <div className="p-5 md:p-10 space-y-5">
+          {item.description && (
+            <p className="text-white/90 leading-relaxed text-sm md:text-base">
+              {item.description}
+            </p>
+          )}
+
+          <div className="flex items-center gap-3 pt-2 border-t border-white/10">
+            {uploaderPhoto ? (
+              <img
+                src={uploaderPhoto}
+                alt={uploaderName}
+                className="w-10 h-10 md:w-11 md:h-11 rounded-full object-cover border border-white/20"
+              />
+            ) : (
+              <div className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center font-bold text-white">
+                {uploaderInitial}
               </div>
             )}
-            <p className="text-white/90 leading-relaxed text-sm md:text-base">{item.description}</p>
-          </div>
-          <div className="text-sm mt-4 md:mt-0">
-            <p className="text-white/40 mb-1">Category</p>
-            <p className="text-white/90 mb-4">{item.category}</p>
-            <p className="text-white/40 mb-1">Type</p>
-            <p className="text-white/90">{item.type}</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] uppercase tracking-widest text-white/40">
+                Uploaded by
+              </p>
+              {uploaderSlug ? (
+                <a
+                  href={`/podcaster/${uploaderSlug}`}
+                  className="font-semibold text-white hover:underline block truncate"
+                >
+                  {uploaderName}
+                </a>
+              ) : (
+                <p className="font-semibold text-white truncate">{uploaderName}</p>
+              )}
+            </div>
+
+            <div className="w-11 h-11 md:w-12 md:h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition flex-shrink-0">
+              <LikeButton videoId={item.id} size={22} stacked />
+            </div>
           </div>
         </div>
       </motion.div>
