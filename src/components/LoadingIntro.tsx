@@ -56,7 +56,7 @@ export default function LoadingIntro({ onDone }: { onDone: () => void }) {
           <div className="relative select-none">
             {/* Invisible base layer — reserves layout space only */}
             <img
-              src="/truth.png"
+              src="/trooflix-logo.jpg"
               alt=""
               draggable={false}
               className="w-[82vw] max-w-[520px] md:max-w-[680px] invisible"
@@ -64,7 +64,7 @@ export default function LoadingIntro({ onDone }: { onDone: () => void }) {
 
             {/* Filling layer: full-color logo revealed left → right */}
             <motion.img
-              src="/truth.png"
+              src="/trooflix-logo.jpg"
               alt=""
               draggable={false}
               initial={{ clipPath: "inset(0 100% 0 0)" }}
