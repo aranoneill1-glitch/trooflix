@@ -16,6 +16,7 @@ import {
   Bookmark,
   Share2,
   Mic,
+  Plus,
 } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
@@ -202,24 +203,33 @@ export default function ProfilePage() {
           <>
             {/* ---- Avatar + stats ---- */}
             <div className="flex items-center gap-6 mb-4">
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-                className="relative w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center flex-shrink-0 overflow-hidden"
-              >
-                {profile?.avatar_url ? (
-                  <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-3xl font-bold">
-                    {(name[0] || "?").toUpperCase()}
-                  </span>
-                )}
-                {uploading && (
-                  <div className="absolute inset-0 bg-black/70 flex items-center justify-center text-xs">
-                    …
-                  </div>
-                )}
-              </button>
+              <div className="relative flex-shrink-0">
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  className="relative w-20 h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center overflow-hidden"
+                >
+                  {profile?.avatar_url ? (
+                    <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-3xl font-bold">
+                      {(name[0] || "?").toUpperCase()}
+                    </span>
+                  )}
+                  {uploading && (
+                    <div className="absolute inset-0 bg-black/70 flex items-center justify-center text-xs">
+                      …
+                    </div>
+                  )}
+                </button>
+                <Link
+                    href="/profile/upload"
+                    className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-red-600 border-2 border-black flex items-center justify-center hover:bg-red-500 transition"
+                    aria-label="Upload reel"
+                  >
+                    <Plus size={16} strokeWidth={3} />
+                  </Link>
+              </div>
               <input
                 ref={fileInputRef}
                 type="file"

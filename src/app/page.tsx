@@ -49,6 +49,7 @@ type Video = {
   match: number;
   duration: string;
   creatorId?: number | null;
+  uploaderUserId?: string | null;
 };
 
 const CATEGORIES: string[] = [
@@ -127,10 +128,11 @@ export default function Home() {
   }, []);
 
   // Hero — featured non-podcaster video (Loose Change etc.)
-  const heroPool = videos.filter((v) => v.featured && !v.creatorId);
+  const heroPool = videos.filter((v) => v.featured && !v.creatorId && !v.uploaderUserId);
 
   // New Releases + Trending — Documentaries and Podcasts only
-  const isDocOrPodcast = (v: Video) => v.type === "Documentary" || v.type === "Podcast";
+  const isDocOrPodcast = (v: Video) =>
+    !v.uploaderUserId && (v.type === "Documentary" || v.type === "Podcast");
 
   const newReleases = videos
     .filter(isDocOrPodcast)
