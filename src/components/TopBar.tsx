@@ -133,16 +133,17 @@ export default function TopBar({ onMenu }: Props) {
           </>
         )}
 
-        <Link
-          href="/messages"
-          className="text-white/90 hover:text-white transition"
-          aria-label="Messages"
-        >
-          <MessageCircle size={20} />
-        </Link>
-
-        {/* Avatar / user menu */}
-        <UserMenu />
+        {/* Desktop only: messages + avatar. Mobile has these in bottom nav / profile. */}
+        <div className="hidden md:flex items-center gap-3">
+          <Link
+            href="/messages"
+            className="text-white/90 hover:text-white transition"
+            aria-label="Messages"
+          >
+            <MessageCircle size={20} />
+          </Link>
+          <UserMenu />
+        </div>
       </div>
     </nav>
   );
