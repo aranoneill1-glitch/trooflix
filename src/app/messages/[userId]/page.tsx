@@ -82,6 +82,7 @@ export default function ThreadPage() {
   const [editFor, setEditFor] = useState<Message | null>(null);
   const [editBody, setEditBody] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
+  const [reelCache, setReelCache] = useState<Record<number, any>>({});
   const longPressRef = useRef<{ timer: any; fired: boolean } | null>(null);
   const [loading, setLoading] = useState(true);
   const [body, setBody] = useState("");
@@ -315,6 +316,37 @@ export default function ThreadPage() {
   }
 
 
+  // ---- Reel detection + fetch ----
+  const REEL_PREFIX = "__REEL__:";
+  const isReelMessage = (body: string) => body.startsWith(REEL_PREFIX);
+  const reelIdOf = (body: string) => Number(body.slice(REEL_PREFIX.length));
+
+  useEffect(() => {
+    if (!messages.length) return;
+    const missing: number[] = [];
+    for (const m of messages) {
+      if (isReelMessage(m.body)) {
+        const id = reelIdOf(m.body);
+        if (id && !reelCache[id]) missing.push(id);
+      }
+    }
+    if (missing.length === 0) return;
+    fetch("/api/videos")
+      .then((r) => r.json())
+      .then((all: any[]) => {
+        const arr = Array.isArray(all) ? all : [];
+        const found: Record<number, any> = {};
+        for (const id of missing) {
+          const v = arr.find((x: any) => Number(x.id) === id);
+          if (v) found[id] = v;
+        }
+        if (Object.keys(found).length > 0) {
+          setReelCache((prev) => ({ ...prev, ...found }));
+        }
+      })
+      .catch(() => {});
+  }, [messages, reelCache]);
+
   // ---- Long-press / right-click on a message bubble ----
   const startLongPress = (m: Message) => {
     if (m.id < 0) return; // optimistic, not yet saved
@@ -497,7 +529,41 @@ export default function ThreadPage() {
                   }}
                   style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", userSelect: "none" }}
                 >
-                  {isMediaUrl(m.body) ? (
+                  {isReelMessage(m.body) ? (() => {
+                    const rid = reelIdOf(m.body);
+                    const reel = reelCache[rid];
+                    return (
+                      <a
+                        href={`/feed?reel=${rid}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                        }}
+                        className="block w-64 max-w-full"
+                      >
+                        <div className="rounded-2xl overflow-hidden bg-black/60">
+                          {reel?.posterUrl || reel?.backdropUrl ? (
+                            <img
+                              src={reel.posterUrl || reel.backdropUrl}
+                              alt={reel?.title || "Reel"}
+                              className="w-full aspect-[4/5] object-cover"
+                            />
+                          ) : (
+                            <div className="w-full aspect-[4/5] bg-black/40 flex items-center justify-center text-white/40 text-sm">
+                              Loading…
+                            </div>
+                          )}
+                          <div className="px-3 py-2">
+                            <p className="text-[10px] uppercase tracking-widest text-white/50 mb-0.5">
+                              Reel
+                            </p>
+                            <p className="text-sm font-semibold text-white truncate">
+                              {reel?.title || "Tap to view"}
+                            </p>
+                          </div>
+                        </div>
+                      </a>
+                    );
+                  })() : isMediaUrl(m.body) ? (
                     <img
                       src={m.body}
                       alt=""

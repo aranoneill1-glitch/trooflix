@@ -13,6 +13,7 @@ import {
 import MobileBottomNav from "@/components/MobileBottomNav";
 import SaveButton from "@/components/SaveButton";
 import LikeButton, { externalLike } from "@/components/LikeButton";
+import ShareReelSheet from "@/components/ShareReelSheet";
 import ViewCount, { trackView } from "@/components/ViewCount";
 import CommentDrawer from "@/components/CommentDrawer";
 import VerifiedBadge from "@/components/VerifiedBadge";
@@ -149,6 +150,7 @@ function ReelCard({
   const [scrubbing, setScrubbing] = useState(false);
   const progressBarRef = useRef<HTMLDivElement>(null);
   const lastTapRef = useRef(0);
+  const [shareOpen, setShareOpen] = useState(false);
 
   const name = creator?.name || "TROOFLIX";
   const slug = creator?.slug;
@@ -262,9 +264,7 @@ function ReelCard({
   };
 
   const share = () => {
-    const url = `${window.location.origin}/podcaster/${slug || ""}/${video.id}`;
-    if (navigator.share) navigator.share({ title: video.title, url }).catch(() => {});
-    else navigator.clipboard.writeText(url);
+    setShareOpen(true);
   };
 
   const seekFromClientX = (clientX: number) => {
@@ -404,6 +404,13 @@ function ReelCard({
           </div>
         </div>
       </div>
+
+      <ShareReelSheet
+        open={shareOpen}
+        onClose={() => setShareOpen(false)}
+        videoId={video.id}
+        videoTitle={video.title}
+      />
     </section>
   );
 }
@@ -532,6 +539,26 @@ export default function FeedPage() {
       })
       .catch(() => setLoading(false));
   }, []);
+
+  // Scroll to reel from URL on mount (window-based, no Suspense needed)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const reelParam = params.get("reel");
+    if (!reelParam) return;
+    const targetId = Number(reelParam);
+    if (!targetId) return;
+
+    const t = setTimeout(() => {
+      const el = scrollerRef.current;
+      if (!el) return;
+      const card = el.querySelector<HTMLElement>(`[data-reel-index="${targetId}"]`);
+      if (card) {
+        card.scrollIntoView({ behavior: "auto", block: "start" });
+      }
+    }, 400);
+    return () => clearTimeout(t);
+  }, [videos.length]);
 
   // Track active index via IntersectionObserver
   useEffect(() => {
