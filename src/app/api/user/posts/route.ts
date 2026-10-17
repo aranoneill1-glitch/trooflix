@@ -46,11 +46,13 @@ export async function GET(req: Request) {
     }
 
     // Uploads only — matches either creatorId (podcaster videos) or uploaderUserId (regular user reels)
+    // Exclude Troos — they appear in feed, not on profiles
     const uploads = allVideos
       .filter(
         (v: any) =>
-          (creatorId !== null && v.creatorId === creatorId) ||
-          v.uploaderUserId === userId
+          v.type !== "Troo" &&
+          ((creatorId !== null && v.creatorId === creatorId) ||
+            v.uploaderUserId === userId)
       )
       .sort((a: any, b: any) => {
         const at = a.createdAt ? new Date(a.createdAt).getTime() : a.id;
