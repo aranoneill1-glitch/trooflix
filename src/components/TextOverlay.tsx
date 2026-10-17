@@ -66,7 +66,7 @@ export default function TextOverlayRenderer({
         return (
           <div
             key={o.id}
-            className={`absolute whitespace-pre-wrap leading-tight ${SIZE_MAP[o.size] || SIZE_MAP.md}`}
+            className={`absolute whitespace-nowrap leading-tight px-2 py-0.5 ${SIZE_MAP[o.size] || SIZE_MAP.md}`}
             style={{
               left: `${o.x * 100}%`,
               top: `${o.y * 100}%`,
@@ -74,7 +74,6 @@ export default function TextOverlayRenderer({
               color: o.color || "#ffffff",
               textShadow: "0 2px 6px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,0.9)",
               maxWidth: "90%",
-              wordBreak: "break-word",
               ...fs,
             }}
           >

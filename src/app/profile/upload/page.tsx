@@ -122,16 +122,12 @@ export default function UserUploadPage() {
   // (poster is optional; the editor/details flow handles empty poster gracefully)
   useEffect(() => {
     if (!videoUrl || uploading || generatingPoster) return;
-    // Small delay to let poster generation finish if it's quick (2s max)
-    const t = setTimeout(() => {
-      const params = new URLSearchParams({
-        v: videoUrl,
-        p: posterUrl,
-        d: duration !== null ? String(Math.round(duration)) : "",
-      });
-      router.push(`/profile/upload/editor?${params.toString()}`);
-    }, 500);
-    return () => clearTimeout(t);
+    const params = new URLSearchParams({
+      v: videoUrl,
+      p: posterUrl,
+      d: duration !== null ? String(Math.round(duration)) : "",
+    });
+    router.push(`/profile/upload/editor?${params.toString()}`);
   }, [videoUrl, posterUrl, generatingPoster, uploading, duration, router]);
 
   // ---- Pinch to scale ----

@@ -134,16 +134,16 @@ export default function EditorPage() {
               <div
                 key={o.id}
                 onPointerDown={(e) => startDrag(e, o)}
-                className={`absolute whitespace-pre-wrap leading-tight cursor-move select-none ${sizeClass} ${editingOverlay === o.id ? "ring-2 ring-red-500/60 rounded px-1" : ""}`}
+                className={`absolute whitespace-nowrap leading-tight cursor-move select-none px-2 py-0.5 ${sizeClass} ${editingOverlay === o.id ? "ring-2 ring-red-500/60 rounded" : ""}`}
                 style={{
                   left: `${o.x * 100}%`,
                   top: `${o.y * 100}%`,
                   transform: "translate(-50%, -50%)",
                   color: o.color || "#ffffff",
                   textShadow: "0 2px 6px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,0.9)",
-                  maxWidth: "90%",
-                  wordBreak: "break-word",
+                  maxWidth: "80vw",
                   touchAction: "none",
+                  whiteSpace: "pre",
                   ...fs,
                 }}
               >
