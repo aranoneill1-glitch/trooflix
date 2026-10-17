@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Upload, Check } from "lucide-react";
+import { Check } from "lucide-react";
 import { grabVideoPoster } from "@/lib/grabVideoPoster";
 
 const MAX_SECONDS = 90;
@@ -137,18 +137,17 @@ export default function UploadPage() {
       <div className="max-w-md w-full text-center space-y-4">
         {!uploading && !error && (
           <>
-            <Upload className="mx-auto text-white/40" size={40} />
-            <p className="text-lg font-semibold">Choose a video to upload</p>
-            <p className="text-sm text-white/50">MP4, WebM, MOV · max {MAX_SECONDS}s</p>
+            <p className="text-2xl md:text-3xl font-black tracking-tight mb-2">UPLOAD A REEL</p>
+            <p className="text-sm text-white/50 mb-6">MP4, WebM, MOV · max {MAX_SECONDS}s</p>
             <button
               onClick={() => inputRef.current?.click()}
-              className="mt-4 px-6 py-3 bg-red-600 hover:bg-red-500 rounded-lg font-semibold transition"
+              className="px-8 py-3 bg-red-600 hover:bg-red-500 rounded-lg font-semibold transition"
             >
               Choose video
             </button>
             <button
               onClick={() => router.push("/profile")}
-              className="block mx-auto text-xs text-white/40 hover:text-white transition mt-2"
+              className="block mx-auto text-xs text-white/40 hover:text-white transition mt-3"
             >
               Cancel
             </button>
@@ -170,7 +169,7 @@ export default function UploadPage() {
         {stage === "poster" && (
           <>
             <Check className="mx-auto text-green-400" size={40} />
-            <p className="text-lg font-semibold">Generating thumbnail…</p>
+            <p className="text-lg font-semibold">Generating video…</p>
             <p className="text-sm text-white/50">Opening editor…</p>
           </>
         )}
