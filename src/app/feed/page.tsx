@@ -280,7 +280,7 @@ function ReelCard({
   return (
     <section
       data-reel-index={video.id}
-      className="relative w-full snap-start snap-always flex items-center justify-center overflow-hidden bg-black"
+      className="relative w-full md:max-w-[450px] md:mx-auto snap-start snap-always flex items-center justify-center overflow-hidden bg-black"
       style={{
         scrollSnapAlign: "start",
         height: "calc(100dvh - 64px - env(safe-area-inset-bottom))",
