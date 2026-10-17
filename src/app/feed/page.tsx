@@ -349,12 +349,12 @@ function PostCard({
 
       {/* Media */}
       {isReel && (
-        <div className="relative w-full aspect-[4/5] bg-black overflow-hidden">
+        <div className="relative w-full bg-black overflow-hidden">
           <video
             ref={videoRef}
             src={post.videoUrl ?? post.bitchuteUrl ?? ""}
             poster={post.posterUrl}
-            className="w-full h-full object-cover cursor-pointer"
+            className="w-full h-auto max-h-[80vh] object-contain cursor-pointer"
             muted
             loop
             playsInline
