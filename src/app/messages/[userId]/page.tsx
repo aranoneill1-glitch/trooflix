@@ -9,12 +9,15 @@ import {
   Check,
   CheckCheck,
   Camera,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { useRealtimeDMs } from "@/hooks/useRealtimeDMs";
 import GifPicker from "@/components/GifPicker";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import { getCachedUser } from "@/lib/cache";
+import { motion, AnimatePresence } from "framer-motion";
 
 type Message = {
   id: number;
@@ -75,6 +78,11 @@ export default function ThreadPage() {
   const [me, setMe] = useState<string | null>(null);
   const [other, setOther] = useState<Profile | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [actionSheetFor, setActionSheetFor] = useState<Message | null>(null);
+  const [editFor, setEditFor] = useState<Message | null>(null);
+  const [editBody, setEditBody] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
+  const longPressRef = useRef<{ timer: any; fired: boolean } | null>(null);
   const [loading, setLoading] = useState(true);
   const [body, setBody] = useState("");
   const [sending, setSending] = useState(false);
@@ -306,6 +314,76 @@ export default function ThreadPage() {
     }
   }
 
+
+  // ---- Long-press / right-click on a message bubble ----
+  const startLongPress = (m: Message) => {
+    if (m.id < 0) return; // optimistic, not yet saved
+    longPressRef.current = {
+      timer: setTimeout(() => {
+        if (longPressRef.current) longPressRef.current.fired = true;
+        setActionSheetFor(m);
+      }, 500),
+      fired: false,
+    };
+  };
+
+  const cancelLongPress = () => {
+    if (longPressRef.current) {
+      clearTimeout(longPressRef.current.timer);
+      longPressRef.current = null;
+    }
+  };
+
+  const handleMessageClick = (e: React.MouseEvent) => {
+    if (longPressRef.current?.fired) {
+      e.preventDefault();
+      e.stopPropagation();
+      longPressRef.current = null;
+    }
+  };
+
+  const deleteMessage = async (m: Message) => {
+    if (!me) return;
+    if (!confirm("Delete this message?")) return;
+    setActionSheetFor(null);
+    const res = await fetch(`/api/dm?id=${m.id}&userId=${me}`, { method: "DELETE" });
+    if (res.ok) {
+      setMessages((prev) => prev.filter((x) => x.id !== m.id));
+    } else {
+      alert("Could not delete.");
+    }
+  };
+
+  const openEdit = (m: Message) => {
+    setEditFor(m);
+    setEditBody(m.body);
+    setActionSheetFor(null);
+  };
+
+  const saveEdit = async () => {
+    if (!editFor || !me) return;
+    const trimmed = editBody.trim();
+    if (!trimmed) return;
+    setSavingEdit(true);
+    const res = await fetch("/api/dm", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: editFor.id, senderId: me, body: trimmed }),
+    });
+    setSavingEdit(false);
+    if (res.ok) {
+      const d = await res.json();
+      setMessages((prev) =>
+        prev.map((x) => (x.id === editFor.id ? { ...x, body: d.message?.body || trimmed } : x))
+      );
+      setEditFor(null);
+      setEditBody("");
+    } else {
+      const d = await res.json();
+      alert(d.error || "Could not save");
+    }
+  };
+
   return (
     <main className="min-h-screen bg-black text-white flex flex-col">
       {/* Header — white bar */}
@@ -408,6 +486,16 @@ export default function ThreadPage() {
                   className={`relative max-w-[78%] md:max-w-[65%] px-3 py-2 text-[15px] leading-[1.35] break-words ${
                     mine ? "bg-[#dc2626]" : "bg-white/10"
                   } text-white rounded-3xl ${tailCorner}`}
+                  onPointerDown={() => startLongPress(m)}
+                  onPointerUp={cancelLongPress}
+                  onPointerLeave={cancelLongPress}
+                  onPointerCancel={cancelLongPress}
+                  onClick={handleMessageClick}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    if (m.id > 0) setActionSheetFor(m);
+                  }}
+                  style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", userSelect: "none" }}
                 >
                   {isMediaUrl(m.body) ? (
                     <img
@@ -540,6 +628,95 @@ export default function ThreadPage() {
           }
         }}
       />
+      {/* ---- Message action sheet ---- */}
+      <AnimatePresence>
+        {actionSheetFor && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setActionSheetFor(null)}
+              className="fixed inset-0 z-[400] bg-black/70"
+            />
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 32, stiffness: 320 }}
+              className="fixed left-0 right-0 bottom-0 z-[401] bg-[#0f0f12] rounded-t-2xl md:max-w-md md:mx-auto md:rounded-2xl md:bottom-4"
+            >
+              <div className="flex justify-center pt-2.5">
+                <div className="w-10 h-1 rounded-full bg-white/25" />
+              </div>
+              <div className="p-2">
+                {!isMediaUrl(actionSheetFor.body) && actionSheetFor.sender_id === me && (
+                  <button
+                    onClick={() => openEdit(actionSheetFor)}
+                    className="w-full flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-white/5 transition text-left"
+                  >
+                    <Pencil size={20} className="text-white/80" />
+                    <span className="font-medium">Edit</span>
+                  </button>
+                )}
+                <button
+                  onClick={() => deleteMessage(actionSheetFor)}
+                  className="w-full flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-red-500/10 transition text-left text-red-400"
+                >
+                  <Trash2 size={20} />
+                  <span className="font-medium">Delete</span>
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* ---- Edit message modal ---- */}
+      <AnimatePresence>
+        {editFor && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => !savingEdit && setEditFor(null)}
+              className="fixed inset-0 z-[500] bg-black/80"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[501] bg-[#0f0f12] rounded-2xl p-4 w-[90vw] max-w-sm border border-white/10"
+            >
+              <h3 className="font-bold mb-3">Edit message</h3>
+              <textarea
+                value={editBody}
+                onChange={(e) => setEditBody(e.target.value)}
+                rows={3}
+                autoFocus
+                className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 outline-none focus:border-red-600 resize-none text-sm"
+              />
+              <div className="flex gap-2 mt-3">
+                <button
+                  onClick={() => !savingEdit && setEditFor(null)}
+                  className="flex-1 py-2 rounded-lg bg-white/10 hover:bg-white/20 font-semibold transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={saveEdit}
+                  disabled={savingEdit || !editBody.trim()}
+                  className="flex-1 py-2 rounded-lg bg-red-600 hover:bg-red-500 disabled:opacity-50 font-semibold transition"
+                >
+                  {savingEdit ? "Saving…" : "Save"}
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
     </main>
   );
 }

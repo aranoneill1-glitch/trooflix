@@ -158,3 +158,81 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: String(e) }, { status: 500 });
   }
 }
+
+// PUT /api/dm — { id, senderId, body } — edit a message (only sender can edit)
+export async function PUT(req: Request) {
+  try {
+    const { id, senderId, body } = await req.json();
+    if (!id || !senderId || body === undefined) {
+      return NextResponse.json({ error: "id, senderId, body required" }, { status: 400 });
+    }
+
+    const trimmed = String(body).trim();
+    if (trimmed.length === 0) {
+      return NextResponse.json({ error: "Message is empty" }, { status: 400 });
+    }
+    if (trimmed.length > MAX_BODY) {
+      return NextResponse.json({ error: `Max ${MAX_BODY} chars` }, { status: 400 });
+    }
+
+    // Verify ownership
+    const { data: existing } = await supabaseAdmin
+      .from("direct_messages")
+      .select("sender_id")
+      .eq("id", Number(id))
+      .maybeSingle();
+
+    if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    if (existing.sender_id !== senderId) {
+      return NextResponse.json({ error: "Cannot edit someone else's message" }, { status: 403 });
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from("direct_messages")
+      .update({ body: trimmed })
+      .eq("id", Number(id))
+      .select()
+      .single();
+
+    if (error) throw error;
+    return NextResponse.json({ ok: true, message: data });
+  } catch (e: any) {
+    console.error("PUT dm error:", e);
+    return NextResponse.json({ error: String(e) }, { status: 500 });
+  }
+}
+
+// DELETE /api/dm — { id, userId } — delete a message (only sender can delete)
+export async function DELETE(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+    const userId = searchParams.get("userId");
+
+    if (!id || !userId) {
+      return NextResponse.json({ error: "id and userId required" }, { status: 400 });
+    }
+
+    const { data: existing } = await supabaseAdmin
+      .from("direct_messages")
+      .select("sender_id")
+      .eq("id", Number(id))
+      .maybeSingle();
+
+    if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    if (existing.sender_id !== userId) {
+      return NextResponse.json({ error: "Cannot delete someone else's message" }, { status: 403 });
+    }
+
+    const { error } = await supabaseAdmin
+      .from("direct_messages")
+      .delete()
+      .eq("id", Number(id));
+
+    if (error) throw error;
+    return NextResponse.json({ ok: true });
+  } catch (e: any) {
+    console.error("DELETE dm error:", e);
+    return NextResponse.json({ error: String(e) }, { status: 500 });
+  }
+}
