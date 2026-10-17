@@ -359,7 +359,30 @@ function PostCard({
         </div>
       </div>
 
-      {/* Media */}
+      {/* Caption / description — ABOVE the media (X-style) */}
+      {!isTroo && (post.title || post.description) && (
+        <div className="px-3 pb-3">
+          {post.title && (
+            <p className="text-sm font-semibold mb-0.5">{post.title}</p>
+          )}
+          {post.description && (
+            <p className="text-sm text-white/80 whitespace-pre-wrap line-clamp-4">
+              {post.description}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Troo body — text only, no media */}
+      {isTroo && (
+        <div className="px-4 py-2 pb-3">
+          <p className="text-base whitespace-pre-wrap leading-relaxed">
+            {post.description}
+          </p>
+        </div>
+      )}
+
+      {/* Media — reel or image */}
       {isReel && (
         <div className="relative w-full bg-black overflow-hidden">
           <video
@@ -373,10 +396,8 @@ function PostCard({
             preload="metadata"
             onClick={togglePlay}
           />
-
           <TextOverlayRenderer overlays={post.textOverlays} />
 
-          {/* Play/pause overlay indicator (fades when playing) */}
           {!playing && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="w-16 h-16 rounded-full bg-black/60 backdrop-blur flex items-center justify-center">
@@ -385,7 +406,6 @@ function PostCard({
             </div>
           )}
 
-          {/* Volume circle — bottom left */}
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -406,14 +426,6 @@ function PostCard({
           className="w-full h-auto object-contain bg-black"
           loading="lazy"
         />
-      )}
-
-      {isTroo && (
-        <div className="px-4 py-5">
-          <p className="text-base md:text-lg whitespace-pre-wrap leading-relaxed">
-            {post.description}
-          </p>
-        </div>
       )}
 
       {/* Action bar */}
@@ -443,24 +455,6 @@ function PostCard({
           <SaveButton videoId={post.id} variant="icon" />
         </div>
       </div>
-
-      {/* Caption */}
-      {!isTroo && post.description && (
-        <div className="px-3 pb-3">
-          {post.title && (
-            <p className="text-sm font-semibold mb-0.5">{post.title}</p>
-          )}
-          <p className="text-sm text-white/80 whitespace-pre-wrap line-clamp-3">
-            {post.description}
-          </p>
-        </div>
-      )}
-
-      {isTroo && post.title && (
-        <div className="px-3 pb-3">
-          <p className="text-[11px] text-white/40">{timeAgo(post.createdAt)}</p>
-        </div>
-      )}
     </article>
   );
 }
