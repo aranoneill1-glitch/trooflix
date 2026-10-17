@@ -10,14 +10,15 @@ import { getCachedUser } from "@/lib/cache";
 
 const TABS: {
   icon?: any;
+  red?: boolean;
   customImage?: string;
   label: string;
   path: string;
 }[] = [
   { customImage: "/icons/home.png", label: "Home", path: "/" },
-  { icon: Play, label: "Feed", path: "/feed" },
-  { icon: Mic, label: "Podcasts", path: "/podcasts" },
-  { icon: MessageCircle, label: "Messages", path: "/messages" },
+  { icon: Play, label: "Feed", path: "/feed", red: true },
+  { icon: Mic, label: "Podcasts", path: "/podcasts", red: true },
+  { icon: MessageCircle, label: "Messages", path: "/messages", red: true },
 ];
 
 export default function MobileBottomNav() {
@@ -83,7 +84,13 @@ export default function MobileBottomNav() {
               ) : (
                 <tab.icon
                   size={22}
-                  className={active ? "text-white" : "text-white/50"}
+                  className={
+                    tab.red
+                      ? "text-red-500"
+                      : active
+                      ? "text-white"
+                      : "text-white/50"
+                  }
                 />
               )}
               <span
