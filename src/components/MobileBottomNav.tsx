@@ -10,15 +10,14 @@ import { getCachedUser } from "@/lib/cache";
 
 const TABS: {
   icon?: any;
-  red?: boolean;
   customImage?: string;
   label: string;
   path: string;
 }[] = [
   { customImage: "/icons/home.png", label: "Home", path: "/" },
-  { icon: Play, label: "Feed", path: "/feed", red: true },
-  { icon: Mic, label: "Podcasts", path: "/podcasts", red: true },
-  { icon: MessageCircle, label: "Messages", path: "/messages", red: true },
+  { icon: Play, label: "Feed", path: "/feed" },
+  { icon: Mic, label: "Podcasts", path: "/podcasts" },
+  { icon: MessageCircle, label: "Messages", path: "/messages" },
 ];
 
 export default function MobileBottomNav() {
@@ -62,7 +61,7 @@ export default function MobileBottomNav() {
 
   return (
     <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur border-t border-white/10">
-      <div className="flex justify-around items-center pt-2 pb-5">
+      <div className="flex justify-around items-center pt-3 pb-4">
         {TABS.map((tab) => {
           const active = isActive(tab.path);
           return (
@@ -77,29 +76,17 @@ export default function MobileBottomNav() {
                 <img
                   src={tab.customImage}
                   alt=""
-                  className={`w-[22px] h-[22px] object-contain transition-opacity ${
-                    active ? "opacity-100" : "opacity-50"
+                  className={`w-[26px] h-[26px] object-contain transition-opacity ${
+                    active ? "opacity-100" : "opacity-70"
                   }`}
                 />
               ) : (
                 <tab.icon
-                  size={22}
-                  className={
-                    tab.red
-                      ? "text-red-500"
-                      : active
-                      ? "text-white"
-                      : "text-white/50"
-                  }
+                  size={26}
+                  className={active ? "text-white" : "text-white/60"}
                 />
               )}
-              <span
-                className={`text-[9px] leading-tight truncate w-full text-center ${
-                  active ? "text-white font-semibold" : "text-white/50"
-                }`}
-              >
-                {tab.label}
-              </span>
+
             </Link>
           );
         })}
