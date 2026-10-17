@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { X } from "lucide-react";
+import { X, ChevronDown, Play, Pause } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { fontStyle, type TextOverlay } from "@/components/TextOverlay";
 
@@ -16,9 +16,16 @@ export default function EditorPage() {
   const [textOverlays, setTextOverlays] = useState<TextOverlay[]>([]);
   const [editingOverlay, setEditingOverlay] = useState<string | null>(null);
   const [showTextSheet, setShowTextSheet] = useState(false);
+  const [showTimeline, setShowTimeline] = useState(false);
+  const [trimStart, setTrimStart] = useState(0);
+  const [trimEnd, setTrimEnd] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [videoDuration, setVideoDuration] = useState(0);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const previewRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<{ id: string; startX: number; startY: number; origX: number; origY: number; moved: boolean } | null>(null);
+  const swipeRef = useRef<{ startY: number; fired: boolean } | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -42,6 +49,8 @@ export default function EditorPage() {
       p: posterUrl,
       d: duration !== null ? String(Math.round(duration)) : "",
       t: JSON.stringify(textOverlays),
+      ts: String(trimStart),
+      te: String(trimEnd),
     });
     router.push(`/profile/upload/details?${params.toString()}`);
   };
@@ -97,6 +106,40 @@ export default function EditorPage() {
     dragRef.current = null;
   };
 
+  // ---- Swipe up gesture ----
+  const onSwipeStart = (e: React.TouchEvent) => {
+    // Don't capture swipes that start on a text overlay
+    const target = e.target as HTMLElement;
+    if (target.closest("[data-text-overlay]")) return;
+    swipeRef.current = { startY: e.touches[0].clientY, fired: false };
+  };
+
+  const onSwipeMove = (e: React.TouchEvent) => {
+    if (!swipeRef.current || swipeRef.current.fired) return;
+    const deltaY = swipeRef.current.startY - e.touches[0].clientY;
+    if (deltaY > 60) {
+      swipeRef.current.fired = true;
+      setShowTimeline(true);
+    }
+  };
+
+  const onSwipeEnd = () => {
+    swipeRef.current = null;
+  };
+
+  const seekVideo = (t: number) => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = t;
+      setCurrentTime(t);
+    }
+  };
+
+  const formatTime = (sec: number) => {
+    const s = Math.floor(sec);
+    const m = Math.floor(s / 60);
+    return `${m}:${String(s % 60).padStart(2, "0")}`;
+  };
+
   if (!videoUrl) {
     return (
       <main className="min-h-screen bg-black text-white flex items-center justify-center">
@@ -113,10 +156,14 @@ export default function EditorPage() {
           onPointerMove={moveDrag}
           onPointerUp={endDrag}
           onPointerCancel={endDrag}
+          onTouchStart={onSwipeStart}
+          onTouchMove={onSwipeMove}
+          onTouchEnd={onSwipeEnd}
           className="relative bg-black select-none h-full"
           style={{ aspectRatio: "9 / 16", maxWidth: "100vw" }}
         >
           <video
+            ref={videoRef}
             src={videoUrl}
             className="w-full h-full object-cover"
             muted
@@ -124,6 +171,14 @@ export default function EditorPage() {
             autoPlay
             playsInline
             preload="auto"
+            onLoadedMetadata={(e) => {
+              const v = e.currentTarget;
+              setVideoDuration(v.duration || 0);
+              if (trimEnd === 0) setTrimEnd(v.duration || 0);
+            }}
+            onTimeUpdate={(e) => {
+              setCurrentTime(e.currentTarget.currentTime);
+            }}
           />
 
           {textOverlays.map((o) => {
@@ -133,6 +188,7 @@ export default function EditorPage() {
             return (
               <div
                 key={o.id}
+                data-text-overlay
                 onPointerDown={(e) => startDrag(e, o)}
                 className={`absolute whitespace-nowrap leading-tight cursor-move select-none px-2 py-0.5 ${sizeClass} ${editingOverlay === o.id ? "ring-2 ring-red-500/60 rounded" : ""}`}
                 style={{
@@ -198,6 +254,190 @@ export default function EditorPage() {
           </button>
         </div>
       </div>
+
+      {/* ---- Timeline panel (swipe up) ---- */}
+      <AnimatePresence>
+        {showTimeline && (
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 32, stiffness: 320 }}
+            className="fixed inset-0 z-[500] bg-black flex flex-col"
+          >
+            {/* Top controls */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+              <button
+                onClick={() => setShowTimeline(false)}
+                className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition"
+                aria-label="Close timeline"
+              >
+                <ChevronDown size={22} />
+              </button>
+              <div className="text-center">
+                <p className="text-sm font-semibold">Trim</p>
+              </div>
+              <button
+                onClick={goNext}
+                className="px-5 py-2 rounded-full bg-red-600 hover:bg-red-500 text-sm font-semibold"
+              >
+                Next →
+              </button>
+            </div>
+
+            {/* Preview area — mini video */}
+            <div className="flex-1 flex items-center justify-center p-4 bg-black overflow-hidden">
+              <div
+                className="relative bg-black"
+                style={{ aspectRatio: "9 / 16", height: "100%", maxWidth: "100vw" }}
+              >
+                <video
+                  ref={videoRef}
+                  src={videoUrl}
+                  className="w-full h-full object-contain"
+                  muted
+                  loop
+                  autoPlay
+                  playsInline
+                  onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
+                />
+              </div>
+            </div>
+
+            {/* Time indicator */}
+            <div className="flex items-center justify-center gap-2 py-2 text-sm text-white/70">
+              <span className="tabular-nums">{formatTime(currentTime)}</span>
+              <span className="text-white/30">/</span>
+              <span className="tabular-nums">{formatTime(videoDuration)}</span>
+            </div>
+
+            {/* Timeline tracks */}
+            <div className="px-4 pb-4 space-y-2">
+              {/* Video track with trim handles */}
+              <div className="relative">
+                <div
+                  className="relative h-16 rounded-md overflow-hidden bg-white/10"
+                  style={{
+                    backgroundImage: posterUrl ? `url(${posterUrl})` : undefined,
+                    backgroundSize: "auto 100%",
+                    backgroundRepeat: "repeat-x",
+                  }}
+                >
+                  {/* Progress playhead */}
+                  <div
+                    className="absolute top-0 bottom-0 w-0.5 bg-white z-20 pointer-events-none"
+                    style={{ left: `${(currentTime / (videoDuration || 1)) * 100}%` }}
+                  />
+                  {/* Trim shading before start */}
+                  <div
+                    className="absolute top-0 bottom-0 left-0 bg-black/70 z-10 pointer-events-none"
+                    style={{ width: `${(trimStart / (videoDuration || 1)) * 100}%` }}
+                  />
+                  {/* Trim shading after end */}
+                  <div
+                    className="absolute top-0 bottom-0 right-0 bg-black/70 z-10 pointer-events-none"
+                    style={{ width: `${((videoDuration - trimEnd) / (videoDuration || 1)) * 100}%` }}
+                  />
+                </div>
+
+                {/* Left trim handle */}
+                <input
+                  type="range"
+                  min={0}
+                  max={videoDuration || 1}
+                  step={0.1}
+                  value={trimStart}
+                  onChange={(e) => {
+                    const v = Math.min(Number(e.target.value), trimEnd - 0.5);
+                    setTrimStart(v);
+                    seekVideo(v);
+                  }}
+                  className="absolute inset-0 w-full opacity-0 cursor-pointer"
+                  style={{ zIndex: 15 }}
+                />
+
+                {/* Right trim handle */}
+                <input
+                  type="range"
+                  min={0}
+                  max={videoDuration || 1}
+                  step={0.1}
+                  value={trimEnd}
+                  onChange={(e) => {
+                    const v = Math.max(Number(e.target.value), trimStart + 0.5);
+                    setTrimEnd(v);
+                    seekVideo(v);
+                  }}
+                  className="absolute inset-0 w-full opacity-0 cursor-pointer"
+                  style={{ zIndex: 16 }}
+                />
+
+                {/* Visual trim handles (decorative) */}
+                <div
+                  className="absolute top-0 bottom-0 w-1 bg-white rounded-l pointer-events-none z-20"
+                  style={{ left: `${(trimStart / (videoDuration || 1)) * 100}%` }}
+                />
+                <div
+                  className="absolute top-0 bottom-0 w-1 bg-white rounded-r pointer-events-none z-20"
+                  style={{ left: `${(trimEnd / (videoDuration || 1)) * 100}%` }}
+                />
+              </div>
+
+              {/* Text track */}
+              {textOverlays.length > 0 && (
+                <div className="space-y-1">
+                  <p className="text-[10px] uppercase tracking-wider text-white/40">Text</p>
+                  {textOverlays.map((o) => (
+                    <div
+                      key={o.id}
+                      onClick={() => {
+                        setEditingOverlay(o.id);
+                        setShowTimeline(false);
+                        setShowTextSheet(true);
+                      }}
+                      className="h-8 rounded-md bg-purple-600 hover:bg-purple-500 flex items-center px-2 cursor-pointer transition"
+                    >
+                      <span className="text-xs font-semibold text-white truncate">
+                        {o.text || "Untitled"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <p className="text-[10px] text-white/40 text-center pt-1">
+                Drag the white handles to trim · Tap text bars to edit
+              </p>
+            </div>
+
+            {/* Bottom action bar */}
+            <div className="flex justify-around py-3 border-t border-white/10">
+              <button
+                onClick={() => {
+                  if (videoRef.current) {
+                    if (videoRef.current.paused) videoRef.current.play();
+                    else videoRef.current.pause();
+                  }
+                }}
+                className="flex flex-col items-center gap-1 px-3 py-2 rounded-lg hover:bg-white/5 transition"
+              >
+                <Play size={22} className="text-white" />
+                <span className="text-[10px] text-white/80">Play</span>
+              </button>
+              <button
+                onClick={() => {
+                  setShowTimeline(false);
+                  addTextOverlay();
+                }}
+                className="flex flex-col items-center gap-1 px-3 py-2 rounded-lg hover:bg-white/5 transition"
+              >
+                <span className="text-lg font-serif text-white">Aa</span>
+                <span className="text-[10px] text-white/80">Text</span>
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Text controls sheet */}
       <AnimatePresence>
