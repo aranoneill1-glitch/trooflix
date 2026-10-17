@@ -194,7 +194,7 @@ export default function FeedPage() {
     <main className="min-h-screen bg-black text-white pb-20 lg:pb-0">
 
       {/* Toggle */}
-      <div className="sticky top-[64px] z-40 bg-black border-b border-white/5">
+      <div className="sticky top-0 z-40 bg-black border-b border-white/5 pt-[env(safe-area-inset-top)]">
         <div className="max-w-lg mx-auto flex">
           <button
             onClick={() => setFilter("all")}
