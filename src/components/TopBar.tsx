@@ -9,7 +9,6 @@ import UserMenu from "@/components/UserMenu";
 
 const NAV_TABS = [
   { label: "Home", path: "/" },
-  { label: "Documentaries", path: "/documentaries" },
   { label: "Podcasts", path: "/podcasts" },
   { label: "Feed", path: "/feed" },
 ];

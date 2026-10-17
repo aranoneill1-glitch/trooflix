@@ -63,7 +63,7 @@ const CATEGORIES: string[] = [
   "The Unknown",
 ];
 
-const NAV_TABS: string[] = ["Home", "Documentaries", "Podcasts", "Feed"];
+const NAV_TABS: string[] = ["Home", "Podcasts", "Feed"];
 
 export default function Home() {
   const [videos, setVideos] = useState<Video[]>([]);
