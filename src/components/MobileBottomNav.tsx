@@ -62,7 +62,7 @@ export default function MobileBottomNav() {
 
   return (
     <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-black/95 backdrop-blur border-t border-white/10">
-      <div className="flex justify-around items-center pt-1.5 pb-2">
+      <div className="flex justify-around items-center pt-2 pb-5">
         {TABS.map((tab) => {
           const active = isActive(tab.path);
           return (
