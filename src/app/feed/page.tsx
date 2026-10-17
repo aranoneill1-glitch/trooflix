@@ -3,13 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Heart,
+import {Heart,
   MessageCircle,
   Send,
   Volume2,
-  VolumeX,
-} from "lucide-react";
+  VolumeX, ChevronLeft} from "lucide-react";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import SaveButton from "@/components/SaveButton";
 import LikeButton, { externalLike } from "@/components/LikeButton";
@@ -152,6 +150,7 @@ function ReelCard({
   const [scrubbing, setScrubbing] = useState(false);
   const progressBarRef = useRef<HTMLDivElement>(null);
   const lastTapRef = useRef(0);
+  const [railCollapsed, setRailCollapsed] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
 
   const name = creator?.name || "TROOFLIX";
@@ -322,22 +321,41 @@ function ReelCard({
       />
 
       {/* Right rail */}
-      <div className="absolute right-3 bottom-24 z-20 flex flex-col items-center gap-5">
+      <div className="absolute right-3 bottom-24 z-20 flex flex-col items-center">
+        {/* Collapse toggle */}
         <button
-          onClick={onToggleMute}
-          className="flex flex-col items-center text-white"
-          aria-label={muted ? "Unmute" : "Mute"}
+          onClick={() => setRailCollapsed((v) => !v)}
+          className="w-8 h-8 rounded-full bg-white/15 backdrop-blur hover:bg-white/25 flex items-center justify-center text-white/80 hover:text-white transition mb-3"
+          aria-label={railCollapsed ? "Show actions" : "Hide actions"}
         >
-          {muted ? <VolumeX size={28} /> : <Volume2 size={28} />}
+          <ChevronLeft
+            size={16}
+            className={`transition-transform duration-300 ${railCollapsed ? "rotate-180" : ""}`}
+          />
         </button>
-        <div data-reel-like={video.id}>
-          <LikeButton videoId={video.id} size={30} stacked />
+
+        {/* Actions */}
+        <div
+          className={`flex flex-col items-center gap-5 transition-all duration-300 ease-out ${
+            railCollapsed ? "opacity-0 translate-x-8 pointer-events-none" : "opacity-100 translate-x-0 pointer-events-auto"
+          }`}
+        >
+          <button
+            onClick={onToggleMute}
+            className="flex flex-col items-center text-white"
+            aria-label={muted ? "Unmute" : "Mute"}
+          >
+            {muted ? <VolumeX size={28} /> : <Volume2 size={28} />}
+          </button>
+          <div data-reel-like={video.id}>
+            <LikeButton videoId={video.id} size={30} stacked />
+          </div>
+          <CommentCountStacked videoId={video.id} onClick={onOpenComments} />
+          <button onClick={share} className="flex flex-col items-center text-white" aria-label="Share">
+            <Send size={28} />
+          </button>
+          <SaveButton videoId={video.id} variant="icon" />
         </div>
-        <CommentCountStacked videoId={video.id} onClick={onOpenComments} />
-        <button onClick={share} className="flex flex-col items-center text-white" aria-label="Share">
-          <Send size={28} />
-        </button>
-        <SaveButton videoId={video.id} variant="icon" />
       </div>
 
       <AnimatePresence>
