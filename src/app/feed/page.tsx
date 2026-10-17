@@ -222,7 +222,9 @@ export default function FeedPage() {
 
       <div className="pt-0 space-y-0">
         {loading && (
-          <p className="text-center text-white/50 py-12">Loading…</p>
+          <div className="w-full h-64 flex items-center justify-center">
+            {/* Empty skeleton to prevent layout shift, no text */}
+          </div>
         )}
 
         {!loading && posts.length === 0 && (
@@ -356,12 +358,24 @@ function PostCard({
       <div className="flex gap-3 p-3">
         {/* Left Column - Avatar */}
         <div className="flex-shrink-0">
-          {author.avatar ? (
-            <img src={author.avatar} alt="" className="w-10 h-10 rounded-full object-cover" />
+          {author.href ? (
+            <Link href={author.href}>
+              {author.avatar ? (
+                <img src={author.avatar} alt="" className="w-10 h-10 rounded-full object-cover" />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-sm font-bold text-white">
+                  {author.name[0]?.toUpperCase() || "?"}
+                </div>
+              )}
+            </Link>
           ) : (
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-sm font-bold text-white">
-              {author.name[0]?.toUpperCase() || "?"}
-            </div>
+            author.avatar ? (
+              <img src={author.avatar} alt="" className="w-10 h-10 rounded-full object-cover" />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-sm font-bold text-white">
+                {author.name[0]?.toUpperCase() || "?"}
+              </div>
+            )
           )}
         </div>
 
@@ -370,7 +384,13 @@ function PostCard({
           {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1 text-sm truncate">
-              <span className="font-bold text-white truncate">{author.name}</span>
+              {author.href ? (
+                <Link href={author.href} className="font-bold text-white truncate hover:underline">
+                  {author.name}
+                </Link>
+              ) : (
+                <span className="font-bold text-white truncate">{author.name}</span>
+              )}
               {author.verified && <VerifiedBadge size={14} />}
               <span className="text-white/50 truncate">{author.handle}</span>
               <span className="text-white/50">·</span>

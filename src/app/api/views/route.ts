@@ -7,8 +7,17 @@ const supabaseAdmin = createServerClient(
   { auth: { autoRefreshToken: false, persistSession: false } }
 );
 
+let cachedCounts: Record<number, number> | null = null;
+let lastFetch = 0;
+const CACHE_TTL = 5000; // 5 seconds
+
 export async function GET() {
   try {
+    const now = Date.now();
+    if (cachedCounts && now - lastFetch < CACHE_TTL) {
+      return NextResponse.json({ counts: cachedCounts });
+    }
+
     const { data, error } = await supabaseAdmin
       .from("views")
       .select("video_id, count");
@@ -20,6 +29,9 @@ export async function GET() {
       counts[row.video_id] = row.count;
     });
 
+    cachedCounts = counts;
+    lastFetch = now;
+
     return NextResponse.json({ counts });
   } catch (e: any) {
     console.error("GET views error:", e);
@@ -30,13 +42,9 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const { videoId } = await req.json();
-    if (!videoId) {
-      return NextResponse.json({ error: "videoId required" }, { status: 400 });
-    }
+    if (!videoId) return NextResponse.json({ error: "videoId required" }, { status: 400 });
 
     const id = Number(videoId);
-
-    // Check if a row exists
     const { data: existing } = await supabaseAdmin
       .from("views")
       .select("count")
@@ -44,16 +52,14 @@ export async function POST(req: Request) {
       .maybeSingle();
 
     if (existing) {
-      const { error } = await supabaseAdmin
+      await supabaseAdmin
         .from("views")
         .update({ count: (existing.count || 0) + 1, updated_at: new Date().toISOString() })
         .eq("video_id", id);
-      if (error) throw error;
     } else {
-      const { error } = await supabaseAdmin
+      await supabaseAdmin
         .from("views")
         .insert({ video_id: id, count: 1 });
-      if (error) throw error;
     }
 
     return NextResponse.json({ ok: true });
