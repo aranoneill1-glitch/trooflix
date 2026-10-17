@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import {Heart, MessageCircle, Send, Bookmark, Play, VolumeX, Volume2} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import ReelModal from "@/components/ReelModal";
 import ShareReelSheet from "@/components/ShareReelSheet";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import LikeButton from "@/components/LikeButton";
@@ -69,11 +68,11 @@ export default function FeedPage() {
   const [userId, setUserId] = useState<string | null>(null);
 
   // Reel modal
-  const [openReel, setOpenReel] = useState<Video | null>(null);
   // Comment drawer
   const [commentVideo, setCommentVideo] = useState<Video | null>(null);
   // Autoplay tracking
   const [activePlayingId, setActivePlayingId] = useState<number | null>(null);
+  const [muted, setMuted] = useState(true);
   const [showSoundPrompt, setShowSoundPrompt] = useState(false);
   const postRefs = useRef<Map<number, HTMLElement>>(new Map());
 
@@ -239,7 +238,6 @@ export default function FeedPage() {
             key={post.id}
             post={post}
             author={authorFor(post)}
-            onOpenReel={() => setOpenReel(post)}
             onOpenComments={() => setCommentVideo(post)}
             isActivePlaying={activePlayingId === post.id}
             showSoundPrompt={showSoundPrompt && activePlayingId === post.id}
@@ -251,16 +249,13 @@ export default function FeedPage() {
               if (el) postRefs.current.set(post.id, el);
               else postRefs.current.delete(post.id);
             }}
+            muted={muted}
+            onToggleMute={() => setMuted((m) => !m)}
           />
         ))}
       </div>
 
       <MobileBottomNav />
-
-      {/* Reel modal */}
-      <ReelModal open={!!openReel} onClose={() => setOpenReel(null)}>
-        {openReel && <ReelPlayer video={openReel} onClose={() => setOpenReel(null)} onOpenComments={() => { setCommentVideo(openReel); setOpenReel(null); }} />}
-      </ReelModal>
 
       {/* Comment drawer */}
       {commentVideo && (
@@ -280,23 +275,26 @@ export default function FeedPage() {
 function PostCard({
   post,
   author,
-  onOpenReel,
   onOpenComments,
   isActivePlaying,
   showSoundPrompt,
   onDismissSoundPrompt,
   registerRef,
+  muted,
+  onToggleMute,
 }: {
   post: Video;
   author: { name: string; handle: string; avatar: string; verified: boolean; href: string | null };
-  onOpenReel: () => void;
   onOpenComments: () => void;
   isActivePlaying: boolean;
   showSoundPrompt: boolean;
   onDismissSoundPrompt: () => void;
   registerRef: (el: HTMLElement | null) => void;
+  muted: boolean;
+  onToggleMute: () => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [playing, setPlaying] = useState(true);
   const isReel = post.type === "Reel";
   const isImage = post.type === "Image";
   const isTroo = post.type === "Troo";
@@ -307,13 +305,27 @@ function PostCard({
     const v = videoRef.current;
     if (!v) return;
     if (isActivePlaying) {
-      v.muted = true;
+      v.muted = muted;
       v.play().catch(() => {});
+      setPlaying(true);
     } else {
       v.pause();
       try { v.currentTime = 0; } catch {}
+      setPlaying(false);
     }
-  }, [isActivePlaying, isReel]);
+  }, [isActivePlaying, isReel, muted]);
+
+  const togglePlay = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (v.paused) {
+      v.play().catch(() => {});
+      setPlaying(true);
+    } else {
+      v.pause();
+      setPlaying(false);
+    }
+  };
 
   return (
     <article
@@ -355,27 +367,35 @@ function PostCard({
             src={post.videoUrl ?? post.bitchuteUrl ?? ""}
             poster={post.posterUrl}
             className="w-full h-auto max-h-[80vh] object-contain cursor-pointer"
-            muted
+            muted={muted}
             loop
             playsInline
             preload="metadata"
-            onClick={onOpenReel}
+            onClick={togglePlay}
           />
+
           <TextOverlayRenderer overlays={post.textOverlays} />
 
-          {/* "Tap for sound" pill — first video only */}
-          {showSoundPrompt && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onDismissSoundPrompt();
-                onOpenReel();
-              }}
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/70 backdrop-blur text-white text-sm font-semibold px-4 py-2 rounded-full flex items-center gap-2 hover:bg-black/85 transition z-10"
-            >
-              🔊 Tap for sound
-            </button>
+          {/* Play/pause overlay indicator (fades when playing) */}
+          {!playing && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="w-16 h-16 rounded-full bg-black/60 backdrop-blur flex items-center justify-center">
+                <Play size={28} fill="white" className="text-white ml-1" />
+              </div>
+            </div>
           )}
+
+          {/* Volume circle — bottom left */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleMute();
+            }}
+            className="absolute bottom-3 left-3 w-9 h-9 rounded-full bg-black/60 backdrop-blur hover:bg-black/80 flex items-center justify-center text-white transition z-10"
+            aria-label={muted ? "Unmute" : "Mute"}
+          >
+            {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+          </button>
         </div>
       )}
 
@@ -404,10 +424,13 @@ function PostCard({
         <div className="flex items-center ml-2">
           <button
             onClick={onOpenComments}
-            className="p-2 text-white/80 hover:text-white transition"
+            className="flex items-center gap-1 p-2 text-white/80 hover:text-white transition"
             aria-label="Comment"
           >
             <MessageCircle size={22} />
+            <span className="text-xs font-semibold tabular-nums">
+              <CommentCountInline videoId={post.id} />
+            </span>
           </button>
         </div>
         <div className="ml-2">
@@ -465,70 +488,24 @@ function ShareReelTrigger({ videoId, videoTitle }: { videoId: number; videoTitle
 }
 
 // ============================================================
-// ReelPlayer — full-screen reel (used inside ReelModal)
-// Simple version for now: plays video, shows text overlays
-// ============================================================
-function ReelPlayer({ video, onClose, onOpenComments }: { video: Video; onClose: () => void; onOpenComments: () => void }) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [muted, setMuted] = useState(false);
+// Inline comment count
+function CommentCountInline({ videoId }: { videoId: number }) {
+  const [count, setCount] = useState<number | null>(null);
 
   useEffect(() => {
-    const v = videoRef.current;
-    if (v) v.muted = muted;
-  }, [muted]);
+    let cancelled = false;
+    fetch("/api/comment-counts")
+      .then((r) => r.json())
+      .then((d) => {
+        if (!cancelled) {
+          const c = d.counts && typeof d.counts === "object" ? d.counts[videoId] || 0 : 0;
+          setCount(c);
+        }
+      })
+      .catch(() => { if (!cancelled) setCount(0); });
+    return () => { cancelled = true; };
+  }, [videoId]);
 
-  return (
-    <div className="relative w-full h-full bg-black flex items-center justify-center">
-      <video
-        ref={videoRef}
-        src={video.videoUrl ?? video.bitchuteUrl ?? ""}
-        className="w-full h-full object-contain"
-        muted={muted}
-        loop
-        autoPlay
-        playsInline
-        preload="auto"
-        onLoadedMetadata={(e) => {
-          e.currentTarget.muted = muted;
-        }}
-      />
-      <TextOverlayRenderer overlays={video.textOverlays} />
-      {/* Right rail */}
-      <div className="absolute right-3 bottom-24 z-20 flex flex-col items-center gap-5">
-        <button
-          onClick={() => setMuted((m) => !m)}
-          className="flex flex-col items-center text-white"
-          aria-label={muted ? "Unmute" : "Mute"}
-        >
-          {muted ? <VolumeX size={28} /> : <Volume2 size={28} />}
-        </button>
-        <LikeButton videoId={video.id} size={30} stacked />
-        <button
-          onClick={onOpenComments}
-          className="flex flex-col items-center text-white"
-          aria-label="Comment"
-        >
-          <MessageCircle size={30} />
-        </button>
-        <ShareReelTrigger videoId={video.id} videoTitle={video.title || ""} />
-        <SaveButton videoId={video.id} variant="icon" />
-      </div>
-
-      {/* Caption overlay at bottom */}
-      {video.description && (
-        <div className="absolute bottom-0 left-0 right-0 z-20 p-4 pb-6 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none">
-          <div className="max-w-[80%] pointer-events-auto">
-            {video.title && (
-              <p className="text-sm font-semibold text-white leading-snug mb-1 line-clamp-2">
-                {video.title}
-              </p>
-            )}
-            <p className="text-xs text-white/80 whitespace-pre-wrap line-clamp-3">
-              {video.description}
-            </p>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+  if (count === null || count === 0) return null;
+  return <>{count.toLocaleString()}</>;
 }
