@@ -282,13 +282,16 @@ export default function UserUploadPage() {
                 onPointerUp={endDragOverlay}
                 onPointerCancel={endDragOverlay}
                 className="relative w-full bg-black rounded-lg overflow-hidden select-none"
-                style={{ aspectRatio: videoDims ? `${videoDims.w} / ${videoDims.h}` : "16 / 9" }}
+                style={{ aspectRatio: "9 / 16" }}
               >
                 <video
                   src={videoUrl}
                   className="w-full h-full object-contain"
                   muted
+                  loop
+                  autoPlay
                   playsInline
+                  preload="auto"
                   onLoadedMetadata={(e) => {
                     const v = e.currentTarget;
                     if (v.videoWidth && v.videoHeight) {
