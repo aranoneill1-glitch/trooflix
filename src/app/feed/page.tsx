@@ -13,6 +13,7 @@ import SaveButton from "@/components/SaveButton";
 import CommentDrawer from "@/components/CommentDrawer";
 import ViewCount from "@/components/ViewCount";
 import TextOverlayRenderer from "@/components/TextOverlay";
+import XVideoModal from "@/components/XVideoModal";
 import { getCachedUser } from "@/lib/cache";
 
 type Video = {
@@ -73,6 +74,7 @@ export default function FeedPage() {
   // Autoplay tracking
   const [activePlayingId, setActivePlayingId] = useState<number | null>(null);
   const [muted, setMuted] = useState(true);
+  const [openVideoModal, setOpenVideoModal] = useState<Video | null>(null);
   const [showSoundPrompt, setShowSoundPrompt] = useState(false);
   const postRefs = useRef<Map<number, HTMLElement>>(new Map());
 
@@ -251,6 +253,7 @@ export default function FeedPage() {
             }}
             muted={muted}
             onToggleMute={() => setMuted((m) => !m)}
+            onOpenVideo={() => setOpenVideoModal(post)}
           />
         ))}
       </div>
@@ -265,6 +268,21 @@ export default function FeedPage() {
           onClose={() => setCommentVideo(null)}
         />
       )}
+
+      {/* Full-screen video modal */}
+      <AnimatePresence>
+        {openVideoModal && (
+          <XVideoModal
+            video={openVideoModal}
+            author={authorFor(openVideoModal)}
+            onClose={() => setOpenVideoModal(null)}
+            onOpenComments={() => {
+              setCommentVideo(openVideoModal);
+              setOpenVideoModal(null);
+            }}
+          />
+        )}
+      </AnimatePresence>
     </main>
   );
 }
@@ -282,6 +300,7 @@ function PostCard({
   registerRef,
   muted,
   onToggleMute,
+  onOpenVideo,
 }: {
   post: Video;
   author: { name: string; handle: string; avatar: string; verified: boolean; href: string | null };
@@ -292,6 +311,7 @@ function PostCard({
   registerRef: (el: HTMLElement | null) => void;
   muted: boolean;
   onToggleMute: () => void;
+  onOpenVideo: () => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(true);
@@ -384,38 +404,33 @@ function PostCard({
 
       {/* Media — reel or image */}
       {isReel && (
-        <div className="relative w-full bg-black overflow-hidden">
-          <video
-            ref={videoRef}
-            src={post.videoUrl ?? post.bitchuteUrl ?? ""}
-            poster={post.posterUrl}
-            className="w-full h-auto max-h-[80vh] object-contain cursor-pointer"
-            muted={muted}
-            loop
-            playsInline
-            preload="metadata"
-            onClick={togglePlay}
-          />
-          <TextOverlayRenderer overlays={post.textOverlays} />
+        <div className="px-3 pb-3">
+          <div className="relative rounded-2xl overflow-hidden bg-black border border-white/10" style={{ maxHeight: '500px' }}>
+            <video
+              ref={videoRef}
+              src={post.videoUrl ?? post.bitchuteUrl ?? ""}
+              poster={post.posterUrl}
+              className="w-full h-full object-contain cursor-pointer"
+              muted={muted}
+              loop
+              playsInline
+              preload="metadata"
+              onClick={onOpenVideo}
+            />
+            <TextOverlayRenderer overlays={post.textOverlays} />
 
-          {!playing && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-16 h-16 rounded-full bg-black/60 backdrop-blur flex items-center justify-center">
-                <Play size={28} fill="white" className="text-white ml-1" />
-              </div>
-            </div>
-          )}
-
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleMute();
-            }}
-            className="absolute bottom-3 left-3 w-9 h-9 rounded-full bg-black/60 backdrop-blur hover:bg-black/80 flex items-center justify-center text-white transition z-10"
-            aria-label={muted ? "Unmute" : "Mute"}
-          >
-            {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
-          </button>
+            {/* Volume circle (bottom left on the video) */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleMute();
+              }}
+              className="absolute bottom-3 left-3 w-8 h-8 rounded-full bg-black/60 backdrop-blur hover:bg-black/80 flex items-center justify-center text-white transition z-10"
+              aria-label={muted ? "Unmute" : "Mute"}
+            >
+              {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+            </button>
+          </div>
         </div>
       )}
 
