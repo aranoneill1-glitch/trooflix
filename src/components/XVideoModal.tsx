@@ -100,14 +100,14 @@ export default function XVideoModal({
       </div>
 
       {/* Bottom Overlay (Floating Text & Actions) */}
-      <div className="absolute bottom-0 left-0 right-0 z-40 bg-gradient-to-t from-black via-black/80 to-transparent pt-32 pb-4 px-4 pointer-events-none">
-        
+      <div className="absolute bottom-12 left-0 right-0 z-40 bg-gradient-to-t from-black via-black/90 to-transparent pt-24 pb-4 px-4 pointer-events-none">
+
         {/* Author Row */}
         <div className="flex items-center gap-2 mb-2 pointer-events-auto">
           {author.avatar ? (
-            <img src={author.avatar} alt="" className="w-10 h-10 rounded-full object-cover" />
+            <img src={author.avatar} alt="" className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
           ) : (
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center font-bold">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center font-bold flex-shrink-0">
               {author.name[0]?.toUpperCase()}
             </div>
           )}
@@ -121,27 +121,27 @@ export default function XVideoModal({
 
         {/* Caption */}
         {video.description && (
-          <p className="text-sm text-white mb-4 line-clamp-3 pointer-events-auto">
+          <p className="text-sm text-white mb-3 line-clamp-3 pointer-events-auto">
             {video.description}
           </p>
         )}
 
         {/* Pill Action Bar */}
-        <div className="flex items-center justify-between bg-black/60 backdrop-blur-md border border-white/10 rounded-full px-4 py-2 pointer-events-auto">
-          <button onClick={onOpenComments} className="flex items-center gap-1.5 text-white/80 hover:text-white">
+        <div className="flex items-center justify-around bg-black/70 backdrop-blur-md border border-white/10 rounded-full px-4 py-2.5 pointer-events-auto">
+          <button onClick={onOpenComments} className="flex items-center gap-1.5 text-white hover:text-white/80 transition">
             <MessageCircle size={20} />
           </button>
-          <button className="flex items-center gap-1.5 text-white/80 hover:text-white">
+          <button className="flex items-center gap-1.5 text-white hover:text-white/80 transition">
             <Share size={20} />
           </button>
-          <button className="flex items-center gap-1.5 text-white/80 hover:text-white">
+          <button className="flex items-center gap-1.5 text-white hover:text-white/80 transition">
             <Heart size={20} />
             <span className="text-xs font-semibold">1</span>
           </button>
-          <button className="flex items-center gap-1.5 text-white/80 hover:text-white">
+          <button className="flex items-center gap-1.5 text-white hover:text-white/80 transition">
             <Bookmark size={20} />
           </button>
-          <button className="flex items-center gap-1.5 text-white/80 hover:text-white">
+          <button className="flex items-center gap-1.5 text-white hover:text-white/80 transition">
             <Share size={20} />
           </button>
         </div>
@@ -149,14 +149,14 @@ export default function XVideoModal({
 
       {/* Video Controls (Very Bottom) */}
       <div className="absolute bottom-0 left-0 right-0 z-50 flex items-center gap-3 px-4 py-2 bg-black text-white">
-        <button onClick={togglePlay}>
-          {playing ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
+        <button onClick={togglePlay} className="flex-shrink-0">
+          {playing ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
         </button>
         <div className="flex-1 h-1 bg-white/20 rounded-full overflow-hidden">
           <div className="h-full bg-white transition-all" style={{ width: `${progress}%` }} />
         </div>
-        <button onClick={toggleMute}>
-          {muted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+        <button onClick={toggleMute} className="flex-shrink-0">
+          {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
         </button>
       </div>
     </motion.div>
