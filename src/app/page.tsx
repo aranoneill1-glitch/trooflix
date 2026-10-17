@@ -570,6 +570,37 @@ function DetailModal({ item, onClose, onPlay, creators }: { item: Video; onClose
   const uploaderSlug = uploader?.slug || "";
   const uploaderInitial = uploaderName.charAt(0).toUpperCase();
 
+  const previewRef = useRef<HTMLVideoElement>(null);
+  const [previewReady, setPreviewReady] = useState(false);
+
+  const videoSrc = item.videoUrl ?? item.bitchuteUrl ?? "";
+
+  useEffect(() => {
+    if (!videoSrc) return;
+    const v = previewRef.current;
+    if (!v) return;
+    const onMeta = () => {
+      try {
+        const dur = v.duration;
+        if (isFinite(dur) && dur > 0) {
+          v.currentTime = Math.min(300, dur / 3);
+        }
+      } catch {}
+    };
+    const onCanPlay = () => {
+      setPreviewReady(true);
+      v.play().catch(() => {});
+    };
+    v.addEventListener("loadedmetadata", onMeta);
+    v.addEventListener("canplay", onCanPlay);
+    return () => {
+      v.removeEventListener("loadedmetadata", onMeta);
+      v.removeEventListener("canplay", onCanPlay);
+      v.pause();
+      try { v.removeAttribute("src"); v.load(); } catch {}
+    };
+  }, [videoSrc]);
+
   const metaParts: string[] = [item.category];
   if (item.duration && item.duration.trim()) metaParts.push(item.duration);
   if (item.year) metaParts.push(String(item.year));
@@ -589,12 +620,26 @@ function DetailModal({ item, onClose, onPlay, creators }: { item: Video; onClose
         onClick={(e) => e.stopPropagation()}
         className="relative max-w-4xl mx-auto md:my-16 bg-[#141414] rounded-lg overflow-hidden shadow-2xl w-full"
       >
-        <div className="relative h-[260px] md:h-[420px] w-full">
+        <div className="relative h-[260px] md:h-[420px] w-full overflow-hidden">
           <img
             src={item.backdropUrl}
             alt={item.title}
-            className="absolute inset-0 w-full h-full object-cover"
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
+              previewReady ? "opacity-0" : "opacity-100"
+            }`}
           />
+          {videoSrc && (
+            <video
+              ref={previewRef}
+              src={videoSrc}
+              muted
+              playsInline
+              preload="metadata"
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
+                previewReady ? "opacity-100" : "opacity-0"
+              }`}
+            />
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-[#141414]/30 to-transparent" />
           <button
             onClick={onClose}
