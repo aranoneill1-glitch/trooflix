@@ -15,6 +15,7 @@ import {
   LogOut,
   Bookmark,
   Share2,
+  Mic,
 } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
@@ -484,7 +485,7 @@ export default function ProfilePage() {
                 </button>
               </div>
               <div className="p-4 space-y-1">
-                {isCreator && (
+                {isCreator ? (
                   <Link
                     href="/studio"
                     onClick={() => setDashOpen(false)}
@@ -492,6 +493,15 @@ export default function ProfilePage() {
                   >
                     <Check size={18} />
                     <span className="font-semibold">Podcaster Studio</span>
+                  </Link>
+                ) : (
+                  <Link
+                    href="/apply"
+                    onClick={() => setDashOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition text-red-500"
+                  >
+                    <Mic size={18} />
+                    <span className="font-semibold">Become a Podcaster</span>
                   </Link>
                 )}
                 <Link
