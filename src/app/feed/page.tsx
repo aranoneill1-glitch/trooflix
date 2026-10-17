@@ -196,7 +196,7 @@ export default function FeedPage() {
 
       {/* Toggle */}
       <div className="sticky top-0 z-40 bg-black border-b border-white/5 pt-[env(safe-area-inset-top)]">
-        <div className="flex">
+        <div className="flex w-full">
           <button
             onClick={() => setFilter("all")}
             className={`flex-1 py-3 text-sm font-semibold transition border-b-2 ${
@@ -220,7 +220,7 @@ export default function FeedPage() {
         </div>
       </div>
 
-      <div className="pt-2 space-y-4">
+      <div className="pt-0 space-y-0">
         {loading && (
           <p className="text-center text-white/50 py-12">Loading…</p>
         )}
@@ -351,121 +351,121 @@ function PostCard({
     <article
       ref={(el) => registerRef(el as HTMLElement | null)}
       data-post-id={post.id}
-      className="bg-[#0f0f12] overflow-hidden"
+      className="bg-black border-b border-white/10 cursor-pointer"
     >
-      {/* Author row */}
-      <div className="flex items-center gap-3 px-3 py-2.5">
-        {author.avatar ? (
-          <img src={author.avatar} alt="" className="w-9 h-9 rounded-full object-cover" />
-        ) : (
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-xs font-bold">
-            {author.name[0]?.toUpperCase() || "?"}
-          </div>
-        )}
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold inline-flex items-center gap-1 truncate">
-            {author.href ? (
-              <Link href={author.href} className="hover:underline truncate">
-                {author.name}
-              </Link>
-            ) : (
-              <span className="truncate">{author.name}</span>
-            )}
-            {author.verified && <VerifiedBadge size={12} />}
-          </p>
-          {author.handle && (
-            <p className="text-xs text-white/50 truncate">{author.handle} · {timeAgo(post.createdAt)}</p>
+      <div className="flex gap-3 p-3">
+        {/* Left Column - Avatar */}
+        <div className="flex-shrink-0">
+          {author.avatar ? (
+            <img src={author.avatar} alt="" className="w-10 h-10 rounded-full object-cover" />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-sm font-bold text-white">
+              {author.name[0]?.toUpperCase() || "?"}
+            </div>
           )}
         </div>
-      </div>
 
-      {/* Caption / description — ABOVE the media (X-style) */}
-      {!isTroo && (post.title || post.description) && (
-        <div className="px-3 pb-3">
-          {post.title && (
-            <p className="text-sm font-semibold mb-0.5">{post.title}</p>
-          )}
+        {/* Right Column - Content */}
+        <div className="flex-1 min-w-0">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1 text-sm truncate">
+              <span className="font-bold text-white truncate">{author.name}</span>
+              {author.verified && <VerifiedBadge size={14} />}
+              <span className="text-white/50 truncate">{author.handle}</span>
+              <span className="text-white/50">·</span>
+              <span className="text-white/50">{timeAgo(post.createdAt)}</span>
+            </div>
+            {/* Three dot menu */}
+            <button className="text-white/50 hover:text-white p-1">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Content Text */}
           {post.description && (
-            <p className="text-sm text-white/80 whitespace-pre-wrap line-clamp-4">
+            <p className="text-[15px] text-white whitespace-pre-wrap mt-1 mb-2 leading-relaxed">
               {post.description}
             </p>
           )}
-        </div>
-      )}
 
-      {/* Troo body — text only, no media */}
-      {isTroo && (
-        <div className="px-4 py-2 pb-3">
-          <p className="text-base whitespace-pre-wrap leading-relaxed">
-            {post.description}
-          </p>
-        </div>
-      )}
+          {/* Media */}
+          <div className="mt-2 rounded-2xl overflow-hidden border border-white/10">
+            {isReel && (
+              <div className="relative bg-black w-full">
+                <video
+                  ref={videoRef}
+                  src={post.videoUrl ?? post.bitchuteUrl ?? ""}
+                  poster={post.posterUrl}
+                  className="w-full max-h-[500px] object-contain cursor-pointer"
+                  muted={muted}
+                  loop
+                  playsInline
+                  preload="metadata"
+                  onClick={onOpenVideo}
+                />
+                <TextOverlayRenderer overlays={post.textOverlays} />
+                <div className="absolute bottom-2 left-2 flex items-center gap-2">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onToggleMute(); }}
+                    className="w-8 h-8 rounded-full bg-black/60 backdrop-blur flex items-center justify-center text-white"
+                  >
+                    {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+                  </button>
+                </div>
+              </div>
+            )}
+            {isImage && post.posterUrl && (
+              <img
+                src={post.posterUrl}
+                alt={post.title || ""}
+                className="w-full h-auto object-contain bg-black"
+                loading="lazy"
+              />
+            )}
+          </div>
 
-      {/* Media — reel or image */}
-      {isReel && (
-        <div className="px-3 pb-3">
-          <div className="relative rounded-2xl overflow-hidden bg-black border border-white/10" style={{ maxHeight: '500px' }}>
-            <video
-              ref={videoRef}
-              src={post.videoUrl ?? post.bitchuteUrl ?? ""}
-              poster={post.posterUrl}
-              className="w-full h-full object-contain cursor-pointer"
-              muted={muted}
-              loop
-              playsInline
-              preload="metadata"
-              onClick={onOpenVideo}
-            />
-            <TextOverlayRenderer overlays={post.textOverlays} />
-
-            {/* Volume circle (bottom left on the video) */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggleMute();
-              }}
-              className="absolute bottom-3 left-3 w-8 h-8 rounded-full bg-black/60 backdrop-blur hover:bg-black/80 flex items-center justify-center text-white transition z-10"
-              aria-label={muted ? "Unmute" : "Mute"}
-            >
-              {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+          {/* X-Style Action Bar */}
+          <div className="flex items-center justify-between mt-3 -ml-2 pr-2">
+            {/* Reply */}
+            <button onClick={onOpenComments} className="flex items-center gap-1 text-white/50 hover:text-blue-400 group transition">
+              <div className="p-2 rounded-full group-hover:bg-blue-400/10"><MessageCircle size={20} /></div>
+              <span className="text-xs font-medium"><CommentCountInline videoId={post.id} /></span>
             </button>
-          </div>
-        </div>
-      )}
 
-      {isImage && post.posterUrl && (
-        <img
-          src={post.posterUrl}
-          alt={post.title || ""}
-          className="w-full h-auto object-contain bg-black"
-          loading="lazy"
-        />
-      )}
+            {/* Repost/Share */}
+            <div className="flex items-center gap-1 text-white/50 hover:text-green-400 group transition">
+              <ShareReelTrigger videoId={post.id} videoTitle={post.title || ""} />
+            </div>
 
-      {/* Pill Action Bar */}
-      <div className="px-3 pb-3 pt-1">
-        <div className="flex items-center justify-around bg-black/40 border border-white/10 rounded-full px-4 py-2.5">
-          <button
-            onClick={onOpenComments}
-            className="flex items-center gap-1.5 text-white hover:text-white/80 transition"
-          >
-            <MessageCircle size={22} strokeWidth={1.5} />
-            <span className="text-sm font-semibold">
-              <CommentCountInline videoId={post.id} />
-            </span>
-          </button>
-          
-          <div className="flex items-center text-white hover:text-white/80 transition">
-            <ShareReelTrigger videoId={post.id} videoTitle={post.title || ""} />
-          </div>
-          
-          <div className="flex items-center text-white hover:text-white/80 transition">
-            <LikeButton videoId={post.id} size={22} showCount />
-          </div>
+            {/* Like */}
+            <div className="flex items-center text-white/50 hover:text-red-500 group transition">
+              <LikeButton videoId={post.id} size={20} showCount />
+            </div>
 
-          <div className="flex items-center text-white hover:text-white/80 transition">
-            <SaveButton videoId={post.id} variant="icon" />
+            {/* Views */}
+            <div className="flex items-center gap-1 text-white/50 hover:text-blue-400 group transition">
+              <div className="p-2 rounded-full group-hover:bg-blue-400/10">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M3 12h4l2-8 4 16 2-8h6" />
+                </svg>
+              </div>
+              <span className="text-xs font-medium"><ViewCount videoId={post.id} showIcon={false} /></span>
+            </div>
+
+            {/* Bookmark */}
+            <div className="flex items-center text-white/50 hover:text-blue-400 group transition">
+              <div className="p-2 rounded-full group-hover:bg-blue-400/10">
+                <SaveButton videoId={post.id} variant="icon" />
+              </div>
+            </div>
+
+            {/* Share */}
+            <button className="flex items-center text-white/50 hover:text-blue-400 group transition">
+              <div className="p-2 rounded-full group-hover:bg-blue-400/10"><Share size={20} /></div>
+            </button>
           </div>
         </div>
       </div>

@@ -100,8 +100,7 @@ export default function XVideoModal({
       </div>
 
       {/* Bottom Overlay (Floating Text & Actions) */}
-      <div className="absolute bottom-12 left-0 right-0 z-40 bg-gradient-to-t from-black via-black/90 to-transparent pt-24 pb-4 px-4 pointer-events-none">
-
+      <div className="absolute bottom-14 left-0 right-0 z-40 bg-gradient-to-t from-black via-black/90 to-transparent pt-24 pb-4 px-4 pointer-events-none">
         {/* Author Row */}
         <div className="flex items-center gap-2 mb-2 pointer-events-auto">
           {author.avatar ? (
