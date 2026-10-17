@@ -11,7 +11,10 @@ import ReelModal from "@/components/ReelModal";
 import ShareReelSheet from "@/components/ShareReelSheet";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import LikeButton from "@/components/LikeButton";
+import DislikeButton from "@/components/DislikeButton";
 import SaveButton from "@/components/SaveButton";
+import CommentDrawer from "@/components/CommentDrawer";
+import ViewCount from "@/components/ViewCount";
 import TextOverlayRenderer from "@/components/TextOverlay";
 import { getCachedUser } from "@/lib/cache";
 
@@ -69,6 +72,8 @@ export default function FeedPage() {
 
   // Reel modal
   const [openReel, setOpenReel] = useState<Video | null>(null);
+  // Comment drawer
+  const [commentVideo, setCommentVideo] = useState<Video | null>(null);
 
   // Get current user
   useEffect(() => {
@@ -201,6 +206,7 @@ export default function FeedPage() {
             post={post}
             author={authorFor(post)}
             onOpenReel={() => setOpenReel(post)}
+            onOpenComments={() => setCommentVideo(post)}
           />
         ))}
       </div>
@@ -209,8 +215,17 @@ export default function FeedPage() {
 
       {/* Reel modal */}
       <ReelModal open={!!openReel} onClose={() => setOpenReel(null)}>
-        {openReel && <ReelPlayer video={openReel} onClose={() => setOpenReel(null)} />}
+        {openReel && <ReelPlayer video={openReel} onClose={() => setOpenReel(null)} onOpenComments={() => { setCommentVideo(openReel); setOpenReel(null); }} />}
       </ReelModal>
+
+      {/* Comment drawer */}
+      {commentVideo && (
+        <CommentDrawer
+          videoId={commentVideo.id}
+          title={commentVideo.title || "Post"}
+          onClose={() => setCommentVideo(null)}
+        />
+      )}
     </main>
   );
 }
@@ -222,10 +237,12 @@ function PostCard({
   post,
   author,
   onOpenReel,
+  onOpenComments,
 }: {
   post: Video;
   author: { name: string; handle: string; avatar: string; verified: boolean; href: string | null };
   onOpenReel: () => void;
+  onOpenComments: () => void;
 }) {
   const isReel = post.type === "Reel";
   const isImage = post.type === "Image";
@@ -304,16 +321,26 @@ function PostCard({
 
       {/* Action bar */}
       <div className="flex items-center gap-1 px-2 py-2 border-t border-white/5">
-        <div className="flex items-center">
+        <div className="flex items-center ml-1">
           <LikeButton videoId={post.id} size={22} />
         </div>
         <div className="flex items-center ml-2">
-          <button className="p-2 text-white/80 hover:text-white transition" aria-label="Comment">
+          <DislikeButton videoId={post.id} size={22} />
+        </div>
+        <div className="flex items-center ml-2">
+          <button
+            onClick={onOpenComments}
+            className="p-2 text-white/80 hover:text-white transition"
+            aria-label="Comment"
+          >
             <MessageCircle size={22} />
           </button>
         </div>
         <div className="ml-2">
           <ShareReelTrigger videoId={post.id} videoTitle={post.title || ""} />
+        </div>
+        <div className="ml-2 text-xs text-white/60 flex items-center">
+          <ViewCount videoId={post.id} showIcon />
         </div>
         <div className="ml-auto">
           <SaveButton videoId={post.id} variant="icon" />
@@ -367,7 +394,7 @@ function ShareReelTrigger({ videoId, videoTitle }: { videoId: number; videoTitle
 // ReelPlayer — full-screen reel (used inside ReelModal)
 // Simple version for now: plays video, shows text overlays
 // ============================================================
-function ReelPlayer({ video, onClose }: { video: Video; onClose: () => void }) {
+function ReelPlayer({ video, onClose, onOpenComments }: { video: Video; onClose: () => void; onOpenComments: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = useState(true);
 
@@ -391,6 +418,37 @@ function ReelPlayer({ video, onClose }: { video: Video; onClose: () => void }) {
       >
         {muted ? "🔇" : "🔊"}
       </button>
+
+      {/* Right rail */}
+      <div className="absolute right-3 bottom-24 z-20 flex flex-col items-center gap-5">
+        <LikeButton videoId={video.id} size={30} stacked />
+        <DislikeButton videoId={video.id} size={30} stacked />
+        <button
+          onClick={onOpenComments}
+          className="flex flex-col items-center text-white"
+          aria-label="Comment"
+        >
+          <MessageCircle size={30} />
+        </button>
+        <ShareReelTrigger videoId={video.id} videoTitle={video.title || ""} />
+        <SaveButton videoId={video.id} variant="icon" />
+      </div>
+
+      {/* Caption overlay at bottom */}
+      {video.description && (
+        <div className="absolute bottom-0 left-0 right-0 z-20 p-4 pb-6 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none">
+          <div className="max-w-[80%] pointer-events-auto">
+            {video.title && (
+              <p className="text-sm font-semibold text-white leading-snug mb-1 line-clamp-2">
+                {video.title}
+              </p>
+            )}
+            <p className="text-xs text-white/80 whitespace-pre-wrap line-clamp-3">
+              {video.description}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
