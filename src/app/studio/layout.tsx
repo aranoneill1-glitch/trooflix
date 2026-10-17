@@ -23,9 +23,9 @@ type Creator = {
 };
 
 const NAV = [
-  { label: "My Videos", path: "/creator", icon: Video },
-  { label: "Upload", path: "/creator/upload", icon: Upload },
-  { label: "Settings", path: "/creator/settings", icon: Settings },
+  { label: "My Videos", path: "/studio", icon: Video },
+  { label: "Upload", path: "/studio/upload", icon: Upload },
+  { label: "Settings", path: "/studio/settings", icon: Settings },
 ];
 
 export default function CreatorLayout({
@@ -80,7 +80,7 @@ export default function CreatorLayout({
   }
 
   const isActive = (path: string) =>
-    path === "/creator" ? pathname === "/creator" : pathname.startsWith(path);
+    path === "/studio" ? pathname === "/studio" : pathname.startsWith(path);
 
   return (
     <div className="min-h-screen bg-[#0b0b0f] text-white flex flex-col md:flex-row">

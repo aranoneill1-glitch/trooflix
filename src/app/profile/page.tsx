@@ -486,12 +486,12 @@ export default function ProfilePage() {
               <div className="p-4 space-y-1">
                 {isCreator && (
                   <Link
-                    href="/creator"
+                    href="/studio"
                     onClick={() => setDashOpen(false)}
                     className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition text-green-400"
                   >
                     <Check size={18} />
-                    <span className="font-semibold">Creator Dashboard</span>
+                    <span className="font-semibold">Podcaster Studio</span>
                   </Link>
                 )}
                 <Link

@@ -71,7 +71,7 @@ export default function CreatorDashboard() {
           </p>
         </div>
         <Link
-          href="/creator/upload"
+          href="/studio/upload"
           className="flex items-center gap-2 bg-red-600 hover:bg-red-500 px-4 py-2 rounded-lg text-sm font-semibold transition"
         >
           <Plus size={16} /> Upload
@@ -92,7 +92,7 @@ export default function CreatorDashboard() {
             Upload your first video to get started.
           </p>
           <Link
-            href="/creator/upload"
+            href="/studio/upload"
             className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-500 px-5 py-2.5 rounded-lg text-sm font-semibold transition"
           >
             <Plus size={16} /> Upload a video
@@ -130,7 +130,7 @@ export default function CreatorDashboard() {
                     View
                   </Link>
                   <Link
-                    href={`/creator/edit/${v.id}`}
+                    href={`/studio/edit/${v.id}`}
                     className="flex items-center gap-1 bg-white/10 hover:bg-white/20 text-xs font-semibold px-3 py-1.5 rounded transition"
                   >
                     <Edit3 size={12} /> Edit
