@@ -58,8 +58,22 @@ export async function GET(req: Request) {
         return bt - at;
       });
 
+    // Merge view counts from Supabase views table
+    const { data: viewRows } = await supabaseAdmin
+      .from("views")
+      .select("video_id, count");
+    const viewMap: Record<number, number> = {};
+    (viewRows || []).forEach((row: any) => {
+      viewMap[Number(row.video_id)] = row.count;
+    });
+
+    const uploadsWithViews = uploads.map((v: any) => ({
+      ...v,
+      viewCount: viewMap[Number(v.id)] || 0,
+    }));
+
     const kind = creatorId !== null ? "creator" : "user";
-    return NextResponse.json({ posts: uploads, kind });
+    return NextResponse.json({ posts: uploadsWithViews, kind });
   } catch (e: any) {
     console.error("user posts error:", e);
     return NextResponse.json({ posts: [], kind: "none" });
