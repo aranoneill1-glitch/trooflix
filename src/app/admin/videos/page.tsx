@@ -56,6 +56,7 @@ export default function VideosPage() {
     creatorId: null as number | null,
   });
   const [status, setStatus] = useState("");
+  const [heroes, setHeroes] = useState<{ main?: number; docufilm?: number; podcast?: number }>({});
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<string | null>(null);
   const [progress, setProgress] = useState<number>(0);
@@ -132,6 +133,7 @@ export default function VideosPage() {
   useEffect(() => {
     setForm((f) => ({ ...f, year: new Date().getFullYear() }));
     loadVideos();
+    fetch("/api/heroes").then((r) => r.json()).then((d) => setHeroes(d || {})).catch(() => {});
     fetch("/api/creators").then((r) => r.json()).then((d) => setCreators(Array.isArray(d) ? d : [])).catch(() => {});
   }, []);
 
@@ -224,6 +226,22 @@ export default function VideosPage() {
       setStatus("❌ " + (err?.message || "Failed"));
     } finally {
       setSaving(false);
+    }
+  };
+
+  const setHero = async (slot: "main" | "docufilm" | "podcast", id: number) => {
+    const res = await fetch("/api/heroes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ slot, id }),
+    });
+    if (res.ok) {
+      const d = await res.json();
+      setHeroes(d.heroes || {});
+      setStatus(`✅ Set ${slot} hero`);
+      setTimeout(() => setStatus(""), 2000);
+    } else {
+      setStatus("❌ Could not set hero");
     }
   };
 
@@ -459,6 +477,38 @@ export default function VideosPage() {
             <button onClick={() => startEdit(v)} className="text-blue-400 hover:text-blue-300 text-sm px-3 py-1 border border-blue-400/40 rounded hover:border-blue-300 transition">
               Edit
             </button>
+            <div className="flex flex-col gap-1">
+              <button
+                onClick={() => setHero("main", v.id)}
+                className={`text-xs px-2 py-0.5 rounded border transition ${
+                  heroes.main === v.id
+                    ? "bg-red-600 border-red-600 text-white"
+                    : "border-white/20 text-white/60 hover:text-white hover:border-white/40"
+                }`}
+              >
+                {heroes.main === v.id ? "★ Main" : "Set Main"}
+              </button>
+              <button
+                onClick={() => setHero("docufilm", v.id)}
+                className={`text-xs px-2 py-0.5 rounded border transition ${
+                  heroes.docufilm === v.id
+                    ? "bg-red-600 border-red-600 text-white"
+                    : "border-white/20 text-white/60 hover:text-white hover:border-white/40"
+                }`}
+              >
+                {heroes.docufilm === v.id ? "★ Doc" : "Set Doc"}
+              </button>
+              <button
+                onClick={() => setHero("podcast", v.id)}
+                className={`text-xs px-2 py-0.5 rounded border transition ${
+                  heroes.podcast === v.id
+                    ? "bg-red-600 border-red-600 text-white"
+                    : "border-white/20 text-white/60 hover:text-white hover:border-white/40"
+                }`}
+              >
+                {heroes.podcast === v.id ? "★ Pod" : "Set Pod"}
+              </button>
+            </div>
             <button onClick={() => remove(v.id)} className="text-red-500 hover:text-red-400 text-sm px-3 py-1 border border-red-500/40 rounded hover:border-red-400 transition">
               Delete
             </button>
