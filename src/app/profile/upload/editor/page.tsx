@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Type, X } from "lucide-react";
+import { X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { fontStyle, type TextOverlay } from "@/components/TextOverlay";
 
@@ -13,16 +13,13 @@ export default function EditorPage() {
   const [posterUrl, setPosterUrl] = useState("");
   const [duration, setDuration] = useState<number | null>(null);
 
-  // Text overlay state
   const [textOverlays, setTextOverlays] = useState<TextOverlay[]>([]);
   const [editingOverlay, setEditingOverlay] = useState<string | null>(null);
   const [showTextSheet, setShowTextSheet] = useState(false);
 
-  // Drag state
   const previewRef = useRef<HTMLDivElement>(null);
-  const dragRef = useRef<{ id: string; startX: number; startY: number; origX: number; origY: number } | null>(null);
+  const dragRef = useRef<{ id: string; startX: number; startY: number; origX: number; origY: number; moved: boolean } | null>(null);
 
-  // Read params from query string on mount (window-based, no Suspense needed)
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
@@ -30,7 +27,6 @@ export default function EditorPage() {
     setPosterUrl(params.get("p") || "");
     const d = params.get("d");
     setDuration(d ? Number(d) : null);
-    // Restore text overlays if editing (return from details step)
     const t = params.get("t");
     if (t) {
       try {
@@ -50,7 +46,6 @@ export default function EditorPage() {
     router.push(`/profile/upload/details?${params.toString()}`);
   };
 
-  // ---- Text helpers ----
   const addTextOverlay = () => {
     const id = `t_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
     setTextOverlays((prev) => [
@@ -76,6 +71,7 @@ export default function EditorPage() {
       startY: e.clientY,
       origX: o.x,
       origY: o.y,
+      moved: false,
     };
     (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
   };
@@ -86,6 +82,7 @@ export default function EditorPage() {
     const rect = previewRef.current.getBoundingClientRect();
     const dx = (e.clientX - d.startX) / rect.width;
     const dy = (e.clientY - d.startY) / rect.height;
+    if (Math.abs(dx) > 0.01 || Math.abs(dy) > 0.01) d.moved = true;
     const x = Math.max(0.05, Math.min(0.95, d.origX + dx));
     const y = Math.max(0.05, Math.min(0.95, d.origY + dy));
     setTextOverlays((prev) =>
@@ -94,6 +91,9 @@ export default function EditorPage() {
   };
 
   const endDrag = () => {
+    if (dragRef.current && !dragRef.current.moved) {
+      setShowTextSheet(true);
+    }
     dragRef.current = null;
   };
 
@@ -106,41 +106,19 @@ export default function EditorPage() {
   }
 
   return (
-    <main className="min-h-screen bg-black text-white flex flex-col">
-      {/* Top bar */}
-      <div className="sticky top-0 z-30 bg-black border-b border-white/5 flex items-center justify-between px-4 py-3">
-        <button
-          onClick={() => router.push("/profile/upload")}
-          className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition"
-          aria-label="Back"
-        >
-          <ChevronLeft size={22} />
-        </button>
-
-        <h1 className="text-sm font-semibold">Editor</h1>
-
-        <button
-          onClick={goNext}
-          className="w-10 h-10 rounded-full bg-red-600 hover:bg-red-500 flex items-center justify-center transition"
-          aria-label="Next"
-        >
-          <span className="text-xl leading-none">→</span>
-        </button>
-      </div>
-
-      {/* Preview */}
-      <div className="flex-1 flex items-center justify-center p-4">
+    <main className="fixed inset-0 bg-black text-white flex flex-col overflow-hidden">
+      <div className="flex-1 flex items-center justify-center relative overflow-hidden">
         <div
           ref={previewRef}
           onPointerMove={moveDrag}
           onPointerUp={endDrag}
           onPointerCancel={endDrag}
-          className="relative bg-black rounded-lg overflow-hidden select-none w-full max-w-[360px]"
-          style={{ aspectRatio: "9 / 16" }}
+          className="relative bg-black select-none h-full"
+          style={{ aspectRatio: "9 / 16", maxWidth: "100vw" }}
         >
           <video
             src={videoUrl}
-            className="w-full h-full object-contain"
+            className="w-full h-full object-cover"
             muted
             loop
             autoPlay
@@ -174,20 +152,54 @@ export default function EditorPage() {
             );
           })}
         </div>
+
+        {/* Top bar */}
+        <div className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between px-4 py-3 pointer-events-none">
+          <button
+            onClick={() => router.push("/profile/upload")}
+            className="w-10 h-10 rounded-full bg-black/60 backdrop-blur hover:bg-black/80 flex items-center justify-center transition pointer-events-auto"
+            aria-label="Close"
+          >
+            <X size={22} />
+          </button>
+
+          <div className="px-4 py-2 rounded-full bg-black/60 backdrop-blur flex items-center gap-2 pointer-events-auto">
+            <span className="text-xs font-semibold text-white/80">Editor</span>
+          </div>
+
+          <button
+            onClick={goNext}
+            className="w-10 h-10 rounded-full bg-red-600 hover:bg-red-500 flex items-center justify-center transition pointer-events-auto"
+            aria-label="Next"
+          >
+            <span className="text-xl leading-none">→</span>
+          </button>
+        </div>
       </div>
 
       {/* Bottom bar */}
-      <div className="sticky bottom-0 z-30 bg-black border-t border-white/5 flex justify-around py-2">
-        <button
-          onClick={addTextOverlay}
-          className="flex flex-col items-center gap-1 px-4 py-2 rounded-lg hover:bg-white/5 transition"
-        >
-          <Type size={22} className="text-white" />
-          <span className="text-[10px] text-white/80">Text</span>
-        </button>
+      <div className="absolute bottom-0 left-0 right-0 z-30 bg-gradient-to-t from-black via-black/80 to-transparent pt-6 pb-3 px-2">
+        <div className="flex justify-around items-center mb-2">
+          <button
+            onClick={addTextOverlay}
+            className="flex flex-col items-center gap-1 px-3 py-2 rounded-lg hover:bg-white/10 transition"
+          >
+            <span className="text-lg font-serif">Aa</span>
+            <span className="text-[10px] text-white/80">Text</span>
+          </button>
+        </div>
+        <div className="flex items-center justify-between px-3 pb-1">
+          <span className="text-xs text-white/50">Add text to your reel</span>
+          <button
+            onClick={goNext}
+            className="px-5 py-2 rounded-full bg-red-600 hover:bg-red-500 text-sm font-semibold flex items-center gap-1.5"
+          >
+            Next →
+          </button>
+        </div>
       </div>
 
-      {/* ---- Text controls bottom sheet ---- */}
+      {/* Text controls sheet */}
       <AnimatePresence>
         {showTextSheet && editingOverlay && (() => {
           const o = textOverlays.find((x) => x.id === editingOverlay);
@@ -236,7 +248,6 @@ export default function EditorPage() {
                 </div>
 
                 <div className="p-4 space-y-4">
-                  {/* Text input + OK */}
                   <div>
                     <label className="text-[10px] uppercase tracking-wider text-white/40 block mb-1">
                       Text
@@ -259,7 +270,6 @@ export default function EditorPage() {
                     </div>
                   </div>
 
-                  {/* Font picker */}
                   <div>
                     <label className="text-[10px] uppercase tracking-wider text-white/40 block mb-1">
                       Font
@@ -281,7 +291,6 @@ export default function EditorPage() {
                     </div>
                   </div>
 
-                  {/* Size slider */}
                   <div>
                     <label className="text-[10px] uppercase tracking-wider text-white/40 block mb-1">
                       Size — {o.size.toUpperCase()}
@@ -300,7 +309,6 @@ export default function EditorPage() {
                     />
                   </div>
 
-                  {/* Color picker */}
                   <div>
                     <label className="text-[10px] uppercase tracking-wider text-white/40 block mb-1">
                       Color
