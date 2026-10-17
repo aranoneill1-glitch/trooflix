@@ -683,12 +683,13 @@ export default function ThreadPage() {
               onClick={() => !savingEdit && setEditFor(null)}
               className="fixed inset-0 z-[500] bg-black/80"
             />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[501] bg-[#0f0f12] rounded-2xl p-4 w-[90vw] max-w-sm border border-white/10"
-            >
+            <div className="fixed inset-0 z-[501] flex items-center justify-center px-4 pointer-events-none">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-[#0f0f12] rounded-2xl p-4 w-full max-w-sm border border-white/10 pointer-events-auto"
+              >
               <h3 className="font-bold mb-3">Edit message</h3>
               <textarea
                 value={editBody}
@@ -712,7 +713,8 @@ export default function ThreadPage() {
                   {savingEdit ? "Saving…" : "Save"}
                 </button>
               </div>
-            </motion.div>
+              </motion.div>
+            </div>
           </>
         )}
       </AnimatePresence>
