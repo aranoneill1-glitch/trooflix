@@ -77,6 +77,13 @@ export async function POST(req: Request) {
 
       const { error } = await supabaseAdmin.from("likes").insert(insertRow);
       if (error) throw error;
+
+      // Mutual exclusivity: remove any dislike for the same video by this user
+      let dislikeQ = supabaseAdmin.from("dislikes").delete().eq("video_id", vid);
+      if (userId) dislikeQ = dislikeQ.eq("user_id", userId);
+      else if (anonId) dislikeQ = dislikeQ.eq("anon_id", anonId);
+      await dislikeQ;
+
       return NextResponse.json({ ok: true, liked: true });
     }
   } catch (e: any) {
