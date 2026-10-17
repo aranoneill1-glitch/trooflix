@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {Heart, MessageCircle, Send, Bookmark, Play, VolumeX, Volume2} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import ReelModal from "@/components/ReelModal";
 import ShareReelSheet from "@/components/ShareReelSheet";
@@ -193,7 +192,6 @@ export default function FeedPage() {
 
   return (
     <main className="min-h-screen bg-black text-white pb-20 lg:pb-0">
-      <TopBar />
 
       {/* Toggle */}
       <div className="sticky top-[64px] z-40 bg-black border-b border-white/5">
