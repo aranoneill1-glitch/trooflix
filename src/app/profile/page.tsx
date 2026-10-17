@@ -22,6 +22,7 @@ import {
   Pin,
   Trash2,
   BarChart3,
+  List,
 } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
@@ -84,6 +85,28 @@ export default function ProfilePage() {
   const [savingEdit, setSavingEdit] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [statusMsg, setStatusMsg] = useState("");
+  const [savedPosts, setSavedPosts] = useState<Post[]>([]);
+  const [mobileTab, setMobileTab] = useState<"uploads" | "saved">("uploads");
+  const [uploadsView, setUploadsView] = useState<"grid" | "list">("grid");
+  const [savedView, setSavedView] = useState<"grid" | "list">("grid");
+
+  // Load view preferences from localStorage
+  useEffect(() => {
+    try {
+      const u = localStorage.getItem("trooflix:uploadsView");
+      const sv = localStorage.getItem("trooflix:savedView");
+      if (u === "grid" || u === "list") setUploadsView(u);
+      if (sv === "grid" || sv === "list") setSavedView(sv);
+    } catch {}
+  }, []);
+
+  // Persist view changes
+  useEffect(() => {
+    try { localStorage.setItem("trooflix:uploadsView", uploadsView); } catch {}
+  }, [uploadsView]);
+  useEffect(() => {
+    try { localStorage.setItem("trooflix:savedView", savedView); } catch {}
+  }, [savedView]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -100,8 +123,10 @@ export default function ProfilePage() {
         fetch(`/api/profile?user_id=${uid}`).then((r) => r.json()),
         fetch(`/api/user-follows?user_id=${uid}&counts=1`).then((r) => r.json()),
         fetch(`/api/user/posts?userId=${uid}`).then((r) => r.json()),
+        fetch(`/api/my-list?user_id=${uid}`).then((r) => r.json()),
+        fetch(`/api/videos`).then((r) => r.json()),
       ])
-        .then(([prof, follows, posts]) => {
+        .then(([prof, follows, posts, myList, allVideos]) => {
           setProfile(prof.profile || null);
           setEditName(prof.profile?.display_name || "");
           setEditBio(prof.profile?.bio || "");
@@ -110,6 +135,11 @@ export default function ProfilePage() {
           setPosts(posts.posts || []);
           setPostsKind(posts.kind || "none");
           setIsCreator(posts.kind === "creator");
+
+          // Build saved list from IDs + all videos
+          const ids = new Set<number>((myList.ids || []).map((x: any) => Number(x)));
+          const all = Array.isArray(allVideos) ? allVideos : [];
+          setSavedPosts(all.filter((v: any) => ids.has(Number(v.id))));
         })
         .catch(() => {})
         .finally(() => setLoading(false));
@@ -419,87 +449,226 @@ export default function ProfilePage() {
               </button>
             </div>
 
-            {/* ---- Tabs ---- */}
-            <div className="flex border-b border-white/10 mb-1">
+            {/* ---- Mobile tabs: Uploads | My List ---- */}
+            <div className="flex md:hidden border-b border-white/10 mb-3">
               <button
-                onClick={() => setTab("grid")}
-                className={`flex-1 flex items-center justify-center py-3 border-b-2 transition ${
-                  tab === "grid"
+                onClick={() => setMobileTab("uploads")}
+                className={`flex-1 py-3 text-sm font-semibold border-b-2 transition ${
+                  mobileTab === "uploads"
                     ? "border-white text-white"
                     : "border-transparent text-white/50"
                 }`}
-                aria-label="Grid"
               >
-                <Grid3x3 size={20} />
+                Uploads
               </button>
               <button
-                onClick={() => setTab("reels")}
-                className={`flex-1 flex items-center justify-center py-3 border-b-2 transition ${
-                  tab === "reels"
+                onClick={() => setMobileTab("saved")}
+                className={`flex-1 py-3 text-sm font-semibold border-b-2 transition ${
+                  mobileTab === "saved"
                     ? "border-white text-white"
                     : "border-transparent text-white/50"
                 }`}
-                aria-label="Reels"
               >
-                <Play size={20} />
+                My List
               </button>
             </div>
 
-            {/* ---- Posts grid ---- */}
-            {visiblePosts.length === 0 ? (
-              <div className="py-16 text-center text-white/50 text-sm">
-                {tab === "reels"
-                  ? "No reels yet."
-                  : postsKind === "creator"
-                  ? "You haven't uploaded any videos yet."
-                  : "Nothing saved to My List yet."}
+            {/* ---- Desktop: two columns. Mobile: tab-selected section ---- */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 -mx-4 md:-mx-6">
+              {/* ==== UPLOADS (left) ==== */}
+              <div className={`${mobileTab === "uploads" ? "" : "hidden md:block"}`}>
+                <div className="flex items-center justify-between px-4 md:px-6 mb-3">
+                  <h2 className="text-sm font-bold text-white/80 uppercase tracking-wider">
+                    Uploads
+                  </h2>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setUploadsView("grid")}
+                      className={`p-1.5 rounded transition ${
+                        uploadsView === "grid" ? "bg-white/15 text-white" : "text-white/40 hover:text-white"
+                      }`}
+                      aria-label="Grid view"
+                    >
+                      <Grid3x3 size={16} />
+                    </button>
+                    <button
+                      onClick={() => setUploadsView("list")}
+                      className={`p-1.5 rounded transition ${
+                        uploadsView === "list" ? "bg-white/15 text-white" : "text-white/40 hover:text-white"
+                      }`}
+                      aria-label="List view"
+                    >
+                      <List size={16} />
+                    </button>
+                  </div>
+                </div>
+
+                {visiblePosts.length === 0 ? (
+                  <div className="py-12 text-center text-white/40 text-sm px-4">
+                    {postsKind === "creator"
+                      ? "No uploads yet."
+                      : "No reels yet."}
+                  </div>
+                ) : uploadsView === "grid" ? (
+                  <div className="grid grid-cols-3 gap-0.5">
+                    {visiblePosts.map((p) => (
+                      <Link
+                        key={p.id}
+                        href={p.creatorId ? `/podcaster/_/${p.id}` : `/feed`}
+                        className="relative aspect-[4/5] bg-[#141418] overflow-hidden group"
+                        onPointerDown={() => startLongPress(p)}
+                        onPointerUp={cancelLongPress}
+                        onPointerLeave={cancelLongPress}
+                        onPointerCancel={cancelLongPress}
+                        onClick={(e) => handleTileClick(p, e)}
+                        onContextMenu={(e) => {
+                          e.preventDefault();
+                          setActionSheetFor(p);
+                        }}
+                        onDragStart={(e) => e.preventDefault()}
+                        style={{
+                          WebkitTouchCallout: "none",
+                          WebkitUserSelect: "none",
+                          userSelect: "none",
+                          touchAction: "manipulation",
+                        }}
+                        draggable={false}
+                      >
+                        <img
+                          src={p.posterUrl || p.backdropUrl}
+                          alt=""
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                        <div className="absolute top-1 right-1">
+                          <Play size={14} fill="white" className="text-white drop-shadow" />
+                        </div>
+                        <div className="absolute bottom-1 left-1 flex items-center gap-0.5 text-[10px] font-semibold text-white drop-shadow">
+                          <Eye size={11} />
+                          {(p.viewCount ?? 0).toLocaleString()}
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-1 px-4 md:px-6">
+                    {visiblePosts.map((p) => (
+                      <Link
+                        key={p.id}
+                        href={p.creatorId ? `/podcaster/_/${p.id}` : `/feed`}
+                        className="flex items-center gap-3 p-2 rounded-lg bg-[#141418] hover:bg-white/5 transition"
+                        onPointerDown={() => startLongPress(p)}
+                        onPointerUp={cancelLongPress}
+                        onPointerLeave={cancelLongPress}
+                        onPointerCancel={cancelLongPress}
+                        onClick={(e) => handleTileClick(p, e)}
+                        onContextMenu={(e) => {
+                          e.preventDefault();
+                          setActionSheetFor(p);
+                        }}
+                        style={{ WebkitTouchCallout: "none" }}
+                        draggable={false}
+                      >
+                        <img
+                          src={p.posterUrl || p.backdropUrl}
+                          alt=""
+                          className="w-12 h-16 rounded object-cover flex-shrink-0"
+                          loading="lazy"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold truncate">{p.title || "Untitled"}</p>
+                          <p className="text-xs text-white/50 flex items-center gap-1 mt-1">
+                            <Eye size={11} />
+                            {(p.viewCount ?? 0).toLocaleString()} views
+                          </p>
+                        </div>
+                        <Play size={14} fill="white" className="text-white/60 flex-shrink-0" />
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
-            ) : (
-              <div className="grid grid-cols-3 gap-0.5 -mx-4 md:-mx-6">
-                {visiblePosts.map((p) => (
-                  <Link
-                    key={p.id}
-                    href={
-                      p.creatorId
-                        ? `/podcaster/_/${p.id}`
-                        : `/feed`
-                    }
-                    className="relative aspect-[4/5] bg-[#141418] overflow-hidden group"
-                    onPointerDown={() => startLongPress(p)}
-                    onPointerUp={cancelLongPress}
-                    onPointerLeave={cancelLongPress}
-                    onPointerCancel={cancelLongPress}
-                    onClick={(e) => handleTileClick(p, e)}
-                    onContextMenu={(e) => {
-                      e.preventDefault();
-                      setActionSheetFor(p);
-                    }}
-                    onDragStart={(e) => e.preventDefault()}
-                    style={{
-                      WebkitTouchCallout: "none",
-                      WebkitUserSelect: "none",
-                      userSelect: "none",
-                      touchAction: "manipulation",
-                    }}
-                    draggable={false}
-                  >
-                    <img
-                      src={p.posterUrl || p.backdropUrl}
-                      alt=""
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                    <div className="absolute top-1 right-1">
-                      <Play size={14} fill="white" className="text-white drop-shadow" />
-                    </div>
-                    <div className="absolute bottom-1 left-1 flex items-center gap-0.5 text-[10px] font-semibold text-white drop-shadow">
-                      <Eye size={11} />
-                      {(p.viewCount ?? 0).toLocaleString()}
-                    </div>
-                  </Link>
-                ))}
+
+              {/* ==== SAVED (right) ==== */}
+              <div className={`${mobileTab === "saved" ? "" : "hidden md:block"}`}>
+                <div className="flex items-center justify-between px-4 md:px-6 mb-3">
+                  <h2 className="text-sm font-bold text-white/80 uppercase tracking-wider">
+                    My List
+                  </h2>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setSavedView("grid")}
+                      className={`p-1.5 rounded transition ${
+                        savedView === "grid" ? "bg-white/15 text-white" : "text-white/40 hover:text-white"
+                      }`}
+                      aria-label="Grid view"
+                    >
+                      <Grid3x3 size={16} />
+                    </button>
+                    <button
+                      onClick={() => setSavedView("list")}
+                      className={`p-1.5 rounded transition ${
+                        savedView === "list" ? "bg-white/15 text-white" : "text-white/40 hover:text-white"
+                      }`}
+                      aria-label="List view"
+                    >
+                      <List size={16} />
+                    </button>
+                  </div>
+                </div>
+
+                {savedPosts.length === 0 ? (
+                  <div className="py-12 text-center text-white/40 text-sm px-4">
+                    Nothing saved yet. Tap + on any video to save it here.
+                  </div>
+                ) : savedView === "grid" ? (
+                  <div className="grid grid-cols-3 gap-0.5">
+                    {savedPosts.map((p) => (
+                      <Link
+                        key={p.id}
+                        href={p.creatorId ? `/podcaster/_/${p.id}` : `/feed`}
+                        className="relative aspect-[4/5] bg-[#141418] overflow-hidden group"
+                      >
+                        <img
+                          src={p.posterUrl || p.backdropUrl}
+                          alt=""
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                        <div className="absolute top-1 right-1">
+                          <Play size={14} fill="white" className="text-white drop-shadow" />
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-1 px-4 md:px-6">
+                    {savedPosts.map((p) => (
+                      <Link
+                        key={p.id}
+                        href={p.creatorId ? `/podcaster/_/${p.id}` : `/feed`}
+                        className="flex items-center gap-3 p-2 rounded-lg bg-[#141418] hover:bg-white/5 transition"
+                      >
+                        <img
+                          src={p.posterUrl || p.backdropUrl}
+                          alt=""
+                          className="w-12 h-16 rounded object-cover flex-shrink-0"
+                          loading="lazy"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold truncate">{p.title || "Untitled"}</p>
+                          <p className="text-xs text-white/50 flex items-center gap-1 mt-1">
+                            <Eye size={11} />
+                            {(p.viewCount ?? 0).toLocaleString()} views
+                          </p>
+                        </div>
+                        <Play size={14} fill="white" className="text-white/60 flex-shrink-0" />
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </>
         )}
       </div>

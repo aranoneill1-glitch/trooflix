@@ -31,57 +31,35 @@ export async function GET(req: Request) {
       (v: any) => !v.hidden
     );
 
-    // Try creator first
+    // Find user's creator record if they have one
     const { data: app } = await supabaseAdmin
       .from("creator_applications")
       .select("status")
       .eq("user_id", userId)
       .maybeSingle();
 
+    let creatorId: number | null = null;
     if (app?.status === "approved") {
       const creators = (await kv.get<any[]>(CREATORS_KEY)) || [];
       const creator = creators.find((c: any) => c.ownerUserId === userId);
-      if (creator) {
-        const mine = allVideos
-          .filter((v: any) => v.creatorId === creator.id || v.uploaderUserId === userId)
-          .sort((a: any, b: any) => {
-            const at = a.createdAt ? new Date(a.createdAt).getTime() : a.id;
-            const bt = b.createdAt ? new Date(b.createdAt).getTime() : b.id;
-            return bt - at;
-          });
-        return NextResponse.json({ posts: mine, kind: "creator" });
-      }
+      if (creator) creatorId = creator.id;
     }
 
-    // Combine: user-uploaded reels + My List
+    // Uploads only — matches either creatorId (podcaster videos) or uploaderUserId (regular user reels)
     const uploads = allVideos
-      .filter((v: any) => v.uploaderUserId === userId)
+      .filter(
+        (v: any) =>
+          (creatorId !== null && v.creatorId === creatorId) ||
+          v.uploaderUserId === userId
+      )
       .sort((a: any, b: any) => {
         const at = a.createdAt ? new Date(a.createdAt).getTime() : a.id;
         const bt = b.createdAt ? new Date(b.createdAt).getTime() : b.id;
         return bt - at;
       });
 
-    const { data: rows } = await supabaseAdmin
-      .from("my_list")
-      .select("video_id, created_at")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false });
-
-    const savedIds = new Set((rows || []).map((r: any) => Number(r.video_id)));
-    const saved = allVideos.filter((v: any) => savedIds.has(Number(v.id)));
-
-    // Merge, de-dupe by id (in case a user saved their own upload)
-    const seen = new Set<number>();
-    const combined: any[] = [];
-    for (const v of [...uploads, ...saved]) {
-      if (!seen.has(v.id)) {
-        seen.add(v.id);
-        combined.push(v);
-      }
-    }
-
-    return NextResponse.json({ posts: combined, kind: "user" });
+    const kind = creatorId !== null ? "creator" : "user";
+    return NextResponse.json({ posts: uploads, kind });
   } catch (e: any) {
     console.error("user posts error:", e);
     return NextResponse.json({ posts: [], kind: "none" });
