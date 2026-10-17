@@ -118,9 +118,14 @@ export async function GET(req: Request) {
       const other = m.sender_id === userId ? m.recipient_id : m.sender_id;
       const existing = conversations.get(other);
       if (!existing) {
+        // Format preview for special message types
+        let preview = m.body;
+        if (m.body && m.body.startsWith("__REEL__:")) preview = "📹 Reel";
+        else if (m.body && /^https?:\/\/.+\.(gif|jpe?g|png|webp)(\?|$)/i.test(m.body)) preview = "📷 Photo";
+
         conversations.set(other, {
           other_user_id: other,
-          last_message: m.body,
+          last_message: preview,
           last_at: m.created_at,
           unread_count:
             m.recipient_id === userId && !m.read_at ? 1 : 0,
