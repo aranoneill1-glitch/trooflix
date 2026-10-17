@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Heart, MessageCircle, Send, Bookmark, Play } from "lucide-react";
+import {Heart, MessageCircle, Send, Bookmark, Play, VolumeX, Volume2} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
@@ -11,7 +11,6 @@ import ReelModal from "@/components/ReelModal";
 import ShareReelSheet from "@/components/ShareReelSheet";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import LikeButton from "@/components/LikeButton";
-import DislikeButton from "@/components/DislikeButton";
 import SaveButton from "@/components/SaveButton";
 import CommentDrawer from "@/components/CommentDrawer";
 import ViewCount from "@/components/ViewCount";
@@ -74,6 +73,10 @@ export default function FeedPage() {
   const [openReel, setOpenReel] = useState<Video | null>(null);
   // Comment drawer
   const [commentVideo, setCommentVideo] = useState<Video | null>(null);
+  // Autoplay tracking
+  const [activePlayingId, setActivePlayingId] = useState<number | null>(null);
+  const [showSoundPrompt, setShowSoundPrompt] = useState(false);
+  const postRefs = useRef<Map<number, HTMLElement>>(new Map());
 
   // Get current user
   useEffect(() => {
@@ -126,6 +129,39 @@ export default function FeedPage() {
   useEffect(() => {
     if (userId !== null || filter === "all") load();
   }, [userId, filter]);
+
+  // Show "tap for sound" prompt on first feed visit in session
+  useEffect(() => {
+    if (posts.length === 0) return;
+    try {
+      const dismissed = sessionStorage.getItem("trooflix:sound-prompt");
+      if (!dismissed) setShowSoundPrompt(true);
+    } catch {
+      setShowSoundPrompt(true);
+    }
+  }, [posts.length]);
+
+  // IntersectionObserver — track which reel is most visible
+  useEffect(() => {
+    if (posts.length === 0) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        let best: { id: number; ratio: number } | null = null;
+        for (const entry of entries) {
+          if (entry.intersectionRatio >= 0.6) {
+            const id = Number((entry.target as HTMLElement).dataset.postId);
+            if (!best || entry.intersectionRatio > best.ratio) {
+              best = { id, ratio: entry.intersectionRatio };
+            }
+          }
+        }
+        if (best) setActivePlayingId(best.id);
+      },
+      { threshold: [0.25, 0.5, 0.75, 1.0] }
+    );
+    postRefs.current.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, [posts.length]);
 
   // Author resolver
   const authorFor = (p: Video) => {
@@ -207,6 +243,16 @@ export default function FeedPage() {
             author={authorFor(post)}
             onOpenReel={() => setOpenReel(post)}
             onOpenComments={() => setCommentVideo(post)}
+            isActivePlaying={activePlayingId === post.id}
+            showSoundPrompt={showSoundPrompt && activePlayingId === post.id}
+            onDismissSoundPrompt={() => {
+              setShowSoundPrompt(false);
+              try { sessionStorage.setItem("trooflix:sound-prompt", "1"); } catch {}
+            }}
+            registerRef={(el) => {
+              if (el) postRefs.current.set(post.id, el);
+              else postRefs.current.delete(post.id);
+            }}
           />
         ))}
       </div>
@@ -238,18 +284,45 @@ function PostCard({
   author,
   onOpenReel,
   onOpenComments,
+  isActivePlaying,
+  showSoundPrompt,
+  onDismissSoundPrompt,
+  registerRef,
 }: {
   post: Video;
   author: { name: string; handle: string; avatar: string; verified: boolean; href: string | null };
   onOpenReel: () => void;
   onOpenComments: () => void;
+  isActivePlaying: boolean;
+  showSoundPrompt: boolean;
+  onDismissSoundPrompt: () => void;
+  registerRef: (el: HTMLElement | null) => void;
 }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
   const isReel = post.type === "Reel";
   const isImage = post.type === "Image";
   const isTroo = post.type === "Troo";
 
+  // Play when active, pause when not
+  useEffect(() => {
+    if (!isReel) return;
+    const v = videoRef.current;
+    if (!v) return;
+    if (isActivePlaying) {
+      v.muted = true;
+      v.play().catch(() => {});
+    } else {
+      v.pause();
+      try { v.currentTime = 0; } catch {}
+    }
+  }, [isActivePlaying, isReel]);
+
   return (
-    <article className="bg-[#0f0f12] md:rounded-xl overflow-hidden border border-white/5">
+    <article
+      ref={(el) => registerRef(el as HTMLElement | null)}
+      data-post-id={post.id}
+      className="bg-[#0f0f12] md:rounded-xl overflow-hidden border border-white/5"
+    >
       {/* Author row */}
       <div className="flex items-center gap-3 px-3 py-2.5">
         {author.avatar ? (
@@ -278,28 +351,34 @@ function PostCard({
 
       {/* Media */}
       {isReel && (
-        <button
-          onClick={onOpenReel}
-          className="relative w-full aspect-[4/5] bg-black overflow-hidden group"
-        >
-          {post.posterUrl ? (
-            <img
-              src={post.posterUrl}
-              alt=""
-              className="w-full h-full object-cover group-hover:scale-105 transition"
-              loading="lazy"
-            />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-red-900 to-black flex items-center justify-center">
-              <Play size={40} fill="white" className="text-white opacity-50" />
-            </div>
+        <div className="relative w-full aspect-[4/5] bg-black overflow-hidden">
+          <video
+            ref={videoRef}
+            src={post.videoUrl ?? post.bitchuteUrl ?? ""}
+            poster={post.posterUrl}
+            className="w-full h-full object-cover cursor-pointer"
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            onClick={onOpenReel}
+          />
+          <TextOverlayRenderer overlays={post.textOverlays} />
+
+          {/* "Tap for sound" pill — first video only */}
+          {showSoundPrompt && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDismissSoundPrompt();
+                onOpenReel();
+              }}
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/70 backdrop-blur text-white text-sm font-semibold px-4 py-2 rounded-full flex items-center gap-2 hover:bg-black/85 transition z-10"
+            >
+              🔊 Tap for sound
+            </button>
           )}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-14 h-14 rounded-full bg-black/50 backdrop-blur flex items-center justify-center">
-              <Play size={24} fill="white" className="text-white ml-0.5" />
-            </div>
-          </div>
-        </button>
+        </div>
       )}
 
       {isImage && post.posterUrl && (
@@ -323,9 +402,6 @@ function PostCard({
       <div className="flex items-center gap-1 px-2 py-2 border-t border-white/5">
         <div className="flex items-center ml-1">
           <LikeButton videoId={post.id} size={22} />
-        </div>
-        <div className="flex items-center ml-2">
-          <DislikeButton videoId={post.id} size={22} />
         </div>
         <div className="flex items-center ml-2">
           <button
@@ -396,7 +472,12 @@ function ShareReelTrigger({ videoId, videoTitle }: { videoId: number; videoTitle
 // ============================================================
 function ReelPlayer({ video, onClose, onOpenComments }: { video: Video; onClose: () => void; onOpenComments: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [muted, setMuted] = useState(true);
+  const [muted, setMuted] = useState(false);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (v) v.muted = muted;
+  }, [muted]);
 
   return (
     <div className="relative w-full h-full bg-black flex items-center justify-center">
@@ -409,20 +490,21 @@ function ReelPlayer({ video, onClose, onOpenComments }: { video: Video; onClose:
         autoPlay
         playsInline
         preload="auto"
+        onLoadedMetadata={(e) => {
+          e.currentTarget.muted = muted;
+        }}
       />
       <TextOverlayRenderer overlays={video.textOverlays} />
-      <button
-        onClick={() => setMuted((m) => !m)}
-        className="absolute top-4 left-4 w-10 h-10 rounded-full bg-black/60 backdrop-blur flex items-center justify-center text-white"
-        aria-label={muted ? "Unmute" : "Mute"}
-      >
-        {muted ? "🔇" : "🔊"}
-      </button>
-
       {/* Right rail */}
       <div className="absolute right-3 bottom-24 z-20 flex flex-col items-center gap-5">
+        <button
+          onClick={() => setMuted((m) => !m)}
+          className="flex flex-col items-center text-white"
+          aria-label={muted ? "Unmute" : "Mute"}
+        >
+          {muted ? <VolumeX size={28} /> : <Volume2 size={28} />}
+        </button>
         <LikeButton videoId={video.id} size={30} stacked />
-        <DislikeButton videoId={video.id} size={30} stacked />
         <button
           onClick={onOpenComments}
           className="flex flex-col items-center text-white"
