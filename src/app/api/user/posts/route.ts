@@ -43,7 +43,7 @@ export async function GET(req: Request) {
       const creator = creators.find((c: any) => c.ownerUserId === userId);
       if (creator) {
         const mine = allVideos
-          .filter((v: any) => v.creatorId === creator.id)
+          .filter((v: any) => v.creatorId === creator.id || v.uploaderUserId === userId)
           .sort((a: any, b: any) => {
             const at = a.createdAt ? new Date(a.createdAt).getTime() : a.id;
             const bt = b.createdAt ? new Date(b.createdAt).getTime() : b.id;
