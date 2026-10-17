@@ -322,18 +322,6 @@ function ReelCard({
 
       {/* Right rail */}
       <div className="absolute right-3 bottom-24 z-20 flex flex-col items-center">
-        {/* Collapse toggle */}
-        <button
-          onClick={() => setRailCollapsed((v) => !v)}
-          className="w-8 h-8 rounded-full bg-white/15 backdrop-blur hover:bg-white/25 flex items-center justify-center text-white/80 hover:text-white transition mb-3"
-          aria-label={railCollapsed ? "Show actions" : "Hide actions"}
-        >
-          <ChevronLeft
-            size={16}
-            className={`transition-transform duration-300 ${railCollapsed ? "rotate-180" : ""}`}
-          />
-        </button>
-
         {/* Actions */}
         <div
           className={`flex flex-col items-center gap-5 transition-all duration-300 ease-out ${
@@ -356,6 +344,18 @@ function ReelCard({
           </button>
           <SaveButton videoId={video.id} variant="icon" />
         </div>
+
+        {/* Collapse toggle (bottom) */}
+        <button
+          onClick={() => setRailCollapsed((v) => !v)}
+          className="w-8 h-8 rounded-full bg-white/15 backdrop-blur hover:bg-white/25 flex items-center justify-center text-white/80 hover:text-white transition mt-3"
+          aria-label={railCollapsed ? "Show actions" : "Hide actions"}
+        >
+          <ChevronLeft
+            size={16}
+            className={`transition-transform duration-300 ${railCollapsed ? "rotate-180" : ""}`}
+          />
+        </button>
       </div>
 
       <AnimatePresence>
