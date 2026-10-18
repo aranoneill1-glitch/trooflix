@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {Heart, MessageCircle, Send, Bookmark, Play, VolumeX, Volume2, Plus, Share, Repeat2} from "lucide-react";
+import {Heart, MessageCircle, Send, Bookmark, Play, Pause, VolumeX, Volume2, Plus, Share, Repeat2} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import ShareReelSheet from "@/components/ShareReelSheet";
@@ -458,6 +458,13 @@ function PostCard({
                 />
                 <TextOverlayRenderer overlays={post.textOverlays} />
                 <div className="absolute bottom-2 left-2 flex items-center gap-2">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); togglePlay(); }}
+                    className="w-8 h-8 rounded-full bg-black/60 backdrop-blur flex items-center justify-center text-white"
+                    aria-label={playing ? "Pause" : "Play"}
+                  >
+                    {playing ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
+                  </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); onToggleMute(); }}
                     className="w-8 h-8 rounded-full bg-black/60 backdrop-blur flex items-center justify-center text-white"
