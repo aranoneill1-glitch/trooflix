@@ -38,6 +38,7 @@ type Profile = {
   avatar_url: string | null;
   bio: string | null;
   is_verified?: boolean;
+  tier?: "user" | "pro" | "podcaster";
 };
 
 type Post = {
@@ -424,7 +425,7 @@ export default function ProfilePage() {
             <div className="mb-4">
               <p className="font-semibold inline-flex items-center gap-1.5">
                 <span>{name}</span>
-                {profile?.is_verified && <VerifiedBadge size={16} />}
+                {profile?.is_verified && <VerifiedBadge size={16} variant={profile.tier === "podcaster" ? "gold" : "red"} />}
               </p>
               {profile?.bio && (
                 <p className="text-sm text-white/90 whitespace-pre-wrap mt-1">
