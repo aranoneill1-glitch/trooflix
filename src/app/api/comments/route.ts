@@ -1,11 +1,32 @@
 import { NextResponse } from "next/server";
 import { createClient as createServerClient } from "@supabase/supabase-js";
+import { kv } from "@vercel/kv";
 
 const supabaseAdmin = createServerClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
   { auth: { autoRefreshToken: false, persistSession: false } }
 );
+
+const VIDEOS_KEY = "trooflix:videos";
+const CREATORS_KEY = "trooflix:creators";
+
+async function findPostOwner(videoId: number): Promise<string | null> {
+  try {
+    const videos = (await kv.get<any[]>(VIDEOS_KEY)) || [];
+    const post = videos.find((v: any) => Number(v.id) === Number(videoId));
+    if (!post) return null;
+    if (post.uploaderUserId) return post.uploaderUserId;
+    if (post.creatorId) {
+      const creators = (await kv.get<any[]>(CREATORS_KEY)) || [];
+      const creator = creators.find((c: any) => Number(c.id) === Number(post.creatorId));
+      if (creator?.ownerUserId) return creator.ownerUserId;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
 
 // GET /api/comments?video_id=X&sort=newest|oldest|top
 export async function GET(req: Request) {
@@ -123,6 +144,22 @@ export async function POST(req: Request) {
       .single();
 
     if (error) throw error;
+
+    // Fire notification for post owner (skip self-comments)
+    const ownerId = await findPostOwner(Number(videoId));
+    if (ownerId && ownerId !== userId) {
+      try {
+        await supabaseAdmin.from("notifications").insert({
+          user_id: ownerId,
+          actor_id: userId,
+          type: "comment",
+          post_id: Number(videoId),
+        });
+      } catch (err) {
+        console.warn("notification insert failed:", err);
+      }
+    }
+
     return NextResponse.json({ ok: true, comment: { ...data, like_count: 0 } });
   } catch (e: any) {
     console.error("POST comments error:", e);

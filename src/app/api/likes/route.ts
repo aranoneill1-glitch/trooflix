@@ -1,11 +1,33 @@
 import { NextResponse } from "next/server";
 import { createClient as createServerClient } from "@supabase/supabase-js";
+import { kv } from "@vercel/kv";
 
 const supabaseAdmin = createServerClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
   { auth: { autoRefreshToken: false, persistSession: false } }
 );
+
+const VIDEOS_KEY = "trooflix:videos";
+const CREATORS_KEY = "trooflix:creators";
+
+// Look up who owns a post. Returns the user_id to notify, or null.
+async function findPostOwner(videoId: number): Promise<string | null> {
+  try {
+    const videos = (await kv.get<any[]>(VIDEOS_KEY)) || [];
+    const post = videos.find((v: any) => Number(v.id) === Number(videoId));
+    if (!post) return null;
+    if (post.uploaderUserId) return post.uploaderUserId;
+    if (post.creatorId) {
+      const creators = (await kv.get<any[]>(CREATORS_KEY)) || [];
+      const creator = creators.find((c: any) => Number(c.id) === Number(post.creatorId));
+      if (creator?.ownerUserId) return creator.ownerUserId;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
 
 // GET: returns liked video IDs for a given user OR anon_id
 export async function GET(req: Request) {
@@ -83,6 +105,23 @@ export async function POST(req: Request) {
       if (userId) dislikeQ = dislikeQ.eq("user_id", userId);
       else if (anonId) dislikeQ = dislikeQ.eq("anon_id", anonId);
       await dislikeQ;
+
+      // Fire a notification for the post owner (skip if user is liking their own post)
+      if (userId) {
+        const ownerId = await findPostOwner(vid);
+        if (ownerId && ownerId !== userId) {
+          try {
+            await supabaseAdmin.from("notifications").insert({
+              user_id: ownerId,
+              actor_id: userId,
+              type: "like",
+              post_id: vid,
+            });
+          } catch (err) {
+            console.warn("notification insert failed:", err);
+          }
+        }
+      }
 
       return NextResponse.json({ ok: true, liked: true });
     }
