@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 import { clearUserCache } from "@/lib/cache";
+import TierCards from "@/components/TierCards";
 
 export default function SignupPage() {
   const [handle, setHandle] = useState("");
@@ -243,6 +244,18 @@ export default function SignupPage() {
               {loading ? "Creating account…" : "Sign Up"}
             </button>
           </form>
+
+          {/* What you can unlock on Trooflix */}
+          <div className="mt-16 mb-8">
+            <p className="text-xs tracking-[0.3em] text-red-500 font-bold mb-2 text-center">
+              WHAT YOU CAN UNLOCK
+            </p>
+            <h2 className="text-2xl font-black mb-1 text-center">Start free. Grow when you're ready.</h2>
+            <p className="text-white/60 text-sm mb-6 text-center">
+              Sign up free — upgrade any time as new tiers launch.
+            </p>
+            <TierCards defaultTier="user" />
+          </div>
 
           <p className="text-white/60 text-base mt-12">
             Already have an account?{" "}
