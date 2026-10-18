@@ -15,7 +15,9 @@ const CREATORS_KEY = "trooflix:creators";
 async function findPostOwner(videoId: number): Promise<string | null> {
   try {
     const videos = (await kv.get<any[]>(VIDEOS_KEY)) || [];
+    console.log("[findPostOwner] videos count:", videos.length, "looking for:", videoId);
     const post = videos.find((v: any) => Number(v.id) === Number(videoId));
+    console.log("[findPostOwner] post found:", post ? "yes" : "no", post?.uploaderUserId || post?.creatorId);
     if (!post) return null;
     if (post.uploaderUserId) return post.uploaderUserId;
     if (post.creatorId) {
@@ -24,7 +26,8 @@ async function findPostOwner(videoId: number): Promise<string | null> {
       if (creator?.ownerUserId) return creator.ownerUserId;
     }
     return null;
-  } catch {
+  } catch (err) {
+    console.error("[findPostOwner] error:", err);
     return null;
   }
 }
@@ -109,16 +112,18 @@ export async function POST(req: Request) {
       // Fire a notification for the post owner (skip if user is liking their own post)
       if (userId) {
         const ownerId = await findPostOwner(vid);
+        console.log("[like notification] ownerId:", ownerId, "userId:", userId, "skip?", !ownerId || ownerId === userId);
         if (ownerId && ownerId !== userId) {
           try {
-            await supabaseAdmin.from("notifications").insert({
+            const result = await supabaseAdmin.from("notifications").insert({
               user_id: ownerId,
               actor_id: userId,
               type: "like",
               post_id: vid,
             });
+            console.log("[like notification] insert result:", JSON.stringify(result));
           } catch (err) {
-            console.warn("notification insert failed:", err);
+            console.error("[like notification] insert FAILED:", err);
           }
         }
       }
