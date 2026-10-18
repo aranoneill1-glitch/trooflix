@@ -818,33 +818,7 @@ export default function ProfilePage() {
                 </button>
               </div>
               <div className="p-4 space-y-1">
-                {isCreator ? (
-                  <Link
-                    href="/studio"
-                    onClick={() => setDashOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition text-green-400"
-                  >
-                    <Check size={18} />
-                    <span className="font-semibold">Podcaster Studio</span>
-                  </Link>
-                ) : (
-                  <Link
-                    href="/apply"
-                    onClick={() => setDashOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition text-red-500"
-                  >
-                    <Mic size={18} />
-                    <span className="font-semibold">Become a Podcaster</span>
-                  </Link>
-                )}
-                <Link
-                  href="/upgrade"
-                  onClick={() => setDashOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition text-yellow-400"
-                >
-                  <Sparkles size={18} />
-                  <span className="font-semibold">Upgrade plan</span>
-                </Link>
+
                 <Link
                   href="/account"
                   onClick={() => setDashOpen(false)}
