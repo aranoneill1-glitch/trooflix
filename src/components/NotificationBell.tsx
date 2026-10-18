@@ -10,7 +10,7 @@ import VerifiedBadge from "@/components/VerifiedBadge";
 type Notification = {
   id: number;
   actor_id: string;
-  type: "like" | "comment" | "follow";
+  type: "like" | "comment" | "follow" | "repost";
   post_id: number | null;
   read: boolean;
   created_at: string;
@@ -112,6 +112,7 @@ export default function NotificationBell() {
     if (n.type === "like") return "liked your post";
     if (n.type === "comment") return "commented on your post";
     if (n.type === "follow") return "started following you";
+    if (n.type === "repost") return "reposted your post";
     return "did something";
   };
 

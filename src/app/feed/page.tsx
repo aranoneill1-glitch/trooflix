@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {Heart, MessageCircle, Send, Bookmark, Play, VolumeX, Volume2, Plus, Share} from "lucide-react";
+import {Heart, MessageCircle, Send, Bookmark, Play, VolumeX, Volume2, Plus, Share, Repeat2} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import ShareReelSheet from "@/components/ShareReelSheet";
@@ -563,3 +563,60 @@ function CommentCountInline({ videoId }: { videoId: number }) {
   if (count === null || count === 0) return null;
   return <>{count.toLocaleString()}</>;
 }
+
+// Repost button — toggle for the current user
+function RepostButton({ postId }: { postId: number }) {
+  const [reposted, setReposted] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    import("@/lib/cache").then(({ getCachedUser }) =>
+      getCachedUser().then(async (u) => {
+        if (!u) return;
+        setUserId(u.id);
+        try {
+          const r = await fetch(`/api/reposts?user_id=${u.id}`, { cache: "no-store" });
+          const d = await r.json();
+          if (Array.isArray(d.ids) && d.ids.includes(postId)) setReposted(true);
+        } catch {}
+      })
+    );
+  }, [postId]);
+
+  const toggle = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!userId || busy) return;
+    setBusy(true);
+    const next = !reposted;
+    setReposted(next);
+    try {
+      const res = await fetch("/api/reposts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, postId }),
+      });
+      if (!res.ok) setReposted(!next);
+    } catch {
+      setReposted(!next);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <button
+      onClick={toggle}
+      disabled={busy}
+      className={`flex items-center transition ${
+        reposted ? "text-green-500" : "text-white/50 hover:text-green-400"
+      } group`}
+      aria-label={reposted ? "Undo repost" : "Repost"}
+    >
+      <div className={`p-2 rounded-full ${reposted ? "bg-green-500/10" : "group-hover:bg-green-400/10"}`}>
+        <Repeat2 size={20} strokeWidth={1.8} />
+      </div>
+    </button>
+  );
+}
+
