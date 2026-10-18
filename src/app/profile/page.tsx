@@ -4,8 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Camera,
+import {Camera,
   Grid3x3,
   Play,
   Eye,
@@ -23,6 +22,7 @@ import {
   Trash2,
   BarChart3,
   List,
+  Sparkles,
 } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
@@ -837,6 +837,14 @@ export default function ProfilePage() {
                     <span className="font-semibold">Become a Podcaster</span>
                   </Link>
                 )}
+                <Link
+                  href="/upgrade"
+                  onClick={() => setDashOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition text-yellow-400"
+                >
+                  <Sparkles size={18} />
+                  <span className="font-semibold">Upgrade plan</span>
+                </Link>
                 <Link
                   href="/account"
                   onClick={() => setDashOpen(false)}

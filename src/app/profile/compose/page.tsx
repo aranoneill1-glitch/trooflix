@@ -46,15 +46,30 @@ export default function ComposePage() {
         <h2 className="text-2xl md:text-3xl font-black mb-2 text-center">What are you posting?</h2>
         <p className="text-white/50 text-sm mb-4 text-center">Choose your format</p>
 
-        {!tierLoading && (
+        {!tierLoading && tier === "user" && (
+          <Link
+            href="/upgrade"
+            className="mb-6 inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-xs text-white/70 transition"
+          >
+            <span>Posting as</span>
+            <span className="font-semibold text-white">Free</span>
+            <span className="text-white/40">· 90s max · Upgrade →</span>
+          </Link>
+        )}
+
+        {!tierLoading && tier === "pro" && (
           <div className="mb-6 inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-xs text-white/70">
             <span>Posting as</span>
-            <span className="font-semibold text-white">
-              {tier === "podcaster" ? "Podcaster" : tier === "pro" ? "Pro" : "Free"}
-            </span>
-            {tier === "user" && <span className="text-white/40">· 90s max</span>}
-            {tier === "pro" && <span className="text-white/40">· Unlimited</span>}
-            {tier === "podcaster" && <span className="text-white/40">· All types</span>}
+            <span className="font-semibold text-white">Pro</span>
+            <span className="text-white/40">· Unlimited</span>
+          </div>
+        )}
+
+        {!tierLoading && tier === "podcaster" && (
+          <div className="mb-6 inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-yellow-600/30 rounded-full text-xs text-yellow-400">
+            <span>Posting as</span>
+            <span className="font-semibold">Podcaster</span>
+            <span className="text-yellow-600/60">· All types</span>
           </div>
         )}
 
