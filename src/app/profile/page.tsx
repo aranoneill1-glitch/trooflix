@@ -471,7 +471,7 @@ export default function ProfilePage() {
                     : "border-transparent text-white/50"
                 }`}
               >
-                Uploads
+                My Posts
               </button>
               <button
                 onClick={() => setMobileTab("reposts")}
@@ -481,7 +481,7 @@ export default function ProfilePage() {
                     : "border-transparent text-white/50"
                 }`}
               >
-                Reposts
+                Retroos
               </button>
               <button
                 onClick={() => setMobileTab("saved")}
@@ -501,7 +501,7 @@ export default function ProfilePage() {
               <div className={`${mobileTab === "uploads" ? "" : "hidden"}`}>
                 <div className="flex items-center justify-between px-4 md:px-6 mb-3">
                   <h2 className="text-sm font-bold text-white/80 uppercase tracking-wider">
-                    Uploads
+                    My Posts
                   </h2>
                   <div className="flex items-center gap-1">
                     <button
@@ -615,7 +615,7 @@ export default function ProfilePage() {
               <div className={`${mobileTab === "reposts" ? "" : "hidden"}`}>
                 <div className="flex items-center justify-between px-4 md:px-6 mb-3">
                   <h2 className="text-sm font-bold text-white/80 uppercase tracking-wider">
-                    Reposts
+                    Retroos
                   </h2>
                   <div className="flex items-center gap-1">
                     <button
