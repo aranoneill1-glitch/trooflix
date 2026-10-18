@@ -16,7 +16,7 @@ export async function GET(req: Request) {
 
     const { data, error } = await supabaseAdmin
       .from("profiles")
-      .select("user_id, avatar_url, display_name, username, bio, is_verified, updated_at")
+      .select("user_id, avatar_url, display_name, username, bio, is_verified, tier, updated_at")
       .eq("user_id", userId)
       .maybeSingle();
 
@@ -31,7 +31,7 @@ export async function GET(req: Request) {
 // POST /api/profile — { userId, avatarUrl?, displayName? }
 export async function POST(req: Request) {
   try {
-    const { userId, avatarUrl, displayName, bio } = await req.json();
+    const { userId, avatarUrl, displayName, bio, tier } = await req.json();
     if (!userId) {
       return NextResponse.json({ error: "userId required" }, { status: 400 });
     }
@@ -49,6 +49,9 @@ export async function POST(req: Request) {
     if (avatarUrl !== undefined) payload.avatar_url = avatarUrl;
     if (displayName !== undefined) payload.display_name = displayName;
     if (bio !== undefined) payload.bio = typeof bio === "string" ? bio.slice(0, 300) : null;
+    if (tier !== undefined && ["user", "pro", "podcaster"].includes(tier)) {
+      payload.tier = tier;
+    }
 
     if (existing) {
       const { data, error } = await supabaseAdmin

@@ -97,19 +97,45 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "userId required" }, { status: 400 });
     }
 
-    if (!["Reel", "Image", "Troo"].includes(postType)) {
+    // Look up the user's tier to enforce upload limits
+    let userTier: "user" | "pro" | "podcaster" = "user";
+    try {
+      const { data: profile } = await supabaseAdmin
+        .from("profiles")
+        .select("tier")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (profile?.tier && ["user", "pro", "podcaster"].includes(profile.tier)) {
+        userTier = profile.tier;
+      }
+    } catch {}
+
+    if (!["Reel", "Image", "Troo", "Podcast"].includes(postType)) {
       return NextResponse.json({ error: "Invalid post type" }, { status: 400 });
     }
 
-    // Type-specific validation
+    // Tier-specific type restrictions
+    if (postType === "Podcast" && userTier !== "podcaster") {
+      return NextResponse.json(
+        { error: "Only Podcaster accounts can post podcasts. Upgrade to unlock." },
+        { status: 403 }
+      );
+    }
+
+    // Duration limits based on tier
+    const DURATION_LIMIT =
+      userTier === "user" ? 90 :
+      userTier === "pro" ? null :
+      null; // podcaster = no limit
+
     if (postType === "Reel") {
       if (!videoUrl) {
         return NextResponse.json({ error: "videoUrl required for reels" }, { status: 400 });
       }
-      if (typeof duration === "number" && duration > 90) {
+      if (DURATION_LIMIT !== null && typeof duration === "number" && duration > DURATION_LIMIT) {
         return NextResponse.json(
-          { error: "Reels are limited to 90 seconds. Upgrade to a Podcaster account for longer videos." },
-          { status: 400 }
+          { error: `Reels are limited to ${DURATION_LIMIT}s on your account. Upgrade to Pro for unlimited length.` },
+          { status: 403 }
         );
       }
     } else if (postType === "Image") {
@@ -124,6 +150,10 @@ export async function POST(req: Request) {
       if (text.length > 280) {
         return NextResponse.json({ error: "Troos are limited to 280 characters" }, { status: 400 });
       }
+    } else if (postType === "Podcast") {
+      if (!videoUrl) {
+        return NextResponse.json({ error: "videoUrl required for podcasts" }, { status: 400 });
+      }
     }
 
     const videos = (await kv.get<any[]>(VIDEOS_KEY)) || [];
@@ -135,7 +165,7 @@ export async function POST(req: Request) {
       category: "Uncategorized",
       type: postType,
       featured: false,
-      videoUrl: postType === "Reel" ? videoUrl : "",
+      videoUrl: (postType === "Reel" || postType === "Podcast") ? videoUrl : "",
       textOverlays: postType === "Reel" && Array.isArray(body.textOverlays) ? body.textOverlays : [],
       uploaderUserId: userId,
       posterUrl:
@@ -148,7 +178,7 @@ export async function POST(req: Request) {
       year: new Date().getFullYear(),
       rating: "TV-MA",
       match: 95,
-      duration: postType === "Reel" && typeof duration === "number" ? `${Math.round(duration)}s` : "",
+      duration: (postType === "Reel" || postType === "Podcast") && typeof duration === "number" ? `${Math.round(duration)}s` : "",
       createdAt: new Date().toISOString(),
     };
 
