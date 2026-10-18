@@ -349,6 +349,20 @@ function PostCard({
     }
   };
 
+  const handleExternalShare = async () => {
+    const url = window.location.origin + '/feed?reel=' + post.id;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: post.title || 'Trooflix Post', url });
+      } catch {}
+    } else {
+      try {
+        await navigator.clipboard.writeText(url);
+        alert('Link copied to clipboard!');
+      } catch {}
+    }
+  };
+
   return (
     <article
       ref={(el) => registerRef(el as HTMLElement | null)}
@@ -449,21 +463,11 @@ function PostCard({
 
           {/* X-Style Action Bar */}
           <div className="flex items-center justify-between mt-3 -ml-2 pr-2">
-            {/* Reply */}
+            {/* Comment */}
             <button onClick={onOpenComments} className="flex items-center gap-1 text-white/50 hover:text-blue-400 group transition">
               <div className="p-2 rounded-full group-hover:bg-blue-400/10"><MessageCircle size={20} /></div>
               <span className="text-xs font-medium"><CommentCountInline videoId={post.id} /></span>
             </button>
-
-            {/* Repost/Share */}
-            <div className="flex items-center gap-1 text-white/50 hover:text-green-400 group transition">
-              <ShareReelTrigger videoId={post.id} videoTitle={post.title || ""} />
-            </div>
-
-            {/* Like */}
-            <div className="flex items-center text-white/50 hover:text-red-500 group transition">
-              <LikeButton videoId={post.id} size={20} showCount />
-            </div>
 
             {/* Views */}
             <div className="flex items-center gap-1 text-white/50 hover:text-blue-400 group transition">
@@ -475,17 +479,27 @@ function PostCard({
               <span className="text-xs font-medium"><ViewCount videoId={post.id} showIcon={false} /></span>
             </div>
 
+            {/* Internal Share */}
+            <div className="flex items-center gap-1 text-white/50 hover:text-green-400 group transition">
+              <ShareReelTrigger videoId={post.id} videoTitle={post.title || ""} />
+            </div>
+
+            {/* External Share */}
+            <button onClick={handleExternalShare} className="flex items-center text-white/50 hover:text-blue-400 group transition">
+              <div className="p-2 rounded-full group-hover:bg-blue-400/10"><Share size={20} /></div>
+            </button>
+
+            {/* Like */}
+            <div className="flex items-center text-white/50 hover:text-red-500 group transition">
+              <LikeButton videoId={post.id} size={20} showCount />
+            </div>
+
             {/* Bookmark */}
             <div className="flex items-center text-white/50 hover:text-blue-400 group transition">
               <div className="p-2 rounded-full group-hover:bg-blue-400/10">
                 <SaveButton videoId={post.id} variant="icon" />
               </div>
             </div>
-
-            {/* Share */}
-            <button className="flex items-center text-white/50 hover:text-blue-400 group transition">
-              <div className="p-2 rounded-full group-hover:bg-blue-400/10"><Share size={20} /></div>
-            </button>
           </div>
         </div>
       </div>
