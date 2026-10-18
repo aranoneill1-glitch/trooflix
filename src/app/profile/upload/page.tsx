@@ -15,6 +15,28 @@ export default function UploadPage() {
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
   const [stage, setStage] = useState<"pick" | "uploading" | "poster">("pick");
+  const [tier, setTier] = useState<"user" | "pro" | "podcaster">("user");
+  const [tierLoaded, setTierLoaded] = useState(false);
+
+  // Load user's tier
+  useEffect(() => {
+    import("@/lib/cache").then(({ getCachedUser }) =>
+      getCachedUser().then(async (u) => {
+        if (!u) { setTierLoaded(true); return; }
+        try {
+          const res = await fetch(`/api/profile?user_id=${u.id}`, { cache: "no-store" });
+          const d = await res.json();
+          if (d.profile?.tier && ["user", "pro", "podcaster"].includes(d.profile.tier)) {
+            setTier(d.profile.tier);
+          }
+        } catch {}
+        setTierLoaded(true);
+      })
+    );
+  }, []);
+
+  // Compute the effective limit
+  const effectiveLimit = tier === "user" ? MAX_SECONDS : null; // null = unlimited
 
   // Auto-open the picker on mount
   useEffect(() => {
@@ -84,8 +106,13 @@ export default function UploadPage() {
     let dur = 0;
     try {
       dur = await readDuration(f);
-      if (dur > MAX_SECONDS + 0.5) {
-        setError(`Your video is ${Math.round(dur)}s. Max is ${MAX_SECONDS}s.`);
+      if (effectiveLimit !== null && dur > effectiveLimit + 0.5) {
+        const mins = Math.floor(dur / 60);
+        const secs = Math.round(dur % 60);
+        const durLabel = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+        setError(
+          `This video is ${durLabel}. Free accounts post up to ${MAX_SECONDS}s. Trim in your phone or tap here to learn about Pro.`
+        );
         return;
       }
     } catch (err: any) {
@@ -138,7 +165,9 @@ export default function UploadPage() {
         {!uploading && !error && (
           <>
             <p className="text-2xl md:text-3xl font-black tracking-tight mb-2">UPLOAD A REEL</p>
-            <p className="text-sm text-white/50 mb-6">MP4, WebM, MOV · max {MAX_SECONDS}s</p>
+            <p className="text-sm text-white/50 mb-6">
+              MP4, WebM, MOV · {tier === "user" ? `max ${MAX_SECONDS}s` : "no length limit"}
+            </p>
             <button
               onClick={() => inputRef.current?.click()}
               className="px-8 py-3 bg-red-600 hover:bg-red-500 rounded-lg font-semibold transition"

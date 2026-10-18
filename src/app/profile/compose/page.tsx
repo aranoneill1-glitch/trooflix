@@ -1,11 +1,32 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Play, Image as ImageIcon, MessageSquare } from "lucide-react";
+import { ChevronLeft, Play, Image as ImageIcon, MessageSquare, Mic } from "lucide-react";
+import { getCachedUser } from "@/lib/cache";
 
 export default function ComposePage() {
   const router = useRouter();
+  const [tier, setTier] = useState<"user" | "pro" | "podcaster">("user");
+  const [tierLoading, setTierLoading] = useState(true);
+
+  useEffect(() => {
+    getCachedUser().then(async (u) => {
+      if (!u) {
+        setTierLoading(false);
+        return;
+      }
+      try {
+        const res = await fetch(`/api/profile?user_id=${u.id}`, { cache: "no-store" });
+        const d = await res.json();
+        if (d.profile?.tier && ["user", "pro", "podcaster"].includes(d.profile.tier)) {
+          setTier(d.profile.tier);
+        }
+      } catch {}
+      setTierLoading(false);
+    });
+  }, []);
 
   return (
     <main className="min-h-screen bg-black text-white flex flex-col">
@@ -23,9 +44,21 @@ export default function ComposePage() {
 
       <div className="flex-1 flex flex-col items-center justify-center p-6">
         <h2 className="text-2xl md:text-3xl font-black mb-2 text-center">What are you posting?</h2>
-        <p className="text-white/50 text-sm mb-8 text-center">Choose your format</p>
+        <p className="text-white/50 text-sm mb-4 text-center">Choose your format</p>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl w-full">
+        {!tierLoading && (
+          <div className="mb-6 inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-xs text-white/70">
+            <span>Posting as</span>
+            <span className="font-semibold text-white">
+              {tier === "podcaster" ? "Podcaster" : tier === "pro" ? "Pro" : "Free"}
+            </span>
+            {tier === "user" && <span className="text-white/40">· 90s max</span>}
+            {tier === "pro" && <span className="text-white/40">· Unlimited</span>}
+            {tier === "podcaster" && <span className="text-white/40">· All types</span>}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-3xl w-full">
           <Link
             href="/profile/upload"
             className="group bg-[#141418] border border-white/10 hover:border-red-600/50 rounded-2xl p-6 flex flex-col items-center text-center transition"
@@ -58,6 +91,19 @@ export default function ComposePage() {
             <p className="text-lg font-bold mb-1">Troo</p>
             <p className="text-xs text-white/50">Text post, up to 280 chars</p>
           </Link>
+
+          {tier === "podcaster" && (
+            <Link
+              href="/profile/compose/podcast"
+              className="group bg-[#141418] border border-white/10 hover:border-yellow-600/50 rounded-2xl p-6 flex flex-col items-center text-center transition"
+            >
+              <div className="w-16 h-16 rounded-full bg-yellow-600/20 flex items-center justify-center mb-4 group-hover:bg-yellow-600/30 transition">
+                <Mic size={28} className="text-yellow-400" />
+              </div>
+              <p className="text-lg font-bold mb-1">Podcast</p>
+              <p className="text-xs text-white/50">Unlimited length</p>
+            </Link>
+          )}
         </div>
       </div>
     </main>
