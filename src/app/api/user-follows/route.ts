@@ -116,6 +116,19 @@ export async function POST(req: Request) {
         .from("user_follows")
         .insert({ follower_id: followerId, following_id: followingId });
       if (error) throw error;
+
+      // Fire a follow notification (skip if somehow self, though we already guarded)
+      try {
+        await supabaseAdmin.from("notifications").insert({
+          user_id: followingId,
+          actor_id: followerId,
+          type: "follow",
+          post_id: null,
+        });
+      } catch (err) {
+        console.warn("follow notification insert failed:", err);
+      }
+
       return NextResponse.json({ ok: true, following: true });
     }
   } catch (e: any) {
