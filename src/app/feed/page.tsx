@@ -461,15 +461,20 @@ function PostCard({
             )}
           </div>
 
-          {/* X-Style Action Bar */}
+          {/* Action Bar */}
           <div className="flex items-center justify-between mt-3 -ml-2 pr-2">
-            {/* Comment */}
+            {/* 1. Likes */}
+            <div className="flex items-center text-white/50 hover:text-red-500 group transition">
+              <LikeButton videoId={post.id} size={20} showCount />
+            </div>
+
+            {/* 2. Comments */}
             <button onClick={onOpenComments} className="flex items-center gap-1 text-white/50 hover:text-blue-400 group transition">
               <div className="p-2 rounded-full group-hover:bg-blue-400/10"><MessageCircle size={20} /></div>
               <span className="text-xs font-medium"><CommentCountInline videoId={post.id} /></span>
             </button>
 
-            {/* Views */}
+            {/* 3. Views */}
             <div className="flex items-center gap-1 text-white/50 hover:text-blue-400 group transition">
               <div className="p-2 rounded-full group-hover:bg-blue-400/10">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -479,22 +484,17 @@ function PostCard({
               <span className="text-xs font-medium"><ViewCount videoId={post.id} showIcon={false} /></span>
             </div>
 
-            {/* Internal Share */}
+            {/* 4. Share Paper Plane (Internal) */}
             <div className="flex items-center gap-1 text-white/50 hover:text-green-400 group transition">
               <ShareReelTrigger videoId={post.id} videoTitle={post.title || ""} />
             </div>
 
-            {/* External Share */}
+            {/* 5. External Share (Arrow Up Box) */}
             <button onClick={handleExternalShare} className="flex items-center text-white/50 hover:text-blue-400 group transition">
               <div className="p-2 rounded-full group-hover:bg-blue-400/10"><Share size={20} /></div>
             </button>
 
-            {/* Like */}
-            <div className="flex items-center text-white/50 hover:text-red-500 group transition">
-              <LikeButton videoId={post.id} size={20} showCount />
-            </div>
-
-            {/* Bookmark */}
+            {/* 6. Bookmark Plus */}
             <div className="flex items-center text-white/50 hover:text-blue-400 group transition">
               <div className="p-2 rounded-full group-hover:bg-blue-400/10">
                 <SaveButton videoId={post.id} variant="icon" />
