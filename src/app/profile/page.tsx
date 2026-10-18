@@ -23,6 +23,7 @@ import {Camera,
   BarChart3,
   List,
   Sparkles,
+  Pencil,
 } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
@@ -54,6 +55,7 @@ type Post = {
   createdAt?: string;
   pinned?: boolean;
   order?: number;
+  description?: string;
 };
 
 export default function ProfilePage() {
@@ -72,6 +74,10 @@ export default function ProfilePage() {
 
   const [tab, setTab] = useState<"grid" | "reels">("grid");
   const [actionSheetFor, setActionSheetFor] = useState<Post | null>(null);
+  const [editFor, setEditFor] = useState<Post | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
   const [insightsFor, setInsightsFor] = useState<Post | null>(null);
   const [reorderFor, setReorderFor] = useState<Post | null>(null);
   const [previewFor, setPreviewFor] = useState<Post | null>(null);
@@ -83,7 +89,6 @@ export default function ProfilePage() {
   // Edit-modal fields (temporary home for the edit form)
   const [editName, setEditName] = useState("");
   const [editBio, setEditBio] = useState("");
-  const [savingEdit, setSavingEdit] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [statusMsg, setStatusMsg] = useState("");
   const [savedPosts, setSavedPosts] = useState<Post[]>([]);
@@ -270,6 +275,43 @@ export default function ProfilePage() {
       e.preventDefault();
       longPressRef.current = null;
       return;
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editFor || !editTitle.trim()) return;
+    setSavingEdit(true);
+    try {
+      const user = await getCachedUser();
+      if (!user) {
+        setSavingEdit(false);
+        return;
+      }
+      const res = await fetch("/api/user/posts", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user.id,
+          postId: editFor.id,
+          title: editTitle.trim(),
+          description: editDescription.trim(),
+        }),
+      });
+      if (!res.ok) {
+        alert("Could not save changes");
+        setSavingEdit(false);
+        return;
+      }
+      const d = await res.json();
+      // Update local state
+      setPosts((prev) =>
+        prev.map((x) => (x.id === editFor.id ? { ...x, title: d.video.title, description: d.video.description } : x))
+      );
+      setEditFor(null);
+    } catch {
+      alert("Network error");
+    } finally {
+      setSavingEdit(false);
     }
   };
 
@@ -980,6 +1022,60 @@ export default function ProfilePage() {
       </AnimatePresence>
 
       <MobileBottomNav />
+      {/* ---- Edit post modal ---- */}
+      <AnimatePresence>
+        {editFor && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => !savingEdit && setEditFor(null)}
+              className="fixed inset-0 z-[500] bg-black/80"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[501] bg-[#0f0f12] rounded-2xl p-4 w-[90vw] max-w-md border border-white/10"
+            >
+              <h3 className="font-bold mb-3">Edit post</h3>
+              <label className="text-[10px] uppercase tracking-wider text-white/40 block mb-1">Title</label>
+              <input
+                type="text"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                maxLength={120}
+                className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 mb-3 outline-none focus:border-red-600 text-sm"
+              />
+              <label className="text-[10px] uppercase tracking-wider text-white/40 block mb-1">Description</label>
+              <textarea
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                rows={4}
+                maxLength={800}
+                className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 mb-4 outline-none focus:border-red-600 resize-none text-sm"
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={() => !savingEdit && setEditFor(null)}
+                  className="flex-1 py-2 rounded-lg bg-white/10 hover:bg-white/20 font-semibold transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveEdit}
+                  disabled={savingEdit || !editTitle.trim()}
+                  className="flex-1 py-2 rounded-lg bg-red-600 hover:bg-red-500 disabled:opacity-50 font-semibold transition"
+                >
+                  {savingEdit ? "Saving…" : "Save"}
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       {/* ---- Long-press action sheet ---- */}
       <AnimatePresence>
         {actionSheetFor && (
@@ -1002,6 +1098,18 @@ export default function ProfilePage() {
                 <div className="w-10 h-1 rounded-full bg-white/25" />
               </div>
               <div className="p-2">
+                <button
+                  onClick={() => {
+                    setEditFor(actionSheetFor);
+                    setEditTitle(actionSheetFor.title || "");
+                    setEditDescription(actionSheetFor.description || "");
+                    setActionSheetFor(null);
+                  }}
+                  className="w-full flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-white/5 transition text-left"
+                >
+                  <Pencil size={20} className="text-white/80" />
+                  <span className="font-medium">Edit</span>
+                </button>
                 <button
                   onClick={() => { setInsightsFor(actionSheetFor); setActionSheetFor(null); }}
                   className="w-full flex items-center gap-4 px-4 py-3 rounded-lg hover:bg-white/5 transition text-left"

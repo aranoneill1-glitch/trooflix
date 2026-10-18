@@ -226,3 +226,72 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: String(e) }, { status: 500 });
   }
 }
+
+// PUT /api/user/posts — { userId, postId, title?, description? } — edit own post
+export async function PUT(req: Request) {
+  try {
+    const { userId, postId, title, description } = await req.json();
+    if (!userId || !postId) {
+      return NextResponse.json({ error: "userId and postId required" }, { status: 400 });
+    }
+
+    const videos = (await kv.get<any[]>(VIDEOS_KEY)) || [];
+    const idx = videos.findIndex((v: any) => Number(v.id) === Number(postId));
+    if (idx === -1) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+    if (videos[idx].uploaderUserId !== userId) {
+      return NextResponse.json({ error: "Not your post" }, { status: 403 });
+    }
+
+    if (title !== undefined) videos[idx].title = String(title).slice(0, 120);
+    if (description !== undefined) videos[idx].description = String(description).slice(0, 800);
+
+    await kv.set(VIDEOS_KEY, videos);
+    return NextResponse.json({ ok: true, video: videos[idx] });
+  } catch (e: any) {
+    console.error("PUT user/posts error:", e);
+    return NextResponse.json({ error: String(e) }, { status: 500 });
+  }
+}
+
+// DELETE /api/user/posts?id=X&userId=Y — delete own post
+export async function DELETE(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const postId = Number(searchParams.get("id"));
+    const userId = searchParams.get("userId");
+
+    if (!postId || !userId) {
+      return NextResponse.json({ error: "id and userId required" }, { status: 400 });
+    }
+
+    const videos = (await kv.get<any[]>(VIDEOS_KEY)) || [];
+    const post = videos.find((v: any) => Number(v.id) === postId);
+    if (!post) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    if (post.uploaderUserId !== userId) {
+      return NextResponse.json({ error: "Not your post" }, { status: 403 });
+    }
+
+    const filtered = videos.filter((v: any) => Number(v.id) !== postId);
+    await kv.set(VIDEOS_KEY, filtered);
+
+    // Clean up related data (best effort)
+    try {
+      await Promise.all([
+        supabaseAdmin.from("likes").delete().eq("video_id", postId),
+        supabaseAdmin.from("comments").delete().eq("video_id", postId),
+        supabaseAdmin.from("views").delete().eq("video_id", postId),
+        supabaseAdmin.from("reposts").delete().eq("post_id", postId),
+        supabaseAdmin.from("notifications").delete().eq("post_id", postId),
+      ]);
+    } catch (err) {
+      console.warn("cleanup after delete failed:", err);
+    }
+
+    return NextResponse.json({ ok: true, deleted: postId });
+  } catch (e: any) {
+    console.error("DELETE user/posts error:", e);
+    return NextResponse.json({ error: String(e) }, { status: 500 });
+  }
+}
+
