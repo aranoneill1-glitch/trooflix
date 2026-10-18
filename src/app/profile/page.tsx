@@ -845,6 +845,14 @@ export default function ProfilePage() {
                   <Share2 size={18} className="text-white/70" />
                   <span className="font-semibold">Share profile</span>
                 </button>
+                <Link
+                  href="/upgrade"
+                  onClick={() => setDashOpen(false)}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition text-yellow-400 text-left"
+                >
+                  <Sparkles size={18} />
+                  <span className="font-semibold">Upgrade plan</span>
+                </Link>
                 <button
                   onClick={logout}
                   className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition text-red-400 text-left"
