@@ -517,11 +517,12 @@ export default function ThreadPage() {
                 {(() => {
                   const isMedia = isMediaUrl(m.body);
                   const isReel = isReelMessage(m.body);
+                  const isChrome = isMedia || isReel;
 
                   return (
                     <div
                       className={`relative break-words ${
-                        isMedia
+                        isChrome
                           ? "max-w-[78%] md:max-w-[65%]"
                           : `max-w-[78%] md:max-w-[65%] px-3 py-2 text-[15px] leading-[1.35] ${
                               mine ? "bg-[#dc2626]" : "bg-white/10"
@@ -549,7 +550,7 @@ export default function ThreadPage() {
                             }}
                             className="block w-64 max-w-full"
                           >
-                            <div className="rounded-2xl overflow-hidden bg-black/60">
+                            <div className="rounded-2xl overflow-hidden">
                               {reel?.posterUrl || reel?.backdropUrl ? (
                                 <img
                                   src={reel.posterUrl || reel.backdropUrl}
@@ -557,11 +558,11 @@ export default function ThreadPage() {
                                   className="w-full aspect-[4/5] object-cover"
                                 />
                               ) : (
-                                <div className="w-full aspect-[4/5] bg-black/40 flex items-center justify-center text-white/40 text-sm">
+                                <div className="w-full aspect-[4/5] bg-black/60 flex items-center justify-center text-white/40 text-sm">
                                   Loading…
                                 </div>
                               )}
-                              <div className="px-3 py-2">
+                              <div className="px-3 py-2 bg-black/60">
                                 <p className="text-[10px] uppercase tracking-widest text-white/50 mb-0.5">
                                   Reel
                                 </p>
