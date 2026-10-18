@@ -149,7 +149,7 @@ export default function LoginPage() {
         <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 z-10">
           <div className="max-w-md">
             <p className="text-red-500 text-xs tracking-[0.3em] font-bold mb-3">
-              TROOFLIX
+              TRUTH WITHOUT CENSORSHIP
             </p>
             <h1 className="text-2xl md:text-5xl font-black leading-tight mb-4">
               No ads.
@@ -177,9 +177,6 @@ export default function LoginPage() {
             <h2 className="text-2xl md:text-3xl font-black mb-2">
               Sign in to <span className="text-red-600">TROOFLIX</span>
             </h2>
-            <p className="text-sm text-white/50">
-              The truth is waiting.
-            </p>
           </div>
 
           <form onSubmit={submit} className="space-y-3">
