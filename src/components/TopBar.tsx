@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useSearch } from "@/context/SearchContext";
 import { Search, Menu, X, MessageCircle } from "lucide-react";
 import UserMenu from "@/components/UserMenu";
+import NotificationBell from "@/components/NotificationBell";
 
 const NAV_TABS = [
   { label: "Home", path: "/" },
@@ -131,6 +132,8 @@ export default function TopBar({ onMenu }: Props) {
             </Link>
           </>
         )}
+
+        <NotificationBell />
 
         {/* Desktop only: messages + avatar. Mobile has these in bottom nav / profile. */}
         <div className="hidden md:flex items-center gap-3">
