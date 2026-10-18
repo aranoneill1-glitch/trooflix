@@ -11,7 +11,7 @@ import VerifiedBadge from "@/components/VerifiedBadge";
 import LikeButton from "@/components/LikeButton";
 import SaveButton from "@/components/SaveButton";
 import CommentDrawer from "@/components/CommentDrawer";
-import ViewCount from "@/components/ViewCount";
+import ViewCount, { trackView } from "@/components/ViewCount";
 import TextOverlayRenderer from "@/components/TextOverlay";
 import XVideoModal from "@/components/XVideoModal";
 import { getCachedUser } from "@/lib/cache";
@@ -77,6 +77,7 @@ export default function FeedPage() {
   const [openVideoModal, setOpenVideoModal] = useState<Video | null>(null);
   const [showSoundPrompt, setShowSoundPrompt] = useState(false);
   const postRefs = useRef<Map<number, HTMLElement>>(new Map());
+  const trackedIdsRef = useRef<Set<number>>(new Set());
 
   // Get current user
   useEffect(() => {
@@ -162,6 +163,14 @@ export default function FeedPage() {
     postRefs.current.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
   }, [posts.length]);
+
+  // Track a view when a post becomes the centered active post (once per session)
+  useEffect(() => {
+    if (!activePlayingId) return;
+    if (trackedIdsRef.current.has(activePlayingId)) return;
+    trackedIdsRef.current.add(activePlayingId);
+    trackView(activePlayingId);
+  }, [activePlayingId]);
 
   // Author resolver
   const authorFor = (p: Video) => {
