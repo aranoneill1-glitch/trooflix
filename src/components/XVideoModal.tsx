@@ -15,7 +15,10 @@ export default function XVideoModal({
   onOpenComments?: () => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const progressBarRef = useRef<HTMLDivElement>(null);
   const [muted, setMuted] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [scrubbing, setScrubbing] = useState(false);
 
   // Pause all other videos on the page
   useEffect(() => {
@@ -58,6 +61,17 @@ export default function XVideoModal({
     };
   }, []);
 
+  // Seek to a position given a client X coordinate
+  const seekFromClientX = (clientX: number) => {
+    const bar = progressBarRef.current;
+    const v = videoRef.current;
+    if (!bar || !v || !v.duration) return;
+    const rect = bar.getBoundingClientRect();
+    const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    v.currentTime = ratio * v.duration;
+    setProgress(ratio);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -84,6 +98,13 @@ export default function XVideoModal({
           loop
           playsInline
           muted={muted}
+          onTimeUpdate={(e) => {
+            if (scrubbing) return;
+            const v = e.currentTarget;
+            if (v.duration && isFinite(v.duration)) {
+              setProgress(v.currentTime / v.duration);
+            }
+          }}
           onClick={(e) => {
             const v = e.currentTarget;
             if (v.paused) v.play().catch(() => {});
@@ -91,6 +112,31 @@ export default function XVideoModal({
           }}
         />
         <TextOverlayRenderer overlays={video.textOverlays} />
+
+        {/* Seek bar — bottom of screen */}
+        <div
+          ref={progressBarRef}
+          onClick={(e) => { e.stopPropagation(); seekFromClientX(e.clientX); }}
+          onTouchStart={(e) => { e.stopPropagation(); setScrubbing(true); seekFromClientX(e.touches[0].clientX); }}
+          onTouchMove={(e) => { e.stopPropagation(); if (scrubbing) seekFromClientX(e.touches[0].clientX); }}
+          onTouchEnd={(e) => { e.stopPropagation(); setScrubbing(false); }}
+          onMouseDown={(e) => { e.stopPropagation(); setScrubbing(true); seekFromClientX(e.clientX); }}
+          onMouseMove={(e) => { if (scrubbing) { e.stopPropagation(); seekFromClientX(e.clientX); } }}
+          onMouseUp={() => setScrubbing(false)}
+          onMouseLeave={() => setScrubbing(false)}
+          className="absolute bottom-0 left-0 right-0 z-40 h-6 flex items-end cursor-pointer pb-[env(safe-area-inset-bottom)]"
+          style={{ pointerEvents: "auto" }}
+        >
+          <div className="w-full h-[3px] bg-white/25 relative">
+            <div
+              className="h-full bg-white"
+              style={{
+                width: `${progress * 100}%`,
+                transition: scrubbing ? "none" : "width 0.2s linear",
+              }}
+            />
+          </div>
+        </div>
       </div>
     </motion.div>
   );
