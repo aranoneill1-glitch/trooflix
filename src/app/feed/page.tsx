@@ -337,12 +337,23 @@ function PostCard({
   const isImage = post.type === "Image";
   const isTroo = post.type === "Troo";
 
+  // Helper: pause every other <video> on the page before playing this one
+  const pauseAllOthers = (thisVideo: HTMLVideoElement) => {
+    const all = document.querySelectorAll<HTMLVideoElement>("video");
+    all.forEach((el) => {
+      if (el !== thisVideo && !el.paused) {
+        el.pause();
+      }
+    });
+  };
+
   // Play when active, pause when not
   useEffect(() => {
     if (!isReel) return;
     const v = videoRef.current;
     if (!v) return;
     if (isActivePlaying) {
+      pauseAllOthers(v);
       v.muted = muted;
       v.play().catch(() => {});
       setPlaying(true);
@@ -357,6 +368,8 @@ function PostCard({
     const v = videoRef.current;
     if (!v) return;
     if (v.paused) {
+      // Only this video should play
+      pauseAllOthers(v);
       v.play().catch(() => {});
       setPlaying(true);
     } else {
