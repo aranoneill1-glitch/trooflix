@@ -34,6 +34,7 @@ type Profile = {
   display_name: string | null;
   avatar_url: string | null;
   is_verified?: boolean;
+  tier?: "user" | "pro" | "podcaster";
 };
 
 function dayKey(iso: string): string {
@@ -445,7 +446,7 @@ export default function ThreadPage() {
             <div className="min-w-0">
               <p className="font-semibold text-sm inline-flex items-center gap-1.5 max-w-full text-white">
                 <span className="truncate">{name}</span>
-                {other?.is_verified && <VerifiedBadge size={13} />}
+                {other?.is_verified && <VerifiedBadge size={13} variant={other.tier === "podcaster" ? "gold" : "red"} />}
               </p>
               <p className="text-xs text-white/50 truncate">
                 {other?.username ? other.username : ""}
@@ -476,7 +477,7 @@ export default function ThreadPage() {
               </div>
               <p className="font-semibold mb-1 inline-flex items-center gap-1.5 text-white">
                 {name}
-                {other?.is_verified && <VerifiedBadge size={14} />}
+                {other?.is_verified && <VerifiedBadge size={14} variant={other.tier === "podcaster" ? "gold" : "red"} />}
               </p>
               <p className="text-white/50 text-sm">
                 Say hi — this is the start of your conversation.

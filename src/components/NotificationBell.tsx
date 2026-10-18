@@ -22,6 +22,7 @@ type Actor = {
   display_name: string | null;
   avatar_url: string | null;
   is_verified?: boolean;
+  tier?: "user" | "pro" | "podcaster";
 };
 
 function timeAgo(iso: string): string {
@@ -185,7 +186,7 @@ export default function NotificationBell() {
                       <p className="text-sm text-white/90 leading-snug">
                         <span className="font-semibold inline-flex items-center gap-1">
                           {name}
-                          {actor?.is_verified && <VerifiedBadge size={12} />}
+                          {actor?.is_verified && <VerifiedBadge size={12} variant={actor.tier === "podcaster" ? "gold" : "red"} />}
                         </span>{" "}
                         {labelFor(n)}
                       </p>
