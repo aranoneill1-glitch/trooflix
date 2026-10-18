@@ -95,32 +95,35 @@ export default function FeedPage() {
       const res = await fetch(url, { cache: "no-store" });
       const d = await res.json();
       const list: Video[] = Array.isArray(d.posts) ? d.posts : [];
-      setPosts(list);
 
-      // Fetch creators for podcaster display
+      // Fetch creators + uploader profiles IN PARALLEL with post set
+      let creatorsData: any[] = [];
+      const profiles: Record<string, UploaderProfile> = {};
+
       try {
-        const cRes = await fetch("/api/creators");
-        const cData = await cRes.json();
-        setCreators(Array.isArray(cData) ? cData : []);
-      } catch {}
+        const uploaderIds = Array.from(
+          new Set(list.map((p: any) => p.uploaderUserId).filter(Boolean))
+        ) as string[];
 
-      // Fetch uploader profiles (user-based posts)
-      const uploaderIds = Array.from(
-        new Set(list.map((p) => p.uploaderUserId).filter(Boolean))
-      ) as string[];
-      if (uploaderIds.length > 0) {
-        const profiles: Record<string, UploaderProfile> = {};
-        await Promise.all(
-          uploaderIds.map(async (uid) => {
+        await Promise.all([
+          fetch("/api/creators")
+            .then((r) => r.json())
+            .then((c) => { if (Array.isArray(c)) creatorsData = c; })
+            .catch(() => {}),
+          ...uploaderIds.map(async (uid) => {
             try {
               const r = await fetch(`/api/profile?user_id=${uid}`);
               const pd = await r.json();
               if (pd.profile) profiles[uid] = pd.profile;
             } catch {}
-          })
-        );
-        setUploaders(profiles);
-      }
+          }),
+        ]);
+      } catch {}
+
+      // Set everything together so the feed renders fully on first paint
+      setPosts(list);
+      setCreators(creatorsData);
+      setUploaders(profiles);
     } catch {
       setPosts([]);
     } finally {
@@ -178,8 +181,13 @@ export default function FeedPage() {
     if (p.uploaderUserId) {
       const profile = uploaders[p.uploaderUserId];
       if (profile) {
+        // Prefer display_name → username → abbreviated user id (instead of "User")
+        const name =
+          (profile.display_name && profile.display_name.trim()) ||
+          (profile.username && profile.username.trim()) ||
+          `User ${p.uploaderUserId.slice(0, 6)}`;
         return {
-          name: profile.display_name || profile.username || "User",
+          name,
           handle: profile.username ? `@${profile.username}` : "",
           avatar: profile.avatar_url || "",
           verified: !!profile.is_verified,
@@ -187,7 +195,8 @@ export default function FeedPage() {
           href: profile.username ? `/u/${profile.username}` : null,
         };
       }
-      return { name: "User", handle: "", avatar: "", verified: false, tier: "user" as const, href: null };
+      // No profile record — show a stable identifier
+      return { name: `User ${p.uploaderUserId.slice(0, 6)}`, handle: "", avatar: "", verified: false, tier: "user" as const, href: null };
     }
     const creator = creators.find((c) => c.id === p.creatorId);
     if (creator) {
@@ -233,11 +242,6 @@ export default function FeedPage() {
       </div>
 
       <div className="pt-0 space-y-0">
-        {loading && (
-          <div className="w-full h-64 flex items-center justify-center">
-            {/* Empty skeleton to prevent layout shift, no text */}
-          </div>
-        )}
 
         {!loading && posts.length === 0 && (
           <div className="text-center py-16 px-4">
