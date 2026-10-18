@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import {Play, Mic, MessageCircle, Podcast} from "lucide-react";
+import {Play, Mic, MessageCircle, Podcast, CircleFadingPlay} from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { usePrefetch } from "@/lib/usePrefetch";
 import { getCachedUser } from "@/lib/cache";
@@ -15,7 +15,7 @@ const TABS: {
   path: string;
 }[] = [
   { customImage: "/icons/home.png", label: "Home", path: "/" },
-  { icon: Play, label: "Feed", path: "/feed" },
+  { icon: CircleFadingPlay, label: "Feed", path: "/feed" },
   { icon: Podcast, label: "Podcasts", path: "/podcasts" },
   { icon: MessageCircle, label: "Messages", path: "/messages" },
 ];
