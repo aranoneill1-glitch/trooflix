@@ -90,6 +90,7 @@ export default function ProfilePage() {
   const [repostedPosts, setRepostedPosts] = useState<Post[]>([]);
   const [mobileTab, setMobileTab] = useState<"uploads" | "saved" | "reposts">("uploads");
   const [uploadsView, setUploadsView] = useState<"grid" | "list">("grid");
+  const [repostsView, setRepostsView] = useState<"grid" | "list">("grid");
   const [savedView, setSavedView] = useState<"grid" | "list">("grid");
 
   // Load view preferences from localStorage
@@ -97,8 +98,10 @@ export default function ProfilePage() {
     try {
       const u = localStorage.getItem("trooflix:uploadsView");
       const sv = localStorage.getItem("trooflix:savedView");
+      const rv = localStorage.getItem("trooflix:repostsView");
       if (u === "grid" || u === "list") setUploadsView(u);
       if (sv === "grid" || sv === "list") setSavedView(sv);
+      if (rv === "grid" || rv === "list") setRepostsView(rv);
     } catch {}
   }, []);
 
@@ -109,6 +112,9 @@ export default function ProfilePage() {
   useEffect(() => {
     try { localStorage.setItem("trooflix:savedView", savedView); } catch {}
   }, [savedView]);
+  useEffect(() => {
+    try { localStorage.setItem("trooflix:repostsView", repostsView); } catch {}
+  }, [repostsView]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -611,13 +617,33 @@ export default function ProfilePage() {
                   <h2 className="text-sm font-bold text-white/80 uppercase tracking-wider">
                     Reposts
                   </h2>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setRepostsView("grid")}
+                      className={`p-1.5 rounded transition ${
+                        repostsView === "grid" ? "bg-white/15 text-white" : "text-white/40 hover:text-white"
+                      }`}
+                      aria-label="Grid view"
+                    >
+                      <Grid3x3 size={16} />
+                    </button>
+                    <button
+                      onClick={() => setRepostsView("list")}
+                      className={`p-1.5 rounded transition ${
+                        repostsView === "list" ? "bg-white/15 text-white" : "text-white/40 hover:text-white"
+                      }`}
+                      aria-label="List view"
+                    >
+                      <List size={16} />
+                    </button>
+                  </div>
                 </div>
 
                 {repostedPosts.length === 0 ? (
                   <div className="py-12 text-center text-white/40 text-sm px-4">
                     Nothing reposted yet. Tap the repost icon on any post.
                   </div>
-                ) : (
+                ) : repostsView === "grid" ? (
                   <div className="grid grid-cols-3 gap-0.5">
                     {repostedPosts.map((p) => (
                       <Link
@@ -640,6 +666,37 @@ export default function ProfilePage() {
                         <div className="absolute top-1 right-1">
                           <Play size={14} fill="white" className="text-white drop-shadow" />
                         </div>
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-1 px-4 md:px-6">
+                    {repostedPosts.map((p) => (
+                      <Link
+                        key={p.id}
+                        href={`/feed?reel=${p.id}`}
+                        className="flex items-center gap-3 p-2 rounded-lg bg-[#141418] hover:bg-white/5 transition"
+                      >
+                        {p.posterUrl ? (
+                          <img
+                            src={p.posterUrl}
+                            alt=""
+                            className="w-12 h-16 rounded object-cover flex-shrink-0"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="w-12 h-16 rounded bg-white/5 flex-shrink-0 flex items-center justify-center text-white/30 text-[10px]">
+                            No image
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold truncate">{p.title || "Untitled"}</p>
+                          <p className="text-xs text-white/50 flex items-center gap-1 mt-1">
+                            <Eye size={11} />
+                            {(p.viewCount ?? 0).toLocaleString()} views
+                          </p>
+                        </div>
+                        <Play size={14} fill="white" className="text-white/60 flex-shrink-0" />
                       </Link>
                     ))}
                   </div>
