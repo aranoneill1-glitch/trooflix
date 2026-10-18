@@ -96,7 +96,7 @@ export default function MobileBottomNav() {
           href={signedIn === false ? "/login" : "/profile"}
           onMouseEnter={() => prefetchTab(signedIn === false ? "/login" : "/profile")}
           onTouchStart={() => prefetchTab(signedIn === false ? "/login" : "/profile")}
-          className="flex flex-col items-center gap-0.5 px-1 py-1 flex-1 min-w-0 -translate-y-0.5"
+          className="flex flex-col items-center gap-0.5 px-1 py-1 flex-1 min-w-0"
         >
           {avatarUrl ? (
             <img
