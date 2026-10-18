@@ -456,7 +456,7 @@ export default function ProfilePage() {
             </div>
 
             {/* ---- Mobile tabs: Uploads | My List ---- */}
-            <div className="flex md:hidden border-b border-white/10 mb-3">
+            <div className="flex border-b border-white/10 mb-3">
               <button
                 onClick={() => setMobileTab("uploads")}
                 className={`flex-1 py-3 text-sm font-semibold border-b-2 transition ${
@@ -490,9 +490,9 @@ export default function ProfilePage() {
             </div>
 
             {/* ---- Desktop: two columns. Mobile: tab-selected section ---- */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 -mx-4 md:-mx-6">
+            <div className="grid grid-cols-1 gap-6 -mx-4 md:-mx-6">
               {/* ==== UPLOADS (left) ==== */}
-              <div className={`${mobileTab === "uploads" ? "" : "hidden md:block"}`}>
+              <div className={`${mobileTab === "uploads" ? "" : "hidden"}`}>
                 <div className="flex items-center justify-between px-4 md:px-6 mb-3">
                   <h2 className="text-sm font-bold text-white/80 uppercase tracking-wider">
                     Uploads
@@ -606,7 +606,7 @@ export default function ProfilePage() {
               </div>
 
               {/* ==== REPOSTS (middle on desktop, tab on mobile) ==== */}
-              <div className={`${mobileTab === "reposts" ? "" : "hidden md:block"}`}>
+              <div className={`${mobileTab === "reposts" ? "" : "hidden"}`}>
                 <div className="flex items-center justify-between px-4 md:px-6 mb-3">
                   <h2 className="text-sm font-bold text-white/80 uppercase tracking-wider">
                     Reposts
@@ -647,7 +647,7 @@ export default function ProfilePage() {
               </div>
 
               {/* ==== SAVED (right) ==== */}
-              <div className={`${mobileTab === "saved" ? "" : "hidden md:block"}`}>
+              <div className={`${mobileTab === "saved" ? "" : "hidden"}`}>
                 <div className="flex items-center justify-between px-4 md:px-6 mb-3">
                   <h2 className="text-sm font-bold text-white/80 uppercase tracking-wider">
                     My List
