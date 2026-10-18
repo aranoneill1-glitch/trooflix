@@ -1,15 +1,19 @@
 "use client";
 
 type Props = {
-  size?: number;           // pixel size (default 16)
+  size?: number;              // pixel size (default 16)
   className?: string;
+  variant?: "red" | "gold";   // red = pro, gold = podcaster (default: red)
 };
 
 /**
- * Trooflix verified badge — Instagram-style scalloped star, Trooflix red (#dc2626).
+ * Trooflix tier badge — Instagram-style scalloped star.
+ * Red (#dc2626) for Pro accounts, Gold (#eab308) for Podcasters.
  * Renders inline SVG so it scales without quality loss.
  */
-export default function VerifiedBadge({ size = 16, className = "" }: Props) {
+export default function VerifiedBadge({ size = 16, className = "", variant = "red" }: Props) {
+  const fill = variant === "gold" ? "#eab308" : "#dc2626";
+
   return (
     <svg
       width={size}
@@ -18,14 +22,14 @@ export default function VerifiedBadge({ size = 16, className = "" }: Props) {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={`inline-block flex-shrink-0 ${className}`}
-      aria-label="Verified"
+      aria-label={variant === "gold" ? "Podcaster" : "Verified"}
       role="img"
     >
       {/* Scalloped 12-point star outline */}
       <path
         d="M12 1.5l1.6 2.05 2.6-.4 1.1 2.4 2.4 1.1-.4 2.6 2.05 1.6-2.05 1.6.4 2.6-2.4 1.1-1.1 2.4-2.6-.4L12 22.5l-1.6-2.05-2.6.4-1.1-2.4-2.4-1.1.4-2.6L2.65 12 4.7 10.4 4.3 7.8 6.7 6.7 7.8 4.3l2.6.4L12 1.5z"
-        fill="#dc2626"
-        stroke="#dc2626"
+        fill={fill}
+        stroke={fill}
         strokeLinejoin="round"
       />
       {/* White check mark */}

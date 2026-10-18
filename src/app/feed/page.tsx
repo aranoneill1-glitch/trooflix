@@ -45,6 +45,7 @@ type UploaderProfile = {
   username?: string | null;
   avatar_url?: string | null;
   is_verified?: boolean;
+  tier?: "user" | "pro" | "podcaster";
 };
 
 function timeAgo(iso?: string): string {
@@ -182,10 +183,11 @@ export default function FeedPage() {
           handle: profile.username ? `@${profile.username}` : "",
           avatar: profile.avatar_url || "",
           verified: !!profile.is_verified,
+          tier: profile.tier || "user",
           href: profile.username ? `/u/${profile.username}` : null,
         };
       }
-      return { name: "User", handle: "", avatar: "", verified: false, href: null };
+      return { name: "User", handle: "", avatar: "", verified: false, tier: "user" as const, href: null };
     }
     const creator = creators.find((c) => c.id === p.creatorId);
     if (creator) {
@@ -194,10 +196,11 @@ export default function FeedPage() {
         handle: `@${creator.slug}`,
         avatar: creator.photoUrl || "",
         verified: !!creator.isVerified,
+        tier: "podcaster" as const,
         href: `/podcaster/${creator.slug}`,
       };
     }
-    return { name: "TROOFLIX", handle: "@trooflix", avatar: "", verified: true, href: null };
+    return { name: "TROOFLIX", handle: "@trooflix", avatar: "", verified: true, tier: "podcaster" as const, href: null };
   };
 
   return (
@@ -314,7 +317,7 @@ function PostCard({
   onOpenVideo,
 }: {
   post: Video;
-  author: { name: string; handle: string; avatar: string; verified: boolean; href: string | null };
+  author: { name: string; handle: string; avatar: string; verified: boolean; tier?: "user" | "pro" | "podcaster"; href: string | null };
   onOpenComments: () => void;
   isActivePlaying: boolean;
   showSoundPrompt: boolean;
@@ -414,7 +417,7 @@ function PostCard({
               ) : (
                 <span className="font-bold text-white truncate">{author.name}</span>
               )}
-              {author.verified && <VerifiedBadge size={14} />}
+              {author.verified && <VerifiedBadge size={14} variant={author.tier === "podcaster" ? "gold" : "red"} />}
               <span className="text-white/50 truncate">{author.handle}</span>
               <span className="text-white/50">·</span>
               <span className="text-white/50">{timeAgo(post.createdAt)}</span>
