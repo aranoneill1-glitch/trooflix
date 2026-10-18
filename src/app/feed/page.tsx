@@ -486,6 +486,9 @@ function PostCard({
               <span className="text-xs font-medium"><CommentCountInline videoId={post.id} /></span>
             </button>
 
+            {/* 2.5. Repost */}
+            <RepostButton postId={post.id} />
+
             {/* 3. Views */}
             <div className="flex items-center gap-1 text-white/50 hover:text-blue-400 group transition">
               <div className="p-2 rounded-full group-hover:bg-blue-400/10">
