@@ -7,9 +7,11 @@ import TextOverlayRenderer from "@/components/TextOverlay";
 
 export default function XVideoModal({
   video,
+  startTime = 0,
   onClose,
 }: {
   video: any;
+  startTime?: number;
   author?: any;
   onClose: () => void;
   onOpenComments?: () => void;
@@ -98,6 +100,14 @@ export default function XVideoModal({
           loop
           playsInline
           muted={muted}
+          onLoadedMetadata={(e) => {
+            // Seek to where the feed video was
+            if (startTime > 0) {
+              const v = e.currentTarget;
+              const target = Math.min(startTime, v.duration - 0.1 || startTime);
+              v.currentTime = target;
+            }
+          }}
           onTimeUpdate={(e) => {
             if (scrubbing) return;
             const v = e.currentTarget;

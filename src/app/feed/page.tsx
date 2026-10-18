@@ -271,7 +271,7 @@ export default function FeedPage() {
             }}
             muted={muted}
             onToggleMute={() => setMuted((m) => !m)}
-            onOpenVideo={() => setOpenVideoModal(post)}
+            onOpenVideo={(currentTime) => setOpenVideoModal({ ...post, _startTime: currentTime } as any)}
           />
         ))}
       </div>
@@ -292,6 +292,7 @@ export default function FeedPage() {
         {openVideoModal && (
           <XVideoModal
             video={openVideoModal}
+            startTime={(openVideoModal as any)._startTime || 0}
             author={authorFor(openVideoModal)}
             onClose={() => setOpenVideoModal(null)}
             onOpenComments={() => {
@@ -329,7 +330,7 @@ function PostCard({
   registerRef: (el: HTMLElement | null) => void;
   muted: boolean;
   onToggleMute: () => void;
-  onOpenVideo: () => void;
+  onOpenVideo: (currentTime: number) => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(true);
@@ -467,7 +468,13 @@ function PostCard({
                   loop
                   playsInline
                   preload="metadata"
-                  onClick={onOpenVideo}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const v = videoRef.current;
+                    const t = v ? v.currentTime : 0;
+                    if (v) v.pause();
+                    onOpenVideo(t);
+                  }}
                 />
                 <TextOverlayRenderer overlays={post.textOverlays} />
                 <div className="absolute bottom-2 left-2 flex items-center gap-2">
