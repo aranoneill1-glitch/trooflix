@@ -514,77 +514,100 @@ export default function ThreadPage() {
                   b.lastOfGroup ? "mb-2.5" : "mb-1"
                 }`}
               >
-                <div
-                  className={`relative max-w-[78%] md:max-w-[65%] px-3 py-2 text-[15px] leading-[1.35] break-words ${
-                    mine ? "bg-[#dc2626]" : "bg-white/10"
-                  } text-white rounded-3xl ${tailCorner}`}
-                  onPointerDown={() => startLongPress(m)}
-                  onPointerUp={cancelLongPress}
-                  onPointerLeave={cancelLongPress}
-                  onPointerCancel={cancelLongPress}
-                  onClick={handleMessageClick}
-                  onContextMenu={(e) => {
-                    e.preventDefault();
-                    if (m.id > 0) setActionSheetFor(m);
-                  }}
-                  style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", userSelect: "none" }}
-                >
-                  {isReelMessage(m.body) ? (() => {
-                    const rid = reelIdOf(m.body);
-                    const reel = reelCache[rid];
-                    return (
-                      <a
-                        href={`/feed?reel=${rid}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                        }}
-                        className="block w-64 max-w-full"
-                      >
-                        <div className="rounded-2xl overflow-hidden bg-black/60">
-                          {reel?.posterUrl || reel?.backdropUrl ? (
-                            <img
-                              src={reel.posterUrl || reel.backdropUrl}
-                              alt={reel?.title || "Reel"}
-                              className="w-full aspect-[4/5] object-cover"
-                            />
-                          ) : (
-                            <div className="w-full aspect-[4/5] bg-black/40 flex items-center justify-center text-white/40 text-sm">
-                              Loading…
-                            </div>
-                          )}
-                          <div className="px-3 py-2">
-                            <p className="text-[10px] uppercase tracking-widest text-white/50 mb-0.5">
-                              Reel
-                            </p>
-                            <p className="text-sm font-semibold text-white truncate">
-                              {reel?.title || "Tap to view"}
-                            </p>
-                          </div>
-                        </div>
-                      </a>
-                    );
-                  })() : isMediaUrl(m.body) ? (
-                    <img
-                      src={m.body}
-                      alt=""
-                      className="rounded-2xl max-w-full max-h-72 object-cover"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <span className="whitespace-pre-wrap">{m.body}</span>
-                  )}
+                {(() => {
+                  const isMedia = isMediaUrl(m.body);
+                  const isReel = isReelMessage(m.body);
 
-                  <span className="inline-flex items-center gap-1 float-right ml-2 mt-1 text-[10px] text-white/50 translate-y-[2px]">
-                    {timeShort(m.created_at)}
-                    {showTicks &&
-                      (read ? (
-                        <CheckCheck size={14} className="text-sky-300" />
+                  return (
+                    <div
+                      className={`relative break-words ${
+                        isMedia
+                          ? "max-w-[78%] md:max-w-[65%]"
+                          : `max-w-[78%] md:max-w-[65%] px-3 py-2 text-[15px] leading-[1.35] ${
+                              mine ? "bg-[#dc2626]" : "bg-white/10"
+                            } text-white rounded-3xl ${tailCorner}`
+                      }`}
+                      onPointerDown={() => startLongPress(m)}
+                      onPointerUp={cancelLongPress}
+                      onPointerLeave={cancelLongPress}
+                      onPointerCancel={cancelLongPress}
+                      onClick={handleMessageClick}
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                        if (m.id > 0) setActionSheetFor(m);
+                      }}
+                      style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", userSelect: "none" }}
+                    >
+                      {isReel ? (() => {
+                        const rid = reelIdOf(m.body);
+                        const reel = reelCache[rid];
+                        return (
+                          <a
+                            href={`/feed?reel=${rid}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                            }}
+                            className="block w-64 max-w-full"
+                          >
+                            <div className="rounded-2xl overflow-hidden bg-black/60">
+                              {reel?.posterUrl || reel?.backdropUrl ? (
+                                <img
+                                  src={reel.posterUrl || reel.backdropUrl}
+                                  alt={reel?.title || "Reel"}
+                                  className="w-full aspect-[4/5] object-cover"
+                                />
+                              ) : (
+                                <div className="w-full aspect-[4/5] bg-black/40 flex items-center justify-center text-white/40 text-sm">
+                                  Loading…
+                                </div>
+                              )}
+                              <div className="px-3 py-2">
+                                <p className="text-[10px] uppercase tracking-widest text-white/50 mb-0.5">
+                                  Reel
+                                </p>
+                                <p className="text-sm font-semibold text-white truncate">
+                                  {reel?.title || "Tap to view"}
+                                </p>
+                              </div>
+                            </div>
+                          </a>
+                        );
+                      })() : isMedia ? (
+                        <>
+                          <img
+                            src={m.body}
+                            alt=""
+                            className="rounded-2xl max-w-full max-h-72 object-cover block"
+                            loading="lazy"
+                          />
+                          <span className="absolute bottom-2 right-2 inline-flex items-center gap-1 text-[10px] text-white bg-black/55 backdrop-blur-sm px-1.5 py-0.5 rounded-md">
+                            {timeShort(m.created_at)}
+                            {showTicks &&
+                              (read ? (
+                                <CheckCheck size={12} className="text-sky-300" />
+                              ) : (
+                                <Check size={12} className="text-white/90" />
+                              ))}
+                          </span>
+                        </>
                       ) : (
-                        <Check size={14} className="text-white/70" />
-                      ))}
-                  </span>
-                  <span className="clear-both" />
-                </div>
+                        <>
+                          <span className="whitespace-pre-wrap">{m.body}</span>
+                          <span className="inline-flex items-center gap-1 float-right ml-2 mt-1 text-[10px] text-white/50 translate-y-[2px]">
+                            {timeShort(m.created_at)}
+                            {showTicks &&
+                              (read ? (
+                                <CheckCheck size={14} className="text-sky-300" />
+                              ) : (
+                                <Check size={14} className="text-white/70" />
+                              ))}
+                          </span>
+                          <span className="clear-both" />
+                        </>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             );
           })}
