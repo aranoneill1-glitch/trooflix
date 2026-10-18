@@ -25,11 +25,46 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get("userId");
+    const requestedKind = searchParams.get("kind") || "uploads";
     if (!userId) return NextResponse.json({ posts: [], kind: "none" });
 
     const allVideos = ((await kv.get<any[]>(VIDEOS_KEY)) || []).filter(
       (v: any) => !v.hidden
     );
+
+    // ---- Reposts branch ----
+    if (requestedKind === "reposts") {
+      const { data: reposts } = await supabaseAdmin
+        .from("reposts")
+        .select("post_id, created_at")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+
+      const repostedIds = new Set<number>(
+        (reposts || []).map((r: any) => Number(r.post_id))
+      );
+      const reposts_posts = allVideos.filter((v: any) =>
+        repostedIds.has(Number(v.id))
+      );
+
+      // Attach view counts
+      const { data: viewRows } = await supabaseAdmin
+        .from("views")
+        .select("video_id, count");
+      const viewMap: Record<number, number> = {};
+      (viewRows || []).forEach((row: any) => {
+        viewMap[Number(row.video_id)] = row.count;
+      });
+
+      const withViews = reposts_posts.map((v: any) => ({
+        ...v,
+        viewCount: viewMap[Number(v.id)] || 0,
+      }));
+
+      return NextResponse.json({ posts: withViews, kind: "reposts" });
+    }
+
+    // ---- Uploads branch (existing) ----
 
     // Find user's creator record if they have one
     const { data: app } = await supabaseAdmin

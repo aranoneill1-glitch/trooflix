@@ -87,7 +87,8 @@ export default function ProfilePage() {
   const [uploading, setUploading] = useState(false);
   const [statusMsg, setStatusMsg] = useState("");
   const [savedPosts, setSavedPosts] = useState<Post[]>([]);
-  const [mobileTab, setMobileTab] = useState<"uploads" | "saved">("uploads");
+  const [repostedPosts, setRepostedPosts] = useState<Post[]>([]);
+  const [mobileTab, setMobileTab] = useState<"uploads" | "saved" | "reposts">("uploads");
   const [uploadsView, setUploadsView] = useState<"grid" | "list">("grid");
   const [savedView, setSavedView] = useState<"grid" | "list">("grid");
 
@@ -126,8 +127,9 @@ export default function ProfilePage() {
         fetch(`/api/user/posts?userId=${uid}`).then((r) => r.json()),
         fetch(`/api/my-list?user_id=${uid}`).then((r) => r.json()),
         fetch(`/api/videos`).then((r) => r.json()),
+        fetch(`/api/user/posts?userId=${uid}&kind=reposts`).then((r) => r.json()),
       ])
-        .then(([prof, follows, posts, myList, allVideos]) => {
+        .then(([prof, follows, posts, myList, allVideos, reposts]) => {
           setProfile(prof.profile || null);
           setEditName(prof.profile?.display_name || "");
           setEditBio(prof.profile?.bio || "");
@@ -141,6 +143,9 @@ export default function ProfilePage() {
           const ids = new Set<number>((myList.ids || []).map((x: any) => Number(x)));
           const all = Array.isArray(allVideos) ? allVideos : [];
           setSavedPosts(all.filter((v: any) => ids.has(Number(v.id))));
+
+          // Reposts list
+          setRepostedPosts(Array.isArray(reposts.posts) ? reposts.posts : []);
         })
         .catch(() => {})
         .finally(() => setLoading(false));
@@ -463,6 +468,16 @@ export default function ProfilePage() {
                 Uploads
               </button>
               <button
+                onClick={() => setMobileTab("reposts")}
+                className={`flex-1 py-3 text-sm font-semibold border-b-2 transition ${
+                  mobileTab === "reposts"
+                    ? "border-white text-white"
+                    : "border-transparent text-white/50"
+                }`}
+              >
+                Reposts
+              </button>
+              <button
                 onClick={() => setMobileTab("saved")}
                 className={`flex-1 py-3 text-sm font-semibold border-b-2 transition ${
                   mobileTab === "saved"
@@ -475,7 +490,7 @@ export default function ProfilePage() {
             </div>
 
             {/* ---- Desktop: two columns. Mobile: tab-selected section ---- */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 -mx-4 md:-mx-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 -mx-4 md:-mx-6">
               {/* ==== UPLOADS (left) ==== */}
               <div className={`${mobileTab === "uploads" ? "" : "hidden md:block"}`}>
                 <div className="flex items-center justify-between px-4 md:px-6 mb-3">
@@ -584,6 +599,47 @@ export default function ProfilePage() {
                           </p>
                         </div>
                         <Play size={14} fill="white" className="text-white/60 flex-shrink-0" />
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* ==== REPOSTS (middle on desktop, tab on mobile) ==== */}
+              <div className={`${mobileTab === "reposts" ? "" : "hidden md:block"}`}>
+                <div className="flex items-center justify-between px-4 md:px-6 mb-3">
+                  <h2 className="text-sm font-bold text-white/80 uppercase tracking-wider">
+                    Reposts
+                  </h2>
+                </div>
+
+                {repostedPosts.length === 0 ? (
+                  <div className="py-12 text-center text-white/40 text-sm px-4">
+                    Nothing reposted yet. Tap the repost icon on any post.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-3 gap-0.5">
+                    {repostedPosts.map((p) => (
+                      <Link
+                        key={p.id}
+                        href={`/feed?reel=${p.id}`}
+                        className="relative aspect-[4/5] bg-[#141418] overflow-hidden group"
+                      >
+                        {p.posterUrl ? (
+                          <img
+                            src={p.posterUrl}
+                            alt={p.title || ""}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-white/30 text-xs p-2 text-center">
+                            {p.title || "Post"}
+                          </div>
+                        )}
+                        <div className="absolute top-1 right-1">
+                          <Play size={14} fill="white" className="text-white drop-shadow" />
+                        </div>
                       </Link>
                     ))}
                   </div>
