@@ -205,20 +205,18 @@ export default function PodcasterProfilePage() {
                   </button>
                 )}
 
-                <div className="mt-4 space-y-3">
-                  <div className="flex items-center">
-                    <FollowButton creatorId={creator?.id as number} />
-                  </div>
+                <div className="mt-4 flex items-center gap-2">
+                  <FollowButton creatorId={creator?.id as number} />
                   
-                  {/* Search bar */}
-                  <div className="relative w-full max-w-md">
-                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+                  {/* Compact search bar next to follow */}
+                  <div className="relative w-40">
+                    <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-white/40" />
                     <input
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search this podcaster..."
-                      className="w-full bg-white/10 border border-white/20 rounded-full pl-9 pr-4 py-2.5 text-sm outline-none focus:border-white/50 placeholder:text-white/40 transition"
+                      placeholder="Search..."
+                      className="w-full bg-white/10 border border-white/20 rounded-full pl-7 pr-2 py-1.5 text-xs outline-none focus:border-white/50 placeholder:text-white/40 transition"
                     />
                   </div>
                 </div>
