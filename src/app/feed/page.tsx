@@ -16,6 +16,7 @@ import TextOverlayRenderer from "@/components/TextOverlay";
 import XVideoModal from "@/components/XVideoModal";
 import { getCachedUser } from "@/lib/cache";
 import PullToRefresh from "@/components/PullToRefresh";
+import ReportModal from "@/components/ReportModal";
 
 type Video = {
   id: number;
@@ -337,6 +338,8 @@ function PostCard({
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(true);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const isReel = post.type === "Reel";
   const isImage = post.type === "Image";
   const isTroo = post.type === "Troo";
@@ -444,11 +447,30 @@ function PostCard({
               <span className="text-white/50">{timeAgo(post.createdAt)}</span>
             </div>
             {/* Three dot menu */}
-            <button className="text-white/50 hover:text-white p-1">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                <circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" />
-              </svg>
-            </button>
+            <div className="relative">
+              <button
+                onClick={(e) => { e.stopPropagation(); setMenuOpen((v) => !v); }}
+                className="text-white/50 hover:text-white p-1"
+                aria-label="More"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" />
+                </svg>
+              </button>
+              {menuOpen && (
+                <>
+                  <div className="fixed inset-0 z-[300]" onClick={() => setMenuOpen(false)} />
+                  <div className="absolute right-0 top-8 z-[301] bg-[#1a1a1f] border border-white/10 rounded-lg shadow-2xl overflow-hidden min-w-[140px]">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setMenuOpen(false); setReportOpen(true); }}
+                      className="w-full text-left px-4 py-2.5 text-sm text-white/90 hover:bg-white/10 transition"
+                    >
+                      Report post
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
 
           {/* Content Text */}
@@ -552,6 +574,13 @@ function PostCard({
           </div>
         </div>
       </div>
+
+      <ReportModal
+        open={reportOpen}
+        onClose={() => setReportOpen(false)}
+        contentType="post"
+        contentId={post.id}
+      />
     </article>
   );
 }
