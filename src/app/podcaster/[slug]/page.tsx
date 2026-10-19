@@ -2,13 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Play, Eye, Bell } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import FollowButton from "@/components/FollowButton";
 import VerifiedBadge from "@/components/VerifiedBadge";
-import VideoPlayer from "@/components/VideoPlayer";
 import { getCachedCreators } from "@/lib/cache";
 
 type Video = {
@@ -51,10 +50,10 @@ function timeAgo(iso?: string): string {
 export default function PodcasterProfilePage() {
   const params = useParams();
   const slug = params.slug as string;
+  const router = useRouter();
 
   const [creator, setCreator] = useState<Creator | null>(null);
   const [videos, setVideos] = useState<Video[]>([]);
-  const [playing, setPlaying] = useState<Video | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [followerCount, setFollowerCount] = useState<number | null>(null);
@@ -231,7 +230,7 @@ export default function PodcasterProfilePage() {
                     </h2>
                     <div
                       className="flex flex-col md:flex-row gap-4 md:gap-6 cursor-pointer group bg-[#0f0f12] rounded-xl p-3 border border-white/5 hover:border-white/10 transition"
-                      onClick={() => setPlaying(latest)}
+                      onClick={() => router.push(`/podcast/${latest.id}`)}
                     >
                       <div className="w-full md:w-80 aspect-video rounded-lg overflow-hidden bg-black flex-shrink-0 relative">
                         {latest.posterUrl ? (
@@ -268,7 +267,7 @@ export default function PodcasterProfilePage() {
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {podcasts.slice(0, 4).map(v => (
-                         <div key={v.id} onClick={() => setPlaying(v)} className="cursor-pointer group">
+                         <div key={v.id} onClick={() => router.push(`/podcast/${v.id}`)} className="cursor-pointer group">
                            <div className="aspect-video rounded-lg overflow-hidden bg-black mb-2 relative">
                              <img src={v.posterUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition" />
                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition flex items-center justify-center">
@@ -293,7 +292,7 @@ export default function PodcasterProfilePage() {
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {documentaries.slice(0, 4).map(v => (
-                         <div key={v.id} onClick={() => setPlaying(v)} className="cursor-pointer group">
+                         <div key={v.id} onClick={() => router.push(`/podcast/${v.id}`)} className="cursor-pointer group">
                            <div className="aspect-video rounded-lg overflow-hidden bg-black mb-2 relative">
                              <img src={v.posterUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition" />
                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition flex items-center justify-center">
@@ -329,7 +328,7 @@ export default function PodcasterProfilePage() {
                     {podcasts.map((v) => (
                       <div
                         key={v.id}
-                        onClick={() => setPlaying(v)}
+                        onClick={() => router.push(`/podcast/${v.id}`)}
                         className="cursor-pointer group"
                       >
                         <div className="aspect-video rounded-xl overflow-hidden bg-black mb-2 relative">
@@ -374,7 +373,7 @@ export default function PodcasterProfilePage() {
                     {documentaries.map((v) => (
                       <div
                         key={v.id}
-                        onClick={() => setPlaying(v)}
+                        onClick={() => router.push(`/podcast/${v.id}`)}
                         className="cursor-pointer group"
                       >
                         <div className="aspect-video rounded-xl overflow-hidden bg-black mb-2 relative">
@@ -419,7 +418,7 @@ export default function PodcasterProfilePage() {
                     {videoPosts.map((v) => (
                       <div
                         key={v.id}
-                        onClick={() => setPlaying(v)}
+                        onClick={() => router.push(`/podcast/${v.id}`)}
                         className="cursor-pointer group"
                       >
                         <div className="aspect-video rounded-xl overflow-hidden bg-black mb-2 relative">
@@ -458,16 +457,6 @@ export default function PodcasterProfilePage() {
       )}
 
       <MobileBottomNav />
-
-      {playing && (
-        <VideoPlayer
-          src={playing.videoUrl ?? playing.bitchuteUrl ?? ""}
-          title={playing.title}
-          videoId={playing.id}
-          textOverlays={playing.textOverlays}
-          onClose={() => setPlaying(null)}
-        />
-      )}
     </main>
   );
 }
