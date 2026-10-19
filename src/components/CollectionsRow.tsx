@@ -23,7 +23,13 @@ const COLLECTIONS = [
   { name: "The Unknown", icon: Eye, slug: "the-unknown" },
 ];
 
-export default function CollectionsRow() {
+export default function CollectionsRow({
+  onSelectCategory,
+  activeCategory,
+}: {
+  onSelectCategory?: (category: string) => void;
+  activeCategory?: string | null;
+}) {
   return (
     <div className="relative">
       <div className="flex items-center justify-between px-4 md:px-12 mb-3">
@@ -40,17 +46,22 @@ export default function CollectionsRow() {
       <div className="flex gap-3 md:gap-4 overflow-x-auto scrollbar-hide px-4 md:px-12 pb-2">
         {COLLECTIONS.map((col) => {
           const Icon = col.icon;
+          const isActive = activeCategory === col.name;
           return (
-            <Link
+            <button
               key={col.slug}
-              href={`/collections/${col.slug}`}
-              className="flex-shrink-0 w-[110px] md:w-[130px] aspect-[3/2] md:aspect-[5/3] rounded-lg flex flex-col items-center justify-center gap-1.5 transition border bg-[#0d0d12] border-white/10 hover:border-white/40 hover:bg-[#141418]"
+              onClick={() => onSelectCategory?.(col.name)}
+              className={`flex-shrink-0 w-[110px] md:w-[130px] aspect-[3/2] md:aspect-[5/3] rounded-lg flex flex-col items-center justify-center gap-1.5 transition border ${
+                isActive
+                  ? "bg-red-600 border-red-600 text-white"
+                  : "bg-[#0d0d12] border-white/10 hover:border-white/40 hover:bg-[#141418] text-white"
+              }`}
             >
-              <Icon size={26} className="text-white" strokeWidth={1.5} />
+              <Icon size={26} strokeWidth={1.5} />
               <span className="text-[10px] md:text-xs font-bold tracking-wider text-center px-2 leading-tight">
                 {col.name.toUpperCase()}
               </span>
-            </Link>
+            </button>
           );
         })}
       </div>

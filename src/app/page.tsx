@@ -253,7 +253,17 @@ export default function Home() {
 
         {!filtered && showingFiltered && (
           <div className="px-4 md:px-12">
-            <h2 className="text-2xl md:text-3xl font-bold mb-6">{activeCategory || activeTab}</h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl md:text-3xl font-bold">{activeCategory || activeTab}</h2>
+              {activeCategory && (
+                <button
+                  onClick={() => setActiveCategory(null)}
+                  className="text-sm text-white/50 hover:text-white transition"
+                >
+                  Clear filter
+                </button>
+              )}
+            </div>
             {displayVideos.length === 0 ? (
               <p className="text-white/40">No videos yet.</p>
             ) : (
@@ -264,7 +274,13 @@ export default function Home() {
 
         {loaded && !filtered && !showingFiltered && (
           <>
-            <CollectionsRow />
+            <CollectionsRow
+              onSelectCategory={(cat) => {
+                setActiveCategory(cat === activeCategory ? null : cat);
+                setActiveTab("Home");
+              }}
+              activeCategory={activeCategory}
+            />
             {newReleases.length > 0 && <Row title="New Releases" items={newReleases} onSelect={setSelected} onPlay={requestPlay} />}
             {trending.length > 0 && <Row title="Trending Now" items={trending} onSelect={setSelected} onPlay={requestPlay} />}
             {loaded && videos.length === 0 && (
