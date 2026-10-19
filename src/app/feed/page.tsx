@@ -215,6 +215,7 @@ export default function FeedPage() {
   };
 
   return (
+    <>
     <PullToRefresh onRefresh={async () => { await load(); }}>
     <main className="min-h-screen bg-black text-white pb-20 lg:pb-0">
 
@@ -279,7 +280,6 @@ export default function FeedPage() {
         ))}
       </div>
 
-      <MobileBottomNav />
 
       {/* Comment drawer */}
       {commentVideo && (
@@ -307,6 +307,8 @@ export default function FeedPage() {
       </AnimatePresence>
     </main>
     </PullToRefresh>
+    <MobileBottomNav />
+    </>
   );
 }
 

@@ -183,6 +183,7 @@ export default function Home() {
   const showingFiltered = activeCategory || activeTab !== "Home" || filtered;
 
   return (
+    <>
     <PullToRefresh onRefresh={async () => { window.location.reload(); }}>
     <main className="min-h-screen bg-black text-white overflow-x-hidden pb-20 lg:pb-0">
       <LoadingIntro onDone={() => setIntroDone(true)} />
@@ -295,12 +296,6 @@ export default function Home() {
         </>
       )}
 
-      {/* ============ MOBILE BOTTOM NAV ============ */}
-      {/* TV-MODE-BOTTOM-NAV: hide on TV */}
-      {!isTV && (
-        <MobileBottomNav />
-      )}
-
       {/* ============ MODAL / PLAYER ============ */}
       <AnimatePresence>
         {showVideoIntro && <VideoIntro onDone={onIntroDone} />}
@@ -317,6 +312,8 @@ export default function Home() {
       </AnimatePresence>
     </main>
     </PullToRefresh>
+    <MobileBottomNav />
+    </>
   );
 }
 
