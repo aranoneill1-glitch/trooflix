@@ -23,7 +23,8 @@ type Creator = {
 };
 
 const NAV = [
-  { label: "My Videos", path: "/studio", icon: Video },
+  { label: "Overview", path: "/studio", icon: Home },
+  { label: "Episodes", path: "/studio/episodes", icon: Video },
   { label: "Upload", path: "/studio/upload", icon: Upload },
   { label: "Settings", path: "/studio/settings", icon: Settings },
 ];
@@ -62,11 +63,11 @@ export default function CreatorLayout({
               .then((r) => r.json())
               .then((cr) => {
                 // Use creator record if it exists, otherwise fallback to profile
-                const creatorInfo = cr.creator || {
-                  id: user.id,
-                  name: profileData.profile.display_name || "Podcaster",
-                  slug: profileData.profile.username || "",
-                  photoUrl: profileData.profile.avatar_url || "",
+                const creatorInfo = {
+                  id: cr.creator?.id || user.id,
+                  name: cr.creator?.name || profileData.profile?.display_name || profileData.profile?.username || "Podcaster",
+                  slug: cr.creator?.slug || profileData.profile?.username || "",
+                  photoUrl: cr.creator?.photoUrl || profileData.profile?.avatar_url || "",
                 };
                 setCreator(creatorInfo);
                 setState("ok");
