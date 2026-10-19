@@ -17,6 +17,7 @@ export default function PaywallGate({
     videoRef: React.RefObject<HTMLVideoElement | null>;
     onTimeUpdate: (e: React.SyntheticEvent<HTMLVideoElement>) => void;
     onContextMenu: (e: React.MouseEvent) => void;
+    onSeeking: (e: React.SyntheticEvent<HTMLVideoElement>) => void;
   }) => React.ReactNode;
   isPodcasterContent: boolean;
   contentType: string | null;
@@ -74,12 +75,23 @@ export default function PaywallGate({
     if (isLocked) e.preventDefault();
   };
 
+  const handleSeeking = (e: React.SyntheticEvent<HTMLVideoElement>) => {
+    if (!isLocked) return;
+    const v = e.currentTarget;
+    if (v.currentTime >= PREVIEW_SECONDS) {
+      v.pause();
+      try { v.currentTime = PREVIEW_SECONDS - 0.1; } catch {}
+      if (!blocked) setBlocked(true);
+    }
+  };
+
   return (
     <div className="relative">
       {children({
         videoRef,
         onTimeUpdate: handleTimeUpdate,
         onContextMenu: handleContextMenu,
+        onSeeking: handleSeeking,
       })}
 
       {blocked && (

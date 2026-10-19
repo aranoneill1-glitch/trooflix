@@ -129,7 +129,7 @@ export default function WatchPage() {
               contentType={video.type}
               videoId={video.id}
             >
-              {({ videoRef, onTimeUpdate, onContextMenu }) => (
+              {({ videoRef, onTimeUpdate, onContextMenu, onSeeking }) => (
                 <div className="relative w-full aspect-video bg-black md:rounded-xl overflow-hidden shadow-2xl">
                   <video
                     ref={videoRef}
@@ -141,6 +141,7 @@ export default function WatchPage() {
                     playsInline
                     onTimeUpdate={onTimeUpdate}
                     onContextMenu={onContextMenu}
+                    onSeeking={onSeeking}
                     disablePictureInPicture
                     controlsList="nodownload noremoteplayback"
                   />
