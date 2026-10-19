@@ -42,18 +42,30 @@ export default function AdminReportsPage() {
     load();
   }, []);
 
-  const updateStatus = async (id: number, status: "reviewed" | "dismissed" | "actioned") => {
+  const handleDecision = async (id: number, decision: "delete" | "dismiss") => {
+    // Extra confirmation for delete (destructive)
+    if (decision === "delete") {
+      if (!confirm("Delete this content permanently? This cannot be undone.")) return;
+    }
     setActioning(id);
     try {
-      const res = await fetch("/api/reports", {
-        method: "PATCH",
+      const res = await fetch("/api/reports/action", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, status }),
+        body: JSON.stringify({ reportId: id, decision }),
       });
       if (res.ok) {
-        setReports((prev) => prev.map((r) => (r.id === id ? { ...r, status } : r)));
+        const d = await res.json();
+        setReports((prev) =>
+          prev.map((r) => (r.id === id ? { ...r, status: d.newStatus } : r))
+        );
+      } else {
+        const d = await res.json();
+        alert(d.error || "Could not take action");
       }
-    } catch {}
+    } catch {
+      alert("Network error");
+    }
     setActioning(null);
   };
 
@@ -147,14 +159,14 @@ export default function AdminReportsPage() {
                 {r.status === "pending" && (
                   <>
                     <button
-                      onClick={() => updateStatus(r.id, "actioned")}
+                      onClick={() => handleDecision(r.id, "delete")}
                       disabled={actioning === r.id}
                       className="inline-flex items-center gap-1.5 text-xs font-semibold bg-red-600 hover:bg-red-500 disabled:opacity-50 px-3 py-1.5 rounded-lg transition"
                     >
-                      <Trash2 size={14} /> Action
+                      <Trash2 size={14} /> {actioning === r.id ? "Working…" : "Delete"}
                     </button>
                     <button
-                      onClick={() => updateStatus(r.id, "dismissed")}
+                      onClick={() => handleDecision(r.id, "dismiss")}
                       disabled={actioning === r.id}
                       className="inline-flex items-center gap-1.5 text-xs font-semibold bg-white/10 hover:bg-white/20 disabled:opacity-50 px-3 py-1.5 rounded-lg transition"
                     >
