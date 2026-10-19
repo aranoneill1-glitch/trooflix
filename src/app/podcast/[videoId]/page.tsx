@@ -27,6 +27,7 @@ type Video = {
   textOverlays?: any[];
   posterUrl: string;
   creatorId?: number | null;
+  uploaderUserId?: string | null;
   createdAt?: string;
   viewCount?: number;
 };
@@ -124,7 +125,7 @@ export default function WatchPage() {
             
             {/* Video Player — wrapped in PaywallGate */}
             <PaywallGate
-              isPodcasterContent={!!video.creatorId}
+              isPodcasterContent={!!(video.creatorId || video.uploaderUserId)}
               contentType={video.type}
               videoId={video.id}
             >
