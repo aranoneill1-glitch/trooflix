@@ -10,10 +10,11 @@ import VerifiedBadge from "@/components/VerifiedBadge";
 type Notification = {
   id: number;
   actor_id: string;
-  type: "like" | "comment" | "follow" | "repost";
+  type: "like" | "comment" | "follow" | "repost" | "report_update";
   post_id: number | null;
   read: boolean;
   created_at: string;
+  meta?: any;
 };
 
 type Actor = {
@@ -113,6 +114,12 @@ export default function NotificationBell() {
     if (n.type === "comment") return "commented on your post";
     if (n.type === "follow") return "started following you";
     if (n.type === "repost") return "reposted your post";
+    if (n.type === "report_update") {
+      const outcome = n.meta?.outcome;
+      if (outcome === "actioned") return "— action taken on your report";
+      if (outcome === "dismissed") return "— your report was reviewed, no action needed";
+      return "— your report was reviewed";
+    }
     return "did something";
   };
 
@@ -163,6 +170,7 @@ export default function NotificationBell() {
                 const actor = actors[n.actor_id];
                 const name = actor?.display_name || actor?.username || "Someone";
                 const username = actor?.username;
+                const isSystem = n.type === "report_update";
                 return (
                   <Link
                     key={n.id}
@@ -172,7 +180,14 @@ export default function NotificationBell() {
                       !n.read ? "bg-white/[0.03]" : ""
                     }`}
                   >
-                    {actor?.avatar_url ? (
+                    {isSystem ? (
+                      <div className="w-9 h-9 rounded-full bg-blue-600/20 flex items-center justify-center flex-shrink-0">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2">
+                          <circle cx="12" cy="12" r="10" />
+                          <path d="M12 16v-4M12 8h.01" />
+                        </svg>
+                      </div>
+                    ) : actor?.avatar_url ? (
                       <img
                         src={actor.avatar_url}
                         alt=""
@@ -185,11 +200,20 @@ export default function NotificationBell() {
                     )}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-white/90 leading-snug">
-                        <span className="font-semibold inline-flex items-center gap-1">
-                          {name}
-                          {actor?.is_verified && <VerifiedBadge size={12} variant={actor.tier === "podcaster" ? "gold" : "red"} />}
-                        </span>{" "}
-                        {labelFor(n)}
+                        {isSystem ? (
+                          <>
+                            <span className="font-semibold">Trooflix Team</span>{" "}
+                            {labelFor(n)}
+                          </>
+                        ) : (
+                          <>
+                            <span className="font-semibold inline-flex items-center gap-1">
+                              {name}
+                              {actor?.is_verified && <VerifiedBadge size={12} variant={actor.tier === "podcaster" ? "gold" : "red"} />}
+                            </span>{" "}
+                            {labelFor(n)}
+                          </>
+                        )}
                       </p>
                       <p className="text-xs text-white/40 mt-0.5">{timeAgo(n.created_at)}</p>
                     </div>

@@ -90,6 +90,17 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: "Invalid id or status" }, { status: 400 });
     }
 
+    // Fetch the report so we know who reported it and what content it was
+    const { data: report } = await supabaseAdmin
+      .from("reports")
+      .select("reporter_user_id, content_type, content_id, reason")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (!report) {
+      return NextResponse.json({ error: "Report not found" }, { status: 404 });
+    }
+
     const { error } = await supabaseAdmin
       .from("reports")
       .update({
@@ -100,6 +111,20 @@ export async function PATCH(req: Request) {
       .eq("id", id);
 
     if (error) throw error;
+
+    // Notify the reporter of the outcome
+    try {
+      await supabaseAdmin.from("notifications").insert({
+        user_id: report.reporter_user_id,
+        actor_id: report.reporter_user_id, // self (system action)
+        type: "report_update",
+        post_id: report.content_type === "post" ? Number(report.content_id) : null,
+        meta: { outcome: status, reason: report.reason, content_type: report.content_type },
+      });
+    } catch (notifErr) {
+      console.warn("report notification failed:", notifErr);
+    }
+
     return NextResponse.json({ ok: true });
   } catch (e: any) {
     console.error("PATCH report error:", e);
