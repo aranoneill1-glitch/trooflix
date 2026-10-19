@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import VideoPlayer from "@/components/VideoPlayer";
 import LoadingIntro from "@/components/LoadingIntro";
+import PullToRefresh from "@/components/PullToRefresh";
 import VideoIntro from "@/components/VideoIntro";
 import UserMenu from "@/components/UserMenu";
 import { useSearch } from "@/context/SearchContext";
@@ -182,6 +183,7 @@ export default function Home() {
   const showingFiltered = activeCategory || activeTab !== "Home" || filtered;
 
   return (
+    <PullToRefresh onRefresh={async () => { window.location.reload(); }}>
     <main className="min-h-screen bg-black text-white overflow-x-hidden pb-20 lg:pb-0">
       <LoadingIntro onDone={() => setIntroDone(true)} />
       {/* ============ TOP NAV ============ */}
@@ -298,6 +300,7 @@ export default function Home() {
         )}
       </AnimatePresence>
     </main>
+    </PullToRefresh>
   );
 }
 
