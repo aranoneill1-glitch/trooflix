@@ -18,6 +18,7 @@ export default function PaywallGate({
     onTimeUpdate: (e: React.SyntheticEvent<HTMLVideoElement>) => void;
     onContextMenu: (e: React.MouseEvent) => void;
     onSeeking: (e: React.SyntheticEvent<HTMLVideoElement>) => void;
+    onPlay: (e: React.SyntheticEvent<HTMLVideoElement>) => void;
   }) => React.ReactNode;
   isPodcasterContent: boolean;
   contentType: string | null;
@@ -62,12 +63,27 @@ export default function PaywallGate({
     });
   }
 
+  const blockVideo = (v: HTMLVideoElement) => {
+    v.pause();
+    if (!v.dataset.originalSrc) v.dataset.originalSrc = v.src;
+    v.removeAttribute("src");
+    try { v.load(); } catch {}
+    setBlocked(true);
+  };
+
   const handleTimeUpdate = (e: React.SyntheticEvent<HTMLVideoElement>) => {
+    if (!isLocked) return;
     const v = e.currentTarget;
-    if (isLocked && v.currentTime >= PREVIEW_SECONDS && !blocked) {
-      v.pause();
-      v.currentTime = PREVIEW_SECONDS;
-      setBlocked(true);
+    if (v.currentTime >= PREVIEW_SECONDS) {
+      blockVideo(v);
+    }
+  };
+
+  const handlePlay = (e: React.SyntheticEvent<HTMLVideoElement>) => {
+    if (!isLocked) return;
+    const v = e.currentTarget;
+    if (v.currentTime >= PREVIEW_SECONDS || !v.src) {
+      blockVideo(v);
     }
   };
 
@@ -79,9 +95,7 @@ export default function PaywallGate({
     if (!isLocked) return;
     const v = e.currentTarget;
     if (v.currentTime >= PREVIEW_SECONDS) {
-      v.pause();
-      try { v.currentTime = PREVIEW_SECONDS - 0.1; } catch {}
-      if (!blocked) setBlocked(true);
+      blockVideo(v);
     }
   };
 
@@ -92,6 +106,7 @@ export default function PaywallGate({
         onTimeUpdate: handleTimeUpdate,
         onContextMenu: handleContextMenu,
         onSeeking: handleSeeking,
+        onPlay: handlePlay,
       })}
 
       {blocked && (
