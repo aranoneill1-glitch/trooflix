@@ -115,7 +115,7 @@ export default function PullToRefresh({
           {/* Logo circle (dark background to make logo pop) */}
           <div className="absolute inset-1 rounded-full bg-black flex items-center justify-center overflow-hidden">
             <img
-              src="/truthlog.png"
+              src="/loading-logo.jpg"
               alt=""
               className="w-[80%] h-[80%] object-contain"
               draggable={false}
