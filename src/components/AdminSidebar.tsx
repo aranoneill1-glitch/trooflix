@@ -13,12 +13,14 @@ import {LayoutDashboard,
   Menu,
   X,
   Users,
+  Flag,
 } from "lucide-react";
 
 const ITEMS = [
   { label: "Overview", path: "/admin", icon: LayoutDashboard, exact: true },
   { label: "Videos", path: "/admin/videos", icon: Video },
   { label: "Users", path: "/admin/users", icon: Users },
+  { label: "Reports", path: "/admin/reports", icon: Flag },
   { label: "Podcasters", path: "/admin/podcasters", icon: Mic },
   { label: "Applications", path: "/admin/applications", icon: Inbox },
   { label: "Settings", path: "/admin/settings", icon: Settings },

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ThumbsUp, Share, Bookmark, ChevronLeft } from "lucide-react";
+import { ThumbsUp, Share, Bookmark, ChevronLeft , MoreHorizontal} from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import FollowButton from "@/components/FollowButton";
@@ -16,6 +16,7 @@ import ViewCount from "@/components/ViewCount";
 import { getCachedCreators } from "@/lib/cache";
 import InlineComments from "@/components/InlineComments";
 import PaywallGate from "@/components/PaywallGate";
+import ReportModal from "@/components/ReportModal";
 
 type Video = {
   id: number;
@@ -58,6 +59,7 @@ export default function WatchPage() {
   const [creator, setCreator] = useState<Creator | null>(null);
   const [loading, setLoading] = useState(true);
   const [showShare, setShowShare] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const [followerCount, setFollowerCount] = useState<number | null>(null);
 
   useEffect(() => {
@@ -204,6 +206,14 @@ export default function WatchPage() {
               <div className="flex items-center gap-2 bg-white/10 hover:bg-white/20 rounded-full px-4 py-2 text-sm font-semibold transition cursor-pointer flex-shrink-0">
                 <SaveButton videoId={video.id} variant="labeled" size={18} />
               </div>
+
+              <button
+                onClick={() => setReportOpen(true)}
+                className="flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full p-2 transition flex-shrink-0"
+                aria-label="Report"
+              >
+                <MoreHorizontal size={20} />
+              </button>
             </div>
 
             {/* Description Box */}
@@ -237,6 +247,13 @@ export default function WatchPage() {
         onClose={() => setShowShare(false)}
         videoId={video.id}
         videoTitle={video.title}
+      />
+
+      <ReportModal
+        open={reportOpen}
+        onClose={() => setReportOpen(false)}
+        contentType="post"
+        contentId={video.id}
       />
     </main>
   );

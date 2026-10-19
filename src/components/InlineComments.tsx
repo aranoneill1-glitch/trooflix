@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ThumbsUp, MoreVertical, Trash2 } from "lucide-react";
 import { getCachedUser } from "@/lib/cache";
 import VerifiedBadge from "@/components/VerifiedBadge";
+import ReportModal from "@/components/ReportModal";
 
 type Comment = {
   id: number;
@@ -41,6 +42,7 @@ export default function InlineComments({ videoId }: { videoId: number }) {
   const [replyTo, setReplyTo] = useState<number | null>(null);
   const [replyText, setReplyText] = useState("");
   const [menuOpenFor, setMenuOpenFor] = useState<number | null>(null);
+  const [reportFor, setReportFor] = useState<number | null>(null);
 
   useEffect(() => {
     getCachedUser().then((u) => setUser(u));
@@ -262,8 +264,8 @@ export default function InlineComments({ videoId }: { videoId: number }) {
           )}
         </div>
 
-        {/* Three-dot menu — only own comments */}
-        {isOwn && (
+        {/* Three-dot menu — shows for all comments */}
+        {user && (
           <div className="relative flex-shrink-0">
             <button
               onClick={() => setMenuOpenFor(menuOpenFor === c.id ? null : c.id)}
@@ -274,13 +276,22 @@ export default function InlineComments({ videoId }: { videoId: number }) {
             {menuOpenFor === c.id && (
               <>
                 <div className="fixed inset-0 z-10" onClick={() => setMenuOpenFor(null)} />
-                <div className="absolute right-0 top-8 z-20 bg-[#1a1a1f] border border-white/10 rounded-lg shadow-2xl overflow-hidden">
-                  <button
-                    onClick={() => deleteComment(c.id)}
-                    className="flex items-center gap-2 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 transition whitespace-nowrap"
-                  >
-                    <Trash2 size={14} /> Delete
-                  </button>
+                <div className="absolute right-0 top-8 z-20 bg-[#1a1a1f] border border-white/10 rounded-lg shadow-2xl overflow-hidden min-w-[140px]">
+                  {isOwn ? (
+                    <button
+                      onClick={() => { deleteComment(c.id); setMenuOpenFor(null); }}
+                      className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 transition whitespace-nowrap text-left"
+                    >
+                      <Trash2 size={14} /> Delete
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => { setReportFor(c.id); setMenuOpenFor(null); }}
+                      className="w-full text-left px-4 py-2 text-sm text-white/90 hover:bg-white/10 transition whitespace-nowrap"
+                    >
+                      Report comment
+                    </button>
+                  )}
                 </div>
               </>
             )}
@@ -350,6 +361,13 @@ export default function InlineComments({ videoId }: { videoId: number }) {
           })}
         </div>
       )}
+
+      <ReportModal
+        open={reportFor !== null}
+        onClose={() => setReportFor(null)}
+        contentType="comment"
+        contentId={reportFor || 0}
+      />
     </div>
   );
 }
