@@ -138,10 +138,9 @@ export default function WatchPage() {
               {video.title}
             </h1>
 
-            {/* Channel Row */}
+            {/* Channel Row (if creator exists) */}
             {creator && (
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mt-4 px-4 md:px-0">
-                
                 {/* Left: Channel Info */}
                 <div className="flex items-center gap-3">
                   <Link href={`/podcaster/${creator.slug}`} className="w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden border border-white/10 flex-shrink-0">
@@ -166,28 +165,28 @@ export default function WatchPage() {
                     <FollowButton creatorId={creator.id} />
                   </div>
                 </div>
-
-                {/* Right: Actions (YouTube style pill buttons) */}
-                <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-                  <div className="flex items-center bg-white/10 rounded-full overflow-hidden">
-                    <div className="px-4 py-2 hover:bg-white/20 transition cursor-pointer flex items-center gap-2">
-                      <LikeButton videoId={video.id} size={18} showCount />
-                    </div>
-                  </div>
-                  
-                  <button
-                    onClick={() => setShowShare(true)}
-                    className="flex items-center gap-2 bg-white/10 hover:bg-white/20 rounded-full px-4 py-2 text-sm font-semibold transition flex-shrink-0"
-                  >
-                    <Share size={18} /> Share
-                  </button>
-                  
-                  <div className="flex items-center gap-2 bg-white/10 hover:bg-white/20 rounded-full px-4 py-2 text-sm font-semibold transition cursor-pointer flex-shrink-0">
-                    <SaveButton videoId={video.id} variant="labeled" size={18} />
-                  </div>
-                </div>
               </div>
             )}
+
+            {/* Action Bar — always shows */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 mt-4 px-4 md:px-0 scrollbar-hide">
+              <div className="flex items-center bg-white/10 rounded-full overflow-hidden flex-shrink-0">
+                <div className="px-4 py-2 hover:bg-white/20 transition cursor-pointer flex items-center gap-2">
+                  <LikeButton videoId={video.id} size={18} showCount />
+                </div>
+              </div>
+              
+              <button
+                onClick={() => setShowShare(true)}
+                className="flex items-center gap-2 bg-white/10 hover:bg-white/20 rounded-full px-4 py-2 text-sm font-semibold transition flex-shrink-0"
+              >
+                <Share size={18} /> Share
+              </button>
+              
+              <div className="flex items-center gap-2 bg-white/10 hover:bg-white/20 rounded-full px-4 py-2 text-sm font-semibold transition cursor-pointer flex-shrink-0">
+                <SaveButton videoId={video.id} variant="labeled" size={18} />
+              </div>
+            </div>
 
             {/* Description Box */}
             <div className="mt-4 bg-[#141418] md:rounded-xl p-4 mx-4 md:mx-0">
