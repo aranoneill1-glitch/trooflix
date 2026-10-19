@@ -14,6 +14,7 @@ import SaveButton from "@/components/SaveButton";
 import ShareReelSheet from "@/components/ShareReelSheet";
 import ViewCount from "@/components/ViewCount";
 import { getCachedCreators } from "@/lib/cache";
+import InlineComments from "@/components/InlineComments";
 
 type Video = {
   id: number;
@@ -196,6 +197,11 @@ export default function WatchPage() {
               <p className="text-sm text-white/90 whitespace-pre-wrap mt-2">
                 {video.description}
               </p>
+            </div>
+
+            {/* Comments Section */}
+            <div className="px-4 md:px-0">
+              <InlineComments videoId={video.id} />
             </div>
           </div>
 
