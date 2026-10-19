@@ -127,8 +127,8 @@ export default function PullToRefresh({
       {/* Content — offset down while pulling */}
       <div
         style={{
-          transform: `translateY(${refreshing ? THRESHOLD : pullDistance}px)`,
-          transition: refreshing || pullDistance === 0 ? "transform 0.25s ease-out" : "none",
+          marginTop: `${refreshing ? THRESHOLD : pullDistance}px`,
+          transition: refreshing || pullDistance === 0 ? "margin-top 0.25s ease-out" : "none",
         }}
       >
         {children}

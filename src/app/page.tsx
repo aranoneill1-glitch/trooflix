@@ -649,23 +649,19 @@ function DetailModal({ item, onClose, onPlay, creators }: { item: Video; onClose
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] bg-black/90"
+      className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"
       onClick={onClose}
     >
-      <div
-        className="absolute top-1/2 left-1/2 w-[calc(100%-24px)] max-w-4xl"
-        style={{ transform: "translate(-50%, -50%)", maxHeight: "90vh" }}
-        onClick={(e) => e.stopPropagation()}
-      >
       <motion.div
         key={item.id}
         ref={modalContentRef}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
         transition={{ duration: 0.2 }}
-        className="bg-[#141414] shadow-2xl rounded-lg relative w-full"
-        style={{ maxHeight: "90vh", overflowY: "auto", overflowX: "hidden", scrollBehavior: "auto" }}
+        className="bg-[#141414] shadow-2xl rounded-lg relative w-full max-w-4xl overflow-y-auto"
+        style={{ maxHeight: "90dvh" }}
+        onClick={(e) => e.stopPropagation()}
       >
         <div className="relative h-[260px] md:h-[420px] w-full overflow-hidden">
           <img
@@ -760,7 +756,6 @@ function DetailModal({ item, onClose, onPlay, creators }: { item: Video; onClose
           </div>
         </div>
       </motion.div>
-      </div>
     </motion.div>
   );
 }
