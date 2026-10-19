@@ -1000,6 +1000,16 @@ export default function ProfilePage() {
                   <Share2 size={18} className="text-white/70" />
                   <span className="font-semibold">Share profile</span>
                 </button>
+                {profile?.tier === "podcaster" && (
+                  <Link
+                    href="/studio"
+                    onClick={() => setDashOpen(false)}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition text-yellow-400 text-left"
+                  >
+                    <Mic size={18} />
+                    <span className="font-semibold">Podcaster Studio</span>
+                  </Link>
+                )}
                 <Link
                   href="/upgrade"
                   onClick={() => setDashOpen(false)}
