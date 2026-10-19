@@ -48,20 +48,12 @@ export default function PaywallGate({
 
   // Determine if this content is locked for the current viewer
   // Locked only when: podcaster content AND not a reel AND viewer is free user
-  // TEMPORARY for testing: lock ALL podcaster content, regardless of tier
-  // (normally would be: tier === "user" && isPodcasterContent && contentType !== "Reel")
-  const isLocked = isPodcasterContent && contentType !== "Reel";
+  const isLocked =
+    tier === "user" &&
+    isPodcasterContent &&
+    contentType !== "Reel";
 
-  // Debug logging
-  if (typeof window !== "undefined") {
-    console.log("[PaywallGate]", {
-      tier,
-      isPodcasterContent,
-      contentType,
-      isLocked,
-      videoId,
-    });
-  }
+
 
   const blockVideo = (v: HTMLVideoElement) => {
     v.pause();
