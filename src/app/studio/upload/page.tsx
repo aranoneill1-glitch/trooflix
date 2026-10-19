@@ -13,7 +13,8 @@ export default function UploadVideoPage() {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [type, setType] = useState<"Reel" | "Podcast">("Reel");
+  const [type, setType] = useState<"Reel" | "Podcast" | "Documentary">("Reel");
+  const [pickerDone, setPickerDone] = useState(false);
   const [videoUrl, setVideoUrl] = useState("");
   const [posterUrl, setPosterUrl] = useState("");
   const [backdropUrl, setBackdropUrl] = useState("");
@@ -139,7 +140,7 @@ export default function UploadVideoPage() {
         userId: user.id,
         title: title.trim(),
         description: description.trim(),
-        type: type === "Podcast" ? "Podcast" : "Reel",
+        type: type,
         videoUrl: videoUrl,
         posterUrl,
         backdropUrl,
@@ -161,6 +162,71 @@ export default function UploadVideoPage() {
       setSubmitting(false);
     }
   };
+
+  // ===== STEP 1: Type picker =====
+  if (!pickerDone) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center p-6">
+        <div className="max-w-3xl w-full">
+          <div className="text-center mb-10">
+            <p className="text-xs tracking-[0.3em] text-yellow-500 font-bold mb-2">STUDIO</p>
+            <h1 className="text-3xl md:text-4xl font-black mb-2">What are you publishing?</h1>
+            <p className="text-white/50 text-sm">Choose a format to start</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <button
+              onClick={() => { setType("Podcast"); setPickerDone(true); }}
+              className="group bg-[#141418] border-2 border-white/10 hover:border-yellow-500 rounded-2xl p-6 flex flex-col items-center text-center transition"
+            >
+              <div className="w-16 h-16 rounded-full bg-yellow-600/20 group-hover:bg-yellow-600/30 flex items-center justify-center mb-4 transition">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#eab308" strokeWidth="2">
+                  <path d="M12 15a3 3 0 003-3V6a3 3 0 00-6 0v6a3 3 0 003 3z" />
+                  <path d="M19 10v2a7 7 0 01-14 0v-2M12 19v3" />
+                </svg>
+              </div>
+              <p className="text-lg font-bold mb-1">Podcast</p>
+              <p className="text-xs text-white/50">Audio-first, long-form</p>
+            </button>
+
+            <button
+              onClick={() => { setType("Documentary"); setPickerDone(true); }}
+              className="group bg-[#141418] border-2 border-white/10 hover:border-blue-500 rounded-2xl p-6 flex flex-col items-center text-center transition"
+            >
+              <div className="w-16 h-16 rounded-full bg-blue-600/20 group-hover:bg-blue-600/30 flex items-center justify-center mb-4 transition">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2">
+                  <rect x="2" y="6" width="20" height="14" rx="2" />
+                  <path d="M2 10h20M7 6V2M17 6V2" />
+                </svg>
+              </div>
+              <p className="text-lg font-bold mb-1">Documentary</p>
+              <p className="text-xs text-white/50">Long-form video, real stories</p>
+            </button>
+
+            <button
+              onClick={() => { setType("Reel"); setPickerDone(true); }}
+              className="group bg-[#141418] border-2 border-white/10 hover:border-red-600 rounded-2xl p-6 flex flex-col items-center text-center transition"
+            >
+              <div className="w-16 h-16 rounded-full bg-red-600/20 group-hover:bg-red-600/30 flex items-center justify-center mb-4 transition">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2">
+                  <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+              </div>
+              <p className="text-lg font-bold mb-1">Reel</p>
+              <p className="text-xs text-white/50">Short-form video</p>
+            </button>
+          </div>
+
+          <button
+            onClick={() => window.history.back()}
+            className="block mx-auto mt-8 text-sm text-white/40 hover:text-white transition"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 md:p-8 max-w-3xl">
