@@ -49,20 +49,38 @@ export default function CreatorLayout({
         setState("unauth");
         return;
       }
-      fetch(`/api/me/creator?user_id=${user.id}`)
+      // 1. Fetch user's tier from their profile
+      fetch(`/api/profile?user_id=${user.id}`)
         .then((r) => r.json())
-        .then((d) => {
-          if (!d.creator) {
-            router.replace("/apply");
-            setState("not-approved");
+        .then((profileData) => {
+          const tier = profileData.profile?.tier;
+          
+          // If they are a podcaster, grant access
+          if (tier === "podcaster") {
+            // Still need the creator name/slug for the studio UI
+            fetch(`/api/me/creator?user_id=${user.id}`)
+              .then((r) => r.json())
+              .then((cr) => {
+                // Use creator record if it exists, otherwise fallback to profile
+                const creatorInfo = cr.creator || {
+                  id: user.id,
+                  name: profileData.profile.display_name || "Podcaster",
+                  slug: profileData.profile.username || "",
+                  photoUrl: profileData.profile.avatar_url || "",
+                };
+                setCreator(creatorInfo);
+                setState("ok");
+              });
             return;
           }
-          setCreator(d.creator);
-          setState("ok");
-        })
-        .catch(() => {
+
+          // Not a podcaster tier — block access
           router.replace("/apply");
           setState("not-approved");
+        })
+        .catch(() => {
+          router.replace("/login");
+          setState("unauth");
         });
     });
   }, [router]);
