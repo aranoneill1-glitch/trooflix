@@ -591,6 +591,15 @@ function Card({ item, hovered, onHover, onLeave, onSelect, onPlay, showCreator, 
 
 /* ============ MODAL ============ */
 function DetailModal({ item, onClose, onPlay, creators }: { item: Video; onClose: () => void; onPlay: (v: Video) => void; creators?: any[] }) {
+  const modalContentRef = useRef<HTMLDivElement>(null);
+
+  // Reset internal scroll to top when modal opens
+  useEffect(() => {
+    if (modalContentRef.current) {
+      modalContentRef.current.scrollTop = 0;
+    }
+  }, [item.id]);
+
   const uploader =
     item.creatorId
       ? (creators || []).find((c: any) => c.id === item.creatorId) || null
@@ -650,7 +659,8 @@ function DetailModal({ item, onClose, onPlay, creators }: { item: Video; onClose
         exit={{ scale: 0.95, opacity: 0, y: 20 }}
         transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
         onClick={(e) => e.stopPropagation()}
-        className="relative max-w-4xl bg-[#141414] rounded-lg shadow-2xl w-full rounded-lg"
+        ref={modalContentRef}
+        className="relative max-w-4xl bg-[#141414] shadow-2xl w-full rounded-lg"
         style={{ maxHeight: "calc(100dvh - 24px)", overflowY: "auto", overflowX: "hidden" }}
       >
         <div className="relative h-[260px] md:h-[420px] w-full overflow-hidden">
