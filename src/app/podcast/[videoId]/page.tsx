@@ -15,11 +15,13 @@ import ShareReelSheet from "@/components/ShareReelSheet";
 import ViewCount from "@/components/ViewCount";
 import { getCachedCreators } from "@/lib/cache";
 import InlineComments from "@/components/InlineComments";
+import PaywallGate from "@/components/PaywallGate";
 
 type Video = {
   id: number;
   title: string;
   description: string;
+  type: string;
   videoUrl?: string;
   bitchuteUrl?: string;
   textOverlays?: any[];
@@ -120,18 +122,31 @@ export default function WatchPage() {
           {/* Main Content (Left) */}
           <div className="flex-1 min-w-0">
             
-            {/* Video Player */}
-            <div className="relative w-full aspect-video bg-black md:rounded-xl overflow-hidden shadow-2xl">
-              <video
-                src={video.videoUrl ?? video.bitchuteUrl ?? ""}
-                poster={video.posterUrl}
-                className="w-full h-full object-contain"
-                controls
-                autoPlay
-                playsInline
-              />
-              <TextOverlayRenderer overlays={video.textOverlays} />
-            </div>
+            {/* Video Player — wrapped in PaywallGate */}
+            <PaywallGate
+              isPodcasterContent={!!video.creatorId}
+              contentType={video.type}
+              videoId={video.id}
+            >
+              {({ videoRef, onTimeUpdate, onContextMenu }) => (
+                <div className="relative w-full aspect-video bg-black md:rounded-xl overflow-hidden shadow-2xl">
+                  <video
+                    ref={videoRef}
+                    src={video.videoUrl ?? video.bitchuteUrl ?? ""}
+                    poster={video.posterUrl}
+                    className="w-full h-full object-contain"
+                    controls
+                    autoPlay
+                    playsInline
+                    onTimeUpdate={onTimeUpdate}
+                    onContextMenu={onContextMenu}
+                    disablePictureInPicture
+                    controlsList="nodownload noremoteplayback"
+                  />
+                  <TextOverlayRenderer overlays={video.textOverlays} />
+                </div>
+              )}
+            </PaywallGate>
 
             {/* Title */}
             <h1 className="text-xl md:text-2xl font-bold mt-4 px-4 md:px-0">
