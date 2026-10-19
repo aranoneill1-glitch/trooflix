@@ -640,7 +640,7 @@ function DetailModal({ item, onClose, onPlay, creators }: { item: Video; onClose
   return (
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] bg-black/90 overflow-y-auto"
+      className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 overflow-y-auto"
       onClick={onClose}
     >
       <motion.div
@@ -649,7 +649,7 @@ function DetailModal({ item, onClose, onPlay, creators }: { item: Video; onClose
         exit={{ scale: 0.95, opacity: 0, y: 20 }}
         transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
         onClick={(e) => e.stopPropagation()}
-        className="relative max-w-4xl mx-auto md:my-16 bg-[#141414] rounded-lg overflow-hidden shadow-2xl w-full"
+        className="relative max-w-4xl bg-[#141414] rounded-lg overflow-hidden shadow-2xl w-full max-h-[90vh] overflow-y-auto my-auto"
       >
         <div className="relative h-[260px] md:h-[420px] w-full overflow-hidden">
           <img
