@@ -220,26 +220,24 @@ export default function PodcasterProfilePage() {
 
           {/* Tab content */}
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-6 md:py-8">
-            {tab === "home" && (
-              <>
-                {latest ? (
-                  <>
-                    {/* Latest feature */}
+                        {tab === "home" && (
+              <div className="space-y-10">
+                {/* 1. Latest Drop */}
+                {latest && (
+                  <div>
+                    <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                      Latest Drop
+                    </h2>
                     <div
-                      className="flex flex-col md:flex-row gap-4 md:gap-6 mb-8 cursor-pointer group"
+                      className="flex flex-col md:flex-row gap-4 md:gap-6 cursor-pointer group bg-[#0f0f12] rounded-xl p-3 border border-white/5 hover:border-white/10 transition"
                       onClick={() => setPlaying(latest)}
                     >
-                      <div className="w-full md:w-96 aspect-video rounded-xl overflow-hidden bg-black flex-shrink-0 relative">
+                      <div className="w-full md:w-80 aspect-video rounded-lg overflow-hidden bg-black flex-shrink-0 relative">
                         {latest.posterUrl ? (
-                          <img
-                            src={latest.posterUrl}
-                            alt=""
-                            className="w-full h-full object-cover group-hover:scale-105 transition"
-                          />
+                          <img src={latest.posterUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Play size={40} className="text-white/30" />
-                          </div>
+                          <div className="w-full h-full flex items-center justify-center"><Play size={40} className="text-white/30" /></div>
                         )}
                         <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition">
                           <div className="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
@@ -247,72 +245,79 @@ export default function PodcasterProfilePage() {
                           </div>
                         </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h2 className="text-lg md:text-2xl font-black mb-2 line-clamp-2 group-hover:text-red-500 transition">
-                          {latest.title}
-                        </h2>
+                      <div className="flex-1 min-w-0 py-2">
+                        <p className="text-xs font-bold text-red-500 uppercase tracking-widest mb-2">{latest.type}</p>
+                        <h3 className="text-lg md:text-2xl font-black mb-2 line-clamp-2 group-hover:text-red-500 transition">{latest.title}</h3>
                         <div className="text-xs text-white/50 mb-3">
                           {(latest.viewCount || 0).toLocaleString()} views · {timeAgo(latest.createdAt)}
                         </div>
                         {latest.description && (
-                          <p className="text-sm text-white/80 whitespace-pre-wrap line-clamp-4">
-                            {latest.description}
-                          </p>
+                          <p className="text-sm text-white/70 whitespace-pre-wrap line-clamp-3">{latest.description}</p>
                         )}
                       </div>
                     </div>
-
-                    {/* Rest grid */}
-                    {rest.length > 0 && (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {rest.map((v) => (
-                          <div
-                            key={v.id}
-                            onClick={() => setPlaying(v)}
-                            className="cursor-pointer group"
-                          >
-                            <div className="aspect-video rounded-xl overflow-hidden bg-black mb-2 relative">
-                              {v.posterUrl ? (
-                                <img
-                                  src={v.posterUrl}
-                                  alt=""
-                                  className="w-full h-full object-cover group-hover:scale-105 transition"
-                                  loading="lazy"
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center">
-                                  <Play size={24} className="text-white/30" />
-                                </div>
-                              )}
-                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition flex items-center justify-center">
-                                <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                                  <Play size={20} fill="black" className="text-black ml-0.5" />
-                                </div>
-                              </div>
-                            </div>
-                            <p className="text-sm font-semibold line-clamp-2 mb-1 group-hover:text-red-500 transition">
-                              {v.title}
-                            </p>
-                            <p className="text-xs text-white/50">
-                              {(v.viewCount || 0).toLocaleString()} views · {timeAgo(v.createdAt)}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="text-center py-16">
-                    <Play size={40} className="mx-auto text-white/20 mb-4" />
-                    <p className="text-white/60">
-                      No episodes published yet.
-                    </p>
                   </div>
                 )}
-              </>
+
+                {/* 2. Recent Podcasts Row */}
+                {podcasts.length > 0 && (
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                       <h2 className="text-xl font-bold">Recent Podcasts</h2>
+                       <button onClick={() => setTab("podcasts")} className="text-xs font-semibold text-white/50 hover:text-white transition">View all</button>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {podcasts.slice(0, 4).map(v => (
+                         <div key={v.id} onClick={() => setPlaying(v)} className="cursor-pointer group">
+                           <div className="aspect-video rounded-lg overflow-hidden bg-black mb-2 relative">
+                             <img src={v.posterUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition" />
+                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition flex items-center justify-center">
+                                <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                                  <Play size={16} fill="black" className="text-black ml-0.5" />
+                                </div>
+                             </div>
+                           </div>
+                           <p className="text-sm font-semibold line-clamp-1">{v.title}</p>
+                         </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 3. Recent Documentaries Row */}
+                {documentaries.length > 0 && (
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                       <h2 className="text-xl font-bold">Recent Documentaries</h2>
+                       <button onClick={() => setTab("documentaries")} className="text-xs font-semibold text-white/50 hover:text-white transition">View all</button>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {documentaries.slice(0, 4).map(v => (
+                         <div key={v.id} onClick={() => setPlaying(v)} className="cursor-pointer group">
+                           <div className="aspect-video rounded-lg overflow-hidden bg-black mb-2 relative">
+                             <img src={v.posterUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition" />
+                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition flex items-center justify-center">
+                                <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                                  <Play size={16} fill="black" className="text-black ml-0.5" />
+                                </div>
+                             </div>
+                           </div>
+                           <p className="text-sm font-semibold line-clamp-1">{v.title}</p>
+                         </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {!latest && podcasts.length === 0 && documentaries.length === 0 && (
+                  <div className="text-center py-20">
+                    <p className="text-white/50">No content published yet.</p>
+                  </div>
+                )}
+              </div>
             )}
 
-            {tab === "podcasts" && (
+{tab === "podcasts" && (
               <>
                 {podcasts.length === 0 ? (
                   <div className="text-center py-16">

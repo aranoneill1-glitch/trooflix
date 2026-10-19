@@ -14,6 +14,7 @@ export default function UploadVideoPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [type, setType] = useState<"Reel" | "Podcast" | "Documentary">("Reel");
+  const [category, setCategory] = useState("History");
   const [pickerDone, setPickerDone] = useState(false);
   const [videoUrl, setVideoUrl] = useState("");
   const [posterUrl, setPosterUrl] = useState("");
@@ -283,7 +284,20 @@ export default function UploadVideoPage() {
 
         {/* Title */}
         <div>
-          <label className="text-xs text-white/50 block mb-2">Title</label>
+                    <div>
+            <label className="text-xs text-white/50 block mb-2">Category</label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full bg-black/40 border border-white/10 rounded px-3 py-2.5 outline-none focus:border-red-600"
+            >
+              {["History", "Politics", "True Crime", "Science & Health", "Technology", "Religion & Belief", "Ancient History", "The Unknown"].map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+
+<label className="text-xs text-white/50 block mb-2">Title</label>
           <input
             type="text"
             value={title}
