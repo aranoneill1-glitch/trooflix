@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Lock } from "lucide-react";
 import { getCachedUser } from "@/lib/cache";
 
-const PREVIEW_SECONDS = 60;
+const PREVIEW_SECONDS = 10;
 
 export default function PaywallGate({
   children,
@@ -46,10 +46,20 @@ export default function PaywallGate({
 
   // Determine if this content is locked for the current viewer
   // Locked only when: podcaster content AND not a reel AND viewer is free user
-  const isLocked =
-    tier === "user" &&
-    isPodcasterContent &&
-    contentType !== "Reel";
+  // TEMPORARY for testing: lock ALL podcaster content, regardless of tier
+  // (normally would be: tier === "user" && isPodcasterContent && contentType !== "Reel")
+  const isLocked = isPodcasterContent && contentType !== "Reel";
+
+  // Debug logging
+  if (typeof window !== "undefined") {
+    console.log("[PaywallGate]", {
+      tier,
+      isPodcasterContent,
+      contentType,
+      isLocked,
+      videoId,
+    });
+  }
 
   const handleTimeUpdate = (e: React.SyntheticEvent<HTMLVideoElement>) => {
     const v = e.currentTarget;
