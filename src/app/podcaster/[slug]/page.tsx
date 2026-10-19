@@ -36,7 +36,7 @@ type Creator = {
   isVerified?: boolean;
 };
 
-type Tab = "home" | "episodes" | "about";
+type Tab = "home" | "podcasts" | "videos";
 
 function timeAgo(iso?: string): string {
   if (!iso) return "";
@@ -100,6 +100,15 @@ export default function PodcasterProfilePage() {
       return bt - at;
     });
   }, [videos]);
+
+  const podcasts = useMemo(
+    () => sorted.filter((v) => v.type === "Podcast"),
+    [sorted]
+  );
+  const videoPosts = useMemo(
+    () => sorted.filter((v) => v.type !== "Podcast"),
+    [sorted]
+  );
 
   const latest = sorted[0];
   const rest = sorted.slice(1);
@@ -189,7 +198,7 @@ export default function PodcasterProfilePage() {
 
             {/* Tabs */}
             <div className="flex border-b border-white/10 mt-6 md:mt-8 gap-6">
-              {(["home", "episodes", "about"] as Tab[]).map((t) => (
+              {(["home", "podcasts", "videos"] as Tab[]).map((t) => (
                 <button
                   key={t}
                   onClick={() => setTab(t)}
@@ -199,7 +208,7 @@ export default function PodcasterProfilePage() {
                       : "border-transparent text-white/50 hover:text-white/80"
                   }`}
                 >
-                  {t === "home" ? "Home" : t === "episodes" ? "Episodes" : "About"}
+                  {t === "home" ? "Home" : t === "podcasts" ? "Podcasts" : "Videos"}
                 </button>
               ))}
             </div>
@@ -299,16 +308,16 @@ export default function PodcasterProfilePage() {
               </>
             )}
 
-            {tab === "episodes" && (
+            {tab === "podcasts" && (
               <>
-                {sorted.length === 0 ? (
+                {podcasts.length === 0 ? (
                   <div className="text-center py-16">
                     <Play size={40} className="mx-auto text-white/20 mb-4" />
-                    <p className="text-white/60">No episodes published yet.</p>
+                    <p className="text-white/60">No podcasts published yet.</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {sorted.map((v) => (
+                    {podcasts.map((v) => (
                       <div
                         key={v.id}
                         onClick={() => setPlaying(v)}
@@ -327,6 +336,11 @@ export default function PodcasterProfilePage() {
                               <Play size={24} className="text-white/30" />
                             </div>
                           )}
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition flex items-center justify-center">
+                            <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                              <Play size={20} fill="black" className="text-black ml-0.5" />
+                            </div>
+                          </div>
                         </div>
                         <p className="text-sm font-semibold line-clamp-2 mb-1">{v.title}</p>
                         <p className="text-xs text-white/50">
@@ -339,25 +353,49 @@ export default function PodcasterProfilePage() {
               </>
             )}
 
-            {tab === "about" && (
-              <div className="max-w-3xl">
-                <h2 className="text-xl font-bold mb-3">About</h2>
-                <p className="text-white/80 whitespace-pre-wrap mb-6">
-                  {creator?.description || "No description yet."}
-                </p>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-white/50 text-xs mb-1">Episodes</p>
-                    <p className="font-bold text-lg">{videos.length}</p>
+            {tab === "videos" && (
+              <>
+                {videoPosts.length === 0 ? (
+                  <div className="text-center py-16">
+                    <Play size={40} className="mx-auto text-white/20 mb-4" />
+                    <p className="text-white/60">No videos published yet.</p>
                   </div>
-                  <div>
-                    <p className="text-white/50 text-xs mb-1">Subscribers</p>
-                    <p className="font-bold text-lg">
-                      {followerCount !== null ? followerCount.toLocaleString() : "—"}
-                    </p>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {videoPosts.map((v) => (
+                      <div
+                        key={v.id}
+                        onClick={() => setPlaying(v)}
+                        className="cursor-pointer group"
+                      >
+                        <div className="aspect-video rounded-xl overflow-hidden bg-black mb-2 relative">
+                          {v.posterUrl ? (
+                            <img
+                              src={v.posterUrl}
+                              alt=""
+                              className="w-full h-full object-cover group-hover:scale-105 transition"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Play size={24} className="text-white/30" />
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition flex items-center justify-center">
+                            <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                              <Play size={20} fill="black" className="text-black ml-0.5" />
+                            </div>
+                          </div>
+                        </div>
+                        <p className="text-sm font-semibold line-clamp-2 mb-1">{v.title}</p>
+                        <p className="text-xs text-white/50">
+                          {(v.viewCount || 0).toLocaleString()} views · {timeAgo(v.createdAt)}
+                        </p>
+                      </div>
+                    ))}
                   </div>
-                </div>
-              </div>
+                )}
+              </>
             )}
           </div>
 
