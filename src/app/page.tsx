@@ -112,6 +112,7 @@ export default function Home() {
   const [showVideoIntro, setShowVideoIntro] = useState(false);
   const [pendingVideo, setPendingVideo] = useState<Video | null>(null);
 
+  // Load videos + creators once
   useEffect(() => {
     getCachedCreators().then(setCreators).catch(() => {});
     getCachedVideos()
@@ -119,11 +120,20 @@ export default function Home() {
         const all = Array.isArray(data) ? data : [];
         setVideos(all);
         setLoaded(true);
-      });
+      })
+      .catch(() => setLoaded(true));
+  }, []);
+
+  // Load progress + listen for changes
+  useEffect(() => {
     setProgressList(getAllProgress());
     const onProg = () => setProgressList(getAllProgress());
     window.addEventListener("progress-changed", onProg);
     return () => window.removeEventListener("progress-changed", onProg);
+  }, []);
+
+  // Scroll tracking
+  useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
