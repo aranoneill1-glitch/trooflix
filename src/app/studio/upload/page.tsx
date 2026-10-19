@@ -134,19 +134,20 @@ export default function UploadVideoPage() {
         return;
       }
 
-      const res = await fetch("/api/creator/videos", {
+      // Compose the request body
+      const body: any = {
+        userId: user.id,
+        title: title.trim(),
+        description: description.trim(),
+        type: type === "Podcast" ? "Podcast" : "Reel",
+        videoUrl: videoUrl,
+        posterUrl,
+        backdropUrl,
+      };
+      const res = await fetch("/api/user/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: user.id,
-          title: title.trim(),
-          description: description.trim(),
-          category: "Uncategorized",
-          type,
-          videoUrl: videoUrl,
-          posterUrl,
-          backdropUrl,
-        }),
+        body: JSON.stringify(body),
       });
       const d = await res.json();
       if (!res.ok) {
