@@ -19,17 +19,23 @@ export async function GET() {
     if (error) throw error;
 
     // Map to the Creator shape the rest of the app expects
-    const creators = (data || []).map((p: any) => ({
-      id: p.user_id,                    // use user_id as the creator id
-      name: p.display_name || p.username || "Podcaster",
-      slug: p.username || p.user_id.slice(0, 8),
-      photoUrl: p.avatar_url || "",
-      heroBackdropUrl: "",
-      description: p.bio || "",
-      isVerified: p.is_verified ?? true,
-      ownerUserId: p.user_id,
-      createdAt: p.updated_at,
-    }));
+    // Convert UUID user_id → stable numeric id (first 12 hex chars as integer, fits in JS safe int)
+    const creators = (data || []).map((p: any) => {
+      const uuidHex = String(p.user_id).replace(/-/g, "").slice(0, 12);
+      const numericId = parseInt(uuidHex, 16) || 0;
+      return {
+        id: numericId,
+        user_id: p.user_id,
+        name: p.display_name || p.username || "Podcaster",
+        slug: p.username || p.user_id.slice(0, 8),
+        photoUrl: p.avatar_url || "",
+        heroBackdropUrl: "",
+        description: p.bio || "",
+        isVerified: p.is_verified ?? true,
+        ownerUserId: p.user_id,
+        createdAt: p.updated_at,
+      };
+    });
 
     return NextResponse.json(creators);
   } catch (e: any) {
