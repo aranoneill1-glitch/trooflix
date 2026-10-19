@@ -25,13 +25,13 @@ export default function PaywallGate({
   videoId: number;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [tier, setTier] = useState<"user" | "pro" | "podcaster" | "loading">("loading");
+  const [tier, setTier] = useState<"anon" | "user" | "pro" | "podcaster" | "loading">("loading");
   const [blocked, setBlocked] = useState(false);
 
   useEffect(() => {
     getCachedUser().then(async (u) => {
       if (!u) {
-        setTier("user");
+        setTier("anon");
         return;
       }
       try {
@@ -48,10 +48,11 @@ export default function PaywallGate({
 
   // Determine if this content is locked for the current viewer
   // Locked only when: podcaster content AND not a reel AND viewer is free user
+  const isAnon = tier === "anon";
   const isLocked =
-    tier === "user" &&
     isPodcasterContent &&
-    contentType !== "Reel";
+    contentType !== "Reel" &&
+    (isAnon || tier === "user");
 
 
 
@@ -101,7 +102,37 @@ export default function PaywallGate({
         onPlay: handlePlay,
       })}
 
-      {blocked && (
+      {/* Immediate sign-in wall for logged-out users */}
+      {isAnon && isLocked && (
+        <div className="absolute inset-0 bg-black/95 backdrop-blur-sm z-40 flex items-center justify-center p-4">
+          <div className="max-w-md w-full text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-600/20 flex items-center justify-center">
+              <Lock size={32} className="text-red-500" />
+            </div>
+            <h2 className="text-2xl font-black mb-2">Sign in to watch</h2>
+            <p className="text-white/70 text-sm mb-6">
+              Sign in or create a free account to preview this podcast.
+            </p>
+            <div className="flex flex-col gap-2">
+              <Link
+                href="/login"
+                className="inline-block bg-red-600 hover:bg-red-500 text-white font-bold px-6 py-3 rounded-lg transition"
+              >
+                Sign in
+              </Link>
+              <Link
+                href="/signup"
+                className="inline-block bg-white/10 hover:bg-white/20 text-white font-semibold px-6 py-3 rounded-lg transition"
+              >
+                Create account
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Preview ended for free users */}
+      {blocked && !isAnon && (
         <div className="absolute inset-0 bg-black/95 backdrop-blur-sm z-40 flex items-center justify-center p-4">
           <div className="max-w-md w-full text-center">
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-600/20 flex items-center justify-center">
