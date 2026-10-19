@@ -192,6 +192,10 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: "You can only delete your own comments" }, { status: 403 });
     }
 
+    // Cascade: delete replies + comment likes too
+    await supabaseAdmin.from("comments").delete().eq("parent_id", Number(id));
+    await supabaseAdmin.from("comment_likes").delete().eq("comment_id", Number(id));
+
     const { error } = await supabaseAdmin
       .from("comments")
       .delete()
@@ -204,3 +208,5 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: String(e) }, { status: 500 });
   }
 }
+
+// DELETE /api/comments?id=X&userId=Y — delete own comment
