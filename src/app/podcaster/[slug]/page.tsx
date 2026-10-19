@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { Play, Eye, Bell } from "lucide-react";
+import { Play, Eye, Bell , Search} from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import FollowButton from "@/components/FollowButton";
@@ -59,6 +59,7 @@ export default function PodcasterProfilePage() {
   const [followerCount, setFollowerCount] = useState<number | null>(null);
   const [tab, setTab] = useState<Tab>("home");
   const [bioExpanded, setBioExpanded] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     getCachedCreators()
@@ -92,13 +93,24 @@ export default function PodcasterProfilePage() {
       });
   }, [slug]);
 
+  // Apply search filter first
+  const searched = useMemo(() => {
+    if (!searchQuery.trim()) return videos;
+    const q = searchQuery.toLowerCase();
+    return videos.filter(
+      (v) =>
+        v.title?.toLowerCase().includes(q) ||
+        v.description?.toLowerCase().includes(q)
+    );
+  }, [videos, searchQuery]);
+
   const sorted = useMemo(() => {
-    return [...videos].sort((a, b) => {
+    return [...searched].sort((a, b) => {
       const at = a.createdAt ? new Date(a.createdAt).getTime() : a.id;
       const bt = b.createdAt ? new Date(b.createdAt).getTime() : b.id;
       return bt - at;
     });
-  }, [videos]);
+  }, [searched]);
 
   const podcasts = useMemo(
     () => sorted.filter((v) => v.type === "Podcast"),
@@ -193,8 +205,20 @@ export default function PodcasterProfilePage() {
                   </button>
                 )}
 
-                <div className="mt-4">
+                <div className="mt-4 flex flex-col sm:flex-row items-center gap-3">
                   <FollowButton creatorId={creator?.id as number} />
+                  
+                  {/* Search bar */}
+                  <div className="relative w-full sm:w-64">
+                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search this podcaster..."
+                      className="w-full bg-white/10 border border-white/10 rounded-full pl-9 pr-4 py-2 text-sm outline-none focus:border-white/30 placeholder:text-white/40 transition"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
