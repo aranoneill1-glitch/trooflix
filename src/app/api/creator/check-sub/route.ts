@@ -17,7 +17,6 @@ export async function GET(req: Request) {
       return NextResponse.json({ hasSub: false });
     }
 
-    // Use the SQL helper function we created in Command 1
     const { data, error } = await supabaseAdmin.rpc("user_has_creator_subscription", {
       p_subscriber_user_id: userId,
       p_creator_id: Number(creatorId),
