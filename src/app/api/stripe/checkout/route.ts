@@ -12,19 +12,18 @@ const supabaseAdmin = createServerClient(
 
 export async function POST(req: Request) {
   try {
-    const { userId, tier } = await req.json();
+    const { userId, type } = await req.json();
 
-    if (!userId || !["pro", "podcaster"].includes(tier)) {
-      return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+    if (!userId || type !== "pass") {
+      return NextResponse.json(
+        { error: "userId and type='pass' required" },
+        { status: 400 }
+      );
     }
 
-    const priceId =
-      tier === "pro"
-        ? process.env.STRIPE_PRO_PRICE_ID
-        : process.env.STRIPE_PODCASTER_PRICE_ID;
-
+    const priceId = process.env.STRIPE_PRO_PRICE_ID;
     if (!priceId) {
-      return NextResponse.json({ error: "Price ID missing" }, { status: 500 });
+      return NextResponse.json({ error: "Pass price ID not configured" }, { status: 500 });
     }
 
     // Look up or create Stripe customer
@@ -38,7 +37,7 @@ export async function POST(req: Request) {
 
     if (!customerId) {
       const customer = await stripe.customers.create({
-        metadata: { userId },
+        metadata: { userId, type: "trooflix_pass" },
         name: profile?.display_name || profile?.username || undefined,
       });
       customerId = customer.id;
@@ -52,10 +51,13 @@ export async function POST(req: Request) {
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
-      success_url: `${process.env.NEXT_PUBLIC_URL || "https://www.trooflixtv.com"}/profile?upgraded=1`,
+      success_url: `${process.env.NEXT_PUBLIC_URL || "https://www.trooflixtv.com"}/profile?upgraded=pass`,
       cancel_url: `${process.env.NEXT_PUBLIC_URL || "https://www.trooflixtv.com"}/upgrade`,
       client_reference_id: userId,
-      subscription_data: { metadata: { userId, tier } },
+      subscription_data: {
+        metadata: { userId, type: "trooflix_pass" },
+      },
+      allow_promotion_codes: true,
     });
 
     return NextResponse.json({ url: session.url });
