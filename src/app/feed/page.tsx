@@ -71,10 +71,7 @@ export default function FeedPage() {
   const [filter, setFilter] = useState<"all" | "following">("all");
   const [userId, setUserId] = useState<string | null>(null);
 
-  // Reel modal
-  // Comment drawer
   const [commentVideo, setCommentVideo] = useState<Video | null>(null);
-  // Autoplay tracking
   const [activePlayingId, setActivePlayingId] = useState<number | null>(null);
   const [muted, setMuted] = useState(true);
   const [openVideoModal, setOpenVideoModal] = useState<Video | null>(null);
@@ -82,12 +79,10 @@ export default function FeedPage() {
   const postRefs = useRef<Map<number, HTMLElement>>(new Map());
   const trackedIdsRef = useRef<Set<number>>(new Set());
 
-  // Get current user
   useEffect(() => {
     getCachedUser().then((u) => setUserId(u?.id || null));
   }, []);
 
-  // Fetch feed
   const load = async () => {
     setLoading(true);
     try {
@@ -98,7 +93,6 @@ export default function FeedPage() {
       const d = await res.json();
       const list: Video[] = Array.isArray(d.posts) ? d.posts : [];
 
-      // Fetch creators + uploader profiles IN PARALLEL with post set
       let creatorsData: any[] = [];
       const profiles: Record<string, UploaderProfile> = {};
 
@@ -122,7 +116,6 @@ export default function FeedPage() {
         ]);
       } catch {}
 
-      // Set everything together so the feed renders fully on first paint
       setPosts(list);
       setCreators(creatorsData);
       setUploaders(profiles);
@@ -137,7 +130,6 @@ export default function FeedPage() {
     if (userId !== null || filter === "all") load();
   }, [userId, filter]);
 
-  // Show "tap for sound" prompt on first feed visit in session
   useEffect(() => {
     if (posts.length === 0) return;
     try {
@@ -148,7 +140,6 @@ export default function FeedPage() {
     }
   }, [posts.length]);
 
-  // IntersectionObserver — track which reel is most visible
   useEffect(() => {
     if (posts.length === 0) return;
     const observer = new IntersectionObserver(
@@ -170,7 +161,6 @@ export default function FeedPage() {
     return () => observer.disconnect();
   }, [posts.length]);
 
-  // Track a view when a post becomes the centered active post (once per session)
   useEffect(() => {
     if (!activePlayingId) return;
     if (trackedIdsRef.current.has(activePlayingId)) return;
@@ -178,12 +168,10 @@ export default function FeedPage() {
     trackView(activePlayingId);
   }, [activePlayingId]);
 
-  // Author resolver
   const authorFor = (p: Video) => {
     if (p.uploaderUserId) {
       const profile = uploaders[p.uploaderUserId];
       if (profile) {
-        // Prefer display_name → username → abbreviated user id (instead of "User")
         const name =
           (profile.display_name && profile.display_name.trim()) ||
           (profile.username && profile.username.trim()) ||
@@ -197,7 +185,6 @@ export default function FeedPage() {
           href: profile.username ? `/u/${profile.username}` : null,
         };
       }
-      // No profile record — show a stable identifier
       return { name: `User ${p.uploaderUserId.slice(0, 6)}`, handle: "", avatar: "", verified: false, tier: "user" as const, href: null };
     }
     const creator = creators.find((c) => c.id === p.creatorId);
@@ -218,11 +205,8 @@ export default function FeedPage() {
     <>
     <PullToRefresh onRefresh={async () => { await load(); }}>
     <main className="min-h-screen bg-black text-white pb-20 lg:pb-0">
-
-      {/* Toggle */}
       <div className="sticky top-0 z-40 bg-black border-b border-white/5 pt-[env(safe-area-inset-top)]">
         <div className="flex items-center w-full">
-          {/* Desktop-only back button */}
           <Link
             href="/"
             className="hidden md:flex items-center justify-center w-16 h-full py-3 text-white/50 hover:text-white transition border-r border-white/5"
@@ -230,7 +214,6 @@ export default function FeedPage() {
             <ChevronLeft size={20} />
           </Link>
 
-          {/* Toggle */}
           <div className="flex flex-1 w-full">
             <button
               onClick={() => setFilter("all")}
@@ -257,7 +240,6 @@ export default function FeedPage() {
       </div>
 
       <div className="pt-0 space-y-0">
-
         {!loading && posts.length === 0 && (
           <div className="text-center py-16 px-4">
             <p className="text-white/60 mb-2">
@@ -272,6 +254,7 @@ export default function FeedPage() {
           <PostCard
             key={post.id}
             post={post}
+            userId={userId}
             author={authorFor(post)}
             onOpenComments={() => setCommentVideo(post)}
             isActivePlaying={activePlayingId === post.id}
@@ -291,8 +274,6 @@ export default function FeedPage() {
         ))}
       </div>
 
-
-      {/* Comment drawer */}
       {commentVideo && (
         <CommentDrawer
           videoId={commentVideo.id}
@@ -301,7 +282,6 @@ export default function FeedPage() {
         />
       )}
 
-      {/* Full-screen video modal */}
       <AnimatePresence>
         {openVideoModal && (
           <XVideoModal
@@ -328,6 +308,7 @@ export default function FeedPage() {
 // ============================================================
 function PostCard({
   post,
+  userId,
   author,
   onOpenComments,
   isActivePlaying,
@@ -339,6 +320,7 @@ function PostCard({
   onOpenVideo,
 }: {
   post: Video;
+  userId: string | null;
   author: { name: string; handle: string; avatar: string; verified: boolean; tier?: "user" | "pro" | "podcaster"; href: string | null };
   onOpenComments: () => void;
   isActivePlaying: boolean;
@@ -357,7 +339,46 @@ function PostCard({
   const isImage = post.type === "Image";
   const isTroo = post.type === "Troo";
 
-  // Helper: pause every other <video> on the page before playing this one
+  // --- Watch Time Tracker ---
+  const watchTimeRef = useRef(0);
+
+  useEffect(() => {
+    if (!isActivePlaying || !userId || !post.id || !post.creatorId) return;
+
+    const interval = setInterval(() => {
+      const v = videoRef.current;
+      // Only count if the video is actively playing
+      if (v && !v.paused && !v.ended) {
+        watchTimeRef.current += 5;
+        
+        // Send ping every 30 seconds
+        if (watchTimeRef.current >= 30) {
+          const secs = watchTimeRef.current;
+          watchTimeRef.current = 0;
+          fetch("/api/watch-time", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId, videoId: post.id, creatorId: post.creatorId, seconds: secs }),
+          }).catch(() => {});
+        }
+      }
+    }, 5000);
+
+    return () => {
+      clearInterval(interval);
+      if (watchTimeRef.current > 0) {
+        fetch("/api/watch-time", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId, videoId: post.id, creatorId: post.creatorId, seconds: watchTimeRef.current }),
+          keepalive: true,
+        }).catch(() => {});
+        watchTimeRef.current = 0;
+      }
+    };
+  }, [isActivePlaying, userId, post.id, post.creatorId]);
+  // --------------------------
+
   const pauseAllOthers = (thisVideo: HTMLVideoElement) => {
     const all = document.querySelectorAll<HTMLVideoElement>("video");
     all.forEach((el) => {
@@ -367,7 +388,6 @@ function PostCard({
     });
   };
 
-  // Play when active, pause when not
   useEffect(() => {
     if (!hasVideo) return;
     const v = videoRef.current;
@@ -388,7 +408,6 @@ function PostCard({
     const v = videoRef.current;
     if (!v) return;
     if (v.paused) {
-      // Only this video should play
       pauseAllOthers(v);
       v.play().catch(() => {});
       setPlaying(true);
@@ -419,7 +438,6 @@ function PostCard({
       className="bg-black border-b border-white/10 cursor-pointer"
     >
       <div className="flex gap-3 p-3">
-        {/* Left Column - Avatar */}
         <div className="flex-shrink-0">
           {author.href ? (
             <Link href={author.href}>
@@ -442,9 +460,7 @@ function PostCard({
           )}
         </div>
 
-        {/* Right Column - Content */}
         <div className="flex-1 min-w-0">
-          {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1 text-sm truncate">
               {author.href ? (
@@ -459,7 +475,6 @@ function PostCard({
               <span className="text-white/50">·</span>
               <span className="text-white/50">{timeAgo(post.createdAt)}</span>
             </div>
-            {/* Three dot menu */}
             <div className="relative">
               <button
                 onClick={(e) => { e.stopPropagation(); setMenuOpen((v) => !v); }}
@@ -486,14 +501,12 @@ function PostCard({
             </div>
           </div>
 
-          {/* Content Text */}
           {post.description && (
             <p className="text-[15px] text-white whitespace-pre-wrap mt-1 mb-2 leading-relaxed">
               {post.description}
             </p>
           )}
 
-          {/* Media */}
           <div className="mt-2 rounded-2xl overflow-hidden border border-white/10">
             {hasVideo && (
               <div className="relative bg-black w-full">
@@ -542,23 +555,18 @@ function PostCard({
             )}
           </div>
 
-          {/* Action Bar */}
           <div className="flex items-center justify-between mt-3 -ml-2 pr-2">
-            {/* 1. Likes */}
             <div className="flex items-center text-white/50 hover:text-red-500 group transition">
               <LikeButton videoId={post.id} size={20} showCount />
             </div>
 
-            {/* 2. Comments */}
             <button onClick={onOpenComments} className="flex items-center gap-1 text-white/50 hover:text-blue-400 group transition">
               <div className="p-2 rounded-full group-hover:bg-blue-400/10"><MessageCircle size={20} /></div>
               <span className="text-xs font-medium"><CommentCountInline videoId={post.id} /></span>
             </button>
 
-            {/* 2.5. Repost */}
             <RepostButton postId={post.id} />
 
-            {/* 3. Views */}
             <div className="flex items-center gap-1 text-white/50 hover:text-blue-400 group transition">
               <div className="p-2 rounded-full group-hover:bg-blue-400/10">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -568,17 +576,14 @@ function PostCard({
               <span className="text-xs font-medium"><ViewCount videoId={post.id} showIcon={false} /></span>
             </div>
 
-            {/* 4. Share Paper Plane (Internal) */}
             <div className="flex items-center gap-1 text-white/50 hover:text-green-400 group transition">
               <ShareReelTrigger videoId={post.id} videoTitle={post.title || ""} />
             </div>
 
-            {/* 5. External Share (Arrow Up Box) */}
             <button onClick={handleExternalShare} className="flex items-center text-white/50 hover:text-blue-400 group transition">
               <div className="p-2 rounded-full group-hover:bg-blue-400/10"><Share size={20} /></div>
             </button>
 
-            {/* 6. Bookmark Plus */}
             <div className="flex items-center text-white/50 hover:text-blue-400 group transition">
               <div className="p-2 rounded-full group-hover:bg-blue-400/10">
                 <SaveButton videoId={post.id} variant="icon" />
@@ -598,7 +603,6 @@ function PostCard({
   );
 }
 
-// Inline share trigger
 function ShareReelTrigger({ videoId, videoTitle }: { videoId: number; videoTitle: string }) {
   const [open, setOpen] = useState(false);
   return (
@@ -620,8 +624,6 @@ function ShareReelTrigger({ videoId, videoTitle }: { videoId: number; videoTitle
   );
 }
 
-// ============================================================
-// Inline comment count
 function CommentCountInline({ videoId }: { videoId: number }) {
   const [count, setCount] = useState<number | null>(null);
 
@@ -643,7 +645,6 @@ function CommentCountInline({ videoId }: { videoId: number }) {
   return <>{count.toLocaleString()}</>;
 }
 
-// Repost button — toggle for the current user
 function RepostButton({ postId }: { postId: number }) {
   const [reposted, setReposted] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -698,4 +699,3 @@ function RepostButton({ postId }: { postId: number }) {
     </button>
   );
 }
-
