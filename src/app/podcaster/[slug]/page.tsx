@@ -3,12 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { Play, Eye, Bell , Search} from "lucide-react";
+import { Play, Eye, Bell, Search, Lock } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import FollowButton from "@/components/FollowButton";
 import VerifiedBadge from "@/components/VerifiedBadge";
-import { getCachedCreators } from "@/lib/cache";
+import { getCachedCreators, getCachedUser } from "@/lib/cache";
 
 type Video = {
   id: number;
@@ -23,6 +23,7 @@ type Video = {
   creatorId?: number | null;
   createdAt?: string;
   viewCount?: number;
+  is_premium?: boolean;
 };
 
 type Creator = {
@@ -33,6 +34,7 @@ type Creator = {
   heroBackdropUrl?: string;
   description: string;
   isVerified?: boolean;
+  ownerUserId?: string;
 };
 
 type Tab = "home" | "podcasts" | "documentaries" | "videos";
@@ -61,6 +63,12 @@ export default function PodcasterProfilePage() {
   const [bioExpanded, setBioExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Premium State
+  const [premiumData, setPremiumData] = useState<{ enabled: boolean; price_cents: number } | null>(null);
+  const [hasSub, setHasSub] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+
   useEffect(() => {
     getCachedCreators()
       .then((all) => {
@@ -85,6 +93,26 @@ export default function PodcasterProfilePage() {
           .then((d) => setFollowerCount(d.count ?? 0))
           .catch(() => setFollowerCount(0));
 
+        // Fetch Premium Data & Subscription Status
+        if (found.ownerUserId) {
+          fetch(`/api/profile?user_id=${found.ownerUserId}`)
+            .then((r) => r.json())
+            .then((d) => {
+              if (d.profile?.premium_enabled) {
+                setPremiumData({ enabled: true, price_cents: d.profile.premium_price_cents });
+              }
+            });
+
+          getCachedUser().then((u) => {
+            if (u) {
+              setUserId(u.id);
+              fetch(`/api/creator/check-sub?userId=${u.id}&creatorId=${found.id}`)
+                .then((r) => r.json())
+                .then((d) => setHasSub(!!d.hasSub));
+            }
+          });
+        }
+
         setLoading(false);
       })
       .catch(() => {
@@ -92,6 +120,37 @@ export default function PodcasterProfilePage() {
         setLoading(false);
       });
   }, [slug]);
+
+  const handleSubscribe = async () => {
+    if (!userId) return router.push("/login");
+    setCheckoutLoading(true);
+    try {
+      const res = await fetch("/api/stripe/creator", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, creatorId: creator?.ownerUserId }),
+      });
+      const d = await res.json();
+      if (d.url) window.location.href = d.url;
+      else alert(d.error || "Could not start checkout");
+    } catch {
+      alert("Network error");
+    } finally {
+      setCheckoutLoading(false);
+    }
+  };
+
+  const handleVideoClick = (v: Video) => {
+    if (v.is_premium && !hasSub) {
+      if (premiumData?.enabled) {
+        handleSubscribe();
+      } else {
+        alert("This is a premium video.");
+      }
+    } else {
+      router.push(`/podcast/${v.id}`);
+    }
+  };
 
   // Apply search filter first
   const searched = useMemo(() => {
@@ -112,18 +171,9 @@ export default function PodcasterProfilePage() {
     });
   }, [searched]);
 
-  const podcasts = useMemo(
-    () => sorted.filter((v) => v.type === "Podcast"),
-    [sorted]
-  );
-  const documentaries = useMemo(
-    () => sorted.filter((v) => v.type === "Documentary"),
-    [sorted]
-  );
-  const videoPosts = useMemo(
-    () => sorted.filter((v) => v.type !== "Podcast" && v.type !== "Documentary"),
-    [sorted]
-  );
+  const podcasts = useMemo(() => sorted.filter((v) => v.type === "Podcast"), [sorted]);
+  const documentaries = useMemo(() => sorted.filter((v) => v.type === "Documentary"), [sorted]);
+  const videoPosts = useMemo(() => sorted.filter((v) => v.type !== "Podcast" && v.type !== "Documentary"), [sorted]);
 
   const latest = sorted[0];
   const rest = sorted.slice(1);
@@ -205,8 +255,25 @@ export default function PodcasterProfilePage() {
                   </button>
                 )}
 
-                <div className="mt-4 flex items-center gap-2">
+                <div className="mt-4 flex flex-wrap items-center gap-2">
                   <FollowButton creatorId={creator?.id as number} />
+
+                  {/* Premium Subscribe Button */}
+                  {premiumData?.enabled && (
+                    hasSub ? (
+                      <div className="bg-green-500/20 text-green-400 border border-green-500/30 px-3 py-1.5 rounded-full text-xs font-bold">
+                        ✓ Subscribed
+                      </div>
+                    ) : (
+                      <button
+                        onClick={handleSubscribe}
+                        disabled={checkoutLoading}
+                        className="bg-yellow-500 hover:bg-yellow-400 text-black px-4 py-1.5 rounded-full text-xs font-bold transition flex items-center gap-1.5 disabled:opacity-50"
+                      >
+                        {checkoutLoading ? "Loading..." : `Subscribe $${(premiumData.price_cents / 100).toFixed(2)}/mo`}
+                      </button>
+                    )
+                  )}
                   
                   {/* Compact search bar next to follow */}
                   <div className="relative w-40">
@@ -243,7 +310,7 @@ export default function PodcasterProfilePage() {
 
           {/* Tab content */}
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-6 md:py-8">
-                        {tab === "home" && (
+            {tab === "home" && (
               <div className="space-y-10">
                 {/* 1. Latest Drop */}
                 {latest && (
@@ -254,18 +321,25 @@ export default function PodcasterProfilePage() {
                     </h2>
                     <div
                       className="flex flex-col md:flex-row gap-4 md:gap-6 cursor-pointer group bg-[#0f0f12] rounded-xl p-3 border border-white/5 hover:border-white/10 transition"
-                      onClick={() => router.push(`/podcast/${latest.id}`)}
+                      onClick={() => handleVideoClick(latest)}
                     >
                       <div className="w-full md:w-80 aspect-video rounded-lg overflow-hidden bg-black flex-shrink-0 relative">
                         {latest.posterUrl ? (
-                          <img src={latest.posterUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition" />
+                          <img src={latest.posterUrl} alt="" className={`w-full h-full object-cover group-hover:scale-105 transition ${latest.is_premium && !hasSub ? 'blur-sm opacity-60' : ''}`} />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center"><Play size={40} className="text-white/30" /></div>
                         )}
                         <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition">
-                          <div className="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                            <Play size={24} fill="black" className="text-black ml-0.5" />
-                          </div>
+                          {latest.is_premium && !hasSub ? (
+                            <div className="flex flex-col items-center justify-center">
+                               <Lock size={32} className="text-yellow-500 mb-1" />
+                               <span className="text-xs font-bold text-yellow-500 uppercase tracking-wider">Premium</span>
+                            </div>
+                          ) : (
+                            <div className="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                              <Play size={24} fill="black" className="text-black ml-0.5" />
+                            </div>
+                          )}
                         </div>
                       </div>
                       <div className="flex-1 min-w-0 py-2">
@@ -291,13 +365,17 @@ export default function PodcasterProfilePage() {
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {podcasts.slice(0, 4).map(v => (
-                         <div key={v.id} onClick={() => router.push(`/podcast/${v.id}`)} className="cursor-pointer group">
+                         <div key={v.id} onClick={() => handleVideoClick(v)} className="cursor-pointer group">
                            <div className="aspect-video rounded-lg overflow-hidden bg-black mb-2 relative">
-                             <img src={v.posterUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition" />
+                             <img src={v.posterUrl} alt="" className={`w-full h-full object-cover group-hover:scale-105 transition ${v.is_premium && !hasSub ? 'blur-sm opacity-60' : ''}`} />
                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition flex items-center justify-center">
-                                <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                                  <Play size={16} fill="black" className="text-black ml-0.5" />
-                                </div>
+                                {v.is_premium && !hasSub ? (
+                                  <Lock size={24} className="text-yellow-500" />
+                                ) : (
+                                  <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                                    <Play size={16} fill="black" className="text-black ml-0.5" />
+                                  </div>
+                                )}
                              </div>
                            </div>
                            <p className="text-sm font-semibold line-clamp-1">{v.title}</p>
@@ -316,13 +394,17 @@ export default function PodcasterProfilePage() {
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {documentaries.slice(0, 4).map(v => (
-                         <div key={v.id} onClick={() => router.push(`/podcast/${v.id}`)} className="cursor-pointer group">
+                         <div key={v.id} onClick={() => handleVideoClick(v)} className="cursor-pointer group">
                            <div className="aspect-video rounded-lg overflow-hidden bg-black mb-2 relative">
-                             <img src={v.posterUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition" />
+                             <img src={v.posterUrl} alt="" className={`w-full h-full object-cover group-hover:scale-105 transition ${v.is_premium && !hasSub ? 'blur-sm opacity-60' : ''}`} />
                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition flex items-center justify-center">
-                                <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                                  <Play size={16} fill="black" className="text-black ml-0.5" />
-                                </div>
+                                {v.is_premium && !hasSub ? (
+                                  <Lock size={24} className="text-yellow-500" />
+                                ) : (
+                                  <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                                    <Play size={16} fill="black" className="text-black ml-0.5" />
+                                  </div>
+                                )}
                              </div>
                            </div>
                            <p className="text-sm font-semibold line-clamp-1">{v.title}</p>
@@ -340,7 +422,7 @@ export default function PodcasterProfilePage() {
               </div>
             )}
 
-{tab === "podcasts" && (
+            {tab === "podcasts" && (
               <>
                 {podcasts.length === 0 ? (
                   <div className="text-center py-16">
@@ -350,28 +432,21 @@ export default function PodcasterProfilePage() {
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {podcasts.map((v) => (
-                      <div
-                        key={v.id}
-                        onClick={() => router.push(`/podcast/${v.id}`)}
-                        className="cursor-pointer group"
-                      >
+                      <div key={v.id} onClick={() => handleVideoClick(v)} className="cursor-pointer group">
                         <div className="aspect-video rounded-xl overflow-hidden bg-black mb-2 relative">
                           {v.posterUrl ? (
-                            <img
-                              src={v.posterUrl}
-                              alt=""
-                              className="w-full h-full object-cover group-hover:scale-105 transition"
-                              loading="lazy"
-                            />
+                            <img src={v.posterUrl} alt="" className={`w-full h-full object-cover group-hover:scale-105 transition ${v.is_premium && !hasSub ? 'blur-sm opacity-60' : ''}`} loading="lazy" />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <Play size={24} className="text-white/30" />
-                            </div>
+                            <div className="w-full h-full flex items-center justify-center"><Play size={24} className="text-white/30" /></div>
                           )}
                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition flex items-center justify-center">
-                            <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                              <Play size={20} fill="black" className="text-black ml-0.5" />
-                            </div>
+                            {v.is_premium && !hasSub ? (
+                              <Lock size={24} className="text-yellow-500" />
+                            ) : (
+                              <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                                <Play size={20} fill="black" className="text-black ml-0.5" />
+                              </div>
+                            )}
                           </div>
                         </div>
                         <p className="text-sm font-semibold line-clamp-2 mb-1">{v.title}</p>
@@ -395,28 +470,21 @@ export default function PodcasterProfilePage() {
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {documentaries.map((v) => (
-                      <div
-                        key={v.id}
-                        onClick={() => router.push(`/podcast/${v.id}`)}
-                        className="cursor-pointer group"
-                      >
+                      <div key={v.id} onClick={() => handleVideoClick(v)} className="cursor-pointer group">
                         <div className="aspect-video rounded-xl overflow-hidden bg-black mb-2 relative">
                           {v.posterUrl ? (
-                            <img
-                              src={v.posterUrl}
-                              alt=""
-                              className="w-full h-full object-cover group-hover:scale-105 transition"
-                              loading="lazy"
-                            />
+                            <img src={v.posterUrl} alt="" className={`w-full h-full object-cover group-hover:scale-105 transition ${v.is_premium && !hasSub ? 'blur-sm opacity-60' : ''}`} loading="lazy" />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <Play size={24} className="text-white/30" />
-                            </div>
+                            <div className="w-full h-full flex items-center justify-center"><Play size={24} className="text-white/30" /></div>
                           )}
                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition flex items-center justify-center">
-                            <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                              <Play size={20} fill="black" className="text-black ml-0.5" />
-                            </div>
+                            {v.is_premium && !hasSub ? (
+                              <Lock size={24} className="text-yellow-500" />
+                            ) : (
+                              <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                                <Play size={20} fill="black" className="text-black ml-0.5" />
+                              </div>
+                            )}
                           </div>
                         </div>
                         <p className="text-sm font-semibold line-clamp-2 mb-1">{v.title}</p>
@@ -440,28 +508,21 @@ export default function PodcasterProfilePage() {
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {videoPosts.map((v) => (
-                      <div
-                        key={v.id}
-                        onClick={() => router.push(`/podcast/${v.id}`)}
-                        className="cursor-pointer group"
-                      >
+                      <div key={v.id} onClick={() => handleVideoClick(v)} className="cursor-pointer group">
                         <div className="aspect-video rounded-xl overflow-hidden bg-black mb-2 relative">
                           {v.posterUrl ? (
-                            <img
-                              src={v.posterUrl}
-                              alt=""
-                              className="w-full h-full object-cover group-hover:scale-105 transition"
-                              loading="lazy"
-                            />
+                            <img src={v.posterUrl} alt="" className={`w-full h-full object-cover group-hover:scale-105 transition ${v.is_premium && !hasSub ? 'blur-sm opacity-60' : ''}`} loading="lazy" />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <Play size={24} className="text-white/30" />
-                            </div>
+                            <div className="w-full h-full flex items-center justify-center"><Play size={24} className="text-white/30" /></div>
                           )}
                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition flex items-center justify-center">
-                            <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                              <Play size={20} fill="black" className="text-black ml-0.5" />
-                            </div>
+                            {v.is_premium && !hasSub ? (
+                              <Lock size={24} className="text-yellow-500" />
+                            ) : (
+                              <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                                <Play size={20} fill="black" className="text-black ml-0.5" />
+                              </div>
+                            )}
                           </div>
                         </div>
                         <p className="text-sm font-semibold line-clamp-2 mb-1">{v.title}</p>
