@@ -10,7 +10,7 @@ import {
   Settings,
   LogOut,
   ChevronLeft,
-  DollarSign,
+  DollarSign, ShoppingBag,
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { clearUserCache } from "@/lib/cache";
@@ -28,6 +28,7 @@ const NAV = [
   { label: "Episodes", path: "/studio/episodes", icon: Video },
   { label: "Upload", path: "/studio/upload", icon: Upload },
   { label: "Premium", path: "/studio/premium", icon: DollarSign },
+  { label: "Shop", path: "/studio/shop", icon: ShoppingBag },
   { label: "Settings", path: "/studio/settings", icon: Settings },
 ];
 
