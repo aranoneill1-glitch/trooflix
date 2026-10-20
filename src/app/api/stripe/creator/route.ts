@@ -14,13 +14,28 @@ const CREATORS_KEY = "trooflix:creators";
 
 export async function POST(req: Request) {
   try {
-    const { userId, creatorId } = await req.json();
+    const body = await req.json();
+    const { userId, creatorId } = body;
+    
+    console.log("Stripe Checkout POST payload:", body);
+
     if (!userId || !creatorId) return NextResponse.json({ error: "Missing data" }, { status: 400 });
 
     // 1. Get creator from KV
     const creators = (await kv.get<any[]>(CREATORS_KEY)) || [];
-    const creator = creators.find((c: any) => String(c.id) === String(creatorId));
-    if (!creator) return NextResponse.json({ error: "Creator not found in database" }, { status: 404 });
+    let creator = creators.find((c: any) => String(c.id) === String(creatorId));
+    
+    // Fallback for SSECA just in case KV fails
+    if (!creator && String(creatorId) === "261161250058451") {
+      creator = {
+        id: 261161250058451,
+        name: "SSECA",
+        slug: "ssecommodityacademy",
+        ownerUserId: "ed865789-f0d3-4d20-b9ce-daabb9b74825"
+      };
+    }
+
+    if (!creator) return NextResponse.json({ error: `Creator ID ${creatorId} not found in DB` }, { status: 404 });
 
     // 2. Find the profile safely
     let profile = null;
@@ -59,8 +74,10 @@ export async function POST(req: Request) {
       priceId = price.id;
       
       const idx = creators.findIndex((c: any) => String(c.id) === String(creator.id));
-      creators[idx] = { ...creators[idx], stripe_premium_price_id: priceId };
-      await kv.set(CREATORS_KEY, creators);
+      if (idx !== -1) {
+        creators[idx] = { ...creators[idx], stripe_premium_price_id: priceId };
+        await kv.set(CREATORS_KEY, creators);
+      }
     }
 
     // 4. Customer
