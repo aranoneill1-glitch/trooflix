@@ -28,6 +28,48 @@ function getSubscriptionId(invoice: Stripe.Invoice): string | null {
   return typeof id === "string" ? id : id.id;
 }
 
+async function upsertCreatorSubscription(subscription: Stripe.Subscription) {
+  const userId = subscription.metadata?.userId;
+  const creatorIdRaw = subscription.metadata?.creatorId;
+  if (!userId || !creatorIdRaw) {
+    console.warn("[stripe] creator sub missing metadata", subscription.id);
+    return;
+  }
+  const creatorId = Number(creatorIdRaw);
+  if (!Number.isFinite(creatorId)) {
+    console.error("[stripe] creatorId not numeric:", creatorIdRaw);
+    return;
+  }
+
+  const periodEnd = getPeriodEnd(subscription);
+  const priceCents = subscription.items.data[0]?.price?.unit_amount ?? 0;
+
+  const { error } = await supabaseAdmin.from("creator_subscriptions").upsert(
+    {
+      subscriber_user_id: userId,
+      creator_id: creatorId,
+      stripe_subscription_id: subscription.id,
+      stripe_customer_id: subscription.customer as string,
+      stripe_price_id: subscription.items.data[0]?.price?.id ?? "",
+      status: subscription.status,
+      price_cents: priceCents,
+      current_period_end: new Date(periodEnd * 1000).toISOString(),
+      cancel_at_period_end: subscription.cancel_at_period_end,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "stripe_subscription_id" }
+  );
+
+  if (error) {
+    console.error("[stripe] creator_subscriptions upsert failed:", error);
+    throw error;
+  }
+
+  console.log(
+    `[stripe] creator sub upserted: sub=${subscription.id} user=${userId} creator=${creatorId} status=${subscription.status}`
+  );
+}
+
 export async function POST(req: Request) {
   const body = await req.text();
   const signature = req.headers.get("stripe-signature");
@@ -42,7 +84,6 @@ export async function POST(req: Request) {
   }
 
   try {
-    // ============ PAID INVOICE → grant access ============
     if (event.type === "invoice.paid" || event.type === "invoice.payment_succeeded") {
       const invoice = event.data.object as Stripe.Invoice;
       const subscriptionId = getSubscriptionId(invoice);
@@ -51,13 +92,18 @@ export async function POST(req: Request) {
 
       const subscription = await stripe.subscriptions.retrieve(subscriptionId);
       const userId = subscription.metadata?.userId;
-      const type = subscription.metadata?.type; // "trooflix_pass" | "podcaster"
+      const type = subscription.metadata?.type;
       if (!userId) return new NextResponse("No userId", { status: 200 });
+
+      if (type === "creator") {
+        await upsertCreatorSubscription(subscription);
+        console.log(`[stripe] ${event.type}: creator sub user=${userId} creator=${subscription.metadata?.creatorId} amount=${invoice.amount_paid}`);
+        return new NextResponse("OK", { status: 200 });
+      }
 
       const periodEnd = getPeriodEnd(subscription);
       const currentPeriodEnd = new Date(periodEnd * 1000);
 
-      // If upgrading Pass → Podcaster, cancel the old Pass subscription
       if (type === "podcaster") {
         const { data: profile } = await supabaseAdmin
           .from("profiles")
@@ -65,7 +111,6 @@ export async function POST(req: Request) {
           .eq("user_id", userId)
           .maybeSingle();
 
-        // Old pass sub still exists and is different → cancel it with prorate
         if (profile?.stripe_subscription_id && profile.stripe_subscription_id !== subscription.id) {
           try {
             await stripe.subscriptions.cancel(profile.stripe_subscription_id, {
@@ -77,13 +122,12 @@ export async function POST(req: Request) {
           }
         }
 
-        // Set podcaster
         await supabaseAdmin
           .from("profiles")
           .update({
             tier: "podcaster",
             is_verified: true,
-            has_pass: true, // podcasters watch everything too
+            has_pass: true,
             podcaster_subscription_id: subscription.id,
             podcaster_subscription_status: subscription.status,
             podcaster_expires_at: null,
@@ -92,7 +136,6 @@ export async function POST(req: Request) {
           })
           .eq("user_id", userId);
       } else {
-        // trooflix_pass
         await supabaseAdmin
           .from("profiles")
           .update({
@@ -107,7 +150,6 @@ export async function POST(req: Request) {
           .eq("user_id", userId);
       }
 
-      // Log subscription
       await supabaseAdmin.from("subscriptions").upsert(
         {
           user_id: userId,
@@ -126,12 +168,38 @@ export async function POST(req: Request) {
       console.log(`[stripe] ${event.type}: user=${userId} type=${type} amount=${invoice.amount_paid}`);
     }
 
-    // ============ SUBSCRIPTION CANCELLED → grace period ============
+    if (event.type === "customer.subscription.updated") {
+      const subscription = event.data.object as Stripe.Subscription;
+      const type = subscription.metadata?.type;
+
+      if (type === "creator") {
+        await upsertCreatorSubscription(subscription);
+        console.log(`[stripe] creator sub updated: sub=${subscription.id} status=${subscription.status}`);
+      }
+    }
+
     if (event.type === "customer.subscription.deleted") {
       const subscription = event.data.object as Stripe.Subscription;
       const userId = subscription.metadata?.userId;
       const type = subscription.metadata?.type;
       if (!userId) return new NextResponse("No userId", { status: 200 });
+
+      if (type === "creator") {
+        const { error } = await supabaseAdmin
+          .from("creator_subscriptions")
+          .update({
+            status: "canceled",
+            cancel_at_period_end: subscription.cancel_at_period_end,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("stripe_subscription_id", subscription.id);
+        if (error) {
+          console.error("[stripe] creator_subscriptions cancel update failed:", error);
+          throw error;
+        }
+        console.log(`[stripe] creator sub canceled: sub=${subscription.id} user=${userId}`);
+        return new NextResponse("OK", { status: 200 });
+      }
 
       const periodEnd = getPeriodEnd(subscription);
       const currentPeriodEnd = new Date(periodEnd * 1000);
