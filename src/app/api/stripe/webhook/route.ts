@@ -13,6 +13,21 @@ const supabaseAdmin = createServerClient(
 
 const GRACE_PERIOD_DAYS = 14;
 
+function getPeriodEnd(sub: Stripe.Subscription): number {
+  const firstItem = sub.items.data[0];
+  return (firstItem as any)?.current_period_end
+    ?? (sub as any).current_period_end
+    ?? Math.floor(Date.now() / 1000);
+}
+
+function getSubscriptionId(invoice: Stripe.Invoice): string | null {
+  const id = (invoice as any).subscription
+    || (invoice.parent as any)?.subscription_details?.subscription
+    || null;
+  if (!id) return null;
+  return typeof id === "string" ? id : id.id;
+}
+
 export async function POST(req: Request) {
   const body = await req.text();
   const signature = req.headers.get("stripe-signature");
@@ -27,49 +42,72 @@ export async function POST(req: Request) {
   }
 
   try {
-    // === GRANT ACCESS: Only on successfully paid invoice ===
+    // ============ PAID INVOICE → grant access ============
     if (event.type === "invoice.paid" || event.type === "invoice.payment_succeeded") {
       const invoice = event.data.object as Stripe.Invoice;
-      // Stripe v2026: subscription lives in invoice.parent.subscription_details
-      const subscriptionId =
-        (invoice as any).subscription ||
-        (invoice.parent as any)?.subscription_details?.subscription ||
-        null;
+      const subscriptionId = getSubscriptionId(invoice);
+      if (!subscriptionId) return new NextResponse("No subscription", { status: 200 });
+      if (invoice.amount_paid === 0) return new NextResponse("No payment", { status: 200 });
 
-      if (!subscriptionId) return new NextResponse("No subscription on invoice", { status: 200 });
-      if (invoice.amount_paid === 0) return new NextResponse("No payment made", { status: 200 });
-
-      const subscription = await stripe.subscriptions.retrieve(
-        typeof subscriptionId === "string" ? subscriptionId : subscriptionId.id
-      );
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId);
       const userId = subscription.metadata?.userId;
+      const type = subscription.metadata?.type; // "trooflix_pass" | "podcaster"
       if (!userId) return new NextResponse("No userId", { status: 200 });
 
-      const firstItem = subscription.items.data[0];
-      const periodEndUnix = (firstItem as any)?.current_period_end
-        ?? (subscription as any).current_period_end
-        ?? Math.floor(Date.now() / 1000);
-      const currentPeriodEnd = new Date(periodEndUnix * 1000);
+      const periodEnd = getPeriodEnd(subscription);
+      const currentPeriodEnd = new Date(periodEnd * 1000);
 
-      // Grant access
-      const { error: updateError } = await supabaseAdmin
-        .from("profiles")
-        .update({
-          has_pass: true,
-          pass_expires_at: null,
-          stripe_subscription_id: subscription.id,
-          stripe_customer_id: subscription.customer as string,
-          subscription_status: subscription.status,
-          tier: "pro",
-          is_verified: true,
-        })
-        .eq("user_id", userId);
+      // If upgrading Pass → Podcaster, cancel the old Pass subscription
+      if (type === "podcaster") {
+        const { data: profile } = await supabaseAdmin
+          .from("profiles")
+          .select("stripe_subscription_id, pass_expires_at, has_pass")
+          .eq("user_id", userId)
+          .maybeSingle();
 
-      if (updateError) {
-        console.error(`[stripe] DB update FAILED for ${userId}:`, updateError);
-        return new NextResponse("DB update failed", { status: 500 });
+        // Old pass sub still exists and is different → cancel it with prorate
+        if (profile?.stripe_subscription_id && profile.stripe_subscription_id !== subscription.id) {
+          try {
+            await stripe.subscriptions.cancel(profile.stripe_subscription_id, {
+              prorate: true,
+            } as any);
+            console.log(`[stripe] cancelled old Pass sub ${profile.stripe_subscription_id}`);
+          } catch (err) {
+            console.warn("Could not cancel old Pass sub:", err);
+          }
+        }
+
+        // Set podcaster
+        await supabaseAdmin
+          .from("profiles")
+          .update({
+            tier: "podcaster",
+            is_verified: true,
+            has_pass: true, // podcasters watch everything too
+            podcaster_subscription_id: subscription.id,
+            podcaster_subscription_status: subscription.status,
+            podcaster_expires_at: null,
+            subscription_status: subscription.status,
+            stripe_subscription_id: subscription.id,
+          })
+          .eq("user_id", userId);
+      } else {
+        // trooflix_pass
+        await supabaseAdmin
+          .from("profiles")
+          .update({
+            tier: "pro",
+            is_verified: true,
+            has_pass: true,
+            pass_expires_at: null,
+            stripe_subscription_id: subscription.id,
+            stripe_customer_id: subscription.customer as string,
+            subscription_status: subscription.status,
+          })
+          .eq("user_id", userId);
       }
 
+      // Log subscription
       await supabaseAdmin.from("subscriptions").upsert(
         {
           user_id: userId,
@@ -79,52 +117,50 @@ export async function POST(req: Request) {
           status: subscription.status,
           current_period_end: currentPeriodEnd.toISOString(),
           cancel_at_period_end: subscription.cancel_at_period_end,
+          subscription_type: type === "podcaster" ? "podcaster" : "pass",
           updated_at: new Date().toISOString(),
         },
         { onConflict: "stripe_subscription_id" }
       );
 
-      console.log(`[stripe] invoice.paid: user=${userId} amount=${invoice.amount_paid} status=${subscription.status}`);
+      console.log(`[stripe] ${event.type}: user=${userId} type=${type} amount=${invoice.amount_paid}`);
     }
 
-    // === REVOKE / GRACE: On subscription cancellation ===
+    // ============ SUBSCRIPTION CANCELLED → grace period ============
     if (event.type === "customer.subscription.deleted") {
       const subscription = event.data.object as Stripe.Subscription;
       const userId = subscription.metadata?.userId;
+      const type = subscription.metadata?.type;
       if (!userId) return new NextResponse("No userId", { status: 200 });
 
-      const firstItem = subscription.items.data[0];
-      const periodEndUnix = (firstItem as any)?.current_period_end
-        ?? (subscription as any).current_period_end
-        ?? Math.floor(Date.now() / 1000);
-      const currentPeriodEnd = new Date(periodEndUnix * 1000);
+      const periodEnd = getPeriodEnd(subscription);
+      const currentPeriodEnd = new Date(periodEnd * 1000);
       const graceEnd = new Date(currentPeriodEnd);
       graceEnd.setDate(graceEnd.getDate() + GRACE_PERIOD_DAYS);
 
-      await supabaseAdmin
-        .from("profiles")
-        .update({
-          has_pass: false,
-          pass_expires_at: graceEnd.toISOString(),
-          subscription_status: subscription.status,
-        })
-        .eq("user_id", userId);
+      if (type === "podcaster") {
+        await supabaseAdmin
+          .from("profiles")
+          .update({
+            has_pass: false,
+            pass_expires_at: graceEnd.toISOString(),
+            podcaster_subscription_status: "cancelled",
+            podcaster_expires_at: graceEnd.toISOString(),
+            subscription_status: "cancelled",
+          })
+          .eq("user_id", userId);
+      } else {
+        await supabaseAdmin
+          .from("profiles")
+          .update({
+            has_pass: false,
+            pass_expires_at: graceEnd.toISOString(),
+            subscription_status: "cancelled",
+          })
+          .eq("user_id", userId);
+      }
 
-      await supabaseAdmin.from("subscriptions").upsert(
-        {
-          user_id: userId,
-          stripe_subscription_id: subscription.id,
-          stripe_customer_id: subscription.customer as string,
-          price_id: subscription.items.data[0].price.id,
-          status: subscription.status,
-          current_period_end: currentPeriodEnd.toISOString(),
-          cancel_at_period_end: subscription.cancel_at_period_end,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "stripe_subscription_id" }
-      );
-
-      console.log(`[stripe] subscription.deleted: user=${userId} grace_until=${graceEnd.toISOString()}`);
+      console.log(`[stripe] cancelled: user=${userId} type=${type} grace_until=${graceEnd.toISOString()}`);
     }
 
     return new NextResponse("OK", { status: 200 });
