@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import {Camera,
+import { Camera,
   Grid3x3,
   Play,
   Eye,
@@ -23,8 +23,7 @@ import {Camera,
   BarChart3,
   List,
   Sparkles,
-  Pencil,
-} from "lucide-react";
+  Pencil, ShoppingBag } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import VerifiedBadge from "@/components/VerifiedBadge";
@@ -1079,6 +1078,15 @@ export default function ProfilePage() {
                     <span className="font-semibold">Podcaster Studio</span>
                   </Link>
                 )}
+                <Link
+                  href="/orders"
+                  onClick={() => setDashOpen(false)}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition text-white/80 text-left"
+                >
+                  <ShoppingBag size={18} />
+                  <span className="font-semibold">My Orders</span>
+                </Link>
+                
                 {profile?.has_pass === true ? (
                   <button
                     onClick={() => { setDashOpen(false); handleManageSubscription(); }}

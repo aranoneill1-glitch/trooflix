@@ -1,0 +1,95 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { ChevronLeft, Package, CheckCircle, Truck } from "lucide-react";
+import { getCachedUser } from "@/lib/cache";
+
+type Order = {
+  id: number;
+  amount_cents: number;
+  status: string;
+  shipping_address: string;
+  shipping_city: string;
+  shipping_postal_code: string;
+  shipping_country: string;
+  created_at: string;
+  product: { name: string; image_url: string } | null;
+  creator_name: string;
+};
+
+export default function MyOrders() {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getCachedUser().then((user) => {
+      if (!user) return;
+      fetch(`/api/user/orders?userId=${user.id}`)
+        .then((r) => r.json())
+        .then((d) => setOrders(d.orders || []))
+        .catch(() => setOrders([]))
+        .finally(() => setLoading(false));
+    });
+  }, []);
+
+  if (loading) return <div className="min-h-screen bg-black text-white p-8 text-center">Loading…</div>;
+
+  return (
+    <div className="min-h-screen bg-black text-white p-4 md:p-8 max-w-4xl mx-auto">
+      <Link href="/profile" className="inline-flex items-center gap-1.5 text-sm text-white/50 hover:text-white mb-6 transition">
+        <ChevronLeft size={16} /> Back to profile
+      </Link>
+
+      <h1 className="text-2xl font-black mb-1">My Orders</h1>
+      <p className="text-white/50 text-sm mb-6">Track your merch purchases.</p>
+
+      <div className="space-y-4">
+        {orders.length === 0 ? (
+          <div className="text-center py-16 bg-[#141418] border border-white/5 rounded-xl">
+            <Package size={32} className="mx-auto text-white/20 mb-3" />
+            <p className="text-white/50 text-sm">You haven't ordered anything yet.</p>
+          </div>
+        ) : (
+          orders.map(o => (
+            <div key={o.id} className="bg-[#141418] border border-white/5 rounded-xl p-5 flex flex-col md:flex-row gap-6">
+              
+              <div className="flex gap-4 flex-1">
+                <div className="w-20 h-20 rounded-lg bg-black flex-shrink-0 overflow-hidden">
+                  {o.product?.image_url ? (
+                    <img src={o.product.image_url} className="w-full h-full object-cover" />
+                  ) : (
+                    <Package size={24} className="m-auto text-white/20 mt-7" />
+                  )}
+                </div>
+                <div>
+                  <p className="text-xs text-white/50 mb-1">From {o.creator_name}</p>
+                  <h3 className="font-bold text-lg">{o.product?.name || "Unknown Product"}</h3>
+                  <p className="text-white/60 text-sm">${(o.amount_cents / 100).toFixed(2)}</p>
+                  <p className="text-xs text-white/40 mt-2">Ordered on {new Date(o.created_at).toLocaleDateString()}</p>
+                </div>
+              </div>
+
+              <div className="flex flex-col md:items-end justify-between border-t md:border-t-0 md:border-l border-white/10 pt-4 md:pt-0 md:pl-6">
+                <div className="mb-4 md:mb-0 text-right">
+                  <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full ${
+                    o.status === "shipped" ? "bg-green-500/10 text-green-400" : "bg-yellow-500/10 text-yellow-400"
+                  }`}>
+                    {o.status === "shipped" ? <><Truck size={14} /> Shipped</> : <><CheckCircle size={14} /> Processing</>}
+                  </span>
+                </div>
+                <div className="text-sm text-white/70 md:text-right">
+                  <p className="font-semibold text-white/90">Shipping to:</p>
+                  <p>{o.shipping_address}</p>
+                  <p>{o.shipping_city}, {o.shipping_postal_code}</p>
+                  <p>{o.shipping_country}</p>
+                </div>
+              </div>
+
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
