@@ -17,6 +17,7 @@ type Video = {
   year: number;
   rating: string;
   creatorId?: number | null;
+  uploaderUserId?: string | null;
 };
 
 type Creator = {
@@ -61,6 +62,8 @@ export default function VideosPage() {
   });
   const [status, setStatus] = useState("");
   const [heroes, setHeroes] = useState<{ main?: number; docufilm?: number; podcast?: number }>({});
+  const [filter, setFilter] = useState<"all" | "home" | "feed" | "podcasts" | "documentaries" | "movies" | "reels" | "images" | "troos" | "no_poster">("all");
+  const [search, setSearch] = useState("");
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<string | null>(null);
   const [progress, setProgress] = useState<number>(0);
@@ -307,6 +310,43 @@ export default function VideosPage() {
     </>
   );
 
+  // Compute filtered videos based on current filter + search
+
+  // Filter + search
+  const filteredVideos = videos.filter((v) => {
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      const matchesTitle = (v.title || "").toLowerCase().includes(q);
+      const matchesCategory = (v.category || "").toLowerCase().includes(q);
+      if (!matchesTitle && !matchesCategory) return false;
+    }
+
+    switch (filter) {
+      case "all":
+        return true;
+      case "home":
+        return (v.type === "Documentary" || v.type === "Movie" || v.type === "Podcast") && !v.uploaderUserId;
+      case "feed":
+        return !!v.uploaderUserId || v.type === "Reel" || v.type === "Image" || v.type === "Troo";
+      case "podcasts":
+        return v.type === "Podcast";
+      case "documentaries":
+        return v.type === "Documentary";
+      case "movies":
+        return v.type === "Movie";
+      case "reels":
+        return v.type === "Reel";
+      case "images":
+        return v.type === "Image";
+      case "troos":
+        return v.type === "Troo";
+      case "no_poster":
+        return !v.posterUrl || v.posterUrl.startsWith("/api/poster");
+      default:
+        return true;
+    }
+  });
+
   return (
     <div className="p-4 md:p-8 max-w-4xl">
       <div className="mb-8">
@@ -453,28 +493,100 @@ export default function VideosPage() {
         </div>
       </form>
 
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-bold">Catalog ({videos.length})</h2>
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+        <div>
+          <h2 className="text-lg font-bold">Catalog ({filteredVideos.length}{filter !== "all" || search ? ` of ${videos.length}` : ""})</h2>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
           {regenStatus && <span className="text-xs text-white/60">{regenStatus}</span>}
           <button
             type="button"
             onClick={regenerateThumbnails}
             disabled={regenerating}
-            className="bg-white/10 hover:bg-white/20 disabled:opacity-50 text-sm font-semibold px-4 py-2 rounded transition"
+            className="bg-white/10 hover:bg-white/20 disabled:opacity-50 text-xs md:text-sm font-semibold px-3 md:px-4 py-2 rounded transition"
           >
             {regenerating ? "Regenerating…" : "Regenerate thumbnails"}
           </button>
         </div>
       </div>
+
+      {/* Search */}
+      <div className="relative mb-3">
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search by title or category…"
+          className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-sm outline-none focus:border-red-600"
+        />
+        {search && (
+          <button
+            onClick={() => setSearch("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white text-xs"
+          >
+            Clear
+          </button>
+        )}
+      </div>
+
+      {/* Filter tabs */}
+      <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1 scrollbar-hide">
+        {[
+          { key: "all", label: "All" },
+          { key: "home", label: "Home" },
+          { key: "feed", label: "Feed" },
+          { key: "podcasts", label: "Podcasts" },
+          { key: "documentaries", label: "Docs" },
+          { key: "movies", label: "Movies" },
+          { key: "reels", label: "Reels" },
+          { key: "images", label: "Images" },
+          { key: "troos", label: "Troos" },
+          { key: "no_poster", label: "No Poster" },
+        ].map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setFilter(tab.key as any)}
+            className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap ${
+              filter === tab.key
+                ? "bg-white text-black"
+                : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"
+            }`}
+          >
+            {tab.label}
+            {tab.key === "no_poster" && (
+              <span className="ml-1 text-red-400">●</span>
+            )}
+          </button>
+        ))}
+      </div>
       <div className="space-y-2">
-        {videos.map((v) => (
+        {filteredVideos.length === 0 ? (
+          <div className="text-center py-12 text-white/50">
+            <p className="text-sm">No videos match this filter.</p>
+            {(filter !== "all" || search) && (
+              <button
+                onClick={() => { setFilter("all"); setSearch(""); }}
+                className="mt-3 text-xs text-red-400 hover:text-red-300"
+              >
+                Clear filters
+              </button>
+            )}
+          </div>
+        ) : (
+        filteredVideos.map((v) => {
+          const isAdminContent = !v.uploaderUserId && (v.type === "Documentary" || v.type === "Movie" || v.type === "Podcast");
+          const noPoster = !v.posterUrl || v.posterUrl.startsWith("/api/poster");
+          return (
           <div key={v.id} className={`flex items-center gap-4 rounded p-3 transition ${editing?.id === v.id ? "bg-red-950/40 border border-red-600" : "bg-[#141418]"}`}>
             <img src={v.posterUrl} alt="" className="w-12 h-16 object-cover rounded" />
             <div className="flex-1 min-w-0">
-              <p className="font-semibold truncate">
+              <p className="font-semibold truncate flex items-center gap-2 flex-wrap">
                 {v.title}
-                {v.featured && <span className="text-red-500 text-xs ml-2">★ FEATURED</span>}
+                {v.featured && <span className="text-red-500 text-xs">★ FEATURED</span>}
+                <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase ${isAdminContent ? "bg-blue-600/20 text-blue-400" : "bg-green-600/20 text-green-400"}`}>
+                  {isAdminContent ? "Home" : "Feed"}
+                </span>
+                {noPoster && <span className="text-[10px] px-1.5 py-0.5 rounded font-bold uppercase bg-red-600/20 text-red-400">No Poster</span>}
               </p>
               <p className="text-sm text-white/50 truncate">{v.type} · {v.category} · {v.year}</p>
             </div>
@@ -517,8 +629,9 @@ export default function VideosPage() {
               Delete
             </button>
           </div>
-        ))}
-        {videos.length === 0 && <p className="text-white/40">No videos yet. Add one above.</p>}
+          );
+        })
+        )}
       </div>
     </div>
   );
