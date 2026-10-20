@@ -126,11 +126,19 @@ export default function PodcasterProfilePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, creatorId: creator?.id }),
       });
-      const d = await res.json();
+      
+      const text = await res.text();
+      let d;
+      try {
+        d = JSON.parse(text);
+      } catch {
+        throw new Error("Server error: " + text.substring(0, 50));
+      }
+      
       if (d.url) window.location.href = d.url;
       else alert(d.error || "Could not start checkout");
-    } catch {
-      alert("Network error");
+    } catch (err: any) {
+      alert("Error: " + err.message);
     } finally {
       setCheckoutLoading(false);
     }
