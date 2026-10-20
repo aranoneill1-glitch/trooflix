@@ -30,6 +30,7 @@ export default function UpgradePage() {
   const [currentTier, setCurrentTier] = useState<Tier>("user");
   const [loading, setLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [podcasterLoading, setPodcasterLoading] = useState(false);
 
   useEffect(() => {
     getCachedUser().then(async (u) => {
@@ -84,6 +85,34 @@ export default function UpgradePage() {
       alert("Network error");
     } finally {
       setCheckoutLoading(false);
+    }
+  };
+
+  const handlePodcasterCheckout = async () => {
+    setPodcasterLoading(true);
+    try {
+      const user = await getCachedUser();
+      if (!user) {
+        router.push("/login");
+        return;
+      }
+
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id, type: "podcaster" }),
+      });
+
+      const d = await res.json();
+      if (d.url) {
+        window.location.href = d.url;
+      } else {
+        alert(d.error || "Could not start checkout");
+      }
+    } catch {
+      alert("Network error");
+    } finally {
+      setPodcasterLoading(false);
     }
   };
 
@@ -171,9 +200,15 @@ export default function UpgradePage() {
               "Apply via our review process",
             ]}
             isCurrent={currentTier === "podcaster"}
-            ctaLabel={currentTier === "podcaster" ? "You're a Podcaster" : "Apply to become a Podcaster"}
-            onClick={() => router.push("/apply")}
-            ctaDisabled={currentTier === "podcaster"}
+            ctaLabel={
+              currentTier === "podcaster"
+                ? "You're a Podcaster"
+                : podcasterLoading
+                ? "Redirecting…"
+                : "Become a Podcaster"
+            }
+            onClick={handlePodcasterCheckout}
+            ctaDisabled={currentTier === "podcaster" || podcasterLoading}
           />
         </div>
 
