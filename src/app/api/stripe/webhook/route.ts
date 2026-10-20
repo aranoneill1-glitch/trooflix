@@ -11,11 +11,7 @@ const supabaseAdmin = createServerClient(
   { auth: { autoRefreshToken: false, persistSession: false } }
 );
 
-function tierFromPriceId(priceId: string): "pro" | "podcaster" | "user" {
-  if (priceId === process.env.STRIPE_PRO_PRICE_ID) return "pro";
-  if (priceId === process.env.STRIPE_PODCASTER_PRICE_ID) return "podcaster";
-  return "user";
-}
+const GRACE_PERIOD_DAYS = 14;
 
 export async function POST(req: Request) {
   const body = await req.text();
@@ -31,43 +27,78 @@ export async function POST(req: Request) {
   }
 
   try {
+    // Handle subscription lifecycle events
     if (
       event.type === "checkout.session.completed" ||
       event.type === "customer.subscription.created" ||
       event.type === "customer.subscription.updated" ||
       event.type === "customer.subscription.deleted"
     ) {
-      const obj = event.data.object as any;
-      let userId: string | null = null;
-      let tier: "pro" | "podcaster" | "user" = "user";
-      let status = "inactive";
+      let subscription: Stripe.Subscription;
 
       if (event.type === "checkout.session.completed") {
-        userId = obj.client_reference_id;
-        const sub = await stripe.subscriptions.retrieve(obj.subscription as string);
-        tier = tierFromPriceId(sub.items.data[0].price.id);
-        status = sub.status;
+        const session = event.data.object as Stripe.Checkout.Session;
+        if (!session.subscription) {
+          return new NextResponse("No subscription on checkout", { status: 200 });
+        }
+        subscription = await stripe.subscriptions.retrieve(session.subscription as string);
       } else {
-        const sub = obj as Stripe.Subscription;
-        userId = sub.metadata?.userId || null;
-        tier = tierFromPriceId(sub.items.data[0].price.id);
-        status = sub.status;
+        subscription = event.data.object as Stripe.Subscription;
       }
 
-      if (userId) {
-        const activeStatuses = ["active", "trialing"];
-        const finalTier = activeStatuses.includes(status) ? tier : "user";
-
-        await supabaseAdmin
-          .from("profiles")
-          .update({
-            subscription_status: status,
-            subscription_tier: finalTier,
-            tier: finalTier,
-            is_verified: finalTier !== "user",
-          })
-          .eq("user_id", userId);
+      const userId = subscription.metadata?.userId;
+      if (!userId) {
+        console.warn("No userId in subscription metadata");
+        return new NextResponse("No userId", { status: 200 });
       }
+
+      const status = subscription.status;
+      const isActive = ["active", "trialing"].includes(status);
+      // Stripe v2026: current_period_end lives on subscription items
+      const firstItem = subscription.items.data[0];
+      const periodEndUnix = (firstItem as any)?.current_period_end
+        ?? (subscription as any).current_period_end
+        ?? Math.floor(Date.now() / 1000);
+      const currentPeriodEnd = new Date(periodEndUnix * 1000);
+
+      // Compute pass_expires_at
+      let passExpiresAt: string | null = null;
+      if (isActive) {
+        passExpiresAt = null; // no expiry while active
+      } else {
+        // cancelled / past_due / unpaid → grace period
+        const graceEnd = new Date(currentPeriodEnd);
+        graceEnd.setDate(graceEnd.getDate() + GRACE_PERIOD_DAYS);
+        passExpiresAt = graceEnd.toISOString();
+      }
+
+      // Update profile
+      await supabaseAdmin
+        .from("profiles")
+        .update({
+          has_pass: isActive,
+          pass_expires_at: passExpiresAt,
+          stripe_subscription_id: subscription.id,
+          subscription_status: status,
+        })
+        .eq("user_id", userId);
+
+      // Log event to subscriptions table
+      await supabaseAdmin.from("subscriptions").upsert(
+        {
+          user_id: userId,
+          stripe_subscription_id: subscription.id,
+          stripe_customer_id: subscription.customer as string,
+          price_id: subscription.items.data[0].price.id,
+          status,
+          current_period_end: currentPeriodEnd.toISOString(),
+          cancel_at_period_end: subscription.cancel_at_period_end,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "stripe_subscription_id" }
+      );
+
+      console.log(`[stripe] ${event.type}: user=${userId} status=${status} active=${isActive}`);
     }
 
     return new NextResponse("OK", { status: 200 });
