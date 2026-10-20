@@ -351,9 +351,9 @@ function PostCard({
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(true);
+  const hasVideo = !!(post.videoUrl || post.bitchuteUrl);
   const [menuOpen, setMenuOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
-  const isReel = post.type === "Reel";
   const isImage = post.type === "Image";
   const isTroo = post.type === "Troo";
 
@@ -369,7 +369,7 @@ function PostCard({
 
   // Play when active, pause when not
   useEffect(() => {
-    if (!isReel) return;
+    if (!hasVideo) return;
     const v = videoRef.current;
     if (!v) return;
     if (isActivePlaying) {
@@ -382,7 +382,7 @@ function PostCard({
       try { v.currentTime = 0; } catch {}
       setPlaying(false);
     }
-  }, [isActivePlaying, isReel, muted]);
+  }, [isActivePlaying, hasVideo, muted]);
 
   const togglePlay = () => {
     const v = videoRef.current;
@@ -495,7 +495,7 @@ function PostCard({
 
           {/* Media */}
           <div className="mt-2 rounded-2xl overflow-hidden border border-white/10">
-            {isReel && (
+            {hasVideo && (
               <div className="relative bg-black w-full">
                 <video
                   ref={videoRef}
