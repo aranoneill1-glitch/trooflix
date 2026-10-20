@@ -19,7 +19,7 @@ export async function GET() {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
-    // 1. Trooflix Passes (You keep 100% of this)
+    // 1. Trooflix Passes (You keep 100%)
     const { data: passes } = await supabaseAdmin
       .from("subscriptions")
       .select("id")
@@ -28,7 +28,16 @@ export async function GET() {
     const passCount = passes?.length || 0;
     const passGrossCents = passCount * 999; // $9.99
 
-    // 2. Creator Subs (You keep 10%)
+    // 2. Podcaster Tiers (You keep 100%)
+    const { data: podcasters } = await supabaseAdmin
+      .from("subscriptions")
+      .select("id")
+      .eq("subscription_type", "podcaster")
+      .in("status", ["active", "trialing"]);
+    const podcasterCount = podcasters?.length || 0;
+    const podcasterGrossCents = podcasterCount * 1599; // $15.99
+
+    // 3. Creator Subs (You keep 10%)
     const { data: creatorSubs } = await supabaseAdmin
       .from("creator_subscriptions")
       .select("price_cents")
@@ -37,7 +46,7 @@ export async function GET() {
     const creatorSubTotalCents = (creatorSubs || []).reduce((sum, s) => sum + (s.price_cents || 0), 0);
     const creatorSubYourCutCents = Math.floor(creatorSubTotalCents * 0.10);
 
-    // 3. Merch (You keep 10%)
+    // 4. Merch (You keep 10%)
     const { data: merch } = await supabaseAdmin
       .from("merch_orders")
       .select("amount_cents")
@@ -46,19 +55,20 @@ export async function GET() {
     const merchTotalCents = (merch || []).reduce((sum, m) => sum + (m.amount_cents || 0), 0);
     const merchYourCutCents = Math.floor(merchTotalCents * 0.10);
 
-    // 4. Calculate Stripe Fees (Approx 3.6% + 30c per transaction across all total volume)
-    const totalVolumeCents = passGrossCents + creatorSubTotalCents + merchTotalCents;
-    const totalTransactions = passCount + creatorSubCount + merchCount;
+    // 5. Calculate Stripe Fees
+    const totalVolumeCents = passGrossCents + podcasterGrossCents + creatorSubTotalCents + merchTotalCents;
+    const totalTransactions = passCount + podcasterCount + creatorSubCount + merchCount;
     const stripeFeesCents = Math.floor((totalVolumeCents * 0.036) + (totalTransactions * 30));
 
-    // 5. Your Net Bank Balance
-    // (Passes 100%) + (Creator Subs 10%) + (Merch 10%) - Stripe Fees
-    const grossPlatformRevenue = passGrossCents + creatorSubYourCutCents + merchYourCutCents;
+    // 6. Your Net Bank Balance
+    const grossPlatformRevenue = passGrossCents + podcasterGrossCents + creatorSubYourCutCents + merchYourCutCents;
     const netBankBalanceCents = Math.max(0, grossPlatformRevenue - stripeFeesCents);
 
     return NextResponse.json({
       pass_count: passCount,
       pass_gross_cents: passGrossCents,
+      podcaster_count: podcasterCount,
+      podcaster_gross_cents: podcasterGrossCents,
       creator_sub_count: creatorSubCount,
       creator_sub_your_cut_cents: creatorSubYourCutCents,
       merch_count: merchCount,
