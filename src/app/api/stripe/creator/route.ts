@@ -14,28 +14,25 @@ const CREATORS_KEY = "trooflix:creators";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { userId, creatorId } = body;
-    
-    console.log("Stripe Checkout POST payload:", body);
-
+    const { userId, creatorId } = await req.json();
     if (!userId || !creatorId) return NextResponse.json({ error: "Missing data" }, { status: 400 });
 
     // 1. Get creator from KV
     const creators = (await kv.get<any[]>(CREATORS_KEY)) || [];
     let creator = creators.find((c: any) => String(c.id) === String(creatorId));
-    
-    // Fallback for SSECA just in case KV fails
-    if (!creator && String(creatorId) === "261161250058451") {
-      creator = {
-        id: 261161250058451,
-        name: "SSECA",
-        slug: "ssecommodityacademy",
-        ownerUserId: "ed865789-f0d3-4d20-b9ce-daabb9b74825"
-      };
+
+    // AUTO-HEAL: If this is SSECA and the ownerUserId is missing, fix it permanently in KV!
+    if (creator && !creator.ownerUserId && String(creator.id) === "261161250058451") {
+      creator.ownerUserId = "ed865789-f0d3-4d20-b9ce-daabb9b74825";
+      const idx = creators.findIndex((c: any) => String(c.id) === String(creator.id));
+      if (idx !== -1) {
+        creators[idx] = creator;
+        await kv.set(CREATORS_KEY, creators);
+        console.log("Auto-healed SSECA ownerUserId in Vercel KV");
+      }
     }
 
-    if (!creator) return NextResponse.json({ error: `Creator ID ${creatorId} not found in DB` }, { status: 404 });
+    if (!creator) return NextResponse.json({ error: "Creator not found" }, { status: 404 });
 
     // 2. Find the profile safely
     let profile = null;
@@ -45,11 +42,6 @@ export async function POST(req: Request) {
     }
     if (!profile && creator.slug) {
        const { data } = await supabaseAdmin.from("profiles").select("*").eq("username", creator.slug).maybeSingle();
-       profile = data;
-    }
-    // Hard fallback for SSECA
-    if (!profile && String(creator.id) === "261161250058451") {
-       const { data } = await supabaseAdmin.from("profiles").select("*").eq("user_id", "ed865789-f0d3-4d20-b9ce-daabb9b74825").maybeSingle();
        profile = data;
     }
 
