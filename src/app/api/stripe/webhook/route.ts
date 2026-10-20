@@ -27,71 +27,56 @@ export async function POST(req: Request) {
   }
 
   try {
-    // Handle subscription lifecycle events
-    if (
-      event.type === "checkout.session.completed" ||
-      event.type === "customer.subscription.created" ||
-      event.type === "customer.subscription.updated" ||
-      event.type === "customer.subscription.deleted"
-    ) {
-      let subscription: Stripe.Subscription;
+    // === GRANT ACCESS: Only on successfully paid invoice ===
+    if (event.type === "invoice.paid" || event.type === "invoice.payment_succeeded") {
+      const invoice = event.data.object as Stripe.Invoice;
+      // Stripe v2026: subscription lives in invoice.parent.subscription_details
+      const subscriptionId =
+        (invoice as any).subscription ||
+        (invoice.parent as any)?.subscription_details?.subscription ||
+        null;
 
-      if (event.type === "checkout.session.completed") {
-        const session = event.data.object as Stripe.Checkout.Session;
-        if (!session.subscription) {
-          return new NextResponse("No subscription on checkout", { status: 200 });
-        }
-        subscription = await stripe.subscriptions.retrieve(session.subscription as string);
-      } else {
-        subscription = event.data.object as Stripe.Subscription;
-      }
+      if (!subscriptionId) return new NextResponse("No subscription on invoice", { status: 200 });
+      if (invoice.amount_paid === 0) return new NextResponse("No payment made", { status: 200 });
 
+      const subscription = await stripe.subscriptions.retrieve(
+        typeof subscriptionId === "string" ? subscriptionId : subscriptionId.id
+      );
       const userId = subscription.metadata?.userId;
-      if (!userId) {
-        console.warn("No userId in subscription metadata");
-        return new NextResponse("No userId", { status: 200 });
-      }
+      if (!userId) return new NextResponse("No userId", { status: 200 });
 
-      const status = subscription.status;
-      const isActive = ["active", "trialing"].includes(status);
-      // Stripe v2026: current_period_end lives on subscription items
       const firstItem = subscription.items.data[0];
       const periodEndUnix = (firstItem as any)?.current_period_end
         ?? (subscription as any).current_period_end
         ?? Math.floor(Date.now() / 1000);
       const currentPeriodEnd = new Date(periodEndUnix * 1000);
 
-      // Compute pass_expires_at
-      let passExpiresAt: string | null = null;
-      if (isActive) {
-        passExpiresAt = null; // no expiry while active
-      } else {
-        // cancelled / past_due / unpaid → grace period
-        const graceEnd = new Date(currentPeriodEnd);
-        graceEnd.setDate(graceEnd.getDate() + GRACE_PERIOD_DAYS);
-        passExpiresAt = graceEnd.toISOString();
-      }
-
-      // Update profile
+      // Grant access
       const { error: updateError } = await supabaseAdmin
         .from("profiles")
         .update({
-          has_pass: isActive,
-          pass_expires_at: passExpiresAt,
+          has_pass: true,
+          pass_expires_at: null,
           stripe_subscription_id: subscription.id,
           stripe_customer_id: subscription.customer as string,
-          subscription_status: status,
+          subscription_status: subscription.status,
+          tier: "pro",
+          is_verified: true,
         })
         .eq("user_id", userId);
 
-      // Log event to subscriptions table
-      const { error: subError } = await supabaseAdmin.from("subscriptions").upsert(
+      if (updateError) {
+        console.error(`[stripe] DB update FAILED for ${userId}:`, updateError);
+        return new NextResponse("DB update failed", { status: 500 });
+      }
+
+      await supabaseAdmin.from("subscriptions").upsert(
         {
           user_id: userId,
           stripe_subscription_id: subscription.id,
           stripe_customer_id: subscription.customer as string,
           price_id: subscription.items.data[0].price.id,
-          status,
+          status: subscription.status,
           current_period_end: currentPeriodEnd.toISOString(),
           cancel_at_period_end: subscription.cancel_at_period_end,
           updated_at: new Date().toISOString(),
@@ -99,14 +84,47 @@ export async function POST(req: Request) {
         { onConflict: "stripe_subscription_id" }
       );
 
-      if (updateError) {
-        console.error(`[stripe] DB update FAILED for ${userId}:`, updateError);
-        return new NextResponse("DB update failed", { status: 500 });
-      }
-      if (subError) {
-        console.error(`[stripe] Subscriptions log FAILED for ${userId}:`, subError);
-      }
-      console.log(`[stripe] ${event.type}: user=${userId} status=${status} active=${isActive}`);
+      console.log(`[stripe] invoice.paid: user=${userId} amount=${invoice.amount_paid} status=${subscription.status}`);
+    }
+
+    // === REVOKE / GRACE: On subscription cancellation ===
+    if (event.type === "customer.subscription.deleted") {
+      const subscription = event.data.object as Stripe.Subscription;
+      const userId = subscription.metadata?.userId;
+      if (!userId) return new NextResponse("No userId", { status: 200 });
+
+      const firstItem = subscription.items.data[0];
+      const periodEndUnix = (firstItem as any)?.current_period_end
+        ?? (subscription as any).current_period_end
+        ?? Math.floor(Date.now() / 1000);
+      const currentPeriodEnd = new Date(periodEndUnix * 1000);
+      const graceEnd = new Date(currentPeriodEnd);
+      graceEnd.setDate(graceEnd.getDate() + GRACE_PERIOD_DAYS);
+
+      await supabaseAdmin
+        .from("profiles")
+        .update({
+          has_pass: false,
+          pass_expires_at: graceEnd.toISOString(),
+          subscription_status: subscription.status,
+        })
+        .eq("user_id", userId);
+
+      await supabaseAdmin.from("subscriptions").upsert(
+        {
+          user_id: userId,
+          stripe_subscription_id: subscription.id,
+          stripe_customer_id: subscription.customer as string,
+          price_id: subscription.items.data[0].price.id,
+          status: subscription.status,
+          current_period_end: currentPeriodEnd.toISOString(),
+          cancel_at_period_end: subscription.cancel_at_period_end,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "stripe_subscription_id" }
+      );
+
+      console.log(`[stripe] subscription.deleted: user=${userId} grace_until=${graceEnd.toISOString()}`);
     }
 
     return new NextResponse("OK", { status: 200 });
