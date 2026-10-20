@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {Heart, MessageCircle, Send, Bookmark, Play, Pause, VolumeX, Volume2, Plus, Share, Repeat2} from "lucide-react";
+import {Heart, MessageCircle, Send, Bookmark, Play, Pause, VolumeX, Volume2, Plus, Share, Repeat2, ChevronLeft} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import ShareReelSheet from "@/components/ShareReelSheet";
@@ -221,27 +221,38 @@ export default function FeedPage() {
 
       {/* Toggle */}
       <div className="sticky top-0 z-40 bg-black border-b border-white/5 pt-[env(safe-area-inset-top)]">
-        <div className="flex w-full">
-          <button
-            onClick={() => setFilter("all")}
-            className={`flex-1 py-3 text-sm font-semibold transition border-b-2 ${
-              filter === "all"
-                ? "border-white text-white"
-                : "border-transparent text-white/50 hover:text-white"
-            }`}
+        <div className="flex items-center w-full">
+          {/* Desktop-only back button */}
+          <Link
+            href="/"
+            className="hidden md:flex items-center justify-center w-16 h-full py-3 text-white/50 hover:text-white transition border-r border-white/5"
           >
-            All
-          </button>
-          <button
-            onClick={() => setFilter("following")}
-            className={`flex-1 py-3 text-sm font-semibold transition border-b-2 ${
-              filter === "following"
-                ? "border-white text-white"
-                : "border-transparent text-white/50 hover:text-white"
-            }`}
-          >
-            Following
-          </button>
+            <ChevronLeft size={20} />
+          </Link>
+
+          {/* Toggle */}
+          <div className="flex flex-1 w-full">
+            <button
+              onClick={() => setFilter("all")}
+              className={`flex-1 py-3 text-sm font-semibold transition border-b-2 ${
+                filter === "all"
+                  ? "border-white text-white"
+                  : "border-transparent text-white/50 hover:text-white"
+              }`}
+            >
+              All
+            </button>
+            <button
+              onClick={() => setFilter("following")}
+              className={`flex-1 py-3 text-sm font-semibold transition border-b-2 ${
+                filter === "following"
+                  ? "border-white text-white"
+                  : "border-transparent text-white/50 hover:text-white"
+              }`}
+            >
+              Following
+            </button>
+          </div>
         </div>
       </div>
 
