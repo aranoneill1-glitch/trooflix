@@ -21,9 +21,16 @@ export default function StudioEpisodes() {
     const user = await getCachedUser();
     if (!user) return;
     
-    const res = await fetch(`/api/creator/videos?userId=${user.id}`);
-    const d = await res.json();
-    setVideos(d.videos || []);
+    // Fetch creator profile to get the numeric creatorId
+    const cRes = await fetch(`/api/me/creator?user_id=${user.id}`);
+    const cData = await cRes.json();
+    
+    if (cData.creator && cData.creator.id) {
+      const res = await fetch(`/api/creator/videos?creatorId=${cData.creator.id}`);
+      const d = await res.json();
+      setVideos(d.videos || []);
+    }
+    
     setLoading(false);
   };
 
@@ -32,7 +39,6 @@ export default function StudioEpisodes() {
   }, []);
 
   const togglePremium = async (video: Video) => {
-    // Optimistic UI update
     setVideos(prev => prev.map(v => v.id === video.id ? { ...v, is_premium: !v.is_premium } : v));
     
     await fetch("/api/creator/videos", {
