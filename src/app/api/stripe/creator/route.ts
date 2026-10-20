@@ -18,23 +18,27 @@ export async function POST(req: Request) {
     if (!userId || !creatorId) return NextResponse.json({ error: "Missing data" }, { status: 400 });
 
     // 1. Get creator from KV
-    const creators = (await kv.get<any[]>(CREATORS_KEY)) || [];
+    let creators = (await kv.get<any[]>(CREATORS_KEY)) || [];
     let creator = creators.find((c: any) => String(c.id) === String(creatorId));
 
-    // AUTO-HEAL: If this is SSECA and the ownerUserId is missing, fix it permanently in KV!
-    if (creator && !creator.ownerUserId && String(creator.id) === "261161250058451") {
-      creator.ownerUserId = "ed865789-f0d3-4d20-b9ce-daabb9b74825";
-      const idx = creators.findIndex((c: any) => String(c.id) === String(creator.id));
-      if (idx !== -1) {
-        creators[idx] = creator;
-        await kv.set(CREATORS_KEY, creators);
-        console.log("Auto-healed SSECA ownerUserId in Vercel KV");
-      }
+    // 2. HARD FALLBACK & AUTO-HEAL (If KV is missing the record entirely)
+    if (!creator && String(creatorId) === "261161250058451") {
+      creator = {
+        id: 261161250058451,
+        name: "SSECA",
+        slug: "ssecommodityacademy",
+        ownerUserId: "ed865789-f0d3-4d20-b9ce-daabb9b74825"
+      };
+      // Permanently save it back to Vercel KV so we never need this fallback again
+      if (!creators) creators = [];
+      creators.push(creator);
+      await kv.set(CREATORS_KEY, creators);
+      console.log("Hard restored SSECA to Vercel KV");
     }
 
-    if (!creator) return NextResponse.json({ error: "Creator not found" }, { status: 404 });
+    if (!creator) return NextResponse.json({ error: `Creator not found (ID: ${creatorId})` }, { status: 404 });
 
-    // 2. Find the profile safely
+    // 3. Find the profile safely
     let profile = null;
     if (creator.ownerUserId) {
        const { data } = await supabaseAdmin.from("profiles").select("*").eq("user_id", creator.ownerUserId).maybeSingle();
@@ -50,7 +54,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Creator has not enabled premium yet" }, { status: 400 });
     }
 
-    // 3. Create/reuse Stripe Price
+    // 4. Create/reuse Stripe Price
     let priceId = creator.stripe_premium_price_id;
     if (!priceId) {
       const product = await stripe.products.create({
@@ -65,6 +69,7 @@ export async function POST(req: Request) {
       });
       priceId = price.id;
       
+      // Update KV with the new Stripe Price ID
       const idx = creators.findIndex((c: any) => String(c.id) === String(creator.id));
       if (idx !== -1) {
         creators[idx] = { ...creators[idx], stripe_premium_price_id: priceId };
@@ -72,7 +77,7 @@ export async function POST(req: Request) {
       }
     }
 
-    // 4. Customer
+    // 5. Customer
     const { data: userProfile } = await supabaseAdmin.from("profiles").select("stripe_customer_id").eq("user_id", userId).maybeSingle();
     let customerId = userProfile?.stripe_customer_id;
     if (!customerId) {
@@ -81,7 +86,7 @@ export async function POST(req: Request) {
       await supabaseAdmin.from("profiles").update({ stripe_customer_id: customerId }).eq("user_id", userId);
     }
 
-    // 5. Checkout
+    // 6. Checkout
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
