@@ -18,67 +18,78 @@ async function isAdmin() {
   return adminPassword && adminCookie === adminPassword;
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
+    const { searchParams } = new URL(req.url);
+    const poolAmountCents = Number(searchParams.get("poolCents") || 100000); // Default $1,000
+
     const creators = (await kv.get<any[]>(CREATORS_KEY)) || [];
     const creatorMap = new Map(creators.map((c) => [Number(c.id), c]));
 
-    // 1. Get active subscriptions
+    // 1. Subs
     const { data: subs } = await supabaseAdmin
       .from("creator_subscriptions")
       .select("creator_id, price_cents")
       .in("status", ["active", "trialing"]);
 
-    // 2. Get paid merch orders
+    // 2. Merch
     const { data: merch } = await supabaseAdmin
       .from("merch_orders")
       .select("creator_id, amount_cents")
       .in("status", ["paid", "shipped"]);
 
-    // 3. Group by creator
-    const owed = new Map<number, { subCount: number; subGross: number; merchGross: number }>();
-    
-    // Add subs
-    for (const s of subs || []) {
-      const current = owed.get(s.creator_id) || { subCount: 0, subGross: 0, merchGross: 0 };
-      owed.set(s.creator_id, {
-        ...current,
-        subCount: current.subCount + 1,
-        subGross: current.subGross + (s.price_cents || 0),
-      });
-    }
-
-    // Add merch
-    for (const m of merch || []) {
-      const current = owed.get(m.creator_id) || { subCount: 0, subGross: 0, merchGross: 0 };
-      owed.set(m.creator_id, {
-        ...current,
-        merchGross: current.merchGross + (m.amount_cents || 0),
-      });
-    }
-
-    // 4. Check who has already been paid this month
+    // 3. Watch Time (Current Month)
     const startOfMonth = new Date();
     startOfMonth.setDate(1);
     startOfMonth.setHours(0, 0, 0, 0);
 
+    const { data: watchSessions } = await supabaseAdmin
+      .from("video_watch_sessions")
+      .select("creator_id, seconds_watched")
+      .gte("created_at", startOfMonth.toISOString());
+
+    // Aggregate Data
+    const aggregated = new Map<number, { subCount: number; subGross: number; merchGross: number; watchSeconds: number }>();
+    let totalPlatformWatchSeconds = 0;
+
+    for (const s of subs || []) {
+      const curr = aggregated.get(s.creator_id) || { subCount: 0, subGross: 0, merchGross: 0, watchSeconds: 0 };
+      aggregated.set(s.creator_id, { ...curr, subCount: curr.subCount + 1, subGross: curr.subGross + (s.price_cents || 0) });
+    }
+
+    for (const m of merch || []) {
+      const curr = aggregated.get(m.creator_id) || { subCount: 0, subGross: 0, merchGross: 0, watchSeconds: 0 };
+      aggregated.set(m.creator_id, { ...curr, merchGross: curr.merchGross + (m.amount_cents || 0) });
+    }
+
+    for (const w of watchSessions || []) {
+      const curr = aggregated.get(w.creator_id) || { subCount: 0, subGross: 0, merchGross: 0, watchSeconds: 0 };
+      aggregated.set(w.creator_id, { ...curr, watchSeconds: curr.watchSeconds + w.seconds_watched });
+      totalPlatformWatchSeconds += w.seconds_watched;
+    }
+
+    // Check who has already been paid
     const { data: recentPayouts } = await supabaseAdmin
       .from("podcaster_payouts")
       .select("creator_id")
       .gte("created_at", startOfMonth.toISOString());
-
     const paidThisMonth = new Set((recentPayouts || []).map((p) => p.creator_id));
 
-    // 5. Build response
-    const rows = Array.from(owed.entries()).map(([creatorId, data]) => {
+    // Build Response
+    const rows = Array.from(aggregated.entries()).map(([creatorId, data]) => {
       const creator = creatorMap.get(creatorId) || { name: "Unknown Creator", slug: "unknown" };
       
-      const totalGross = data.subGross + data.merchGross;
-      const net = Math.floor(totalGross * 0.9);
-      const fee = totalGross - net;
+      const watchSharePct = totalPlatformWatchSeconds > 0 ? (data.watchSeconds / totalPlatformWatchSeconds) : 0;
+      const watchEarningsCents = Math.floor(poolAmountCents * watchSharePct);
+
+      // 90% split on subs and merch
+      const subNet = Math.floor(data.subGross * 0.9);
+      const merchNet = Math.floor(data.merchGross * 0.9);
       
+      const totalNetCents = subNet + merchNet + watchEarningsCents;
+
       return {
         creator_id: creatorId,
         name: creator.name,
@@ -86,16 +97,15 @@ export async function GET() {
         subscriber_count: data.subCount,
         sub_gross_cents: data.subGross,
         merch_gross_cents: data.merchGross,
-        total_gross_cents: totalGross,
-        fee_cents: fee,
-        net_cents: net,
+        watch_share_pct: (watchSharePct * 100).toFixed(2),
+        watch_earnings_cents: watchEarningsCents,
+        net_cents: totalNetCents,
         paid_this_month: paidThisMonth.has(creatorId),
       };
-    }).sort((a, b) => b.total_gross_cents - a.total_gross_cents);
+    }).sort((a, b) => b.net_cents - a.net_cents);
 
     return NextResponse.json({ rows });
   } catch (e: any) {
-    console.error("GET admin payouts error:", e);
     return NextResponse.json({ error: String(e) }, { status: 500 });
   }
 }
@@ -104,7 +114,7 @@ export async function POST(req: Request) {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
-    const { creator_id, subscriber_count, total_gross_cents, fee_cents, net_cents } = await req.json();
+    const { creator_id, subscriber_count, net_cents } = await req.json();
     if (!creator_id) return NextResponse.json({ error: "creator_id required" }, { status: 400 });
 
     const now = new Date();
@@ -116,8 +126,8 @@ export async function POST(req: Request) {
       period_start: startOfMonth.toISOString(),
       period_end: endOfMonth.toISOString(),
       subscriber_count,
-      gross_cents: total_gross_cents,
-      platform_fee_cents: fee_cents,
+      gross_cents: net_cents, 
+      platform_fee_cents: 0,
       net_payout_cents: net_cents,
       paid_at: now.toISOString(),
       payment_method: "manual",
