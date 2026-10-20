@@ -27,13 +27,17 @@ type Creator = {
 
 const CATEGORIES = [
   "History",
-  "Politics",
-  "True Crime",
-  "Science & Health",
-  "Technology",
-  "Religion & Belief",
-  "Ancient History",
-  "The Unknown",
+  "Politics & Geopolitics",
+  "War & Conflict",
+  "True Crime & Justice",
+  "Conspiracy & Unsolved",
+  "Society & Culture",
+  "Business & Finance",
+  "Science & Technology",
+  "Environment & Nature",
+  "Religion & Spirituality",
+  "Comedy & Satire",
+  "News & Current Events",
 ];
 
 const TYPES = ["Movie", "Documentary", "Podcast", "Series"];

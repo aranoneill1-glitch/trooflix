@@ -57,13 +57,17 @@ type Video = {
 
 const CATEGORIES: string[] = [
   "History",
-  "Politics",
-  "True Crime",
-  "Science & Health",
-  "Technology",
-  "Religion & Belief",
-  "Ancient History",
-  "The Unknown",
+  "Politics & Geopolitics",
+  "War & Conflict",
+  "True Crime & Justice",
+  "Conspiracy & Unsolved",
+  "Society & Culture",
+  "Business & Finance",
+  "Science & Technology",
+  "Environment & Nature",
+  "Religion & Spirituality",
+  "Comedy & Satire",
+  "News & Current Events",
 ];
 
 const NAV_TABS: string[] = ["Home", "Podcasts", "Feed"];

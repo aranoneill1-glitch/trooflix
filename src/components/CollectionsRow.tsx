@@ -6,21 +6,25 @@ import {
   Building2,
   Fingerprint,
   Atom,
-  Cpu,
   Church,
-  Pyramid,
   Eye,
+  Sword,
+  Users,
+  Briefcase,
+  Leaf,
 } from "lucide-react";
 
 const COLLECTIONS = [
   { name: "History", icon: Landmark, slug: "history" },
-  { name: "Politics", icon: Building2, slug: "politics" },
-  { name: "True Crime", icon: Fingerprint, slug: "true-crime" },
-  { name: "Science & Health", icon: Atom, slug: "science-health" },
-  { name: "Technology", icon: Cpu, slug: "technology" },
-  { name: "Religion & Belief", icon: Church, slug: "religion-belief" },
-  { name: "Ancient History", icon: Pyramid, slug: "ancient-history" },
-  { name: "The Unknown", icon: Eye, slug: "the-unknown" },
+  { name: "Politics & Geopolitics", icon: Building2, slug: "politics" },
+  { name: "War & Conflict", icon: Sword, slug: "war" },
+  { name: "True Crime & Justice", icon: Fingerprint, slug: "true-crime" },
+  { name: "Conspiracy & Unsolved", icon: Eye, slug: "conspiracy" },
+  { name: "Society & Culture", icon: Users, slug: "society" },
+  { name: "Business & Finance", icon: Briefcase, slug: "business" },
+  { name: "Science & Technology", icon: Atom, slug: "science" },
+  { name: "Environment & Nature", icon: Leaf, slug: "environment" },
+  { name: "Religion & Spirituality", icon: Church, slug: "religion" },
 ];
 
 export default function CollectionsRow({
