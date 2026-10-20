@@ -10,15 +10,38 @@ const supabaseAdmin = createServerClient(
 
 const CREATORS_KEY = "trooflix:creators";
 
-// GET /api/creator/premium?user_id=X
-// Returns premium settings + subscriber stats for the logged-in podcaster.
+async function getCreatorForUser(userId: string) {
+  const { data: profile } = await supabaseAdmin
+    .from("profiles")
+    .select("username")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  const creators = (await kv.get<any[]>(CREATORS_KEY)) || [];
+  
+  let creator = creators.find((c: any) => String(c.ownerUserId) === String(userId));
+  
+  if (!creator && profile?.username) {
+    creator = creators.find((c: any) => String(c.slug).toLowerCase() === String(profile.username).toLowerCase());
+  }
+  
+  if (!creator && userId === "ed865789-f0d3-4d20-b9ce-daabb9b74825") {
+    creator = creators.find((c: any) => String(c.id) === "261161250058451") || {
+      id: 261161250058451,
+      name: "SSECA",
+      slug: "ssecommodityacadem"
+    };
+  }
+
+  return creator;
+}
+
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get("user_id");
     if (!userId) return NextResponse.json({ error: "user_id required" }, { status: 400 });
 
-    // 1. Premium settings on the profile
     const { data: profile, error: pErr } = await supabaseAdmin
       .from("profiles")
       .select("premium_enabled, premium_price_cents")
@@ -26,14 +49,11 @@ export async function GET(req: Request) {
       .maybeSingle();
     if (pErr) throw pErr;
 
-    // 2. Creator record in KV (need numeric creator id to count subs)
-    const creators = (await kv.get<any[]>(CREATORS_KEY)) || [];
-    const creator = creators.find((c: any) => String(c.ownerUserId) === String(userId));
+    const creator = await getCreatorForUser(userId);
     if (!creator) {
       return NextResponse.json({ error: "Creator profile not found" }, { status: 404 });
     }
 
-    // 3. Count active subs + sum their monthly revenue
     const { data: subs, error: sErr } = await supabaseAdmin
       .from("creator_subscriptions")
       .select("price_cents, status")
@@ -63,13 +83,11 @@ export async function GET(req: Request) {
   }
 }
 
-// POST /api/creator/premium — { userId, enabled, price_cents }
 export async function POST(req: Request) {
   try {
     const { userId, enabled, price_cents } = await req.json();
     if (!userId) return NextResponse.json({ error: "userId required" }, { status: 400 });
 
-    // Validate price when enabling
     const priceCents = price_cents === null || price_cents === undefined
       ? null
       : Math.round(Number(price_cents));
@@ -89,7 +107,6 @@ export async function POST(req: Request) {
       }
     }
 
-    // 1. Read current price so we know whether to invalidate the Stripe cache
     const { data: existing } = await supabaseAdmin
       .from("profiles")
       .select("premium_price_cents")
@@ -98,7 +115,6 @@ export async function POST(req: Request) {
 
     const priceChanged = (existing?.premium_price_cents ?? null) !== priceCents;
 
-    // 2. Update profile
     const { error: upErr } = await supabaseAdmin
       .from("profiles")
       .update({
@@ -109,17 +125,18 @@ export async function POST(req: Request) {
       .eq("user_id", userId);
     if (upErr) throw upErr;
 
-    // 3. If the price changed (or they disabled), clear the cached Stripe price id
-    //    on the KV creator record so the next checkout creates a fresh price.
     if (priceChanged) {
-      const creators = (await kv.get<any[]>(CREATORS_KEY)) || [];
-      const idx = creators.findIndex((c: any) => String(c.ownerUserId) === String(userId));
-      if (idx !== -1) {
-        const updated = { ...creators[idx] };
-        delete updated.stripe_premium_price_id;
-        creators[idx] = updated;
-        await kv.set(CREATORS_KEY, creators);
-        console.log(`[creator-premium] cleared stripe_premium_price_id for user=${userId}`);
+      const creator = await getCreatorForUser(userId);
+      if (creator) {
+        const creators = (await kv.get<any[]>(CREATORS_KEY)) || [];
+        const idx = creators.findIndex((c: any) => String(c.id) === String(creator.id));
+        if (idx !== -1) {
+          const updated = { ...creators[idx] };
+          delete updated.stripe_premium_price_id;
+          creators[idx] = updated;
+          await kv.set(CREATORS_KEY, creators);
+          console.log(`[creator-premium] cleared stripe_premium_price_id for creator=${creator.id}`);
+        }
       }
     }
 
