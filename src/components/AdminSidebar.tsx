@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {LayoutDashboard,
+import {
+  LayoutDashboard,
   Video,
   Mic,
   Inbox,
@@ -14,6 +15,8 @@ import {LayoutDashboard,
   X,
   Users,
   Flag,
+  Banknote,
+  PlayCircle,
 } from "lucide-react";
 
 const ITEMS = [
@@ -22,6 +25,8 @@ const ITEMS = [
   { label: "Users", path: "/admin/users", icon: Users },
   { label: "Reports", path: "/admin/reports", icon: Flag },
   { label: "Podcasters", path: "/admin/podcasters", icon: Mic },
+  { label: "Payouts", path: "/admin/payouts", icon: Banknote },
+  { label: "Watch Time", path: "/admin/watch-time", icon: PlayCircle },
   { label: "Applications", path: "/admin/applications", icon: Inbox },
   { label: "Settings", path: "/admin/settings", icon: Settings },
 ];
