@@ -40,6 +40,10 @@ type Profile = {
   bio: string | null;
   is_verified?: boolean;
   tier?: "user" | "pro" | "podcaster";
+  has_pass?: boolean;
+  pass_expires_at?: string | null;
+  stripe_subscription_id?: string | null;
+  subscription_status?: string | null;
 };
 
 type Post = {
@@ -91,6 +95,7 @@ export default function ProfilePage() {
   const [editBio, setEditBio] = useState("");
   const [uploading, setUploading] = useState(false);
   const [statusMsg, setStatusMsg] = useState("");
+  const [portalLoading, setPortalLoading] = useState(false);
   const [savedPosts, setSavedPosts] = useState<Post[]>([]);
   const [repostedPosts, setRepostedPosts] = useState<Post[]>([]);
   const [mobileTab, setMobileTab] = useState<"uploads" | "saved" | "reposts">("uploads");
@@ -409,6 +414,27 @@ export default function ProfilePage() {
       alert(err.message || "Could not update preview");
     } finally {
       setPosterUploading(false);
+    }
+  };
+
+  const handleManageSubscription = async () => {
+    setPortalLoading(true);
+    try {
+      const res = await fetch("/api/stripe/portal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+      const d = await res.json();
+      if (d.url) {
+        window.location.href = d.url;
+      } else {
+        alert(d.error || "Could not open billing portal");
+      }
+    } catch {
+      alert("Network error");
+    } finally {
+      setPortalLoading(false);
     }
   };
 
@@ -1010,14 +1036,27 @@ export default function ProfilePage() {
                     <span className="font-semibold">Podcaster Studio</span>
                   </Link>
                 )}
-                <Link
-                  href="/upgrade"
-                  onClick={() => setDashOpen(false)}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition text-yellow-400 text-left"
-                >
-                  <Sparkles size={18} />
-                  <span className="font-semibold">Upgrade plan</span>
-                </Link>
+                {profile?.has_pass === true ? (
+                  <button
+                    onClick={() => { setDashOpen(false); handleManageSubscription(); }}
+                    disabled={portalLoading}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition text-yellow-400 text-left disabled:opacity-50"
+                  >
+                    <Sparkles size={18} />
+                    <span className="font-semibold">
+                      {portalLoading ? "Opening…" : "Manage Subscription"}
+                    </span>
+                  </button>
+                ) : (
+                  <Link
+                    href="/upgrade"
+                    onClick={() => setDashOpen(false)}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition text-yellow-400 text-left"
+                  >
+                    <Sparkles size={18} />
+                    <span className="font-semibold">Upgrade plan</span>
+                  </Link>
+                )}
                 <button
                   onClick={logout}
                   className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition text-red-400 text-left"
