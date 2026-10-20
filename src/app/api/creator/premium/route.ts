@@ -63,7 +63,7 @@ export async function GET(req: Request) {
 
     const activeCount = subs?.length ?? 0;
     const monthlyGrossCents = (subs ?? []).reduce((sum, s) => sum + (s.price_cents || 0), 0);
-    const monthlyNetCents = Math.floor(monthlyGrossCents * 0.95);
+    const monthlyNetCents = Math.floor(monthlyGrossCents * 0.9);
 
     return NextResponse.json({
       creator: { id: creator.id, name: creator.name, slug: creator.slug },
@@ -93,9 +93,9 @@ export async function POST(req: Request) {
       : Math.round(Number(price_cents));
 
     if (enabled) {
-      if (!priceCents || !Number.isFinite(priceCents) || priceCents < 50) {
+      if (!priceCents || !Number.isFinite(priceCents) || priceCents < 499) {
         return NextResponse.json(
-          { error: "Price must be at least $0.50 (Stripe minimum)" },
+          { error: "Price must be at least $4.99 (to cover payment processing)" },
           { status: 400 }
         );
       }

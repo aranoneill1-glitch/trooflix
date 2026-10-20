@@ -76,7 +76,7 @@ export async function GET() {
       const creator = creatorMap.get(creatorId) || { name: "Unknown Creator", slug: "unknown" };
       
       const totalGross = data.subGross + data.merchGross;
-      const net = Math.floor(totalGross * 0.95);
+      const net = Math.floor(totalGross * 0.9);
       const fee = totalGross - net;
       
       return {
