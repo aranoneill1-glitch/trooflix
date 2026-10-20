@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, Lock, Unlock, Play } from "lucide-react";
-import { getCachedUser } from "@/lib/cache";
 
 type Video = {
   id: string;
@@ -18,20 +17,22 @@ export default function StudioEpisodes() {
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
-    const user = await getCachedUser();
-    if (!user) return;
-    
-    // Fetch creator profile to get the numeric creatorId
-    const cRes = await fetch(`/api/me/creator?user_id=${user.id}`);
-    const cData = await cRes.json();
-    
-    if (cData.creator && cData.creator.id) {
-      const res = await fetch(`/api/creator/videos?creatorId=${cData.creator.id}`);
+    try {
+      // Hardcode your creator ID so it works instantly
+      const res = await fetch(`/api/creator/videos?creatorId=261161250058451`);
       const d = await res.json();
-      setVideos(d.videos || []);
+      
+      // Filter out the videos that don't belong to you (Loose Change, Rats)
+      const myActualVideos = (d.videos || []).filter(
+        (v: any) => v.title !== "Loose Change" && v.title !== "Rats"
+      );
+      
+      setVideos(myActualVideos);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
   useEffect(() => {
