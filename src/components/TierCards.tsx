@@ -10,44 +10,49 @@ const TIERS: Record<Tier, {
   name: string;
   tagline: string;
   badge?: React.ReactNode;
+  price: string;
+  priceSub: string;
   features: string[];
-  comingSoon?: boolean;
 }> = {
   user: {
     name: "Free",
     tagline: "Start posting today",
+    price: "$0",
+    priceSub: "forever",
     features: [
+      "Watch all reels (always free)",
       "Post 90-second reels",
       "Post images & Troos",
-      "Comment, like & share",
-      "Your own profile page",
+      "120-second previews of podcasts",
     ],
   },
   pro: {
-    name: "Pro",
-    tagline: "Post without limits",
+    name: "Trooflix Pass",
+    tagline: "Unlock everything",
     badge: <VerifiedBadge size={20} variant="red" />,
+    price: "$9.99",
+    priceSub: "per month",
     features: [
-      "Everything in Free",
+      "Watch all podcasts (full length)",
+      "Watch all documentaries",
       "Unlimited-length reels",
       "Red verified badge",
-      "Priority in your feed",
+      "Support independent creators",
     ],
-    comingSoon: true,
   },
   podcaster: {
     name: "Podcaster",
-    tagline: "Become a featured creator",
+    tagline: "Create & monetize",
     badge: <VerifiedBadge size={20} variant="gold" />,
+    price: "$15.99",
+    priceSub: "per month",
     features: [
-      "Everything in Pro",
-      "Post full-length podcasts",
+      "Everything in Trooflix Pass",
+      "Post podcasts & documentaries",
       "Dedicated podcaster page",
-      "Featured in podcast section",
-      "Featured on the home page",
+      "Featured on home page",
       "Gold verified badge",
     ],
-    comingSoon: true,
   },
 };
 
@@ -73,11 +78,6 @@ export default function TierCards({ defaultTier = "user" }: { defaultTier?: Tier
               }`}
             >
               {t.name}
-              {t.comingSoon && (
-                <span className="text-[9px] uppercase tracking-wider text-white/40 font-bold">
-                  Soon
-                </span>
-              )}
             </button>
           );
         })}
@@ -89,7 +89,12 @@ export default function TierCards({ defaultTier = "user" }: { defaultTier?: Tier
           <h3 className="text-2xl font-black">{tier.name}</h3>
           {tier.badge}
         </div>
-        <p className="text-sm text-white/60 mb-5">{tier.tagline}</p>
+        <p className="text-sm text-white/60 mb-3">{tier.tagline}</p>
+
+        <div className="mb-5">
+          <span className="text-3xl font-black">{tier.price}</span>
+          <span className="text-sm text-white/50 ml-1">{tier.priceSub}</span>
+        </div>
 
         <ul className="space-y-2.5 mb-4">
           {tier.features.map((f, i) => (
@@ -99,14 +104,6 @@ export default function TierCards({ defaultTier = "user" }: { defaultTier?: Tier
             </li>
           ))}
         </ul>
-
-        {tier.comingSoon && (
-          <div className="mt-5 pt-4 border-t border-white/10">
-            <p className="text-xs text-white/40 text-center">
-              Coming soon — you'll be able to upgrade from your profile once live
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );
