@@ -124,7 +124,7 @@ export default function PodcasterProfilePage() {
       const res = await fetch("/api/stripe/creator", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, creatorId: creator?.ownerUserId }),
+        body: JSON.stringify({ userId, creatorId: creator?.id }),
       });
       const d = await res.json();
       if (d.url) window.location.href = d.url;
