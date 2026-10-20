@@ -2,32 +2,34 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Check, Sparkles, X } from "lucide-react";
+import { ChevronLeft, Check, X, Sparkles } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import { getCachedUser } from "@/lib/cache";
 
-type Tier = "user" | "pro" | "podcaster";
+type Tier = "user" | "pass" | "podcaster";
 
 const FEATURES = [
-  { label: "Post 90-second reels", free: true, pro: true, podcaster: true },
-  { label: "Unlimited-length reels", free: false, pro: true, podcaster: true },
-  { label: "Post images", free: true, pro: true, podcaster: true },
-  { label: "Post Troos (text)", free: true, pro: true, podcaster: true },
-  { label: "Post podcasts", free: false, pro: false, podcaster: true },
-  { label: "Dedicated podcaster page", free: false, pro: false, podcaster: true },
-  { label: "Featured in podcast section", free: false, pro: false, podcaster: true },
-  { label: "Featured on the home page", free: false, pro: false, podcaster: true },
-  { label: "Red verified badge", free: false, pro: true, podcaster: false },
-  { label: "Gold verified badge", free: false, pro: false, podcaster: true },
+  { label: "Watch reels (always free)", free: true, pass: true, podcaster: true },
+  { label: "Post reels (up to 90s)", free: true, pass: true, podcaster: true },
+  { label: "Post images & Troos", free: true, pass: true, podcaster: true },
+  { label: "Watch full podcasts", free: false, pass: true, podcaster: true },
+  { label: "Watch full documentaries", free: false, pass: true, podcaster: true },
+  { label: "Unlimited-length reels", free: false, pass: true, podcaster: true },
+  { label: "Red verified badge", free: false, pass: true, podcaster: false },
+  { label: "Post full podcasts", free: false, pass: false, podcaster: true },
+  { label: "Post documentaries", free: false, pass: false, podcaster: true },
+  { label: "Dedicated podcaster page", free: false, pass: false, podcaster: true },
+  { label: "Featured on home page", free: false, pass: false, podcaster: true },
+  { label: "Gold verified badge", free: false, pass: false, podcaster: true },
 ];
 
 export default function UpgradePage() {
   const router = useRouter();
   const [currentTier, setCurrentTier] = useState<Tier>("user");
   const [loading, setLoading] = useState(true);
-  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   useEffect(() => {
     getCachedUser().then(async (u) => {
@@ -38,16 +40,27 @@ export default function UpgradePage() {
       try {
         const res = await fetch(`/api/profile?user_id=${u.id}`, { cache: "no-store" });
         const d = await res.json();
-        if (d.profile?.tier && ["user", "pro", "podcaster"].includes(d.profile.tier)) {
-          setCurrentTier(d.profile.tier);
+        const profile = d.profile;
+
+        if (profile?.tier === "podcaster") {
+          setCurrentTier("podcaster");
+        } else if (profile?.has_pass === true) {
+          const expires = profile?.pass_expires_at;
+          if (!expires || new Date(expires) > new Date()) {
+            setCurrentTier("pass");
+          } else {
+            setCurrentTier("user");
+          }
+        } else {
+          setCurrentTier("user");
         }
       } catch {}
       setLoading(false);
     });
   }, []);
 
-  const handleCheckout = async (tier: "pro" | "podcaster") => {
-    setCheckoutLoading(tier);
+  const handlePassCheckout = async () => {
+    setCheckoutLoading(true);
     try {
       const user = await getCachedUser();
       if (!user) {
@@ -58,7 +71,7 @@ export default function UpgradePage() {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.id, tier }),
+        body: JSON.stringify({ userId: user.id, type: "pass" }),
       });
 
       const d = await res.json();
@@ -70,7 +83,7 @@ export default function UpgradePage() {
     } catch {
       alert("Network error");
     } finally {
-      setCheckoutLoading(null);
+      setCheckoutLoading(false);
     }
   };
 
@@ -87,74 +100,87 @@ export default function UpgradePage() {
         </button>
 
         <div className="text-center mb-10">
-          <p className="text-xs tracking-[0.3em] text-red-500 font-bold mb-2">CHOOSE YOUR TIER</p>
-          <h1 className="text-3xl md:text-5xl font-black mb-3">Upgrade your Trooflix</h1>
+          <p className="text-xs tracking-[0.3em] text-red-500 font-bold mb-2">CHOOSE YOUR PLAN</p>
+          <h1 className="text-3xl md:text-5xl font-black mb-3">Watch everything on Trooflix</h1>
           <p className="text-white/60 text-sm md:text-base max-w-2xl mx-auto">
-            Post more, reach further, and get verified. Choose the tier that fits how you create.
+            One pass. Every podcast, every documentary. Or become a creator and share your own.
           </p>
         </div>
 
-        {/* Three cards */}
+        {/* 3 cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
           {/* Free */}
           <TierCard
             name="Free"
-            tagline="Start posting today"
+            tagline="Browse & preview"
+            price="$0"
+            priceSub="forever"
             features={[
-              "Post 90-second reels",
+              "Watch reels (always free)",
+              "Post reels up to 90s",
               "Post images & Troos",
-              "Comment, like & share",
-              "Your own profile page",
+              "120-second previews of podcasts",
             ]}
             isCurrent={currentTier === "user"}
-            ctaLabel="You're on Free"
+            ctaLabel={currentTier === "user" ? "You're on Free" : "Current plan"}
             ctaDisabled={true}
           />
 
-          {/* Pro */}
+          {/* Trooflix Pass */}
           <TierCard
-            name="Pro"
-            tagline="Post without limits"
+            name="Trooflix Pass"
+            tagline="Unlock everything"
             badge={<VerifiedBadge size={20} variant="red" />}
+            price="$9.99"
+            priceSub="per month"
             features={[
-              "Everything in Free",
+              "Watch all podcasts (full length)",
+              "Watch all documentaries",
               "Unlimited-length reels",
               "Red verified badge",
-              "Priority in your feed",
+              "Support independent creators",
             ]}
-            isCurrent={currentTier === "pro"}
-            ctaLabel={checkoutLoading === "pro" ? "Redirecting…" : "Subscribe for $0.10"}
-            onClick={() => handleCheckout("pro")}
-            ctaDisabled={checkoutLoading === "pro" || currentTier === "pro" || currentTier === "podcaster"}
-            price="$0.10/mo"
+            isCurrent={currentTier === "pass"}
+            ctaLabel={
+              currentTier === "pass"
+                ? "You have Pass"
+                : currentTier === "podcaster"
+                ? "Included in Podcaster"
+                : checkoutLoading
+                ? "Redirecting…"
+                : "Get Trooflix Pass"
+            }
+            onClick={handlePassCheckout}
+            ctaDisabled={currentTier !== "user" || checkoutLoading}
+            highlight={true}
           />
 
           {/* Podcaster */}
           <TierCard
             name="Podcaster"
-            tagline="Become a featured creator"
+            tagline="Create & monetize"
             badge={<VerifiedBadge size={20} variant="gold" />}
+            price="$15.99"
+            priceSub="per month"
             features={[
-              "Everything in Pro",
-              "Post full-length podcasts",
+              "Everything in Pass",
+              "Post podcasts & documentaries",
               "Dedicated podcaster page",
-              "Featured in podcast section",
-              "Featured on the home page",
+              "Featured on home page",
               "Gold verified badge",
+              "Apply via our review process",
             ]}
             isCurrent={currentTier === "podcaster"}
-            ctaLabel={checkoutLoading === "podcaster" ? "Redirecting…" : "Subscribe for $0.10"}
-            onClick={() => handleCheckout("podcaster")}
-            ctaDisabled={checkoutLoading === "podcaster" || currentTier === "podcaster"}
-            highlight={true}
-            price="$0.10/mo"
+            ctaLabel={currentTier === "podcaster" ? "You're a Podcaster" : "Apply to become a Podcaster"}
+            onClick={() => router.push("/apply")}
+            ctaDisabled={currentTier === "podcaster"}
           />
         </div>
 
-        {/* Feature comparison table */}
+        {/* Feature comparison */}
         <div className="bg-[#0f0f12] border border-white/5 rounded-2xl overflow-hidden">
           <div className="px-5 py-4 border-b border-white/5">
-            <h2 className="text-lg font-bold">Feature comparison</h2>
+            <h2 className="text-lg font-bold">Compare plans</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -162,7 +188,7 @@ export default function UpgradePage() {
                 <tr className="border-b border-white/5">
                   <th className="text-left px-5 py-3 font-semibold text-white/60 w-1/2">Feature</th>
                   <th className="text-center px-3 py-3 font-semibold text-white/60">Free</th>
-                  <th className="text-center px-3 py-3 font-semibold text-white/60">Pro</th>
+                  <th className="text-center px-3 py-3 font-semibold text-white/60">Pass</th>
                   <th className="text-center px-3 py-3 font-semibold text-white/60">Podcaster</th>
                 </tr>
               </thead>
@@ -174,7 +200,7 @@ export default function UpgradePage() {
                       {f.free ? <Check size={16} className="inline text-green-500" /> : <X size={16} className="inline text-white/20" />}
                     </td>
                     <td className="text-center px-3 py-3">
-                      {f.pro ? <Check size={16} className="inline text-green-500" /> : <X size={16} className="inline text-white/20" />}
+                      {f.pass ? <Check size={16} className="inline text-green-500" /> : <X size={16} className="inline text-white/20" />}
                     </td>
                     <td className="text-center px-3 py-3">
                       {f.podcaster ? <Check size={16} className="inline text-green-500" /> : <X size={16} className="inline text-white/20" />}
@@ -207,6 +233,7 @@ function TierCard({
   highlight,
   onClick,
   price,
+  priceSub,
 }: {
   name: string;
   tagline: string;
@@ -217,19 +244,20 @@ function TierCard({
   ctaDisabled: boolean;
   highlight?: boolean;
   onClick?: () => void;
-  price?: string;
+  price: string;
+  priceSub: string;
 }) {
   return (
     <div
       className={`relative rounded-2xl p-6 flex flex-col ${
         highlight
-          ? "bg-gradient-to-b from-yellow-950/40 to-[#0f0f12] border-2 border-yellow-600/40"
+          ? "bg-gradient-to-b from-red-950/40 to-[#0f0f12] border-2 border-red-600/40"
           : "bg-[#0f0f12] border border-white/10"
       } ${isCurrent ? "ring-2 ring-white/20" : ""}`}
     >
-      {highlight && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-yellow-600 rounded-full text-xs font-bold text-black flex items-center gap-1">
-          <Sparkles size={11} /> FEATURED
+      {highlight && !isCurrent && (
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-red-600 rounded-full text-xs font-bold text-white flex items-center gap-1">
+          <Sparkles size={11} /> MOST POPULAR
         </div>
       )}
       {isCurrent && (
@@ -242,8 +270,12 @@ function TierCard({
         <h3 className="text-xl font-black">{name}</h3>
         {badge}
       </div>
-      <p className="text-sm text-white/50 mb-2">{tagline}</p>
-      {price && <p className="text-2xl font-black mb-4">{price}</p>}
+      <p className="text-sm text-white/50 mb-4">{tagline}</p>
+
+      <div className="mb-4">
+        <span className="text-3xl font-black">{price}</span>
+        <span className="text-sm text-white/50 ml-1">{priceSub}</span>
+      </div>
 
       <ul className="space-y-2.5 mb-6 flex-1">
         {features.map((f, i) => (
@@ -262,7 +294,9 @@ function TierCard({
             ? "bg-white/10 text-white/60 cursor-default"
             : ctaDisabled
             ? "bg-white/5 text-white/40 cursor-not-allowed"
-            : "bg-red-600 hover:bg-red-500 text-white"
+            : highlight
+            ? "bg-red-600 hover:bg-red-500 text-white"
+            : "bg-white/10 hover:bg-white/20 text-white"
         }`}
       >
         {ctaLabel}
