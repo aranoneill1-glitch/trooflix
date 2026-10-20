@@ -63,7 +63,7 @@ export async function GET(req: Request) {
 
     const activeCount = subs?.length ?? 0;
     const monthlyGrossCents = (subs ?? []).reduce((sum, s) => sum + (s.price_cents || 0), 0);
-    const monthlyNetCents = Math.floor(monthlyGrossCents * 0.9);
+    const monthlyNetCents = Math.floor(monthlyGrossCents * 0.95);
 
     return NextResponse.json({
       creator: { id: creator.id, name: creator.name, slug: creator.slug },

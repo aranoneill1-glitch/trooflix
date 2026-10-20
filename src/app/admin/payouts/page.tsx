@@ -93,7 +93,7 @@ export default function AdminPayouts() {
                 <th className="px-5 py-3 font-medium">Sub Gross</th>
                 <th className="px-5 py-3 font-medium">Merch Gross</th>
                 <th className="px-5 py-3 font-medium">Total Gross</th>
-                <th className="px-5 py-3 font-medium text-green-400">Owed (90%)</th>
+                <th className="px-5 py-3 font-medium text-green-400">Owed (95%)</th>
                 <th className="px-5 py-3 font-medium text-right">Status</th>
               </tr>
             </thead>

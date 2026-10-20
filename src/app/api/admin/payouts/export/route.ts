@@ -34,10 +34,10 @@ export async function GET() {
       owed.set(s.creator_id, { count: current.count + 1, gross_cents: current.gross_cents + (s.price_cents || 0) });
     }
 
-    let csv = "Creator Name,Slug,Subscribers,Gross Amount,Platform Fee (10%),Net Owed (90%)\n";
+    let csv = "Creator Name,Slug,Subscribers,Gross Amount,Platform Fee (5%),Net Owed (95%)\n";
     Array.from(owed.entries()).forEach(([creatorId, data]) => {
       const c = creatorMap.get(creatorId) || { name: "Unknown", slug: "unknown" };
-      const net = Math.floor(data.gross_cents * 0.9);
+      const net = Math.floor(data.gross_cents * 0.95);
       const fee = data.gross_cents - net;
       csv += `"${c.name}","${c.slug}",${data.count},${(data.gross_cents/100).toFixed(2)},${(fee/100).toFixed(2)},${(net/100).toFixed(2)}\n`;
     });

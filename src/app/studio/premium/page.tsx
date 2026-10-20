@@ -111,8 +111,8 @@ export default function PremiumSettings() {
 
       <h1 className="text-2xl font-black mb-1">Premium Subscriptions</h1>
       <p className="text-white/50 text-sm mb-6">
-        Charge your superfans for exclusive episodes. You keep 90% of every
-        subscription — Trooflix takes 10% to cover payment processing.
+        Charge your superfans for exclusive episodes. You keep 95% of every
+        subscription — Trooflix takes 5% to cover payment processing.
       </p>
 
       {/* Stats row */}
@@ -133,7 +133,7 @@ export default function PremiumSettings() {
         </div>
         <div className="bg-[#141418] border border-white/5 rounded-xl p-4">
           <div className="flex items-center gap-1.5 text-xs text-white/50 mb-1">
-            <TrendingUp size={13} /> Your 90%
+            <TrendingUp size={13} /> Your 95%
           </div>
           <p className="text-2xl font-black text-green-400">
             {dollars(stats.monthly_net_cents)}
