@@ -18,29 +18,42 @@ async function isAdmin() {
   return adminPassword && adminCookie === adminPassword;
 }
 
-export async function GET(req: Request) {
+export async function GET() {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
-    const { searchParams } = new URL(req.url);
-    const poolAmountCents = Number(searchParams.get("poolCents") || 100000); // Default $1,000
-
     const creators = (await kv.get<any[]>(CREATORS_KEY)) || [];
     const creatorMap = new Map(creators.map((c) => [Number(c.id), c]));
 
-    // 1. Subs
+    // 1. Fetch active Pass subscriptions to calculate the Pool automatically
+    const { data: passSubs } = await supabaseAdmin
+      .from("subscriptions")
+      .select("id")
+      .eq("subscription_type", "pass")
+      .in("status", ["active", "trialing"]);
+
+    const passCount = passSubs?.length || 0;
+    const passGrossCents = passCount * 999; // $9.99 per pass
+    // Estimate Stripe fees: 3.6% + 30c per transaction
+    const estimatedStripeFees = Math.floor((passGrossCents * 0.036) + (passCount * 30));
+    const passNetCents = Math.max(0, passGrossCents - estimatedStripeFees);
+    
+    // 50% of Net Pass Revenue goes into the Watch Time Pool
+    const autoPoolCents = Math.floor(passNetCents * 0.5);
+
+    // 2. Fetch Creator Subs
     const { data: subs } = await supabaseAdmin
       .from("creator_subscriptions")
       .select("creator_id, price_cents")
       .in("status", ["active", "trialing"]);
 
-    // 2. Merch
+    // 3. Fetch Merch Orders
     const { data: merch } = await supabaseAdmin
       .from("merch_orders")
       .select("creator_id, amount_cents")
       .in("status", ["paid", "shipped"]);
 
-    // 3. Watch Time (Current Month)
+    // 4. Fetch Watch Time (Current Month)
     const startOfMonth = new Date();
     startOfMonth.setDate(1);
     startOfMonth.setHours(0, 0, 0, 0);
@@ -82,7 +95,7 @@ export async function GET(req: Request) {
       const creator = creatorMap.get(creatorId) || { name: "Unknown Creator", slug: "unknown" };
       
       const watchSharePct = totalPlatformWatchSeconds > 0 ? (data.watchSeconds / totalPlatformWatchSeconds) : 0;
-      const watchEarningsCents = Math.floor(poolAmountCents * watchSharePct);
+      const watchEarningsCents = Math.floor(autoPoolCents * watchSharePct);
 
       // 90% split on subs and merch
       const subNet = Math.floor(data.subGross * 0.9);
@@ -104,7 +117,11 @@ export async function GET(req: Request) {
       };
     }).sort((a, b) => b.net_cents - a.net_cents);
 
-    return NextResponse.json({ rows });
+    return NextResponse.json({ 
+      rows,
+      auto_pool_cents: autoPoolCents,
+      pass_count: passCount
+    });
   } catch (e: any) {
     return NextResponse.json({ error: String(e) }, { status: 500 });
   }

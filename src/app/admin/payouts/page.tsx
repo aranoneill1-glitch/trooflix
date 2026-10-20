@@ -23,7 +23,8 @@ function dollars(cents: number) {
 
 export default function AdminPayouts() {
   const [rows, setRows] = useState<PayoutRow[]>([]);
-  const [poolAmount, setPoolAmount] = useState("1000");
+  const [autoPoolCents, setAutoPoolCents] = useState(0);
+  const [passCount, setPassCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [payingId, setPayingId] = useState<number | null>(null);
@@ -31,11 +32,12 @@ export default function AdminPayouts() {
   const load = async () => {
     setLoading(true);
     try {
-      const poolCents = Math.round(Number(poolAmount) * 100);
-      const res = await fetch(`/api/admin/payouts?poolCents=${poolCents}`);
+      const res = await fetch(`/api/admin/payouts`);
       const d = await res.json();
       if (!res.ok) throw new Error(d.error || "Failed to load");
       setRows(d.rows || []);
+      setAutoPoolCents(d.auto_pool_cents || 0);
+      setPassCount(d.pass_count || 0);
       setError("");
     } catch (e: any) {
       setError(e.message);
@@ -78,17 +80,12 @@ export default function AdminPayouts() {
         </div>
         
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2 bg-[#141418] border border-white/10 rounded-lg p-1.5">
-            <span className="text-sm text-white/50 pl-2">Watch Time Pool ($)</span>
-            <input
-              type="number"
-              value={poolAmount}
-              onChange={(e) => setPoolAmount(e.target.value)}
-              className="bg-black/40 border border-white/10 rounded px-3 py-1.5 text-sm w-28 outline-none focus:border-red-600"
-            />
-            <button onClick={load} className="bg-red-600 hover:bg-red-500 text-white font-bold px-4 py-1.5 rounded text-sm transition">
-              Calculate
-            </button>
+          <div className="bg-[#141418] border border-green-500/30 rounded-lg px-4 py-2 flex items-center gap-3">
+            <span className="text-sm text-white/50">Auto Watch Time Pool:</span>
+            <span className="text-lg font-black text-green-400">{dollars(autoPoolCents)}</span>
+            <span className="text-xs text-white/40 border-l border-white/10 pl-3">
+              (From {passCount} Passes)
+            </span>
           </div>
           <a
             href="/api/admin/payouts/export"
