@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Check, X, Sparkles } from "lucide-react";
+import { ChevronLeft, Check, Sparkles, X } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import VerifiedBadge from "@/components/VerifiedBadge";
@@ -17,7 +17,7 @@ const FEATURES = [
   { label: "Post Troos (text)", free: true, pro: true, podcaster: true },
   { label: "Post podcasts", free: false, pro: false, podcaster: true },
   { label: "Dedicated podcaster page", free: false, pro: false, podcaster: true },
-  { label: "Featured in the podcast section", free: false, pro: false, podcaster: true },
+  { label: "Featured in podcast section", free: false, pro: false, podcaster: true },
   { label: "Featured on the home page", free: false, pro: false, podcaster: true },
   { label: "Red verified badge", free: false, pro: true, podcaster: false },
   { label: "Gold verified badge", free: false, pro: false, podcaster: true },
@@ -27,6 +27,7 @@ export default function UpgradePage() {
   const router = useRouter();
   const [currentTier, setCurrentTier] = useState<Tier>("user");
   const [loading, setLoading] = useState(true);
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
 
   useEffect(() => {
     getCachedUser().then(async (u) => {
@@ -44,6 +45,34 @@ export default function UpgradePage() {
       setLoading(false);
     });
   }, []);
+
+  const handleCheckout = async (tier: "pro" | "podcaster") => {
+    setCheckoutLoading(tier);
+    try {
+      const user = await getCachedUser();
+      if (!user) {
+        router.push("/login");
+        return;
+      }
+
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id, tier }),
+      });
+
+      const d = await res.json();
+      if (d.url) {
+        window.location.href = d.url;
+      } else {
+        alert(d.error || "Could not start checkout");
+      }
+    } catch {
+      alert("Network error");
+    } finally {
+      setCheckoutLoading(null);
+    }
+  };
 
   return (
     <main className="min-h-screen bg-black text-white pb-20 lg:pb-0">
@@ -94,8 +123,10 @@ export default function UpgradePage() {
               "Priority in your feed",
             ]}
             isCurrent={currentTier === "pro"}
-            ctaLabel="Coming soon"
-            ctaDisabled={true}
+            ctaLabel={checkoutLoading === "pro" ? "Redirecting…" : "Subscribe for $0.10"}
+            onClick={() => handleCheckout("pro")}
+            ctaDisabled={checkoutLoading === "pro" || currentTier === "pro" || currentTier === "podcaster"}
+            price="$0.10/mo"
           />
 
           {/* Podcaster */}
@@ -112,9 +143,11 @@ export default function UpgradePage() {
               "Gold verified badge",
             ]}
             isCurrent={currentTier === "podcaster"}
-            ctaLabel="Coming soon"
-            ctaDisabled={true}
+            ctaLabel={checkoutLoading === "podcaster" ? "Redirecting…" : "Subscribe for $0.10"}
+            onClick={() => handleCheckout("podcaster")}
+            ctaDisabled={checkoutLoading === "podcaster" || currentTier === "podcaster"}
             highlight={true}
+            price="$0.10/mo"
           />
         </div>
 
@@ -154,7 +187,7 @@ export default function UpgradePage() {
         </div>
 
         <p className="text-center text-xs text-white/40 mt-8 max-w-xl mx-auto">
-          Paid tiers are launching soon. Stay tuned — you&apos;ll be notified when upgrades are available.
+          Secure payments powered by Stripe. Cancel anytime.
         </p>
       </div>
 
@@ -172,6 +205,8 @@ function TierCard({
   ctaLabel,
   ctaDisabled,
   highlight,
+  onClick,
+  price,
 }: {
   name: string;
   tagline: string;
@@ -181,6 +216,8 @@ function TierCard({
   ctaLabel: string;
   ctaDisabled: boolean;
   highlight?: boolean;
+  onClick?: () => void;
+  price?: string;
 }) {
   return (
     <div
@@ -205,7 +242,8 @@ function TierCard({
         <h3 className="text-xl font-black">{name}</h3>
         {badge}
       </div>
-      <p className="text-sm text-white/50 mb-5">{tagline}</p>
+      <p className="text-sm text-white/50 mb-2">{tagline}</p>
+      {price && <p className="text-2xl font-black mb-4">{price}</p>}
 
       <ul className="space-y-2.5 mb-6 flex-1">
         {features.map((f, i) => (
@@ -217,11 +255,14 @@ function TierCard({
       </ul>
 
       <button
+        onClick={onClick}
         disabled={ctaDisabled}
         className={`w-full py-2.5 rounded-lg font-semibold text-sm transition ${
           isCurrent
             ? "bg-white/10 text-white/60 cursor-default"
-            : "bg-white/5 text-white/40 cursor-not-allowed"
+            : ctaDisabled
+            ? "bg-white/5 text-white/40 cursor-not-allowed"
+            : "bg-red-600 hover:bg-red-500 text-white"
         }`}
       >
         {ctaLabel}
