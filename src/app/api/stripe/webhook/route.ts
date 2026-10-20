@@ -73,18 +73,19 @@ export async function POST(req: Request) {
       }
 
       // Update profile
-      await supabaseAdmin
+      const { error: updateError } = await supabaseAdmin
         .from("profiles")
         .update({
           has_pass: isActive,
           pass_expires_at: passExpiresAt,
           stripe_subscription_id: subscription.id,
+          stripe_customer_id: subscription.customer as string,
           subscription_status: status,
         })
         .eq("user_id", userId);
 
       // Log event to subscriptions table
-      await supabaseAdmin.from("subscriptions").upsert(
+      const { error: subError } = await supabaseAdmin.from("subscriptions").upsert(
         {
           user_id: userId,
           stripe_subscription_id: subscription.id,
@@ -98,6 +99,13 @@ export async function POST(req: Request) {
         { onConflict: "stripe_subscription_id" }
       );
 
+      if (updateError) {
+        console.error(`[stripe] DB update FAILED for ${userId}:`, updateError);
+        return new NextResponse("DB update failed", { status: 500 });
+      }
+      if (subError) {
+        console.error(`[stripe] Subscriptions log FAILED for ${userId}:`, subError);
+      }
       console.log(`[stripe] ${event.type}: user=${userId} status=${status} active=${isActive}`);
     }
 
