@@ -9,7 +9,9 @@ type PayoutRow = {
   name: string;
   slug: string;
   subscriber_count: number;
-  gross_cents: number;
+  sub_gross_cents: number;
+  merch_gross_cents: number;
+  total_gross_cents: number;
   fee_cents: number;
   net_cents: number;
   paid_this_month: boolean;
@@ -50,7 +52,7 @@ export default function AdminPayouts() {
         body: JSON.stringify(row),
       });
       if (!res.ok) throw new Error("Failed to mark paid");
-      await load(); // refresh list
+      await load();
     } catch (e: any) {
       alert("Error: " + e.message);
     } finally {
@@ -70,7 +72,7 @@ export default function AdminPayouts() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-black mb-1">Creator Payouts</h1>
-          <p className="text-white/50 text-sm">Who you owe this month. Manual payouts only.</p>
+          <p className="text-white/50 text-sm">Who you owe this month (Subscriptions + Merch).</p>
         </div>
         <a
           href="/api/admin/payouts/export"
@@ -88,8 +90,9 @@ export default function AdminPayouts() {
               <tr>
                 <th className="px-5 py-3 font-medium">Creator</th>
                 <th className="px-5 py-3 font-medium">Subs</th>
-                <th className="px-5 py-3 font-medium">Gross</th>
-                <th className="px-5 py-3 font-medium">Fee (10%)</th>
+                <th className="px-5 py-3 font-medium">Sub Gross</th>
+                <th className="px-5 py-3 font-medium">Merch Gross</th>
+                <th className="px-5 py-3 font-medium">Total Gross</th>
                 <th className="px-5 py-3 font-medium text-green-400">Owed (90%)</th>
                 <th className="px-5 py-3 font-medium text-right">Status</th>
               </tr>
@@ -102,8 +105,9 @@ export default function AdminPayouts() {
                     <p className="text-xs text-white/40">/{r.slug}</p>
                   </td>
                   <td className="px-5 py-4">{r.subscriber_count}</td>
-                  <td className="px-5 py-4">{dollars(r.gross_cents)}</td>
-                  <td className="px-5 py-4 text-white/50">{dollars(r.fee_cents)}</td>
+                  <td className="px-5 py-4 text-white/70">{dollars(r.sub_gross_cents)}</td>
+                  <td className="px-5 py-4 text-white/70">{dollars(r.merch_gross_cents)}</td>
+                  <td className="px-5 py-4 font-bold">{dollars(r.total_gross_cents)}</td>
                   <td className="px-5 py-4 text-green-400 font-bold">{dollars(r.net_cents)}</td>
                   <td className="px-5 py-4 text-right">
                     {r.paid_this_month ? (
@@ -124,8 +128,8 @@ export default function AdminPayouts() {
               ))}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-5 py-10 text-center text-white/50">
-                    No active creator subscriptions yet.
+                  <td colSpan={7} className="px-5 py-10 text-center text-white/50">
+                    No active subscriptions or merch orders yet.
                   </td>
                 </tr>
               )}
