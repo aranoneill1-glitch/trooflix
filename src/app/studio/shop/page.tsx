@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, Plus, Package } from "lucide-react";
+import { ChevronLeft, Plus, Package, Camera } from "lucide-react";
 import { getCachedUser } from "@/lib/cache";
 
 type Product = {
@@ -19,6 +19,7 @@ export default function StudioShop() {
   const [loading, setLoading] = useState(true);
   const [creatorId, setCreatorId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   // Form State
   const [name, setName] = useState("");
@@ -43,6 +44,44 @@ export default function StudioShop() {
   };
 
   useEffect(() => { load(); }, []);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    try {
+      // 1. Get presigned URL from your existing R2 upload API
+      const presign = await fetch("/api/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          filename: file.name,
+          contentType: file.type || "image/jpeg",
+          folder: "merch", // Puts merch in its own folder
+        }),
+      });
+      
+      if (!presign.ok) throw new Error("Upload prep failed");
+      const { signedUrl, publicUrl } = await presign.json();
+
+      // 2. Upload directly to R2
+      const put = await fetch(signedUrl, {
+        method: "PUT",
+        headers: { "Content-Type": file.type || "image/jpeg" },
+        body: file,
+      });
+
+      if (!put.ok) throw new Error("Upload to R2 failed");
+      
+      // 3. Save the public URL to state
+      setImageUrl(publicUrl);
+    } catch (err: any) {
+      alert("Image upload failed: " + err.message);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,6 +129,32 @@ export default function StudioShop() {
         <div className="md:col-span-1">
           <form onSubmit={handleAdd} className="bg-[#141418] border border-white/5 rounded-xl p-5 space-y-4">
             <h2 className="font-bold text-lg mb-2">Add Product</h2>
+
+            {/* Image Upload Box */}
+            <div>
+              <label className="text-xs text-white/50 block mb-1">Product Image</label>
+              <label className="block border-2 border-dashed border-white/10 hover:border-red-600/50 rounded-xl overflow-hidden cursor-pointer transition">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  disabled={uploadingImage}
+                  className="hidden"
+                />
+                {imageUrl ? (
+                  <img src={imageUrl} alt="" className="w-full aspect-square object-cover" />
+                ) : (
+                  <div className="aspect-square flex items-center justify-center bg-black/20">
+                    <div className="text-center">
+                      <Camera size={24} className="mx-auto mb-2 text-white/40" />
+                      <p className="text-xs text-white/50">
+                        {uploadingImage ? "Uploading..." : "Click to upload"}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </label>
+            </div>
             
             <div>
               <label className="text-xs text-white/50 block mb-1">Product Name</label>
@@ -102,16 +167,11 @@ export default function StudioShop() {
             </div>
 
             <div>
-              <label className="text-xs text-white/50 block mb-1">Image URL</label>
-              <input value={imageUrl} onChange={e => setImageUrl(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-sm outline-none focus:border-red-600" placeholder="https://..." />
-            </div>
-
-            <div>
               <label className="text-xs text-white/50 block mb-1">Description</label>
               <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-sm outline-none focus:border-red-600 resize-none" placeholder="Soft cotton..." />
             </div>
 
-            <button disabled={saving} type="submit" className="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-2.5 rounded-lg text-sm transition flex items-center justify-center gap-2">
+            <button disabled={saving || uploadingImage} type="submit" className="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-2.5 rounded-lg text-sm transition flex items-center justify-center gap-2 disabled:opacity-50">
               <Plus size={16} /> {saving ? "Saving..." : "Add Product"}
             </button>
           </form>
