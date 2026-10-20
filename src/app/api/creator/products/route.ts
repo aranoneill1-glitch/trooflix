@@ -51,3 +51,29 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: String(e) }, { status: 500 });
   }
 }
+
+export async function PATCH(req: Request) {
+  try {
+    const { id, name, description, price_cents, image_url } = await req.json();
+    if (!id || !name || !price_cents) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from("products")
+      .update({
+        name,
+        description,
+        price_cents: Number(price_cents),
+        image_url,
+      })
+      .eq("id", Number(id))
+      .select()
+      .single();
+
+    if (error) throw error;
+    return NextResponse.json({ ok: true, product: data });
+  } catch (e: any) {
+    return NextResponse.json({ error: String(e) }, { status: 500 });
+  }
+}

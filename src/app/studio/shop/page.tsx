@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, Plus, Package, Camera } from "lucide-react";
+import { ChevronLeft, Plus, Package, Camera, Pencil, X, Check } from "lucide-react";
 import { getCachedUser } from "@/lib/cache";
 
 type Product = {
@@ -22,6 +22,7 @@ export default function StudioShop() {
   const [uploadingImage, setUploadingImage] = useState(false);
 
   // Form State
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
@@ -51,21 +52,19 @@ export default function StudioShop() {
 
     setUploadingImage(true);
     try {
-      // 1. Get presigned URL from your existing R2 upload API
       const presign = await fetch("/api/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           filename: file.name,
           contentType: file.type || "image/jpeg",
-          folder: "merch", // Puts merch in its own folder
+          folder: "merch",
         }),
       });
       
       if (!presign.ok) throw new Error("Upload prep failed");
       const { signedUrl, publicUrl } = await presign.json();
 
-      // 2. Upload directly to R2
       const put = await fetch(signedUrl, {
         method: "PUT",
         headers: { "Content-Type": file.type || "image/jpeg" },
@@ -73,8 +72,6 @@ export default function StudioShop() {
       });
 
       if (!put.ok) throw new Error("Upload to R2 failed");
-      
-      // 3. Save the public URL to state
       setImageUrl(publicUrl);
     } catch (err: any) {
       alert("Image upload failed: " + err.message);
@@ -83,29 +80,43 @@ export default function StudioShop() {
     }
   };
 
-  const handleAdd = async (e: React.FormEvent) => {
+  const resetForm = () => {
+    setEditingId(null);
+    setName("");
+    setDescription("");
+    setPrice("");
+    setImageUrl("");
+  };
+
+  const handleEdit = (p: Product) => {
+    setEditingId(p.id);
+    setName(p.name);
+    setDescription(p.description || "");
+    setPrice((p.price_cents / 100).toFixed(2));
+    setImageUrl(p.image_url || "");
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!creatorId || !name || !price) return;
     setSaving(true);
 
     const priceCents = Math.round(Number(price) * 100);
-    
-    await fetch("/api/creator/products", {
-      method: "POST",
+    const isEditing = editingId !== null;
+
+    const endpoint = "/api/creator/products";
+    const method = isEditing ? "PATCH" : "POST";
+    const body = isEditing 
+      ? { id: editingId, name, description, price_cents: priceCents, image_url: imageUrl }
+      : { creatorId, name, description, price_cents: priceCents, image_url: imageUrl };
+
+    await fetch(endpoint, {
+      method,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        creatorId,
-        name,
-        description,
-        price_cents: priceCents,
-        image_url: imageUrl,
-      }),
+      body: JSON.stringify(body),
     });
 
-    setName("");
-    setDescription("");
-    setPrice("");
-    setImageUrl("");
+    resetForm();
     await load();
     setSaving(false);
   };
@@ -125,31 +136,29 @@ export default function StudioShop() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         
-        {/* Add Product Form */}
+        {/* Add / Edit Product Form */}
         <div className="md:col-span-1">
-          <form onSubmit={handleAdd} className="bg-[#141418] border border-white/5 rounded-xl p-5 space-y-4">
-            <h2 className="font-bold text-lg mb-2">Add Product</h2>
+          <form onSubmit={handleSave} className="bg-[#141418] border border-white/5 rounded-xl p-5 space-y-4">
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="font-bold text-lg">{editingId ? "Edit Product" : "Add Product"}</h2>
+              {editingId && (
+                <button type="button" onClick={resetForm} className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1">
+                  <X size={12} /> Cancel
+                </button>
+              )}
+            </div>
 
-            {/* Image Upload Box */}
             <div>
               <label className="text-xs text-white/50 block mb-1">Product Image</label>
               <label className="block border-2 border-dashed border-white/10 hover:border-red-600/50 rounded-xl overflow-hidden cursor-pointer transition">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  disabled={uploadingImage}
-                  className="hidden"
-                />
+                <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploadingImage} className="hidden" />
                 {imageUrl ? (
                   <img src={imageUrl} alt="" className="w-full aspect-square object-cover" />
                 ) : (
                   <div className="aspect-square flex items-center justify-center bg-black/20">
                     <div className="text-center">
                       <Camera size={24} className="mx-auto mb-2 text-white/40" />
-                      <p className="text-xs text-white/50">
-                        {uploadingImage ? "Uploading..." : "Click to upload"}
-                      </p>
+                      <p className="text-xs text-white/50">{uploadingImage ? "Uploading..." : "Click to upload"}</p>
                     </div>
                   </div>
                 )}
@@ -172,7 +181,8 @@ export default function StudioShop() {
             </div>
 
             <button disabled={saving || uploadingImage} type="submit" className="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-2.5 rounded-lg text-sm transition flex items-center justify-center gap-2 disabled:opacity-50">
-              <Plus size={16} /> {saving ? "Saving..." : "Add Product"}
+              {editingId ? <Check size={16} /> : <Plus size={16} />} 
+              {saving ? "Saving..." : editingId ? "Update Product" : "Add Product"}
             </button>
           </form>
         </div>
@@ -188,7 +198,7 @@ export default function StudioShop() {
             </div>
           ) : (
             products.map(p => (
-              <div key={p.id} className="bg-[#141418] border border-white/5 rounded-xl p-3 flex gap-4 items-center">
+              <div key={p.id} className={`bg-[#141418] border ${editingId === p.id ? 'border-red-500/50' : 'border-white/5'} rounded-xl p-3 flex gap-4 items-center transition`}>
                 <div className="w-16 h-16 rounded-lg bg-black flex-shrink-0 overflow-hidden">
                   {p.image_url ? <img src={p.image_url} className="w-full h-full object-cover" /> : <Package size={20} className="m-auto text-white/20 mt-5" />}
                 </div>
@@ -196,6 +206,13 @@ export default function StudioShop() {
                   <p className="font-bold truncate">{p.name}</p>
                   <p className="text-sm text-green-400">${(p.price_cents / 100).toFixed(2)}</p>
                 </div>
+                <button 
+                  onClick={() => handleEdit(p)}
+                  className="p-2 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white rounded-lg transition"
+                  title="Edit Product"
+                >
+                  <Pencil size={16} />
+                </button>
               </div>
             ))
           )}
