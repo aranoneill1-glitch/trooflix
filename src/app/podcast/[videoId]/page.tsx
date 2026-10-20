@@ -126,11 +126,7 @@ export default function WatchPage() {
           <div className="flex-1 min-w-0">
             
             {/* Video Player — wrapped in PaywallGate */}
-            <PaywallGate
-              isPodcasterContent={!!(video.creatorId || video.uploaderUserId)}
-              contentType={video.type}
-              videoId={video.id}
-            >
+            <PaywallGate contentType={video.type}>
               {({ videoRef, onTimeUpdate, onContextMenu, onSeeking, onPlay }) => (
                 <div className="relative w-full aspect-video bg-black md:rounded-xl overflow-hidden shadow-2xl">
                   <video
