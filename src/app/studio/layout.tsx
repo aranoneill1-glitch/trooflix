@@ -1,5 +1,6 @@
 "use client";
 
+import { DollarSign } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
