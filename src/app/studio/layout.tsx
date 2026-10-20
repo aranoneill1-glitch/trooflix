@@ -1,6 +1,5 @@
 "use client";
 
-import { DollarSign } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
@@ -11,6 +10,7 @@ import {
   Settings,
   LogOut,
   ChevronLeft,
+  DollarSign,
 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { clearUserCache } from "@/lib/cache";
@@ -27,6 +27,7 @@ const NAV = [
   { label: "Overview", path: "/studio", icon: Home },
   { label: "Episodes", path: "/studio/episodes", icon: Video },
   { label: "Upload", path: "/studio/upload", icon: Upload },
+  { label: "Premium", path: "/studio/premium", icon: DollarSign },
   { label: "Settings", path: "/studio/settings", icon: Settings },
 ];
 
