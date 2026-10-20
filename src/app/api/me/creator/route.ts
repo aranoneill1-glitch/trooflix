@@ -7,7 +7,6 @@ const supabaseAdmin = createServerClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
   { auth: { autoRefreshToken: false, persistSession: false } }
 );
-
 const CREATORS_KEY = "trooflix:creators";
 
 export async function GET(req: Request) {
@@ -19,16 +18,17 @@ export async function GET(req: Request) {
     const creators = (await kv.get<any[]>(CREATORS_KEY)) || [];
     const creator = creators.find((c: any) => String(c.ownerUserId) === String(userId)) || null;
     
-    if (creator && !creator.photoUrl) {
-      // Fetch avatar directly from Supabase
+    if (creator) {
+      // Fix the missing avatar: always pull latest profile data
       const { data: profile } = await supabaseAdmin
         .from("profiles")
-        .select("avatar_url")
+        .select("avatar_url, display_name")
         .eq("user_id", userId)
         .maybeSingle();
         
-      if (profile?.avatar_url) {
-        creator.photoUrl = profile.avatar_url;
+      if (profile) {
+        if (profile.avatar_url) creator.photoUrl = profile.avatar_url;
+        if (profile.display_name) creator.name = profile.display_name;
       }
     }
 

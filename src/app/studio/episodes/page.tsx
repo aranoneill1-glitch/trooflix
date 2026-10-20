@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Video as VideoIcon, Plus, Trash2, Eye, Heart, MessageCircle, ArrowUpDown } from "lucide-react";
+import { Video as VideoIcon, Plus, Trash2, Eye, Heart, MessageCircle, ArrowUpDown, Lock, Unlock } from "lucide-react";
 import { getCachedUser } from "@/lib/cache";
 
 type Video = {
@@ -15,6 +15,7 @@ type Video = {
   viewCount?: number;
   likeCount?: number;
   commentCount?: number;
+  is_premium?: boolean;
 };
 
 type SortMode = "newest" | "oldest" | "plays" | "likes";
@@ -40,7 +41,6 @@ export default function StudioEpisodes() {
       const vRes = await fetch(`/api/creators/videos?creatorId=${cr.creator.id}`, { cache: "no-store" }).then((r) => r.json());
       setVideos(Array.isArray(vRes.videos) ? vRes.videos : []);
 
-      // Fetch like + comment counts
       try {
         const lr = await fetch("/api/like-counts").then((r) => r.json());
         setLikeCounts(lr.counts || {});
@@ -85,9 +85,25 @@ export default function StudioEpisodes() {
     setDeleting(null);
   };
 
+  const togglePremium = async (v: Video) => {
+    const newPremium = !v.is_premium;
+    // Optimistic UI
+    setVideos(prev => prev.map(x => x.id === v.id ? { ...x, is_premium: newPremium } : x));
+    try {
+      await fetch("/api/creators/videos", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ videoId: v.id, is_premium: newPremium }),
+      });
+    } catch {
+      // Revert on failure
+      setVideos(prev => prev.map(x => x.id === v.id ? { ...x, is_premium: !newPremium } : x));
+      alert("Failed to update premium status");
+    }
+  };
+
   return (
     <div className="p-4 md:p-8 max-w-5xl">
-      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
         <div>
           <h1 className="text-2xl md:text-3xl font-black mb-1">Episodes</h1>
@@ -103,7 +119,6 @@ export default function StudioEpisodes() {
         </Link>
       </div>
 
-      {/* Sort */}
       {videos.length > 0 && (
         <div className="flex items-center gap-2 mb-4">
           <ArrowUpDown size={14} className="text-white/40" />
@@ -159,7 +174,6 @@ export default function StudioEpisodes() {
                 </div>
               </div>
 
-              {/* Stats */}
               <div className="flex items-center gap-4 text-xs text-white/60 md:mr-4">
                 <span className="inline-flex items-center gap-1" title="Plays">
                   <Eye size={14} /> {(v.viewCount || 0).toLocaleString()}
@@ -172,8 +186,18 @@ export default function StudioEpisodes() {
                 </span>
               </div>
 
-              {/* Actions */}
               <div className="flex items-center gap-2 md:flex-shrink-0">
+                <button
+                  onClick={() => togglePremium(v)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+                    v.is_premium
+                      ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
+                      : "bg-white/5 text-white/50 hover:bg-white/10"
+                  }`}
+                >
+                  {v.is_premium ? <Lock size={14} /> : <Unlock size={14} />}
+                  {v.is_premium ? "Premium" : "Free"}
+                </button>
                 <button
                   onClick={() => handleDelete(v)}
                   disabled={deleting === v.id}
