@@ -96,6 +96,7 @@ export default function ProfilePage() {
   const [uploading, setUploading] = useState(false);
   const [statusMsg, setStatusMsg] = useState("");
   const [portalLoading, setPortalLoading] = useState(false);
+  const [settingUpPass, setSettingUpPass] = useState(false);
   const [savedPosts, setSavedPosts] = useState<Post[]>([]);
   const [repostedPosts, setRepostedPosts] = useState<Post[]>([]);
   const [mobileTab, setMobileTab] = useState<"uploads" | "saved" | "reposts">("uploads");
@@ -438,11 +439,53 @@ export default function ProfilePage() {
     }
   };
 
+  // Poll for has_pass after checkout — webhook can take 2-5s
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("upgraded") !== "pass" || !userId) return;
+
+    setSettingUpPass(true);
+
+    let attempts = 0;
+    const maxAttempts = 10;
+    const interval = setInterval(async () => {
+      attempts++;
+      try {
+        const r = await fetch(`/api/profile?user_id=${userId}`, { cache: "no-store" });
+        const d = await r.json();
+        if (d.profile?.has_pass === true) {
+          setProfile(d.profile);
+          setSettingUpPass(false);
+          clearInterval(interval);
+          window.history.replaceState({}, "", window.location.pathname);
+        }
+      } catch {}
+
+      if (attempts >= maxAttempts) {
+        setSettingUpPass(false);
+        clearInterval(interval);
+      }
+    }, 1500);
+
+    return () => clearInterval(interval);
+  }, [userId]);
+
   return (
     <main className="min-h-screen bg-black text-white pb-24 lg:pb-0">
       <TopBar />
 
       <div className="pt-20 md:pt-24 max-w-2xl mx-auto px-4 md:px-6">
+        {settingUpPass && !loading && (
+          <div className="bg-yellow-950/30 border border-yellow-600/40 rounded-xl p-4 mb-4 flex items-center gap-3">
+            <div className="w-4 h-4 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin flex-shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-yellow-300">Setting up your Trooflix Pass…</p>
+              <p className="text-xs text-white/60">This takes a few seconds. Your badge will appear shortly.</p>
+            </div>
+          </div>
+        )}
+
         {loading && <p className="text-white/50 py-12 text-center">Loading…</p>}
 
         {!loading && (
