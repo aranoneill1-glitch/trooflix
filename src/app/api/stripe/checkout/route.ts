@@ -52,8 +52,8 @@ export async function POST(req: Request) {
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
-      success_url: `${process.env.NEXT_PUBLIC_URL}/profile?upgraded=1`,
-      cancel_url: `${process.env.NEXT_PUBLIC_URL}/upgrade`,
+      success_url: `${process.env.NEXT_PUBLIC_URL || "https://www.trooflixtv.com"}/profile?upgraded=1`,
+      cancel_url: `${process.env.NEXT_PUBLIC_URL || "https://www.trooflixtv.com"}/upgrade`,
       client_reference_id: userId,
       subscription_data: { metadata: { userId, tier } },
     });
