@@ -93,25 +93,21 @@ export default function PodcasterProfilePage() {
           .then((d) => setFollowerCount(d.count ?? 0))
           .catch(() => setFollowerCount(0));
 
-        // Fetch Premium Data & Subscription Status
-        if (found.ownerUserId) {
-          fetch(`/api/profile?user_id=${found.ownerUserId}`)
-            .then((r) => r.json())
-            .then((d) => {
-              if (d.profile?.premium_enabled) {
-                setPremiumData({ enabled: true, price_cents: d.profile.premium_price_cents });
-              }
-            });
-
-          getCachedUser().then((u) => {
-            if (u) {
-              setUserId(u.id);
-              fetch(`/api/creator/check-sub?userId=${u.id}&creatorId=${found.id}`)
-                .then((r) => r.json())
-                .then((d) => setHasSub(!!d.hasSub));
-            }
+        // Fetch Premium Data & Subscription Status using Creator ID
+        fetch(`/api/creator/public-premium?creatorId=${found.id}`)
+          .then((r) => r.json())
+          .then((d) => {
+            if (d.enabled) setPremiumData({ enabled: true, price_cents: d.price_cents });
           });
-        }
+
+        getCachedUser().then((u) => {
+          if (u) {
+            setUserId(u.id);
+            fetch(`/api/creator/check-sub?userId=${u.id}&creatorId=${found.id}`)
+              .then((r) => r.json())
+              .then((d) => setHasSub(!!d.hasSub));
+          }
+        });
 
         setLoading(false);
       })
