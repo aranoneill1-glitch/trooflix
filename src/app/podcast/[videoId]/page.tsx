@@ -13,10 +13,11 @@ import LikeButton from "@/components/LikeButton";
 import SaveButton from "@/components/SaveButton";
 import ShareReelSheet from "@/components/ShareReelSheet";
 import ViewCount from "@/components/ViewCount";
-import { getCachedCreators } from "@/lib/cache";
+import { getCachedCreators, getCachedUser } from "@/lib/cache";
 import InlineComments from "@/components/InlineComments";
 import PaywallGate from "@/components/PaywallGate";
 import ReportModal from "@/components/ReportModal";
+import WatchTimeTracker from "@/components/WatchTimeTracker";
 
 type Video = {
   id: number;
@@ -57,16 +58,21 @@ export default function WatchPage() {
 
   const [video, setVideo] = useState<Video | null>(null);
   const [creator, setCreator] = useState<Creator | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [showShare, setShowShare] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [followerCount, setFollowerCount] = useState<number | null>(null);
 
   useEffect(() => {
+    // Get the current user for the Watch Time Tracker
+    getCachedUser().then((u) => {
+      if (u) setUserId(u.id);
+    });
+
     getCachedCreators().then(async (creatorsList) => {
       const list: Creator[] = Array.isArray(creatorsList) ? creatorsList : [];
       
-      // Fetch the video directly from the API
       const res = await fetch(`/api/videos`, { cache: "no-store" });
       const allVideos = await res.json();
       const found = allVideos.find((v: any) => v.id === videoId);
@@ -108,6 +114,16 @@ export default function WatchPage() {
 
   return (
     <main className="min-h-screen bg-black text-white pb-24 lg:pb-0">
+      
+      {/* Background Watch Time Tracker */}
+      {userId && video.creatorId && (
+        <WatchTimeTracker 
+          userId={userId} 
+          videoId={video.id.toString()} 
+          creatorId={video.creatorId.toString()} 
+        />
+      )}
+
       <TopBar />
 
       <div className="pt-20 md:pt-24 max-w-7xl mx-auto px-0 md:px-8">
