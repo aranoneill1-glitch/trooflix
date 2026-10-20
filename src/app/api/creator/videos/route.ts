@@ -11,9 +11,8 @@ export async function GET(req: Request) {
 
   try {
     const allVideos = (await kv.get<any[]>(VIDEOS_KEY)) || [];
-    // Just match the exact ID that the video object uses
+    // Match the exact creatorId
     const myVideos = allVideos.filter((v: any) => String(v.creatorId) === String(creatorId));
-
     return NextResponse.json({ videos: myVideos });
   } catch (e) {
     return NextResponse.json({ videos: [] });
@@ -30,7 +29,6 @@ export async function PATCH(req: Request) {
       allVideos[idx] = { ...allVideos[idx], is_premium };
       await kv.set(VIDEOS_KEY, allVideos);
     }
-
     return NextResponse.json({ ok: true });
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 });

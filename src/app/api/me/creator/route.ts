@@ -7,36 +7,36 @@ const supabaseAdmin = createServerClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
   { auth: { autoRefreshToken: false, persistSession: false } }
 );
-
 const CREATORS_KEY = "trooflix:creators";
+const VIDEOS_KEY = "trooflix:videos";
 
-// GET /api/me/creator?user_id=X
-// Returns { creator } if this user is an approved creator, else { creator: null }
 export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const userId = searchParams.get("user_id");
+  if (!userId) return NextResponse.json({ creator: null });
+
   try {
-    const { searchParams } = new URL(req.url);
-    const userId = searchParams.get("user_id");
-    if (!userId) return NextResponse.json({ creator: null });
-
-    // 1. Verify their application is approved
-    const { data: app, error: appErr } = await supabaseAdmin
-      .from("creator_applications")
-      .select("status")
-      .eq("user_id", userId)
-      .maybeSingle();
-
-    if (appErr) throw appErr;
-    if (!app || app.status !== "approved") {
-      return NextResponse.json({ creator: null });
+    const creators = (await kv.get<any[]>(CREATORS_KEY)) || [];
+    const creator = creators.find((c: any) => String(c.ownerUserId) === String(userId));
+    
+    if (!creator) {
+      // If they don't have a creator record yet, return profile data so the avatar shows
+      const { data: profile } = await supabaseAdmin.from("profiles").select("username, display_name, avatar_url").eq("user_id", userId).maybeSingle();
+      return NextResponse.json({ creator: profile ? { name: profile.display_name || profile.username, photoUrl: profile.avatar_url, id: null } : null });
     }
 
-    // 2. Find their creator record in KV (linked via ownerUserId)
-    const creators = (await kv.get<any[]>(CREATORS_KEY)) || [];
-    const creator = creators.find((c: any) => c.ownerUserId === userId) || null;
+    // Get videos for this creator to fix the Studio stats
+    const allVideos = (await kv.get<any[]>(VIDEOS_KEY)) || [];
+    const myVideos = allVideos.filter((v: any) => String(v.creatorId) === String(creator.id));
+    
+    // Ensure the creator object has the photoUrl
+    if (!creator.photoUrl) {
+      const { data: profile } = await supabaseAdmin.from("profiles").select("avatar_url").eq("user_id", userId).maybeSingle();
+      if (profile?.avatar_url) creator.photoUrl = profile.avatar_url;
+    }
 
-    return NextResponse.json({ creator });
-  } catch (e: any) {
-    console.error("GET /api/me/creator error:", e);
+    return NextResponse.json({ creator, stats: { episodes: myVideos.length, plays: 0, followers: 0, likes: 0 } });
+  } catch (e) {
     return NextResponse.json({ creator: null });
   }
 }
