@@ -59,9 +59,12 @@ export default function TopBar({ onMenu }: Props) {
 
       {/* Logo OR Plus Button */}
       {pathname === "/profile" ? (
-        <button onClick={() => setCreateOpen(true)} className="p-1 hover:bg-white/10 rounded-full transition shrink-0">
-          <Plus size={24} className="text-white" />
-        </button>
+        <div className="relative shrink-0">
+          <button onClick={() => setCreateOpen(!createOpen)} className="p-1 hover:bg-white/10 rounded-full transition">
+            <Plus size={24} className="text-white" />
+          </button>
+          <CreateSheet open={createOpen} onClose={() => setCreateOpen(false)} />
+        </div>
       ) : (
         <Link href="/" className="text-xl md:text-2xl font-black tracking-tight shrink-0">
           <span className="text-white">TROO</span>
@@ -151,7 +154,6 @@ export default function TopBar({ onMenu }: Props) {
           <UserMenu />
         </div>
       </div>
-    <CreateSheet open={createOpen} onClose={() => setCreateOpen(false)} />
     </nav>
   );
 }
