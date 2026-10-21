@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { X, Play, Pause, Volume2, VolumeX, MessageCircle, Share, Send, Eye } from "lucide-react";
+import Link from "next/link";
+import { X, Play, Volume2, VolumeX, MessageCircle, Share, Send, Eye } from "lucide-react";
 import LikeButton from "@/components/LikeButton";
 import SaveButton from "@/components/SaveButton";
 import ViewCount, { trackView } from "@/components/ViewCount";
@@ -31,19 +32,17 @@ export default function ProfileReelViewer({
   videos: Video[];
   initialIndex: number;
   onClose: () => void;
-  author: { name: string; avatar: string; verified: boolean };
+  author: { name: string; avatar: string; verified: boolean; profileHref: string };
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(initialIndex);
   const [muted, setMuted] = useState(true);
   
-  // Modals/Drawers state
   const [commentVideo, setCommentVideo] = useState<Video | null>(null);
   const [shareVideo, setShareVideo] = useState<Video | null>(null);
 
   const trackedViews = useRef<Set<number>>(new Set());
 
-  // Scroll to the initially clicked video on mount
   useEffect(() => {
     if (containerRef.current) {
       const container = containerRef.current;
@@ -54,7 +53,6 @@ export default function ProfileReelViewer({
     }
   }, [initialIndex]);
 
-  // Intersection Observer to detect which video is currently on screen
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -66,7 +64,6 @@ export default function ProfileReelViewer({
             const index = Number((entry.target as HTMLElement).dataset.index);
             setActiveIndex(index);
             
-            // Track view using the same function as the main feed
             const videoId = Number((entry.target as HTMLElement).dataset.videoId);
             if (!trackedViews.current.has(videoId)) {
               trackedViews.current.add(videoId);
@@ -84,14 +81,12 @@ export default function ProfileReelViewer({
 
   return (
     <div className="fixed inset-0 z-[200] bg-black flex flex-col">
-      {/* Top Bar */}
       <div className="absolute top-0 left-0 right-0 z-50 p-4 pt-[env(safe-area-inset-top)] bg-gradient-to-b from-black/80 to-transparent flex justify-between items-center">
         <button onClick={onClose} className="p-2 bg-black/40 rounded-full text-white backdrop-blur">
           <X size={24} />
         </button>
       </div>
 
-      {/* Reels Container */}
       <div
         ref={containerRef}
         className="flex-1 overflow-y-auto snap-y snap-mandatory scrollbar-hide"
@@ -112,7 +107,6 @@ export default function ProfileReelViewer({
         ))}
       </div>
 
-      {/* Drawers / Modals */}
       {commentVideo && (
         <CommentDrawer
           videoId={commentVideo.id}
@@ -140,7 +134,6 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
-
     if (isActive) {
       v.play().catch(() => {});
       setPlaying(true);
@@ -180,34 +173,23 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
         onClick={togglePlay}
       />
 
-      {/* Overlay UI */}
-      <div className="absolute inset-0 flex flex-col justify-end p-4 pb-24 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none">
+      <div className="absolute inset-0 flex flex-col justify-end p-4 pb-6 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none">
         
-        {/* RIGHT SIDE ACTION BAR (Matching Feed) */}
+        {/* RIGHT SIDE ACTIONS */}
         <div className="absolute right-4 bottom-20 flex flex-col items-center gap-5 pointer-events-auto">
-          
-          {/* Like */}
           <div className="flex flex-col items-center gap-1 text-white drop-shadow-md">
             <LikeButton videoId={video.id} size={26} showCount={true} />
           </div>
-
-          {/* Comments */}
           <button onClick={onOpenComments} className="flex flex-col items-center gap-1 text-white drop-shadow-md">
             <MessageCircle size={26} />
           </button>
-
-          {/* Views */}
           <div className="flex flex-col items-center gap-1 text-white/80 drop-shadow-md">
             <Eye size={24} />
             <span className="text-xs font-semibold"><ViewCount videoId={video.id} showIcon={false} /></span>
           </div>
-
-          {/* Share */}
           <button onClick={onOpenShare} className="flex flex-col items-center gap-1 text-white drop-shadow-md">
             <Send size={26} />
           </button>
-
-          {/* External Share */}
           <button onClick={() => {
             const url = window.location.origin + `/feed?reel=${video.id}`;
             if (navigator.share) navigator.share({ url });
@@ -215,41 +197,34 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
           }} className="flex flex-col items-center gap-1 text-white drop-shadow-md">
             <Share size={24} />
           </button>
-
-          {/* Bookmark */}
           <div className="flex flex-col items-center gap-1 text-white drop-shadow-md">
             <SaveButton videoId={video.id} variant="icon" size={24} />
           </div>
-
         </div>
 
-        {/* BOTTOM LEFT INFO */}
-        <div className="flex-1 flex flex-col justify-end max-w-[75%] pointer-events-auto">
+        {/* BOTTOM LEFT INFO (Pushed down, smaller text, clickable avatar) */}
+        <div className="flex-1 flex flex-col justify-end max-w-[75%] pointer-events-auto mb-2">
           
-          {/* Creator Info */}
-          {author && (
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-red-600 to-red-900 overflow-hidden flex-shrink-0 border border-white/20">
-                {author.avatar ? (
-                  <img src={author.avatar} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-xs font-bold text-white">
-                    {author.name?.[0]?.toUpperCase() || "?"}
-                  </div>
-                )}
-              </div>
-              <span className="font-bold text-white text-[15px] drop-shadow-md flex items-center gap-1">
-                {author.name || "User"}
-                {author.verified && <VerifiedBadge size={14} variant="gold" />}
-              </span>
+          <Link href={author.profileHref} className="flex items-center gap-2 mb-2 w-max">
+            <div className="w-11 h-11 rounded-full bg-gradient-to-br from-red-600 to-red-900 overflow-hidden flex-shrink-0 border border-white/20">
+              {author.avatar ? (
+                <img src={author.avatar} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-sm font-bold text-white">
+                  {author.name?.[0]?.toUpperCase() || "?"}
+                </div>
+              )}
             </div>
-          )}
+            <span className="font-bold text-white text-[13px] drop-shadow-md flex items-center gap-1">
+              {author.name || "User"}
+              {author.verified && <VerifiedBadge size={13} variant="gold" />}
+            </span>
+          </Link>
 
-          {video.title && <h3 className="text-white font-bold text-lg mb-1 drop-shadow-md">{video.title}</h3>}
-          {video.description && <p className="text-white/90 text-sm line-clamp-2 mb-2 drop-shadow-md">{video.description}</p>}
+          {video.title && <h3 className="text-white font-bold text-sm mb-1 drop-shadow-md">{video.title}</h3>}
+          {video.description && <p className="text-white/80 text-xs line-clamp-2 mb-3 drop-shadow-md">{video.description}</p>}
         </div>
 
-        {/* PLAY/PAUSE CONTROL */}
         {!playing && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-auto">
              <div className="p-5 bg-black/50 rounded-full backdrop-blur text-white">
@@ -258,7 +233,6 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
           </div>
         )}
         
-        {/* MUTE CONTROL */}
         <div className="absolute left-4 top-16 pointer-events-auto">
            <button onClick={onToggleMute} className="p-2.5 bg-black/50 rounded-full backdrop-blur text-white">
              {muted ? <VolumeX size={20} /> : <Volume2 size={20} />}

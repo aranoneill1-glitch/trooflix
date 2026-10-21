@@ -308,7 +308,8 @@ export default function UserProfilePage() {
           author={{
             name: user?.display_name || user?.username || "User",
             avatar: user?.avatar_url || "",
-            verified: user?.is_verified || false
+            verified: user?.is_verified || false,
+            profileHref: user?.username ? `/u/${user.username}` : "#"
           }}
         />
       )}

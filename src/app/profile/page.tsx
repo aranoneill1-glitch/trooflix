@@ -1652,7 +1652,8 @@ export default function ProfilePage() {
           author={{
             name: profile?.display_name || profile?.username || "User",
             avatar: profile?.avatar_url || "",
-            verified: profile?.is_verified || false
+            verified: profile?.is_verified || false,
+            profileHref: "/profile"
           }}
         />
       )}
