@@ -103,7 +103,7 @@ export default function ProfilePage() {
   const [settingUpPass, setSettingUpPass] = useState(false);
   const [savedPosts, setSavedPosts] = useState<Post[]>([]);
   const [repostedPosts, setRepostedPosts] = useState<Post[]>([]);
-  const [mobileTab, setMobileTab] = useState<"uploads" | "saved" | "reposts">("uploads");
+  const [mobileTab, setMobileTab] = useState<"uploads" | "premium" | "saved" | "reposts">("uploads");
   const [uploadsView, setUploadsView] = useState<"grid" | "list">("grid");
   const [repostsView, setRepostsView] = useState<"grid" | "list">("grid");
   const [savedView, setSavedView] = useState<"grid" | "list">("grid");
@@ -289,6 +289,10 @@ export default function ProfilePage() {
     tab === "reels"
       ? posts.filter((p) => p.type === "Reel" || p.type === "Short")
       : posts;
+
+  const isPodcaster = profile?.tier === "podcaster";
+  const visibleReels = posts.filter((p: any) => p.type !== "Podcast" && p.type !== "Documentary");
+  const visiblePremium = posts.filter((p: any) => p.type === "Podcast" || p.type === "Documentary");
 
   // ---- Long press / right click on grid tiles ----
   const startLongPress = (post: Post) => {
@@ -500,7 +504,8 @@ export default function ProfilePage() {
       }
     }, 1500);
 
-    return () => clearInterval(interval);
+
+  return () => clearInterval(interval);
   }, [userId]);
 
   return (
@@ -641,8 +646,20 @@ export default function ProfilePage() {
                     : "border-transparent text-white/50"
                 }`}
               >
-                My Posts
+                {isPodcaster ? "Reels" : "My Posts"}
               </button>
+              {isPodcaster && (
+                <button
+                  onClick={() => setMobileTab("premium")}
+                  className={`flex-1 py-3 text-sm font-semibold border-b-2 transition ${
+                    mobileTab === "premium"
+                      ? "border-white text-white"
+                      : "border-transparent text-white/50"
+                  }`}
+                >
+                  Premium
+                </button>
+              )}
               <button
                 onClick={() => setMobileTab("reposts")}
                 className={`flex-1 py-3 text-sm font-semibold border-b-2 transition ${
@@ -671,7 +688,7 @@ export default function ProfilePage() {
               <div className={`${mobileTab === "uploads" ? "" : "hidden"}`}>
                 <div className="flex items-center justify-between px-4 md:px-6 mb-3">
                   <h2 className="text-sm font-bold text-white/80 uppercase tracking-wider">
-                    My Posts
+                    {isPodcaster ? "Reels" : "My Posts"}
                   </h2>
                   <div className="flex items-center gap-1">
                     <button
@@ -695,7 +712,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                {visiblePosts.length === 0 ? (
+                {visibleReels.length === 0 ? (
                   <div className="py-12 text-center text-white/40 text-sm px-4">
                     {postsKind === "creator"
                       ? "No uploads yet."
@@ -703,7 +720,7 @@ export default function ProfilePage() {
                   </div>
                 ) : uploadsView === "grid" ? (
                   <div className="grid grid-cols-3 gap-0.5">
-                    {visiblePosts.map((p) => (
+                    {visibleReels.map((p) => (
                       <Link
                         key={p.id}
                         href={p.creatorId ? `/podcaster/_/${p.id}` : `/feed`}
@@ -744,7 +761,7 @@ export default function ProfilePage() {
                   </div>
                 ) : (
                   <div className="space-y-1 px-4 md:px-6">
-                    {visiblePosts.map((p) => (
+                    {visibleReels.map((p) => (
                       <Link
                         key={p.id}
                         href={p.creatorId ? `/podcaster/_/${p.id}` : `/feed`}
@@ -780,6 +797,124 @@ export default function ProfilePage() {
                   </div>
                 )}
               </div>
+
+              
+
+              {/* ==== PREMIUM (middle on desktop, tab on mobile) ==== */}
+              <div className={`${mobileTab === "premium" ? "" : "hidden"}`}>
+                <div className="flex items-center justify-between px-4 md:px-6 mb-3">
+                  <h2 className="text-sm font-bold text-white/80 uppercase tracking-wider">
+                    Premium Content
+                  </h2>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setUploadsView("grid")}
+                      className={`p-1.5 rounded transition ${
+                        uploadsView === "grid" ? "bg-white/15 text-white" : "text-white/40 hover:text-white"
+                      }`}
+                      aria-label="Grid view"
+                    >
+                      <Grid3x3 size={16} />
+                    </button>
+                    <button
+                      onClick={() => setUploadsView("list")}
+                      className={`p-1.5 rounded transition ${
+                        uploadsView === "list" ? "bg-white/15 text-white" : "text-white/40 hover:text-white"
+                      }`}
+                      aria-label="List view"
+                    >
+                      <List size={16} />
+                    </button>
+                  </div>
+                </div>
+
+                {visiblePremium.length === 0 ? (
+                  <div className="py-12 text-center text-white/40 text-sm px-4">
+                    {postsKind === "creator"
+                      ? "No uploads yet."
+                      : "No reels yet."}
+                  </div>
+                ) : uploadsView === "grid" ? (
+                  <div className="grid grid-cols-3 gap-0.5">
+                    {visiblePremium.map((p) => (
+                      <Link
+                        key={p.id}
+                        href={p.creatorId ? `/podcaster/_/${p.id}` : `/feed`}
+                        className="relative aspect-[4/5] bg-[#141418] overflow-hidden group"
+                        onPointerDown={() => startLongPress(p)}
+                        onPointerUp={cancelLongPress}
+                        onPointerLeave={cancelLongPress}
+                        onPointerCancel={cancelLongPress}
+                        onClick={(e) => handleTileClick(p, e)}
+                        onContextMenu={(e) => {
+                          e.preventDefault();
+                          setActionSheetFor(p);
+                        }}
+                        onDragStart={(e) => e.preventDefault()}
+                        style={{
+                          WebkitTouchCallout: "none",
+                          WebkitUserSelect: "none",
+                          userSelect: "none",
+                          touchAction: "manipulation",
+                        }}
+                        draggable={false}
+                      >
+                        <img
+                          src={p.posterUrl || p.backdropUrl}
+                          alt=""
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                        <div className="absolute top-1 right-1">
+                          <Play size={14} fill="white" className="text-white drop-shadow" />
+                        </div>
+                        <div className="absolute bottom-1 left-1 flex items-center gap-0.5 text-[10px] font-semibold text-white drop-shadow">
+                          <Eye size={11} />
+                          {(p.viewCount ?? 0).toLocaleString()}
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-1 px-4 md:px-6">
+                    {visiblePremium.map((p) => (
+                      <Link
+                        key={p.id}
+                        href={p.creatorId ? `/podcaster/_/${p.id}` : `/feed`}
+                        className="flex items-center gap-3 p-2 rounded-lg bg-[#141418] hover:bg-white/5 transition"
+                        onPointerDown={() => startLongPress(p)}
+                        onPointerUp={cancelLongPress}
+                        onPointerLeave={cancelLongPress}
+                        onPointerCancel={cancelLongPress}
+                        onClick={(e) => handleTileClick(p, e)}
+                        onContextMenu={(e) => {
+                          e.preventDefault();
+                          setActionSheetFor(p);
+                        }}
+                        style={{ WebkitTouchCallout: "none" }}
+                        draggable={false}
+                      >
+                        <img
+                          src={p.posterUrl || p.backdropUrl}
+                          alt=""
+                          className="w-12 h-16 rounded object-cover flex-shrink-0"
+                          loading="lazy"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold truncate">{p.title || "Untitled"}</p>
+                          <p className="text-xs text-white/50 flex items-center gap-1 mt-1">
+                            <Eye size={11} />
+                            {(p.viewCount ?? 0).toLocaleString()} views
+                          </p>
+                        </div>
+                        <Play size={14} fill="white" className="text-white/60 flex-shrink-0" />
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              
 
               {/* ==== REPOSTS (middle on desktop, tab on mobile) ==== */}
               <div className={`${mobileTab === "reposts" ? "" : "hidden"}`}>
