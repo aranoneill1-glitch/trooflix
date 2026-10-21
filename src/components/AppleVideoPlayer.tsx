@@ -43,15 +43,24 @@ export default function AppleVideoPlayer({
     };
   }, [isPlaying]);
 
-  // Tap screen to show controls (for 3 seconds)
-  const handleScreenTap = () => {
-    if (!showControls) {
-      setShowControls(true);
-      if (isPlaying) {
-        if (controlsTimeout.current) clearTimeout(controlsTimeout.current);
+  // Tap screen to toggle controls
+  const handleScreenTap = (e: React.MouseEvent) => {
+    // Ignore taps on actual buttons or the timeline slider
+    const target = e.target as HTMLElement;
+    if (target.closest('button') || target.closest('input')) return;
+
+    setShowControls((prev) => {
+      const next = !prev;
+      
+      if (controlsTimeout.current) clearTimeout(controlsTimeout.current);
+      
+      // If we are showing controls and the video is playing, start the auto-hide timer
+      if (next && isPlaying) {
         controlsTimeout.current = setTimeout(() => setShowControls(false), 3000);
       }
-    }
+      
+      return next;
+    });
   };
 
   const formatTime = (time: number) => {
