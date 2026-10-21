@@ -12,7 +12,7 @@ type Props = {
   onShare: () => void;
 };
 
-export default function ProfileMenu({ open, onClose, onEdit, onAvatar, onShare }: Props) {
+export default function ProfileMenu({ open, onClose, onEdit, onAvatar, onBackdrop, onShare }: Props) {
   return (
     <AnimatePresence>
       {open && (
