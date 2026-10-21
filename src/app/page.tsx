@@ -519,7 +519,7 @@ function Card({ item, hovered, onHover, onLeave, onSelect, onPlay, showCreator, 
       animate={{ scale: hovered ? 1.08 : 1 }}
       transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
       data-tv-focus
-      className="relative flex-shrink-0 w-[140px] md:w-[180px] aspect-[2/3] rounded overflow-hidden cursor-pointer z-10 hover:z-40 shadow-lg"
+      className="relative flex-shrink-0 w-[110px] md:w-[140px] aspect-[2/3] rounded overflow-hidden cursor-pointer z-10 hover:z-40 shadow-lg"
     >
       <img src={item.posterUrl} alt={item.title} className="w-full h-full object-cover" loading="lazy" />
 
