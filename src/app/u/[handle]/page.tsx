@@ -244,11 +244,11 @@ export default function UserProfilePage() {
                 <p className="text-center text-white/50 text-sm py-16">No posts yet.</p>
               ) : (
                 <div className="grid grid-cols-3 gap-0.5 -mx-4 md:-mx-6">
-                  {visibleReels.map((p) => (
-                    <Link
+                  {visibleReels.map((p, idx) => (
+                    <div
                       key={p.id}
-                      href={p.creatorId ? `/podcaster/_/${p.id}` : `/feed`}
-                      className="relative aspect-[4/5] bg-[#141418] overflow-hidden"
+                      onClick={() => setViewerIndex(idx)}
+                      className="relative aspect-[4/5] bg-[#141418] overflow-hidden cursor-pointer"
                     >
                       <img
                         src={p.posterUrl || p.backdropUrl}
@@ -256,7 +256,7 @@ export default function UserProfilePage() {
                         className="w-full h-full object-cover"
                         loading="lazy"
                       />
-                    </Link>
+                    </div>
                   ))}
                 </div>
               )
@@ -268,10 +268,10 @@ export default function UserProfilePage() {
               ) : (
                 <div className="grid grid-cols-3 gap-0.5 -mx-4 md:-mx-6">
                   {visiblePremium.map((p) => (
-                    <Link
+                    <div
                       key={p.id}
-                      href={p.creatorId ? `/podcaster/_/${p.id}` : `/feed`}
-                      className="relative aspect-[4/5] bg-[#141418] overflow-hidden"
+                      onClick={() => setViewerIndex(idx)}
+                      className="relative aspect-[4/5] bg-[#141418] overflow-hidden cursor-pointer"
                     >
                       <img
                         src={p.posterUrl || p.backdropUrl}

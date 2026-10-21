@@ -740,10 +740,10 @@ export default function ProfilePage() {
                 ) : uploadsView === "grid" ? (
                   <div className="grid grid-cols-3 gap-0.5">
                     {visibleReels.map((p) => (
-                      <Link
+                      <div
                         key={p.id}
-                        href={p.creatorId ? `/podcaster/_/${p.id}` : `/feed`}
-                        className="relative aspect-[4/5] bg-[#141418] overflow-hidden group"
+                        onClick={() => setViewerIndex(idx)}
+                        className="relative aspect-[4/5] bg-[#141418] overflow-hidden cursor-pointer"
                         onPointerDown={() => startLongPress(p)}
                         onPointerUp={cancelLongPress}
                         onPointerLeave={cancelLongPress}
@@ -775,7 +775,7 @@ export default function ProfilePage() {
                           <Eye size={11} />
                           {(p.viewCount ?? 0).toLocaleString()}
                         </div>
-                      </Link>
+                      </div>
                     ))}
                   </div>
                 ) : (
@@ -856,10 +856,10 @@ export default function ProfilePage() {
                 ) : uploadsView === "grid" ? (
                   <div className="grid grid-cols-3 gap-0.5">
                     {visiblePremium.map((p) => (
-                      <Link
+                      <div
                         key={p.id}
-                        href={p.creatorId ? `/podcaster/_/${p.id}` : `/feed`}
-                        className="relative aspect-[4/5] bg-[#141418] overflow-hidden group"
+                        onClick={() => setViewerIndex(idx)}
+                        className="relative aspect-[4/5] bg-[#141418] overflow-hidden cursor-pointer"
                         onPointerDown={() => startLongPress(p)}
                         onPointerUp={cancelLongPress}
                         onPointerLeave={cancelLongPress}
@@ -1073,10 +1073,10 @@ export default function ProfilePage() {
                 ) : savedView === "grid" ? (
                   <div className="grid grid-cols-3 gap-0.5">
                     {savedPosts.map((p) => (
-                      <Link
+                      <div
                         key={p.id}
-                        href={p.creatorId ? `/podcaster/_/${p.id}` : `/feed`}
-                        className="relative aspect-[4/5] bg-[#141418] overflow-hidden group"
+                        onClick={() => setViewerIndex(idx)}
+                        className="relative aspect-[4/5] bg-[#141418] overflow-hidden cursor-pointer"
                       >
                         <img
                           src={p.posterUrl || p.backdropUrl}
