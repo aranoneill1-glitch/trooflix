@@ -1416,6 +1416,14 @@ export default function ProfilePage() {
         )}
       </AnimatePresence>
 
+    
+      {/* Floating Profile Action Button */}
+      <button 
+        onClick={() => router.push("/profile/compose")} 
+        className="fixed top-20 right-6 p-3 bg-red-600 hover:bg-red-500 rounded-full shadow-lg transition z-50 flex items-center justify-center"
+      >
+        <Plus size={24} className="text-white" />
+      </button>
     </main>
   );
 }
