@@ -1,3 +1,4 @@
+import PushNotificationManager from "@/components/PushNotificationManager";
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -35,7 +36,8 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <PushNotificationManager />
+        <body className={inter.className}>
         <script
           dangerouslySetInnerHTML={{
             __html: `
