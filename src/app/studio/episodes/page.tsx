@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Video as VideoIcon, Plus, Trash2, Eye, Heart, MessageCircle, ArrowUpDown, Lock, Unlock } from "lucide-react";
+import { Video as VideoIcon, Plus, Trash2, Eye, Heart, MessageCircle, ArrowUpDown } from "lucide-react";
 import { getCachedUser } from "@/lib/cache";
 
 type Video = {
@@ -16,6 +16,7 @@ type Video = {
   likeCount?: number;
   commentCount?: number;
   is_premium?: boolean;
+  access_type?: string;
 };
 
 type SortMode = "newest" | "oldest" | "plays" | "likes";
@@ -85,20 +86,17 @@ export default function StudioEpisodes() {
     setDeleting(null);
   };
 
-  const togglePremium = async (v: Video) => {
-    const newPremium = !v.is_premium;
-    // Optimistic UI
-    setVideos(prev => prev.map(x => x.id === v.id ? { ...x, is_premium: newPremium } : x));
+  const updateAccess = async (v: Video, newAccess: string) => {
+    setVideos(prev => prev.map(x => x.id === v.id ? { ...x, access_type: newAccess } : x));
     try {
-      await fetch("/api/creators/videos", {
+      await fetch("/api/creator/videos", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ videoId: v.id, is_premium: newPremium }),
+        body: JSON.stringify({ videoId: v.id, access_type: newAccess }),
       });
     } catch {
-      // Revert on failure
-      setVideos(prev => prev.map(x => x.id === v.id ? { ...x, is_premium: !newPremium } : x));
-      alert("Failed to update premium status");
+      alert("Failed to update access level");
+      load(); // Revert on failure
     }
   };
 
@@ -150,65 +148,77 @@ export default function StudioEpisodes() {
         </div>
       ) : (
         <div className="space-y-2">
-          {sorted.map((v) => (
-            <div
-              key={v.id}
-              className="flex flex-col md:flex-row md:items-center gap-3 bg-[#0f0f12] border border-white/5 hover:border-white/10 rounded-xl p-3 transition"
-            >
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                <div className="w-14 h-14 md:w-16 md:h-16 rounded-lg overflow-hidden flex-shrink-0 bg-black">
-                  {v.posterUrl ? (
-                    <img src={v.posterUrl} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-white/30">
-                      <VideoIcon size={20} />
-                    </div>
-                  )}
+          {sorted.map((v) => {
+            // Determine current access (fallback for older videos that just have is_premium)
+            const currentAccess = v.access_type || (v.is_premium ? "creator" : "free");
+            
+            return (
+              <div
+                key={v.id}
+                className="flex flex-col md:flex-row md:items-center gap-3 bg-[#0f0f12] border border-white/5 hover:border-white/10 rounded-xl p-3 transition"
+              >
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="w-14 h-14 md:w-16 md:h-16 rounded-lg overflow-hidden flex-shrink-0 bg-black">
+                    {v.posterUrl ? (
+                      <img src={v.posterUrl} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-white/30">
+                        <VideoIcon size={20} />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold truncate">{v.title}</p>
+                    <p className="text-xs text-white/50">
+                      {v.type || "Episode"} ·{" "}
+                      {v.createdAt ? new Date(v.createdAt).toLocaleDateString() : "—"}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate">{v.title}</p>
-                  <p className="text-xs text-white/50">
-                    {v.type || "Episode"} ·{" "}
-                    {v.createdAt ? new Date(v.createdAt).toLocaleDateString() : "—"}
-                  </p>
+
+                <div className="flex items-center gap-4 text-xs text-white/60 md:mr-4">
+                  <span className="inline-flex items-center gap-1" title="Plays">
+                    <Eye size={14} /> {(v.viewCount || 0).toLocaleString()}
+                  </span>
+                  <span className="inline-flex items-center gap-1" title="Likes">
+                    <Heart size={14} /> {(likeCounts[v.id] || 0).toLocaleString()}
+                  </span>
+                  <span className="inline-flex items-center gap-1" title="Comments">
+                    <MessageCircle size={14} /> {(commentCounts[v.id] || 0).toLocaleString()}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2 md:flex-shrink-0">
+                  
+                  {/* 3-Way Access Dropdown */}
+                  <select
+                    value={currentAccess}
+                    onChange={(e) => updateAccess(v, e.target.value)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition outline-none border ${
+                      currentAccess === "pass" 
+                        ? "bg-red-500/20 text-red-400 border-red-500/30"
+                        : currentAccess === "creator"
+                        ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
+                        : "bg-white/5 text-white/50 border-white/10 hover:bg-white/10"
+                    }`}
+                  >
+                    <option value="free" className="text-black">Free</option>
+                    <option value="pass" className="text-black">TF Pass Only</option>
+                    <option value="creator" className="text-black">Creator Sub</option>
+                  </select>
+
+                  <button
+                    onClick={() => handleDelete(v)}
+                    disabled={deleting === v.id}
+                    className="text-red-400 hover:text-red-300 p-2 rounded-lg hover:bg-red-500/10 transition disabled:opacity-50"
+                    aria-label="Delete episode"
+                  >
+                    <Trash2 size={16} />
+                  </button>
                 </div>
               </div>
-
-              <div className="flex items-center gap-4 text-xs text-white/60 md:mr-4">
-                <span className="inline-flex items-center gap-1" title="Plays">
-                  <Eye size={14} /> {(v.viewCount || 0).toLocaleString()}
-                </span>
-                <span className="inline-flex items-center gap-1" title="Likes">
-                  <Heart size={14} /> {(likeCounts[v.id] || 0).toLocaleString()}
-                </span>
-                <span className="inline-flex items-center gap-1" title="Comments">
-                  <MessageCircle size={14} /> {(commentCounts[v.id] || 0).toLocaleString()}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2 md:flex-shrink-0">
-                <button
-                  onClick={() => togglePremium(v)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition ${
-                    v.is_premium
-                      ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
-                      : "bg-white/5 text-white/50 hover:bg-white/10"
-                  }`}
-                >
-                  {v.is_premium ? <Lock size={14} /> : <Unlock size={14} />}
-                  {v.is_premium ? "Premium" : "Free"}
-                </button>
-                <button
-                  onClick={() => handleDelete(v)}
-                  disabled={deleting === v.id}
-                  className="text-red-400 hover:text-red-300 p-2 rounded-lg hover:bg-red-500/10 transition disabled:opacity-50"
-                  aria-label="Delete episode"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

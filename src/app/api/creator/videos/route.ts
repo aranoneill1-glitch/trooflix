@@ -11,7 +11,6 @@ export async function GET(req: Request) {
 
   try {
     const allVideos = (await kv.get<any[]>(VIDEOS_KEY)) || [];
-    // Match the exact creatorId
     const myVideos = allVideos.filter((v: any) => String(v.creatorId) === String(creatorId));
     return NextResponse.json({ videos: myVideos });
   } catch (e) {
@@ -21,12 +20,17 @@ export async function GET(req: Request) {
 
 export async function PATCH(req: Request) {
   try {
-    const { videoId, is_premium } = await req.json();
+    const { videoId, access_type } = await req.json();
     const allVideos = (await kv.get<any[]>(VIDEOS_KEY)) || [];
     const idx = allVideos.findIndex((v: any) => v.id === videoId);
     
     if (idx !== -1) {
-      allVideos[idx] = { ...allVideos[idx], is_premium };
+      // Update the new access_type, and keep is_premium for backwards compatibility
+      allVideos[idx] = { 
+        ...allVideos[idx], 
+        access_type,
+        is_premium: access_type !== "free" 
+      };
       await kv.set(VIDEOS_KEY, allVideos);
     }
     return NextResponse.json({ ok: true });
