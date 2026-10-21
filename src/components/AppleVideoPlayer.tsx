@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { X, Play, Pause, Volume2, VolumeX, RotateCcw, RotateCw } from "lucide-react";
+import { X, Play, Pause, Volume2, VolumeX } from "lucide-react";
 import TextOverlayRenderer from "@/components/TextOverlay";
 
 export default function AppleVideoPlayer({
@@ -43,20 +43,16 @@ export default function AppleVideoPlayer({
 
   // Tap screen to toggle controls
   const handleScreenTap = (e: React.MouseEvent) => {
-    // Ignore taps on actual buttons or the timeline slider
     const target = e.target as HTMLElement;
     if (target.closest('button') || target.closest('input')) return;
 
     setShowControls((prev) => {
       const next = !prev;
-      
       if (controlsTimeout.current) clearTimeout(controlsTimeout.current);
       
-      // If we are showing controls and the video is playing, start the auto-hide timer
       if (next && isPlaying) {
         controlsTimeout.current = setTimeout(() => setShowControls(false), 3000);
       }
-      
       return next;
     });
   };
@@ -114,40 +110,48 @@ export default function AppleVideoPlayer({
       <TextOverlayRenderer overlays={textOverlays} />
 
       {/* TOP BAR */}
-      <div className={`absolute top-0 left-0 right-0 p-6 pt-[env(safe-area-inset-top)] flex items-start justify-between transition-opacity duration-300 ${showControls ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
-        <button onClick={onClose} className="w-12 h-12 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10">
+      <div className={`absolute top-0 left-0 right-0 z-50 p-6 pt-[env(safe-area-inset-top)] flex items-start justify-between transition-opacity duration-300 pointer-events-none ${showControls ? "opacity-100" : "opacity-0"}`}>
+        <button onClick={onClose} className="pointer-events-auto w-12 h-12 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10">
           <X size={24} />
         </button>
         <button 
           onClick={() => { if(videoRef.current) videoRef.current.muted = !isMuted; setIsMuted(!isMuted); }} 
-          className="w-12 h-12 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10"
+          className="pointer-events-auto w-12 h-12 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10"
         >
           {isMuted ? <VolumeX size={22} /> : <Volume2 size={22} />}
         </button>
       </div>
 
-      {/* CENTER CONTROLS */}
-      <div className={`absolute inset-0 flex items-center justify-center gap-8 transition-opacity duration-300 ${showControls ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
-        <button onClick={(e) => { e.stopPropagation(); skip(-10); }} className="w-20 h-20 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10 relative">
-          <RotateCcw size={32} strokeWidth={1.5} />
-          <span className="absolute text-[10px] font-bold mt-1">10</span>
+      {/* CENTER CONTROLS (Apple Glass Style) */}
+      <div className={`absolute inset-0 z-40 flex items-center justify-center gap-6 transition-opacity duration-300 pointer-events-none ${showControls ? "opacity-100" : "opacity-0"}`}>
+        
+        {/* Rewind 10s */}
+        <button onClick={(e) => { e.stopPropagation(); skip(-10); }} className="pointer-events-auto w-[72px] h-[72px] rounded-full bg-white/10 backdrop-blur-2xl backdrop-saturate-150 border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.37),inset_0_1px_0_rgba(255,255,255,0.2)] flex items-center justify-center text-white active:scale-95 transition-transform">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 5V2L7 6.5L12 11V8C15.31 8 18 10.69 18 14C18 17.31 15.31 20 12 20C8.69 20 6 17.31 6 14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            <text x="12" y="16" fontSize="7.5" fontWeight="bold" fill="currentColor" textAnchor="middle" stroke="none">10</text>
+          </svg>
         </button>
         
-        <button onClick={(e) => { e.stopPropagation(); togglePlay(); }} className="w-24 h-24 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10">
-          {isPlaying ? <Pause size={48} fill="white" /> : <Play size={48} fill="white" className="ml-2" />}
+        {/* Play / Pause */}
+        <button onClick={(e) => { e.stopPropagation(); togglePlay(); }} className="pointer-events-auto w-[88px] h-[88px] rounded-full bg-white/10 backdrop-blur-2xl backdrop-saturate-150 border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.37),inset_0_1px_0_rgba(255,255,255,0.2)] flex items-center justify-center text-white active:scale-95 transition-transform">
+          {isPlaying ? <Pause size={40} fill="white" strokeWidth={0} /> : <Play size={40} fill="white" strokeWidth={0} className="ml-1.5" />}
         </button>
         
-        <button onClick={(e) => { e.stopPropagation(); skip(10); }} className="w-20 h-20 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10 relative">
-          <RotateCw size={32} strokeWidth={1.5} />
-          <span className="absolute text-[10px] font-bold mt-1">10</span>
+        {/* Forward 10s */}
+        <button onClick={(e) => { e.stopPropagation(); skip(10); }} className="pointer-events-auto w-[72px] h-[72px] rounded-full bg-white/10 backdrop-blur-2xl backdrop-saturate-150 border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.37),inset_0_1px_0_rgba(255,255,255,0.2)] flex items-center justify-center text-white active:scale-95 transition-transform">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 5V2L17 6.5L12 11V8C8.69 8 6 10.69 6 14C6 17.31 8.69 20 12 20C15.31 20 18 17.31 18 14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            <text x="12" y="16" fontSize="7.5" fontWeight="bold" fill="currentColor" textAnchor="middle" stroke="none">10</text>
+          </svg>
         </button>
       </div>
 
       {/* BOTTOM CONTROLS */}
-      <div className={`absolute bottom-0 left-0 right-0 p-6 pb-[env(safe-area-inset-bottom)] mb-6 transition-opacity duration-300 ${showControls ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+      <div className={`absolute bottom-0 left-0 right-0 z-50 p-6 pb-[env(safe-area-inset-bottom)] mb-6 transition-opacity duration-300 pointer-events-none ${showControls ? "opacity-100" : "opacity-0"}`}>
         
         {/* Glass Time Pill Bar */}
-        <div className="w-full bg-[#1c1c1e]/80 backdrop-blur-md rounded-full px-5 py-4 flex items-center gap-4 border border-white/10 shadow-2xl">
+        <div className="pointer-events-auto w-full bg-[#1c1c1e]/80 backdrop-blur-md rounded-full px-5 py-4 flex items-center gap-4 border border-white/10 shadow-2xl">
           <span className="text-white text-sm font-medium tabular-nums tracking-wide">
             {formatTime(currentTime)}
           </span>
@@ -161,7 +165,6 @@ export default function AppleVideoPlayer({
               onChange={handleSeek}
               className="w-full absolute inset-0 h-1 my-auto bg-white/20 rounded-full appearance-none outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full shadow-inner cursor-pointer z-10"
             />
-            {/* Progress Fill */}
             <div 
               className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-white rounded-full pointer-events-none" 
               style={{ width: `${(currentTime / (duration || 1)) * 100}%` }}
