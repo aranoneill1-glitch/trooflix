@@ -290,7 +290,7 @@ export default function UserProfilePage() {
                           SUB
                         </div>
                       )}
-                    </Link>
+                    </div>
                   ))}
                 </div>
               )
