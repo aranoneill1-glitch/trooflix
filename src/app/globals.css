@@ -34,9 +34,3 @@ input, textarea, select, button {
 }
 
 
-/* Definitive iOS Safe Area Fix */
-html, body {
-  background-color: #000000;
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-}
