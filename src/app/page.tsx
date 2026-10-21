@@ -18,7 +18,7 @@ import {
   Search, Bell, Home as HomeIcon, Film, FileText, Mic, Tv, Menu,
   Compass,
 } from "lucide-react";
-import VideoPlayer from "@/components/VideoPlayer";
+import AppleVideoPlayer from "@/components/AppleVideoPlayer";
 import LoadingIntro from "@/components/LoadingIntro";
 import PullToRefresh from "@/components/PullToRefresh";
 import VideoIntro from "@/components/VideoIntro";
@@ -305,10 +305,10 @@ export default function Home() {
         {showVideoIntro && <VideoIntro onDone={onIntroDone} />}
         {selected && <DetailModal item={selected} onClose={() => setSelected(null)} onPlay={(v) => { setSelected(null); requestPlay(v); }} creators={creators} />}
         {playing && (
-          <VideoPlayer
+          <AppleVideoPlayer
             src={playing.videoUrl ?? playing.bitchuteUrl ?? ""}
+            poster={playing.posterUrl}
             title={playing.title}
-            videoId={playing.id}
             textOverlays={playing?.textOverlays}
             onClose={() => setPlaying(null)}
           />
