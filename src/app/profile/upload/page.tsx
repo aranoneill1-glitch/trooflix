@@ -97,7 +97,7 @@ export default function UploadPage() {
     const f = e.target.files?.[0];
     if (!f) {
       // User cancelled — back to profile
-      router.push("/profile/compose");
+      router.push("/profile");
       return;
     }
     setError("");
@@ -175,7 +175,7 @@ export default function UploadPage() {
               Choose video
             </button>
             <button
-              onClick={() => router.push("/profile/compose")}
+              onClick={() => router.push("/profile")}
               className="block mx-auto text-xs text-white/40 hover:text-white transition mt-3"
             >
               Cancel
@@ -216,7 +216,7 @@ export default function UploadPage() {
               Try again
             </button>
             <button
-              onClick={() => router.push("/profile/compose")}
+              onClick={() => router.push("/profile")}
               className="block mx-auto text-xs text-white/40 hover:text-white transition"
             >
               Cancel
