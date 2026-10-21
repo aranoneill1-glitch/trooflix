@@ -739,16 +739,15 @@ export default function ProfilePage() {
                   </div>
                 ) : uploadsView === "grid" ? (
                   <div className="grid grid-cols-3 gap-0.5">
-                    {visibleReels.map((p) => (
+                    {visibleReels.map((p, idx) => (
                       <div
                         key={p.id}
-                        onClick={() => setViewerIndex(idx)}
+                        onClick={() => router.push(p.creatorId ? `/podcaster/_/${p.id}` : `/feed`)}
                         className="relative aspect-[4/5] bg-[#141418] overflow-hidden cursor-pointer"
                         onPointerDown={() => startLongPress(p)}
                         onPointerUp={cancelLongPress}
                         onPointerLeave={cancelLongPress}
                         onPointerCancel={cancelLongPress}
-                        onClick={(e) => handleTileClick(p, e)}
                         onContextMenu={(e) => {
                           e.preventDefault();
                           setActionSheetFor(p);
@@ -780,7 +779,7 @@ export default function ProfilePage() {
                   </div>
                 ) : (
                   <div className="space-y-1 px-4 md:px-6">
-                    {visibleReels.map((p) => (
+                    {visibleReels.map((p, idx) => (
                       <Link
                         key={p.id}
                         href={p.creatorId ? `/podcaster/_/${p.id}` : `/feed`}
@@ -855,16 +854,15 @@ export default function ProfilePage() {
                   </div>
                 ) : uploadsView === "grid" ? (
                   <div className="grid grid-cols-3 gap-0.5">
-                    {visiblePremium.map((p) => (
+                    {visiblePremium.map((p, idx) => (
                       <div
                         key={p.id}
-                        onClick={() => setViewerIndex(idx)}
+                        onClick={() => router.push(p.creatorId ? `/podcaster/_/${p.id}` : `/feed`)}
                         className="relative aspect-[4/5] bg-[#141418] overflow-hidden cursor-pointer"
                         onPointerDown={() => startLongPress(p)}
                         onPointerUp={cancelLongPress}
                         onPointerLeave={cancelLongPress}
                         onPointerCancel={cancelLongPress}
-                        onClick={(e) => handleTileClick(p, e)}
                         onContextMenu={(e) => {
                           e.preventDefault();
                           setActionSheetFor(p);
@@ -907,7 +905,7 @@ export default function ProfilePage() {
                   </div>
                 ) : (
                   <div className="space-y-1 px-4 md:px-6">
-                    {visiblePremium.map((p) => (
+                    {visiblePremium.map((p, idx) => (
                       <Link
                         key={p.id}
                         href={p.creatorId ? `/podcaster/_/${p.id}` : `/feed`}
@@ -1072,10 +1070,10 @@ export default function ProfilePage() {
                   </div>
                 ) : savedView === "grid" ? (
                   <div className="grid grid-cols-3 gap-0.5">
-                    {savedPosts.map((p) => (
+                    {savedPosts.map((p, idx) => (
                       <div
                         key={p.id}
-                        onClick={() => setViewerIndex(idx)}
+                        onClick={() => router.push(p.creatorId ? `/podcaster/_/${p.id}` : `/feed`)}
                         className="relative aspect-[4/5] bg-[#141418] overflow-hidden cursor-pointer"
                       >
                         <img
@@ -1092,7 +1090,7 @@ export default function ProfilePage() {
                   </div>
                 ) : (
                   <div className="space-y-1 px-4 md:px-6">
-                    {savedPosts.map((p) => (
+                    {savedPosts.map((p, idx) => (
                       <Link
                         key={p.id}
                         href={p.creatorId ? `/podcaster/_/${p.id}` : `/feed`}

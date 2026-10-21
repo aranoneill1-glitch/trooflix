@@ -247,7 +247,7 @@ export default function UserProfilePage() {
                   {visibleReels.map((p, idx) => (
                     <div
                       key={p.id}
-                      onClick={() => setViewerIndex(idx)}
+                      onClick={() => router.push(p.creatorId ? `/podcaster/_/${p.id}` : `/feed`)}
                       className="relative aspect-[4/5] bg-[#141418] overflow-hidden cursor-pointer"
                     >
                       <img
@@ -267,10 +267,10 @@ export default function UserProfilePage() {
                 <p className="text-center text-white/50 text-sm py-16">No premium content yet.</p>
               ) : (
                 <div className="grid grid-cols-3 gap-0.5 -mx-4 md:-mx-6">
-                  {visiblePremium.map((p) => (
+                  {visiblePremium.map((p, idx) => (
                     <div
                       key={p.id}
-                      onClick={() => setViewerIndex(idx)}
+                      onClick={() => router.push(p.creatorId ? `/podcaster/_/${p.id}` : `/feed`)}
                       className="relative aspect-[4/5] bg-[#141418] overflow-hidden cursor-pointer"
                     >
                       <img
