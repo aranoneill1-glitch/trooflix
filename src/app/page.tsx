@@ -704,9 +704,9 @@ function DetailModal({ item, onClose, onPlay, creators }: { item: Video; onClose
             <div className="flex gap-2 md:gap-3 flex-wrap">
               <button
                 onClick={() => onPlay(item)}
-                className="flex items-center gap-2 bg-white text-black font-bold px-6 md:px-8 py-2.5 md:py-3 rounded hover:bg-white/80 transition"
+                className="flex items-center gap-2 bg-white/20 backdrop-blur-xl border border-white/30 text-white font-bold px-6 md:px-8 py-2.5 md:py-3 rounded-xl shadow-lg hover:bg-white/30 transition-all active:scale-95"
               >
-                <Play size={18} fill="black" /> Play
+                <Play size={18} fill="currentColor" /> Play
               </button>
               <SaveButton videoId={item.id} variant="labeled" size={18} />
             </div>
