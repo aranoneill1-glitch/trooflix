@@ -33,10 +33,10 @@ input, textarea, select, button {
   touch-action: manipulation;
 }
 
-/* iOS Safe Area Fixes */
-.fixed.top-0, .sticky.top-0 {
-  padding-top: env(safe-area-inset-top) !important;
-}
-.fixed.bottom-0 {
-  padding-bottom: env(safe-area-inset-bottom) !important;
+
+/* Definitive iOS Safe Area Fix */
+html, body {
+  background-color: #000000;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
 }
