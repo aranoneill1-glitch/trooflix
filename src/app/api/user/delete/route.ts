@@ -12,11 +12,16 @@ export async function POST(req: Request) {
     const { userId } = await req.json();
     if (!userId) return NextResponse.json({ error: "userId required" }, { status: 400 });
 
-    // Delete from Supabase Auth (this cascades to profiles if configured, but we do it manually just in case)
+    // 1. Delete user data from public tables
     await supabaseAdmin.from("profiles").delete().eq("user_id", userId);
-    const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
+    await supabaseAdmin.from("blocked_users").delete().eq("blocker_id", userId);
+    await supabaseAdmin.from("blocked_users").delete().eq("blocked_id", userId);
+    // Note: You may want to add more tables here (e.g., likes, comments) depending on your DB schema
 
+    // 2. Delete the actual Auth account
+    const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
     if (error) throw error;
+
     return NextResponse.json({ ok: true });
   } catch (e: any) {
     return NextResponse.json({ error: String(e) }, { status: 500 });
