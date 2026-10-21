@@ -902,7 +902,7 @@ export default function ProfilePage() {
                             SUB
                           </div>
                         )}
-                      </Link>
+                      </div>
                     ))}
                   </div>
                 ) : (
@@ -1087,7 +1087,7 @@ export default function ProfilePage() {
                         <div className="absolute top-1 right-1">
                           <Play size={14} fill="white" className="text-white drop-shadow" />
                         </div>
-                      </Link>
+                      </div>
                     ))}
                   </div>
                 ) : (
