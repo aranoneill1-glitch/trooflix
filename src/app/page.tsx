@@ -246,7 +246,7 @@ export default function Home() {
           )}
           {showingFiltered && <div className="h-20 md:h-24" />}
 
-          <div className="relative z-10 pt-0 md:pt-12 pb-32 md:pb-20 space-y-4 md:space-y-12">
+          <div className="relative z-10 pt-2 md:pt-6 pb-32 md:pb-20 space-y-2 md:space-y-6">
         {filtered && (
           <SearchResults
             search={search}
@@ -390,7 +390,7 @@ function TopNav({ activeTab, setActiveTab, searchOpen, setSearchOpen, search, se
 /* ============ HERO ============ */
 function Hero({ video, onPlay, onMore }: { video: Video; onPlay: () => void; onMore: () => void }) {
   return (
-    <section className="relative h-[55vh] md:h-[85vh] w-full">
+    <section className="relative h-[40vh] md:h-[65vh] w-full">
       <img src={video.backdropUrl} alt={video.title} className="absolute inset-0 w-full h-full object-cover" />
       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
       <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/20 to-transparent" />
