@@ -55,10 +55,10 @@ export default function CollectionsRow({
             <button
               key={col.slug}
               onClick={() => onSelectCategory?.(col.name)}
-              className={`flex-shrink-0 w-[110px] md:w-[130px] aspect-[3/2] md:aspect-[5/3] rounded-lg flex flex-col items-center justify-center gap-1.5 transition border ${
+              className={`flex-shrink-0 w-[110px] md:w-[130px] aspect-[3/2] md:aspect-[5/3] rounded-2xl flex flex-col items-center justify-center gap-1.5 transition-all duration-200 border shadow-lg backdrop-blur-xl active:scale-95 ${
                 isActive
-                  ? "bg-red-600 border-red-600 text-white"
-                  : "bg-[#0d0d12] border-white/10 hover:border-white/40 hover:bg-[#141418] text-white"
+                  ? "bg-red-600/90 border-red-500 text-white shadow-red-500/20"
+                  : "bg-[#1c1c1e]/80 border-white/10 hover:bg-[#1c1c1e]/95 text-white"
               }`}
             >
               <Icon size={26} strokeWidth={1.5} />
