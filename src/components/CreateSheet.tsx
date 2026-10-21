@@ -55,7 +55,8 @@ export default function CreateSheet({ open, onClose }: Props) {
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed bottom-0 left-0 right-0 z-[101] bg-[#121212] rounded-t-3xl border-t border-white/10 pb-8"
+            style={{ maxHeight: "90vh", overflowY: "auto" }}
+            className="fixed bottom-0 left-0 right-0 z-[101] bg-[#121212] rounded-t-3xl border-t border-white/10 pb-[calc(2rem+env(safe-area-inset-bottom))]"
           >
             {/* Handle */}
             <div className="w-full flex justify-center pt-3 pb-2">
