@@ -133,7 +133,7 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
   const [showHeart, setShowHeart] = useState(false);
-  const lastTap = useRef<number>(0);
+  const tapTimeout = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const v = videoRef.current;
@@ -160,19 +160,22 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
     }
   };
 
-  // SINGLE TAP TO PAUSE, DOUBLE TAP TO LIKE
-  const handleScreenTap = () => {
-    const now = Date.now();
-    const DOUBLE_PRESS_DELAY = 300;
+  const handleScreenTap = (e: React.MouseEvent) => {
+    // Ignore taps on actual UI elements
+    const target = e.target as HTMLElement;
+    if (target.closest('button') || target.closest('a') || target.closest('.ui-ignore')) return;
 
-    if (now - lastTap.current < DOUBLE_PRESS_DELAY) {
-      // Double tap detected
+    if (tapTimeout.current) {
+      // DOUBLE TAP DETECTED
+      clearTimeout(tapTimeout.current);
+      tapTimeout.current = null;
       triggerLike();
-      lastTap.current = 0; // Reset
     } else {
-      // Single tap
-      togglePlay();
-      lastTap.current = now;
+      // SINGLE TAP DETECTED (Wait 250ms to see if a second tap comes)
+      tapTimeout.current = setTimeout(() => {
+        togglePlay();
+        tapTimeout.current = null;
+      }, 250);
     }
   };
 
@@ -180,9 +183,17 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
     setShowHeart(true);
     setTimeout(() => setShowHeart(false), 800);
 
-    // Find the actual LikeButton component and click it programmatically
-    const btn = document.getElementById(`like-btn-${video.id}`)?.querySelector("button");
-    if (btn) btn.click();
+    // Find the LikeButton and simulate a click on its inner element
+    const el = document.getElementById(`like-btn-${video.id}`);
+    if (el) {
+      // Try to click the first child (button, div, or svg)
+      const clickable = el.querySelector('button') || el.firstElementChild;
+      if (clickable) {
+        (clickable as HTMLElement).click();
+      } else {
+        el.click();
+      }
+    }
   };
 
   return (
@@ -190,24 +201,19 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
       data-index={index}
       data-video-id={video.id}
       className="w-full h-full snap-start relative bg-black flex items-center justify-center"
+      onClick={handleScreenTap}
     >
+      {/* Video has pointer-events-none so it passes all taps to the wrapper */}
       <video
         ref={videoRef}
         src={video.videoUrl ?? video.bitchuteUrl ?? ""}
         poster={video.posterUrl}
-        className="w-full h-full object-contain"
+        className="w-full h-full object-contain pointer-events-none"
         loop
         playsInline
         muted={muted}
       />
 
-      {/* Full screen tap area for play/pause and double-tap like */}
-      <div 
-        className="absolute inset-0 z-0" 
-        onClick={handleScreenTap}
-      />
-
-      {/* Heart Animation on Double Tap */}
       <AnimatePresence>
         {showHeart && (
           <motion.div
@@ -222,11 +228,11 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
         )}
       </AnimatePresence>
 
+      {/* Overlay UI has pointer-events-none, but buttons inside have pointer-events-auto */}
       <div className="absolute inset-0 flex flex-col justify-end p-4 pb-6 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none z-10">
         
         {/* RIGHT SIDE ACTIONS */}
         <div className="absolute right-4 bottom-20 flex flex-col items-center gap-5 pointer-events-auto">
-          {/* We added an ID here so the double tap can find and click it */}
           <div id={`like-btn-${video.id}`} className="flex flex-col items-center gap-1 text-white drop-shadow-md">
             <LikeButton videoId={video.id} size={26} showCount={true} />
           </div>
@@ -254,7 +260,6 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
 
         {/* BOTTOM LEFT INFO */}
         <div className="flex-1 flex flex-col justify-end max-w-[75%] pointer-events-auto mb-2">
-          
           <Link href={author.profileHref} onClick={onCloseViewer} className="flex items-center gap-2 mb-2 w-max">
             <div className="w-11 h-11 rounded-full bg-gradient-to-br from-red-600 to-red-900 overflow-hidden flex-shrink-0 border border-white/20">
               {author.avatar ? (
@@ -283,7 +288,7 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
           </div>
         )}
         
-        <div className="absolute left-4 top-16 pointer-events-auto">
+        <div className="absolute left-4 top-16 pointer-events-auto ui-ignore">
            <button onClick={onToggleMute} className="p-2.5 bg-black/50 rounded-full backdrop-blur text-white">
              {muted ? <VolumeX size={20} /> : <Volume2 size={20} />}
            </button>
