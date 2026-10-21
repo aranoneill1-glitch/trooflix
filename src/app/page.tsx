@@ -279,6 +279,7 @@ export default function Home() {
 
         {loaded && !filtered && !showingFiltered && (
           <>
+            {newReleases.length > 0 && <Row title="New Releases" items={newReleases} onSelect={setSelected} onPlay={requestPlay} />}
             <CollectionsRow
               onSelectCategory={(cat) => {
                 setActiveCategory(cat === activeCategory ? null : cat);
@@ -286,7 +287,6 @@ export default function Home() {
               }}
               activeCategory={activeCategory}
             />
-            {newReleases.length > 0 && <Row title="New Releases" items={newReleases} onSelect={setSelected} onPlay={requestPlay} />}
             {trending.length > 0 && <Row title="Trending Now" items={trending} onSelect={setSelected} onPlay={requestPlay} />}
             {loaded && videos.length === 0 && (
               <div className="px-8 py-20 text-center text-white/50">
@@ -395,7 +395,7 @@ function Hero({ video, onPlay, onMore }: { video: Video; onPlay: () => void; onM
       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
       <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/20 to-transparent" />
 
-      <div className="relative z-10 flex flex-col justify-end h-full px-4 md:px-12 max-w-2xl pt-24 md:pt-20 pb-6 md:pb-[12vh]">
+      <div className="relative z-10 flex flex-col justify-end h-full px-4 md:px-12 max-w-2xl pt-24 md:pt-20 pb-20 md:pb-[25vh]">
         <motion.p
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           className="text-xs md:text-sm tracking-[0.3em] text-red-500 font-bold mb-3"
