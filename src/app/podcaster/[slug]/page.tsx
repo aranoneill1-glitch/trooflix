@@ -46,6 +46,8 @@ function timeAgo(iso?: string): string {
   return new Date(iso).toLocaleDateString();
 }
 
+const isIOS = typeof window !== "undefined" && /iPhone|iPad|iPod/.test(navigator.userAgent);
+
 export default function PodcasterProfilePage() {
   const params = useParams();
   const slug = params.slug as string;
@@ -117,6 +119,11 @@ export default function PodcasterProfilePage() {
   }, [slug]);
 
   const handleSubscribe = async () => {
+    if (isIOS) {
+      alert("To subscribe to this creator, please visit trooflixtv.com on your web browser.");
+      return;
+    }
+
     if (!userId) return router.push("/login");
     setCheckoutLoading(true);
     try {

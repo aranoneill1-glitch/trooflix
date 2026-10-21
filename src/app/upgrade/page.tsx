@@ -25,6 +25,8 @@ const FEATURES = [
   { label: "Gold verified badge", free: false, pass: false, podcaster: true },
 ];
 
+const isIOS = typeof window !== "undefined" && /iPhone|iPad|iPod/.test(navigator.userAgent);
+
 export default function UpgradePage() {
   const router = useRouter();
   const [currentTier, setCurrentTier] = useState<Tier>("user");
