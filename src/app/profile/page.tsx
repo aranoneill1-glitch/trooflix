@@ -788,7 +788,7 @@ export default function ProfilePage() {
                         onPointerUp={cancelLongPress}
                         onPointerLeave={cancelLongPress}
                         onPointerCancel={cancelLongPress}
-                        onClick={(e) => handleTileClick(p, e)}
+                        
                         onContextMenu={(e) => {
                           e.preventDefault();
                           setActionSheetFor(p);
