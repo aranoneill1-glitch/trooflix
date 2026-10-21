@@ -50,6 +50,7 @@ type Profile = {
 type Post = {
   id: number;
   title?: string;
+  access_type?: string;
   posterUrl?: string;
   backdropUrl?: string;
   videoUrl?: string;
@@ -888,6 +889,17 @@ export default function ProfilePage() {
                           <Eye size={11} />
                           {(p.viewCount ?? 0).toLocaleString()}
                         </div>
+                      
+                        {p.access_type === "pass" && (
+                          <div className="absolute bottom-1 right-1 bg-red-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow z-10">
+                            TF
+                          </div>
+                        )}
+                        {p.access_type === "creator" && (
+                          <div className="absolute bottom-1 right-1 bg-yellow-500 text-black text-[9px] font-black px-1.5 py-0.5 rounded shadow z-10">
+                            SUB
+                          </div>
+                        )}
                       </Link>
                     ))}
                   </div>
