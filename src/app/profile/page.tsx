@@ -24,6 +24,7 @@ import { Camera,
   List,
   Sparkles,
   Pencil, ShoppingBag } from "lucide-react";
+import ProfileMenu from "@/components/ProfileMenu";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import VerifiedBadge from "@/components/VerifiedBadge";
@@ -88,6 +89,7 @@ export default function ProfilePage() {
   const longPressRef = useRef<{ timer: any; fired: boolean } | null>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [dashOpen, setDashOpen] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
 
   // Edit-modal fields (temporary home for the edit form)
   const [editName, setEditName] = useState("");
@@ -551,12 +553,28 @@ export default function ProfilePage() {
 
             {/* ---- Edit + Share buttons ---- */}
             <div className="grid grid-cols-2 gap-2 mb-6">
-              <button
-                onClick={() => setEditOpen(true)}
-                className="flex-1 text-center py-2.5 rounded-xl text-sm font-semibold transition text-white bg-[#1c1c1e]/80 backdrop-blur-xl border border-white/10 shadow-lg hover:bg-[#1c1c1e]/95"
-                  >
-                    Edit profile
-              </button>
+              <div className="relative flex-1">
+        <button
+          onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+          className="{old_class} w-full"
+        >
+          Edit profile
+        </button>
+        <ProfileMenu
+          open={profileMenuOpen}
+          onClose={() => setProfileMenuOpen(false)}
+          onEdit={() => setEditOpen(true)}
+          onAvatar={() => fileInputRef.current?.click()}
+          onShare={() => {
+            if (navigator.share) {
+              navigator.share({ title: 'My Trooflix Profile', url: window.location.href });
+            } else {
+              navigator.clipboard.writeText(window.location.href);
+              alert('Link copied to clipboard!');
+            }
+          }}
+        />
+      </div>
               <button
                 onClick={() => setDashOpen(true)}
                 className="flex-1 text-center py-2.5 rounded-xl text-sm font-semibold transition text-white bg-[#1c1c1e]/80 backdrop-blur-xl border border-white/10 shadow-lg hover:bg-[#1c1c1e]/95"
