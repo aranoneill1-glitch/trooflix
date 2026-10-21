@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { X, Play, Pause, Volume2, VolumeX } from "lucide-react";
+import { X, Play, Pause, Volume2, VolumeX, RotateCcw, RotateCw } from "lucide-react";
 import TextOverlayRenderer from "@/components/TextOverlay";
 
 export default function AppleVideoPlayer({
@@ -41,6 +41,7 @@ export default function AppleVideoPlayer({
     };
   }, [isPlaying]);
 
+  // Tap screen to toggle controls
   const handleScreenTap = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
     if (target.closest('button') || target.closest('input')) return;
@@ -109,48 +110,43 @@ export default function AppleVideoPlayer({
 
       {/* TOP BAR */}
       <div className={`absolute top-0 left-0 right-0 z-50 p-6 pt-[env(safe-area-inset-top)] flex items-start justify-between transition-opacity duration-300 pointer-events-none ${showControls ? "opacity-100" : "opacity-0"}`}>
-        <button onClick={onClose} className="pointer-events-auto relative w-12 h-12 rounded-full flex items-center justify-center text-white active:scale-95 transition-transform">
-          <div className="absolute inset-0 rounded-full bg-[#1c1c1e]/80 backdrop-blur-md border border-white/10" />
-          <X size={24} className="relative z-10" />
+        <button 
+          onClick={onClose} 
+          className="pointer-events-auto w-12 h-12 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10"
+        >
+          <X size={24} />
         </button>
         <button 
           onClick={() => { if(videoRef.current) videoRef.current.muted = !isMuted; setIsMuted(!isMuted); }} 
-          className="pointer-events-auto relative w-12 h-12 rounded-full flex items-center justify-center text-white active:scale-95 transition-transform"
+          className="pointer-events-auto w-12 h-12 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10"
         >
-          <div className="absolute inset-0 rounded-full bg-[#1c1c1e]/80 backdrop-blur-md border border-white/10" />
-          {isMuted ? <VolumeX size={22} className="relative z-10" /> : <Volume2 size={22} className="relative z-10" />}
+          {isMuted ? <VolumeX size={22} /> : <Volume2 size={22} />}
         </button>
       </div>
 
-      {/* CENTER CONTROLS (Fixed iOS Blur Bug) */}
-      <div className={`absolute inset-0 z-40 flex items-center justify-center gap-6 transition-opacity duration-300 pointer-events-none ${showControls ? "opacity-100" : "opacity-0"}`}>
-        
-        {/* Rewind 10s */}
-        <button onClick={(e) => { e.stopPropagation(); skip(-10); }} className="pointer-events-auto relative w-[72px] h-[72px] rounded-full flex items-center justify-center text-white active:scale-95 transition-transform">
-          <div className="absolute inset-0 rounded-full bg-white/10 backdrop-blur-2xl border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.37),inset_0_1px_0_rgba(255,255,255,0.2)]" />
-          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
-            <path d="M12 5V2L7 6.5L12 11V8C15.31 8 18 10.69 18 14C18 17.31 15.31 20 12 20C8.69 20 6 17.31 6 14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-            <text x="12" y="16" fontSize="7.5" fontWeight="bold" fill="currentColor" textAnchor="middle" stroke="none">10</text>
-          </svg>
+      {/* CENTER CONTROLS */}
+      <div className={`absolute inset-0 z-40 flex items-center justify-center gap-8 transition-opacity duration-300 pointer-events-none ${showControls ? "opacity-100" : "opacity-0"}`}>
+        <button 
+          onClick={(e) => { e.stopPropagation(); skip(-10); }} 
+          className="pointer-events-auto w-20 h-20 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10 relative"
+        >
+          <RotateCcw size={32} strokeWidth={1.5} />
+          <span className="absolute text-[10px] font-bold mt-1">10</span>
         </button>
         
-        {/* Play / Pause */}
-        <button onClick={(e) => { e.stopPropagation(); togglePlay(); }} className="pointer-events-auto relative w-[88px] h-[88px] rounded-full flex items-center justify-center text-white active:scale-95 transition-transform">
-          <div className="absolute inset-0 rounded-full bg-white/10 backdrop-blur-2xl border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.37),inset_0_1px_0_rgba(255,255,255,0.2)]" />
-          {isPlaying ? (
-            <Pause size={40} fill="white" strokeWidth={0} className="relative z-10" />
-          ) : (
-            <Play size={40} fill="white" strokeWidth={0} className="ml-1.5 relative z-10" />
-          )}
+        <button 
+          onClick={(e) => { e.stopPropagation(); togglePlay(); }} 
+          className="pointer-events-auto w-24 h-24 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10"
+        >
+          {isPlaying ? <Pause size={48} fill="white" /> : <Play size={48} fill="white" className="ml-2" />}
         </button>
         
-        {/* Forward 10s */}
-        <button onClick={(e) => { e.stopPropagation(); skip(10); }} className="pointer-events-auto relative w-[72px] h-[72px] rounded-full flex items-center justify-center text-white active:scale-95 transition-transform">
-          <div className="absolute inset-0 rounded-full bg-white/10 backdrop-blur-2xl border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.37),inset_0_1px_0_rgba(255,255,255,0.2)]" />
-          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10">
-            <path d="M12 5V2L17 6.5L12 11V8C8.69 8 6 10.69 6 14C6 17.31 8.69 20 12 20C15.31 20 18 17.31 18 14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-            <text x="12" y="16" fontSize="7.5" fontWeight="bold" fill="currentColor" textAnchor="middle" stroke="none">10</text>
-          </svg>
+        <button 
+          onClick={(e) => { e.stopPropagation(); skip(10); }} 
+          className="pointer-events-auto w-20 h-20 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10 relative"
+        >
+          <RotateCw size={32} strokeWidth={1.5} />
+          <span className="absolute text-[10px] font-bold mt-1">10</span>
         </button>
       </div>
 
@@ -158,14 +154,12 @@ export default function AppleVideoPlayer({
       <div className={`absolute bottom-0 left-0 right-0 z-50 p-6 pb-[env(safe-area-inset-bottom)] mb-6 transition-opacity duration-300 pointer-events-none ${showControls ? "opacity-100" : "opacity-0"}`}>
         
         {/* Glass Time Pill Bar */}
-        <div className="pointer-events-auto relative w-full rounded-full px-5 py-4 flex items-center gap-4 overflow-hidden">
-          <div className="absolute inset-0 rounded-full bg-[#1c1c1e]/80 backdrop-blur-md border border-white/10 shadow-2xl" />
-          
-          <span className="relative z-10 text-white text-sm font-medium tabular-nums tracking-wide">
+        <div className="pointer-events-auto w-full bg-[#1c1c1e]/80 backdrop-blur-md rounded-full px-5 py-4 flex items-center gap-4 border border-white/10 shadow-2xl">
+          <span className="text-white text-sm font-medium tabular-nums tracking-wide">
             {formatTime(currentTime)}
           </span>
           
-          <div className="relative z-10 flex-1 flex items-center h-4">
+          <div className="relative flex-1 flex items-center h-4">
             <input
               type="range"
               min={0}
@@ -180,7 +174,7 @@ export default function AppleVideoPlayer({
             />
           </div>
 
-          <span className="relative z-10 text-white/60 text-sm font-medium tabular-nums tracking-wide">
+          <span className="text-white/60 text-sm font-medium tabular-nums tracking-wide">
             {formatRemaining(currentTime)}
           </span>
         </div>
