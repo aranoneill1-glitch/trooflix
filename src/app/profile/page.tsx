@@ -553,15 +553,15 @@ export default function ProfilePage() {
             <div className="grid grid-cols-2 gap-2 mb-6">
               <button
                 onClick={() => setEditOpen(true)}
-                className="bg-white/10 hover:bg-white/20 py-2 rounded-lg text-sm font-semibold transition"
-              >
-                Edit profile
+                className="flex-1 text-center py-2.5 rounded-xl text-sm font-semibold transition text-white bg-[#1c1c1e]/80 backdrop-blur-xl border border-white/10 shadow-lg hover:bg-[#1c1c1e]/95"
+                  >
+                    Edit profile
               </button>
               <button
                 onClick={() => setDashOpen(true)}
-                className="bg-white/10 hover:bg-white/20 py-2 rounded-lg text-sm font-semibold transition"
-              >
-                Dashboard
+                className="flex-1 text-center py-2.5 rounded-xl text-sm font-semibold transition text-white bg-[#1c1c1e]/80 backdrop-blur-xl border border-white/10 shadow-lg hover:bg-[#1c1c1e]/95"
+                  >
+                    Dashboard
               </button>
             </div>
 
@@ -913,7 +913,9 @@ export default function ProfilePage() {
                 <div className="w-10 h-1 rounded-full bg-white/25" />
               </div>
               <div className="flex items-center justify-between px-4 py-2 border-b border-white/10">
-                <h2 className="text-base font-bold">Edit profile</h2>
+                <h2 className="flex-1 text-center py-2.5 rounded-xl text-sm font-semibold transition text-white bg-[#1c1c1e]/80 backdrop-blur-xl border border-white/10 shadow-lg hover:bg-[#1c1c1e]/95"
+                  >
+                    Edit profile</h2>
                 <button
                   onClick={() => setEditOpen(false)}
                   className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-white/10"
@@ -1025,7 +1027,9 @@ export default function ProfilePage() {
                 <div className="w-10 h-1 rounded-full bg-white/25" />
               </div>
               <div className="flex items-center justify-between px-4 py-2 border-b border-white/10">
-                <h2 className="text-base font-bold">Dashboard</h2>
+                <h2 className="flex-1 text-center py-2.5 rounded-xl text-sm font-semibold transition text-white bg-[#1c1c1e]/80 backdrop-blur-xl border border-white/10 shadow-lg hover:bg-[#1c1c1e]/95"
+                  >
+                    Dashboard</h2>
                 <button
                   onClick={() => setDashOpen(false)}
                   className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-white/10"
