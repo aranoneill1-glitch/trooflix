@@ -52,7 +52,7 @@ export default function CreateSheet({ open, onClose }: Props) {
             className="absolute top-[110%] left-0 w-60 bg-[#1c1c1e]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-[100]"
           >
             <div className="py-1">
-              <button onClick={() => handleAction("/profile/compose")} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition text-white">
+              <button onClick={() => handleAction("/profile/upload")} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition text-white">
                 <Play size={20} className="text-white/80" />
                 <span className="text-[15px] font-medium">Reel</span>
               </button>
