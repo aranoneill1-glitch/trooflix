@@ -556,7 +556,7 @@ export default function ProfilePage() {
               <div className="relative flex-1">
         <button
           onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-          className="{old_class} w-full"
+          className="w-full text-center py-2.5 rounded-xl text-sm font-semibold transition text-white bg-[#1c1c1e]/80 backdrop-blur-xl border border-white/10 shadow-lg hover:bg-[#1c1c1e]/95"
         >
           Edit profile
         </button>
