@@ -510,13 +510,7 @@ export default function ProfilePage() {
                     </div>
                   )}
                 </button>
-                <Link
-                    href="/profile/compose"
-                    className=" w-7 h-7 rounded-full bg-red-600 border-2 border-black flex items-center justify-center hover:bg-red-500 transition"
-                    aria-label="Upload reel"
-                  >
-                    <Plus size={16} strokeWidth={3} />
-                  </Link>
+                
               </div>
               <input
                 ref={fileInputRef}
@@ -1417,13 +1411,7 @@ export default function ProfilePage() {
       </AnimatePresence>
 
     
-      {/* Floating Profile Action Button */}
-      <button 
-        onClick={() => router.push("/profile/compose")} 
-        className="fixed top-20 right-6 p-3 bg-red-600 hover:bg-red-500 rounded-full shadow-lg transition z-50 flex items-center justify-center"
-      >
-        <Plus size={24} className="text-white" />
-      </button>
+      
     </main>
   );
 }

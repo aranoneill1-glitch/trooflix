@@ -31,7 +31,6 @@ export default function TopBar({ onMenu }: Props) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Determine active tab from pathname
   const isActive = (path: string) => {
     if (path === "/") return pathname === "/";
     return pathname === path || pathname.startsWith(path + "/");
@@ -56,15 +55,15 @@ export default function TopBar({ onMenu }: Props) {
         </button>
       )}
 
-      {/* Logo */}
-      {pathname !== "/profile" ? (
+      {/* Logo OR Plus Button */}
+      {pathname === "/profile" ? (
+        <Link href="/profile/compose" className="p-1 hover:bg-white/10 rounded-full transition shrink-0">
+          <Plus size={24} className="text-white" />
+        </Link>
+      ) : (
         <Link href="/" className="text-xl md:text-2xl font-black tracking-tight shrink-0">
           <span className="text-white">TROO</span>
           <span className="text-red-600">FLIX</span>
-        </Link>
-      ) : (
-        <Link href="/profile/compose" className="p-1 hover:bg-white/10 rounded-full transition shrink-0">
-          <Plus size={24} className="text-white" />
         </Link>
       )}
 
@@ -120,7 +119,6 @@ export default function TopBar({ onMenu }: Props) {
           </div>
         ) : (
           <>
-            {/* Desktop: open inline search */}
             <button
               onClick={() => setSearchOpen(true)}
               className="hidden md:flex text-white/90 hover:text-white transition"
@@ -128,7 +126,6 @@ export default function TopBar({ onMenu }: Props) {
             >
               <Search size={20} />
             </button>
-            {/* Mobile: navigate to /search page */}
             <Link
               href="/search"
               className="md:hidden text-white/90 hover:text-white transition"
@@ -141,7 +138,6 @@ export default function TopBar({ onMenu }: Props) {
 
         <NotificationBell />
 
-        {/* Desktop only: messages + avatar. Mobile has these in bottom nav / profile. */}
         <div className="hidden md:flex items-center gap-3">
           <Link
             href="/messages"
