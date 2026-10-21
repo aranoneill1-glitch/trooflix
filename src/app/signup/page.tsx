@@ -14,6 +14,7 @@ export default function SignupPage() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [handleStatus, setHandleStatus] = useState<
     "" | "checking" | "available" | "taken" | "invalid"
   >("");
@@ -194,10 +195,27 @@ export default function SignupPage() {
               </div>
             )}
 
+            <div className="flex items-start gap-3 mt-4 mb-2">
+              <input
+                type="checkbox"
+                id="terms"
+                checked={agreedToTerms}
+                onChange={(e) => setAgreedToTerms(e.target.checked)}
+                className="mt-1 w-4 h-4 accent-red-600 rounded bg-[#333] border-white/20"
+              />
+              <label htmlFor="terms" className="text-xs text-white/70 leading-relaxed">
+                I agree to the{" "}
+                <Link href="/terms" className="text-red-500 hover:underline" target="_blank">
+                  Terms of Service
+                </Link>{" "}
+                and acknowledge the Zero Tolerance Policy for objectionable content.
+              </label>
+            </div>
+
             <button
               type="submit"
-              disabled={loading || handleStatus === "taken" || handleStatus === "invalid"}
-              className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-50 font-semibold py-3.5 rounded transition mt-4 text-base"
+              disabled={loading || handleStatus === "taken" || handleStatus === "invalid" || !agreedToTerms}
+              className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-50 font-semibold py-3.5 rounded transition mt-2 text-base"
             >
               {loading ? "Creating account…" : "Sign Up"}
             </button>

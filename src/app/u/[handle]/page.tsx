@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { MessageCircle, ChevronLeft, Pencil } from "lucide-react";
+import { MessageCircle, ChevronLeft, Pencil, Ban } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import UserFollowButton from "@/components/UserFollowButton";
@@ -39,6 +39,7 @@ export default function UserProfilePage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -89,6 +90,23 @@ export default function UserProfilePage() {
         setLoading(false);
       });
   }, [handle]);
+
+  
+  const handleBlock = async () => {
+    if (!meId || !user) return;
+    if (!confirm(`Are you sure you want to block ${user.display_name || user.username}?`)) return;
+    try {
+      await fetch("/api/users/block", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ blockerId: meId, blockedId: user.user_id }),
+      });
+      setIsBlocked(true);
+      alert("User blocked.");
+    } catch (e) {
+      alert("Failed to block user.");
+    }
+  };
 
   const isMe = user && meId && user.user_id === meId;
   const name = user?.display_name || (user?.username ? `@${user.username}` : "User");
@@ -179,6 +197,14 @@ export default function UserProfilePage() {
                       <MessageCircle size={16} /> Message
                     </Link>
                   )}
+
+                  <button
+                    onClick={handleBlock}
+                    disabled={isBlocked}
+                    className="flex items-center gap-2 bg-red-600/20 text-red-500 hover:bg-red-600 hover:text-white px-4 py-2 rounded-lg text-sm font-semibold transition disabled:opacity-50"
+                  >
+                    <Ban size={16} /> {isBlocked ? "Blocked" : "Block"}
+                  </button>
                 </>
               )}
             </div>
