@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useSearch } from "@/context/SearchContext";
 import { Search, Menu, X, MessageCircle, Plus } from "lucide-react";
 import UserMenu from "@/components/UserMenu";
+import CreateSheet from "@/components/CreateSheet";
 import NotificationBell from "@/components/NotificationBell";
 
 const NAV_TABS = [
@@ -24,6 +25,7 @@ export default function TopBar({ onMenu }: Props) {
   const { search, setSearch, clearSearch } = useSearch();
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
   
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -57,9 +59,9 @@ export default function TopBar({ onMenu }: Props) {
 
       {/* Logo OR Plus Button */}
       {pathname === "/profile" ? (
-        <Link href="/profile/compose" className="p-1 hover:bg-white/10 rounded-full transition shrink-0">
+        <button onClick={() => setCreateOpen(true)} className="p-1 hover:bg-white/10 rounded-full transition shrink-0">
           <Plus size={24} className="text-white" />
-        </Link>
+        </button>
       ) : (
         <Link href="/" className="text-xl md:text-2xl font-black tracking-tight shrink-0">
           <span className="text-white">TROO</span>
@@ -149,6 +151,7 @@ export default function TopBar({ onMenu }: Props) {
           <UserMenu />
         </div>
       </div>
+    <CreateSheet open={createOpen} onClose={() => setCreateOpen(false)} />
     </nav>
   );
 }
