@@ -149,14 +149,30 @@ export default function ProfilePage() {
         fetch(`/api/my-list?user_id=${uid}`).then((r) => r.json()),
         fetch(`/api/videos`).then((r) => r.json()),
         fetch(`/api/user/posts?userId=${uid}&kind=reposts`).then((r) => r.json()),
+        fetch(`/api/me/creator?user_id=${uid}`).then((r) => r.json()),
       ])
-        .then(([prof, follows, posts, myList, allVideos, reposts]) => {
+        .then(async ([prof, follows, posts, myList, allVideos, reposts, creatorData]) => {
           setProfile(prof.profile || null);
           setEditName(prof.profile?.display_name || "");
           setEditBio(prof.profile?.bio || "");
           setFollowers(follows.followers || 0);
           setFollowing(follows.following || 0);
-          setPosts(posts.posts || []);
+          
+          let combinedPosts = posts.posts || [];
+          
+          // If podcaster, fetch their creator videos (Podcasts/Docs) and merge
+          if (prof.profile?.tier === "podcaster" && creatorData.creator?.id) {
+            try {
+              const vidsRes = await fetch(`/api/creators/videos?creatorId=${creatorData.creator.id}`).then(r => r.json());
+              if (vidsRes.videos) {
+                const existingIds = new Set(combinedPosts.map((p: any) => p.id));
+                const newVids = vidsRes.videos.filter((v: any) => !existingIds.has(v.id));
+                combinedPosts = [...combinedPosts, ...newVids];
+              }
+            } catch (e) {}
+          }
+          
+          setPosts(combinedPosts);
           setPostsKind(posts.kind || "none");
           setIsCreator(posts.kind === "creator");
 
