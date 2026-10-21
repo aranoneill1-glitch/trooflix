@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSearch } from "@/context/SearchContext";
-import { Search, Menu, X, MessageCircle } from "lucide-react";
+import { Search, Menu, X, MessageCircle, Plus } from "lucide-react";
 import UserMenu from "@/components/UserMenu";
 import NotificationBell from "@/components/NotificationBell";
 
@@ -57,10 +57,16 @@ export default function TopBar({ onMenu }: Props) {
       )}
 
       {/* Logo */}
-      {pathname !== "/profile" && <Link href="/" className="text-xl md:text-2xl font-black tracking-tight shrink-0">
-        <span className="text-white">TROO</span>
-        <span className="text-red-600">FLIX</span>
-      </Link>}
+      {pathname !== "/profile" ? (
+        <Link href="/" className="text-xl md:text-2xl font-black tracking-tight shrink-0">
+          <span className="text-white">TROO</span>
+          <span className="text-red-600">FLIX</span>
+        </Link>
+      ) : (
+        <Link href="/profile/compose" className="p-1 hover:bg-white/10 rounded-full transition shrink-0">
+          <Plus size={24} className="text-white" />
+        </Link>
+      )}
 
       {/* Desktop tabs */}
       <div className="hidden lg:flex gap-6 text-sm ml-6">
