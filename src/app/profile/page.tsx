@@ -25,6 +25,7 @@ import { Camera,
   Sparkles,
   Pencil, ShoppingBag } from "lucide-react";
 import ProfileMenu from "@/components/ProfileMenu";
+import ProfileReelViewer from "@/components/ProfileReelViewer";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import VerifiedBadge from "@/components/VerifiedBadge";
@@ -92,6 +93,7 @@ export default function ProfilePage() {
   const [editOpen, setEditOpen] = useState(false);
   const [dashOpen, setDashOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
 
   // Edit-modal fields (temporary home for the edit form)
   const [editName, setEditName] = useState("");
@@ -1645,6 +1647,13 @@ export default function ProfilePage() {
 
     
       
-    </main>
+    {viewerIndex !== null && (
+        <ProfileReelViewer
+          videos={visibleReels}
+          initialIndex={viewerIndex}
+          onClose={() => setViewerIndex(null)}
+        />
+      )}
+      </main>
   );
 }

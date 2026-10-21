@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { MessageCircle, ChevronLeft, Pencil } from "lucide-react";
+import ProfileReelViewer from "@/components/ProfileReelViewer";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import UserFollowButton from "@/components/UserFollowButton";
@@ -40,6 +41,7 @@ export default function UserProfilePage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [isCreator, setIsCreator] = useState(false);
   const [tab, setTab] = useState<"reels" | "premium">("reels");
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
@@ -298,7 +300,14 @@ export default function UserProfilePage() {
       </div>
 
       <MobileBottomNav />
-    </main>
+    {viewerIndex !== null && (
+        <ProfileReelViewer
+          videos={visibleReels}
+          initialIndex={viewerIndex}
+          onClose={() => setViewerIndex(null)}
+        />
+      )}
+      </main>
   );
 }
 
