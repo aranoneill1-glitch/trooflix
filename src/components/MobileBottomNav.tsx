@@ -5,7 +5,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {Play, Mic, MessageCircle, Podcast} from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
-import { usePrefetch } from "@/lib/usePrefetch";
 import { getCachedUser } from "@/lib/cache";
 
 const TABS: {
@@ -22,9 +21,17 @@ const TABS: {
 
 export default function MobileBottomNav() {
   const pathname = usePathname();
+  const router = useRouter();
 
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [signedIn, setSignedIn] = useState<boolean | null>(null);
+
+  // AGGRESSIVE PREFETCH: Download all nav routes immediately on mount
+  useEffect(() => {
+    TABS.forEach(tab => router.prefetch(tab.path));
+    router.prefetch("/profile");
+    router.prefetch("/login");
+  }, [router]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -42,8 +49,6 @@ export default function MobileBottomNav() {
         .catch(() => {});
     });
   }, [pathname]);
-
-  const router = useRouter();
 
   const prefetchTab = (path: string) => {
     try {
@@ -68,6 +73,7 @@ export default function MobileBottomNav() {
             <Link
               key={tab.path}
               href={tab.path}
+              prefetch={true}
               onMouseEnter={() => prefetchTab(tab.path)}
               onTouchStart={() => prefetchTab(tab.path)}
               className="flex flex-col items-center gap-0.5 px-1 py-1 flex-1 min-w-0"
@@ -94,6 +100,7 @@ export default function MobileBottomNav() {
         {/* Profile (avatar) tab */}
         <Link
           href={signedIn === false ? "/login" : "/profile"}
+          prefetch={true}
           onMouseEnter={() => prefetchTab(signedIn === false ? "/login" : "/profile")}
           onTouchStart={() => prefetchTab(signedIn === false ? "/login" : "/profile")}
           className="flex flex-col items-center gap-0.5 px-1 py-1 flex-1 min-w-0"
