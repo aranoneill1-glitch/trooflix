@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { X, Play, Pause, Volume2, VolumeX, RotateCcw, RotateCw, Settings, Cast } from "lucide-react";
+import { X, Play, Pause, Volume2, VolumeX, RotateCcw, RotateCw } from "lucide-react";
 import TextOverlayRenderer from "@/components/TextOverlay";
 
 export default function AppleVideoPlayer({
@@ -25,20 +25,34 @@ export default function AppleVideoPlayer({
   const [isMuted, setIsMuted] = useState(false);
   const controlsTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  const resetControlsTimeout = () => {
-    setShowControls(true);
-    if (controlsTimeout.current) clearTimeout(controlsTimeout.current);
-    if (isPlaying) {
-      controlsTimeout.current = setTimeout(() => setShowControls(false), 3000);
-    }
-  };
-
+  // Auto-hide controls when playing
   useEffect(() => {
-    resetControlsTimeout();
+    if (controlsTimeout.current) clearTimeout(controlsTimeout.current);
+
+    if (isPlaying) {
+      setShowControls(true);
+      // Hide after 1 second when playing starts/resumes
+      controlsTimeout.current = setTimeout(() => setShowControls(false), 1000);
+    } else {
+      // Stay visible when paused
+      setShowControls(true);
+    }
+
     return () => {
       if (controlsTimeout.current) clearTimeout(controlsTimeout.current);
     };
   }, [isPlaying]);
+
+  // Tap screen to show controls (for 3 seconds)
+  const handleScreenTap = () => {
+    if (!showControls) {
+      setShowControls(true);
+      if (isPlaying) {
+        if (controlsTimeout.current) clearTimeout(controlsTimeout.current);
+        controlsTimeout.current = setTimeout(() => setShowControls(false), 3000);
+      }
+    }
+  };
 
   const formatTime = (time: number) => {
     if (isNaN(time)) return "0:00";
@@ -59,7 +73,6 @@ export default function AppleVideoPlayer({
     if (videoRef.current) {
       if (isPlaying) videoRef.current.pause();
       else videoRef.current.play();
-      setIsPlaying(!isPlaying);
     }
   };
 
@@ -76,34 +89,28 @@ export default function AppleVideoPlayer({
   return (
     <div 
       className="fixed inset-0 z-[200] bg-black flex items-center justify-center select-none"
-      onClick={resetControlsTimeout}
+      onClick={handleScreenTap}
     >
       <video
         ref={videoRef}
         src={src}
         poster={poster}
-        className="w-full h-full object-contain"
+        className="w-full h-full object-contain pointer-events-none"
         autoPlay
         playsInline
         onTimeUpdate={() => setCurrentTime(videoRef.current?.currentTime || 0)}
         onLoadedMetadata={() => setDuration(videoRef.current?.duration || 0)}
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
-        onClick={togglePlay}
       />
 
       <TextOverlayRenderer overlays={textOverlays} />
 
-      {/* TOP BAR (X, Cast, Mute) */}
+      {/* TOP BAR */}
       <div className={`absolute top-0 left-0 right-0 p-6 pt-[env(safe-area-inset-top)] flex items-start justify-between transition-opacity duration-300 ${showControls ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
-        <div className="flex items-center gap-4">
-          <button onClick={onClose} className="w-12 h-12 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10">
-            <X size={24} />
-          </button>
-          <button className="w-12 h-12 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10">
-            <Cast size={22} />
-          </button>
-        </div>
+        <button onClick={onClose} className="w-12 h-12 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10">
+          <X size={24} />
+        </button>
         <button 
           onClick={() => { if(videoRef.current) videoRef.current.muted = !isMuted; setIsMuted(!isMuted); }} 
           className="w-12 h-12 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10"
@@ -112,35 +119,28 @@ export default function AppleVideoPlayer({
         </button>
       </div>
 
-      {/* CENTER CONTROLS (Skip 10, Pause, Skip 10) */}
-      <div className={`absolute inset-0 flex items-center justify-center gap-8 transition-opacity duration-300 pointer-events-none ${showControls || !isPlaying ? "opacity-100" : "opacity-0"}`}>
-        <button onClick={() => skip(-10)} className="pointer-events-auto w-20 h-20 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10 relative">
+      {/* CENTER CONTROLS */}
+      <div className={`absolute inset-0 flex items-center justify-center gap-8 transition-opacity duration-300 pointer-events-none ${showControls ? "opacity-100" : "opacity-0"}`}>
+        <button onClick={(e) => { e.stopPropagation(); skip(-10); }} className="pointer-events-auto w-20 h-20 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10 relative">
           <RotateCcw size={32} strokeWidth={1.5} />
           <span className="absolute text-[10px] font-bold mt-1">10</span>
         </button>
         
-        <button onClick={togglePlay} className="pointer-events-auto w-24 h-24 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10">
+        <button onClick={(e) => { e.stopPropagation(); togglePlay(); }} className="pointer-events-auto w-24 h-24 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10">
           {isPlaying ? <Pause size={48} fill="white" /> : <Play size={48} fill="white" className="ml-2" />}
         </button>
         
-        <button onClick={() => skip(10)} className="pointer-events-auto w-20 h-20 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10 relative">
+        <button onClick={(e) => { e.stopPropagation(); skip(10); }} className="pointer-events-auto w-20 h-20 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10 relative">
           <RotateCw size={32} strokeWidth={1.5} />
           <span className="absolute text-[10px] font-bold mt-1">10</span>
         </button>
       </div>
 
-      {/* BOTTOM CONTROLS (Settings, Glass Pill Bar) */}
-      <div className={`absolute bottom-0 left-0 right-0 p-6 pb-[env(safe-area-inset-bottom)] flex flex-col gap-4 transition-opacity duration-300 ${showControls ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+      {/* BOTTOM CONTROLS */}
+      <div className={`absolute bottom-0 left-0 right-0 p-6 pb-[env(safe-area-inset-bottom)] mb-6 transition-opacity duration-300 ${showControls ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
         
-        {/* Settings Button */}
-        <div className="flex justify-end mb-2">
-          <button className="w-12 h-12 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10">
-            <Settings size={22} />
-          </button>
-        </div>
-
         {/* Glass Time Pill Bar */}
-        <div className="w-full bg-[#1c1c1e]/80 backdrop-blur-md rounded-full px-5 py-4 flex items-center gap-4 border border-white/10 shadow-2xl">
+        <div className="w-full bg-[#1c1c1e]/80 backdrop-blur-md rounded-full px-5 py-4 flex items-center gap-4 border border-white/10 shadow-2xl pointer-events-auto">
           <span className="text-white text-sm font-medium tabular-nums tracking-wide">
             {formatTime(currentTime)}
           </span>
