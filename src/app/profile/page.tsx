@@ -308,8 +308,8 @@ export default function ProfilePage() {
       : posts;
 
   const isPodcaster = profile?.tier === "podcaster";
-  const visibleReels = posts.filter((p: any) => p.type !== "Podcast" && p.type !== "Documentary");
-  const visiblePremium = posts.filter((p: any) => p.type === "Podcast" || p.type === "Documentary");
+  const visibleReels = posts.filter((p: any) => !p.access_type || p.access_type === "free");
+  const visiblePremium = posts.filter((p: any) => p.access_type === "pass" || p.access_type === "creator");
 
   // ---- Long press / right click on grid tiles ----
   const startLongPress = (post: Post) => {

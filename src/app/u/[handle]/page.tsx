@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { MessageCircle, ChevronLeft, Pencil, Ban } from "lucide-react";
+import { MessageCircle, ChevronLeft, Pencil } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import UserFollowButton from "@/components/UserFollowButton";
@@ -27,6 +27,7 @@ type Post = {
   backdropUrl?: string;
   creatorId?: number | null;
   viewCount?: number;
+  access_type?: string;
 };
 
 export default function UserProfilePage() {
@@ -37,9 +38,10 @@ export default function UserProfilePage() {
   const [user, setUser] = useState<User | null>(null);
   const [meId, setMeId] = useState<string | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
+  const [isCreator, setIsCreator] = useState(false);
+  const [tab, setTab] = useState<"reels" | "premium">("reels");
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [isBlocked, setIsBlocked] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -77,12 +79,36 @@ export default function UserProfilePage() {
         }
         setUser(found);
 
-        // Load their posts (saved list or videos)
+        // Fetch profile to check if they are a podcaster
+        const pRes = await fetch(`/api/profile?user_id=${found.user_id}`).then((r) => r.json());
+        const isPod = pRes.profile?.tier === "podcaster";
+        setIsCreator(isPod);
+
+        // 1. Fetch standard posts
+        let combinedPosts: Post[] = [];
         try {
           const pr = await fetch(`/api/user/posts?userId=${found.user_id}`);
           const pd = await pr.json();
-          setPosts(pd.posts || []);
+          combinedPosts = pd.posts || [];
         } catch {}
+
+        // 2. If podcaster, fetch creator videos and merge them
+        if (isPod) {
+          try {
+            const cr = await fetch(`/api/me/creator?user_id=${found.user_id}`).then((r) => r.json());
+            if (cr.creator?.id) {
+              const vr = await fetch(`/api/creators/videos?creatorId=${cr.creator.id}`);
+              const vd = await vr.json();
+              if (vd.videos) {
+                const existingIds = new Set(combinedPosts.map(p => p.id));
+                const newVids = vd.videos.filter((v: any) => !existingIds.has(v.id));
+                combinedPosts = [...combinedPosts, ...newVids];
+              }
+            }
+          } catch {}
+        }
+
+        setPosts(combinedPosts);
         setLoading(false);
       })
       .catch(() => {
@@ -91,26 +117,13 @@ export default function UserProfilePage() {
       });
   }, [handle]);
 
-  
-  const handleBlock = async () => {
-    if (!meId || !user) return;
-    if (!confirm(`Are you sure you want to block ${user.display_name || user.username}?`)) return;
-    try {
-      await fetch("/api/users/block", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ blockerId: meId, blockedId: user.user_id }),
-      });
-      setIsBlocked(true);
-      alert("User blocked.");
-    } catch (e) {
-      alert("Failed to block user.");
-    }
-  };
-
   const isMe = user && meId && user.user_id === meId;
   const name = user?.display_name || (user?.username ? `@${user.username}` : "User");
   const displayHandle = user?.username ? `@${user.username}` : "";
+
+  // Filter by access_type instead of content type
+  const visibleReels = posts.filter(p => !p.access_type || p.access_type === "free");
+  const visiblePremium = posts.filter(p => p.access_type === "pass" || p.access_type === "creator");
 
   return (
     <main className="min-h-screen bg-black text-white pb-24 lg:pb-0">
@@ -197,40 +210,88 @@ export default function UserProfilePage() {
                       <MessageCircle size={16} /> Message
                     </Link>
                   )}
-
-                  <button
-                    onClick={handleBlock}
-                    disabled={isBlocked}
-                    className="flex items-center gap-2 bg-red-600/20 text-red-500 hover:bg-red-600 hover:text-white px-4 py-2 rounded-lg text-sm font-semibold transition disabled:opacity-50"
-                  >
-                    <Ban size={16} /> {isBlocked ? "Blocked" : "Block"}
-                  </button>
                 </>
               )}
             </div>
 
-            {/* Posts grid */}
-            {posts.length === 0 ? (
-              <p className="text-center text-white/50 text-sm py-16">
-                No posts yet.
-              </p>
-            ) : (
-              <div className="grid grid-cols-3 gap-0.5 -mx-4 md:-mx-6">
-                {posts.map((p) => (
-                  <Link
-                    key={p.id}
-                    href={p.creatorId ? `/podcaster/_/${p.id}` : `/feed`}
-                    className="relative aspect-[4/5] bg-[#141418] overflow-hidden"
-                  >
-                    <img
-                      src={p.posterUrl || p.backdropUrl}
-                      alt=""
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                  </Link>
-                ))}
+            {/* Tabs */}
+            {isCreator && (
+              <div className="flex border-b border-white/10 mb-3">
+                <button
+                  onClick={() => setTab("reels")}
+                  className={`flex-1 py-3 text-sm font-semibold border-b-2 transition ${
+                    tab === "reels" ? "border-white text-white" : "border-transparent text-white/50"
+                  }`}
+                >
+                  Reels
+                </button>
+                <button
+                  onClick={() => setTab("premium")}
+                  className={`flex-1 py-3 text-sm font-semibold border-b-2 transition ${
+                    tab === "premium" ? "border-white text-white" : "border-transparent text-white/50"
+                  }`}
+                >
+                  Premium
+                </button>
               </div>
+            )}
+
+            {/* Grid */}
+            {(!isCreator || tab === "reels") && (
+              visibleReels.length === 0 ? (
+                <p className="text-center text-white/50 text-sm py-16">No posts yet.</p>
+              ) : (
+                <div className="grid grid-cols-3 gap-0.5 -mx-4 md:-mx-6">
+                  {visibleReels.map((p) => (
+                    <Link
+                      key={p.id}
+                      href={p.creatorId ? `/podcaster/_/${p.id}` : `/feed`}
+                      className="relative aspect-[4/5] bg-[#141418] overflow-hidden"
+                    >
+                      <img
+                        src={p.posterUrl || p.backdropUrl}
+                        alt=""
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    </Link>
+                  ))}
+                </div>
+              )
+            )}
+
+            {isCreator && tab === "premium" && (
+              visiblePremium.length === 0 ? (
+                <p className="text-center text-white/50 text-sm py-16">No premium content yet.</p>
+              ) : (
+                <div className="grid grid-cols-3 gap-0.5 -mx-4 md:-mx-6">
+                  {visiblePremium.map((p) => (
+                    <Link
+                      key={p.id}
+                      href={p.creatorId ? `/podcaster/_/${p.id}` : `/feed`}
+                      className="relative aspect-[4/5] bg-[#141418] overflow-hidden"
+                    >
+                      <img
+                        src={p.posterUrl || p.backdropUrl}
+                        alt=""
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                      
+                      {p.access_type === "pass" && (
+                        <div className="absolute bottom-1 right-1 bg-red-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow z-10">
+                          TF
+                        </div>
+                      )}
+                      {p.access_type === "creator" && (
+                        <div className="absolute bottom-1 right-1 bg-yellow-500 text-black text-[9px] font-black px-1.5 py-0.5 rounded shadow z-10">
+                          SUB
+                        </div>
+                      )}
+                    </Link>
+                  ))}
+                </div>
+              )
             )}
           </>
         )}
