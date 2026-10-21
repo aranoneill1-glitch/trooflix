@@ -10,7 +10,15 @@ const config: CapacitorConfig = {
     allowNavigation: ['www.trooflixtv.com', 'trooflixtv.com', '*.trooflixtv.com']
   },
   ios: {
-    contentInset: 'always'
+    contentInset: 'never',
+    backgroundColor: '#000000'
+  },
+  plugins: {
+    StatusBar: {
+      style: 'DARK',
+      backgroundColor: '#000000',
+      overlaysWebView: true
+    }
   }
 };
 
