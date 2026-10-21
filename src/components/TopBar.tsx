@@ -57,10 +57,10 @@ export default function TopBar({ onMenu }: Props) {
       )}
 
       {/* Logo */}
-      <Link href="/" className="text-xl md:text-2xl font-black tracking-tight shrink-0">
+      {pathname !== "/profile" && <Link href="/" className="text-xl md:text-2xl font-black tracking-tight shrink-0">
         <span className="text-white">TROO</span>
         <span className="text-red-600">FLIX</span>
-      </Link>
+      </Link>}
 
       {/* Desktop tabs */}
       <div className="hidden lg:flex gap-6 text-sm ml-6">
