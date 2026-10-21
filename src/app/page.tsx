@@ -416,12 +416,7 @@ function Hero({ video, onPlay, onMore }: { video: Video; onPlay: () => void; onM
           <span className="border border-white/40 px-1.5 py-0.5 text-xs">{video.rating}</span>
           <span className="text-white/70">{video.type}</span>
         </motion.div>
-        <motion.p
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-          className="text-sm md:text-base text-white/85 mb-6 line-clamp-3 max-w-xl"
-        >
-          {video.description}
-        </motion.p>
+        
         <motion.div
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
           className="flex gap-3"
