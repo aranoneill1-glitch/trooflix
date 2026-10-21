@@ -1649,6 +1649,11 @@ export default function ProfilePage() {
           videos={visibleReels}
           initialIndex={viewerIndex}
           onClose={() => setViewerIndex(null)}
+          author={{
+            name: profile?.display_name || profile?.username || "User",
+            avatar: profile?.avatar_url || "",
+            verified: profile?.is_verified || false
+          }}
         />
       )}
       </main>

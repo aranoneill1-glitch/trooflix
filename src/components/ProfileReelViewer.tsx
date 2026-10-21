@@ -26,10 +26,12 @@ export default function ProfileReelViewer({
   videos,
   initialIndex,
   onClose,
+  author,
 }: {
   videos: Video[];
   initialIndex: number;
   onClose: () => void;
+  author: { name: string; avatar: string; verified: boolean };
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(initialIndex);
@@ -101,6 +103,7 @@ export default function ProfileReelViewer({
             video={v}
             index={i}
             isActive={activeIndex === i}
+            author={author}
             muted={muted}
             onToggleMute={() => setMuted((m) => !m)}
             onOpenComments={() => setCommentVideo(v)}
@@ -130,7 +133,7 @@ export default function ProfileReelViewer({
   );
 }
 
-function ReelItem({ video, index, isActive, muted, onToggleMute, onOpenComments, onOpenShare }: any) {
+function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenComments, onOpenShare }: any) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
 
@@ -222,6 +225,26 @@ function ReelItem({ video, index, isActive, muted, onToggleMute, onOpenComments,
 
         {/* BOTTOM LEFT INFO */}
         <div className="flex-1 flex flex-col justify-end max-w-[75%] pointer-events-auto">
+          
+          {/* Creator Info */}
+          {author && (
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-red-600 to-red-900 overflow-hidden flex-shrink-0 border border-white/20">
+                {author.avatar ? (
+                  <img src={author.avatar} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-xs font-bold text-white">
+                    {author.name?.[0]?.toUpperCase() || "?"}
+                  </div>
+                )}
+              </div>
+              <span className="font-bold text-white text-[15px] drop-shadow-md flex items-center gap-1">
+                {author.name || "User"}
+                {author.verified && <VerifiedBadge size={14} variant="gold" />}
+              </span>
+            </div>
+          )}
+
           {video.title && <h3 className="text-white font-bold text-lg mb-1 drop-shadow-md">{video.title}</h3>}
           {video.description && <p className="text-white/90 text-sm line-clamp-2 mb-2 drop-shadow-md">{video.description}</p>}
         </div>

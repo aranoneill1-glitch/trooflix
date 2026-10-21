@@ -305,6 +305,11 @@ export default function UserProfilePage() {
           videos={visibleReels}
           initialIndex={viewerIndex}
           onClose={() => setViewerIndex(null)}
+          author={{
+            name: user?.display_name || user?.username || "User",
+            avatar: user?.avatar_url || "",
+            verified: user?.is_verified || false
+          }}
         />
       )}
       </main>
