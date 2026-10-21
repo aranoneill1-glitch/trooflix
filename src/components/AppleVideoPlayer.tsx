@@ -117,7 +117,7 @@ export default function AppleVideoPlayer({
 
       {/* TOP BAR */}
       <div className={`absolute top-0 left-0 right-0 p-6 pt-[env(safe-area-inset-top)] flex items-start justify-between transition-opacity duration-300 ${showControls ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
-        <button onClick={onClose} className="w-12 h-12 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10">
+        <button onClick={onClose} className="w-12 h-12 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10`}>
           <X size={24} />
         </button>
         <button 
@@ -130,16 +130,16 @@ export default function AppleVideoPlayer({
 
       {/* CENTER CONTROLS */}
       <div className={`absolute inset-0 flex items-center justify-center gap-8 transition-opacity duration-300 pointer-events-none ${showControls ? "opacity-100" : "opacity-0"}`}>
-        <button onClick={(e) => { e.stopPropagation(); skip(-10); }} className="pointer-events-auto w-20 h-20 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10 relative">
+        <button onClick={(e) => { e.stopPropagation(); skip(-10); }} className={`${showControls ? "pointer-events-auto" : "pointer-events-none"} w-20 h-20 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10 relative`}>
           <RotateCcw size={32} strokeWidth={1.5} />
           <span className="absolute text-[10px] font-bold mt-1">10</span>
         </button>
         
-        <button onClick={(e) => { e.stopPropagation(); togglePlay(); }} className="pointer-events-auto w-24 h-24 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10">
+        <button onClick={(e) => { e.stopPropagation(); togglePlay(); }} className={`${showControls ? "pointer-events-auto" : "pointer-events-none"} w-24 h-24 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10`}>
           {isPlaying ? <Pause size={48} fill="white" /> : <Play size={48} fill="white" className="ml-2" />}
         </button>
         
-        <button onClick={(e) => { e.stopPropagation(); skip(10); }} className="pointer-events-auto w-20 h-20 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10 relative">
+        <button onClick={(e) => { e.stopPropagation(); skip(10); }} className={`${showControls ? "pointer-events-auto" : "pointer-events-none"} w-20 h-20 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10 relative`}>
           <RotateCw size={32} strokeWidth={1.5} />
           <span className="absolute text-[10px] font-bold mt-1">10</span>
         </button>
