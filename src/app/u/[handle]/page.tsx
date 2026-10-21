@@ -245,19 +245,19 @@ export default function UserProfilePage() {
               ) : (
                 <div className="grid grid-cols-3 gap-0.5 -mx-4 md:-mx-6">
                   {visibleReels.map((p, idx) => (
-                    <div
-                      key={p.id}
-                      onClick={() => router.push(p.creatorId ? `/podcaster/_/${p.id}` : `/feed`)}
-                      className="relative aspect-[4/5] bg-[#141418] overflow-hidden cursor-pointer"
-                    >
-                      <img
-                        src={p.posterUrl || p.backdropUrl}
-                        alt=""
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                    </div>
-                  ))}
+                  <div
+                    key={p.id}
+                    onClick={() => setViewerIndex(idx)}
+                    className="relative aspect-[4/5] bg-[#141418] overflow-hidden cursor-pointer"
+                  >
+                    <img
+                      src={p.posterUrl || p.backdropUrl}
+                      alt=""
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                ))}
                 </div>
               )
             )}

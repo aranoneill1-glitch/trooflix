@@ -739,10 +739,10 @@ export default function ProfilePage() {
                   </div>
                 ) : uploadsView === "grid" ? (
                   <div className="grid grid-cols-3 gap-0.5">
-                    {visibleReels.map((p, idx) => (
+                    {visibleReels.map((p: any, idx: number) => (
                       <div
                         key={p.id}
-                        onClick={() => router.push(p.creatorId ? `/podcaster/_/${p.id}` : `/feed`)}
+                        onClick={() => setViewerIndex(idx)}
                         className="relative aspect-[4/5] bg-[#141418] overflow-hidden cursor-pointer"
                         onPointerDown={() => startLongPress(p)}
                         onPointerUp={cancelLongPress}
@@ -752,7 +752,6 @@ export default function ProfilePage() {
                           e.preventDefault();
                           setActionSheetFor(p);
                         }}
-                        onDragStart={(e) => e.preventDefault()}
                         style={{
                           WebkitTouchCallout: "none",
                           WebkitUserSelect: "none",
