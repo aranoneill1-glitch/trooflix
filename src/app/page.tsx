@@ -400,7 +400,7 @@ function Hero({ video, onPlay, onMore }: { video: Video; onPlay: () => void; onM
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
           className="text-xs md:text-sm tracking-[0.3em] text-red-500 font-bold mb-3"
         >
-          TROOFLIX ORIGINAL
+          TROOFLIX PRESENTS
         </motion.p>
         <motion.h1
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
