@@ -1,13 +1,14 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Pencil, Camera, Share2 } from "lucide-react";
+import { Pencil, Camera, Share2, Image as ImageIcon } from "lucide-react";
 
 type Props = {
   open: boolean;
   onClose: () => void;
   onEdit: () => void;
   onAvatar: () => void;
+  onBackdrop: () => void;
   onShare: () => void;
 };
 
@@ -32,6 +33,10 @@ export default function ProfileMenu({ open, onClose, onEdit, onAvatar, onShare }
               <button onClick={() => { onClose(); onAvatar(); }} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition text-white">
                 <Camera size={18} className="text-white/80" />
                 <span className="text-[15px] font-medium">Change Avatar</span>
+              </button>
+              <button onClick={() => { onClose(); onBackdrop(); }} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition text-white">
+                <ImageIcon size={18} className="text-white/80" />
+                <span className="text-[15px] font-medium">Change Backdrop</span>
               </button>
               <button onClick={() => { onClose(); onShare(); }} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition text-white">
                 <Share2 size={18} className="text-white/80" />

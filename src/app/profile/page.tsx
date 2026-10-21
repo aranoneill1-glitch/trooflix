@@ -37,6 +37,7 @@ type Profile = {
   username: string | null;
   display_name: string | null;
   avatar_url: string | null;
+  backdrop_url?: string | null;
   bio: string | null;
   is_verified?: boolean;
   tier?: "user" | "pro" | "podcaster";
@@ -95,6 +96,8 @@ export default function ProfilePage() {
   const [editName, setEditName] = useState("");
   const [editBio, setEditBio] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [uploadingBackdrop, setUploadingBackdrop] = useState(false);
+  const backdropInputRef = useRef<HTMLInputElement>(null);
   const [statusMsg, setStatusMsg] = useState("");
   const [portalLoading, setPortalLoading] = useState(false);
   const [settingUpPass, setSettingUpPass] = useState(false);
@@ -195,6 +198,34 @@ export default function ProfilePage() {
       }, 1200);
     } else {
       setStatusMsg("❌ Could not save");
+    }
+  };
+
+  
+  const onBackdropChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !userId) return;
+    setUploadingBackdrop(true);
+    try {
+      const presign = await fetch("/api/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filename: file.name, contentType: file.type, folder: "backdrops" }),
+      });
+      const { signedUrl, publicUrl } = await presign.json();
+      await fetch(signedUrl, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
+      
+      await fetch("/api/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, backdropUrl: publicUrl }),
+      });
+      
+      setProfile((p) => p ? { ...p, backdrop_url: publicUrl } : p);
+    } catch (err) {
+      alert("Failed to upload backdrop");
+    } finally {
+      setUploadingBackdrop(false);
     }
   };
 
@@ -476,7 +507,23 @@ export default function ProfilePage() {
     <main className="min-h-screen bg-black text-white pb-24 lg:pb-0">
       <TopBar />
 
-      <div className="pt-20 md:pt-24 max-w-2xl mx-auto px-4 md:px-6">
+      {/* Backdrop Section */}
+      {profile?.backdrop_url && (
+        <div className="w-full h-40 md:h-64 relative bg-[#1c1c1e]">
+          <img src={profile.backdrop_url} alt="Backdrop" className="w-full h-full object-cover opacity-80" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent" />
+        </div>
+      )}
+      
+      <input 
+        type="file" 
+        ref={backdropInputRef} 
+        onChange={onBackdropChange} 
+        accept="image/*" 
+        className="hidden" 
+      />
+
+      <div className={`relative ${profile?.backdrop_url ? '-mt-16' : 'pt-20 md:pt-24'} max-w-2xl mx-auto px-4 md:px-6`}>
         {settingUpPass && !loading && (
           <div className="bg-yellow-950/30 border border-yellow-600/40 rounded-xl p-4 mb-4 flex items-center gap-3">
             <div className="w-4 h-4 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin flex-shrink-0" />
@@ -565,6 +612,7 @@ export default function ProfilePage() {
           onClose={() => setProfileMenuOpen(false)}
           onEdit={() => setEditOpen(true)}
           onAvatar={() => fileInputRef.current?.click()}
+          onBackdrop={() => backdropInputRef.current?.click()}
           onShare={() => {
             if (navigator.share) {
               navigator.share({ title: 'My Trooflix Profile', url: window.location.href });
