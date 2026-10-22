@@ -327,7 +327,7 @@ export default function ProfilePage() {
   const isPodcaster = profile?.tier === "podcaster";
   const visibleFree = posts.filter((p: any) => !p.access_type || p.access_type === "free");
   const visibleReels = visibleFree.filter((p: any) => p.videoUrl || p.bitchuteUrl || p.type === "Reel" || p.type === "Podcast" || p.type === "Documentary");
-  const visibleImagePosts = visibleFree.filter((p: any) => !p.videoUrl && !p.bitchuteUrl && p.type !== "Reel" && p.type !== "Podcast" && p.type !== "Documentary");
+  const visibleImagePosts = visibleFree.filter((p: any) => !p.videoUrl && !p.bitchuteUrl && p.type !== "Reel" && p.type !== "Podcast" && p.type !== "Documentary" && p.type !== "Troo");
   const visiblePremium = posts.filter((p: any) => p.access_type === "pass" || p.access_type === "creator");
 
   // ---- Long press / right click on grid tiles ----
