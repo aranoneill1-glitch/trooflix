@@ -125,11 +125,12 @@ export default function MobileBottomNav() {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="fixed bottom-28 right-6 z-[100] bg-[#1c1c1e] border border-white/10 rounded-2xl p-2 w-48 shadow-2xl"
+              className="fixed bottom-28 right-6 z-[100] bg-[#1c1c1e] border border-white/10 rounded-2xl p-2 w-48 shadow-2xl select-none"
             >
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center justify-center gap-2 p-3 text-red-500 font-bold hover:bg-red-500/10 rounded-xl transition"
+                className="w-full flex items-center justify-center gap-2 p-3 text-red-500 font-bold hover:bg-red-500/10 rounded-xl transition select-none"
+                style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none" }}
               >
                 <LogOut size={18} /> Log Out
               </button>
@@ -185,7 +186,8 @@ export default function MobileBottomNav() {
             onTouchStart={startPress}
             onTouchEnd={cancelPress}
             onTouchCancel={cancelPress}
-            className="flex flex-col items-center justify-center w-12 h-12 rounded-full cursor-pointer"
+            className="flex flex-col items-center justify-center w-12 h-12 rounded-full cursor-pointer select-none"
+            style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none" }}
           >
             <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }}>
               {avatarUrl ? (
