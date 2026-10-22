@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Check, Shield, TrendingUp, MonitorPlay, MessageSquare, BadgeDollarSign, Sparkles, Zap } from "lucide-react";
+import { ArrowRight, Check, Shield, TrendingUp, MonitorPlay, MessageSquare, BadgeDollarSign, Zap } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import { motion } from "framer-motion";
 
-// Animation variants for scroll reveals
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
@@ -21,29 +20,17 @@ const staggerContainer = {
 
 export default function CreatorsPage() {
   return (
-    // 'hidden md:block' hides this entirely on mobile devices
     <div className="hidden md:block min-h-screen bg-[#050505] text-white pb-32 overflow-x-hidden selection:bg-red-500/30">
       <TopBar />
       
       {/* HERO SECTION */}
       <div className="relative pt-40 pb-24 px-6 max-w-6xl mx-auto flex flex-col items-center text-center">
-        {/* Animated Background Glow */}
         <motion.div 
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.5, ease: "easeOut" }}
+          transition={{ duration: 1.5 }}
           className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-gradient-to-r from-red-600/20 via-orange-600/10 to-transparent rounded-full blur-[120px] pointer-events-none" 
         />
-        
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="relative z-10 flex items-center gap-2 py-1.5 px-4 rounded-full bg-white/5 border border-white/10 backdrop-blur-md mb-8 shadow-2xl"
-        >
-          <Sparkles size={14} className="text-red-400" />
-          <span className="text-xs font-semibold tracking-wide text-white/80">Accepting the first 10 Founding Creators</span>
-        </motion.div>
         
         <motion.h1 
           initial={{ opacity: 0, y: 20 }}
@@ -52,7 +39,7 @@ export default function CreatorsPage() {
           className="relative z-10 text-5xl md:text-7xl font-black tracking-tighter mb-8 leading-[1.1]"
         >
           Stop letting Big Tech <br className="hidden md:block"/>
-          <span className="bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">eat your lunch.</span>
+          <span className="text-red-500">eat your lunch.</span>
         </motion.h1>
         
         <motion.p 
@@ -97,32 +84,36 @@ export default function CreatorsPage() {
         <div className="bg-[#0a0a0a] border border-white/10 rounded-3xl overflow-hidden shadow-2xl relative">
           <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
           
+          {/* Header Row */}
           <div className="grid grid-cols-4 text-center border-b border-white/10 bg-white/[0.02]">
-            <div className="p-6 text-left font-semibold text-white/40 text-sm tracking-wider uppercase">Platform Type</div>
-            <div className="p-6 font-semibold text-white/40 text-sm tracking-wider uppercase">Video</div>
-            <div className="p-6 font-semibold text-white/40 text-sm tracking-wider uppercase">Memberships</div>
+            <div className="p-6 text-left font-semibold text-white/40 text-sm tracking-wider uppercase">Platform</div>
+            <div className="p-6 font-semibold text-white/40 text-sm tracking-wider uppercase">Video Cut</div>
+            <div className="p-6 font-semibold text-white/40 text-sm tracking-wider uppercase">Member Cut</div>
             <div className="p-6 font-bold text-white text-sm tracking-wider uppercase">You Keep</div>
           </div>
           
+          {/* YouTube Row */}
           <div className="grid grid-cols-4 text-center border-b border-white/5 hover:bg-white/[0.03] transition-colors">
-            <div className="p-6 text-left font-bold text-lg">Traditional Video</div>
-            <div className="p-6 text-white/50 font-medium">45% cut</div>
-            <div className="p-6 text-white/50 font-medium">30% cut</div>
-            <div className="p-6 font-bold text-red-400/80 text-lg">~55%</div>
+            <div className="p-6 text-left font-bold text-lg text-white/90">YouTube</div>
+            <div className="p-6 text-white/50 font-medium">45%</div>
+            <div className="p-6 text-white/50 font-medium">30%</div>
+            <div className="p-6 font-bold text-red-400/80 text-lg">55%</div>
           </div>
 
+          {/* Patreon Row */}
           <div className="grid grid-cols-4 text-center border-b border-white/5 hover:bg-white/[0.03] transition-colors">
-            <div className="p-6 text-left font-bold text-lg">Live Streaming</div>
-            <div className="p-6 text-white/50 font-medium">50% cut</div>
-            <div className="p-6 text-white/50 font-medium">50% cut</div>
-            <div className="p-6 font-bold text-red-400/80 text-lg">~50%</div>
-          </div>
-
-          <div className="grid grid-cols-4 text-center border-b border-white/5 hover:bg-white/[0.03] transition-colors">
-            <div className="p-6 text-left font-bold text-lg">Memberships</div>
+            <div className="p-6 text-left font-bold text-lg text-white/90">Patreon</div>
             <div className="p-6 text-white/50 font-medium">N/A</div>
             <div className="p-6 text-white/50 font-medium">10% + Fees</div>
-            <div className="p-6 font-bold text-white/60 text-lg">~80%</div>
+            <div className="p-6 font-bold text-red-400/80 text-lg">~80%</div>
+          </div>
+
+          {/* Twitch Row */}
+          <div className="grid grid-cols-4 text-center border-b border-white/5 hover:bg-white/[0.03] transition-colors">
+            <div className="p-6 text-left font-bold text-lg text-white/90">Twitch</div>
+            <div className="p-6 text-white/50 font-medium">N/A</div>
+            <div className="p-6 text-white/50 font-medium">50%</div>
+            <div className="p-6 font-bold text-red-400/80 text-lg">50%</div>
           </div>
 
           {/* Trooflix Row (Highlighted) */}
@@ -132,7 +123,7 @@ export default function CreatorsPage() {
               Trooflix <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider shadow-lg">Best</span>
             </div>
             <div className="p-6 font-bold text-white text-lg">Free</div>
-            <div className="p-6 font-bold text-white text-lg">10% cut</div>
+            <div className="p-6 font-bold text-white text-lg">10%</div>
             <div className="p-6 font-black text-green-400 text-xl">90%</div>
           </div>
         </div>
