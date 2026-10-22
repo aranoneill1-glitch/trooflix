@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { MessageCircle, ChevronLeft, Pencil } from "lucide-react";
+import { MessageCircle, ChevronLeft, Pencil, Grid3x3, List, Play, Eye, ShoppingBag, Settings } from "lucide-react";
 import ProfileReelViewer from "@/components/ProfileReelViewer";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
@@ -19,6 +19,7 @@ type User = {
   avatar_url: string | null;
   bio: string | null;
   is_verified?: boolean;
+  tier?: string;
 };
 
 type Post = {
@@ -26,6 +27,9 @@ type Post = {
   title?: string;
   posterUrl?: string;
   backdropUrl?: string;
+  videoUrl?: string;
+  bitchuteUrl?: string;
+  type?: string;
   creatorId?: number | null;
   viewCount?: number;
   access_type?: string;
@@ -39,11 +43,13 @@ export default function UserProfilePage() {
   const [user, setUser] = useState<User | null>(null);
   const [meId, setMeId] = useState<string | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
   const [isCreator, setIsCreator] = useState(false);
-  const [tab, setTab] = useState<"reels" | "premium">("reels");
+  const [activeTab, setActiveTab] = useState<"posts" | "reels" | "premium" | "shop">("reels");
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [uploadsView, setUploadsView] = useState<"grid" | "list">("grid");
 
   useEffect(() => {
     const supabase = createClient();
@@ -56,7 +62,6 @@ export default function UserProfilePage() {
     if (!handle) return;
 
     const looksLikeUuid = /^[0-9a-f]{8}-/.test(handle);
-
     const fetcher = looksLikeUuid
       ? fetch(`/api/users?id=${handle}`)
       : fetch(`/api/users?q=${encodeURIComponent(handle.replace(/^@/, ""))}`);
@@ -69,10 +74,7 @@ export default function UserProfilePage() {
           found = d.user;
         } else if (Array.isArray(d.users)) {
           const clean = handle.replace(/^@/, "").toLowerCase();
-          found =
-            d.users.find(
-              (u: User) => (u.username || "").toLowerCase() === clean
-            ) || d.users[0] || null;
+          found = d.users.find((u: User) => (u.username || "").toLowerCase() === clean) || d.users[0] || null;
         }
         if (!found) {
           setNotFound(true);
@@ -81,12 +83,10 @@ export default function UserProfilePage() {
         }
         setUser(found);
 
-        // Fetch profile to check if they are a podcaster
         const pRes = await fetch(`/api/profile?user_id=${found.user_id}`).then((r) => r.json());
         const isPod = pRes.profile?.tier === "podcaster";
         setIsCreator(isPod);
 
-        // 1. Fetch standard posts
         let combinedPosts: Post[] = [];
         try {
           const pr = await fetch(`/api/user/posts?userId=${found.user_id}`);
@@ -94,7 +94,6 @@ export default function UserProfilePage() {
           combinedPosts = pd.posts || [];
         } catch {}
 
-        // 2. If podcaster, fetch creator videos and merge them
         if (isPod) {
           try {
             const cr = await fetch(`/api/me/creator?user_id=${found.user_id}`).then((r) => r.json());
@@ -106,6 +105,10 @@ export default function UserProfilePage() {
                 const newVids = vd.videos.filter((v: any) => !existingIds.has(v.id));
                 combinedPosts = [...combinedPosts, ...newVids];
               }
+              // Fetch products for shop
+              const prRes = await fetch(`/api/creator/products?creatorId=${cr.creator.id}`);
+              const prData = await prRes.json();
+              setProducts(prData.products || []);
             }
           } catch {}
         }
@@ -123,21 +126,21 @@ export default function UserProfilePage() {
   const name = user?.display_name || (user?.username ? `@${user.username}` : "User");
   const displayHandle = user?.username ? `@${user.username}` : "";
 
-  // Filter by access_type instead of content type
-  const visibleReels = posts.filter(p => !p.access_type || p.access_type === "free");
+  // Filters based on private profile logic
+  const visibleFree = posts.filter(p => !p.access_type || p.access_type === "free");
+  const visibleReels = visibleFree.filter(p => p.videoUrl || p.bitchuteUrl || p.type === "Reel" || p.type === "Podcast" || p.type === "Documentary");
+  const visibleImagePosts = visibleFree.filter(p => !p.videoUrl && !p.bitchuteUrl && p.type !== "Reel" && p.type !== "Podcast" && p.type !== "Documentary" && p.type !== "Troo");
   const visiblePremium = posts.filter(p => p.access_type === "pass" || p.access_type === "creator");
 
+  const listToShow = activeTab === "posts" ? visibleImagePosts : visibleReels;
+
   return (
-    <main className="min-h-screen bg-black text-white pb-24 lg:pb-0">
+    <main className="min-h-screen bg-black text-white pb-24 lg:pb-0 overflow-x-hidden">
       <TopBar />
 
       <div className="pt-20 md:pt-24 max-w-2xl mx-auto px-4 md:px-6">
         <div className="mb-4">
-          <button
-            onClick={() => router.back()}
-            className="p-1.5 -ml-1.5 rounded-full hover:bg-white/10 transition"
-            aria-label="Back"
-          >
+          <button onClick={() => router.back()} className="p-1.5 -ml-1.5 rounded-full hover:bg-white/10 transition">
             <ChevronLeft size={22} />
           </button>
         </div>
@@ -147,9 +150,7 @@ export default function UserProfilePage() {
         {!loading && notFound && (
           <div className="text-center py-16">
             <p className="text-white/70 mb-2">User not found.</p>
-            <Link href="/" className="text-red-500 hover:underline text-sm">
-              Go home →
-            </Link>
+            <Link href="/" className="text-red-500 hover:underline text-sm">Go home →</Link>
           </div>
         )}
 
@@ -161,9 +162,7 @@ export default function UserProfilePage() {
                 {user.avatar_url ? (
                   <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-3xl font-bold">
-                    {(name[0] || "?").toUpperCase()}
-                  </span>
+                  <span className="text-3xl font-bold">{(name[0] || "?").toUpperCase()}</span>
                 )}
               </div>
 
@@ -180,35 +179,28 @@ export default function UserProfilePage() {
             <div className="mb-4">
               <p className="font-semibold inline-flex items-center gap-1.5">
                 <span>{name}</span>
-                {user.is_verified && <VerifiedBadge size={16} />}
+                {user.is_verified && <VerifiedBadge size={16} variant={isCreator ? "gold" : "red"} />}
               </p>
-              {displayHandle && (
-                <p className="text-sm text-white/50">{displayHandle}</p>
-              )}
-              {user.bio && (
-                <p className="text-sm text-white/90 whitespace-pre-wrap mt-2">
-                  {user.bio}
-                </p>
-              )}
+              {displayHandle && <p className="text-sm text-white/50">{displayHandle}</p>}
+              {user.bio && <p className="text-sm text-white/90 whitespace-pre-wrap mt-2">{user.bio}</p>}
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-2 mb-6">
+            <div className="flex flex-wrap items-center gap-3 mb-8">
               {isMe ? (
-                <Link
-                  href="/profile"
-                  className="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-sm font-semibold transition"
-                >
-                  <Pencil size={14} /> Edit profile
-                </Link>
+                <>
+                  <Link href="/studio" className="flex-1 md:flex-none justify-center bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 hover:bg-yellow-500/20 px-6 py-3 rounded-xl text-sm font-bold transition flex items-center gap-2 backdrop-blur-md shadow-lg shadow-yellow-500/5">
+                    <Settings size={16} /> My Studio
+                  </Link>
+                  <Link href="/profile" className="flex-1 md:flex-none justify-center bg-[#1c1c1e]/80 backdrop-blur-xl text-white border border-white/10 hover:bg-[#1c1c1e]/95 px-6 py-3 rounded-xl text-sm font-bold transition flex items-center gap-2 shadow-lg">
+                    <Pencil size={16} /> Edit Profile
+                  </Link>
+                </>
               ) : (
                 <>
                   <UserFollowButton userId={user.user_id} />
                   {meId && (
-                    <Link
-                      href={`/messages/${user.user_id}`}
-                      className="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-sm font-semibold transition"
-                    >
+                    <Link href={`/messages/${user.user_id}`} className="flex items-center gap-2 bg-[#1c1c1e]/80 backdrop-blur-xl border border-white/10 hover:bg-[#1c1c1e]/95 px-6 py-3 rounded-xl text-sm font-bold transition shadow-lg">
                       <MessageCircle size={16} /> Message
                     </Link>
                   )}
@@ -217,90 +209,176 @@ export default function UserProfilePage() {
             </div>
 
             {/* Tabs */}
-            {isCreator && (
-              <div className="flex border-b border-white/10 mb-3">
+            <div className="flex overflow-x-auto gap-2 mb-6 pb-2 scrollbar-hide border-b border-white/5">
+              <button
+                onClick={() => setActiveTab("posts")}
+                className={`px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition border ${
+                  activeTab === "posts" ? "bg-white text-black border-white shadow-lg" : "bg-[#1c1c1e]/50 text-white/60 border-white/10 hover:bg-[#1c1c1e] hover:text-white"
+                }`}
+              >
+                Posts
+              </button>
+              <button
+                onClick={() => setActiveTab("reels")}
+                className={`px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition border ${
+                  activeTab === "reels" ? "bg-white text-black border-white shadow-lg" : "bg-[#1c1c1e]/50 text-white/60 border-white/10 hover:bg-[#1c1c1e] hover:text-white"
+                }`}
+              >
+                Reels
+              </button>
+              {isCreator && (
                 <button
-                  onClick={() => setTab("reels")}
-                  className={`flex-1 py-3 text-sm font-semibold border-b-2 transition ${
-                    tab === "reels" ? "border-white text-white" : "border-transparent text-white/50"
-                  }`}
-                >
-                  Reels
-                </button>
-                <button
-                  onClick={() => setTab("premium")}
-                  className={`flex-1 py-3 text-sm font-semibold border-b-2 transition ${
-                    tab === "premium" ? "border-white text-white" : "border-transparent text-white/50"
+                  onClick={() => setActiveTab("premium")}
+                  className={`px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition border ${
+                    activeTab === "premium" ? "bg-white text-black border-white shadow-lg" : "bg-[#1c1c1e]/50 text-white/60 border-white/10 hover:bg-[#1c1c1e] hover:text-white"
                   }`}
                 >
                   Premium
                 </button>
+              )}
+              {isCreator && (
+                <button
+                  onClick={() => setActiveTab("shop")}
+                  className={`px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition border ${
+                    activeTab === "shop" ? "bg-white text-black border-white shadow-lg" : "bg-[#1c1c1e]/50 text-white/60 border-white/10 hover:bg-[#1c1c1e] hover:text-white"
+                  }`}
+                >
+                  Shop
+                </button>
+              )}
+            </div>
+
+            {/* Grid Content */}
+            {(activeTab === "posts" || activeTab === "reels") && (
+              <div>
+                <div className="flex items-center justify-between px-4 md:px-6 mb-4 mt-2">
+                  <h2 className="text-xl font-black text-white tracking-tight">
+                    {activeTab === "posts" ? "Posts" : "Reels"}
+                  </h2>
+                  <div className="flex items-center gap-1 bg-[#1c1c1e]/80 backdrop-blur-md p-1 rounded-lg border border-white/10">
+                    <button onClick={() => setUploadsView("grid")} className={`p-1.5 rounded transition ${uploadsView === "grid" ? "bg-white/15 text-white" : "text-white/40 hover:text-white"}`}>
+                      <Grid3x3 size={16} />
+                    </button>
+                    <button onClick={() => setUploadsView("list")} className={`p-1.5 rounded transition ${uploadsView === "list" ? "bg-white/15 text-white" : "text-white/40 hover:text-white"}`}>
+                      <List size={16} />
+                    </button>
+                  </div>
+                </div>
+
+                {listToShow.length === 0 ? (
+                  <div className="py-12 text-center text-white/40 text-sm px-4">No content yet.</div>
+                ) : uploadsView === "grid" ? (
+                  <div className="grid grid-cols-3 gap-1 md:gap-2 px-2 md:px-0">
+                    {listToShow.map((p, idx) => (
+                      <div
+                        key={p.id}
+                        onClick={() => activeTab === "reels" ? setViewerIndex(idx) : router.push(`/podcast/${p.id}`)}
+                        className="relative aspect-[4/5] bg-[#141418] rounded-xl overflow-hidden cursor-pointer group"
+                      >
+                        <img src={p.posterUrl || p.backdropUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition duration-300" loading="lazy" />
+                        {activeTab === "reels" && (
+                          <div className="absolute top-1 right-1">
+                            <Play size={14} fill="white" className="text-white drop-shadow" />
+                          </div>
+                        )}
+                        <div className="absolute bottom-1 left-1 flex items-center gap-0.5 text-[10px] font-semibold text-white drop-shadow">
+                          <Eye size={11} /> {(p.viewCount ?? 0).toLocaleString()}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-1 px-4 md:px-6">
+                    {listToShow.map((p, idx) => (
+                      <div
+                        key={p.id}
+                        onClick={() => activeTab === "reels" ? setViewerIndex(idx) : router.push(`/podcast/${p.id}`)}
+                        className="flex items-center gap-3 p-2 rounded-lg bg-[#141418] hover:bg-white/5 transition cursor-pointer"
+                      >
+                        <img src={p.posterUrl || p.backdropUrl} alt="" className="w-12 h-16 rounded object-cover flex-shrink-0" loading="lazy" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold truncate">{p.title || "Untitled"}</p>
+                          <p className="text-xs text-white/50 flex items-center gap-1 mt-1">
+                            <Eye size={11} /> {(p.viewCount ?? 0).toLocaleString()} views
+                          </p>
+                        </div>
+                        <Play size={14} fill="white" className="text-white/60 flex-shrink-0" />
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
-            {/* Grid */}
-            {(!isCreator || tab === "reels") && (
-              visibleReels.length === 0 ? (
-                <p className="text-center text-white/50 text-sm py-16">No posts yet.</p>
-              ) : (
-                <div className="grid grid-cols-3 gap-0.5 -mx-4 md:-mx-6">
-                  {visibleReels.map((p, idx) => (
-                  <div
-                    key={p.id}
-                    onClick={() => setViewerIndex(idx)}
-                    className="relative aspect-[4/5] bg-[#141418] overflow-hidden cursor-pointer"
-                  >
-                    <img
-                      src={p.posterUrl || p.backdropUrl}
-                      alt=""
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                  </div>
-                ))}
+            {activeTab === "premium" && isCreator && (
+              <div>
+                <div className="flex items-center justify-between px-4 md:px-6 mb-4 mt-2">
+                  <h2 className="text-xl font-black text-white tracking-tight">Premium Content</h2>
                 </div>
-              )
+                {visiblePremium.length === 0 ? (
+                  <p className="text-center text-white/50 text-sm py-16">No premium content yet.</p>
+                ) : (
+                  <div className="grid grid-cols-3 gap-1 md:gap-2 px-2 md:px-0">
+                    {visiblePremium.map((p, idx) => (
+                      <div
+                        key={p.id}
+                        onClick={() => router.push(`/podcast/${p.id}`)}
+                        className="relative aspect-[4/5] bg-[#141418] rounded-xl overflow-hidden cursor-pointer group"
+                      >
+                        <img src={p.posterUrl || p.backdropUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition duration-300" loading="lazy" />
+                        
+                        {p.access_type === "pass" && (
+                          <div className="absolute bottom-1 right-1 bg-red-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow z-10">TF</div>
+                        )}
+                        {p.access_type === "creator" && (
+                          <div className="absolute bottom-1 right-1 bg-yellow-500 text-black text-[9px] font-black px-1.5 py-0.5 rounded shadow z-10">SUB</div>
+                        )}
+                        <div className="absolute bottom-1 left-1 flex items-center gap-0.5 text-[10px] font-semibold text-white drop-shadow">
+                          <Eye size={11} /> {(p.viewCount ?? 0).toLocaleString()}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
 
-            {isCreator && tab === "premium" && (
-              visiblePremium.length === 0 ? (
-                <p className="text-center text-white/50 text-sm py-16">No premium content yet.</p>
-              ) : (
-                <div className="grid grid-cols-3 gap-0.5 -mx-4 md:-mx-6">
-                  {visiblePremium.map((p, idx) => (
-                    <div
-                      key={p.id}
-                      onClick={() => router.push(p.creatorId ? `/podcaster/_/${p.id}` : `/feed`)}
-                      className="relative aspect-[4/5] bg-[#141418] overflow-hidden cursor-pointer"
-                    >
-                      <img
-                        src={p.posterUrl || p.backdropUrl}
-                        alt=""
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                      
-                      {p.access_type === "pass" && (
-                        <div className="absolute bottom-1 right-1 bg-red-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow z-10">
-                          TF
-                        </div>
-                      )}
-                      {p.access_type === "creator" && (
-                        <div className="absolute bottom-1 right-1 bg-yellow-500 text-black text-[9px] font-black px-1.5 py-0.5 rounded shadow z-10">
-                          SUB
-                        </div>
-                      )}
-                    </div>
-                  ))}
+            {activeTab === "shop" && isCreator && (
+              <div>
+                <div className="flex items-center justify-between px-4 md:px-6 mb-4 mt-2">
+                  <h2 className="text-xl font-black text-white tracking-tight">Creator Shop</h2>
                 </div>
-              )
+                {products.length === 0 ? (
+                  <div className="text-center py-16 bg-[#141418] rounded-2xl border border-white/5 mx-4 md:mx-0">
+                    <ShoppingBag size={40} className="mx-auto text-white/20 mb-3" />
+                    <p className="text-white/50 text-sm">No products in this shop yet.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 px-4 md:px-0">
+                    {products.map((p) => (
+                      <div key={p.id} className="bg-[#141418] border border-white/5 rounded-2xl p-3 flex flex-col hover:border-white/10 transition">
+                        <div className="aspect-square rounded-xl overflow-hidden bg-[#1c1c1e] mb-3">
+                          {p.image_url ? (
+                            <img src={p.image_url} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center"><ShoppingBag size={32} className="text-white/20" /></div>
+                          )}
+                        </div>
+                        <h3 className="font-bold text-sm mb-1 truncate">{p.name}</h3>
+                        <p className="text-sm text-green-400 font-bold mt-auto">${(p.price_cents / 100).toFixed(2)}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
           </>
         )}
       </div>
 
       <MobileBottomNav />
-    {viewerIndex !== null && (
+      
+      {viewerIndex !== null && (
         <ProfileReelViewer
           videos={visibleReels}
           initialIndex={viewerIndex}
@@ -313,7 +391,7 @@ export default function UserProfilePage() {
           }}
         />
       )}
-      </main>
+    </main>
   );
 }
 
