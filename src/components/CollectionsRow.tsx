@@ -15,16 +15,16 @@ import {
 } from "lucide-react";
 
 const COLLECTIONS = [
-  { name: "History", icon: Landmark, slug: "history" },
-  { name: "Politics & Geopolitics", icon: Building2, slug: "politics" },
-  { name: "War & Conflict", icon: Sword, slug: "war" },
-  { name: "True Crime & Justice", icon: Fingerprint, slug: "true-crime" },
-  { name: "Conspiracy & Unsolved", icon: Eye, slug: "conspiracy" },
-  { name: "Society & Culture", icon: Users, slug: "society" },
-  { name: "Business & Finance", icon: Briefcase, slug: "business" },
-  { name: "Science & Technology", icon: Atom, slug: "science" },
-  { name: "Environment & Nature", icon: Leaf, slug: "environment" },
-  { name: "Religion & Spirituality", icon: Church, slug: "religion" },
+  { name: "History", icon: Landmark, slug: "history", image: "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=600&auto=format&fit=crop" },
+  { name: "Politics & Geopolitics", icon: Building2, slug: "politics", image: "https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?q=80&w=600&auto=format&fit=crop" },
+  { name: "War & Conflict", icon: Sword, slug: "war", image: "https://images.unsplash.com/photo-1508614589041-895b88991e3e?q=80&w=600&auto=format&fit=crop" },
+  { name: "True Crime & Justice", icon: Fingerprint, slug: "true-crime", image: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=600&auto=format&fit=crop" },
+  { name: "Conspiracy & Unsolved", icon: Eye, slug: "conspiracy", image: "https://images.unsplash.com/photo-1518676590629-3dcbd9c5a5c9?q=80&w=600&auto=format&fit=crop" },
+  { name: "Society & Culture", icon: Users, slug: "society", image: "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?q=80&w=600&auto=format&fit=crop" },
+  { name: "Business & Finance", icon: Briefcase, slug: "business", image: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=600&auto=format&fit=crop" },
+  { name: "Science & Technology", icon: Atom, slug: "science", image: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=600&auto=format&fit=crop" },
+  { name: "Environment & Nature", icon: Leaf, slug: "environment", image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=600&auto=format&fit=crop" },
+  { name: "Religion & Spirituality", icon: Church, slug: "religion", image: "https://images.unsplash.com/photo-1548625149-fc4a29cf7092?q=80&w=600&auto=format&fit=crop" },
 ];
 
 export default function CollectionsRow({
@@ -55,16 +55,29 @@ export default function CollectionsRow({
             <button
               key={col.slug}
               onClick={() => onSelectCategory?.(col.name)}
-              className={`flex-shrink-0 w-[110px] md:w-[130px] aspect-[3/2] md:aspect-[5/3] rounded-2xl flex flex-col items-center justify-center gap-1.5 transition-all duration-200 border shadow-lg backdrop-blur-xl active:scale-95 ${
+              className={`relative flex-shrink-0 w-[140px] md:w-[160px] aspect-[3/4] md:aspect-[3/4] rounded-xl overflow-hidden transition-all duration-300 border ${
                 isActive
-                  ? "bg-red-600/90 border-red-500 text-white shadow-red-500/20"
-                  : "bg-[#1c1c1e]/80 border-white/10 hover:bg-[#1c1c1e]/95 text-white"
+                  ? "border-red-500 shadow-[0_0_20px_rgba(220,38,38,0.4)] scale-105"
+                  : "border-white/10 hover:border-white/30"
               }`}
             >
-              <Icon size={26} strokeWidth={1.5} />
-              <span className="text-[10px] md:text-xs font-bold tracking-wider text-center px-2 leading-tight">
-                {col.name.toUpperCase()}
-              </span>
+              {/* Background Image */}
+              <img
+                src={col.image}
+                alt={col.name}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              
+              {/* Dark Gradient Overlay for Text Readability */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
+              
+              {/* Content */}
+              <div className="absolute inset-0 flex flex-col justify-end p-3 md:p-4">
+                <Icon size={24} className={`mb-2 ${isActive ? "text-red-400" : "text-white/80"}`} strokeWidth={1.5} />
+                <span className={`text-[11px] md:text-sm font-bold tracking-wide text-left leading-tight ${isActive ? "text-white" : "text-white/90"}`}>
+                  {col.name.toUpperCase()}
+                </span>
+              </div>
             </button>
           );
         })}
