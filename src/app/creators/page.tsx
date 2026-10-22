@@ -151,7 +151,7 @@ export default function CreatorsPage() {
         >
           {[
             { icon: TrendingUp, title: "Watch-Time Pool", desc: "We take 50% of our platform pass revenue and distribute it based on total watch minutes. Great content gets paid, not just clickbait." },
-            { icon: MonitorPlay, title: "Cinematic Catalog", desc: "A Netflix-style homepage for your documentaries and full-length podcasts. Give your work the premium presentation it deserves." },
+            { icon: MonitorPlay, title: "Cinematic Catalog", desc: "A cinematic homepage for your documentaries and full-length podcasts. Give your work the premium presentation it deserves." },
             { icon: BadgeDollarSign, title: "Built-in Merch Shop", desc: "Upload your designs, set your prices, and sell directly to your audience. We handle the checkout, you keep 90%." },
             { icon: Shield, title: "No Censorship", desc: "We don't silence opinions. As long as you follow basic community guidelines, your documentaries, podcasts, and reels are safe." },
             { icon: MessageSquare, title: "Direct Connection", desc: "Built-in DMs and community features. Don't rely on an algorithm to talk to your own audience." },
