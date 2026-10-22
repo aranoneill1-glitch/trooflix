@@ -289,8 +289,8 @@ export default function Home() {
               }}
               activeCategory={activeCategory}
             />
-            {newReleases.length > 0 && <Row title="New Releases" items={newReleases} onSelect={setSelected} onPlay={requestPlay} />}
-            {trending.length > 0 && <Row title="Trending Now" items={trending} onSelect={setSelected} onPlay={requestPlay} />}
+            {newReleases.length > 0 && <Row title="New Releases" items={newReleases} onSelect={setSelected} onPlay={requestPlay} showCreator={true} creators={creators} />}
+            {trending.length > 0 && <Row title="Trending Now" items={trending} onSelect={setSelected} onPlay={requestPlay} showCreator={true} creators={creators} />}
             {loaded && videos.length === 0 && (
               <div className="px-8 py-20 text-center text-white/50">
                 <p className="text-xl mb-2">No videos yet</p>
