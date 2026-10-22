@@ -50,6 +50,7 @@ export default function CreatorsPage() {
         >
           Traditional platforms take massive cuts and hide your content behind algorithms. 
           Trooflix was built for creators who are tired of sharing their revenue with billionaires.
+          At Trooflix, we don't wear small hats.
         </motion.p>
         
         <motion.div 
