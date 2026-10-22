@@ -1302,33 +1302,9 @@ export default function ProfilePage() {
                     </button>
                     
                     {/* New Edit Profile Options */}
-                    <button
-                      onClick={() => { setDashOpen(false); setEditOpen(true); }}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 active:bg-white/10 transition group text-left"
-                    >
-                      <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition">
-                        <Pencil size={16} className="text-white/70" />
-                      </div>
-                      <span className="font-medium text-sm text-white/90">Edit Details</span>
-                    </button>
-                    <button
-                      onClick={() => { setDashOpen(false); fileInputRef.current?.click(); }}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 active:bg-white/10 transition group text-left"
-                    >
-                      <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition">
-                        <Camera size={16} className="text-white/70" />
-                      </div>
-                      <span className="font-medium text-sm text-white/90">Change Avatar</span>
-                    </button>
-                    <button
-                      onClick={() => { setDashOpen(false); backdropInputRef.current?.click(); }}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 active:bg-white/10 transition group text-left"
-                    >
-                      <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition">
-                        <Image size={16} className="text-white/70" />
-                      </div>
-                      <span className="font-medium text-sm text-white/90">Change Backdrop</span>
-                    </button>
+                    
+                    
+                    
                   </div>
                 </div>
 
