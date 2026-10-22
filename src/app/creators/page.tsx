@@ -39,7 +39,7 @@ export default function CreatorsPage() {
           className="relative z-10 text-5xl md:text-7xl font-black tracking-tighter mb-8 leading-[1.1]"
         >
           Stop letting Big Tech <br className="hidden md:block"/>
-          <span className="text-red-500">eat your lunch.</span>
+          <span style={{ color: "#dc2626" }}>eat your lunch.</span>
         </motion.h1>
         
         <motion.p 
