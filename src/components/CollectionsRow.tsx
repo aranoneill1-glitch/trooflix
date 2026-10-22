@@ -28,7 +28,7 @@ const COLLECTIONS = [
   { name: "Science & Technology", icon: Atom, slug: "science", image: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=600&auto=format&fit=crop" },
   { name: "Environment & Nature", icon: Leaf, slug: "environment", image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=600&auto=format&fit=crop" },
   { name: "Religion & Spirituality", icon: Church, slug: "religion", image: "https://images.unsplash.com/photo-1548625149-fc4a29cf7092?q=80&w=600&auto=format&fit=crop" },
-  { name: "Ancient History", icon: Hourglass, slug: "ancient", image: "https://images.unsplash.com/photo-1599819026021-4e3308bd89da?q=80&w=600&auto=format&fit=crop" },
+  { name: "Ancient History", icon: Hourglass, slug: "ancient", image: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?q=80&w=600&auto=format&fit=crop" },
   { name: "Comedy", icon: Smile, slug: "comedy", image: "https://images.unsplash.com/photo-1585699324551-f6c309eedeca?q=80&w=600&auto=format&fit=crop" },
   { name: "News", icon: Newspaper, slug: "news", image: "https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=600&auto=format&fit=crop" },
 ];
