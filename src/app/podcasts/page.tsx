@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import TopBar from "@/components/TopBar";
-import { useSearch } from "@/context/SearchContext";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import { getCachedVideos, getCachedCreators } from "@/lib/cache";
+import { getCachedCreators } from "@/lib/cache";
+import { Search, Play, Mic, Film, ArrowRight, Sparkles } from "lucide-react";
+import VerifiedBadge from "@/components/VerifiedBadge";
 
 type Creator = {
   id: number;
@@ -13,78 +14,228 @@ type Creator = {
   slug: string;
   photoUrl: string;
   description: string;
+  heroBackdropUrl?: string;
+  category?: string;
+  isVerified?: boolean;
 };
 
 export default function PodcastsPage() {
   const [creators, setCreators] = useState<Creator[]>([]);
-  const { search } = useSearch();
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("All");
 
   useEffect(() => {
     getCachedCreators()
       .then((d) => {
-        setCreators(Array.isArray(d) ? d : []);
+        const list = Array.isArray(d) ? d : [];
+        setCreators(list);
         setLoading(false);
       })
       .catch(() => setLoading(false));
   }, []);
 
+  // Filter logic
+  const filteredCreators = useMemo(() => {
+    let result = creators;
+    
+    // Search Filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(c => 
+        c.name?.toLowerCase().includes(q) || 
+        c.description?.toLowerCase().includes(q) ||
+        c.category?.toLowerCase().includes(q)
+      );
+    }
+
+    // Category Filter
+    if (activeTab !== "All") {
+      if (activeTab === "Podcasts") {
+        result = result.filter(c => c.category === "Podcast" || c.category === "Podcasts" || !c.category);
+      } else if (activeTab === "Documentaries") {
+        result = result.filter(c => c.category === "Documentary" || c.category === "Documentaries");
+      } else {
+        result = result.filter(c => c.category === activeTab);
+      }
+    }
+
+    return result;
+  }, [creators, searchQuery, activeTab]);
+
+  const featuredCreator = creators[0]; // Just taking the first creator as the featured one for now
+
+  const TABS = ["All", "Podcasts", "Documentaries", "History", "Politics", "Conspiracy"];
+
   return (
-    <main className="min-h-screen bg-black text-white">
+    <main className="min-h-screen bg-black text-white pb-24">
       <TopBar />
 
-      <div className="px-8 md:px-12 pt-28 pb-10">
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-10">
+      <div className="pt-28 md:pt-32 max-w-7xl mx-auto px-4 md:px-8">
+        
+        {/* HEADER & SEARCH */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
           <div>
-            <h1 className="text-4xl md:text-5xl font-black mb-2">Podcasts</h1>
-            <p className="text-white/50">Browse shows by podcaster</p>
+            <p className="text-[10px] md:text-xs tracking-[0.4em] text-red-500 font-bold mb-2 uppercase">
+              The Home of Independent Voices
+            </p>
+            <h1 className="text-4xl md:text-6xl font-black tracking-tight">
+              Discover Your <span className="text-white/40">Favorite Creators</span>
+            </h1>
           </div>
-          <Link
-            href="/apply"
-            className="self-start md:self-auto bg-red-600 hover:bg-red-500 text-white font-semibold px-5 py-2.5 rounded-lg transition"
-          >
-            Become a Podcaster
+          
+          <div className="relative w-full md:w-72">
+            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search creators, topics..."
+              className="w-full bg-[#1c1c1e]/80 backdrop-blur-md border border-white/10 rounded-full pl-11 pr-4 py-3 text-sm outline-none focus:border-red-500 transition placeholder:text-white/30"
+            />
+          </div>
+        </div>
+
+        {/* AVATAR SCROLLING ROW */}
+        <div className="mb-12">
+          <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide pb-4 px-1">
+            {creators.slice(0, 10).map((c) => (
+              <Link key={c.id} href={`/podcaster/${c.slug}`} className="flex flex-col items-center gap-2 flex-shrink-0 group">
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full p-[2px] bg-gradient-to-tr from-red-600 to-orange-500 group-hover:scale-105 transition-transform">
+                  <div className="w-full h-full rounded-full border-2 border-black overflow-hidden bg-black">
+                    {c.photoUrl ? (
+                      <img src={c.photoUrl} alt={c.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-[#1c1c1e] flex items-center justify-center text-xl font-bold">{c.name[0]}</div>
+                    )}
+                  </div>
+                </div>
+                <span className="text-xs font-semibold text-white/80 group-hover:text-white transition truncate w-20 text-center">{c.name.split(" ")[0]}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* HERO FEATURED CREATOR */}
+        {featuredCreator && !searchQuery && activeTab === "All" && (
+          <div className="relative rounded-3xl overflow-hidden mb-12 border border-white/10 shadow-2xl group">
+            <div className="absolute inset-0 bg-black/40 z-10" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent z-20" />
+            <img 
+              src={featuredCreator.heroBackdropUrl || featuredCreator.photoUrl || "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=1200&auto=format&fit=crop"} 
+              alt="Hero" 
+              className="w-full h-[300px] md:h-[400px] object-cover object-center group-hover:scale-105 transition-transform duration-700" 
+            />
+            
+            <div className="absolute inset-0 z-30 flex flex-col justify-end p-8 md:p-12">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="bg-red-600 text-white text-[10px] font-bold tracking-widest uppercase px-2 py-1 rounded">Featured Creator</span>
+              </div>
+              <div className="flex items-center gap-3 mb-4">
+                <h2 className="text-4xl md:text-5xl font-black">{featuredCreator.name}</h2>
+                {featuredCreator.isVerified && <VerifiedBadge size={24} variant="gold" />}
+              </div>
+              <p className="text-white/60 text-sm md:text-base max-w-xl mb-6 line-clamp-2">
+                {featuredCreator.description || "Discover exclusive documentaries, podcasts and more from this creator."}
+              </p>
+              <div className="flex items-center gap-4">
+                <Link href={`/podcaster/${featuredCreator.slug}`} className="bg-white text-black font-bold px-6 py-3 rounded-xl hover:scale-105 transition flex items-center gap-2">
+                  <Play size={18} fill="black" /> View Profile
+                </Link>
+                <button className="bg-white/10 backdrop-blur-md text-white border border-white/20 px-6 py-3 rounded-xl font-semibold hover:bg-white/20 transition flex items-center gap-2">
+                  <Sparkles size={18} /> Subscribe
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TABS */}
+        <div className="flex overflow-x-auto gap-2 mb-8 scrollbar-hide pb-2">
+          {TABS.map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition border ${
+                activeTab === tab 
+                  ? "bg-white text-black border-white" 
+                  : "bg-[#1c1c1e]/50 text-white/60 border-white/10 hover:bg-[#1c1c1e] hover:text-white"
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+
+        {/* CREATORS GRID */}
+        {loading ? (
+          <p className="text-white/40 py-12 text-center">Loading…</p>
+        ) : filteredCreators.length === 0 ? (
+          <div className="text-center py-20 bg-[#0a0a0a] rounded-2xl border border-white/5">
+            <p className="text-white/40">No creators found matching your search.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            {filteredCreators.map((c) => (
+              <Link
+                key={c.id}
+                href={`/podcaster/${c.slug}`}
+                className="group relative bg-[#0a0a0a] border border-white/5 rounded-2xl overflow-hidden hover:border-white/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_10px_30px_rgba(255,255,255,0.05)] flex flex-col"
+              >
+                <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#141418]">
+                  {c.heroBackdropUrl ? (
+                    <img src={c.heroBackdropUrl} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-80 group-hover:opacity-100" />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-red-900/20 to-black flex items-center justify-center">
+                      <Mic size={40} className="text-white/10" />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent opacity-80" />
+                  
+                  {/* Avatar overlapping the image */}
+                  <div className="absolute -bottom-6 left-4 w-16 h-16 rounded-full border-4 border-[#0a0a0a] overflow-hidden bg-black z-10">
+                    {c.photoUrl ? (
+                      <img src={c.photoUrl} alt={c.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-red-900 flex items-center justify-center font-bold text-xl">{c.name[0]}</div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="p-4 pt-8 flex-1 flex flex-col">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <h3 className="font-bold text-lg leading-tight truncate group-hover:text-red-400 transition-colors">{c.name}</h3>
+                    {c.isVerified && <VerifiedBadge size={14} variant="gold" />}
+                  </div>
+                  <p className="text-xs text-white/40 line-clamp-2 mb-4 flex-1">
+                    {c.description || "Explore content from this creator on Trooflix."}
+                  </p>
+                  
+                  <div className="flex items-center justify-between mt-auto pt-3 border-t border-white/5">
+                    <span className="text-[10px] font-bold tracking-widest uppercase text-white/40">{c.category || "Creator"}</span>
+                    <span className="text-xs font-semibold text-white/80 group-hover:text-red-400 transition-colors flex items-center gap-1">
+                      View <ArrowRight size={12} />
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+        
+        {/* BOTTOM CTA */}
+        <div className="mt-20 mb-12 bg-gradient-to-br from-[#1c1c1e] to-black border border-white/10 rounded-3xl p-8 md:p-12 text-center relative overflow-hidden">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-32 bg-red-600/20 blur-3xl pointer-events-none" />
+          <h2 className="text-2xl md:text-4xl font-black mb-4 relative z-10">Want to become a Creator?</h2>
+          <p className="text-white/50 mb-8 relative z-10 max-w-xl mx-auto">Join our network, monetize your content, and keep 90% of your revenue.</p>
+          <Link href="/creators" className="inline-block bg-white text-black font-bold px-8 py-3.5 rounded-xl hover:scale-105 transition relative z-10">
+            Apply to Join Trooflix
           </Link>
         </div>
 
-        {loading && <p className="text-white/40">Loading…</p>}
-        {!loading && creators.length === 0 && (
-          <p className="text-white/40">No podcasters yet.</p>
-        )}
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-          {creators
-            .filter((c) => !search || c.name.toLowerCase().includes(search.toLowerCase()))
-            .map((c) => (
-            <Link
-              key={c.id}
-              href={`/podcaster/${c.slug}`}
-              className="group flex flex-col items-center text-center"
-            >
-              <div className="relative w-40 h-40 md:w-48 md:h-48 rounded-full overflow-hidden border-2 border-white/10 group-hover:border-red-600 transition">
-                {c.photoUrl ? (
-                  <img
-                    src={c.photoUrl}
-                    alt={c.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-4xl font-black">
-                    {c.name[0]?.toUpperCase() || "?"}
-                  </div>
-                )}
-              </div>
-              <p className="mt-4 font-bold text-lg group-hover:text-red-500 transition">
-                {c.name}
-              </p>
-              {c.description && (
-                <p className="text-sm text-white/50 mt-1 line-clamp-2">{c.description}</p>
-              )}
-            </Link>
-          ))}
-        </div>
       </div>
-          <MobileBottomNav />
+
+      <MobileBottomNav />
     </main>
   );
 }
