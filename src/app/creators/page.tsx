@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Check, Shield, TrendingUp, MonitorPlay, MessageSquare, BadgeDollarSign, Zap } from "lucide-react";
+import { ArrowRight, Shield, TrendingUp, MonitorPlay, MessageSquare, BadgeDollarSign, Sparkles, Star, Eye } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import { motion } from "framer-motion";
 
@@ -84,7 +84,6 @@ export default function CreatorsPage() {
         <div className="bg-[#0a0a0a] border border-white/10 rounded-3xl overflow-hidden shadow-2xl relative">
           <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
           
-          {/* Header Row */}
           <div className="grid grid-cols-4 text-center border-b border-white/10 bg-white/[0.02]">
             <div className="p-6 text-left font-semibold text-white/40 text-sm tracking-wider uppercase">Platform</div>
             <div className="p-6 font-semibold text-white/40 text-sm tracking-wider uppercase">Video Cut</div>
@@ -92,7 +91,6 @@ export default function CreatorsPage() {
             <div className="p-6 font-bold text-white text-sm tracking-wider uppercase">You Keep</div>
           </div>
           
-          {/* YouTube Row */}
           <div className="grid grid-cols-4 text-center border-b border-white/5 hover:bg-white/[0.03] transition-colors">
             <div className="p-6 text-left font-bold text-lg text-white/90">YouTube</div>
             <div className="p-6 text-white/50 font-medium">45%</div>
@@ -100,7 +98,6 @@ export default function CreatorsPage() {
             <div className="p-6 font-bold text-red-400/80 text-lg">55%</div>
           </div>
 
-          {/* Patreon Row */}
           <div className="grid grid-cols-4 text-center border-b border-white/5 hover:bg-white/[0.03] transition-colors">
             <div className="p-6 text-left font-bold text-lg text-white/90">Patreon</div>
             <div className="p-6 text-white/50 font-medium">N/A</div>
@@ -108,7 +105,6 @@ export default function CreatorsPage() {
             <div className="p-6 font-bold text-red-400/80 text-lg">~80%</div>
           </div>
 
-          {/* Twitch Row */}
           <div className="grid grid-cols-4 text-center border-b border-white/5 hover:bg-white/[0.03] transition-colors">
             <div className="p-6 text-left font-bold text-lg text-white/90">Twitch</div>
             <div className="p-6 text-white/50 font-medium">N/A</div>
@@ -116,7 +112,6 @@ export default function CreatorsPage() {
             <div className="p-6 font-bold text-red-400/80 text-lg">50%</div>
           </div>
 
-          {/* Trooflix Row (Highlighted) */}
           <div className="grid grid-cols-4 text-center bg-gradient-to-r from-red-600/10 via-red-600/5 to-transparent relative overflow-hidden">
             <div className="absolute left-0 top-0 bottom-0 w-1 bg-red-500 shadow-[0_0_20px_rgba(239,68,68,0.8)]" />
             <div className="p-6 text-left font-black text-xl text-white flex items-center gap-3">
@@ -129,50 +124,121 @@ export default function CreatorsPage() {
         </div>
       </motion.div>
 
-      {/* FEATURES GRID */}
-      <div className="px-6 max-w-6xl mx-auto mb-32">
+      {/* NEW EDITORIAL FEATURES SECTION */}
+      <div className="px-6 max-w-6xl mx-auto mb-32 space-y-6">
+        
         <motion.div 
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
           variants={fadeUp}
-          className="text-center mb-16"
+          className="text-center mb-12"
         >
           <h2 className="text-3xl md:text-5xl font-black tracking-tight mb-4">Everything you need to build an empire.</h2>
-          <p className="text-white/50 text-lg max-w-2xl mx-auto">We didn't just build a video host. We built an entire ecosystem to help you grow, engage, and monetize your audience.</p>
+          <p className="text-white/50 text-lg max-w-2xl mx-auto">We didn't just build a video host. We built an entire ecosystem.</p>
         </motion.div>
 
+        {/* Row 1: One Platform (Full Width) */}
         <motion.div 
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-50px" }}
-          variants={staggerContainer}
-          className="grid grid-cols-1 md:grid-cols-3 gap-6"
+          variants={fadeUp}
+          className="group relative bg-[#0a0a0a] border border-white/10 p-10 md:p-14 rounded-3xl hover:border-white/20 transition-all duration-300 overflow-hidden"
         >
-          {[
-            { icon: TrendingUp, title: "Watch-Time Pool", desc: "We take 50% of our platform pass revenue and distribute it based on total watch minutes. Great content gets paid, not just clickbait." },
-            { icon: MonitorPlay, title: "Cinematic Catalog", desc: "A cinematic homepage for your documentaries and full-length podcasts. Give your work the premium presentation it deserves." },
-            { icon: BadgeDollarSign, title: "Built-in Merch Shop", desc: "Upload your designs, set your prices, and sell directly to your audience. We handle the checkout, you keep 90%." },
-            { icon: Shield, title: "No Censorship", desc: "We don't silence opinions. As long as you follow basic community guidelines, your documentaries, podcasts, and reels are safe." },
-            { icon: MessageSquare, title: "Direct Connection", desc: "Built-in DMs and community features. Don't rely on an algorithm to talk to your own audience." },
-            { icon: Zap, title: "Founding Creator Status", desc: "The first 10 creators to join get their Podcaster tier free for life, and featured placement on the homepage." }
-          ].map((feature, i) => (
-            <motion.div 
-              key={i}
-              variants={fadeUp}
-              className="group relative bg-[#0a0a0a] border border-white/5 p-8 rounded-3xl hover:bg-[#111] hover:border-white/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_10px_40px_-10px_rgba(255,255,255,0.05)]"
-            >
-              <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 rounded-3xl transition-opacity duration-300 pointer-events-none" />
-              <div className="relative z-10">
-                <div className="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 group-hover:bg-red-500/20">
-                  <feature.icon size={28} className="text-red-400" />
+          <div className="absolute top-0 right-0 w-96 h-96 bg-red-600/5 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+          <div className="relative z-10">
+            <h3 className="text-3xl md:text-5xl font-black mb-4">Stop Duct-Taping Your Business Together.</h3>
+            <p className="text-white/50 text-lg max-w-3xl mb-10">
+              You shouldn't need YouTube for video, Patreon for memberships, Shopify for merch, and Instagram for promo. Trooflix is a complete ecosystem.
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {[
+                { icon: MonitorPlay, label: "Cinematic Catalog" },
+                { icon: MessageSquare, label: "Direct DMs" },
+                { icon: TrendingUp, label: "Reels Feed" },
+                { icon: BadgeDollarSign, label: "Built-in Merch" }
+              ].map((item, i) => (
+                <div key={i} className="flex flex-col items-center justify-center p-4 bg-white/5 rounded-2xl border border-white/5">
+                  <item.icon size={28} className="text-red-400 mb-2" />
+                  <span className="text-sm font-semibold text-white/80">{item.label}</span>
                 </div>
-                <h3 className="text-xl font-bold mb-3 text-white/90 group-hover:text-white transition-colors">{feature.title}</h3>
-                <p className="text-white/40 text-sm leading-relaxed group-hover:text-white/60 transition-colors">{feature.desc}</p>
-              </div>
-            </motion.div>
-          ))}
+              ))}
+            </div>
+          </div>
         </motion.div>
+
+        {/* Row 2: Censorship & Discovery (Two Columns) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          {/* No Censorship */}
+          <motion.div 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+            variants={fadeUp}
+            className="group relative bg-[#0a0a0a] border border-white/10 p-10 rounded-3xl hover:border-white/20 transition-all duration-300 overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 w-64 h-64 bg-red-600/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+            <div className="relative z-10">
+              <div className="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-6">
+                <Shield size={28} className="text-red-400" />
+              </div>
+              <h3 className="text-2xl md:text-3xl font-black mb-3">Your Voice. Your Rules.</h3>
+              <p className="text-white/50 text-base leading-relaxed">
+                On other platforms, your content can be demonetized, shadowbanned, or deleted because an algorithm doesn't like it. Trooflix is different. We don't silence opinions. As long as you follow basic community guidelines, your work is safe here.
+              </p>
+            </div>
+          </motion.div>
+
+          {/* Built-In Discovery */}
+          <motion.div 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
+            variants={fadeUp}
+            className="group relative bg-[#0a0a0a] border border-white/10 p-10 rounded-3xl hover:border-white/20 transition-all duration-300 overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 w-64 h-64 bg-orange-600/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+            <div className="relative z-10">
+              <div className="w-14 h-14 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center mb-6">
+                <Eye size={28} className="text-orange-400" />
+              </div>
+              <h3 className="text-2xl md:text-3xl font-black mb-3">We Bring the Audience to You.</h3>
+              <p className="text-white/50 text-base leading-relaxed">
+                On Patreon, you have to bring 100% of your own traffic. On Trooflix, your content is featured on the global homepage, in "New Releases," and in the "Trending Now" rows. New users can discover you without you spending a single dollar on ads.
+              </p>
+            </div>
+          </motion.div>
+
+        </div>
+
+        {/* Row 3: Founding Creator (Highlighted) */}
+        <motion.div 
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+          variants={fadeUp}
+          className="relative bg-gradient-to-br from-red-600/10 via-[#0a0a0a] to-[#0a0a0a] border border-red-500/30 p-10 md:p-14 rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(239,68,68,0.1)]"
+        >
+          <div className="absolute top-0 right-0 w-96 h-96 bg-red-600/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="max-w-2xl">
+              <div className="flex items-center gap-2 mb-4">
+                <Star size={20} className="text-yellow-400 fill-yellow-400" />
+                <span className="text-yellow-400 text-sm font-bold tracking-widest uppercase">Limited Opportunity</span>
+              </div>
+              <h3 className="text-3xl md:text-5xl font-black mb-3">Become a Founding Creator.</h3>
+              <p className="text-white/60 text-lg leading-relaxed">
+                We are onboarding our first 10 creators right now. Founding Creators get their Podcaster tier free for life, permanent featured placement on the homepage, and direct access to the founder for feature requests. You aren't just a user; you're a partner in building the platform.
+              </p>
+            </div>
+            <Link href="/signup?type=podcaster" className="flex-shrink-0 bg-white text-black font-bold px-8 py-4 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.3)] text-lg flex items-center gap-2">
+              Claim Your Spot <ArrowRight size={20} />
+            </Link>
+          </div>
+        </motion.div>
+
       </div>
 
       {/* FOOTER CTA */}
