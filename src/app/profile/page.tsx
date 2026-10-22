@@ -107,7 +107,7 @@ export default function ProfilePage() {
   const [settingUpPass, setSettingUpPass] = useState(false);
   const [savedPosts, setSavedPosts] = useState<Post[]>([]);
   const [repostedPosts, setRepostedPosts] = useState<Post[]>([]);
-  const [mobileTab, setMobileTab] = useState<"uploads" | "premium" | "shop">("uploads");
+  const [mobileTab, setMobileTab] = useState<"posts" | "reels" | "premium" | "shop">("reels");
   const [uploadsView, setUploadsView] = useState<"grid" | "list">("grid");
   const [repostsView, setRepostsView] = useState<"grid" | "list">("grid");
   const [savedView, setSavedView] = useState<"grid" | "list">("grid");
@@ -325,7 +325,9 @@ export default function ProfilePage() {
       : posts;
 
   const isPodcaster = profile?.tier === "podcaster";
-  const visibleReels = posts.filter((p: any) => !p.access_type || p.access_type === "free");
+  const visibleFree = posts.filter((p: any) => !p.access_type || p.access_type === "free");
+  const visibleReels = visibleFree.filter((p: any) => p.videoUrl || p.bitchuteUrl || p.type === "Reel" || p.type === "Podcast" || p.type === "Documentary");
+  const visibleImagePosts = visibleFree.filter((p: any) => !p.videoUrl && !p.bitchuteUrl && p.type !== "Reel" && p.type !== "Podcast" && p.type !== "Documentary");
   const visiblePremium = posts.filter((p: any) => p.access_type === "pass" || p.access_type === "creator");
 
   // ---- Long press / right click on grid tiles ----
@@ -658,14 +660,24 @@ export default function ProfilePage() {
             {/* ---- Premium Tabs ---- */}
             <div className="flex overflow-x-auto gap-2 mb-6 pb-2 scrollbar-hide border-b border-white/5">
               <button
-                onClick={() => setMobileTab("uploads")}
+                onClick={() => setMobileTab("posts")}
                 className={`px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition border ${
-                  mobileTab === "uploads"
+                  mobileTab === "posts"
                     ? "bg-white text-black border-white shadow-lg"
                     : "bg-[#1c1c1e]/50 text-white/60 border-white/10 hover:bg-[#1c1c1e] hover:text-white"
                 }`}
               >
-                {isPodcaster ? "Reels" : "My Posts"}
+                Posts
+              </button>
+              <button
+                onClick={() => setMobileTab("reels")}
+                className={`px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition border ${
+                  mobileTab === "reels"
+                    ? "bg-white text-black border-white shadow-lg"
+                    : "bg-[#1c1c1e]/50 text-white/60 border-white/10 hover:bg-[#1c1c1e] hover:text-white"
+                }`}
+              >
+                Reels
               </button>
               {isPodcaster && (
                 <button
@@ -698,10 +710,10 @@ export default function ProfilePage() {
             {/* ---- Desktop: two columns. Mobile: tab-selected section ---- */}
             <div className="grid grid-cols-1 gap-6 -mx-4 md:-mx-6">
               {/* ==== UPLOADS (left) ==== */}
-              <div className={`${mobileTab === "uploads" ? "" : "hidden"}`}>
+              <div className={`${mobileTab === "reels" || mobileTab === "posts" ? "" : "hidden"}`}>
                 <div className="flex items-center justify-between px-4 md:px-6 mb-4 mt-2">
                   <h2 className="text-xl font-black text-white tracking-tight">
-                    {isPodcaster ? "Reels" : "My Posts"}
+                    {mobileTab === "posts" ? "Posts" : "Reels"}
                   </h2>
                   <div className="flex items-center gap-1 bg-[#1c1c1e]/80 backdrop-blur-md p-1 rounded-lg border border-white/10">
                     <button
@@ -725,7 +737,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                {visibleReels.length === 0 ? (
+                {(mobileTab === "posts" ? visibleImagePosts : visibleReels).length === 0 ? (
                   <div className="py-12 text-center text-white/40 text-sm px-4">
                     {postsKind === "creator"
                       ? "No uploads yet."
@@ -733,7 +745,7 @@ export default function ProfilePage() {
                   </div>
                 ) : uploadsView === "grid" ? (
                   <div className="grid grid-cols-3 gap-1 md:gap-2 px-2 md:px-0">
-                    {visibleReels.map((p: any, idx: number) => (
+                    {(mobileTab === "posts" ? visibleImagePosts : visibleReels).map((p: any, idx: number) => (
                       <div
                         key={p.id}
                         onClick={() => setViewerIndex(idx)}
@@ -772,7 +784,7 @@ export default function ProfilePage() {
                   </div>
                 ) : (
                   <div className="space-y-1 px-4 md:px-6">
-                    {visibleReels.map((p, idx) => (
+                    {(mobileTab === "posts" ? visibleImagePosts : visibleReels).map((p, idx) => (
                       <Link
                         key={p.id}
                         href={p.creatorId ? `/podcaster/_/${p.id}` : `/feed`}
