@@ -55,9 +55,9 @@ export default function CollectionsRow({
             <button
               key={col.slug}
               onClick={() => onSelectCategory?.(col.name)}
-              className={`relative flex-shrink-0 w-[140px] md:w-[160px] aspect-[3/4] md:aspect-[3/4] rounded-xl overflow-hidden transition-all duration-300 border ${
+              className={`relative flex-shrink-0 w-[110px] md:w-[130px] aspect-[3/2] md:aspect-[5/3] rounded-xl overflow-hidden flex flex-col items-center justify-center gap-1.5 transition-all duration-300 border ${
                 isActive
-                  ? "border-red-500 shadow-[0_0_20px_rgba(220,38,38,0.4)] scale-105"
+                  ? "border-red-500 shadow-[0_0_15px_rgba(220,38,38,0.5)] scale-105"
                   : "border-white/10 hover:border-white/30"
               }`}
             >
@@ -68,13 +68,13 @@ export default function CollectionsRow({
                 className="absolute inset-0 w-full h-full object-cover"
               />
               
-              {/* Dark Gradient Overlay for Text Readability */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
-              
-              {/* Content */}
-              <div className="absolute inset-0 flex flex-col justify-end p-3 md:p-4">
-                <Icon size={24} className={`mb-2 ${isActive ? "text-red-400" : "text-white/80"}`} strokeWidth={1.5} />
-                <span className={`text-[11px] md:text-sm font-bold tracking-wide text-left leading-tight ${isActive ? "text-white" : "text-white/90"}`}>
+              {/* Dark Gradient Overlay */}
+              <div className="absolute inset-0 bg-black/50" />
+
+              {/* Content (Above the image) */}
+              <div className="relative z-10 flex flex-col items-center justify-center gap-1.5 px-2">
+                <Icon size={24} strokeWidth={1.5} className={`${isActive ? "text-red-400" : "text-white"}`} />
+                <span className={`text-[10px] md:text-xs font-bold tracking-wider text-center leading-tight ${isActive ? "text-white" : "text-white/90"}`}>
                   {col.name.toUpperCase()}
                 </span>
               </div>
