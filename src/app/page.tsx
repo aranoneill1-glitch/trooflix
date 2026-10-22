@@ -241,17 +241,7 @@ export default function Home() {
       {/* ============ CONTENT ============ */}
       {loaded && (
         <>
-          {!showingFiltered && !filtered && (
-            <div className="pt-20 md:pt-24 pb-4 relative z-20">
-              <CollectionsRow
-                  onSelectCategory={(cat) => {
-                    setActiveCategory(cat === activeCategory ? null : cat);
-                    setActiveTab("Home");
-                  }}
-                  activeCategory={activeCategory}
-                />
-            </div>
-          )}
+          
           {!showingFiltered && hero && (
             <Hero video={hero} onPlay={() => requestPlay(hero)} onMore={() => setSelected(hero)} />
           )}
