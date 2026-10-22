@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {Heart, MessageCircle, Send, Bookmark, Play, Pause, VolumeX, Volume2, Plus, Share, Repeat2, ChevronLeft} from "lucide-react";
@@ -68,7 +68,7 @@ export default function FeedPage() {
   const [creators, setCreators] = useState<Creator[]>([]);
   const [uploaders, setUploaders] = useState<Record<string, UploaderProfile>>({});
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<"all" | "following">("all");
+  const [filter, setFilter] = useState<"all" | "reels" | "following">("all");
   const [userId, setUserId] = useState<string | null>(null);
 
   const [commentVideo, setCommentVideo] = useState<Video | null>(null);
@@ -158,7 +158,7 @@ export default function FeedPage() {
       { threshold: [0.25, 0.5, 0.75, 1.0] }
     );
     postRefs.current.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
+  return () => observer.disconnect();
   }, [posts.length]);
 
   useEffect(() => {
@@ -201,6 +201,14 @@ export default function FeedPage() {
     return { name: "TROOFLIX", handle: "@trooflix", avatar: "", verified: true, tier: "podcaster" as const, href: null };
   };
 
+  // Filter posts for the "Reels" tab
+  const displayedPosts = useMemo(() => {
+    if (filter === "reels") {
+      return posts.filter((p: any) => p.videoUrl || p.bitchuteUrl || p.type === "Reel");
+    }
+    return posts;
+  }, [posts, filter]);
+
   return (
     <>
     <PullToRefresh onRefresh={async () => { await load(); }}>
@@ -224,6 +232,16 @@ export default function FeedPage() {
               }`}
             >
               All
+            </button>
+            <button
+              onClick={() => setFilter("reels")}
+              className={`flex-1 py-3 text-sm font-semibold transition border-b-2 ${
+                filter === "reels"
+                  ? "border-white text-white"
+                  : "border-transparent text-white/50 hover:text-white"
+              }`}
+            >
+              Reels
             </button>
             <button
               onClick={() => setFilter("following")}
@@ -250,7 +268,7 @@ export default function FeedPage() {
           </div>
         )}
 
-        {posts.map((post) => (
+        {displayedPosts.map((post) => (
           <PostCard
             key={post.id}
             post={post}
