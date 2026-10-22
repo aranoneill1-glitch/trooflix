@@ -1242,119 +1242,178 @@ export default function ProfilePage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setDashOpen(false)}
-              className="fixed inset-0 z-[300] bg-black/70"
+              className="fixed inset-0 z-[300] bg-black/80 backdrop-blur-sm"
             />
             <motion.div
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 32, stiffness: 320 }}
-              className="fixed left-0 right-0 bottom-0 z-[301] bg-[#0f0f12] rounded-t-2xl md:max-w-md md:mx-auto md:rounded-2xl md:bottom-4"
+              transition={{ type: "spring", damping: 30, stiffness: 300 }}
+              className="fixed left-0 right-0 bottom-0 z-[301] bg-[#0a0a0a]/95 backdrop-blur-2xl rounded-t-3xl md:max-w-md md:mx-auto md:rounded-3xl md:bottom-4 border-t md:border border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] overflow-hidden pb-[env(safe-area-inset-bottom)] flex flex-col max-h-[85vh]"
             >
-              <div className="flex justify-center pt-2.5">
-                <div className="w-10 h-1 rounded-full bg-white/25" />
+              {/* Handle */}
+              <div className="flex justify-center pt-3 pb-1 shrink-0">
+                <div className="w-12 h-1.5 rounded-full bg-white/20" />
               </div>
-              <div className="flex items-center justify-between px-4 py-2 border-b border-white/10">
-                <h2 className="flex-1 text-center py-2.5 rounded-xl text-sm font-semibold transition text-white bg-[#1c1c1e]/80 backdrop-blur-xl border border-white/10 shadow-lg hover:bg-[#1c1c1e]/95"
-                  >
-                    Dashboard</h2>
-                <button
-                  onClick={() => setDashOpen(false)}
-                  className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-white/10"
-                  aria-label="Close"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-              <div className="p-4 space-y-1">
 
-                <Link
-                  href="/account"
-                  onClick={() => setDashOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition"
-                >
-                  <Settings size={18} className="text-white/70" />
-                  <span className="font-semibold">Account settings</span>
-                </Link>
-                <Link
-                  href="/my-list"
-                  onClick={() => setDashOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition"
-                >
-                  <Bookmark size={18} className="text-white/70" />
-                  <span className="font-semibold">My List</span>
-                </Link>
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 py-3 border-b border-white/5 shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full overflow-hidden border border-white/20 bg-[#1c1c1e]">
+                    {profile?.avatar_url ? (
+                      <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-sm font-bold">
+                        {(profile?.display_name?.[0] || profile?.username?.[0] || "?").toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <p className="font-bold text-white leading-tight">{profile?.display_name || profile?.username || "User"}</p>
+                    <p className="text-xs text-white/50 leading-tight">@{profile?.username || "user"}</p>
+                  </div>
+                </div>
                 <button
-                  onClick={() => {
-                    share();
-                    setDashOpen(false);
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition text-left"
-                >
-                  <Share2 size={18} className="text-white/70" />
-                  <span className="font-semibold">Share profile</span>
-                </button>
-                {profile?.tier === "podcaster" && (
-                  <Link
-                    href="/studio"
-                    onClick={() => setDashOpen(false)}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition text-yellow-400 text-left"
-                  >
-                    <Mic size={18} />
-                    <span className="font-semibold">Creator Studio</span>
-                  </Link>
-                )}
-                <Link
-                  href="/orders"
                   onClick={() => setDashOpen(false)}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition text-white/80 text-left"
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition"
                 >
-                  <ShoppingBag size={18} />
-                  <span className="font-semibold">My Orders</span>
-                </Link>
-                
-                <Link
-                  href="/profile/wallet"
-                  onClick={() => setDashOpen(false)}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition text-white/80 text-left"
-                >
-                  <Wallet size={18} />
-                  <span className="font-semibold">Creator Wallet</span>
-                </Link>
-                
-                {profile?.has_pass === true ? (
-                  <button
-                    onClick={() => { setDashOpen(false); handleManageSubscription(); }}
-                    disabled={portalLoading}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition text-yellow-400 text-left disabled:opacity-50"
-                  >
-                    <Sparkles size={18} />
-                    <span className="font-semibold">
-                      {portalLoading ? "Opening…" : "Manage Subscription"}
-                    </span>
-                  </button>
-                ) : (
-                  <Link
-                    href="/upgrade"
-                    onClick={() => setDashOpen(false)}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition text-yellow-400 text-left"
-                  >
-                    <Sparkles size={18} />
-                    <span className="font-semibold">Upgrade plan</span>
-                  </Link>
-                )}
-                <button
-                  onClick={logout}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition text-red-400 text-left"
-                >
-                  <LogOut size={18} />
-                  <span className="font-semibold">Log out</span>
+                  <X size={18} />
                 </button>
               </div>
+
+              {/* Scrollable Content */}
+              <div className="p-4 space-y-6 overflow-y-auto scrollbar-hide">
+                
+                {/* Account Section */}
+                <div>
+                  <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2 px-2">Account</p>
+                  <div className="space-y-1">
+                    <Link
+                      href="/account"
+                      onClick={() => setDashOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 active:bg-white/10 transition group"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition">
+                        <Settings size={16} className="text-white/70" />
+                      </div>
+                      <span className="font-medium text-sm text-white/90">Account settings</span>
+                    </Link>
+                    <Link
+                      href="/my-list"
+                      onClick={() => setDashOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 active:bg-white/10 transition group"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition">
+                        <Bookmark size={16} className="text-white/70" />
+                      </div>
+                      <span className="font-medium text-sm text-white/90">My List</span>
+                    </Link>
+                    <button
+                      onClick={() => { share(); setDashOpen(false); }}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 active:bg-white/10 transition group text-left"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition">
+                        <Share2 size={16} className="text-white/70" />
+                      </div>
+                      <span className="font-medium text-sm text-white/90">Share profile</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Creator Tools Section */}
+                {profile?.tier === "podcaster" && (
+                  <div>
+                    <p className="text-[10px] font-bold text-yellow-500/80 uppercase tracking-widest mb-2 px-2 flex items-center gap-1.5">
+                      <Sparkles size={12} /> Creator Tools
+                    </p>
+                    <div className="space-y-1">
+                      <Link
+                        href="/studio"
+                        onClick={() => setDashOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-yellow-500/10 active:bg-yellow-500/20 transition group text-yellow-400"
+                      >
+                        <div className="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center group-hover:bg-yellow-500/20 transition">
+                          <Mic size={16} className="text-yellow-500" />
+                        </div>
+                        <span className="font-medium text-sm">Creator Studio</span>
+                      </Link>
+                      <Link
+                        href="/profile/wallet"
+                        onClick={() => setDashOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-yellow-500/10 active:bg-yellow-500/20 transition group text-yellow-400"
+                      >
+                        <div className="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center group-hover:bg-yellow-500/20 transition">
+                          <Wallet size={16} className="text-yellow-500" />
+                        </div>
+                        <span className="font-medium text-sm">Creator Wallet</span>
+                      </Link>
+                      <Link
+                        href="/orders"
+                        onClick={() => setDashOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-yellow-500/10 active:bg-yellow-500/20 transition group text-yellow-400"
+                      >
+                        <div className="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center group-hover:bg-yellow-500/20 transition">
+                          <ShoppingBag size={16} className="text-yellow-500" />
+                        </div>
+                        <span className="font-medium text-sm">My Orders</span>
+                      </Link>
+                    </div>
+                  </div>
+                )}
+
+                {/* Billing Section */}
+                <div>
+                  <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2 px-2">Billing</p>
+                  <div className="space-y-1">
+                    {profile?.has_pass === true ? (
+                      <button
+                        onClick={() => { setDashOpen(false); handleManageSubscription(); }}
+                        disabled={portalLoading}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 active:bg-white/10 transition group text-left disabled:opacity-50"
+                      >
+                        <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition">
+                          <Sparkles size={16} className="text-yellow-400" />
+                        </div>
+                        <span className="font-medium text-sm text-white/90">
+                          {portalLoading ? "Opening…" : "Manage Subscription"}
+                        </span>
+                      </button>
+                    ) : (
+                      <Link
+                        href="/upgrade"
+                        onClick={() => setDashOpen(false)}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 active:bg-white/10 transition group"
+                      >
+                        <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition">
+                          <Sparkles size={16} className="text-yellow-400" />
+                        </div>
+                        <span className="font-medium text-sm text-white/90">Upgrade plan</span>
+                      </Link>
+                    )}
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Log out Button */}
+              <div className="p-4 border-t border-white/5 shrink-0">
+                <button
+                  onClick={async () => {
+                    const supabase = createClient();
+                    await supabase.auth.signOut();
+                    clearUserCache();
+                    router.push("/");
+                  }}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500 font-bold text-sm transition"
+                >
+                  <LogOut size={16} /> Log out
+                </button>
+              </div>
+
             </motion.div>
           </>
         )}
-      </AnimatePresence>
+        </AnimatePresence>
 
       <MobileBottomNav />
       {/* ---- Edit post modal ---- */}
