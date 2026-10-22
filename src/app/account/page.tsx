@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Upload, LogOut, Check, Trash2, ChevronLeft, Camera, Image as ImageIcon, User, AtSign, Mail } from "lucide-react";
+import { Upload, Check, Trash2, ChevronLeft, Camera, Image as ImageIcon, User, AtSign, Mail } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { createClient } from "@/utils/supabase/client";
@@ -412,37 +412,9 @@ export default function AccountPage() {
             </div>
           </section>
 
-          {/* Following Section */}
-          <section className="bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 overflow-hidden w-full">
-            <h2 className="text-lg font-bold mb-4">Following ({followedCreators.length})</h2>
-            {followedCreators.length === 0 ? (
-              <p className="text-white/50 text-sm">You're not following any creators yet.</p>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {followedCreators.map((c) => (
-                  <Link key={c.id} href={`/podcaster/${c.slug}`} className="flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition border border-transparent hover:border-white/10">
-                    {c.photoUrl ? (
-                      <img src={c.photoUrl} alt={c.name} className="w-10 h-10 rounded-full object-cover" />
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-red-900 flex items-center justify-center font-bold">{c.name[0]}</div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold truncate text-sm">{c.name}</p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </section>
+          
 
-          {/* Danger Zone */}
-          <section className="border border-red-500/20 bg-red-500/5 rounded-3xl p-6 md:p-8">
-            <h2 className="text-lg font-bold text-red-400 mb-2">Log Out</h2>
-            <p className="text-sm text-white/50 mb-4">Sign out of your Trooflix account on this device.</p>
-            <button onClick={logout} className="bg-red-500 text-white font-bold px-6 py-3 rounded-xl hover:bg-red-600 transition flex items-center gap-2">
-              <LogOut size={18} /> Log Out
-            </button>
-          </section>
+          
 
         </div>
       </div>
