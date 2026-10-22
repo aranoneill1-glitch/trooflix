@@ -1313,6 +1313,15 @@ export default function ProfilePage() {
                   <span className="font-semibold">My Orders</span>
                 </Link>
                 
+                <Link
+                  href="/profile/wallet"
+                  onClick={() => setDashOpen(false)}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition text-white/80 text-left"
+                >
+                  <Wallet size={18} />
+                  <span className="font-semibold">Creator Wallet</span>
+                </Link>
+                
                 {profile?.has_pass === true ? (
                   <button
                     onClick={() => { setDashOpen(false); handleManageSubscription(); }}
