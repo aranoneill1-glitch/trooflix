@@ -207,7 +207,7 @@ export default function UpgradePage() {
                 ? "You're a Podcaster"
                 : podcasterLoading
                 ? "Redirecting…"
-                : "Become a Podcaster"
+                : "Become a Creator"
             }
             onClick={handlePodcasterCheckout}
             ctaDisabled={currentTier === "podcaster" || podcasterLoading}

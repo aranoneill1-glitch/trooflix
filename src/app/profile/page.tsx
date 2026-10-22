@@ -23,7 +23,7 @@ import { Camera,
   BarChart3,
   List,
   Sparkles,
-  Pencil, ShoppingBag } from "lucide-react";
+  Pencil, ShoppingBag, Wallet } from "lucide-react";
 import ProfileMenu from "@/components/ProfileMenu";
 import ProfileReelViewer from "@/components/ProfileReelViewer";
 import TopBar from "@/components/TopBar";
@@ -1301,7 +1301,7 @@ export default function ProfilePage() {
                     className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 transition text-yellow-400 text-left"
                   >
                     <Mic size={18} />
-                    <span className="font-semibold">Podcaster Studio</span>
+                    <span className="font-semibold">Creator Studio</span>
                   </Link>
                 )}
                 <Link
