@@ -279,7 +279,6 @@ export default function Home() {
 
         {loaded && !filtered && !showingFiltered && (
           <>
-            {newReleases.length > 0 && <Row title="New Releases" items={newReleases} onSelect={setSelected} onPlay={requestPlay} />}
             <CollectionsRow
               onSelectCategory={(cat) => {
                 setActiveCategory(cat === activeCategory ? null : cat);
@@ -287,6 +286,7 @@ export default function Home() {
               }}
               activeCategory={activeCategory}
             />
+            {newReleases.length > 0 && <Row title="New Releases" items={newReleases} onSelect={setSelected} onPlay={requestPlay} />}
             {trending.length > 0 && <Row title="Trending Now" items={trending} onSelect={setSelected} onPlay={requestPlay} />}
             {loaded && videos.length === 0 && (
               <div className="px-8 py-20 text-center text-white/50">
