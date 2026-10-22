@@ -211,7 +211,7 @@ export default function AccountPage() {
   );
 
   return (
-    <main className="min-h-screen bg-[#050505] text-white pb-32">
+    <main className="min-h-screen bg-[#050505] text-white pb-32 overflow-x-hidden w-full">
       <TopBar />
 
       <div className="pt-28 max-w-3xl mx-auto px-4 md:px-6">
@@ -235,7 +235,7 @@ export default function AccountPage() {
         <div className="space-y-6">
           
           {/* Hero Backdrop Section */}
-          <section className="bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8">
+          <section className="bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 overflow-hidden w-full">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
                 <ImageIcon size={20} className="text-white/70" />
@@ -282,7 +282,7 @@ export default function AccountPage() {
           </section>
 
           {/* Avatar Section */}
-          <section className="bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8">
+          <section className="bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 overflow-hidden w-full">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
                 <Camera size={20} className="text-white/70" />
@@ -321,7 +321,7 @@ export default function AccountPage() {
           </section>
 
           {/* Edit Details Section */}
-          <section className="bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8">
+          <section className="bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 overflow-hidden w-full">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
                 <User size={20} className="text-white/70" />
@@ -363,7 +363,7 @@ export default function AccountPage() {
           </section>
 
           {/* Username & Email Section */}
-          <section className="bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8">
+          <section className="bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 overflow-hidden w-full">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
                 <AtSign size={20} className="text-white/70" />
@@ -377,8 +377,8 @@ export default function AccountPage() {
             <div className="space-y-5">
               <div>
                 <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 block">Username</label>
-                <div className="flex gap-2">
-                  <div className="flex-1 flex items-center bg-black/40 border border-white/10 rounded-xl focus-within:border-red-500 transition px-4">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="flex-1 flex items-center bg-black/40 border border-white/10 rounded-xl focus-within:border-red-500 transition px-4 min-w-0">
                     <span className="text-white/40">@</span>
                     <input
                       type="text"
@@ -386,10 +386,10 @@ export default function AccountPage() {
                       onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
                       placeholder="yourhandle"
                       maxLength={20}
-                      className="flex-1 bg-transparent py-3 px-2 outline-none text-white"
+                      className="flex-1 bg-transparent py-3 px-2 outline-none text-white min-w-0"
                     />
                   </div>
-                  <button onClick={saveUsername} disabled={savingUsername || usernameStatus === "taken" || usernameStatus === "invalid"} className="bg-white text-black font-bold px-6 py-3 rounded-xl hover:scale-105 transition disabled:opacity-50 flex items-center gap-2 text-sm">
+                  <button onClick={saveUsername} disabled={savingUsername || usernameStatus === "taken" || usernameStatus === "invalid"} className="bg-white text-black font-bold px-6 py-3 rounded-xl hover:scale-105 transition disabled:opacity-50 flex items-center justify-center gap-2 text-sm w-full sm:w-auto shrink-0">
                     <Check size={16} /> Save
                   </button>
                 </div>
@@ -413,7 +413,7 @@ export default function AccountPage() {
           </section>
 
           {/* Following Section */}
-          <section className="bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8">
+          <section className="bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 overflow-hidden w-full">
             <h2 className="text-lg font-bold mb-4">Following ({followedCreators.length})</h2>
             {followedCreators.length === 0 ? (
               <p className="text-white/50 text-sm">You're not following any creators yet.</p>
