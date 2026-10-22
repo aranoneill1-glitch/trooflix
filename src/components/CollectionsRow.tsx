@@ -12,6 +12,9 @@ import {
   Users,
   Briefcase,
   Leaf,
+  Hourglass,
+  Smile,
+  Newspaper,
 } from "lucide-react";
 
 const COLLECTIONS = [
@@ -25,6 +28,9 @@ const COLLECTIONS = [
   { name: "Science & Technology", icon: Atom, slug: "science", image: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=600&auto=format&fit=crop" },
   { name: "Environment & Nature", icon: Leaf, slug: "environment", image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=600&auto=format&fit=crop" },
   { name: "Religion & Spirituality", icon: Church, slug: "religion", image: "https://images.unsplash.com/photo-1548625149-fc4a29cf7092?q=80&w=600&auto=format&fit=crop" },
+  { name: "Ancient History", icon: Hourglass, slug: "ancient", image: "https://images.unsplash.com/photo-1599819026021-4e3308bd89da?q=80&w=600&auto=format&fit=crop" },
+  { name: "Comedy", icon: Smile, slug: "comedy", image: "https://images.unsplash.com/photo-1585699324551-f6c309eedeca?q=80&w=600&auto=format&fit=crop" },
+  { name: "News", icon: Newspaper, slug: "news", image: "https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=600&auto=format&fit=crop" },
 ];
 
 export default function CollectionsRow({
@@ -65,16 +71,16 @@ export default function CollectionsRow({
               <img
                 src={col.image}
                 alt={col.name}
-                className="absolute inset-0 w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 hover:scale-110"
               />
               
-              {/* Dark Gradient Overlay */}
-              <div className="absolute inset-0 bg-black/50" />
+              {/* Gradient Overlay (Vibrant top, dark bottom for text) */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
 
               {/* Content (Above the image) */}
               <div className="relative z-10 flex flex-col items-center justify-center gap-1.5 px-2">
-                <Icon size={24} strokeWidth={1.5} className={`${isActive ? "text-red-400" : "text-white"}`} />
-                <span className={`text-[10px] md:text-xs font-bold tracking-wider text-center leading-tight ${isActive ? "text-white" : "text-white/90"}`}>
+                <Icon size={24} strokeWidth={1.5} className={`drop-shadow-md ${isActive ? "text-red-400" : "text-white"}`} />
+                <span className={`text-[10px] md:text-xs font-bold tracking-wider text-center leading-tight drop-shadow-md ${isActive ? "text-white" : "text-white/95"}`}>
                   {col.name.toUpperCase()}
                 </span>
               </div>
