@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { Play, Eye, Bell, Search, Lock, ShoppingBag } from "lucide-react";
+import { Play, Search, Lock, ShoppingBag, Sparkles, ChevronLeft } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import FollowButton from "@/components/FollowButton";
@@ -21,6 +21,7 @@ type Video = {
   createdAt?: string;
   viewCount?: number;
   is_premium?: boolean;
+  access_type?: string;
 };
 
 type Creator = {
@@ -39,10 +40,8 @@ type Tab = "home" | "podcasts" | "documentaries" | "videos" | "shop";
 function timeAgo(iso?: string): string {
   if (!iso) return "";
   const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
   if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
   if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
-  if (diff < 2592000) return `${Math.floor(diff / 604800)}w ago`;
   return new Date(iso).toLocaleDateString();
 }
 
@@ -123,7 +122,6 @@ export default function PodcasterProfilePage() {
       alert("To subscribe to this creator, please visit trooflixtv.com on your web browser.");
       return;
     }
-
     if (!userId) return router.push("/login");
     setCheckoutLoading(true);
     try {
@@ -143,9 +141,9 @@ export default function PodcasterProfilePage() {
   };
 
   const handleVideoClick = (v: Video) => {
-    if (v.is_premium && !hasSub) {
+    if (v.access_type && v.access_type !== "free" && !hasSub) {
       if (premiumData?.enabled) handleSubscribe();
-      else alert("This is a premium video.");
+      else alert("This is premium content.");
     } else {
       router.push(`/podcast/${v.id}`);
     }
@@ -192,8 +190,8 @@ export default function PodcasterProfilePage() {
       <main className="min-h-screen bg-black text-white">
         <TopBar />
         <div className="pt-32 text-center">
-          <p className="text-white/50 mb-4">Podcaster not found</p>
-          <Link href="/podcasts" className="text-red-500 hover:underline">← Back to Podcasts</Link>
+          <p className="text-white/50 mb-4">Creator not found</p>
+          <Link href="/podcasts" className="text-red-500 hover:underline">← Back to Creators</Link>
         </div>
         <MobileBottomNav />
       </main>
@@ -210,72 +208,142 @@ export default function PodcasterProfilePage() {
         <div className="h-screen flex items-center justify-center"><p className="text-white/50">Loading…</p></div>
       ) : (
         <>
-          <div className="relative w-full h-[20vh] md:h-[30vh] overflow-hidden mt-16 md:mt-20">
-            {bannerUrl ? <img src={bannerUrl} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gradient-to-br from-yellow-900/30 to-black" />}
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+          {/* CINEMATIC BANNER */}
+          <div className="relative w-full h-[40vh] md:h-[50vh] overflow-hidden mt-16 md:mt-20">
+            {bannerUrl ? (
+              <img src={bannerUrl} alt="" className="w-full h-full object-cover object-center" />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-red-900/40 via-black to-black" />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent" />
           </div>
 
-          <div className="max-w-6xl mx-auto px-4 md:px-8 -mt-12 md:-mt-16 relative z-10">
-            <div className="flex flex-col md:flex-row md:items-end md:gap-6">
-              <div className="w-24 h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 rounded-full overflow-hidden border-4 border-black bg-gradient-to-br from-yellow-600 to-yellow-900 flex items-center justify-center flex-shrink-0">
-                {creator?.photoUrl ? <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" /> : <span className="text-4xl md:text-6xl font-black">{creator?.name?.[0]?.toUpperCase() || "?"}</span>}
+          {/* CREATOR HEADER (Glassmorphic Overlap) */}
+          <div className="max-w-6xl mx-auto px-4 md:px-8 -mt-20 md:-mt-32 relative z-10">
+            <div className="flex flex-col md:flex-row md:items-end md:gap-8">
+              
+              {/* Avatar */}
+              <div className="w-32 h-32 md:w-44 md:h-44 rounded-full overflow-hidden border-4 border-black bg-[#1c1c1e] flex items-center justify-center flex-shrink-0 shadow-2xl shadow-black/50">
+                {creator?.photoUrl ? (
+                  <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-5xl font-black">{creator?.name?.[0]?.toUpperCase() || "?"}</span>
+                )}
               </div>
 
-              <div className="flex-1 min-w-0 md:pb-2 mt-3 md:mt-0">
-                <h1 className="text-2xl md:text-4xl font-black inline-flex items-center gap-2 mb-1">
-                  {creator?.name} {creator?.isVerified && <VerifiedBadge size={24} variant="gold" />}
-                </h1>
-                <div className="flex flex-wrap items-center gap-2 text-sm text-white/60 mb-2">
-                  <span className="text-white/80">@{creator?.slug}</span><span>·</span><span>{followerCount !== null ? followerCount.toLocaleString() : "—"} subscribers</span><span>·</span><span>{videos.length} episodes</span>
+              {/* Info */}
+              <div className="flex-1 min-w-0 md:pb-4 mt-4 md:mt-0">
+                <div className="flex items-center gap-3 mb-2">
+                  <h1 className="text-3xl md:text-5xl font-black tracking-tight drop-shadow-lg">{creator?.name}</h1>
+                  {creator?.isVerified && <VerifiedBadge size={28} variant="gold" />}
                 </div>
-                {creator?.description && <p className={`text-sm text-white/80 max-w-2xl ${bioExpanded ? "" : "line-clamp-2"}`}>{creator.description}</p>}
+                
+                <div className="flex flex-wrap items-center gap-2 text-sm text-white/60 mb-3 font-medium">
+                  <span className="text-white/90">@{creator?.slug}</span>
+                  <span>·</span>
+                  <span>{followerCount !== null ? followerCount.toLocaleString() : "—"} subscribers</span>
+                  <span>·</span>
+                  <span>{videos.length} episodes</span>
+                </div>
+                
+                {creator?.description && (
+                  <p className={`text-sm md:text-base text-white/70 max-w-2xl mb-4 ${bioExpanded ? "" : "line-clamp-2"}`}>
+                    {creator.description}
+                  </p>
+                )}
 
-                <div className="mt-4 flex flex-wrap items-center gap-2">
+                {/* Action Buttons */}
+                <div className="flex flex-wrap items-center gap-3">
                   <FollowButton creatorId={creator?.id as number} />
+                  
                   {premiumData?.enabled && (
                     hasSub ? (
-                      <div className="bg-green-500/20 text-green-400 border border-green-500/30 px-3 py-1.5 rounded-full text-xs font-bold">✓ Subscribed</div>
+                      <div className="bg-green-500/10 text-green-400 border border-green-500/30 px-5 py-2.5 rounded-xl text-sm font-bold backdrop-blur-md flex items-center gap-2">
+                        <Sparkles size={16} /> Subscribed
+                      </div>
                     ) : (
-                      <button onClick={handleSubscribe} disabled={checkoutLoading} className="bg-yellow-500 hover:bg-yellow-400 text-black px-4 py-1.5 rounded-full text-xs font-bold transition disabled:opacity-50">
-                        {checkoutLoading ? "Loading..." : `Subscribe $${(premiumData.price_cents / 100).toFixed(2)}/mo`}
+                      <button onClick={handleSubscribe} disabled={checkoutLoading} className="bg-white text-black hover:bg-gray-200 px-5 py-2.5 rounded-xl text-sm font-bold transition disabled:opacity-50 shadow-lg flex items-center gap-2">
+                        <Sparkles size={16} /> {checkoutLoading ? "Loading..." : `Subscribe $${(premiumData.price_cents / 100).toFixed(2)}/mo`}
                       </button>
                     )
                   )}
-                  <div className="relative w-40">
-                    <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-white/40" />
-                    <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search..." className="w-full bg-white/10 border border-white/20 rounded-full pl-7 pr-2 py-1.5 text-xs outline-none focus:border-white/50 placeholder:text-white/40 transition" />
+
+                  <div className="relative flex-1 md:flex-none md:w-64">
+                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+                    <input 
+                      type="text" 
+                      value={searchQuery} 
+                      onChange={(e) => setSearchQuery(e.target.value)} 
+                      placeholder="Search content..." 
+                      className="w-full bg-[#1c1c1e]/80 backdrop-blur-md border border-white/10 rounded-xl pl-10 pr-3 py-2.5 text-sm outline-none focus:border-white/30 placeholder:text-white/30 transition" 
+                    />
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="flex border-b border-white/10 mt-6 md:mt-8 gap-6 overflow-x-auto">
+            {/* SLEEK TABS */}
+            <div className="flex overflow-x-auto gap-2 mt-8 md:mt-12 pb-2 scrollbar-hide">
               {(["home", "podcasts", "documentaries", "videos", "shop"] as Tab[]).map((t) => (
-                <button key={t} onClick={() => setTab(t)} className={`py-3 text-sm font-semibold uppercase tracking-wider border-b-2 transition whitespace-nowrap ${tab === t ? "border-white text-white" : "border-transparent text-white/50 hover:text-white/80"}`}>
+                <button 
+                  key={t} 
+                  onClick={() => setTab(t)} 
+                  className={`px-6 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition border ${
+                    tab === t 
+                      ? "bg-white text-black border-white shadow-lg" 
+                      : "bg-[#1c1c1e]/50 text-white/60 border-white/10 hover:bg-[#1c1c1e] hover:text-white"
+                  }`}
+                >
                   {t === "home" ? "Home" : t === "podcasts" ? "Podcasts" : t === "documentaries" ? "Documentaries" : t === "videos" ? "Videos" : "Shop"}
                 </button>
               ))}
             </div>
           </div>
 
-          <div className="max-w-6xl mx-auto px-4 md:px-8 py-6 md:py-8">
+          {/* CONTENT AREA */}
+          <div className="max-w-6xl mx-auto px-4 md:px-8 py-8 md:py-12">
+            
             {tab === "home" && (
-              <div className="space-y-10">
+              <div className="space-y-12">
                 {latest && (
                   <div>
-                    <h2 className="text-xl font-bold mb-4 flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>Latest Drop</h2>
-                    <div className="flex flex-col md:flex-row gap-4 md:gap-6 cursor-pointer group bg-[#0f0f12] rounded-xl p-3 border border-white/5 hover:border-white/10 transition" onClick={() => handleVideoClick(latest)}>
-                      <div className="w-full md:w-80 aspect-video rounded-lg overflow-hidden bg-black flex-shrink-0 relative">
-                        {latest.posterUrl ? <img src={latest.posterUrl} alt="" className={`w-full h-full object-cover group-hover:scale-105 transition ${latest.is_premium && !hasSub ? 'blur-sm opacity-60' : ''}`} /> : <div className="w-full h-full flex items-center justify-center"><Play size={40} className="text-white/30" /></div>}
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition">
-                          {latest.is_premium && !hasSub ? <div className="flex flex-col items-center justify-center"><Lock size={32} className="text-yellow-500 mb-1" /><span className="text-xs font-bold text-yellow-500 uppercase tracking-wider">Premium</span></div> : <div className="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"><Play size={24} fill="black" className="text-black ml-0.5" /></div>}
+                    <h2 className="text-xl md:text-2xl font-black mb-4 flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span> Latest Drop
+                    </h2>
+                    <div 
+                      className="flex flex-col md:flex-row gap-6 cursor-pointer group bg-[#0f0f12] rounded-2xl p-4 md:p-6 border border-white/5 hover:border-white/10 transition-all hover:shadow-2xl hover:shadow-red-500/5" 
+                      onClick={() => handleVideoClick(latest)}
+                    >
+                      <div className="w-full md:w-[45%] aspect-video rounded-xl overflow-hidden bg-black flex-shrink-0 relative shadow-lg">
+                        {latest.posterUrl ? (
+                          <img src={latest.posterUrl} alt="" className={`w-full h-full object-cover group-hover:scale-105 transition duration-500 ${latest.access_type && latest.access_type !== "free" && !hasSub ? 'blur-sm opacity-60' : ''}`} />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center"><Play size={40} className="text-white/30" /></div>
+                        )}
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition">
+                          {latest.access_type && latest.access_type !== "free" && !hasSub ? (
+                            <div className="flex flex-col items-center justify-center bg-black/60 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/10">
+                              <Lock size={24} className="text-red-500 mb-1" />
+                              <span className="text-xs font-bold text-white uppercase tracking-wider">Premium</span>
+                            </div>
+                          ) : (
+                            <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-transform transform scale-90 group-hover:scale-100 shadow-xl">
+                              <Play size={28} fill="white" className="text-white ml-1" />
+                            </div>
+                          )}
                         </div>
                       </div>
-                      <div className="flex-1 min-w-0 py-2">
-                        <p className="text-xs font-bold text-red-500 uppercase tracking-widest mb-2">{latest.type}</p>
-                        <h3 className="text-lg md:text-2xl font-black mb-2 line-clamp-2 group-hover:text-red-500 transition">{latest.title}</h3>
-                        <div className="text-xs text-white/50 mb-3">{(latest.viewCount || 0).toLocaleString()} views · {timeAgo(latest.createdAt)}</div>
-                        {latest.description && <p className="text-sm text-white/70 whitespace-pre-wrap line-clamp-3">{latest.description}</p>}
+                      
+                      <div className="flex-1 min-w-0 py-2 flex flex-col justify-center">
+                        <p className="text-[10px] md:text-xs font-bold text-red-500 uppercase tracking-widest mb-2">{latest.type}</p>
+                        <h3 className="text-2xl md:text-4xl font-black mb-3 line-clamp-2 group-hover:text-red-500 transition-colors">{latest.title}</h3>
+                        <div className="text-xs md:text-sm text-white/40 mb-4 font-medium">
+                          {(latest.viewCount || 0).toLocaleString()} views · {timeAgo(latest.createdAt)}
+                        </div>
+                        {latest.description && (
+                          <p className="text-sm md:text-base text-white/70 whitespace-pre-wrap line-clamp-3 leading-relaxed">{latest.description}</p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -287,19 +355,39 @@ export default function PodcasterProfilePage() {
               <>
                 {(() => {
                   const list = tab === "podcasts" ? podcasts : tab === "documentaries" ? documentaries : videoPosts;
-                  if (list.length === 0) return <div className="text-center py-16"><Play size={40} className="mx-auto text-white/20 mb-4" /><p className="text-white/60">No content published yet.</p></div>;
+                  if (list.length === 0) return (
+                    <div className="text-center py-24 bg-[#0f0f12] rounded-2xl border border-white/5">
+                      <Play size={40} className="mx-auto text-white/20 mb-4" />
+                      <p className="text-white/50">No content published yet.</p>
+                    </div>
+                  );
                   return (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                       {list.map((v) => (
-                        <div key={v.id} onClick={() => handleVideoClick(v)} className="cursor-pointer group">
-                          <div className="aspect-video rounded-xl overflow-hidden bg-black mb-2 relative">
-                            {v.posterUrl ? <img src={v.posterUrl} alt="" className={`w-full h-full object-cover group-hover:scale-105 transition ${v.is_premium && !hasSub ? 'blur-sm opacity-60' : ''}`} loading="lazy" /> : <div className="w-full h-full flex items-center justify-center"><Play size={24} className="text-white/30" /></div>}
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition flex items-center justify-center">
-                              {v.is_premium && !hasSub ? <Lock size={24} className="text-yellow-500" /> : <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"><Play size={20} fill="black" className="text-black ml-0.5" /></div>}
+                        <div key={v.id} onClick={() => handleVideoClick(v)} className="cursor-pointer group flex flex-col">
+                          <div className="aspect-video rounded-xl overflow-hidden bg-[#1c1c1e] mb-3 relative shadow-lg">
+                            {v.posterUrl ? (
+                              <img src={v.posterUrl} alt="" className={`w-full h-full object-cover group-hover:scale-105 transition duration-500 ${v.access_type && v.access_type !== "free" && !hasSub ? 'blur-sm opacity-60' : ''}`} loading="lazy" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center"><Play size={24} className="text-white/30" /></div>
+                            )}
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition flex items-center justify-center">
+                              {v.access_type && v.access_type !== "free" && !hasSub ? (
+                                <div className="bg-black/60 backdrop-blur-md px-3 py-2 rounded-xl border border-white/10 flex items-center gap-2">
+                                  <Lock size={16} className="text-red-500" />
+                                  <span className="text-[10px] font-bold text-white uppercase tracking-wider">Premium</span>
+                                </div>
+                              ) : (
+                                <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-transform transform scale-90 group-hover:scale-100">
+                                  <Play size={20} fill="white" className="text-white ml-0.5" />
+                                </div>
+                              )}
                             </div>
                           </div>
-                          <p className="text-sm font-semibold line-clamp-2 mb-1">{v.title}</p>
-                          <p className="text-xs text-white/50">{(v.viewCount || 0).toLocaleString()} views · {timeAgo(v.createdAt)}</p>
+                          <p className="text-base font-bold line-clamp-2 mb-1 group-hover:text-red-400 transition-colors">{v.title}</p>
+                          <p className="text-xs text-white/40 font-medium">
+                            {(v.viewCount || 0).toLocaleString()} views · {timeAgo(v.createdAt)}
+                          </p>
                         </div>
                       ))}
                     </div>
@@ -310,21 +398,30 @@ export default function PodcasterProfilePage() {
 
             {tab === "shop" && (
               <div>
-                <h2 className="text-xl font-bold mb-6 flex items-center gap-2"><ShoppingBag size={20}/> Merchandise</h2>
+                <h2 className="text-2xl font-black mb-6 flex items-center gap-2"><ShoppingBag size={24} className="text-red-500"/> Creator Merch</h2>
                 {products.length === 0 ? (
-                  <div className="text-center py-16"><ShoppingBag size={40} className="mx-auto text-white/20 mb-4" /><p className="text-white/60">No products available yet.</p></div>
+                  <div className="text-center py-24 bg-[#0f0f12] rounded-2xl border border-white/5">
+                    <ShoppingBag size={40} className="mx-auto text-white/20 mb-4" />
+                    <p className="text-white/50">No products available yet.</p>
+                  </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {products.map((p) => (
-                      <div key={p.id} className="bg-[#0f0f12] border border-white/5 rounded-xl p-4 flex flex-col">
-                        <div className="aspect-square rounded-lg overflow-hidden bg-black mb-4">
-                          {p.image_url ? <img src={p.image_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><ShoppingBag size={32} className="text-white/20" /></div>}
+                      <div key={p.id} className="bg-[#0f0f12] border border-white/5 rounded-2xl p-4 flex flex-col hover:border-white/10 transition">
+                        <div className="aspect-square rounded-xl overflow-hidden bg-[#1c1c1e] mb-4">
+                          {p.image_url ? (
+                            <img src={p.image_url} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center"><ShoppingBag size={32} className="text-white/20" /></div>
+                          )}
                         </div>
                         <h3 className="font-bold text-lg mb-1">{p.name}</h3>
-                        <p className="text-sm text-white/50 mb-3 flex-1">{p.description}</p>
-                        <div className="flex items-center justify-between mt-auto">
-                          <span className="text-xl font-black text-green-400">${(p.price_cents / 100).toFixed(2)}</span>
-                          <button onClick={() => handleBuyProduct(p.id)} className="bg-white text-black font-bold px-4 py-2 rounded-lg text-sm hover:bg-gray-200 transition">Buy Now</button>
+                        <p className="text-sm text-white/50 mb-4 flex-1 line-clamp-2">{p.description}</p>
+                        <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/5">
+                          <span className="text-xl font-black text-white">${(p.price_cents / 100).toFixed(2)}</span>
+                          <button onClick={() => handleBuyProduct(p.id)} className="bg-white text-black font-bold px-5 py-2 rounded-xl text-sm hover:bg-gray-200 transition">
+                            Buy Now
+                          </button>
                         </div>
                       </div>
                     ))}
@@ -333,6 +430,7 @@ export default function PodcasterProfilePage() {
               </div>
             )}
           </div>
+
           <div className="h-16" />
         </>
       )}
