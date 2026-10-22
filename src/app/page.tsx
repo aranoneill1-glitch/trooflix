@@ -11,6 +11,7 @@ if (typeof window !== "undefined") {
   });
 }
 
+import Link from "next/link";
 import { useEffect, useState, useRef, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
