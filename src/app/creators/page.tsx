@@ -20,7 +20,7 @@ const staggerContainer = {
 
 export default function CreatorsPage() {
   return (
-    <div className="hidden md:block min-h-screen bg-[#050505] text-white pb-32 overflow-x-hidden selection:bg-red-500/30">
+    <div className="hidden md:block min-h-screen bg-[#050505] text-white pb-32 overflow-x-hidden selection:bg-red-600/30">
       <TopBar />
       
       {/* HERO SECTION */}
@@ -29,7 +29,7 @@ export default function CreatorsPage() {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.5 }}
-          className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-gradient-to-r from-red-600/20 via-orange-600/10 to-transparent rounded-full blur-[120px] pointer-events-none" 
+          className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-gradient-to-r from-red-600/30 via-red-600/10 to-transparent rounded-full blur-[120px] pointer-events-none" 
         />
         
         <motion.h1 
@@ -112,10 +112,10 @@ export default function CreatorsPage() {
             <div className="p-6 font-bold text-red-400/80 text-lg">50%</div>
           </div>
 
-          <div className="grid grid-cols-4 text-center bg-gradient-to-r from-red-600/10 via-red-600/5 to-transparent relative overflow-hidden">
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-red-500 shadow-[0_0_20px_rgba(239,68,68,0.8)]" />
+          <div className="grid grid-cols-4 text-center bg-gradient-to-r from-red-600/20 via-red-600/5 to-transparent relative overflow-hidden">
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-red-600 shadow-[0_0_20px_rgba(220,38,38,0.8)]" />
             <div className="p-6 text-left font-black text-xl text-white flex items-center gap-3">
-              Trooflix <span className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider shadow-lg">Best</span>
+              Trooflix <span className="bg-red-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider shadow-lg">Best</span>
             </div>
             <div className="p-6 font-bold text-white text-lg">Free</div>
             <div className="p-6 font-bold text-white text-lg">10%</div>
@@ -181,7 +181,7 @@ export default function CreatorsPage() {
           >
             <div className="absolute top-0 right-0 w-64 h-64 bg-red-600/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
             <div className="relative z-10">
-              <div className="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-6">
+              <div className="w-14 h-14 rounded-2xl bg-red-600/10 border border-red-500/20 flex items-center justify-center mb-6">
                 <Shield size={28} className="text-red-400" />
               </div>
               <h3 className="text-2xl md:text-3xl font-black mb-3">Your Voice. Your Rules.</h3>
@@ -199,10 +199,10 @@ export default function CreatorsPage() {
             variants={fadeUp}
             className="group relative bg-[#0a0a0a] border border-white/10 p-10 rounded-3xl hover:border-white/20 transition-all duration-300 overflow-hidden"
           >
-            <div className="absolute top-0 right-0 w-64 h-64 bg-orange-600/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-red-600/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
             <div className="relative z-10">
-              <div className="w-14 h-14 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center mb-6">
-                <Eye size={28} className="text-orange-400" />
+              <div className="w-14 h-14 rounded-2xl bg-red-600/10 border border-red-500/20 flex items-center justify-center mb-6">
+                <Eye size={28} className="text-red-400" />
               </div>
               <h3 className="text-2xl md:text-3xl font-black mb-3">We Bring the Audience to You.</h3>
               <p className="text-white/50 text-base leading-relaxed">
