@@ -129,6 +129,23 @@ export default function AccountPage() {
     }
   };
 
+  const removeBackdrop = async () => {
+    if (!user) return;
+    if (!confirm("Remove your hero backdrop?")) return;
+    try {
+      setBackdropUrl("");
+      await fetch("/api/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id, backdropUrl: "" }),
+      });
+      setStatus("✅ Backdrop removed");
+      setTimeout(() => setStatus(""), 2500);
+    } catch {
+      setStatus("❌ Failed to remove backdrop");
+    }
+  };
+
   const saveDetails = async () => {
     if (!user) return;
     await fetch("/api/profile", {
@@ -246,7 +263,22 @@ export default function AccountPage() {
               </button>
             </div>
             <input ref={backdropInput} type="file" accept="image/*" onChange={(e) => { if (e.target.files?.[0]) handleUpload(e.target.files[0], "backdrop"); e.target.value = ""; }} className="hidden" />
-            {uploadingBackdrop && <p className="text-sm text-yellow-400">Uploading backdrop... {backdropProgress}%</p>}
+            
+            <div className="flex items-center gap-3 mt-4">
+              <button 
+                onClick={() => backdropInput.current?.click()} 
+                disabled={uploadingBackdrop}
+                className="bg-white text-black font-bold px-5 py-2.5 rounded-xl hover:scale-105 transition disabled:opacity-50 flex items-center gap-2 text-sm"
+              >
+                <Upload size={16} /> {uploadingBackdrop ? `${backdropProgress}%` : "Upload New"}
+              </button>
+              
+              {backdropUrl && !uploadingBackdrop && (
+                <button onClick={removeBackdrop} className="bg-red-500/10 text-red-400 font-bold px-5 py-2.5 rounded-xl hover:bg-red-500/20 transition flex items-center gap-2 text-sm">
+                  <Trash2 size={16} /> Remove
+                </button>
+              )}
+            </div>
           </section>
 
           {/* Avatar Section */}
