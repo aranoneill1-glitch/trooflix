@@ -78,6 +78,7 @@ export default function ProfilePage() {
   const [postsKind, setPostsKind] = useState<"creator" | "user" | "none">("none");
   const [isCreator, setIsCreator] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState<any[]>([]);
 
   const [tab, setTab] = useState<"grid" | "reels">("grid");
   const [actionSheetFor, setActionSheetFor] = useState<Post | null>(null);
@@ -106,7 +107,7 @@ export default function ProfilePage() {
   const [settingUpPass, setSettingUpPass] = useState(false);
   const [savedPosts, setSavedPosts] = useState<Post[]>([]);
   const [repostedPosts, setRepostedPosts] = useState<Post[]>([]);
-  const [mobileTab, setMobileTab] = useState<"uploads" | "premium" | "saved" | "reposts">("uploads");
+  const [mobileTab, setMobileTab] = useState<"uploads" | "premium" | "shop">("uploads");
   const [uploadsView, setUploadsView] = useState<"grid" | "list">("grid");
   const [repostsView, setRepostsView] = useState<"grid" | "list">("grid");
   const [savedView, setSavedView] = useState<"grid" | "list">("grid");
@@ -191,6 +192,20 @@ export default function ProfilePage() {
         .finally(() => setLoading(false));
     });
   }, [router]);
+
+
+  useEffect(() => {
+    if (!userId) return;
+    fetch(`/api/me/creator?user_id=${userId}`)
+      .then(r => r.json())
+      .then(d => {
+        if (d.creator?.id) {
+          return fetch(`/api/creator/products?creatorId=${d.creator.id}`).then(r => r.json());
+        }
+      })
+      .then(pd => { if (pd) setProducts(pd.products || []); })
+      .catch(() => {});
+  }, [userId]);
 
   const saveEdit = async () => {
     if (!userId) return;
@@ -664,26 +679,20 @@ export default function ProfilePage() {
                   Premium
                 </button>
               )}
-              <button
-                onClick={() => setMobileTab("reposts")}
-                className={`px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition border ${
-                  mobileTab === "reposts"
-                    ? "bg-white text-black border-white shadow-lg"
-                    : "bg-[#1c1c1e]/50 text-white/60 border-white/10 hover:bg-[#1c1c1e] hover:text-white"
-                }`}
-              >
-                Reposts
-              </button>
-              <button
-                onClick={() => setMobileTab("saved")}
-                className={`px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition border ${
-                  mobileTab === "saved"
-                    ? "bg-white text-black border-white shadow-lg"
-                    : "bg-[#1c1c1e]/50 text-white/60 border-white/10 hover:bg-[#1c1c1e] hover:text-white"
-                }`}
-              >
-                My List
-              </button>
+              {isPodcaster && (
+                <button
+                  onClick={() => setMobileTab("shop")}
+                  className={`px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition border ${
+                    mobileTab === "shop"
+                      ? "bg-white text-black border-white shadow-lg"
+                      : "bg-[#1c1c1e]/50 text-white/60 border-white/10 hover:bg-[#1c1c1e] hover:text-white"
+                  }`}
+                >
+                  Shop
+                </button>
+              )}
+              
+              
             </div>
 
             {/* ---- Desktop: two columns. Mobile: tab-selected section ---- */}
@@ -928,484 +937,40 @@ export default function ProfilePage() {
 
               
 
-              {/* ==== REPOSTS (middle on desktop, tab on mobile) ==== */}
-              <div className={`${mobileTab === "reposts" ? "" : "hidden"}`}>
-                <div className="flex items-center justify-between px-4 md:px-6 mb-3">
-                  <h2 className="text-sm font-bold text-white/80 uppercase tracking-wider">
-                    Reposts
-                  </h2>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => setRepostsView("grid")}
-                      className={`p-1.5 rounded transition ${
-                        repostsView === "grid" ? "bg-white/15 text-white" : "text-white/40 hover:text-white"
-                      }`}
-                      aria-label="Grid view"
-                    >
-                      <Grid3x3 size={16} />
-                    </button>
-                    <button
-                      onClick={() => setRepostsView("list")}
-                      className={`p-1.5 rounded transition ${
-                        repostsView === "list" ? "bg-white/15 text-white" : "text-white/40 hover:text-white"
-                      }`}
-                      aria-label="List view"
-                    >
-                      <List size={16} />
-                    </button>
-                  </div>
+              
+              {/* ==== SHOP ==== */}
+              <div className={`${mobileTab === "shop" ? "" : "hidden"}`}>
+                <div className="flex items-center justify-between px-4 md:px-6 mb-4 mt-2">
+                  <h2 className="text-xl font-black text-white tracking-tight">Creator Shop</h2>
                 </div>
-
-                {repostedPosts.length === 0 ? (
-                  <div className="py-12 text-center text-white/40 text-sm px-4">
-                    Nothing reposted yet. Tap the repost icon on any post.
-                  </div>
-                ) : repostsView === "grid" ? (
-                  <div className="grid grid-cols-3 gap-1 md:gap-2 px-2 md:px-0">
-                    {repostedPosts.map((p) => (
-                      <Link
-                        key={p.id}
-                        href={`/feed?reel=${p.id}`}
-                        className="relative aspect-[4/5] bg-[#141418] rounded-xl overflow-hidden group"
-                      >
-                        {p.posterUrl ? (
-                          <img
-                            src={p.posterUrl}
-                            alt={p.title || ""}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-white/30 text-xs p-2 text-center">
-                            {p.title || "Post"}
-                          </div>
-                        )}
-                        <div className="absolute top-1 right-1">
-                          <Play size={14} fill="white" className="text-white drop-shadow" />
-                        </div>
-                      </Link>
-                    ))}
+                {products.length === 0 ? (
+                  <div className="text-center py-16 bg-[#141418] rounded-2xl border border-white/5 mx-4 md:mx-0">
+                    <ShoppingBag size={40} className="mx-auto text-white/20 mb-3" />
+                    <p className="text-white/50 text-sm">No products in your shop yet.</p>
                   </div>
                 ) : (
-                  <div className="space-y-1 px-4 md:px-6">
-                    {repostedPosts.map((p) => (
-                      <Link
-                        key={p.id}
-                        href={`/feed?reel=${p.id}`}
-                        className="flex items-center gap-3 p-2 rounded-lg bg-[#141418] hover:bg-white/5 transition"
-                      >
-                        {p.posterUrl ? (
-                          <img
-                            src={p.posterUrl}
-                            alt=""
-                            className="w-12 h-16 rounded object-cover flex-shrink-0"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div className="w-12 h-16 rounded bg-white/5 flex-shrink-0 flex items-center justify-center text-white/30 text-[10px]">
-                            No image
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold truncate">{p.title || "Untitled"}</p>
-                          <p className="text-xs text-white/50 flex items-center gap-1 mt-1">
-                            <Eye size={11} />
-                            {(p.viewCount ?? 0).toLocaleString()} views
-                          </p>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 px-4 md:px-0">
+                    {products.map((p) => (
+                      <div key={p.id} className="bg-[#141418] border border-white/5 rounded-2xl p-3 flex flex-col hover:border-white/10 transition">
+                        <div className="aspect-square rounded-xl overflow-hidden bg-[#1c1c1e] mb-3">
+                          {p.image_url ? (
+                            <img src={p.image_url} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center"><ShoppingBag size={32} className="text-white/20" /></div>
+                          )}
                         </div>
-                        <Play size={14} fill="white" className="text-white/60 flex-shrink-0" />
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* ==== SAVED (right) ==== */}
-              <div className={`${mobileTab === "saved" ? "" : "hidden"}`}>
-                <div className="flex items-center justify-between px-4 md:px-6 mb-3">
-                  <h2 className="text-sm font-bold text-white/80 uppercase tracking-wider">
-                    My List
-                  </h2>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => setSavedView("grid")}
-                      className={`p-1.5 rounded transition ${
-                        savedView === "grid" ? "bg-white/15 text-white" : "text-white/40 hover:text-white"
-                      }`}
-                      aria-label="Grid view"
-                    >
-                      <Grid3x3 size={16} />
-                    </button>
-                    <button
-                      onClick={() => setSavedView("list")}
-                      className={`p-1.5 rounded transition ${
-                        savedView === "list" ? "bg-white/15 text-white" : "text-white/40 hover:text-white"
-                      }`}
-                      aria-label="List view"
-                    >
-                      <List size={16} />
-                    </button>
-                  </div>
-                </div>
-
-                {savedPosts.length === 0 ? (
-                  <div className="py-12 text-center text-white/40 text-sm px-4">
-                    Nothing saved yet. Tap + on any video to save it here.
-                  </div>
-                ) : savedView === "grid" ? (
-                  <div className="grid grid-cols-3 gap-1 md:gap-2 px-2 md:px-0">
-                    {savedPosts.map((p, idx) => (
-                      <div
-                        key={p.id}
-                        onClick={() => router.push(p.creatorId ? `/podcaster/_/${p.id}` : `/feed`)}
-                        className="relative aspect-[4/5] bg-[#141418] rounded-xl overflow-hidden cursor-pointer"
-                      >
-                        <img
-                          src={p.posterUrl || p.backdropUrl}
-                          alt=""
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                        <div className="absolute top-1 right-1">
-                          <Play size={14} fill="white" className="text-white drop-shadow" />
-                        </div>
+                        <h3 className="font-bold text-sm mb-1 truncate">{p.name}</h3>
+                        <p className="text-sm text-green-400 font-bold mt-auto">${(p.price_cents / 100).toFixed(2)}</p>
                       </div>
                     ))}
                   </div>
-                ) : (
-                  <div className="space-y-1 px-4 md:px-6">
-                    {savedPosts.map((p, idx) => (
-                      <Link
-                        key={p.id}
-                        href={p.creatorId ? `/podcaster/_/${p.id}` : `/feed`}
-                        className="flex items-center gap-3 p-2 rounded-lg bg-[#141418] hover:bg-white/5 transition"
-                      >
-                        <img
-                          src={p.posterUrl || p.backdropUrl}
-                          alt=""
-                          className="w-12 h-16 rounded object-cover flex-shrink-0"
-                          loading="lazy"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold truncate">{p.title || "Untitled"}</p>
-                          <p className="text-xs text-white/50 flex items-center gap-1 mt-1">
-                            <Eye size={11} />
-                            {(p.viewCount ?? 0).toLocaleString()} views
-                          </p>
-                        </div>
-                        <Play size={14} fill="white" className="text-white/60 flex-shrink-0" />
-                      </Link>
-                    ))}
-                  </div>
                 )}
               </div>
+      <MobileBottomNav />
             </div>
           </>
         )}
       </div>
-
-      {/* ---- Edit profile (bottom sheet, temporary) ---- */}
-      <AnimatePresence>
-        {editOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setEditOpen(false)}
-              className="fixed inset-0 z-[300] bg-black/70"
-            />
-            <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 32, stiffness: 320 }}
-              className="fixed left-0 right-0 bottom-0 z-[301] bg-[#0f0f12] rounded-t-2xl md:max-w-md md:mx-auto md:rounded-2xl md:bottom-4 max-h-[85vh] overflow-y-auto"
-            >
-              <div className="flex justify-center pt-2.5 pb-1">
-                <div className="w-10 h-1 rounded-full bg-white/25" />
-              </div>
-              <div className="flex items-center justify-between px-4 py-2 border-b border-white/10">
-                <h2 className="flex-1 text-center py-2.5 rounded-xl text-sm font-semibold transition text-white bg-[#1c1c1e]/80 backdrop-blur-xl border border-white/10 shadow-lg hover:bg-[#1c1c1e]/95"
-                  >
-                    Edit profile</h2>
-                <button
-                  onClick={() => setEditOpen(false)}
-                  className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-white/10"
-                  aria-label="Close"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-
-              <div className="p-4 space-y-4">
-                {/* Avatar row */}
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-16 h-16 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center overflow-hidden flex-shrink-0"
-                  >
-                    {profile?.avatar_url ? (
-                      <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <Camera size={22} className="text-white/70" />
-                    )}
-                  </button>
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="text-sm font-semibold text-red-500"
-                  >
-                    {uploading ? "Uploading…" : "Edit picture or avatar"}
-                  </button>
-                </div>
-
-                {/* Name */}
-                <div>
-                  <label className="text-xs text-white/50 block mb-1">Name</label>
-                  <input
-                    type="text"
-                    value={editName}
-                    onChange={(e) => setEditName(e.target.value)}
-                    maxLength={40}
-                    className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 outline-none focus:border-red-600"
-                  />
-                </div>
-
-                {/* Username (read-only for now) */}
-                <div>
-                  <label className="text-xs text-white/50 block mb-1">Username</label>
-                  <input
-                    type="text"
-                    value={profile?.username || ""}
-                    disabled
-                    className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 outline-none opacity-60"
-                  />
-                  <p className="text-[11px] text-white/40 mt-1">
-                    Change username on Account settings.
-                  </p>
-                </div>
-
-                {/* Bio */}
-                <div>
-                  <label className="text-xs text-white/50 block mb-1">Bio</label>
-                  <textarea
-                    value={editBio}
-                    onChange={(e) => setEditBio(e.target.value)}
-                    maxLength={300}
-                    rows={3}
-                    className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 outline-none focus:border-red-600 resize-none"
-                  />
-                  <p className="text-[11px] text-white/40 mt-1 text-right">
-                    {editBio.length}/300
-                  </p>
-                </div>
-
-                {statusMsg && (
-                  <p className="text-sm text-white/80">{statusMsg}</p>
-                )}
-
-                <button
-                  onClick={saveEdit}
-                  disabled={savingEdit}
-                  className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-500 disabled:opacity-50 font-semibold py-3 rounded-lg transition"
-                >
-                  <Check size={16} /> {savingEdit ? "Saving…" : "Save"}
-                </button>
-
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
-      {/* ---- Dashboard sheet ---- */}
-      <AnimatePresence>
-        {dashOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setDashOpen(false)}
-              className="fixed inset-0 z-[300] bg-black/80 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed left-0 right-0 bottom-0 z-[301] bg-[#0a0a0a]/95 backdrop-blur-2xl rounded-t-3xl md:max-w-md md:mx-auto md:rounded-3xl md:bottom-4 border-t md:border border-white/10 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] overflow-hidden pb-[env(safe-area-inset-bottom)] flex flex-col max-h-[85vh]"
-            >
-              {/* Handle */}
-              <div className="flex justify-center pt-3 pb-1 shrink-0">
-                <div className="w-12 h-1.5 rounded-full bg-white/20" />
-              </div>
-
-              {/* Header */}
-              <div className="flex items-center justify-between px-5 py-3 border-b border-white/5 shrink-0">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full overflow-hidden border border-white/20 bg-[#1c1c1e]">
-                    {profile?.avatar_url ? (
-                      <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-sm font-bold">
-                        {(profile?.display_name?.[0] || profile?.username?.[0] || "?").toUpperCase()}
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <p className="font-bold text-white leading-tight">{profile?.display_name || profile?.username || "User"}</p>
-                    <p className="text-xs text-white/50 leading-tight">@{profile?.username || "user"}</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setDashOpen(false)}
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              {/* Scrollable Content */}
-              <div className="p-4 space-y-6 overflow-y-auto scrollbar-hide">
-                
-                {/* Account Section */}
-                <div>
-                  <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2 px-2">Account</p>
-                  <div className="space-y-1">
-                    <Link
-                      href="/account"
-                      onClick={() => setDashOpen(false)}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 active:bg-white/10 transition group"
-                    >
-                      <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition">
-                        <Settings size={16} className="text-white/70" />
-                      </div>
-                      <span className="font-medium text-sm text-white/90">Account settings</span>
-                    </Link>
-                    <Link
-                      href="/my-list"
-                      onClick={() => setDashOpen(false)}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 active:bg-white/10 transition group"
-                    >
-                      <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition">
-                        <Bookmark size={16} className="text-white/70" />
-                      </div>
-                      <span className="font-medium text-sm text-white/90">My List</span>
-                    </Link>
-                    <button
-                      onClick={() => { share(); setDashOpen(false); }}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 active:bg-white/10 transition group text-left"
-                    >
-                      <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition">
-                        <Share2 size={16} className="text-white/70" />
-                      </div>
-                      <span className="font-medium text-sm text-white/90">Share profile</span>
-                    </button>
-                    
-                    {/* New Edit Profile Options */}
-                    
-                    
-                    
-                  </div>
-                </div>
-
-                {/* Creator Tools Section */}
-                {profile?.tier === "podcaster" && (
-                  <div>
-                    <p className="text-[10px] font-bold text-yellow-500/80 uppercase tracking-widest mb-2 px-2 flex items-center gap-1.5">
-                      <Sparkles size={12} /> Creator Tools
-                    </p>
-                    <div className="space-y-1">
-                      <Link
-                        href="/studio"
-                        onClick={() => setDashOpen(false)}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-yellow-500/10 active:bg-yellow-500/20 transition group text-yellow-400"
-                      >
-                        <div className="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center group-hover:bg-yellow-500/20 transition">
-                          <Mic size={16} className="text-yellow-500" />
-                        </div>
-                        <span className="font-medium text-sm">Creator Studio</span>
-                      </Link>
-                      <Link
-                        href="/profile/wallet"
-                        onClick={() => setDashOpen(false)}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-yellow-500/10 active:bg-yellow-500/20 transition group text-yellow-400"
-                      >
-                        <div className="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center group-hover:bg-yellow-500/20 transition">
-                          <Wallet size={16} className="text-yellow-500" />
-                        </div>
-                        <span className="font-medium text-sm">Creator Wallet</span>
-                      </Link>
-                      <Link
-                        href="/orders"
-                        onClick={() => setDashOpen(false)}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-yellow-500/10 active:bg-yellow-500/20 transition group text-yellow-400"
-                      >
-                        <div className="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center group-hover:bg-yellow-500/20 transition">
-                          <ShoppingBag size={16} className="text-yellow-500" />
-                        </div>
-                        <span className="font-medium text-sm">My Orders</span>
-                      </Link>
-                    </div>
-                  </div>
-                )}
-
-                {/* Billing Section */}
-                <div>
-                  <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2 px-2">Billing</p>
-                  <div className="space-y-1">
-                    {profile?.has_pass === true ? (
-                      <button
-                        onClick={() => { setDashOpen(false); handleManageSubscription(); }}
-                        disabled={portalLoading}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 active:bg-white/10 transition group text-left disabled:opacity-50"
-                      >
-                        <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition">
-                          <Sparkles size={16} className="text-yellow-400" />
-                        </div>
-                        <span className="font-medium text-sm text-white/90">
-                          {portalLoading ? "Opening…" : "Manage Subscription"}
-                        </span>
-                      </button>
-                    ) : (
-                      <Link
-                        href="/upgrade"
-                        onClick={() => setDashOpen(false)}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 active:bg-white/10 transition group"
-                      >
-                        <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition">
-                          <Sparkles size={16} className="text-yellow-400" />
-                        </div>
-                        <span className="font-medium text-sm text-white/90">Upgrade plan</span>
-                      </Link>
-                    )}
-                  </div>
-                </div>
-
-              </div>
-
-              {/* Log out Button */}
-              <div className="p-4 border-t border-white/5 shrink-0">
-                <button
-                  onClick={async () => {
-                    const supabase = createClient();
-                    await supabase.auth.signOut();
-                    clearUserCache();
-                    router.push("/");
-                  }}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500 font-bold text-sm transition"
-                >
-                  <LogOut size={16} /> Log out
-                </button>
-              </div>
-
-            </motion.div>
-          </>
-        )}
-        </AnimatePresence>
-
-      <MobileBottomNav />
       {/* ---- Edit post modal ---- */}
       <AnimatePresence>
         {editFor && (
