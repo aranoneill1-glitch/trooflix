@@ -228,7 +228,8 @@ export default function Home() {
                     {cat}
                   </button>
                 ))}
-              </div>
+              <Link href="/creators" onClick={() => setDrawerOpen(false)} className="block w-full text-left px-3 py-2.5 rounded text-sm transition text-white/70 hover:text-white hover:bg-white/5">Creators</Link>
+                </div>
 
               <div className="text-xs leading-relaxed tracking-widest text-red-600 font-bold opacity-80">
                 REAL STORIES.<br />UNCENSORED.<br />TROOFLIX.

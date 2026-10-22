@@ -13,6 +13,7 @@ const NAV_TABS = [
   { label: "Home", path: "/" },
   { label: "Podcasts", path: "/podcasts" },
   { label: "Feed", path: "/feed" },
+  { label: "Creators", path: "/creators" },
 ];
 
 type Props = {
