@@ -38,7 +38,7 @@ export default function PodcastsPage() {
   const [activeTab, setActiveTab] = useState("All");
 
   useEffect(() => {
-    Promise.all([getCachedCreators(), getCachedVideos()])
+    Promise.all([fetch("/api/creators", { cache: "no-store" }).then(r => r.json()), getCachedVideos()])
       .then(([creatorData, videoData]) => {
         setCreators(Array.isArray(creatorData) ? creatorData : []);
         setVideos(Array.isArray(videoData) ? videoData : []);
