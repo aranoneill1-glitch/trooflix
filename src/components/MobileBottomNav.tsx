@@ -161,6 +161,8 @@ export default function MobileBottomNav() {
                     <img
                       src={tab.customImage}
                       alt=""
+                      draggable={false}
+                      style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", pointerEvents: "none" }}
                       className={`w-[26px] h-[26px] object-contain transition-opacity ${
                         active ? "opacity-100" : "opacity-70"
                       }`}
@@ -192,6 +194,8 @@ export default function MobileBottomNav() {
                 <img
                   src={avatarUrl}
                   alt=""
+                  draggable={false}
+                  style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", pointerEvents: "none" }}
                   className={`w-7 h-7 rounded-full object-cover ${
                     profileActive ? "ring-2 ring-white" : "ring-1 ring-white/30"
                   }`}
