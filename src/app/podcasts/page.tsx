@@ -4,8 +4,8 @@ import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import { getCachedCreators } from "@/lib/cache";
-import { Search, Play, Mic, Film, ArrowRight, Sparkles } from "lucide-react";
+import { getCachedCreators, getCachedVideos } from "@/lib/cache";
+import { Search, Play, Mic, ArrowRight, Sparkles } from "lucide-react";
 import VerifiedBadge from "@/components/VerifiedBadge";
 
 type Creator = {
@@ -19,27 +19,36 @@ type Creator = {
   isVerified?: boolean;
 };
 
+type Video = {
+  id: number;
+  title: string;
+  description?: string;
+  posterUrl?: string;
+  backdropUrl?: string;
+  creatorId?: number | null;
+  type?: string;
+  createdAt?: string;
+};
+
 export default function PodcastsPage() {
   const [creators, setCreators] = useState<Creator[]>([]);
+  const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("All");
 
   useEffect(() => {
-    getCachedCreators()
-      .then((d) => {
-        const list = Array.isArray(d) ? d : [];
-        setCreators(list);
+    Promise.all([getCachedCreators(), getCachedVideos()])
+      .then(([creatorData, videoData]) => {
+        setCreators(Array.isArray(creatorData) ? creatorData : []);
+        setVideos(Array.isArray(videoData) ? videoData : []);
         setLoading(false);
       })
       .catch(() => setLoading(false));
   }, []);
 
-  // Filter logic
   const filteredCreators = useMemo(() => {
     let result = creators;
-    
-    // Search Filter
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(c => 
@@ -48,8 +57,6 @@ export default function PodcastsPage() {
         c.category?.toLowerCase().includes(q)
       );
     }
-
-    // Category Filter
     if (activeTab !== "All") {
       if (activeTab === "Podcasts") {
         result = result.filter(c => c.category === "Podcast" || c.category === "Podcasts" || !c.category);
@@ -59,11 +66,24 @@ export default function PodcastsPage() {
         result = result.filter(c => c.category === activeTab);
       }
     }
-
     return result;
   }, [creators, searchQuery, activeTab]);
 
-  const featuredCreator = creators[0]; // Just taking the first creator as the featured one for now
+  // Find the newest video with a backdrop to feature
+  const featuredVideo = useMemo(() => {
+    const withBackdrop = videos.filter(v => v.backdropUrl || v.posterUrl);
+    return withBackdrop.sort((a, b) => {
+      const at = a.createdAt ? new Date(a.createdAt).getTime() : a.id;
+      const bt = b.createdAt ? new Date(b.createdAt).getTime() : b.id;
+      return bt - at;
+    })[0];
+  }, [videos]);
+
+  // Find the creator of the featured video
+  const featuredCreator = useMemo(() => {
+    if (!featuredVideo || !featuredVideo.creatorId) return null;
+    return creators.find(c => c.id === featuredVideo.creatorId);
+  }, [featuredVideo, creators]);
 
   const TABS = ["All", "Podcasts", "Documentaries", "History", "Politics", "Conspiracy"];
 
@@ -116,35 +136,40 @@ export default function PodcastsPage() {
           </div>
         </div>
 
-        {/* HERO FEATURED CREATOR */}
-        {featuredCreator && !searchQuery && activeTab === "All" && (
+        {/* HERO FEATURED CONTENT */}
+        {featuredVideo && featuredCreator && !searchQuery && activeTab === "All" && (
           <div className="relative rounded-3xl overflow-hidden mb-12 border border-white/10 shadow-2xl group">
-            <div className="absolute inset-0 bg-black/40 z-10" />
+            <div className="absolute inset-0 bg-black/30 z-10" />
             <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent z-20" />
             <img 
-              src={featuredCreator.heroBackdropUrl || featuredCreator.photoUrl || "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=1200&auto=format&fit=crop"} 
+              src={featuredVideo.backdropUrl || featuredVideo.posterUrl} 
               alt="Hero" 
               className="w-full h-[300px] md:h-[400px] object-cover object-center group-hover:scale-105 transition-transform duration-700" 
             />
             
             <div className="absolute inset-0 z-30 flex flex-col justify-end p-8 md:p-12">
               <div className="flex items-center gap-2 mb-3">
-                <span className="bg-red-600 text-white text-[10px] font-bold tracking-widest uppercase px-2 py-1 rounded">Featured Creator</span>
+                <span className="bg-red-600 text-white text-[10px] font-bold tracking-widest uppercase px-2 py-1 rounded">Featured Content</span>
+                <span className="bg-white/10 backdrop-blur-md border border-white/20 text-white/80 text-[10px] font-bold tracking-widest uppercase px-2 py-1 rounded">{featuredVideo.type || "Video"}</span>
               </div>
-              <div className="flex items-center gap-3 mb-4">
-                <h2 className="text-4xl md:text-5xl font-black">{featuredCreator.name}</h2>
-                {featuredCreator.isVerified && <VerifiedBadge size={24} variant="gold" />}
+              <h2 className="text-3xl md:text-5xl font-black mb-2">{featuredVideo.title}</h2>
+              
+              <div className="flex items-center gap-2 mb-4">
+                <img src={featuredCreator.photoUrl} className="w-6 h-6 rounded-full object-cover" alt="" />
+                <span className="text-sm font-semibold text-white/90">{featuredCreator.name}</span>
+                {featuredCreator.isVerified && <VerifiedBadge size={14} variant="gold" />}
               </div>
+
               <p className="text-white/60 text-sm md:text-base max-w-xl mb-6 line-clamp-2">
-                {featuredCreator.description || "Discover exclusive documentaries, podcasts and more from this creator."}
+                {featuredVideo.description || "Watch this exclusive content on Trooflix."}
               </p>
               <div className="flex items-center gap-4">
-                <Link href={`/podcaster/${featuredCreator.slug}`} className="bg-white text-black font-bold px-6 py-3 rounded-xl hover:scale-105 transition flex items-center gap-2">
-                  <Play size={18} fill="black" /> View Profile
+                <Link href={`/podcast/${featuredVideo.id}`} className="bg-white text-black font-bold px-6 py-3 rounded-xl hover:scale-105 transition flex items-center gap-2">
+                  <Play size={18} fill="black" /> Watch Now
                 </Link>
-                <button className="bg-white/10 backdrop-blur-md text-white border border-white/20 px-6 py-3 rounded-xl font-semibold hover:bg-white/20 transition flex items-center gap-2">
-                  <Sparkles size={18} /> Subscribe
-                </button>
+                <Link href={`/podcaster/${featuredCreator.slug}`} className="bg-white/10 backdrop-blur-md text-white border border-white/20 px-6 py-3 rounded-xl font-semibold hover:bg-white/20 transition flex items-center gap-2">
+                  <Sparkles size={18} /> View Creator
+                </Link>
               </div>
             </div>
           </div>
@@ -192,7 +217,6 @@ export default function PodcastsPage() {
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent opacity-80" />
                   
-                  {/* Avatar overlapping the image */}
                   <div className="absolute -bottom-6 left-4 w-16 h-16 rounded-full border-4 border-[#0a0a0a] overflow-hidden bg-black z-10">
                     {c.photoUrl ? (
                       <img src={c.photoUrl} alt={c.name} className="w-full h-full object-cover" />
@@ -223,7 +247,6 @@ export default function PodcastsPage() {
           </div>
         )}
         
-        {/* BOTTOM CTA */}
         <div className="mt-20 mb-12 bg-gradient-to-br from-[#1c1c1e] to-black border border-white/10 rounded-3xl p-8 md:p-12 text-center relative overflow-hidden">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-32 bg-red-600/20 blur-3xl pointer-events-none" />
           <h2 className="text-2xl md:text-4xl font-black mb-4 relative z-10">Want to become a Creator?</h2>
