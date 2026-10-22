@@ -622,30 +622,32 @@ export default function ProfilePage() {
               )}
             </div>
 
-            {/* ---- Edit + Share buttons ---- */}
-            <div className="grid grid-cols-2 gap-2 mb-6">
-              <Link
-                href="/studio"
-                className="flex-1 text-center py-2.5 rounded-xl text-sm font-semibold transition text-white bg-[#1c1c1e]/80 backdrop-blur-xl border border-white/10 shadow-lg hover:bg-[#1c1c1e]/95 flex items-center justify-center gap-2"
-              >
-                <Mic size={16} className="text-yellow-400" /> My Studio
-              </Link>
+            {/* ---- Action Buttons ---- */}
+            <div className="flex flex-wrap items-center gap-3 mb-8">
+              {profile?.tier === "podcaster" && (
+                <Link
+                  href="/studio"
+                  className="flex-1 md:flex-none justify-center bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 hover:bg-yellow-500/20 px-6 py-3 rounded-xl text-sm font-bold transition flex items-center gap-2 backdrop-blur-md shadow-lg shadow-yellow-500/5"
+                >
+                  <Mic size={16} /> My Studio
+                </Link>
+              )}
               <button
                 onClick={() => setDashOpen(true)}
-                className="flex-1 text-center py-2.5 rounded-xl text-sm font-semibold transition text-white bg-[#1c1c1e]/80 backdrop-blur-xl border border-white/10 shadow-lg hover:bg-[#1c1c1e]/95"
-                  >
-                    Dashboard
+                className="flex-1 md:flex-none justify-center bg-[#1c1c1e]/80 backdrop-blur-xl text-white border border-white/10 hover:bg-[#1c1c1e]/95 px-6 py-3 rounded-xl text-sm font-bold transition flex items-center gap-2 shadow-lg"
+              >
+                <Settings size={16} /> Dashboard
               </button>
             </div>
 
-            {/* ---- Mobile tabs: Uploads | My List ---- */}
-            <div className="flex border-b border-white/10 mb-3">
+            {/* ---- Premium Tabs ---- */}
+            <div className="flex overflow-x-auto gap-2 mb-6 pb-2 scrollbar-hide border-b border-white/5">
               <button
                 onClick={() => setMobileTab("uploads")}
-                className={`flex-1 py-3 text-sm font-semibold border-b-2 transition ${
+                className={`px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition border ${
                   mobileTab === "uploads"
-                    ? "border-white text-white"
-                    : "border-transparent text-white/50"
+                    ? "bg-white text-black border-white shadow-lg"
+                    : "bg-[#1c1c1e]/50 text-white/60 border-white/10 hover:bg-[#1c1c1e] hover:text-white"
                 }`}
               >
                 {isPodcaster ? "Reels" : "My Posts"}
@@ -653,10 +655,10 @@ export default function ProfilePage() {
               {isPodcaster && (
                 <button
                   onClick={() => setMobileTab("premium")}
-                  className={`flex-1 py-3 text-sm font-semibold border-b-2 transition ${
+                  className={`px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition border ${
                     mobileTab === "premium"
-                      ? "border-white text-white"
-                      : "border-transparent text-white/50"
+                      ? "bg-white text-black border-white shadow-lg"
+                      : "bg-[#1c1c1e]/50 text-white/60 border-white/10 hover:bg-[#1c1c1e] hover:text-white"
                   }`}
                 >
                   Premium
@@ -664,20 +666,20 @@ export default function ProfilePage() {
               )}
               <button
                 onClick={() => setMobileTab("reposts")}
-                className={`flex-1 py-3 text-sm font-semibold border-b-2 transition ${
+                className={`px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition border ${
                   mobileTab === "reposts"
-                    ? "border-white text-white"
-                    : "border-transparent text-white/50"
+                    ? "bg-white text-black border-white shadow-lg"
+                    : "bg-[#1c1c1e]/50 text-white/60 border-white/10 hover:bg-[#1c1c1e] hover:text-white"
                 }`}
               >
                 Reposts
               </button>
               <button
                 onClick={() => setMobileTab("saved")}
-                className={`flex-1 py-3 text-sm font-semibold border-b-2 transition ${
+                className={`px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition border ${
                   mobileTab === "saved"
-                    ? "border-white text-white"
-                    : "border-transparent text-white/50"
+                    ? "bg-white text-black border-white shadow-lg"
+                    : "bg-[#1c1c1e]/50 text-white/60 border-white/10 hover:bg-[#1c1c1e] hover:text-white"
                 }`}
               >
                 My List
@@ -688,11 +690,11 @@ export default function ProfilePage() {
             <div className="grid grid-cols-1 gap-6 -mx-4 md:-mx-6">
               {/* ==== UPLOADS (left) ==== */}
               <div className={`${mobileTab === "uploads" ? "" : "hidden"}`}>
-                <div className="flex items-center justify-between px-4 md:px-6 mb-3">
-                  <h2 className="text-sm font-bold text-white/80 uppercase tracking-wider">
+                <div className="flex items-center justify-between px-4 md:px-6 mb-4 mt-2">
+                  <h2 className="text-xl font-black text-white tracking-tight">
                     {isPodcaster ? "Reels" : "My Posts"}
                   </h2>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 bg-[#1c1c1e]/80 backdrop-blur-md p-1 rounded-lg border border-white/10">
                     <button
                       onClick={() => setUploadsView("grid")}
                       className={`p-1.5 rounded transition ${
@@ -721,12 +723,12 @@ export default function ProfilePage() {
                       : "No reels yet."}
                   </div>
                 ) : uploadsView === "grid" ? (
-                  <div className="grid grid-cols-3 gap-0.5">
+                  <div className="grid grid-cols-3 gap-1 md:gap-2 px-2 md:px-0">
                     {visibleReels.map((p: any, idx: number) => (
                       <div
                         key={p.id}
                         onClick={() => setViewerIndex(idx)}
-                        className="relative aspect-[4/5] bg-[#141418] overflow-hidden cursor-pointer"
+                        className="relative aspect-[4/5] bg-[#141418] rounded-xl overflow-hidden cursor-pointer"
                         onPointerDown={() => startLongPress(p)}
                         onPointerUp={cancelLongPress}
                         onPointerLeave={cancelLongPress}
@@ -835,12 +837,12 @@ export default function ProfilePage() {
                       : "No reels yet."}
                   </div>
                 ) : uploadsView === "grid" ? (
-                  <div className="grid grid-cols-3 gap-0.5">
+                  <div className="grid grid-cols-3 gap-1 md:gap-2 px-2 md:px-0">
                     {visiblePremium.map((p, idx) => (
                       <div
                         key={p.id}
                         onClick={() => router.push(p.creatorId ? `/podcaster/_/${p.id}` : `/feed`)}
-                        className="relative aspect-[4/5] bg-[#141418] overflow-hidden cursor-pointer"
+                        className="relative aspect-[4/5] bg-[#141418] rounded-xl overflow-hidden cursor-pointer"
                         onPointerDown={() => startLongPress(p)}
                         onPointerUp={cancelLongPress}
                         onPointerLeave={cancelLongPress}
@@ -959,12 +961,12 @@ export default function ProfilePage() {
                     Nothing reposted yet. Tap the repost icon on any post.
                   </div>
                 ) : repostsView === "grid" ? (
-                  <div className="grid grid-cols-3 gap-0.5">
+                  <div className="grid grid-cols-3 gap-1 md:gap-2 px-2 md:px-0">
                     {repostedPosts.map((p) => (
                       <Link
                         key={p.id}
                         href={`/feed?reel=${p.id}`}
-                        className="relative aspect-[4/5] bg-[#141418] overflow-hidden group"
+                        className="relative aspect-[4/5] bg-[#141418] rounded-xl overflow-hidden group"
                       >
                         {p.posterUrl ? (
                           <img
@@ -1051,12 +1053,12 @@ export default function ProfilePage() {
                     Nothing saved yet. Tap + on any video to save it here.
                   </div>
                 ) : savedView === "grid" ? (
-                  <div className="grid grid-cols-3 gap-0.5">
+                  <div className="grid grid-cols-3 gap-1 md:gap-2 px-2 md:px-0">
                     {savedPosts.map((p, idx) => (
                       <div
                         key={p.id}
                         onClick={() => router.push(p.creatorId ? `/podcaster/_/${p.id}` : `/feed`)}
-                        className="relative aspect-[4/5] bg-[#141418] overflow-hidden cursor-pointer"
+                        className="relative aspect-[4/5] bg-[#141418] rounded-xl overflow-hidden cursor-pointer"
                       >
                         <img
                           src={p.posterUrl || p.backdropUrl}
