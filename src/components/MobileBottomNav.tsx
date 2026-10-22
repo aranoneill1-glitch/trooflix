@@ -16,7 +16,7 @@ const TABS: {
   label: string;
   path: string;
 }[] = [
-  { customImage: "/icons/licon.jpg", label: "Home", path: "/" },
+  { customImage: "/icons/home-new.png", label: "Home", path: "/" },
   { icon: Play, label: "Feed", path: "/feed" },
   { icon: Podcast, label: "Podcasts", path: "/podcasts" },
   { icon: MessageCircle, label: "Messages", path: "/messages" },
