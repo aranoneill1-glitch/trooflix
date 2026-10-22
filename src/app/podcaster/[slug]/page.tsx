@@ -255,7 +255,21 @@ export default function PodcasterProfilePage() {
 
                 {/* Action Buttons */}
                 <div className="flex flex-wrap items-center gap-3">
-                  <FollowButton creatorId={creator?.id as number} />
+                  <button 
+                    onClick={async () => {
+                      // Reuse the follow functionality but style it
+                      const res = await fetch("/api/follows", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ userId, creatorId: creator?.id }),
+                      });
+                      // Optionally update local state to show "Following"
+                      alert("Subscribed to creator updates!");
+                    }}
+                    className="bg-white text-black font-bold px-5 py-2.5 rounded-xl text-sm transition hover:bg-gray-200 shadow-lg flex items-center gap-2"
+                  >
+                    + Subscribe
+                  </button>
                   
                   {premiumData?.enabled && (
                     hasSub ? (
