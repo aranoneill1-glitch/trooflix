@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
-import { Play, MessageCircle, Podcast, LogOut, X } from "lucide-react";
+import { Play, MessageCircle, Podcast, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Capacitor } from "@capacitor/core";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
@@ -38,7 +38,6 @@ export default function MobileBottomNav() {
   const [signedIn, setSignedIn] = useState<boolean | null>(null);
   const [showLogoutMenu, setShowLogoutMenu] = useState(false);
   
-  // Long press refs
   const pressTimer = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
 
@@ -88,14 +87,13 @@ export default function MobileBottomNav() {
     router.refresh();
   };
 
-  // Long press handlers
   const startPress = () => {
     isLongPress.current = false;
     pressTimer.current = setTimeout(() => {
       isLongPress.current = true;
-      triggerHaptic(); // Stronger haptic for long press
+      triggerHaptic();
       setShowLogoutMenu(true);
-    }, 600); // 600ms hold
+    }, 600);
   };
 
   const cancelPress = () => {
@@ -108,13 +106,11 @@ export default function MobileBottomNav() {
       isLongPress.current = false;
       return;
     }
-    // Normal click behavior
     router.push(signedIn === false ? "/login" : "/profile");
   };
 
   return (
     <>
-      {/* Logout Dropdown Menu */}
       <AnimatePresence>
         {showLogoutMenu && (
           <>
@@ -123,13 +119,13 @@ export default function MobileBottomNav() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowLogoutMenu(false)}
-              className="fixed inset-0 z-[90] bg-black/60 backdrop-blur-sm"
+              className="fixed inset-0 z-[90] bg-black/40 backdrop-blur-sm"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="fixed bottom-24 right-4 z-[100] bg-[#1c1c1e] border border-white/10 rounded-2xl p-2 w-48 shadow-2xl"
+              className="fixed bottom-28 right-6 z-[100] bg-[#1c1c1e] border border-white/10 rounded-2xl p-2 w-48 shadow-2xl"
             >
               <button
                 onClick={handleLogout}
@@ -142,8 +138,10 @@ export default function MobileBottomNav() {
         )}
       </AnimatePresence>
 
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-black/60 backdrop-blur-2xl border-t border-white/10 shadow-[0_-5px_20px_rgba(0,0,0,0.5)]">
-        <div className="flex justify-around items-center pt-3 pb-4">
+      {/* Floating Glass Pill Container */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-[env(safe-area-inset-bottom)] pointer-events-none">
+        <div className="pointer-events-auto flex items-center justify-around w-[92%] max-w-sm mb-4 px-2 py-2 bg-[#1c1c1e]/80 backdrop-blur-2xl border border-white/10 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
+          
           {TABS.map((tab) => {
             const active = isActive(tab.path);
             return (
@@ -154,7 +152,7 @@ export default function MobileBottomNav() {
                 onClick={triggerHaptic}
                 onMouseEnter={() => prefetchTab(tab.path)}
                 onTouchStart={() => prefetchTab(tab.path)}
-                className="flex flex-col items-center gap-0.5 px-1 py-1 flex-1 min-w-0"
+                className="flex flex-col items-center justify-center w-12 h-12 rounded-full"
               >
                 <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }}>
                   {tab.customImage ? (
@@ -164,13 +162,13 @@ export default function MobileBottomNav() {
                       draggable={false}
                       style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", pointerEvents: "none" }}
                       className={`w-[26px] h-[26px] object-contain transition-opacity ${
-                        active ? "opacity-100" : "opacity-70"
+                        active ? "opacity-100" : "opacity-60 hover:opacity-80"
                       }`}
                     />
                   ) : (
                     <tab.icon
                       size={26}
-                      className={active ? "text-white" : "text-white/60"}
+                      className={active ? "text-white" : "text-white/60 hover:text-white/80"}
                     />
                   )}
                 </motion.div>
@@ -178,7 +176,7 @@ export default function MobileBottomNav() {
             );
           })}
 
-          {/* Profile (avatar) tab with Long Press */}
+          {/* Profile Avatar */}
           <div
             onClick={handleAvatarClick}
             onMouseDown={startPress}
@@ -187,7 +185,7 @@ export default function MobileBottomNav() {
             onTouchStart={startPress}
             onTouchEnd={cancelPress}
             onTouchCancel={cancelPress}
-            className="flex flex-col items-center gap-0.5 px-1 py-1 flex-1 min-w-0 cursor-pointer"
+            className="flex flex-col items-center justify-center w-12 h-12 rounded-full cursor-pointer"
           >
             <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }}>
               {avatarUrl ? (
@@ -215,6 +213,7 @@ export default function MobileBottomNav() {
               )}
             </motion.div>
           </div>
+          
         </div>
       </nav>
     </>
