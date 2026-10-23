@@ -56,7 +56,7 @@ export async function PUT(req: Request) {
     const body = await req.json();
     const videos = (await kv.get<any[]>(KEY)) || [];
 
-    const index = videos.findIndex((v: any) => v.id === id);
+    const index = videos.findIndex((v: any) => String(v.id) === String(id));
     if (index === -1) {
       return NextResponse.json({ error: "Video not found" }, { status: 404 });
     }
@@ -92,7 +92,7 @@ export async function DELETE(req: Request) {
     const { searchParams } = new URL(req.url);
     const id = Number(searchParams.get("id"));
     const videos = (await kv.get<any[]>(KEY)) || [];
-    const filtered = videos.filter((v: any) => v.id !== id);
+    const filtered = videos.filter((v: any) => String(v.id) !== String(id));
     await kv.set(KEY, filtered);
     return NextResponse.json({ ok: true, deleted: id });
   } catch (e: any) {
