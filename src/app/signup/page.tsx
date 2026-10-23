@@ -101,11 +101,27 @@ export default function SignupPage() {
       });
     }
 
-    setMessage("Account created! Redirecting…");
+    // Ensure they are logged in (in case Supabase doesn't auto-login)
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: email.trim().toLowerCase(),
+      password,
+    });
+
+    if (signInError) {
+      // If auto-login fails, fallback to the login page
+      setMessage("Account created! Please sign in.");
+      setTimeout(() => {
+        router.push("/login");
+        router.refresh();
+      }, 2000);
+      return;
+    }
+
+    setMessage("Account created! Taking you to your profile…");
     setTimeout(() => {
-      router.push("/login");
+      router.push("/profile");
       router.refresh();
-    }, 2200);
+    }, 1500);
   };
 
   return (
