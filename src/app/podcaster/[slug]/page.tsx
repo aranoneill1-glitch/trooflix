@@ -207,7 +207,7 @@ export default function PodcasterProfilePage() {
       ) : (
         <>
           {/* CINEMATIC BANNER */}
-          <div className="relative w-full h-[40vh] md:h-[65vh] overflow-hidden mt-16 md:mt-20">
+          <div className="relative w-full h-[35vh] md:h-[40vh] overflow-hidden mt-16 md:mt-20">
             {bannerUrl ? (
               <img src={bannerUrl} alt="" className="w-full h-full object-cover object-center" />
             ) : (
@@ -218,11 +218,11 @@ export default function PodcasterProfilePage() {
           </div>
 
           {/* CREATOR HEADER (Desktop Overlap) */}
-          <div className="max-w-6xl mx-auto px-4 md:px-8 -mt-24 md:-mt-40 relative z-10">
+          <div className="max-w-6xl mx-auto px-4 md:px-8 -mt-20 md:-mt-24 relative z-10">
             <div className="flex flex-col md:flex-row md:items-end md:gap-10">
               
               {/* Avatar */}
-              <div className="w-32 h-32 md:w-48 md:h-48 rounded-full overflow-hidden border-4 md:border-[6px] border-[#050505] bg-[#1c1c1e] flex items-center justify-center flex-shrink-0 shadow-2xl shadow-black/50">
+              <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 md:border-[6px] border-[#050505] bg-[#1c1c1e] flex items-center justify-center flex-shrink-0 shadow-2xl shadow-black/50">
                 {creator?.photoUrl ? (
                   <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" />
                 ) : (
