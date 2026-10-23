@@ -236,27 +236,7 @@ export default function CreatorsPage() {
           {activeTab === "All" && (
             <>
               {/* FEATURED HERO */}
-              {featuredCreator && !searchQuery && (
-                <div className="px-4 md:px-8 mb-12">
-                  <div className="relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl group aspect-[21/9] md:aspect-[3/1]">
-                    <div className="absolute inset-0 bg-black/40 z-10" />
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-[#050505]/60 to-transparent z-20" />
-                    <img src={featuredCreator.heroBackdropUrl || featuredCreator.photoUrl} alt="Hero" className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" />
-                    
-                    <div className="absolute inset-0 z-30 flex flex-col justify-center p-8 md:p-12 max-w-2xl">
-                      <span className="bg-red-600 text-white text-[10px] font-bold tracking-widest uppercase px-2 py-1 rounded w-max mb-3 shadow-lg">Featured Creator</span>
-                      <h2 className="text-3xl md:text-5xl font-black mb-3 flex items-center gap-2">
-                        {featuredCreator.name}
-                        {featuredCreator.isVerified && <VerifiedBadge size={24} variant="gold" />}
-                      </h2>
-                      <p className="text-white/70 text-sm md:text-base line-clamp-2 mb-6">{featuredCreator.description}</p>
-                      <Link href={`/podcaster/${featuredCreator.slug}`} className="bg-white text-black font-bold px-6 py-3 rounded-xl hover:scale-105 transition flex items-center gap-2 w-max shadow-[0_0_20px_rgba(255,255,255,0.3)]">
-                        <Play size={18} fill="black" /> View Profile
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              )}
+              
 
               {/* NETFLIX SHELVES */}
               {searchQuery ? (
@@ -273,7 +253,35 @@ export default function CreatorsPage() {
                 </div>
               ) : (
                 <>
-                  <ContentRow title="Trending Now" icon={TrendingUp} items={trendingCreators} loading={loading} />
+                  {videos.filter(v => v.type === "Documentary" && (v.posterUrl || v.backdropUrl)).length > 0 && (
+                  <div className="mb-10">
+                    <div className="flex items-center gap-2 mb-4 px-4 md:px-8">
+                      <Film size={20} className="text-red-500" />
+                      <h2 className="text-xl md:text-2xl font-black tracking-tight">Featured Documentaries</h2>
+                    </div>
+                    <div className="flex gap-4 overflow-x-auto scrollbar-hide px-4 md:px-8 pb-4 snap-x">
+                      {videos.filter(v => v.type === "Documentary" && (v.posterUrl || v.backdropUrl)).slice(0, 15).map(v => (
+                        <div key={v.id} onClick={() => window.location.href = `/podcast/${v.id}`} className="group relative flex-shrink-0 w-[240px] md:w-[300px] aspect-video rounded-xl overflow-hidden snap-start cursor-pointer border border-white/5 hover:border-white/20 transition">
+                          <img src={v.posterUrl || v.backdropUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90" />
+                          
+                          {/* Play Button Overlay */}
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                            <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center">
+                              <Play size={20} fill="white" className="text-white ml-1" />
+                            </div>
+                          </div>
+
+                          <div className="absolute inset-x-0 bottom-0 p-4">
+                            <p className="font-bold text-sm md:text-base leading-tight line-clamp-2">{v.title}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <ContentRow title="Trending Creators" icon={TrendingUp} items={trendingCreators} loading={loading} />
                   <ContentRow title="Fresh Talent" icon={Zap} items={freshCreators} loading={loading} />
                   <ContentRow title="Top Documentary Makers" icon={Film} items={documentaryCreators} loading={loading} />
                   <ContentRow title="Top Podcasters" icon={Mic} items={podcastCreators} loading={loading} />
