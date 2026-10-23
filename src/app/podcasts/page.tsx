@@ -112,7 +112,7 @@ export default function PodcastsPage() {
               The Home of Independent Voices
             </p>
             <h1 className="text-4xl md:text-6xl font-black tracking-tight">
-              Discover <span className="text-white/40">Trooflix</span>
+              Discover Your <span className="text-white/40">Favorite Creators</span>
             </h1>
           </div>
           
