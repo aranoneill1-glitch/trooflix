@@ -470,11 +470,20 @@ export default function ProfilePage() {
       });
       if (!put.ok) throw new Error("Upload failed");
 
-      const res = await fetch(`/api/videos?id=${post.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ posterUrl: publicUrl }),
-      });
+      let res;
+      if (postsKind === "creator") {
+        res = await fetch(`/api/videos?id=${post.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ posterUrl: publicUrl }),
+        });
+      } else {
+        res = await fetch(`/api/user/posts`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId, postId: post.id, posterUrl: publicUrl }),
+        });
+      }
       if (!res.ok) throw new Error("Save failed");
 
       setPosts((prev) =>

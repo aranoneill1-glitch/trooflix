@@ -230,7 +230,7 @@ export async function POST(req: Request) {
 // PUT /api/user/posts — { userId, postId, title?, description? } — edit own post
 export async function PUT(req: Request) {
   try {
-    const { userId, postId, title, description } = await req.json();
+    const { userId, postId, title, description, posterUrl } = await req.json();
     if (!userId || !postId) {
       return NextResponse.json({ error: "userId and postId required" }, { status: 400 });
     }
@@ -245,6 +245,7 @@ export async function PUT(req: Request) {
 
     if (title !== undefined) videos[idx].title = String(title).slice(0, 120);
     if (description !== undefined) videos[idx].description = String(description).slice(0, 800);
+    if (posterUrl !== undefined) videos[idx].posterUrl = String(posterUrl);
 
     await kv.set(VIDEOS_KEY, videos);
     return NextResponse.json({ ok: true, video: videos[idx] });
