@@ -91,7 +91,7 @@ export default function CreatorsPage() {
   const [activeTab, setActiveTab] = useState(typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("tab") || "All" : "All");
 
   useEffect(() => {
-    Promise.all([getCachedCreators(), getCachedVideos()])
+    Promise.all([fetch("/api/creators", { cache: "no-store" }).then(r => r.json()), getCachedVideos()])
       .then(([creatorData, videoData]) => {
         setCreators(Array.isArray(creatorData) ? creatorData : []);
         setVideos(Array.isArray(videoData) ? videoData : []);
