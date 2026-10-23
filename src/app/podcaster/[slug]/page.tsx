@@ -206,19 +206,17 @@ export default function PodcasterProfilePage() {
         <div className="h-screen flex items-center justify-center"><p className="text-white/50">Loading…</p></div>
       ) : (
         <>
-          {/* CINEMATIC BANNER */}
-          <div className="relative w-full h-[35vh] md:h-[40vh] overflow-hidden mt-16 md:mt-20">
-            {bannerUrl ? (
+          {/* CINEMATIC BANNER (Only if they have one) */}
+          {bannerUrl && (
+            <div className="relative w-full h-[35vh] md:h-[40vh] overflow-hidden mt-16 md:mt-20">
               <img src={bannerUrl} alt="" className="w-full h-full object-cover object-center" />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-br from-red-900/40 via-black to-black" />
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/60 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-[#050505]/40 to-transparent" />
-          </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/60 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-[#050505]/40 to-transparent" />
+            </div>
+          )}
 
           {/* CREATOR HEADER (Desktop Overlap) */}
-          <div className="max-w-6xl mx-auto px-4 md:px-8 -mt-20 md:-mt-24 relative z-10">
+          <div className={`max-w-6xl mx-auto px-4 md:px-8 relative z-10 ${bannerUrl ? "-mt-20 md:-mt-24" : "pt-28 md:pt-32"}`}>
             <div className="flex flex-col md:flex-row md:items-end md:gap-10">
               
               {/* Avatar */}
@@ -291,7 +289,7 @@ export default function PodcasterProfilePage() {
             </div>
 
             {/* DESKTOP TABS (Centered, Sticky) */}
-            <div className="flex justify-center mt-12 md:mt-16 mb-8 md:sticky md:top-20 z-40">
+            <div className={`flex justify-center ${bannerUrl ? "mt-12 md:mt-16" : "mt-8 md:mt-12"} mb-8 md:sticky md:top-20 z-40`}>
               <div className="flex gap-2 p-1.5 bg-[#0a0a0a]/80 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl overflow-x-auto scrollbar-hide">
                 {(["home", "podcasts", "documentaries", "videos", "shop"] as Tab[]).map((t) => (
                   <button 
