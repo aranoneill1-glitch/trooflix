@@ -1,192 +1,175 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { Play, Info, ChevronLeft, ChevronRight, Plus, ThumbsUp, X } from "lucide-react";
+import { useEffect, useState, useMemo } from "react";
+import Link from "next/link";
 import TopBar from "@/components/TopBar";
-import { useSearch } from "@/context/SearchContext";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import VideoPlayer from "@/components/VideoPlayer";
-import { getCachedVideos, getCachedCreators } from "@/lib/cache";
+import { getCachedCreators, getCachedVideos } from "@/lib/cache";
+import { Search, Film, ArrowRight } from "lucide-react";
+import VerifiedBadge from "@/components/VerifiedBadge";
+
+type Creator = {
+  id: number;
+  name: string;
+  slug: string;
+  photoUrl: string;
+  description: string;
+  heroBackdropUrl?: string;
+  category?: string;
+  isVerified?: boolean;
+};
 
 type Video = {
   id: number;
-  title: string;
-  description: string;
-  category: string;
-  type: string;
-  featured: boolean;
-  videoUrl?: string;
-  bitchuteUrl?: string;
-  textOverlays?: any[];
-  posterUrl: string;
-  backdropUrl: string;
-  year: number;
-  rating: string;
-  match: number;
-  duration: string;
   creatorId?: number | null;
+  type?: string;
 };
 
 export default function DocumentariesPage() {
+  const [creators, setCreators] = useState<Creator[]>([]);
   const [videos, setVideos] = useState<Video[]>([]);
-  const { search } = useSearch();
-  const [selected, setSelected] = useState<Video | null>(null);
-  const [playing, setPlaying] = useState<Video | null>(null);
-  const [loaded, setLoaded] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    getCachedVideos()
-      .then((data) => {
-        const docs = Array.isArray(data)
-          ? data.filter((v: any) => v.type === "Documentary" && !v.creatorId)
-          : [];
-        setVideos(docs);
-        setLoaded(true);
-      });
+    Promise.all([getCachedCreators(), getCachedVideos()])
+      .then(([creatorData, videoData]) => {
+        setCreators(Array.isArray(creatorData) ? creatorData : []);
+        setVideos(Array.isArray(videoData) ? videoData : []);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
   }, []);
 
-  const searchFiltered = search
-    ? videos.filter((v) => v.title.toLowerCase().includes(search.toLowerCase()))
-    : videos;
+  // Filter to find creators who have uploaded Documentaries
+  const documentarians = useMemo(() => {
+    const docCreatorIds = new Set(
+      videos.filter(v => v.type === "Documentary" && v.creatorId).map(v => Number(v.creatorId))
+    );
+    let result = creators.filter(c => docCreatorIds.has(Number(c.id)));
 
-  const hero = search ? searchFiltered[0] : videos.find((v) => v.featured) || videos[0];
-  const newReleases = [...searchFiltered].sort((a, b) => b.id - a.id).slice(0, 20);
-  const byCategory = Array.from(new Set(searchFiltered.map((v) => v.category))).map((cat) => ({
-    title: cat,
-    items: searchFiltered.filter((v) => v.category === cat),
-  }));
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(c => 
+        c.name?.toLowerCase().includes(q) || 
+        c.description?.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  }, [creators, videos, searchQuery]);
 
   return (
-    <main className="min-h-screen bg-black text-white overflow-x-hidden pb-20 lg:pb-0">
+    <main className="min-h-screen bg-[#050505] text-white pb-24">
       <TopBar />
 
-      {hero && <Hero video={hero} onPlay={() => setPlaying(hero)} onMore={() => setSelected(hero)} />}
+      <div className="pt-28 md:pt-32 max-w-7xl mx-auto px-4 md:px-8">
+        
+        {/* HEADER */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+          <div>
+            <p className="text-[10px] md:text-xs tracking-[0.4em] text-red-500 font-bold mb-2 uppercase">
+              Watch the truth
+            </p>
+            <h1 className="text-4xl md:text-6xl font-black tracking-tight">
+              Discover <span className="text-white/40">Documentaries</span>
+            </h1>
+          </div>
+          
+          <div className="relative w-full md:w-72">
+            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search documentaries..."
+              className="w-full bg-[#1c1c1e]/80 backdrop-blur-md border border-white/10 rounded-full pl-11 pr-4 py-3 text-sm outline-none focus:border-red-500 transition placeholder:text-white/30"
+            />
+          </div>
+        </div>
 
-      <div className="relative z-10 -mt-24 md:-mt-32 pb-24 space-y-8 md:space-y-12">
-        {loaded && videos.length === 0 && (
-          <div className="text-center py-20 text-white/50">
-            <p className="text-xl mb-2">No documentaries yet</p>
+        {/* AVATAR SCROLLING ROW */}
+        {documentarians.length > 0 && !searchQuery && (
+          <div className="mb-12">
+            <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide pb-4">
+              {documentarians.slice(0, 15).map((c) => (
+                <Link key={c.id} href={`/podcaster/${c.slug}`} className="flex flex-col items-center gap-2 flex-shrink-0 group">
+                  <div className="w-16 h-16 md:w-20 md:h-20 rounded-full p-[2px] bg-gradient-to-tr from-red-600 to-orange-500 group-hover:scale-105 transition-transform">
+                    <div className="w-full h-full rounded-full border-2 border-black overflow-hidden bg-[#1c1c1e]">
+                      {c.photoUrl ? (
+                        <img src={c.photoUrl} alt={c.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-xl font-bold">{c.name?.[0]}</div>
+                      )}
+                    </div>
+                  </div>
+                  <span className="text-xs font-semibold text-white/80 group-hover:text-white transition truncate w-24 text-center">{c.name}</span>
+                </Link>
+              ))}
+            </div>
           </div>
         )}
-        {newReleases.length > 0 && (
-          <Row title="New Documentaries" items={newReleases} onSelect={setSelected} onPlay={setPlaying} />
-        )}
-        {byCategory.map((row) => (
-          <Row key={row.title} title={row.title} items={row.items} onSelect={setSelected} onPlay={setPlaying} />
-        ))}
+
+        {/* GRID */}
+        <div>
+          <h2 className="text-2xl font-black mb-6">All Documentary Makers</h2>
+          {loading ? (
+            <p className="text-white/40 py-12 text-center">Loading…</p>
+          ) : documentarians.length === 0 ? (
+            <div className="text-center py-20 bg-[#0a0a0a] rounded-2xl border border-white/5">
+              <Film size={48} className="mx-auto text-white/20 mb-4" />
+              <p className="text-white/40">No documentaries found.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+              {documentarians.map((c) => (
+                <Link
+                  key={c.id}
+                  href={`/podcaster/${c.slug}`}
+                  className="group relative bg-[#0a0a0a] border border-white/5 rounded-2xl overflow-hidden hover:border-white/20 transition-all duration-300 hover:-translate-y-1 flex flex-col"
+                >
+                  <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#141418]">
+                    {c.heroBackdropUrl ? (
+                      <img src={c.heroBackdropUrl} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-80 group-hover:opacity-100" />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-red-900/20 to-black flex items-center justify-center">
+                        <Film size={40} className="text-white/10" />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent opacity-80" />
+                    
+                    <div className="absolute -bottom-6 left-4 w-16 h-16 rounded-full border-4 border-[#0a0a0a] overflow-hidden bg-black z-10">
+                      {c.photoUrl ? (
+                        <img src={c.photoUrl} alt={c.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-red-900 flex items-center justify-center font-bold text-xl">{c.name[0]}</div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="p-4 pt-8 flex-1 flex flex-col">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <h3 className="font-bold text-lg leading-tight truncate group-hover:text-red-400 transition-colors">{c.name}</h3>
+                      {c.isVerified && <VerifiedBadge size={14} variant="gold" />}
+                    </div>
+                    <p className="text-xs text-white/40 line-clamp-2 mb-4 flex-1">
+                      {c.description || "Watch documentaries from this creator."}
+                    </p>
+                    
+                    <div className="flex items-center justify-between mt-auto pt-3 border-t border-white/5">
+                      <span className="text-[10px] font-bold tracking-widest uppercase text-white/40">Documentarian</span>
+                      <span className="text-xs font-semibold text-white/80 group-hover:text-red-400 transition-colors flex items-center gap-1">
+                        Watch <ArrowRight size={12} />
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
-      {selected && <DetailModal item={selected} onClose={() => setSelected(null)} onPlay={(v) => { setSelected(null); setPlaying(v); }} />}
-      {playing && (
-        <VideoPlayer
-          src={playing.videoUrl ?? playing.bitchuteUrl ?? ""}
-          title={playing.title}
-          videoId={playing.id}
-            textOverlays={playing?.textOverlays}
-          onClose={() => setPlaying(null)}
-        />
-      )}
-          <MobileBottomNav />
+      <MobileBottomNav />
     </main>
-  );
-}
-
-function Hero({ video, onPlay, onMore }: { video: Video; onPlay: () => void; onMore: () => void }) {
-  return (
-    <section className="relative h-[70vh] md:h-[85vh] w-full">
-      <img src={video.backdropUrl} alt={video.title} className="absolute inset-0 w-full h-full object-cover" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/20 to-transparent" />
-
-      <div className="relative z-10 flex flex-col justify-center h-full px-4 md:px-12 max-w-2xl pt-24 md:pt-20 pb-12 md:pb-0">
-        <p className="text-xs md:text-sm tracking-[0.3em] text-red-500 font-bold mb-3">
-          TROOFLIX DOCUMENTARY
-        </p>
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-black leading-[1.05] mb-4 tracking-tight">
-          {video.title}
-        </h1>
-        <div className="flex items-center gap-3 text-sm mb-4 flex-wrap">
-          <span className="text-green-500 font-bold">{video.match}% Match</span>
-          <span className="text-white/70">{video.year}</span>
-          <span className="border border-white/40 px-1.5 py-0.5 text-xs">{video.rating}</span>
-          <span className="text-white/70">{video.type}</span>
-        </div>
-        <p className="text-sm md:text-base text-white/85 mb-6 line-clamp-3 max-w-xl">
-          {video.description}
-        </p>
-        <div className="flex gap-3">
-          <button onClick={onPlay} className="flex items-center gap-2 bg-white text-black font-bold px-6 md:px-8 py-2.5 md:py-3 rounded hover:bg-white/80 transition">
-            <Play size={20} fill="black" /> Play
-          </button>
-          <button onClick={onMore} className="flex items-center gap-2 bg-white/20 backdrop-blur text-white font-semibold px-5 md:px-7 py-2.5 md:py-3 rounded hover:bg-white/30 transition">
-            <Info size={20} /> More Info
-          </button>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function Row({ title, items, onSelect, onPlay }: { title: string; items: Video[]; onSelect: (v: Video) => void; onPlay: (v: Video) => void }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const scroll = (dir: "left" | "right") => {
-    if (!ref.current) return;
-    const amount = ref.current.clientWidth * 0.8;
-    ref.current.scrollBy({ left: dir === "left" ? -amount : amount, behavior: "smooth" });
-  };
-  return (
-    <div className="relative group/row">
-      <h2 className="text-xl font-bold px-8 md:px-12 mb-3">{title}</h2>
-      <div className="relative">
-        <button onClick={() => scroll("left")} className="hidden md:flex absolute left-0 top-0 bottom-0 z-30 w-12 bg-black/60 hover:bg-black/80 opacity-0 group-hover/row:opacity-100 transition items-center justify-center">
-          <ChevronLeft size={28} />
-        </button>
-        <div ref={ref} className="flex gap-3 overflow-x-auto scrollbar-hide px-8 md:px-12 pb-4">
-          {items.map((item) => (
-            <div key={item.id} onClick={() => onSelect(item)} className="relative flex-shrink-0 w-[140px] md:w-[180px] aspect-[2/3] rounded-md overflow-hidden cursor-pointer bg-[#141418] hover:scale-105 transition">
-              <img src={item.posterUrl} alt={item.title} className="w-full h-full object-cover" loading="lazy" />
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/70 to-transparent p-2">
-                <p className="text-[10px] md:text-xs font-bold leading-tight line-clamp-2">{item.title}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-        <button onClick={() => scroll("right")} className="hidden md:flex absolute right-0 top-0 bottom-0 z-30 w-12 bg-black/60 hover:bg-black/80 opacity-0 group-hover/row:opacity-100 transition items-center justify-center">
-          <ChevronRight size={28} />
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function DetailModal({ item, onClose, onPlay }: { item: Video; onClose: () => void; onPlay: (v: Video) => void }) {
-  return (
-    <div className="fixed inset-0 z-[100] bg-black/90 overflow-y-auto" onClick={onClose}>
-      <div className="relative max-w-4xl mx-auto my-12 bg-[#141418] rounded-lg overflow-hidden" onClick={(e) => e.stopPropagation()}>
-        <div className="relative h-[400px] w-full">
-          <img src={item.backdropUrl} alt={item.title} className="absolute inset-0 w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#141418] via-[#141418]/40 to-transparent" />
-          <button onClick={onClose} className="absolute top-4 right-4 z-20 bg-black/60 hover:bg-black/80 rounded-full p-2"><X size={20} /></button>
-          <div className="absolute bottom-0 left-0 right-0 p-8">
-            <h2 className="text-4xl md:text-5xl font-black mb-6">{item.title}</h2>
-            <div className="flex gap-3">
-              <button onClick={() => onPlay(item)} className="flex items-center gap-2 bg-white text-black font-semibold px-8 py-3 rounded hover:bg-white/80 transition">
-                <Play size={20} fill="black" /> Play
-              </button>
-              <button className="border-2 border-white/60 rounded-full p-3 hover:border-white transition"><Plus size={20} /></button>
-              <button className="border-2 border-white/60 rounded-full p-3 hover:border-white transition"><ThumbsUp size={20} /></button>
-            </div>
-          </div>
-        </div>
-        <div className="p-8">
-          <div className="flex items-center gap-3 text-sm text-white/80 mb-4 flex-wrap">
-            <span className="text-green-400 font-bold">{item.match}% Match</span>
-            <span>{item.year}</span>
-            <span className="border border-white/40 px-2 py-0.5">{item.rating}</span>
-          </div>
-          <p className="text-white/90 leading-relaxed">{item.description}</p>
-        </div>
-      </div>
-    </div>
   );
 }
