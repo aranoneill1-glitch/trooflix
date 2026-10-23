@@ -18,7 +18,7 @@ const TABS: {
 }[] = [
   { customImage: "/icons/lgo.png", label: "Home", path: "/" },
   { icon: Play, label: "Feed", path: "/feed" },
-  { icon: Podcast, label: "Podcasts", path: "/podcasts" },
+  { icon: Podcast, label: "Creators", path: "/creators" },
   { icon: MessageCircle, label: "Messages", path: "/messages" },
 ];
 
