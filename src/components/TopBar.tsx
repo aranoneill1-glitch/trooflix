@@ -12,8 +12,6 @@ import CreateSheet from "@/components/CreateSheet";
 const NAV_TABS = [
   { label: "Home", path: "/" },
   { label: "Creators", path: "/creators" },
-  { label: "Podcasts", path: "/podcasts" },
-  { label: "Documentaries", path: "/podcasts?tab=Documentaries" },
   { label: "Feed", path: "/feed" },
 ];
 
