@@ -20,7 +20,7 @@ const staggerContainer = {
 
 export default function CreatorsPage() {
   return (
-    <div className="hidden md:block min-h-screen bg-[#050505] text-white pb-32 overflow-x-hidden selection:bg-red-600/30">
+    <div className="min-h-screen bg-[#050505] text-white pb-32 overflow-x-hidden selection:bg-red-600/30">
       <TopBar />
       
       {/* HERO SECTION */}
