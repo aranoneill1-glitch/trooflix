@@ -433,9 +433,15 @@ export default function PodcasterProfilePage() {
                         <p className="text-sm text-white/50 mb-4 flex-1 line-clamp-2">{p.description}</p>
                         <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/5">
                           <span className="text-xl font-black text-white">${(p.price_cents / 100).toFixed(2)}</span>
+                          {p.inventory_count > 0 ? (
                           <button onClick={() => handleBuyProduct(p.id)} className="bg-white text-black font-bold px-5 py-2 rounded-xl text-sm hover:bg-gray-200 transition">
                             Buy Now
                           </button>
+                        ) : (
+                          <button disabled className="bg-white/10 text-white/40 font-bold px-5 py-2 rounded-xl text-sm cursor-not-allowed">
+                            Sold Out
+                          </button>
+                        )}
                         </div>
                       </div>
                     ))}
