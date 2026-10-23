@@ -38,6 +38,7 @@ export default function StudioOverview() {
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [premiumStats, setPremiumStats] = useState({ subscribers: 0, gross: 0, net: 0 });
+  const [poolCents, setPoolCents] = useState(0);
   const [totals, setTotals] = useState({
     plays: 0,
     likes: 0,
@@ -74,6 +75,15 @@ export default function StudioOverview() {
               gross: pRes.stats.monthly_gross_cents,
               net: pRes.stats.monthly_net_cents
             });
+        // Fetch Open Book Pool
+        try {
+          const poolRes = await fetch("/api/creator/open-book").then(r => r.json());
+          if (poolRes.pool_cents !== undefined) {
+            setPoolCents(poolRes.pool_cents);
+          }
+        } catch {}
+
+
           }
         } catch {}
 
@@ -186,7 +196,30 @@ export default function StudioOverview() {
         </div>
       </div>
 
-      {/* Content & Engagement */}
+      
+      {/* Open Book Transparency */}
+      <div className="mb-8">
+        <div className="relative bg-gradient-to-br from-green-900/20 via-[#0a0a0a] to-[#0a0a0a] border border-green-500/30 rounded-3xl p-6 md:p-8 overflow-hidden shadow-[0_0_30px_rgba(34,197,94,0.1)]">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-green-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
+          <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="bg-green-500/20 text-green-400 text-[10px] font-bold tracking-widest uppercase px-2 py-1 rounded">Open Book</span>
+              </div>
+              <h2 className="text-2xl md:text-3xl font-black text-white mb-2">The Creator Pool</h2>
+              <p className="text-white/60 text-sm md:text-base max-w-xl">
+                We believe in total transparency. This is the exact amount of money being distributed back to creators from this month's Trooflix Pass revenue.
+              </p>
+            </div>
+            <div className="shrink-0 text-left md:text-right">
+              <p className="text-sm text-green-400/80 font-semibold mb-1">Total Pool This Month</p>
+              <p className="text-4xl md:text-5xl font-black text-green-400">${(poolCents / 100).toFixed(2)}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+{/* Content & Engagement */}
       <div className="mb-8">
         <h2 className="text-lg md:text-xl font-bold mb-4">Content & Engagement</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
