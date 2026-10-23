@@ -188,8 +188,8 @@ export default function FeaturesPage() {
             <Link href="/signup" className="w-full sm:w-auto bg-white text-black font-bold px-10 py-4 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.4)] text-lg">
               Create Free Account
             </Link>
-            <Link href="/creators" className="w-full sm:w-auto bg-red-600/10 text-red-500 border border-red-500/20 font-bold px-10 py-4 rounded-full transition-all duration-300 hover:bg-red-600/20 text-lg">
-              Become a Creator
+            <Link href="/why-us" className="w-full sm:w-auto bg-red-600/10 text-red-500 border border-red-500/20 font-bold px-10 py-4 rounded-full transition-all duration-300 hover:bg-red-600/20 text-lg">
+              Why Trooflix
             </Link>
           </div>
         </div>

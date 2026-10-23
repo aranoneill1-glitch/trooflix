@@ -263,7 +263,7 @@ export default function Home() {
                   <Link href="/features" onClick={() => setDrawerOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white/80 font-medium">
                     Features
                   </Link>
-                  <Link href="/creators" onClick={() => setDrawerOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white/80 font-medium">
+                  <Link href="/why-us" onClick={() => setDrawerOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white/80 font-medium">
                     Why Trooflix
                   </Link>
                   <Link href="/signup?type=podcaster" onClick={() => setDrawerOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-red-600/10 text-red-500 hover:bg-red-600/20 transition font-bold mt-2">
