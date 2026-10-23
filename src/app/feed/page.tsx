@@ -257,7 +257,7 @@ export default function FeedPage() {
         </div>
       </div>
 
-      <div className="pt-0 space-y-0">
+      <div className="pt-0 space-y-0 max-w-[600px] mx-auto md:border-x border-white/10 bg-black min-h-screen">
         {!loading && posts.length === 0 && (
           <div className="text-center py-16 px-4">
             <p className="text-white/60 mb-2">
@@ -532,7 +532,7 @@ function PostCard({
                   ref={videoRef}
                   src={post.videoUrl ?? post.bitchuteUrl ?? ""}
                   poster={post.posterUrl}
-                  className="w-full max-h-[500px] object-contain cursor-pointer"
+                  className="w-full max-h-[70vh] object-contain cursor-pointer"
                   muted={muted}
                   loop
                   playsInline
@@ -567,7 +567,7 @@ function PostCard({
               <img
                 src={post.posterUrl}
                 alt={post.title || ""}
-                className="w-full h-auto object-contain bg-black"
+                className="w-full max-h-[70vh] object-contain bg-black"
                 loading="lazy"
               />
             )}
