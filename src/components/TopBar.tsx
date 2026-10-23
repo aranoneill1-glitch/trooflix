@@ -11,9 +11,10 @@ import CreateSheet from "@/components/CreateSheet";
 
 const NAV_TABS = [
   { label: "Home", path: "/" },
-  { label: "Creators", path: "/podcasts" },
+  { label: "Creators", path: "/creators" },
+  { label: "Podcasts", path: "/podcasts" },
+  { label: "Documentaries", path: "/podcasts?tab=Documentaries" },
   { label: "Feed", path: "/feed" },
-  { label: "Why Us", path: "/creators" },
 ];
 
 type Props = {
@@ -35,8 +36,9 @@ export default function TopBar({ onMenu }: Props) {
   }, []);
 
   const isActive = (path: string) => {
-    if (path === "/") return pathname === "/";
-    return pathname === path || pathname.startsWith(path + "/");
+    const basePath = path.split("?")[0];
+    if (basePath === "/") return pathname === "/";
+    return pathname === basePath || pathname.startsWith(basePath + "/");
   };
 
   return (

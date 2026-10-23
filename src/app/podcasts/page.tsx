@@ -88,7 +88,7 @@ export default function PodcastsPage() {
   const [loading, setLoading] = useState(true);
   const [loadingProducts, setLoadingProducts] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState("All");
+  const [activeTab, setActiveTab] = useState(typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("tab") || "All" : "All");
 
   useEffect(() => {
     Promise.all([getCachedCreators(), getCachedVideos()])
