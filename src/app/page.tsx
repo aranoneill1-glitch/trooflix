@@ -339,7 +339,7 @@ export default function Home() {
                 <div className="flex items-center justify-between px-4 md:px-12 mb-4">
                   <h2 className="text-lg md:text-xl font-bold flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                    Fresh Talent
+                    Just Joined
                   </h2>
                   <Link href="/podcasts" className="text-xs font-semibold text-white/50 hover:text-white transition">View all</Link>
                 </div>
