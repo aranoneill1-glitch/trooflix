@@ -197,43 +197,83 @@ export default function Home() {
 
       {/* ============ DRAWER (categories) ============ */}
       <AnimatePresence>
-        {drawerOpen && (
+                {drawerOpen && (
           <>
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/70 z-[60]"
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60]"
               onClick={() => setDrawerOpen(false)}
             />
             <motion.aside
-              initial={{ x: -300 }} animate={{ x: 0 }} exit={{ x: -300 }}
-              transition={{ duration: 0.25, ease: "easeOut" }}
-              className="fixed top-0 left-0 h-screen w-72 bg-black border-r border-white/10 z-[70] pt-6 pb-8 px-6 overflow-y-auto"
+              initial={{ x: -320 }} animate={{ x: 0 }} exit={{ x: -320 }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed top-0 left-0 h-screen w-[300px] bg-[#0a0a0a]/95 backdrop-blur-2xl border-r border-white/10 z-[70] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] flex flex-col overflow-y-auto"
             >
-              <div className="flex items-center justify-between mb-8">
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 border-b border-white/5 shrink-0">
                 <span className="text-2xl font-black tracking-tight">
                   <span className="text-white">TROO</span><span className="text-red-600">FLIX</span>
                 </span>
-                <button onClick={() => setDrawerOpen(false)} className="text-white/60 hover:text-white">
-                  <X size={22} />
+                <button onClick={() => setDrawerOpen(false)} className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition text-white/70 hover:text-white">
+                  <X size={18} />
                 </button>
               </div>
 
-              <p className="text-xs font-bold tracking-widest text-white/40 mb-3">EXPLORE</p>
-              <div className="space-y-0.5 mb-8">
-                {CATEGORIES.map((cat: string) => (
-                  <button
-                    key={cat}
-                    onClick={() => { setActiveCategory(cat === activeCategory ? null : cat); setActiveTab("Home"); setDrawerOpen(false); }}
-                    className={`block w-full text-left px-3 py-2.5 rounded text-sm transition ${activeCategory === cat ? "text-red-600 bg-white/5" : "text-white/70 hover:text-white hover:bg-white/5"}`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              <Link href="/creators" onClick={() => setDrawerOpen(false)} className="block w-full text-left px-3 py-2.5 rounded text-sm transition text-white/70 hover:text-white hover:bg-white/5">Creators</Link>
+              {/* Navigation Links */}
+              <div className="flex-1 p-4 space-y-6 overflow-y-auto scrollbar-hide">
+                
+                {/* Main Links */}
+                <div className="space-y-1">
+                  <Link href="/" onClick={() => setDrawerOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white font-semibold">
+                    Home
+                  </Link>
+                  <Link href="/podcasts" onClick={() => setDrawerOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white/80 font-medium">
+                    Creators
+                  </Link>
+                  <Link href="/feed" onClick={() => setDrawerOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white/80 font-medium">
+                    Feed
+                  </Link>
                 </div>
 
-              <div className="text-xs leading-relaxed tracking-widest text-red-600 font-bold opacity-80">
-                REAL STORIES.<br />UNCENSORED.<br />TROOFLIX.
+                <div className="h-px bg-white/5 mx-4" />
+
+                {/* Categories Accordion */}
+                <details className="group">
+                  <summary className="flex items-center justify-between px-4 py-3 rounded-xl hover:bg-white/5 transition cursor-pointer list-none text-white/80 font-medium">
+                    <span>Categories</span>
+                    <ChevronRight size={16} className="group-open:rotate-90 transition-transform duration-200 text-white/50" />
+                  </summary>
+                  <div className="mt-2 space-y-0.5 pl-4">
+                    {CATEGORIES.map((cat: string) => (
+                      <button
+                        key={cat}
+                        onClick={() => { setActiveCategory(cat === activeCategory ? null : cat); setActiveTab("Home"); setDrawerOpen(false); }}
+                        className={`block w-full text-left px-4 py-2.5 rounded-lg text-sm transition ${activeCategory === cat ? "text-red-500 bg-red-500/10 font-semibold" : "text-white/60 hover:text-white hover:bg-white/5"}`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                </details>
+
+                <div className="h-px bg-white/5 mx-4" />
+
+                {/* Trooflix Section */}
+                <div className="space-y-1">
+                  <Link href="/creators" onClick={() => setDrawerOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white/80 font-medium">
+                    Why Trooflix
+                  </Link>
+                  <Link href="/signup?type=podcaster" onClick={() => setDrawerOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-red-600/10 text-red-500 hover:bg-red-600/20 transition font-bold mt-2">
+                    Become a Creator
+                  </Link>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="p-6 border-t border-white/5 shrink-0 bg-black/20">
+                <div className="text-[10px] leading-relaxed tracking-widest text-red-600/60 font-bold">
+                  REAL STORIES.<br />UNCENSORED.<br />TROOFLIX.
+                </div>
               </div>
             </motion.aside>
           </>
