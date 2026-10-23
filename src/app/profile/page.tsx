@@ -640,7 +640,7 @@ export default function ProfilePage() {
             </div>
 
             {/* ---- Action Buttons ---- */}
-            <div className="flex flex-wrap items-center gap-3 mb-8">
+            <div className="relative z-50 flex flex-wrap items-center gap-3 mb-8">
               {profile?.tier === "podcaster" && (
                 <Link
                   href="/studio"
@@ -650,8 +650,9 @@ export default function ProfilePage() {
                 </Link>
               )}
               <button
+                type="button"
                 onClick={() => setDashOpen(true)}
-                className="flex-1 md:flex-none justify-center bg-[#1c1c1e]/80 backdrop-blur-xl text-white border border-white/10 hover:bg-[#1c1c1e]/95 px-6 py-3 rounded-xl text-sm font-bold transition flex items-center gap-2 shadow-lg"
+                className="relative z-50 cursor-pointer flex-1 md:flex-none justify-center bg-[#1c1c1e]/80 backdrop-blur-xl text-white border border-white/10 hover:bg-[#1c1c1e]/95 px-6 py-3 rounded-xl text-sm font-bold transition flex items-center gap-2 shadow-lg"
               >
                 <Settings size={16} /> Dashboard
               </button>
