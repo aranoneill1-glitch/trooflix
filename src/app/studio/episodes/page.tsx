@@ -17,9 +17,16 @@ type Video = {
   commentCount?: number;
   is_premium?: boolean;
   access_type?: string;
+  category?: string;
 };
 
 type SortMode = "newest" | "oldest" | "plays" | "likes";
+
+const CATEGORIES = [
+  "History", "Politics", "War", "True Crime", "Conspiracy", "Society", 
+  "Business", "Science", "Environment", "Religion", "Ancient History", 
+  "Comedy", "News", "Other"
+];
 
 export default function StudioEpisodes() {
   const [videos, setVideos] = useState<Video[]>([]);
@@ -84,6 +91,21 @@ export default function StudioEpisodes() {
       alert("Network error");
     }
     setDeleting(null);
+  };
+
+
+  const updateCategory = async (v: Video, newCategory: string) => {
+    setVideos(prev => prev.map(x => x.id === v.id ? { ...x, category: newCategory } : x));
+    try {
+      await fetch("/api/creator/videos", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ videoId: v.id, category: newCategory }),
+      });
+    } catch {
+      alert("Failed to update category");
+      load();
+    }
   };
 
   const updateAccess = async (v: Video, newAccess: string) => {
@@ -188,8 +210,20 @@ export default function StudioEpisodes() {
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2 md:flex-shrink-0">
+                <div className="flex flex-wrap items-center gap-2 md:flex-shrink-0">
                   
+                  {/* Category Dropdown */}
+                  <select
+                    value={v.category || "Uncategorized"}
+                    onChange={(e) => updateCategory(v, e.target.value)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-semibold transition outline-none border bg-[#1c1c1e] text-white/70 border-white/10 hover:bg-[#2c2c2e]"
+                  >
+                    <option value="Uncategorized" disabled>Category</option>
+                    {CATEGORIES.map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+
                   {/* 3-Way Access Dropdown */}
                   <select
                     value={currentAccess}

@@ -20,7 +20,7 @@ export async function GET(req: Request) {
 
 export async function PATCH(req: Request) {
   try {
-    const { videoId, access_type } = await req.json();
+    const { videoId, access_type, category } = await req.json();
     const allVideos = (await kv.get<any[]>(VIDEOS_KEY)) || [];
     const idx = allVideos.findIndex((v: any) => v.id === videoId);
     
@@ -29,7 +29,8 @@ export async function PATCH(req: Request) {
       allVideos[idx] = { 
         ...allVideos[idx], 
         access_type,
-        is_premium: access_type !== "free" 
+        is_premium: access_type !== "free",
+        ...(category !== undefined ? { category } : {})
       };
       await kv.set(VIDEOS_KEY, allVideos);
     }
