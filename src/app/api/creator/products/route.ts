@@ -27,7 +27,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const { creatorId, name, description, price_cents, image_url } = await req.json();
+    const { creatorId, name, description, price_cents, image_url, inventory_count } = await req.json();
     if (!creatorId || !name || !price_cents) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
@@ -40,6 +40,7 @@ export async function POST(req: Request) {
         description,
         price_cents: Number(price_cents),
         image_url,
+        inventory_count: Number(inventory_count) || 0,
         active: true,
       })
       .select()
@@ -54,7 +55,7 @@ export async function POST(req: Request) {
 
 export async function PATCH(req: Request) {
   try {
-    const { id, name, description, price_cents, image_url } = await req.json();
+    const { id, name, description, price_cents, image_url, inventory_count } = await req.json();
     if (!id || !name || !price_cents) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
@@ -66,6 +67,7 @@ export async function PATCH(req: Request) {
         description,
         price_cents: Number(price_cents),
         image_url,
+        inventory_count: Number(inventory_count),
       })
       .eq("id", Number(id))
       .select()
