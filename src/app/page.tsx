@@ -227,7 +227,7 @@ export default function Home() {
                   <Link href="/" onClick={() => setDrawerOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white font-semibold">
                     Home
                   </Link>
-                  <Link href="/podcasts" onClick={() => setDrawerOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white/80 font-medium">
+                  <Link href="/creators" onClick={() => setDrawerOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white/80 font-medium">
                     Creators
                   </Link>
                   <Link href="/feed" onClick={() => setDrawerOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white/80 font-medium">
