@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Trash2 } from "lucide-react";
 import VerifiedBadge from "@/components/VerifiedBadge";
 
 type Profile = {
@@ -58,6 +59,33 @@ export default function AdminUsersPage() {
         )
       );
       setToast(`✅ Set ${tier}`);
+      setTimeout(() => setToast(""), 2000);
+    } catch (err: any) {
+      setToast(`❌ ${err.message}`);
+      setTimeout(() => setToast(""), 3000);
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+
+  const deleteUser = async (userId: string, displayName: string) => {
+    if (!confirm(`Are you sure you want to PERMANENTLY DELETE ${displayName}? This will remove their account, videos, and all data. This cannot be undone.`)) return;
+    
+    setUpdating(userId);
+    try {
+      const res = await fetch("/api/admin/delete-user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+      if (!res.ok) {
+        const d = await res.json();
+        throw new Error(d.error || "Could not delete");
+      }
+      // Remove from local state
+      setUsers(prev => prev.filter(u => u.user_id !== userId));
+      setToast(`✅ Deleted ${displayName}`);
       setTimeout(() => setToast(""), 2000);
     } catch (err: any) {
       setToast(`❌ ${err.message}`);
@@ -160,6 +188,15 @@ export default function AdminUsersPage() {
                 <option value="pro">Pro</option>
                 <option value="podcaster">Podcaster</option>
               </select>
+
+              <button
+                onClick={() => deleteUser(u.user_id, u.display_name || u.username || "this user")}
+                disabled={updating === u.user_id}
+                className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition disabled:opacity-50"
+                title="Delete User"
+              >
+                <Trash2 size={16} />
+              </button>
             </div>
           ))}
         </div>
