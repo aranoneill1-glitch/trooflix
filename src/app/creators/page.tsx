@@ -1,267 +1,381 @@
 "use client";
 
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
-import { ArrowRight, Shield, TrendingUp, MonitorPlay, MessageSquare, BadgeDollarSign, Sparkles, Star, Eye } from "lucide-react";
 import TopBar from "@/components/TopBar";
+import MobileBottomNav from "@/components/MobileBottomNav";
+import { getCachedCreators, getCachedVideos } from "@/lib/cache";
+import { Search, Play, Mic, ArrowRight, Sparkles, ShoppingBag, Film, TrendingUp, Zap } from "lucide-react";
+import VerifiedBadge from "@/components/VerifiedBadge";
 import { motion } from "framer-motion";
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
+type Creator = {
+  id: number;
+  name: string;
+  slug: string;
+  photoUrl: string;
+  description: string;
+  heroBackdropUrl?: string;
+  category?: string;
+  isVerified?: boolean;
+  createdAt?: string;
 };
 
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1 }
-  }
+type Video = {
+  id: number;
+  title: string;
+  description?: string;
+  posterUrl?: string;
+  backdropUrl?: string;
+  creatorId?: number | null;
+  type?: string;
+  createdAt?: string;
 };
+
+type Product = {
+  id: number;
+  name: string;
+  price_cents: number;
+  image_url: string;
+  creatorName: string;
+  creatorSlug: string;
+  creatorPhoto: string;
+};
+
+// Reusable Horizontal Row
+function ContentRow({ title, icon: Icon, items, loading }: { title: string, icon?: any, items: Creator[], loading: boolean }) {
+  if (loading) return <div className="h-48 flex items-center justify-center text-white/30">Loading...</div>;
+  if (items.length === 0) return null;
+
+  return (
+    <div className="mb-10">
+      <div className="flex items-center gap-2 mb-4 px-4 md:px-8">
+        {Icon && <Icon size={20} className="text-red-500" />}
+        <h2 className="text-xl md:text-2xl font-black tracking-tight">{title}</h2>
+      </div>
+      <div className="flex gap-4 overflow-x-auto scrollbar-hide px-4 md:px-8 pb-4 snap-x">
+        {items.map(c => (
+          <Link 
+            key={c.id} 
+            href={`/podcaster/${c.slug}`}
+            className="group relative flex-shrink-0 w-[160px] md:w-[200px] aspect-[2/3] rounded-xl overflow-hidden snap-start"
+          >
+            <img 
+              src={c.heroBackdropUrl || c.photoUrl || "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=400&h=600&fit=crop"} 
+              alt={c.name} 
+              className="w-full h-full object-cover group-hover:scale-110 transition duration-500" 
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-80" />
+            
+            <div className="absolute inset-x-0 bottom-0 p-3 md:p-4 flex flex-col justify-end">
+              <div className="flex items-center gap-1.5 mb-1">
+                <p className="font-bold text-sm md:text-base leading-tight truncate">{c.name}</p>
+                {c.isVerified && <VerifiedBadge size={12} variant="gold" />}
+              </div>
+              <p className="text-[10px] text-white/60 line-clamp-1">{c.category || "Creator"}</p>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function CreatorsPage() {
+  const [creators, setCreators] = useState<Creator[]>([]);
+  const [videos, setVideos] = useState<Video[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingProducts, setLoadingProducts] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState(typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("tab") || "All" : "All");
+
+  useEffect(() => {
+    Promise.all([getCachedCreators(), getCachedVideos()])
+      .then(([creatorData, videoData]) => {
+        setCreators(Array.isArray(creatorData) ? creatorData : []);
+        setVideos(Array.isArray(videoData) ? videoData : []);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === "Shop" && products.length === 0 && !loadingProducts) {
+      setLoadingProducts(true);
+      fetch("/api/products/global")
+        .then((r) => r.json())
+        .then((d) => setProducts(d.products || []))
+        .catch(() => {})
+        .finally(() => setLoadingProducts(false));
+    }
+  }, [activeTab, products.length, loadingProducts]);
+
+  // Helper to map creator IDs to their content types
+  const creatorContentTypes = useMemo(() => {
+    const map = new Map<number, Set<string>>();
+    videos.forEach(v => {
+      if (v.creatorId) {
+        const current = map.get(v.creatorId) || new Set();
+        if (v.type) current.add(v.type);
+        map.set(v.creatorId, current);
+      }
+    });
+    return map;
+  }, [videos]);
+
+  const filteredCreators = useMemo(() => {
+    let result = creators;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(c => c.name?.toLowerCase().includes(q) || c.description?.toLowerCase().includes(q));
+    }
+    if (activeTab === "Podcasts") {
+      result = result.filter(c => creatorContentTypes.get(Number(c.id))?.has("Podcast"));
+    } else if (activeTab === "Documentaries") {
+      result = result.filter(c => creatorContentTypes.get(Number(c.id))?.has("Documentary"));
+    }
+    return result;
+  }, [creators, searchQuery, activeTab, creatorContentTypes]);
+
+  // Data Sorting for the Shelves
+  const trendingCreators = useMemo(() => {
+    return [...creators].sort((a, b) => (creatorContentTypes.get(Number(b.id))?.size || 0) - (creatorContentTypes.get(Number(a.id))?.size || 0)).slice(0, 10);
+  }, [creators, creatorContentTypes]);
+
+  const freshCreators = useMemo(() => {
+    return [...creators].sort((a, b) => {
+      const at = a.createdAt ? new Date(a.createdAt).getTime() : a.id;
+      const bt = b.createdAt ? new Date(b.createdAt).getTime() : b.id;
+      return bt - at;
+    }).slice(0, 10);
+  }, [creators]);
+
+  const documentaryCreators = useMemo(() => {
+    return creators.filter(c => creatorContentTypes.get(Number(c.id))?.has("Documentary")).slice(0, 10);
+  }, [creators, creatorContentTypes]);
+
+  const podcastCreators = useMemo(() => {
+    return creators.filter(c => creatorContentTypes.get(Number(c.id))?.has("Podcast")).slice(0, 10);
+  }, [creators, creatorContentTypes]);
+
+  const featuredCreator = freshCreators[0];
+  const TABS = ["All", "Podcasts", "Documentaries", "Shop"];
+
   return (
-    <div className="min-h-screen bg-[#050505] text-white pb-32 overflow-x-hidden selection:bg-red-600/30">
+    <main className="min-h-screen bg-[#050505] text-white pb-24">
       <TopBar />
-      
-      {/* HERO SECTION */}
-      <div className="relative pt-40 pb-24 px-6 max-w-6xl mx-auto flex flex-col items-center text-center">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.5 }}
-          className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-gradient-to-r from-red-600/30 via-red-600/10 to-transparent rounded-full blur-[120px] pointer-events-none" 
-        />
+
+      <div className="pt-28 md:pt-32 max-w-7xl mx-auto">
         
-        <motion.h1 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="relative z-10 text-5xl md:text-7xl font-black tracking-tighter mb-8 leading-[1.1]"
-        >
-          Stop letting Big Tech <br className="hidden md:block"/>
-          <span className="bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent">eat your lunch.</span>
-        </motion.h1>
-        
-        <motion.p 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="relative z-10 text-lg md:text-xl text-white/50 max-w-2xl mx-auto mb-12 font-medium leading-relaxed"
-        >
-          Traditional platforms take massive cuts and hide your content behind algorithms. 
-          Trooflix was built for creators who are tired of sharing their revenue with billionaires.
-          At Trooflix, we don't wear small hats.
-        </motion.p>
-        
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="relative z-10 flex flex-col sm:flex-row items-center justify-center gap-4 w-full"
-        >
-          <Link href="/signup?type=podcaster" className="group w-full sm:w-auto bg-white text-black font-bold px-8 py-4 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.3)] text-lg flex items-center justify-center gap-2">
-            Apply as a Creator 
-            <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-          </Link>
-          <Link href="/upgrade" className="w-full sm:w-auto bg-white/5 hover:bg-white/10 text-white font-semibold px-8 py-4 rounded-full border border-white/10 backdrop-blur-md transition-all duration-300 text-lg">
-            View Pricing
-          </Link>
-        </motion.div>
-      </div>
-
-      {/* COMPARISON TABLE */}
-      <motion.div 
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
-        variants={fadeUp}
-        className="px-6 max-w-5xl mx-auto mb-32"
-      >
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-5xl font-black tracking-tight mb-4">The Math is Simple.</h2>
-          <p className="text-white/50 text-lg">Why give away your hard-earned money?</p>
-        </div>
-        
-        <div className="bg-[#0a0a0a] border border-white/10 rounded-3xl overflow-hidden shadow-2xl relative">
-          <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
-          
-          <div className="grid grid-cols-4 text-center border-b border-white/10 bg-white/[0.02]">
-            <div className="p-6 text-left font-semibold text-white/40 text-sm tracking-wider uppercase">Platform</div>
-            <div className="p-6 font-semibold text-white/40 text-sm tracking-wider uppercase">Video Cut</div>
-            <div className="p-6 font-semibold text-white/40 text-sm tracking-wider uppercase">Member Cut</div>
-            <div className="p-6 font-bold text-white text-sm tracking-wider uppercase">You Keep</div>
-          </div>
-          
-          <div className="grid grid-cols-4 text-center border-b border-white/5 hover:bg-white/[0.03] transition-colors">
-            <div className="p-6 text-left font-bold text-lg text-white/90">YouTube</div>
-            <div className="p-6 text-white/50 font-medium">45%</div>
-            <div className="p-6 text-white/50 font-medium">30%</div>
-            <div className="p-6 font-bold text-red-400/80 text-lg">55%</div>
-          </div>
-
-          <div className="grid grid-cols-4 text-center border-b border-white/5 hover:bg-white/[0.03] transition-colors">
-            <div className="p-6 text-left font-bold text-lg text-white/90">Patreon</div>
-            <div className="p-6 text-white/50 font-medium">N/A</div>
-            <div className="p-6 text-white/50 font-medium">10% + Fees</div>
-            <div className="p-6 font-bold text-red-400/80 text-lg">~80%</div>
-          </div>
-
-          <div className="grid grid-cols-4 text-center border-b border-white/5 hover:bg-white/[0.03] transition-colors">
-            <div className="p-6 text-left font-bold text-lg text-white/90">Twitch</div>
-            <div className="p-6 text-white/50 font-medium">N/A</div>
-            <div className="p-6 text-white/50 font-medium">50%</div>
-            <div className="p-6 font-bold text-red-400/80 text-lg">50%</div>
-          </div>
-
-          <div className="grid grid-cols-4 text-center bg-gradient-to-r from-red-600/20 via-red-600/5 to-transparent relative overflow-hidden">
-            <div className="absolute left-0 top-0 bottom-0 w-1 bg-red-600 shadow-[0_0_20px_rgba(220,38,38,0.8)]" />
-            <div className="p-6 text-left font-black text-xl text-white flex items-center gap-3">
-              Trooflix <span className="bg-red-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider shadow-lg">Best</span>
-            </div>
-            <div className="p-6 font-bold text-white text-lg">Free</div>
-            <div className="p-6 font-bold text-white text-lg">10%</div>
-            <div className="p-6 font-black text-green-400 text-xl">90%</div>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* NEW EDITORIAL FEATURES SECTION */}
-      <div className="px-6 max-w-6xl mx-auto mb-32 space-y-6">
-        
-        <motion.div 
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={fadeUp}
-          className="text-center mb-12"
-        >
-          <h2 className="text-3xl md:text-5xl font-black tracking-tight mb-4">Everything you need to build an empire.</h2>
-          <p className="text-white/50 text-lg max-w-2xl mx-auto">We didn't just build a video host. We built an entire ecosystem.</p>
-        </motion.div>
-
-        {/* Row 1: One Platform (Full Width) */}
-        <motion.div 
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-50px" }}
-          variants={fadeUp}
-          className="group relative bg-[#0a0a0a] border border-white/10 p-10 md:p-14 rounded-3xl hover:border-white/20 transition-all duration-300 overflow-hidden"
-        >
-          <div className="absolute top-0 right-0 w-96 h-96 bg-red-600/5 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
-          <div className="relative z-10">
-            <h3 className="text-3xl md:text-5xl font-black mb-4">Stop Duct-Taping Your Business Together.</h3>
-            <p className="text-white/50 text-lg max-w-3xl mb-10">
-              You shouldn't need YouTube for video, Patreon for memberships, Shopify for merch, and Instagram for promo. Trooflix is a complete ecosystem.
+        {/* HEADER & SEARCH */}
+        <div className="px-4 md:px-8 flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+          <div>
+            <p className="text-[10px] md:text-xs tracking-[0.4em] text-red-500 font-bold mb-2 uppercase">
+              The Home of Independent Voices
             </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {[
-                { icon: MonitorPlay, label: "Cinematic Catalog" },
-                { icon: MessageSquare, label: "Direct DMs" },
-                { icon: TrendingUp, label: "Reels Feed" },
-                { icon: BadgeDollarSign, label: "Built-in Merch" }
-              ].map((item, i) => (
-                <div key={i} className="flex flex-col items-center justify-center p-4 bg-white/5 rounded-2xl border border-white/5">
-                  <item.icon size={28} className="text-red-400 mb-2" />
-                  <span className="text-sm font-semibold text-white/80">{item.label}</span>
-                </div>
-              ))}
-            </div>
+            <h1 className="text-4xl md:text-6xl font-black tracking-tight">
+              Discover Your <span className="text-white/40">Favorite Creators</span>
+            </h1>
           </div>
-        </motion.div>
-
-        {/* Row 2: Censorship & Discovery (Two Columns) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           
-          {/* No Censorship */}
-          <motion.div 
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-50px" }}
-            variants={fadeUp}
-            className="group relative bg-[#0a0a0a] border border-white/10 p-10 rounded-3xl hover:border-white/20 transition-all duration-300 overflow-hidden"
-          >
-            <div className="absolute top-0 right-0 w-64 h-64 bg-red-600/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
-            <div className="relative z-10">
-              <div className="w-14 h-14 rounded-2xl bg-red-600/10 border border-red-500/20 flex items-center justify-center mb-6">
-                <Shield size={28} className="text-red-400" />
-              </div>
-              <h3 className="text-2xl md:text-3xl font-black mb-3">Your Voice. Your Rules.</h3>
-              <p className="text-white/50 text-base leading-relaxed">
-                On other platforms, your content can be demonetized, shadowbanned, or deleted because an algorithm doesn't like it. Trooflix is different. We don't silence opinions. As long as you follow basic community guidelines, your work is safe here.
-              </p>
-            </div>
-          </motion.div>
-
-          {/* Built-In Discovery */}
-          <motion.div 
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-50px" }}
-            variants={fadeUp}
-            className="group relative bg-[#0a0a0a] border border-white/10 p-10 rounded-3xl hover:border-white/20 transition-all duration-300 overflow-hidden"
-          >
-            <div className="absolute top-0 right-0 w-64 h-64 bg-red-600/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
-            <div className="relative z-10">
-              <div className="w-14 h-14 rounded-2xl bg-red-600/10 border border-red-500/20 flex items-center justify-center mb-6">
-                <Eye size={28} className="text-red-400" />
-              </div>
-              <h3 className="text-2xl md:text-3xl font-black mb-3">We Bring the Audience to You.</h3>
-              <p className="text-white/50 text-base leading-relaxed">
-                On Patreon, you have to bring 100% of your own traffic. On Trooflix, your content is featured on the global homepage, in "New Releases," and in the "Trending Now" rows. New users can discover you without you spending a single dollar on ads.
-              </p>
-            </div>
-          </motion.div>
-
+          <div className="relative w-full md:w-72">
+            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search creators, topics..."
+              className="w-full bg-[#1c1c1e]/80 backdrop-blur-md border border-white/10 rounded-full pl-11 pr-4 py-3 text-sm outline-none focus:border-red-500 transition placeholder:text-white/30"
+            />
+          </div>
         </div>
 
-        {/* Row 3: Founding Creator (Highlighted) */}
-        <motion.div 
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-50px" }}
-          variants={fadeUp}
-          className="relative bg-gradient-to-br from-red-600/10 via-[#0a0a0a] to-[#0a0a0a] border border-red-500/30 p-10 md:p-14 rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(239,68,68,0.1)]"
-        >
-          <div className="absolute top-0 right-0 w-96 h-96 bg-red-600/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
-          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="max-w-2xl">
-              <div className="flex items-center gap-2 mb-4">
-                <Star size={20} className="text-yellow-400 fill-yellow-400" />
-                <span className="text-yellow-400 text-sm font-bold tracking-widest uppercase">Limited Opportunity</span>
-              </div>
-              <h3 className="text-3xl md:text-5xl font-black mb-3">Become a Founding Creator.</h3>
-              <p className="text-white/60 text-lg leading-relaxed">
-                We are onboarding our first 10 creators right now. Founding Creators get their Podcaster tier free for life, permanent featured placement on the homepage, and direct access to the founder for feature requests. You aren't just a user; you're a partner in building the platform.
-              </p>
+        {/* AVATAR SCROLLING ROW */}
+        <div className="px-4 md:px-8 mb-12">
+          <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide pb-4">
+            {creators.slice(0, 15).map((c) => (
+              <Link key={c.id} href={`/podcaster/${c.slug}`} className="flex flex-col items-center gap-2 flex-shrink-0 group">
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full p-[2px] bg-gradient-to-tr from-red-600 to-orange-500 group-hover:scale-105 transition-transform">
+                  <div className="w-full h-full rounded-full border-2 border-black overflow-hidden bg-[#1c1c1e]">
+                    {c.photoUrl ? (
+                      <img src={c.photoUrl} alt={c.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-xl font-bold">{c.name?.[0]}</div>
+                    )}
+                  </div>
+                </div>
+                <span className="text-xs font-semibold text-white/80 group-hover:text-white transition truncate w-24 text-center">{c.name}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* STICKY TABS */}
+        <div className="sticky top-[64px] md:top-[80px] z-40 bg-[#050505]/90 backdrop-blur-xl border-y border-white/5 py-4 mb-8">
+          <div className="px-4 md:px-8 flex overflow-x-auto gap-3 scrollbar-hide">
+            {TABS.map(tab => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-6 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition border ${
+                  activeTab === tab 
+                    ? "bg-white text-black border-white shadow-lg" 
+                    : "bg-[#1c1c1e]/50 text-white/60 border-white/10 hover:bg-[#1c1c1e] hover:text-white"
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* CONTENT AREA */}
+        <div className="pb-12">
+          
+          {activeTab === "All" && (
+            <>
+              {/* FEATURED HERO */}
+              {featuredCreator && !searchQuery && (
+                <div className="px-4 md:px-8 mb-12">
+                  <div className="relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl group aspect-[21/9] md:aspect-[3/1]">
+                    <div className="absolute inset-0 bg-black/40 z-10" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-[#050505]/60 to-transparent z-20" />
+                    <img src={featuredCreator.heroBackdropUrl || featuredCreator.photoUrl} alt="Hero" className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700" />
+                    
+                    <div className="absolute inset-0 z-30 flex flex-col justify-center p-8 md:p-12 max-w-2xl">
+                      <span className="bg-red-600 text-white text-[10px] font-bold tracking-widest uppercase px-2 py-1 rounded w-max mb-3 shadow-lg">Featured Creator</span>
+                      <h2 className="text-3xl md:text-5xl font-black mb-3 flex items-center gap-2">
+                        {featuredCreator.name}
+                        {featuredCreator.isVerified && <VerifiedBadge size={24} variant="gold" />}
+                      </h2>
+                      <p className="text-white/70 text-sm md:text-base line-clamp-2 mb-6">{featuredCreator.description}</p>
+                      <Link href={`/podcaster/${featuredCreator.slug}`} className="bg-white text-black font-bold px-6 py-3 rounded-xl hover:scale-105 transition flex items-center gap-2 w-max shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+                        <Play size={18} fill="black" /> View Profile
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* NETFLIX SHELVES */}
+              {searchQuery ? (
+                <div className="px-4 md:px-8">
+                   <h2 className="text-2xl font-black mb-6">Search Results</h2>
+                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {filteredCreators.map(c => (
+                        <Link key={c.id} href={`/podcaster/${c.slug}`} className="bg-[#1c1c1e] rounded-2xl p-4 flex flex-col items-center">
+                          <img src={c.photoUrl} className="w-20 h-20 rounded-full object-cover mb-3" />
+                          <p className="font-bold">{c.name}</p>
+                        </Link>
+                      ))}
+                   </div>
+                </div>
+              ) : (
+                <>
+                  <ContentRow title="Trending Now" icon={TrendingUp} items={trendingCreators} loading={loading} />
+                  <ContentRow title="Fresh Talent" icon={Zap} items={freshCreators} loading={loading} />
+                  <ContentRow title="Top Documentary Makers" icon={Film} items={documentaryCreators} loading={loading} />
+                  <ContentRow title="Top Podcasters" icon={Mic} items={podcastCreators} loading={loading} />
+                </>
+              )}
+            </>
+          )}
+
+          {activeTab === "Shop" && (
+            <div className="px-4 md:px-8">
+              <h2 className="text-2xl font-black mb-6 flex items-center gap-2"><ShoppingBag size={24} className="text-red-500"/> Trooflix Merch</h2>
+              {loadingProducts ? (
+                <p className="text-white/40 py-12 text-center">Loading products...</p>
+              ) : products.length === 0 ? (
+                <div className="text-center py-20 bg-[#0a0a0a] rounded-2xl border border-white/5">
+                  <ShoppingBag size={48} className="mx-auto text-white/20 mb-4" />
+                  <p className="text-white/40">No products available on the platform yet.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                  {products.map((p) => (
+                    <Link href={`/podcaster/${p.creatorSlug}`} key={p.id} className="group bg-[#0a0a0a] border border-white/5 rounded-2xl overflow-hidden hover:border-white/20 transition-all duration-300 hover:-translate-y-1 flex flex-col">
+                      <div className="relative aspect-square w-full overflow-hidden bg-[#141418]">
+                        <img src={p.image_url} alt={p.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                      </div>
+                      <div className="p-4 flex-1 flex flex-col">
+                        <p className="text-xs text-white/50 mb-1 flex items-center gap-1">
+                          {p.creatorPhoto && <img src={p.creatorPhoto} className="w-4 h-4 rounded-full" />}
+                          {p.creatorName}
+                        </p>
+                        <h3 className="font-bold text-lg leading-tight truncate group-hover:text-red-400 transition-colors mb-2">{p.name}</h3>
+                        <p className="text-green-400 font-bold mt-auto">${(p.price_cents / 100).toFixed(2)}</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
-            <Link href="/signup?type=podcaster" className="flex-shrink-0 bg-white text-black font-bold px-8 py-4 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.3)] text-lg flex items-center gap-2">
-              Claim Your Spot <ArrowRight size={20} />
+          )}
+
+          {(activeTab === "Podcasts" || activeTab === "Documentaries") && (
+            <div className="px-4 md:px-8">
+              <h2 className="text-2xl font-black mb-6">{activeTab}</h2>
+              {filteredCreators.length === 0 ? (
+                <div className="text-center py-20 bg-[#0a0a0a] rounded-2xl border border-white/5">
+                  <p className="text-white/40">No creators found for this category.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                  {filteredCreators.map((c) => (
+                    <Link key={c.id} href={`/podcaster/${c.slug}`} className="group relative bg-[#0a0a0a] border border-white/5 rounded-2xl overflow-hidden hover:border-white/20 transition-all duration-300 hover:-translate-y-1 flex flex-col">
+                      <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#141418]">
+                        {c.heroBackdropUrl ? (
+                          <img src={c.heroBackdropUrl} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-80 group-hover:opacity-100" />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-red-900/20 to-black flex items-center justify-center">
+                            <Mic size={40} className="text-white/10" />
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent opacity-80" />
+                        <div className="absolute -bottom-6 left-4 w-16 h-16 rounded-full border-4 border-[#0a0a0a] overflow-hidden bg-black z-10">
+                          {c.photoUrl ? (
+                            <img src={c.photoUrl} alt={c.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full bg-red-900 flex items-center justify-center font-bold text-xl">{c.name[0]}</div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="p-4 pt-8 flex-1 flex flex-col">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <h3 className="font-bold text-lg leading-tight truncate group-hover:text-red-400 transition-colors">{c.name}</h3>
+                          {c.isVerified && <VerifiedBadge size={14} variant="gold" />}
+                        </div>
+                        <p className="text-xs text-white/40 line-clamp-2 mb-4 flex-1">{c.description}</p>
+                        <div className="flex items-center justify-between mt-auto pt-3 border-t border-white/5">
+                          <span className="text-[10px] font-bold tracking-widest uppercase text-white/40">{c.category || "Creator"}</span>
+                          <span className="text-xs font-semibold text-white/80 group-hover:text-red-400 transition-colors flex items-center gap-1">View <ArrowRight size={12} /></span>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+        
+        {/* BOTTOM CTA */}
+        <div className="px-4 md:px-8 pb-16">
+          <div className="bg-gradient-to-br from-[#1c1c1e] to-black border border-white/10 rounded-3xl p-8 md:p-12 text-center relative overflow-hidden">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-32 bg-red-600/20 blur-3xl pointer-events-none" />
+            <h2 className="text-2xl md:text-4xl font-black mb-4 relative z-10">Want to become a Creator?</h2>
+            <p className="text-white/50 mb-8 relative z-10 max-w-xl mx-auto">Join our network, monetize your content, and keep 90% of your revenue.</p>
+            <Link href="/creators" className="inline-block bg-white text-black font-bold px-8 py-3.5 rounded-xl hover:scale-105 transition relative z-10">
+              Apply to Join Trooflix
             </Link>
           </div>
-        </motion.div>
+        </div>
 
       </div>
 
-      {/* FOOTER CTA */}
-      <motion.div 
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        variants={fadeUp}
-        className="px-6 max-w-4xl mx-auto text-center relative"
-      >
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-red-600/10 rounded-full blur-[100px] pointer-events-none" />
-        
-        <div className="relative z-10 bg-[#0a0a0a] border border-white/10 rounded-3xl p-12 md:p-20 shadow-2xl overflow-hidden">
-          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none" />
-          <h2 className="text-4xl md:text-6xl font-black mb-6 tracking-tight">Ready to own your audience?</h2>
-          <p className="text-white/50 mb-10 text-lg max-w-xl mx-auto">Stop building your house on rented land. Bring your content to a platform that actually respects creators.</p>
-          <Link href="/signup?type=podcaster" className="inline-block bg-white text-black font-bold px-10 py-4 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.4)] text-lg">
-            Claim Your Creator Account
-          </Link>
-        </div>
-      </motion.div>
-
-    </div>
+      <MobileBottomNav />
+    </main>
   );
 }
