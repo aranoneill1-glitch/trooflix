@@ -142,7 +142,7 @@ export default function PodcastsPage() {
                     )}
                   </div>
                 </div>
-                <span className="text-xs font-semibold text-white/80 group-hover:text-white transition truncate w-20 text-center">{c.name.split(" ")[0]}</span>
+                <span className="text-xs font-semibold text-white/80 group-hover:text-white transition truncate w-24 text-center">{c.name}</span>
               </Link>
             ))}
           </div>

@@ -335,11 +335,14 @@ export default function AccountPage() {
             <div className="space-y-5">
               <div>
                 <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 block">Display Name</label>
+                <p className="text-xs text-yellow-500/80 mb-3 flex items-start gap-1.5">
+                  <span>⚠️</span> This is your public name. Use your full name or business name so fans can easily find and recognize you.
+                </p>
                 <input
                   type="text"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder="Your Name"
+                  placeholder="Full name or business name"
                   maxLength={40}
                   className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-red-500 transition"
                 />
