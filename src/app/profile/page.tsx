@@ -24,7 +24,6 @@ import { Camera,
   List,
   Sparkles,
   Pencil, ShoppingBag, Wallet } from "lucide-react";
-import ProfileMenu from "@/components/ProfileMenu";
 import ProfileReelViewer from "@/components/ProfileReelViewer";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
@@ -93,8 +92,7 @@ export default function ProfilePage() {
   const longPressRef = useRef<{ timer: any; fired: boolean } | null>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [dashOpen, setDashOpen] = useState(false);
-  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
+    const [viewerIndex, setViewerIndex] = useState<number | null>(null);
 
   // Edit-modal fields (temporary home for the edit form)
   const [editName, setEditName] = useState("");
@@ -640,7 +638,7 @@ export default function ProfilePage() {
             </div>
 
             {/* ---- Action Buttons ---- */}
-            <div className="relative z-50 flex flex-wrap items-center gap-3 mb-8">
+            <div className="relative z-[100] flex flex-wrap items-center gap-3 mb-8">
               {profile?.tier === "podcaster" && (
                 <Link
                   href="/studio"
@@ -652,7 +650,7 @@ export default function ProfilePage() {
               <button
                 type="button"
                 onClick={() => setDashOpen(true)}
-                className="relative z-50 cursor-pointer flex-1 md:flex-none justify-center bg-[#1c1c1e]/80 backdrop-blur-xl text-white border border-white/10 hover:bg-[#1c1c1e]/95 px-6 py-3 rounded-xl text-sm font-bold transition flex items-center gap-2 shadow-lg"
+                className="relative z-[100] cursor-pointer flex-1 md:flex-none justify-center bg-[#1c1c1e]/80 backdrop-blur-xl text-white border border-white/10 hover:bg-[#1c1c1e]/95 px-6 py-3 rounded-xl text-sm font-bold transition flex items-center gap-2 shadow-lg"
               >
                 <Settings size={16} /> Dashboard
               </button>
