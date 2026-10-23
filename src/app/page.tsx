@@ -260,6 +260,9 @@ export default function Home() {
 
                 {/* Trooflix Section */}
                 <div className="space-y-1">
+                  <Link href="/features" onClick={() => setDrawerOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white/80 font-medium">
+                    Features
+                  </Link>
                   <Link href="/creators" onClick={() => setDrawerOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white/80 font-medium">
                     Why Trooflix
                   </Link>
