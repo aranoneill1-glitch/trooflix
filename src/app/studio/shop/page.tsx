@@ -231,15 +231,26 @@ export default function StudioShop() {
       {/* Add/Edit Modal */}
       <AnimatePresence>
         {isModalOpen && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={closeModal} className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm" />
-            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[101] bg-[#0a0a0a] border border-white/10 rounded-3xl w-[90vw] max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto scrollbar-hide">
-              <div className="flex items-center justify-between p-6 border-b border-white/10 sticky top-0 bg-[#0a0a0a]/90 backdrop-blur-xl z-10">
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }} 
+            onClick={closeModal} 
+            className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
+          >
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }} 
+              animate={{ opacity: 1, scale: 1, y: 0 }} 
+              exit={{ opacity: 0, scale: 0.95, y: 20 }} 
+              onClick={(e) => e.stopPropagation()}
+              className="relative z-[101] bg-[#0a0a0a] border border-white/10 rounded-3xl w-full max-w-lg shadow-2xl max-h-[90vh] flex flex-col overflow-hidden"
+            >
+              <div className="flex items-center justify-between p-6 border-b border-white/10 shrink-0">
                 <h2 className="text-xl font-bold">{editingId ? "Edit Product" : "New Product"}</h2>
                 <button onClick={closeModal} className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition"><X size={18} /></button>
               </div>
               
-              <form onSubmit={handleSave} className="p-6 space-y-5">
+              <form onSubmit={handleSave} className="p-6 space-y-5 overflow-y-auto scrollbar-hide">
                 <div>
                   <label className="text-xs font-bold text-white/50 uppercase tracking-wider block mb-2">Product Image</label>
                   <label className="block border-2 border-dashed border-white/10 hover:border-red-500/50 rounded-2xl overflow-hidden cursor-pointer transition bg-black/20 group">
@@ -289,7 +300,7 @@ export default function StudioShop() {
                 </button>
               </form>
             </motion.div>
-          </>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
