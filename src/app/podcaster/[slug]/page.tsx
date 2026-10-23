@@ -229,7 +229,7 @@ export default function PodcasterProfilePage() {
               </div>
 
               {/* Info */}
-              <div className="flex-1 min-w-0 md:pb-6 mt-4 md:mt-0">
+              <div className="flex-1 min-w-0 md:pb-2 mt-4 md:mt-0">
                 <div className="flex items-center gap-3 mb-2 md:mb-3">
                   <h1 className="text-3xl md:text-6xl font-black tracking-tight drop-shadow-lg">{creator?.name}</h1>
                   {creator?.isVerified && <VerifiedBadge size={28} variant="gold" />}
@@ -289,7 +289,7 @@ export default function PodcasterProfilePage() {
             </div>
 
             {/* DESKTOP TABS (Centered, Sticky) */}
-            <div className={`flex justify-center ${bannerUrl ? "mt-12 md:mt-16" : "mt-8 md:mt-12"} mb-8 md:sticky md:top-20 z-40`}>
+            <div className={`flex justify-center ${bannerUrl ? "mt-4 md:mt-8" : "mt-8 md:mt-12"} mb-8 md:sticky md:top-20 z-40`}>
               <div className="flex gap-2 p-1.5 bg-[#0a0a0a]/80 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl overflow-x-auto scrollbar-hide">
                 {(["home", "podcasts", "documentaries", "videos", "shop"] as Tab[]).map((t) => (
                   <button 
