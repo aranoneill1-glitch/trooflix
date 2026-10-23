@@ -606,29 +606,25 @@ function Card({ item, hovered, onHover, onLeave, onSelect, onPlay, showCreator, 
     >
       <img src={item.posterUrl} alt={item.title} className="w-full h-full object-cover" loading="lazy" />
 
-      {/* Bottom label — title OR creator badge */}
-      {showCreator && creator ? (
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/70 to-transparent p-2 md:p-2.5 flex items-center gap-2">
-          {creator.photoUrl ? (
+      {/* Bottom label — avatar (optional) + video title */}
+      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/70 to-transparent p-2 md:p-2.5 flex items-center gap-2">
+        {showCreator && creator && (
+          creator.photoUrl ? (
             <img
               src={creator.photoUrl}
               alt=""
-              className="w-6 h-6 md:w-7 md:h-7 rounded-full object-cover flex-shrink-0 border border-white/20"
+              className="w-5 h-5 md:w-6 md:h-6 rounded-full object-cover flex-shrink-0 border border-white/20"
             />
           ) : (
-            <div className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-[10px] font-bold flex-shrink-0">
+            <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-[9px] font-bold flex-shrink-0">
               {(creator.name?.[0] || "?").toUpperCase()}
             </div>
-          )}
-          <p className="text-[11px] md:text-xs font-semibold leading-tight line-clamp-1">
-            {creator.name}
-          </p>
-        </div>
-      ) : (
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/60 to-transparent p-2 md:p-2.5">
-          <p className="text-[11px] md:text-xs font-bold leading-tight line-clamp-2">{item.title}</p>
-        </div>
-      )}
+          )
+        )}
+        <p className="text-[11px] md:text-xs font-bold leading-tight line-clamp-2 text-white">
+          {item.title}
+        </p>
+      </div>
 
       {/* Hover info panel (desktop only) */}
       {hovered && (
