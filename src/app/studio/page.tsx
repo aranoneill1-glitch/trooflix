@@ -8,8 +8,8 @@ import {
   Users,
   Heart,
   Plus,
-  ChevronRight,
-  BarChart3,
+  DollarSign,
+  TrendingUp,
 } from "lucide-react";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import { getCachedUser } from "@/lib/cache";
@@ -37,6 +37,7 @@ export default function StudioOverview() {
   const [creator, setCreator] = useState<Creator | null>(null);
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
+  const [premiumStats, setPremiumStats] = useState({ subscribers: 0, gross: 0, net: 0 });
   const [totals, setTotals] = useState({
     plays: 0,
     likes: 0,
@@ -64,6 +65,19 @@ export default function StudioOverview() {
         );
         const myVideos: Video[] = Array.isArray(vRes.videos) ? vRes.videos : [];
         setVideos(myVideos);
+        // Fetch Premium Stats
+        try {
+          const pRes = await fetch(`/api/creator/premium?user_id=${user.id}`).then(r => r.json());
+          if (pRes.stats) {
+            setPremiumStats({
+              subscribers: pRes.stats.active_subscribers,
+              gross: pRes.stats.monthly_gross_cents,
+              net: pRes.stats.monthly_net_cents
+            });
+          }
+        } catch {}
+
+
 
         // Totals
         const totalPlays = myVideos.reduce((s, v) => s + (v.viewCount || 0), 0);
@@ -104,13 +118,7 @@ export default function StudioOverview() {
     })();
   }, []);
 
-  const recent = [...videos]
-    .sort((a, b) => {
-      const at = a.createdAt ? new Date(a.createdAt).getTime() : a.id;
-      const bt = b.createdAt ? new Date(b.createdAt).getTime() : b.id;
-      return bt - at;
-    })
-    .slice(0, 5);
+  
 
   const initials = creator?.name
     ? creator.name
@@ -167,66 +175,28 @@ export default function StudioOverview() {
         <Plus size={16} /> Publish Episode
       </Link>
 
-      {/* Stat cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8">
-        <StatCard icon={Video} label="Episodes" value={videos.length} />
-        <StatCard icon={Eye} label="Plays" value={totals.plays} />
-        <StatCard icon={Users} label="Followers" value={totals.followers} />
-        <StatCard icon={Heart} label="Likes" value={totals.likes} />
+
+      {/* Financial & Subscribers */}
+      <div className="mb-8">
+        <h2 className="text-lg md:text-xl font-bold mb-4">Revenue & Subscribers</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+          <StatCard icon={Users} label="Active Subscribers" value={premiumStats.subscribers} />
+          <StatCard icon={DollarSign} label="Monthly Gross" value={`$${(premiumStats.gross / 100).toFixed(2)}`} />
+          <StatCard icon={TrendingUp} label="Your 90% Payout" value={`$${(premiumStats.net / 100).toFixed(2)}`} />
+        </div>
       </div>
 
-      {/* Recent Episodes */}
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg md:text-xl font-bold">Recent Episodes</h2>
-        {videos.length > 5 && (
-          <Link
-            href="/studio/episodes"
-            className="text-sm text-red-400 hover:text-red-300 transition inline-flex items-center gap-1"
-          >
-            View all <ChevronRight size={14} />
-          </Link>
-        )}
+      {/* Content & Engagement */}
+      <div className="mb-8">
+        <h2 className="text-lg md:text-xl font-bold mb-4">Content & Engagement</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+          <StatCard icon={Video} label="Episodes" value={videos.length} />
+          <StatCard icon={Eye} label="Total Plays" value={totals.plays} />
+          <StatCard icon={Users} label="Followers" value={totals.followers} />
+          <StatCard icon={Heart} label="Likes" value={totals.likes} />
+        </div>
       </div>
 
-      {recent.length === 0 ? (
-        <div className="bg-[#0f0f12] border border-white/10 rounded-xl p-10 text-center">
-          <BarChart3 size={32} className="mx-auto text-white/20 mb-3" />
-          <p className="text-white/60 mb-4">You haven't published any episodes yet.</p>
-          <Link
-            href="/studio/upload"
-            className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white font-bold px-5 py-2.5 rounded-lg text-sm transition"
-          >
-            <Plus size={16} /> Publish your first episode
-          </Link>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {recent.map((v) => (
-            <Link
-              key={v.id}
-              href={`/studio/episodes`}
-              className="flex items-center gap-3 bg-[#0f0f12] border border-white/5 hover:border-white/10 rounded-xl p-3 transition"
-            >
-              <div className="w-14 h-14 md:w-16 md:h-16 rounded-lg overflow-hidden flex-shrink-0 bg-black">
-                {v.posterUrl ? (
-                  <img src={v.posterUrl} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-white/30">
-                    <Video size={20} />
-                  </div>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold truncate">{v.title}</p>
-                <p className="text-xs text-white/50">
-                  {v.type || "Episode"} · {(v.viewCount || 0).toLocaleString()} plays
-                </p>
-              </div>
-              <ChevronRight size={16} className="text-white/30 flex-shrink-0" />
-            </Link>
-          ))}
-        </div>
-      )}
 
       <div className="h-16" />
     </div>
@@ -240,7 +210,7 @@ function StatCard({
 }: {
   icon: any;
   label: string;
-  value: number;
+  value: number | string;
 }) {
   return (
     <div className="bg-[#0f0f12] border border-white/5 rounded-xl p-3 md:p-4">

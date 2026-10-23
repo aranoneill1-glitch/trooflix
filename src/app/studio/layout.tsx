@@ -19,8 +19,7 @@ type Creator = {
 const NAV = [
   { label: "Overview", path: "/studio", icon: Home },
   { label: "Episodes", path: "/studio/episodes", icon: Video },
-  { label: "Upload", path: "/studio/upload", icon: Upload },
-  { label: "Premium", path: "/studio/premium", icon: DollarSign },
+  { label: "Subscription", path: "/studio/premium", icon: DollarSign },
   { label: "Shop", path: "/studio/shop", icon: ShoppingBag },
   { label: "Orders", path: "/studio/orders", icon: Package },
   { label: "Settings", path: "/studio/settings", icon: Settings },

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, Plus, Package, Camera, Pencil, X, Check } from "lucide-react";
+import { ChevronLeft, Plus, Package, Camera, Pencil, X, Check, Trash2 } from "lucide-react";
 import { getCachedUser } from "@/lib/cache";
 
 type Product = {
@@ -79,6 +79,21 @@ export default function StudioShop() {
     setDescription(p.description || "");
     setPrice((p.price_cents / 100).toFixed(2));
     setImageUrl(p.image_url || "");
+  };
+
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this product?")) return;
+    try {
+      await fetch("/api/creator/products", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      await load();
+    } catch {
+      alert("Failed to delete product");
+    }
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -197,12 +212,20 @@ export default function StudioShop() {
                     <p className="font-bold text-lg truncate leading-tight mb-1">{p.name}</p>
                     <p className="text-green-400 font-bold mb-3">${(p.price_cents / 100).toFixed(2)}</p>
                     
-                    <button 
-                      onClick={() => handleEdit(p)}
-                      className="w-full mt-auto py-2 bg-white/5 hover:bg-white/10 text-white font-semibold rounded-xl transition flex items-center justify-center gap-2 text-sm border border-white/5"
-                    >
-                      <Pencil size={14} /> Edit Product
-                    </button>
+                    <div className="flex gap-2 mt-auto">
+                      <button 
+                        onClick={() => handleEdit(p)}
+                        className="flex-1 py-2 bg-white/5 hover:bg-white/10 text-white font-semibold rounded-xl transition flex items-center justify-center gap-2 text-sm border border-white/5"
+                      >
+                        <Pencil size={14} /> Edit
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(p.id)}
+                        className="py-2 px-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 font-semibold rounded-xl transition flex items-center justify-center border border-red-500/20"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
