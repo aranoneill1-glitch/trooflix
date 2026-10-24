@@ -281,6 +281,44 @@ export default function CreatorsPage() {
                   </div>
                 )}
 
+
+                {/* Featured Podcasts Row */}
+                <div className="mb-10">
+                  <div className="flex items-center gap-2 mb-4 px-4 md:px-8">
+                    <Mic size={20} className="text-red-500" />
+                    <h2 className="text-xl md:text-2xl font-black tracking-tight">Featured Podcasts</h2>
+                  </div>
+                  
+                  {videos.filter(v => v.type === "Podcast" && (v.posterUrl || v.backdropUrl)).length > 0 ? (
+                    <div className="flex gap-4 overflow-x-auto scrollbar-hide px-4 md:px-8 pb-4 snap-x">
+                      {videos.filter(v => v.type === "Podcast" && (v.posterUrl || v.backdropUrl)).slice(0, 15).map(v => (
+                        <div key={v.id} onClick={() => window.location.href = `/podcast/${v.id}`} className="group relative flex-shrink-0 w-[240px] md:w-[300px] aspect-video rounded-xl overflow-hidden snap-start cursor-pointer border border-white/5 hover:border-white/20 transition">
+                          <img src={v.posterUrl || v.backdropUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90" />
+                          
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                            <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center">
+                              <Play size={20} fill="white" className="text-white ml-1" />
+                            </div>
+                          </div>
+
+                          <div className="absolute inset-x-0 bottom-0 p-4">
+                            <p className="font-bold text-sm md:text-base leading-tight line-clamp-2">{v.title}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="px-4 md:px-8 pb-4">
+                      <div className="w-full h-[140px] border-2 border-dashed border-white/10 rounded-xl flex items-center justify-center bg-white/5">
+                        <p className="text-white/40 font-semibold flex items-center gap-2">
+                          <Mic size={18} className="text-white/20" /> No podcasts uploaded yet.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 <ContentRow title="Trending Creators" icon={TrendingUp} items={trendingCreators} loading={loading} />
                   <ContentRow title="Fresh Talent" icon={Zap} items={freshCreators} loading={loading} />
                   <ContentRow title="Top Documentary Makers" icon={Film} items={documentaryCreators} loading={loading} />
