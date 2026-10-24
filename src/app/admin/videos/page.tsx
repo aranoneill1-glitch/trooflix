@@ -232,66 +232,96 @@ export default function VideosPage() {
         <p className="text-white/50 text-sm">{editing ? `Editing: ${editing.title}` : "Add and manage videos in your catalog"}</p>
       </div>
 
-      <form onSubmit={submit} className="bg-[#141418] rounded-lg p-6 space-y-4 mb-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <form onSubmit={submit} className="bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 space-y-6 mb-10 shadow-2xl">
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-xl font-bold">{editing ? "Edit Video" : "Add New Video"}</h2>
+          {editing && (
+            <button type="button" onClick={resetForm} className="text-xs text-red-400 hover:text-red-300 bg-red-500/10 px-3 py-1.5 rounded-lg transition">
+              Cancel Edit
+            </button>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          
           <div className="col-span-2">
-            <label className="block text-sm text-white/60 mb-1">Title *</label>
-            <input required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none" />
+            <label className="block text-xs font-bold text-white/50 uppercase tracking-wider mb-2">Title *</label>
+            <input required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-red-500 transition" placeholder="e.g. The Art of Deception" />
           </div>
+
           <div className="col-span-2">
-            <label className="block text-sm text-white/60 mb-1">Video File *</label>
-            <div className="flex gap-2">
-              <input type="text" required value={form.videoUrl} onChange={(e) => setForm({ ...form, videoUrl: e.target.value })} placeholder="Click Upload, or paste a URL" className="flex-1 bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none text-sm" />
-              <UploadButton label="Upload Video" folder="videos" inputRef={videoInput} onDone={(url) => setForm((f) => ({ ...f, videoUrl: url }))} />
+            <label className="block text-xs font-bold text-white/50 uppercase tracking-wider mb-2">Video File *</label>
+            <div className="flex gap-3">
+              <input type="text" required value={form.videoUrl} onChange={(e) => setForm({ ...form, videoUrl: e.target.value })} placeholder="Click Upload, or paste a URL" className="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-red-500 transition text-sm" />
+              <button type="button" onClick={() => videoInput.current?.click()} disabled={uploading === "videos"} className="bg-white text-black hover:bg-gray-200 disabled:opacity-50 px-6 py-3 rounded-xl text-sm font-bold whitespace-nowrap transition">
+                {uploading === "videos" ? `${progress}%` : "Upload"}
+              </button>
+              <input ref={videoInput} type="file" accept="video/*" onChange={(e) => { const file = e.target.files?.[0]; if (file) uploadFile(file, "videos", (url) => setForm((f) => ({ ...f, videoUrl: url }))); e.target.value = ""; }} className="hidden" />
             </div>
           </div>
+
           <div>
-            <label className="block text-sm text-white/60 mb-1">Type *</label>
-            <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none">
+            <label className="block text-xs font-bold text-white/50 uppercase tracking-wider mb-2">Type *</label>
+            <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-red-500 transition appearance-none">
               {TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
+
           <div>
-            <label className="block text-sm text-white/60 mb-1">Category *</label>
-            <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none">
+            <label className="block text-xs font-bold text-white/50 uppercase tracking-wider mb-2">Category *</label>
+            <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-red-500 transition appearance-none">
               {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
-          <div className="flex items-end">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={form.featured} onChange={(e) => setForm({ ...form, featured: e.target.checked })} className="accent-red-600 w-4 h-4" />
-              <span className="text-sm text-white/80">Feature in Trending Now</span>
+
+          <div className="col-span-2">
+            <label className="flex items-center gap-3 bg-black/20 border border-white/5 rounded-xl px-4 py-4 cursor-pointer hover:bg-black/30 transition">
+              <input type="checkbox" checked={form.featured} onChange={(e) => setForm({ ...form, featured: e.target.checked })} className="accent-red-600 w-5 h-5 rounded" />
+              <div>
+                <p className="text-sm font-bold text-white">Feature in Hero Carousel</p>
+                <p className="text-xs text-white/40">This video will rotate on the homepage banner.</p>
+              </div>
             </label>
           </div>
+
           <div className="col-span-2">
-            <label className="block text-sm text-white/60 mb-1">Description</label>
-            <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none" />
+            <label className="block text-xs font-bold text-white/50 uppercase tracking-wider mb-2">Description</label>
+            <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-red-500 transition resize-none" placeholder="Brief summary of the video..." />
           </div>
+
           <div className="col-span-2">
-            <label className="block text-sm text-white/60 mb-1">Podcaster</label>
-            <select value={form.creatorId ?? ""} onChange={(e) => setForm({ ...form, creatorId: e.target.value ? Number(e.target.value) : null })} className="w-full bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none">
-              <option value="">— None —</option>
+            <label className="block text-xs font-bold text-white/50 uppercase tracking-wider mb-2">Podcaster</label>
+            <select value={form.creatorId ?? ""} onChange={(e) => setForm({ ...form, creatorId: e.target.value ? Number(e.target.value) : null })} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-red-500 transition appearance-none">
+              <option value="">— None (Admin Content) —</option>
               {creators.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
-          <div className="col-span-2">
-            <label className="block text-sm text-white/60 mb-1">Poster (portrait image)</label>
+
+          <div className="col-span-2 md:col-span-1">
+            <label className="block text-xs font-bold text-white/50 uppercase tracking-wider mb-2">Poster (portrait)</label>
             <div className="flex gap-2">
-              <input type="text" value={form.posterUrl} onChange={(e) => setForm({ ...form, posterUrl: e.target.value })} placeholder="Click Upload, or paste a URL" className="flex-1 bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none text-sm" />
-              <UploadButton label="Upload" folder="posters" inputRef={posterInput} onDone={(url) => setForm((f) => ({ ...f, posterUrl: url }))} />
+              <input type="text" value={form.posterUrl} onChange={(e) => setForm({ ...form, posterUrl: e.target.value })} placeholder="Paste URL" className="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-red-500 transition text-sm min-w-0" />
+              <button type="button" onClick={() => posterInput.current?.click()} disabled={uploading === "posters"} className="bg-white/10 text-white hover:bg-white/20 disabled:opacity-50 px-4 py-3 rounded-xl text-sm font-bold transition">
+                {uploading === "posters" ? `${progress}%` : "Upload"}
+              </button>
+              <input ref={posterInput} type="file" accept="image/*" onChange={(e) => { const file = e.target.files?.[0]; if (file) uploadFile(file, "posters", (url) => setForm((f) => ({ ...f, posterUrl: url }))); e.target.value = ""; }} className="hidden" />
             </div>
           </div>
-          <div className="col-span-2">
-            <label className="block text-sm text-white/60 mb-1">Backdrop (landscape image, for hero)</label>
+
+          <div className="col-span-2 md:col-span-1">
+            <label className="block text-xs font-bold text-white/50 uppercase tracking-wider mb-2">Backdrop (landscape)</label>
             <div className="flex gap-2">
-              <input type="text" value={form.backdropUrl} onChange={(e) => setForm({ ...form, backdropUrl: e.target.value })} placeholder="Click Upload, or paste a URL" className="flex-1 bg-black/40 border border-white/10 rounded px-3 py-2 focus:border-red-600 outline-none text-sm" />
-              <UploadButton label="Upload" folder="backdrops" inputRef={backdropInput} onDone={(url) => setForm((f) => ({ ...f, backdropUrl: url }))} />
+              <input type="text" value={form.backdropUrl} onChange={(e) => setForm({ ...form, backdropUrl: e.target.value })} placeholder="Paste URL" className="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-red-500 transition text-sm min-w-0" />
+              <button type="button" onClick={() => backdropInput.current?.click()} disabled={uploading === "backdrops"} className="bg-white/10 text-white hover:bg-white/20 disabled:opacity-50 px-4 py-3 rounded-xl text-sm font-bold transition">
+                {uploading === "backdrops" ? `${progress}%` : "Upload"}
+              </button>
+              <input ref={backdropInput} type="file" accept="image/*" onChange={(e) => { const file = e.target.files?.[0]; if (file) uploadFile(file, "backdrops", (url) => setForm((f) => ({ ...f, backdropUrl: url }))); e.target.value = ""; }} className="hidden" />
             </div>
           </div>
         </div>
 
         {uploading && (
-          <div className="bg-black/40 border border-white/10 rounded p-3">
+          <div className="bg-black/40 border border-white/10 rounded-xl p-4">
             <p className="text-sm text-white/70 mb-2">Uploading {uploading}… {progress}%</p>
             <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
               <div className="h-full bg-red-600 transition-all" style={{ width: `${progress}%` }} />
@@ -299,14 +329,11 @@ export default function VideosPage() {
           </div>
         )}
 
-        <div className="flex items-center gap-4">
-          <button type="submit" disabled={saving || !!uploading} className="bg-red-600 hover:bg-red-500 disabled:opacity-50 font-semibold px-6 py-2 rounded transition">
-            {saving ? (editing ? "Updating…" : "Adding…") : (editing ? "Save Changes" : "Add Video")}
+        <div className="flex items-center gap-4 pt-2">
+          <button type="submit" disabled={saving || !!uploading} className="bg-white text-black hover:scale-[1.02] disabled:opacity-50 font-bold px-8 py-3.5 rounded-xl transition shadow-lg">
+            {saving ? (editing ? "Saving..." : "Adding...") : (editing ? "Save Changes" : "Add Video")}
           </button>
-          {editing && (
-            <button type="button" onClick={resetForm} className="text-white/60 hover:text-white text-sm transition">Cancel edit</button>
-          )}
-          {status && <span className="text-sm">{status}</span>}
+          {status && <span className="text-sm font-semibold">{status}</span>}
         </div>
       </form>
 
