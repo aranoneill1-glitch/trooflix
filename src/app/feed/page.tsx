@@ -289,7 +289,6 @@ export default function FeedPage() {
             }}
             muted={muted}
             onToggleMute={() => setMuted((m) => !m)}
-            onOpenVideo={(currentTime) => setOpenVideoModal({ ...post, _startTime: currentTime } as any)}
           />
         ); })}
       </div>
@@ -339,7 +338,6 @@ function PostCard({
   registerRef,
   muted,
   onToggleMute,
-  onOpenVideo,
 }: {
   post: Video;
   userId: string | null;
@@ -352,7 +350,6 @@ function PostCard({
   registerRef: (el: HTMLElement | null) => void;
   muted: boolean;
   onToggleMute: () => void;
-  onOpenVideo: (currentTime: number) => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(true);
@@ -360,47 +357,6 @@ function PostCard({
   const [menuOpen, setMenuOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const isImage = post.type === "Image";
-  const isTroo = post.type === "Troo";
-
-  // --- Watch Time Tracker ---
-  const watchTimeRef = useRef(0);
-
-  useEffect(() => {
-    if (!isActivePlaying || !userId || !post.id || !post.creatorId) return;
-
-    const interval = setInterval(() => {
-      const v = videoRef.current;
-      // Only count if the video is actively playing
-      if (v && !v.paused && !v.ended) {
-        watchTimeRef.current += 5;
-        
-        // Send ping every 30 seconds
-        if (watchTimeRef.current >= 30) {
-          const secs = watchTimeRef.current;
-          watchTimeRef.current = 0;
-          fetch("/api/watch-time", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId, videoId: post.id, creatorId: post.creatorId, seconds: secs }),
-          }).catch(() => {});
-        }
-      }
-    }, 5000);
-
-    return () => {
-      clearInterval(interval);
-      if (watchTimeRef.current > 0) {
-        fetch("/api/watch-time", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId, videoId: post.id, creatorId: post.creatorId, seconds: watchTimeRef.current }),
-          keepalive: true,
-        }).catch(() => {});
-        watchTimeRef.current = 0;
-      }
-    };
-  }, [isActivePlaying, userId, post.id, post.creatorId]);
-  // --------------------------
 
   const pauseAllOthers = (thisVideo: HTMLVideoElement) => {
     const all = document.querySelectorAll<HTMLVideoElement>("video");
@@ -415,9 +371,11 @@ function PostCard({
     if (!hasVideo) return;
     const v = videoRef.current;
     if (!v) return;
+    
     if (isActivePlaying) {
       pauseAllOthers(v);
       v.muted = muted;
+      // Force playback immediately
       v.play().catch(() => {});
       setPlaying(true);
     } else {
@@ -431,7 +389,6 @@ function PostCard({
     const v = videoRef.current;
     if (!v) return;
     if (v.paused) {
-      pauseAllOthers(v);
       v.play().catch(() => {});
       setPlaying(true);
     } else {
@@ -443,14 +400,9 @@ function PostCard({
   const handleExternalShare = async () => {
     const url = window.location.origin + '/feed?reel=' + post.id;
     if (navigator.share) {
-      try {
-        await navigator.share({ title: post.title || 'Trooflix Post', url });
-      } catch {}
+      try { await navigator.share({ title: post.title || 'Trooflix Post', url }); } catch {}
     } else {
-      try {
-        await navigator.clipboard.writeText(url);
-        alert('Link copied to clipboard!');
-      } catch {}
+      try { await navigator.clipboard.writeText(url); alert('Link copied to clipboard!'); } catch {}
     }
   };
 
@@ -458,9 +410,10 @@ function PostCard({
     <article
       ref={(el) => registerRef(el as HTMLElement | null)}
       data-post-id={post.id}
-      className="bg-black border-b border-white/10 cursor-pointer"
+      className="bg-black border-b border-white/10"
     >
       <div className="flex gap-3 p-3">
+        {/* Left Column - Avatar */}
         <div className="flex-shrink-0">
           {author.href ? (
             <Link href={author.href}>
@@ -483,7 +436,9 @@ function PostCard({
           )}
         </div>
 
+        {/* Right Column - Content */}
         <div className="flex-1 min-w-0">
+          {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1 text-sm truncate">
               {author.href ? (
@@ -524,69 +479,83 @@ function PostCard({
             </div>
           </div>
 
+          {/* Content Text */}
           {post.description && (
             <p className="text-[15px] text-white whitespace-pre-wrap mt-1 mb-2 leading-relaxed">
               {post.description}
             </p>
           )}
 
-          <div className="mt-2 rounded-2xl overflow-hidden border border-white/10 w-max max-w-full mx-auto">
+          {/* Media */}
+          <div className="mt-2 rounded-2xl overflow-hidden bg-black relative">
             {hasVideo && (
-              <div className="relative bg-black w-full">
+              <div className="relative bg-black w-full flex justify-center">
                 <video
                   ref={videoRef}
                   src={post.videoUrl ?? post.bitchuteUrl ?? ""}
-                  className="w-full max-h-[70vh] object-contain cursor-pointer"
+                  className="w-full max-h-[75vh] object-cover cursor-pointer"
                   muted={muted}
                   loop
                   playsInline
                   preload={isActivePlaying || isNext ? "auto" : "metadata"}
                   onClick={(e) => {
                     e.stopPropagation();
-                    const v = videoRef.current;
-                    const t = v ? v.currentTime : 0;
-                    if (v) v.pause();
-                    onOpenVideo(t);
+                    if (muted) {
+                      onToggleMute();
+                    } else {
+                      togglePlay();
+                    }
                   }}
                 />
                 <TextOverlayRenderer overlays={post.textOverlays} />
-
-                {muted && isActivePlaying && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 z-30 pointer-events-none">
-                    <div className="bg-black/60 backdrop-blur-md px-6 py-3 rounded-full border border-white/20 flex items-center gap-3 animate-pulse">
-                      <VolumeX size={24} className="text-white" />
-                      <span className="text-white font-bold text-sm">Tap to Unmute</span>
+                
+                {/* Play/Pause overlay */}
+                {!playing && isActivePlaying && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 pointer-events-none">
+                    <div className="w-16 h-16 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center border border-white/20">
+                      <Play size={32} fill="white" className="text-white ml-1" />
                     </div>
                   </div>
                 )}
 
-                <div className="absolute bottom-2 left-2 flex items-center gap-2">
+                {/* Bottom controls */}
+                <div className="absolute bottom-3 left-3 flex items-center gap-2 z-20">
                   <button
-                    onClick={(e) => { e.stopPropagation(); togglePlay(); if (muted) onToggleMute(); }}
-                    className="w-8 h-8 rounded-full bg-black/60 backdrop-blur flex items-center justify-center text-white"
-                    aria-label={playing ? "Pause" : "Play"}
+                    onClick={(e) => { e.stopPropagation(); togglePlay(); }}
+                    className="w-9 h-9 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white border border-white/10 hover:bg-black/80 transition"
                   >
-                    {playing ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
+                    {playing ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" className="ml-0.5" />}
                   </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); onToggleMute(); }}
-                    className="w-8 h-8 rounded-full bg-black/60 backdrop-blur flex items-center justify-center text-white"
+                    className="w-9 h-9 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white border border-white/10 hover:bg-black/80 transition"
                   >
-                    {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+                    {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
                   </button>
                 </div>
+
+                {/* Tap to Unmute overlay */}
+                {muted && isActivePlaying && (
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                    <div className="bg-black/60 backdrop-blur-md px-5 py-2.5 rounded-full border border-white/20 flex items-center gap-2">
+                      <VolumeX size={18} className="text-white" />
+                      <span className="text-white font-bold text-sm">Tap to Unmute</span>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
             {isImage && post.posterUrl && (
               <img
                 src={post.posterUrl}
                 alt={post.title || ""}
-                className="w-full max-h-[70vh] object-contain bg-black"
+                className="w-full max-h-[70vh] object-cover bg-black"
                 loading="lazy"
               />
             )}
           </div>
 
+          {/* Action Bar */}
           <div className="flex items-center justify-between mt-3 -ml-2 pr-2">
             <div className="flex items-center text-white/50 hover:text-red-500 group transition">
               <LikeButton videoId={post.id} size={20} showCount />
