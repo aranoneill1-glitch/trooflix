@@ -277,6 +277,7 @@ export default function FeedPage() {
             author={authorFor(post)}
             onOpenComments={() => setCommentVideo(post)}
             isActivePlaying={activePlayingId === post.id}
+            isNext={posts.findIndex(p => p.id === activePlayingId) + 1 === posts.findIndex(p => p.id === post.id)}
             showSoundPrompt={showSoundPrompt && activePlayingId === post.id}
             onDismissSoundPrompt={() => {
               setShowSoundPrompt(false);
@@ -332,6 +333,7 @@ function PostCard({
   author,
   onOpenComments,
   isActivePlaying,
+  isNext,
   showSoundPrompt,
   onDismissSoundPrompt,
   registerRef,
@@ -344,6 +346,7 @@ function PostCard({
   author: { name: string; handle: string; avatar: string; verified: boolean; tier?: "user" | "pro" | "podcaster"; href: string | null };
   onOpenComments: () => void;
   isActivePlaying: boolean;
+  isNext?: boolean;
   showSoundPrompt: boolean;
   onDismissSoundPrompt: () => void;
   registerRef: (el: HTMLElement | null) => void;
@@ -537,7 +540,7 @@ function PostCard({
                   muted={muted}
                   loop
                   playsInline
-                  preload="metadata"
+                  preload={isActivePlaying || isNext ? "auto" : "metadata"}
                   onClick={(e) => {
                     e.stopPropagation();
                     const v = videoRef.current;
@@ -547,9 +550,19 @@ function PostCard({
                   }}
                 />
                 <TextOverlayRenderer overlays={post.textOverlays} />
+
+                {muted && isActivePlaying && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 z-30 pointer-events-none">
+                    <div className="bg-black/60 backdrop-blur-md px-6 py-3 rounded-full border border-white/20 flex items-center gap-3 animate-pulse">
+                      <VolumeX size={24} className="text-white" />
+                      <span className="text-white font-bold text-sm">Tap to Unmute</span>
+                    </div>
+                  </div>
+                )}
+
                 <div className="absolute bottom-2 left-2 flex items-center gap-2">
                   <button
-                    onClick={(e) => { e.stopPropagation(); togglePlay(); }}
+                    onClick={(e) => { e.stopPropagation(); togglePlay(); if (muted) onToggleMute(); }}
                     className="w-8 h-8 rounded-full bg-black/60 backdrop-blur flex items-center justify-center text-white"
                     aria-label={playing ? "Pause" : "Play"}
                   >
