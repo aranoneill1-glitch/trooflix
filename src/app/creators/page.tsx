@@ -193,7 +193,7 @@ export default function CreatorsPage() {
 
         {/* AVATAR SCROLLING ROW */}
         <div className="px-4 md:px-8 mb-12">
-          <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide pb-4">
+          <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide py-4 px-2">
             {creators.slice(0, 15).map((c) => (
               <Link key={c.id} href={`/podcaster/${c.slug}`} className="flex flex-col items-center gap-2 flex-shrink-0 group">
                 <div className="w-16 h-16 md:w-20 md:h-20 rounded-full p-[2px] bg-gradient-to-tr from-red-600 to-orange-500 group-hover:scale-105 transition-transform">
