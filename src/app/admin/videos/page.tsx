@@ -252,6 +252,22 @@ export default function VideosPage() {
     }
   };
 
+
+  const toggleFeatured = async (video: Video) => {
+    try {
+      const res = await fetch(`/api/videos?id=${video.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ featured: !video.featured }),
+      });
+      if (res.ok) {
+        await loadVideos();
+      }
+    } catch (err) {
+      alert("Failed to toggle featured status");
+    }
+  };
+
   const startEdit = (video: Video) => {
     setEditing(video);
     setForm({
