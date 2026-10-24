@@ -28,16 +28,21 @@ export default function UserMenu() {
           email: user.email || "",
           initial: (user.email || "?")[0].toUpperCase(),
         };
-        setUser(base);
-        setLoading(false);
-
+        
+        // Fetch profile to get avatar BEFORE we stop loading
         try {
           const r = await fetch(`/api/profile?user_id=${user.id}`);
           const d = await r.json();
           if (d.profile) {
             setUser({ ...base, avatarUrl: d.profile.avatar_url || null });
+          } else {
+            setUser(base);
           }
-        } catch {}
+        } catch {
+          setUser(base);
+        } finally {
+          setLoading(false);
+        }
       } else {
         setUser(null);
         setLoading(false);
@@ -55,8 +60,9 @@ export default function UserMenu() {
     };
   }, []);
 
+  // Smooth loading skeleton instead of the "Q" letter
   if (loading) {
-    return <div className="w-7 h-7" />;
+    return <div className="w-7 h-7 rounded-full bg-white/10 animate-pulse border border-white/20" />;
   }
 
   // Signed out → person icon, links to /login
