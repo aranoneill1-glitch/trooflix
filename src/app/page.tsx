@@ -201,13 +201,13 @@ export default function Home() {
           <>
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60]"
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[290]"
               onClick={() => setDrawerOpen(false)}
             />
             <motion.aside
               initial={{ x: -320 }} animate={{ x: 0 }} exit={{ x: -320 }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed top-0 left-0 h-screen w-[300px] bg-[#0a0a0a]/95 backdrop-blur-2xl border-r border-white/10 z-[70] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] flex flex-col overflow-y-auto"
+              className="fixed top-0 left-0 h-screen w-[300px] bg-[#0a0a0a]/95 backdrop-blur-2xl border-r border-white/10 z-[300] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] flex flex-col overflow-y-auto"
             >
               {/* Header */}
               <div className="flex items-center justify-between p-6 border-b border-white/5 shrink-0">
@@ -262,6 +262,9 @@ export default function Home() {
                 <div className="space-y-1">
                   <Link href="/features" onClick={() => setDrawerOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white/80 font-medium">
                     Features
+                  </Link>
+                  <Link href="/books" onClick={() => setDrawerOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white/80 font-medium">
+                    Book Store
                   </Link>
                   <Link href="/why-us" onClick={() => setDrawerOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white/80 font-medium">
                     Why Trooflix
