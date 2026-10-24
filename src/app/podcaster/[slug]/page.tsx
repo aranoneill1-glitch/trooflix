@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { Play, Search, Lock, ShoppingBag, Sparkles, ChevronLeft } from "lucide-react";
+import { Play, Search, Lock, ShoppingBag, Sparkles, ChevronLeft, Plus, Settings } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import VerifiedBadge from "@/components/VerifiedBadge";
@@ -198,6 +198,8 @@ export default function PodcasterProfilePage() {
 
   const bannerUrl = creator?.heroBackdropUrl || latest?.backdropUrl || "";
 
+  const isOwner = userId && creator?.ownerUserId === userId;
+
   return (
     <main className="min-h-screen bg-[#050505] text-white pb-24 lg:pb-0">
       <TopBar />
@@ -251,16 +253,30 @@ export default function PodcasterProfilePage() {
 
                 {/* Action Buttons */}
                 <div className="flex flex-wrap items-center gap-3 md:gap-4">
-                  <button 
-                    onClick={async () => {
-                      if (!userId) return router.push("/login");
-                      await fetch("/api/follows", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId, creatorId: creator?.id }) });
-                      alert("Subscribed to updates!");
-                    }} 
-                    className="bg-white text-black font-bold px-6 md:px-8 py-2.5 md:py-3 rounded-xl text-sm md:text-base transition hover:scale-105 shadow-lg flex items-center gap-2"
-                  >
-                    + Subscribe
-                  </button>
+                  {isOwner ? (
+                    <>
+                      <Link href="/studio/upload" className="bg-red-600 text-white font-bold px-6 md:px-8 py-2.5 md:py-3 rounded-xl text-sm md:text-base transition hover:scale-105 shadow-[0_0_20px_rgba(220,38,38,0.4)] flex items-center gap-2">
+                        <Plus size={18} /> Add Video
+                      </Link>
+                      <Link href="/studio/shop" className="bg-[#1c1c1e] text-white border border-white/20 font-bold px-6 md:px-8 py-2.5 md:py-3 rounded-xl text-sm md:text-base transition hover:bg-white/10 flex items-center gap-2">
+                        <ShoppingBag size={18} /> Add Merch
+                      </Link>
+                      <Link href="/studio" className="bg-white/10 text-white border border-white/10 font-bold px-6 md:px-8 py-2.5 md:py-3 rounded-xl text-sm md:text-base transition hover:bg-white/20 flex items-center gap-2">
+                        <Settings size={18} /> Studio
+                      </Link>
+                    </>
+                  ) : (
+                    <button 
+                      onClick={async () => {
+                        if (!userId) return router.push("/login");
+                        await fetch("/api/follows", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId, creatorId: creator?.id }) });
+                        alert("Subscribed to updates!");
+                      }} 
+                      className="bg-white text-black font-bold px-6 md:px-8 py-2.5 md:py-3 rounded-xl text-sm md:text-base transition hover:scale-105 shadow-lg flex items-center gap-2"
+                    >
+                      + Subscribe
+                    </button>
+                  )}
                   
                   {premiumData?.enabled && (
                     hasSub ? (
