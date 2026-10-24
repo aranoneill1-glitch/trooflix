@@ -12,13 +12,13 @@ if (typeof window !== "undefined") {
 }
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState, useRef, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Play, Info, ChevronLeft, ChevronRight, Plus, ThumbsUp, X,
   Search, Bell, Home as HomeIcon, Film, FileText, Mic, Tv, Menu,
-  Compass,
-} from "lucide-react";
+  Compass, LogOut } from "lucide-react";
 import AppleVideoPlayer from "@/components/AppleVideoPlayer";
 import LoadingIntro from "@/components/LoadingIntro";
 import PullToRefresh from "@/components/PullToRefresh";
@@ -26,6 +26,8 @@ import VideoIntro from "@/components/VideoIntro";
 import UserMenu from "@/components/UserMenu";
 import { useSearch } from "@/context/SearchContext";
 import TopBar from "@/components/TopBar";
+import { createClient } from "@/utils/supabase/client";
+import { clearUserCache } from "@/lib/cache";
 import CollectionsRow from "@/components/CollectionsRow";
 import SaveButton from "@/components/SaveButton";
 import LikeButton from "@/components/LikeButton";
@@ -74,6 +76,7 @@ const CATEGORIES: string[] = [
 const NAV_TABS: string[] = ["Home", "Podcasts", "Feed"];
 
 export default function Home() {
+  const router = useRouter();
   const [videos, setVideos] = useState<Video[]>([]);
   const [likeCounts, setLikeCounts] = useState<Record<number, number>>({});
   const [creators, setCreators] = useState<any[]>([]);
@@ -83,6 +86,16 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState("Home");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    clearUserCache();
+    setDrawerOpen(false);
+    router.push("/");
+    router.refresh();
+  };
+
   const [searchOpen, setSearchOpen] = useState(false);
   
   // Sync from URL on mount and when URL changes
@@ -272,6 +285,13 @@ export default function Home() {
                   <Link href="/signup?type=podcaster" onClick={() => setDrawerOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-red-600/10 text-red-500 hover:bg-red-600/20 transition font-bold mt-2">
                     Become a Creator
                   </Link>
+                  
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition font-medium mt-6"
+                  >
+                    <LogOut size={18} /> Log Out
+                  </button>
                 </div>
               </div>
 
@@ -725,6 +745,7 @@ function DetailModal({ item, onClose, onPlay, creators }: { item: Video; onClose
   if (item.duration && item.duration.trim()) metaParts.push(item.duration);
   if (item.year) metaParts.push(String(item.year));
   if (item.rating) metaParts.push(item.rating);
+
 
   return (
     <motion.div
