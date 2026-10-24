@@ -207,7 +207,6 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
       <video
         ref={videoRef}
         src={video.videoUrl ?? video.bitchuteUrl ?? ""}
-        poster={video.posterUrl}
         className="w-full h-full object-contain pointer-events-none"
         loop
         playsInline
