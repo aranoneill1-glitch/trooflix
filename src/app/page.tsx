@@ -196,7 +196,7 @@ export default function Home() {
     }
     const interval = setInterval(() => {
       setHeroIndex((prev) => (prev + 1) % heroPool.length);
-    }, 10000);
+    }, 7000);
     return () => clearInterval(interval);
   }, [heroPool.length]);
 
