@@ -774,12 +774,22 @@ export default function ProfilePage() {
                         }}
                         draggable={false}
                       >
-                        <img
-                          src={p.posterUrl || p.backdropUrl}
-                          alt=""
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
+                        {(p.videoUrl || p.bitchuteUrl) ? (
+                          <video
+                            src={`${p.videoUrl || p.bitchuteUrl}#t=0.1`}
+                            className="w-full h-full object-cover pointer-events-none"
+                            preload="metadata"
+                            muted
+                            playsInline
+                          />
+                        ) : (
+                          <img
+                            src={p.posterUrl || p.backdropUrl}
+                            alt=""
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                        )}
                         <div className="absolute top-1 right-1">
                           <Play size={14} fill="white" className="text-white drop-shadow" />
                         </div>
@@ -809,12 +819,22 @@ export default function ProfilePage() {
                         style={{ WebkitTouchCallout: "none" }}
                         draggable={false}
                       >
-                        <img
-                          src={p.posterUrl || p.backdropUrl}
-                          alt=""
-                          className="w-12 h-16 rounded object-cover flex-shrink-0"
-                          loading="lazy"
-                        />
+                        {(p.videoUrl || p.bitchuteUrl) ? (
+                          <video
+                            src={`${p.videoUrl || p.bitchuteUrl}#t=0.1`}
+                            className="w-12 h-16 rounded object-cover flex-shrink-0 pointer-events-none"
+                            preload="metadata"
+                            muted
+                            playsInline
+                          />
+                        ) : (
+                          <img
+                            src={p.posterUrl || p.backdropUrl}
+                            alt=""
+                            className="w-12 h-16 rounded object-cover flex-shrink-0"
+                            loading="lazy"
+                          />
+                        )}
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold truncate">{p.title || "Untitled"}</p>
                           <p className="text-xs text-white/50 flex items-center gap-1 mt-1">
@@ -889,12 +909,22 @@ export default function ProfilePage() {
                         }}
                         draggable={false}
                       >
-                        <img
-                          src={p.posterUrl || p.backdropUrl}
-                          alt=""
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
+                        {(p.videoUrl || p.bitchuteUrl) ? (
+                          <video
+                            src={`${p.videoUrl || p.bitchuteUrl}#t=0.1`}
+                            className="w-full h-full object-cover pointer-events-none"
+                            preload="metadata"
+                            muted
+                            playsInline
+                          />
+                        ) : (
+                          <img
+                            src={p.posterUrl || p.backdropUrl}
+                            alt=""
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                        )}
                         <div className="absolute top-1 right-1">
                           <Play size={14} fill="white" className="text-white drop-shadow" />
                         </div>
@@ -935,12 +965,22 @@ export default function ProfilePage() {
                         style={{ WebkitTouchCallout: "none" }}
                         draggable={false}
                       >
-                        <img
-                          src={p.posterUrl || p.backdropUrl}
-                          alt=""
-                          className="w-12 h-16 rounded object-cover flex-shrink-0"
-                          loading="lazy"
-                        />
+                        {(p.videoUrl || p.bitchuteUrl) ? (
+                          <video
+                            src={`${p.videoUrl || p.bitchuteUrl}#t=0.1`}
+                            className="w-12 h-16 rounded object-cover flex-shrink-0 pointer-events-none"
+                            preload="metadata"
+                            muted
+                            playsInline
+                          />
+                        ) : (
+                          <img
+                            src={p.posterUrl || p.backdropUrl}
+                            alt=""
+                            className="w-12 h-16 rounded object-cover flex-shrink-0"
+                            loading="lazy"
+                          />
+                        )}
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold truncate">{p.title || "Untitled"}</p>
                           <p className="text-xs text-white/50 flex items-center gap-1 mt-1">
