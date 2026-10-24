@@ -17,10 +17,7 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "Trooflix",
   },
-  icons: {
-    icon: "/icon-192.png",
-    apple: "/apple-touch-icon.png",
-  },
+  
 };
 
 export const viewport: Viewport = {
@@ -36,6 +33,10 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="icon" href="/favicon.png" />
+        <link rel="apple-touch-icon" href="/favicon.png" />
+      </head>
       <PushNotificationManager />
         <body className={inter.className}>
         <script
