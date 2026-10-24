@@ -11,6 +11,7 @@ import VerifiedBadge from "@/components/VerifiedBadge";
 import LikeButton from "@/components/LikeButton";
 import SaveButton from "@/components/SaveButton";
 import CommentDrawer from "@/components/CommentDrawer";
+import ProfileReelViewer from "@/components/ProfileReelViewer";
 import ViewCount, { trackView } from "@/components/ViewCount";
 import TextOverlayRenderer from "@/components/TextOverlay";
 import XVideoModal from "@/components/XVideoModal";
@@ -302,14 +303,15 @@ export default function FeedPage() {
 
       <AnimatePresence>
         {openVideoModal && (
-          <XVideoModal
-            video={openVideoModal}
-            startTime={(openVideoModal as any)._startTime || 0}
-            author={authorFor(openVideoModal)}
+          <ProfileReelViewer
+            videos={displayedPosts.filter(p => p.videoUrl || p.bitchuteUrl)}
+            initialIndex={displayedPosts.findIndex(p => p.id === openVideoModal.id)}
             onClose={() => setOpenVideoModal(null)}
-            onOpenComments={() => {
-              setCommentVideo(openVideoModal);
-              setOpenVideoModal(null);
+            author={{
+              name: authorFor(openVideoModal).name,
+              avatar: authorFor(openVideoModal).avatar,
+              verified: authorFor(openVideoModal).verified,
+              profileHref: authorFor(openVideoModal).href || "#"
             }}
           />
         )}
