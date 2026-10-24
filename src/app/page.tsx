@@ -160,6 +160,7 @@ export default function Home() {
 
   // Hero — featured non-podcaster video (Loose Change etc.)
   const heroPool = videos.filter((v) => v.featured && !v.creatorId && !v.uploaderUserId);
+  const [heroIndex, setHeroIndex] = useState(0);
 
   // New Releases + Trending — Documentaries and Podcasts only
   const isDocOrPodcast = (v: Video) =>
@@ -186,7 +187,18 @@ export default function Home() {
     ? videos.filter((v) => v.title.toLowerCase().includes(search.toLowerCase()))
     : null;
 
-  const hero = heroPool[0] || videos[0];
+    useEffect(() => {
+    if (heroPool.length <= 1) {
+      setHeroIndex(0);
+      return;
+    }
+    const interval = setInterval(() => {
+      setHeroIndex((prev) => (prev + 1) % heroPool.length);
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [heroPool.length]);
+
+  const hero = heroPool[heroIndex] || videos[0];
 
   const requestPlay = (video: Video) => {
     setPendingVideo(video);
@@ -311,7 +323,18 @@ export default function Home() {
         <>
           
           {!showingFiltered && hero && (
-            <Hero video={hero} onPlay={() => requestPlay(hero)} onMore={() => setSelected(hero)} />
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={hero.id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.8 }}
+                className="w-full"
+              >
+                <Hero video={hero} onPlay={() => requestPlay(hero)} onMore={() => setSelected(hero)} />
+              </motion.div>
+            </AnimatePresence>
           )}
           {showingFiltered && <div className="h-20 md:h-24" />}
 
