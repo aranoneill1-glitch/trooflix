@@ -96,7 +96,6 @@ export default function AppleVideoPlayer({
       <video
         ref={videoRef}
         src={src}
-        poster={poster}
         className="w-full h-full object-contain pointer-events-none"
         autoPlay
         playsInline
