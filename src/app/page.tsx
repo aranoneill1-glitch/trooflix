@@ -18,7 +18,7 @@ import { useRouter } from "next/navigation";
 import {
   Play, Info, ChevronLeft, ChevronRight, Plus, ThumbsUp, X,
   Search, Bell, HomeIcon, Film, FileText, Mic, Tv, Menu,
-  Compass, LogOut, Users, Sparkles, BookOpen, Flame
+  Compass, LogOut, LogIn, Users, Sparkles, BookOpen, Flame
 } from "lucide-react";
 import AppleVideoPlayer from "@/components/AppleVideoPlayer";
 import LoadingIntro from "@/components/LoadingIntro";
@@ -37,7 +37,7 @@ import MobileBottomNav from "@/components/MobileBottomNav";
 import TextOverlayRenderer from "@/components/TextOverlay";
 import { getAllProgress } from "@/lib/progress";
 import SkeletonRow from "@/components/SkeletonRow";
-import { getCachedVideos, getCachedCreators } from "@/lib/cache";
+import { getCachedVideos, getCachedCreators, getCachedUser } from "@/lib/cache";
 
 type Video = {
   id: number;
@@ -87,6 +87,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState("Home");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
 
   const handleLogout = async () => {
     const supabase = createClient();
@@ -135,6 +136,7 @@ export default function Home() {
   // Load videos + creators once
   useEffect(() => {
     getCachedCreators().then(setCreators).catch(() => {});
+    getCachedUser().then(setUser);
     fetch("/api/videos", { cache: "no-store" })
       .then((r) => r.json())
       .then((data) => {
@@ -299,15 +301,29 @@ export default function Home() {
 
               {/* Footer Actions */}
               <div className="p-4 border-t border-white/5 shrink-0 space-y-3 bg-black/40">
-                <Link href="/signup?type=podcaster" onClick={() => setDrawerOpen(false)} className="flex items-center justify-center gap-2 w-full px-4 py-3.5 rounded-xl bg-red-600 hover:bg-red-500 text-white transition font-bold shadow-lg shadow-red-600/20">
+                {user ? (
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center justify-center gap-2 w-full px-4 py-3.5 rounded-xl bg-red-600 hover:bg-red-500 text-white transition font-bold shadow-lg shadow-red-600/20"
+                  >
+                    <LogOut size={18} /> Log Out
+                  </button>
+                ) : (
+                  <Link
+                    href="/login"
+                    onClick={() => setDrawerOpen(false)}
+                    className="flex items-center justify-center gap-2 w-full px-4 py-3.5 rounded-xl bg-red-600 hover:bg-red-500 text-white transition font-bold shadow-lg shadow-red-600/20"
+                  >
+                    <LogIn size={18} /> Log In
+                  </Link>
+                )}
+                <Link
+                  href="/signup?type=podcaster"
+                  onClick={() => setDrawerOpen(false)}
+                  className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition font-medium mt-3"
+                >
                   Become a Creator
                 </Link>
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition font-medium"
-                >
-                  <LogOut size={18} /> Log Out
-                </button>
                 <div className="text-center pt-2">
                   <p className="text-[9px] tracking-[0.2em] text-white/20 font-bold uppercase">
                     Real Stories. Uncensored.
