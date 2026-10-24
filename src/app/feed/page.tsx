@@ -269,7 +269,7 @@ export default function FeedPage() {
           </div>
         )}
 
-        {displayedPosts.map((post) => (
+        {displayedPosts.map((post, idx) => { const activeIdx = displayedPosts.findIndex(p => p.id === activePlayingId); return (
           <PostCard
             key={post.id}
             post={post}
@@ -277,7 +277,7 @@ export default function FeedPage() {
             author={authorFor(post)}
             onOpenComments={() => setCommentVideo(post)}
             isActivePlaying={activePlayingId === post.id}
-            isNext={posts.findIndex(p => p.id === activePlayingId) + 1 === posts.findIndex(p => p.id === post.id)}
+            
             showSoundPrompt={showSoundPrompt && activePlayingId === post.id}
             onDismissSoundPrompt={() => {
               setShowSoundPrompt(false);
@@ -291,7 +291,7 @@ export default function FeedPage() {
             onToggleMute={() => setMuted((m) => !m)}
             onOpenVideo={(currentTime) => setOpenVideoModal({ ...post, _startTime: currentTime } as any)}
           />
-        ))}
+        ); })}
       </div>
 
       {commentVideo && (
