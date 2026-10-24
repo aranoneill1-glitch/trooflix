@@ -236,7 +236,7 @@ export default function Home() {
             <motion.aside
               initial={{ x: -320 }} animate={{ x: 0 }} exit={{ x: -320 }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed top-0 left-0 h-screen w-[300px] bg-[#0a0a0a]/95 backdrop-blur-2xl border-r border-white/10 z-[300] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] flex flex-col shadow-2xl"
+              className="fixed top-0 left-0 h-screen w-[300px] bg-[#0a0a0a]/95 backdrop-blur-2xl border-r border-white/10 z-[300] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] flex flex-col shadow-2xl overflow-hidden"
             >
               {/* Header */}
               <div className="flex items-center justify-between p-6 border-b border-white/5 shrink-0">
@@ -249,7 +249,7 @@ export default function Home() {
               </div>
 
               {/* Scrollable Content */}
-              <div className="flex-1 overflow-y-auto scrollbar-hide p-4 space-y-4">
+              <div className="flex-1 overflow-y-auto scrollbar-hide p-4 space-y-4 overscroll-contain">
                 
                 {/* 1. Main Nav */}
                 <div className="space-y-1">
