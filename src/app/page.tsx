@@ -18,7 +18,7 @@ import { useRouter } from "next/navigation";
 import {
   Play, Info, ChevronLeft, ChevronRight, Plus, ThumbsUp, X,
   Search, Bell, HomeIcon, Film, FileText, Mic, Tv, Menu,
-  Compass, LogOut, LogIn, Users, Sparkles, BookOpen, Flame
+  Compass, LogOut, LogIn, Users, ShoppingBag, Sparkles, BookOpen, Flame
 } from "lucide-react";
 import AppleVideoPlayer from "@/components/AppleVideoPlayer";
 import LoadingIntro from "@/components/LoadingIntro";
@@ -249,9 +249,9 @@ export default function Home() {
               </div>
 
               {/* Scrollable Content */}
-              <div className="flex-1 overflow-y-auto scrollbar-hide p-4 space-y-6">
+              <div className="flex-1 overflow-y-auto scrollbar-hide p-4 space-y-4">
                 
-                {/* Main Navigation */}
+                {/* 1. Main Nav */}
                 <div className="space-y-1">
                   <Link href="/" onClick={() => setDrawerOpen(false)} className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white font-bold">
                     <HomeIcon size={20} className="text-white/50" /> Home
@@ -264,9 +264,9 @@ export default function Home() {
                   </Link>
                 </div>
 
-                <div className="h-px bg-white/5 mx-4" />
+                <div className="h-px bg-white/5 mx-2" />
 
-                {/* Explore Section */}
+                {/* 2. Categories */}
                 <div className="space-y-1">
                   <details className="group">
                     <summary className="flex items-center justify-between px-4 py-3 rounded-xl hover:bg-white/5 transition cursor-pointer list-none text-white/70 hover:text-white font-medium">
@@ -287,11 +287,26 @@ export default function Home() {
                       ))}
                     </div>
                   </details>
-                  <Link href="/features" onClick={() => setDrawerOpen(false)} className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white/70 hover:text-white font-medium">
-                    <Sparkles size={20} className="text-white/50" /> Features
-                  </Link>
+                </div>
+
+                <div className="h-px bg-white/5 mx-2" />
+
+                {/* 3. Stores */}
+                <div className="space-y-1">
                   <Link href="/books" onClick={() => setDrawerOpen(false)} className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white/70 hover:text-white font-medium">
                     <BookOpen size={20} className="text-white/50" /> Book Store
+                  </Link>
+                  <Link href="/merchandise" onClick={() => setDrawerOpen(false)} className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white/70 hover:text-white font-medium">
+                    <ShoppingBag size={20} className="text-white/50" /> Creator Merchandise
+                  </Link>
+                </div>
+
+                <div className="h-px bg-white/5 mx-2" />
+
+                {/* 4. Info */}
+                <div className="space-y-1">
+                  <Link href="/features" onClick={() => setDrawerOpen(false)} className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white/70 hover:text-white font-medium">
+                    <Sparkles size={20} className="text-white/50" /> Features
                   </Link>
                   <Link href="/why-us" onClick={() => setDrawerOpen(false)} className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white/70 hover:text-white font-medium">
                     <Flame size={20} className="text-white/50" /> Why Trooflix
@@ -317,13 +332,6 @@ export default function Home() {
                     <LogIn size={18} /> Log In
                   </Link>
                 )}
-                <Link
-                  href="/signup?type=podcaster"
-                  onClick={() => setDrawerOpen(false)}
-                  className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition font-medium mt-3"
-                >
-                  Become a Creator
-                </Link>
                 <div className="text-center pt-2">
                   <p className="text-[9px] tracking-[0.2em] text-white/20 font-bold uppercase">
                     Real Stories. Uncensored.
