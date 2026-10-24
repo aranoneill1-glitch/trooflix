@@ -527,7 +527,7 @@ function PostCard({
             </p>
           )}
 
-          <div className="mt-2 rounded-2xl overflow-hidden border border-white/10">
+          <div className="mt-2 rounded-2xl overflow-hidden border border-white/10 w-max max-w-full mx-auto">
             {hasVideo && (
               <div className="relative bg-black w-full">
                 <video
