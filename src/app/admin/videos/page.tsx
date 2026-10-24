@@ -602,7 +602,7 @@ export default function VideosPage() {
                     : "border-white/20 text-white/60 hover:text-white hover:border-white/40"
                 }`}
               >
-                {heroes.main === v.id ? "★ Main" : "Set Main"}
+                {heroes.main === v.id ? "★ Hero" : "Set Hero"}
               </button>
               <button
                 onClick={() => setHero("docufilm", v.id)}
