@@ -41,7 +41,7 @@ export default function TopBar({ onMenu }: Props) {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 flex items-center gap-6 px-6 md:px-8 py-4 transition-colors duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-[200] flex items-center gap-6 px-6 md:px-8 py-4 transition-colors duration-300 ${
         scrolled
           ? "bg-black"
           : "bg-gradient-to-b from-black/90 via-black/60 to-transparent"
