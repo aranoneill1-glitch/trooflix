@@ -312,16 +312,14 @@ export default function PodcasterProfilePage() {
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-4 md:py-8 min-h-[50vh]">
             
             {tab === "home" && (
-              <div className="space-y-12">
+              <div className="space-y-16">
                 {latest && (
                   <div>
                     <h2 className="text-2xl md:text-3xl font-black mb-6 flex items-center gap-3">
                       <span className="w-3 h-3 rounded-full bg-red-500 animate-pulse"></span> Latest Drop
                     </h2>
                     
-                    {/* Cinematic Featured Video Card */}
                     <div className="relative rounded-3xl overflow-hidden bg-[#0a0a0a] border border-white/10 shadow-2xl group cursor-pointer" onClick={() => handleVideoClick(latest)}>
-                      {/* Blurred background glow */}
                       <div className="absolute inset-0 opacity-20 blur-[80px] scale-110 pointer-events-none">
                         <img src={latest.posterUrl} alt="" className="w-full h-full object-cover" />
                       </div>
@@ -359,6 +357,51 @@ export default function PodcasterProfilePage() {
                           )}
                         </div>
                       </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Recent Podcasts */}
+                {podcasts.length > 0 && (
+                  <div>
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="text-2xl md:text-3xl font-black">Recent Podcasts</h2>
+                      <button onClick={() => setTab("podcasts")} className="text-sm font-bold text-white/50 hover:text-white transition">View All</button>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                      {podcasts.slice(0, 4).map(v => (
+                        <VideoCard key={v.id} video={v} onClick={() => handleVideoClick(v)} hasSub={hasSub} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Recent Documentaries */}
+                {documentaries.length > 0 && (
+                  <div>
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="text-2xl md:text-3xl font-black">Recent Documentaries</h2>
+                      <button onClick={() => setTab("documentaries")} className="text-sm font-bold text-white/50 hover:text-white transition">View All</button>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                      {documentaries.slice(0, 4).map(v => (
+                        <VideoCard key={v.id} video={v} onClick={() => handleVideoClick(v)} hasSub={hasSub} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Recent Videos */}
+                {videoPosts.length > 0 && (
+                  <div>
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="text-2xl md:text-3xl font-black">Recent Videos</h2>
+                      <button onClick={() => setTab("videos")} className="text-sm font-bold text-white/50 hover:text-white transition">View All</button>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                      {videoPosts.slice(0, 4).map(v => (
+                        <VideoCard key={v.id} video={v} onClick={() => handleVideoClick(v)} hasSub={hasSub} />
+                      ))}
                     </div>
                   </div>
                 )}
@@ -450,5 +493,36 @@ export default function PodcasterProfilePage() {
       )}
       <MobileBottomNav />
     </main>
+  );
+}
+
+
+function VideoCard({ video, onClick, hasSub }: { video: Video; onClick: () => void; hasSub: boolean }) {
+  return (
+    <div onClick={onClick} className="cursor-pointer group flex flex-col">
+      <div className="aspect-video rounded-2xl overflow-hidden bg-[#0f0f12] mb-4 relative shadow-lg border border-white/5">
+        {video.posterUrl ? (
+          <img src={video.posterUrl} alt="" className={`w-full h-full object-cover group-hover:scale-105 transition duration-500 ${video.access_type && video.access_type !== "free" && !hasSub ? 'blur-sm opacity-60' : ''}`} loading="lazy" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center"><Play size={24} className="text-white/30" /></div>
+        )}
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition flex items-center justify-center">
+          {video.access_type && video.access_type !== "free" && !hasSub ? (
+            <div className="bg-black/60 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 flex items-center gap-2">
+              <Lock size={16} className="text-red-500" />
+              <span className="text-xs font-bold text-white uppercase tracking-wider">Premium</span>
+            </div>
+          ) : (
+            <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-transform transform scale-90 group-hover:scale-100">
+              <Play size={24} fill="white" className="text-white ml-1" />
+            </div>
+          )}
+        </div>
+      </div>
+      <p className="text-base font-bold line-clamp-2 mb-2 group-hover:text-red-400 transition-colors">{video.title}</p>
+      <p className="text-sm text-white/40 font-medium mt-auto">
+        {(video.viewCount || 0).toLocaleString()} views · {timeAgo(video.createdAt)}
+      </p>
+    </div>
   );
 }
