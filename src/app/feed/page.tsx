@@ -531,7 +531,6 @@ function PostCard({
                 <video
                   ref={videoRef}
                   src={post.videoUrl ?? post.bitchuteUrl ?? ""}
-                  poster={post.posterUrl}
                   className="w-full max-h-[70vh] object-contain cursor-pointer"
                   muted={muted}
                   loop
