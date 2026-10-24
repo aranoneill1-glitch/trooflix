@@ -160,7 +160,7 @@ export default function Home() {
   }, []);
 
   // Hero — featured non-podcaster video (Loose Change etc.)
-  const heroPool = videos.filter((v) => v.featured && !v.creatorId && !v.uploaderUserId);
+  const heroPool = videos.filter((v) => v.featured);
   const [heroIndex, setHeroIndex] = useState(0);
 
   // New Releases + Trending — Documentaries and Podcasts only
