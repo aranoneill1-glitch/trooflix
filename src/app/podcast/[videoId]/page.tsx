@@ -215,7 +215,7 @@ export default function WatchPage() {
                 <Share size={18} /> Share
               </button>
               
-              <div className="flex items-center gap-2 bg-white/10 hover:bg-white/20 rounded-full px-4 py-2 text-sm font-semibold transition cursor-pointer flex-shrink-0">
+              <div className="flex items-center gap-2 bg-white/10 hover:bg-white/20 rounded-full px-4 py-2 text-sm font-semibold transition cursor-pointer flex-shrink-0 [&>button]:bg-transparent [&>button]:border-none [&>button]:p-0">
                 <SaveButton videoId={video.id} variant="labeled" size={18} />
               </div>
 
@@ -230,10 +230,13 @@ export default function WatchPage() {
 
             {/* Description Box */}
             <div className="mt-4 bg-[#141418] md:rounded-xl p-4 mx-4 md:mx-0">
-              <p className="text-sm font-bold mb-1">
-                <ViewCount videoId={video.id} /> · {timeAgo(video.createdAt)}
-              </p>
-              <p className="text-sm text-white/90 whitespace-pre-wrap mt-2">
+              <div className="flex items-center gap-1.5 text-sm font-bold mb-2 text-white/80">
+                <span className="inline-block"><ViewCount videoId={video.id} /></span>
+                <span>views</span>
+                <span>·</span>
+                <span>{timeAgo(video.createdAt)}</span>
+              </div>
+              <p className="text-sm text-white/90 whitespace-pre-wrap leading-relaxed">
                 {video.description}
               </p>
             </div>
