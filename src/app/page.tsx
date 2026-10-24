@@ -12,13 +12,14 @@ if (typeof window !== "undefined") {
 }
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState, useRef, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState, useRef, Suspense } from "react";
+import { useRouter } from "next/navigation";
 import {
   Play, Info, ChevronLeft, ChevronRight, Plus, ThumbsUp, X,
-  Search, Bell, Home as HomeIcon, Film, FileText, Mic, Tv, Menu,
-  Compass, LogOut } from "lucide-react";
+  Search, Bell, HomeIcon, Film, FileText, Mic, Tv, Menu,
+  Compass, LogOut, Users, Sparkles, BookOpen, Flame
+} from "lucide-react";
 import AppleVideoPlayer from "@/components/AppleVideoPlayer";
 import LoadingIntro from "@/components/LoadingIntro";
 import PullToRefresh from "@/components/PullToRefresh";
@@ -233,7 +234,7 @@ export default function Home() {
             <motion.aside
               initial={{ x: -320 }} animate={{ x: 0 }} exit={{ x: -320 }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed top-0 left-0 h-screen w-[300px] bg-[#0a0a0a]/95 backdrop-blur-2xl border-r border-white/10 z-[300] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] flex flex-col overflow-y-auto"
+              className="fixed top-0 left-0 h-screen w-[300px] bg-[#0a0a0a]/95 backdrop-blur-2xl border-r border-white/10 z-[300] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] flex flex-col shadow-2xl"
             >
               {/* Header */}
               <div className="flex items-center justify-between p-6 border-b border-white/5 shrink-0">
@@ -245,73 +246,72 @@ export default function Home() {
                 </button>
               </div>
 
-              {/* Navigation Links */}
-              <div className="flex-1 p-4 space-y-6 overflow-y-auto scrollbar-hide">
+              {/* Scrollable Content */}
+              <div className="flex-1 overflow-y-auto scrollbar-hide p-4 space-y-6">
                 
-                {/* Main Links */}
+                {/* Main Navigation */}
                 <div className="space-y-1">
-                  <Link href="/" onClick={() => setDrawerOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white font-semibold">
-                    Home
+                  <Link href="/" onClick={() => setDrawerOpen(false)} className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white font-bold">
+                    <HomeIcon size={20} className="text-white/50" /> Home
                   </Link>
-                  <Link href="/creators" onClick={() => setDrawerOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white/80 font-medium">
-                    Creators
+                  <Link href="/creators" onClick={() => setDrawerOpen(false)} className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white/70 hover:text-white font-medium">
+                    <Users size={20} className="text-white/50" /> Creators
                   </Link>
-                  <Link href="/feed" onClick={() => setDrawerOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white/80 font-medium">
-                    Feed
+                  <Link href="/feed" onClick={() => setDrawerOpen(false)} className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white/70 hover:text-white font-medium">
+                    <Play size={20} className="text-white/50" /> Feed
                   </Link>
                 </div>
 
                 <div className="h-px bg-white/5 mx-4" />
 
-                {/* Categories Accordion */}
-                <details className="group">
-                  <summary className="flex items-center justify-between px-4 py-3 rounded-xl hover:bg-white/5 transition cursor-pointer list-none text-white/80 font-medium">
-                    <span>Categories</span>
-                    <ChevronRight size={16} className="group-open:rotate-90 transition-transform duration-200 text-white/50" />
-                  </summary>
-                  <div className="mt-2 space-y-0.5 pl-4">
-                    {CATEGORIES.map((cat: string) => (
-                      <button
-                        key={cat}
-                        onClick={() => { setActiveCategory(cat === activeCategory ? null : cat); setActiveTab("Home"); setDrawerOpen(false); }}
-                        className={`block w-full text-left px-4 py-2.5 rounded-lg text-sm transition ${activeCategory === cat ? "text-red-500 bg-red-500/10 font-semibold" : "text-white/60 hover:text-white hover:bg-white/5"}`}
-                      >
-                        {cat}
-                      </button>
-                    ))}
-                  </div>
-                </details>
-
-                <div className="h-px bg-white/5 mx-4" />
-
-                {/* Trooflix Section */}
+                {/* Explore Section */}
                 <div className="space-y-1">
-                  <Link href="/features" onClick={() => setDrawerOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white/80 font-medium">
-                    Features
+                  <details className="group">
+                    <summary className="flex items-center justify-between px-4 py-3 rounded-xl hover:bg-white/5 transition cursor-pointer list-none text-white/70 hover:text-white font-medium">
+                      <div className="flex items-center gap-4">
+                        <Compass size={20} className="text-white/50" /> Categories
+                      </div>
+                      <ChevronRight size={16} className="text-white/40 group-open:rotate-90 transition-transform duration-200" />
+                    </summary>
+                    <div className="mt-1 space-y-1 pl-12 pr-4">
+                      {CATEGORIES.map((cat: string) => (
+                        <button
+                          key={cat}
+                          onClick={() => { setActiveCategory(cat === activeCategory ? null : cat); setActiveTab("Home"); setDrawerOpen(false); }}
+                          className={`block w-full text-left px-3 py-2 rounded-lg text-sm transition ${activeCategory === cat ? "text-red-500 bg-red-500/10 font-semibold" : "text-white/50 hover:text-white hover:bg-white/5"}`}
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+                  </details>
+                  <Link href="/features" onClick={() => setDrawerOpen(false)} className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white/70 hover:text-white font-medium">
+                    <Sparkles size={20} className="text-white/50" /> Features
                   </Link>
-                  <Link href="/books" onClick={() => setDrawerOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white/80 font-medium">
-                    Book Store
+                  <Link href="/books" onClick={() => setDrawerOpen(false)} className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white/70 hover:text-white font-medium">
+                    <BookOpen size={20} className="text-white/50" /> Book Store
                   </Link>
-                  <Link href="/why-us" onClick={() => setDrawerOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white/80 font-medium">
-                    Why Trooflix
+                  <Link href="/why-us" onClick={() => setDrawerOpen(false)} className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white/70 hover:text-white font-medium">
+                    <Flame size={20} className="text-white/50" /> Why Trooflix
                   </Link>
-                  <Link href="/signup?type=podcaster" onClick={() => setDrawerOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-red-600/10 text-red-500 hover:bg-red-600/20 transition font-bold mt-2">
-                    Become a Creator
-                  </Link>
-                  
-                  <button
-                    onClick={handleLogout}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition font-medium mt-6"
-                  >
-                    <LogOut size={18} /> Log Out
-                  </button>
                 </div>
               </div>
 
-              {/* Footer */}
-              <div className="p-6 border-t border-white/5 shrink-0 bg-black/20">
-                <div className="text-[10px] leading-relaxed tracking-widest text-red-600/60 font-bold">
-                  REAL STORIES.<br />UNCENSORED.<br />TROOFLIX.
+              {/* Footer Actions */}
+              <div className="p-4 border-t border-white/5 shrink-0 space-y-3 bg-black/40">
+                <Link href="/signup?type=podcaster" onClick={() => setDrawerOpen(false)} className="flex items-center justify-center gap-2 w-full px-4 py-3.5 rounded-xl bg-red-600 hover:bg-red-500 text-white transition font-bold shadow-lg shadow-red-600/20">
+                  Become a Creator
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition font-medium"
+                >
+                  <LogOut size={18} /> Log Out
+                </button>
+                <div className="text-center pt-2">
+                  <p className="text-[9px] tracking-[0.2em] text-white/20 font-bold uppercase">
+                    Real Stories. Uncensored.
+                  </p>
                 </div>
               </div>
             </motion.aside>
