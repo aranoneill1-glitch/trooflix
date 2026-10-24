@@ -134,7 +134,8 @@ export default function Home() {
   // Load videos + creators once
   useEffect(() => {
     getCachedCreators().then(setCreators).catch(() => {});
-    getCachedVideos()
+    fetch("/api/videos", { cache: "no-store" })
+      .then((r) => r.json())
       .then((data) => {
         const all = Array.isArray(data) ? data : [];
         setVideos(all);
