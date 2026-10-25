@@ -30,7 +30,7 @@ type Video = {
   is_premium?: boolean;
   access_type?: string;
   category?: string;
-  status?: string; // For future Draft/Scheduled support
+  status?: string;
 };
 
 type SortMode = "newest" | "oldest" | "plays" | "likes";
@@ -49,7 +49,6 @@ export default function StudioEpisodes() {
   const [likeCounts, setLikeCounts] = useState<Record<number, number>>({});
   const [commentCounts, setCommentCounts] = useState<Record<number, number>>({});
   
-  // State for the three-dot menu
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
 
   const load = async () => {
@@ -79,6 +78,13 @@ export default function StudioEpisodes() {
 
   useEffect(() => {
     load();
+  }, []);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClick = () => setOpenMenuId(null);
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
   }, []);
 
   const sorted = useMemo(() => {
@@ -139,7 +145,7 @@ export default function StudioEpisodes() {
   };
 
   return (
-    <div className="p-4 md:p-8 max-w-6xl mx-auto">
+    <div className="p-4 md:p-8 max-w-6xl mx-auto min-h-screen">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div>
@@ -166,10 +172,10 @@ export default function StudioEpisodes() {
               onChange={(e) => setSort(e.target.value as SortMode)}
               className="bg-transparent border-none text-sm text-white/80 outline-none cursor-pointer font-medium"
             >
-              <option value="newest">Newest first</option>
-              <option value="oldest">Oldest first</option>
-              <option value="plays">Most plays</option>
-              <option value="likes">Most likes</option>
+              <option value="newest" className="bg-[#0f0f12]">Newest first</option>
+              <option value="oldest" className="bg-[#0f0f12]">Oldest first</option>
+              <option value="plays" className="bg-[#0f0f12]">Most plays</option>
+              <option value="likes" className="bg-[#0f0f12]">Most likes</option>
             </select>
           </div>
         </div>
@@ -198,42 +204,43 @@ export default function StudioEpisodes() {
         <div className="space-y-3">
           {sorted.map((v) => {
             const currentAccess = v.access_type || (v.is_premium ? "creator" : "free");
-            const status = v.status || "published"; // Fallback until DB supports drafts
+            const status = v.status || "published";
+            const isMenuOpen = openMenuId === v.id;
             
             return (
               <div
                 key={v.id}
-                className="group relative flex flex-col md:flex-row md:items-center gap-4 bg-[#0f0f12]/60 backdrop-blur-sm border border-white/[0.06] hover:border-white/20 rounded-2xl p-3 md:p-4 transition-all duration-300"
+                className={`relative flex flex-col lg:flex-row lg:items-center gap-4 bg-[#0f0f12] border border-white/[0.06] hover:border-white/20 rounded-2xl p-3 md:p-4 transition-all duration-200 ${
+                  isMenuOpen ? "z-50 ring-1 ring-white/10" : "z-10"
+                }`}
               >
-                {/* Thumbnail & Title */}
+                {/* 1. Thumbnail & Title */}
                 <div className="flex items-center gap-4 flex-1 min-w-0">
-                  <div className="w-20 h-14 md:w-24 md:h-16 rounded-xl overflow-hidden flex-shrink-0 bg-black relative">
+                  <div className="w-24 h-16 md:w-32 md:h-20 rounded-lg overflow-hidden flex-shrink-0 bg-black border border-white/5">
                     {v.posterUrl ? (
-                      <img src={v.posterUrl} alt="" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                      <img src={v.posterUrl} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-white/30">
-                        <VideoIcon size={20} />
+                      <div className="w-full h-full flex items-center justify-center text-white/20">
+                        <VideoIcon size={24} />
                       </div>
                     )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="text-base font-bold truncate text-white/90 group-hover:text-white transition-colors">{v.title}</p>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-white/50">
-                      <span>{v.type || "Episode"}</span>
+                  <div className="flex-1 min-w-0 py-1">
+                    <p className="text-base md:text-lg font-bold truncate text-white/90 mb-1">{v.title}</p>
+                    <div className="flex items-center flex-wrap gap-x-2 gap-y-1 text-xs text-white/50">
+                      <span className="font-medium">{v.type || "Episode"}</span>
                       <span>·</span>
                       <span>{v.createdAt ? new Date(v.createdAt).toLocaleDateString() : "—"}</span>
                       <span>·</span>
-                      <span className="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-emerald-400/80 bg-emerald-500/10 px-1.5 py-0.5 rounded">
+                      <span className="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
                         <CheckCircle2 size={10} /> {status}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                {/* Stats */}
-                <div className="flex items-center gap-4 text-xs text-white/60 md:mr-4 bg-black/20 px-3 py-1.5 rounded-lg">
+                {/* 2. Stats (Fixed width so they align nicely) */}
+                <div className="flex items-center gap-4 text-xs font-medium text-white/60 lg:w-48 shrink-0 lg:border-l lg:border-white/5 lg:pl-4">
                   <span className="inline-flex items-center gap-1.5" title="Plays">
                     <Eye size={14} className="text-orange-400" /> {(v.viewCount || 0).toLocaleString()}
                   </span>
@@ -245,85 +252,83 @@ export default function StudioEpisodes() {
                   </span>
                 </div>
 
-                {/* Controls (Category & Access) */}
-                <div className="flex flex-wrap items-center gap-2 md:flex-shrink-0">
-                  
+                {/* 3. Controls */}
+                <div className="flex items-center gap-2 shrink-0 lg:w-auto">
                   <select
                     value={v.category || "Uncategorized"}
                     onChange={(e) => updateCategory(v, e.target.value)}
-                    className="px-3 py-1.5 rounded-lg text-xs font-semibold transition outline-none border bg-white/5 text-white/70 border-white/10 hover:bg-white/10 hover:text-white cursor-pointer"
+                    className="px-3 py-1.5 rounded-lg text-xs font-semibold transition outline-none border bg-[#18181b] text-white/70 border-white/10 hover:bg-[#27272a] hover:text-white cursor-pointer w-28 md:w-32"
                   >
                     <option value="Uncategorized" disabled>Category</option>
                     {CATEGORIES.map(cat => (
-                      <option key={cat} value={cat} className="bg-[#0f0f12]">{cat}</option>
+                      <option key={cat} value={cat} className="bg-[#18181b]">{cat}</option>
                     ))}
                   </select>
 
                   <select
                     value={currentAccess}
                     onChange={(e) => updateAccess(v, e.target.value)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition outline-none border cursor-pointer ${
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition outline-none border cursor-pointer w-28 md:w-32 ${
                       currentAccess === "pass" 
-                        ? "bg-red-500/20 text-red-400 border-red-500/30"
+                        ? "bg-red-500/10 text-red-400 border-red-500/20"
                         : currentAccess === "creator"
-                        ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
-                        : "bg-white/5 text-white/50 border-white/10 hover:bg-white/10"
+                        ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/20"
+                        : "bg-white/5 text-white/60 border-white/10 hover:bg-white/10"
                     }`}
                   >
                     <option value="free" className="text-black">Free</option>
-                    <option value="pass" className="text-black">TF Pass Only</option>
+                    <option value="pass" className="text-black">TF Pass</option>
                     <option value="creator" className="text-black">Creator Sub</option>
                   </select>
 
-                  {/* Three Dot Menu */}
+                  {/* 3-Dots Menu */}
                   <div className="relative">
                     <button
-                      onClick={() => setOpenMenuId(openMenuId === v.id ? null : v.id)}
-                      className="p-1.5 text-white/40 hover:text-white hover:bg-white/10 rounded-lg transition"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenMenuId(isMenuOpen ? null : v.id);
+                      }}
+                      className={`p-2 rounded-lg transition ${isMenuOpen ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white hover:bg-white/10'}`}
                     >
                       <MoreVertical size={18} />
                     </button>
 
-                    {openMenuId === v.id && (
-                      <>
-                        {/* Click-away overlay */}
-                        <div 
-                          className="fixed inset-0 z-40" 
-                          onClick={() => setOpenMenuId(null)}
-                        />
-                        <div className="absolute right-0 top-full mt-2 w-40 bg-[#1c1c1e] border border-white/10 rounded-xl shadow-2xl z-50 py-1.5 overflow-hidden">
-                          <button
-                            onClick={() => {
-                              setOpenMenuId(null);
-                              alert("Edit feature coming soon! (Requires backend API route)");
-                            }}
-                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-white/70 hover:text-white hover:bg-white/5 transition"
-                          >
-                            <Edit2 size={14} /> Edit
-                          </button>
-                          <button
-                            onClick={() => {
-                              setOpenMenuId(null);
-                              alert("Analytics feature coming soon!");
-                            }}
-                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-white/70 hover:text-white hover:bg-white/5 transition"
-                          >
-                            <BarChart2 size={14} /> Analytics
-                          </button>
-                          <div className="h-px bg-white/5 my-1" />
-                          <button
-                            onClick={() => handleDelete(v)}
-                            disabled={deleting === v.id}
-                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition disabled:opacity-50"
-                          >
-                            <Trash2 size={14} /> Delete
-                          </button>
-                        </div>
-                      </>
+                    {isMenuOpen && (
+                      <div 
+                        className="absolute right-0 top-full mt-2 w-40 bg-[#18181b] border border-white/10 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] z-[100] py-1 overflow-hidden"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          onClick={() => {
+                            setOpenMenuId(null);
+                            alert("Edit feature coming soon!");
+                          }}
+                          className="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white/70 hover:text-white hover:bg-white/5 transition"
+                        >
+                          <Edit2 size={14} /> Edit
+                        </button>
+                        <button
+                          onClick={() => {
+                            setOpenMenuId(null);
+                            alert("Analytics feature coming soon!");
+                          }}
+                          className="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white/70 hover:text-white hover:bg-white/5 transition"
+                        >
+                          <BarChart2 size={14} /> Analytics
+                        </button>
+                        <div className="h-px bg-white/5 my-1" />
+                        <button
+                          onClick={() => handleDelete(v)}
+                          disabled={deleting === v.id}
+                          className="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 transition disabled:opacity-50"
+                        >
+                          <Trash2 size={14} /> Delete
+                        </button>
+                      </div>
                     )}
                   </div>
-
                 </div>
+
               </div>
             );
           })}
