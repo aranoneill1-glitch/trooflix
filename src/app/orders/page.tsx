@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { ChevronLeft, Package, CheckCircle, Truck, Loader2 } from "lucide-react";
 import { getCachedUser } from "@/lib/cache";
 
@@ -11,11 +12,13 @@ type Order = {
   product: { name: string; image_url: string } | null; creator_name: string;
 };
 
-export default function MyOrders() {
+function OrdersContent() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const pollCount = useRef(0);
+  const searchParams = useSearchParams();
+  const justPurchased = searchParams.get("purchased") === "1";
 
   useEffect(() => {
     let intervalId: NodeJS.Timeout;
@@ -32,11 +35,8 @@ export default function MyOrders() {
         setOrders(fetchedOrders);
         setLoading(false);
 
-        // If we just bought something (URL has purchased=1) and the webhook hasn't saved it yet
-        const params = new URLSearchParams(window.location.search);
-        const justPurchased = params.get("purchased") === "1";
-
-        if (fetchedOrders.length === 0 || (justPurchased && pollCount.current < 10)) {
+        // If they just bought something and it's not here yet, keep polling
+        if (justPurchased && pollCount.current < 15 && fetchedOrders.length === 0) {
           setSyncing(true);
           pollCount.current += 1;
         } else {
@@ -48,21 +48,16 @@ export default function MyOrders() {
       }
     };
 
-    // Initial fetch
     fetchOrders();
 
-    // Auto-poll every 2 seconds in case the webhook is still processing
-    intervalId = setInterval(() => {
-      if (pollCount.current < 10) {
-        fetchOrders();
-      } else {
-        clearInterval(intervalId);
-        setSyncing(false);
-      }
-    }, 2000);
+    // Poll every 2 seconds (up to 30 seconds) if they just purchased
+    if (justPurchased) {
+      setSyncing(true);
+      intervalId = setInterval(fetchOrders, 2000);
+    }
 
     return () => clearInterval(intervalId);
-  }, []);
+  }, [justPurchased]);
 
   if (loading) return <div className="min-h-screen bg-black text-white p-8 text-center">Loading…</div>;
 
@@ -79,7 +74,7 @@ export default function MyOrders() {
         </div>
         
         {syncing && (
-          <div className="flex items-center gap-2 text-xs text-yellow-500 font-semibold bg-yellow-500/10 px-3 py-1.5 rounded-lg">
+          <div className="flex items-center gap-2 text-xs text-yellow-500 font-semibold bg-yellow-500/10 px-3 py-1.5 rounded-lg animate-pulse">
             <Loader2 size={14} className="animate-spin" /> Syncing your order...
           </div>
         )}
@@ -136,5 +131,13 @@ export default function MyOrders() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function MyOrders() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black text-white p-8 text-center">Loading…</div>}>
+      <OrdersContent />
+    </Suspense>
   );
 }

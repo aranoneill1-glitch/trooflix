@@ -1,0 +1,20 @@
+{
+  "headers": [
+    {
+      "source": "/api/stripe/webhook",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/stripe/webhook",
+      "dest": "/api/stripe/webhook",
+      "continue": true
+    }
+  ]
+}
