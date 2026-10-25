@@ -76,7 +76,7 @@ export default function FeedPage() {
   const [muted, setMuted] = useState(true);
   
   const [openVideoModal, setOpenVideoModal] = useState<Video | null>(null);
-  const [modalStartTime, setModalStartTime] = useState(0); // <-- Track exact start time
+  const [modalStartTime, setModalStartTime] = useState(0);
   
   const [showSoundPrompt, setShowSoundPrompt] = useState(false);
   const postRefs = useRef<Map<number, HTMLElement>>(new Map());
@@ -151,25 +151,44 @@ export default function FeedPage() {
     }
   }, [posts.length]);
 
+  // BULLETPROOF SCROLL LISTENER FOR FEED
   useEffect(() => {
     if (posts.length === 0) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        let best: { id: number; ratio: number } | null = null;
-        for (const entry of entries) {
-          if (entry.intersectionRatio >= 0.6) {
-            const id = Number((entry.target as HTMLElement).dataset.postId);
-            if (!best || entry.intersectionRatio > best.ratio) {
-              best = { id, ratio: entry.intersectionRatio };
+    
+    let timeoutId: any;
+    const handleScroll = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        const viewportCenter = window.innerHeight / 2;
+        let closestId: number | null = null;
+        let minDistance = Infinity;
+
+        postRefs.current.forEach((el, id) => {
+          const rect = el.getBoundingClientRect();
+          // Check if element is visible
+          if (rect.bottom > 0 && rect.top < window.innerHeight) {
+            const elCenter = rect.top + rect.height / 2;
+            const distance = Math.abs(viewportCenter - elCenter);
+            if (distance < minDistance) {
+              minDistance = distance;
+              closestId = id;
             }
           }
+        });
+
+        if (closestId) {
+          setActivePlayingId(closestId);
         }
-        if (best) setActivePlayingId(best.id);
-      },
-      { threshold: [0.25, 0.5, 0.75, 1.0] }
-    );
-    postRefs.current.forEach((el) => observer.observe(el));
-  return () => observer.disconnect();
+      }, 50);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll(); // Call once initially
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      clearTimeout(timeoutId);
+    };
   }, [posts.length]);
 
   useEffect(() => {
@@ -289,7 +308,7 @@ export default function FeedPage() {
               setModalStartTime(startTime);
               setOpenVideoModal(post);
             }}
-            isActivePlaying={activePlayingId === post.id && !openVideoModal} // Pause feed if modal is open
+            isActivePlaying={activePlayingId === post.id && !openVideoModal}
             showSoundPrompt={showSoundPrompt && activePlayingId === post.id}
             onDismissSoundPrompt={() => {
               setShowSoundPrompt(false);
@@ -319,7 +338,7 @@ export default function FeedPage() {
             videos={displayedPosts.filter(p => p.videoUrl || p.bitchuteUrl)}
             initialIndex={displayedPosts.findIndex(p => p.id === openVideoModal.id)}
             onClose={() => setOpenVideoModal(null)}
-            startTime={modalStartTime} // <-- Pass the exact timestamp
+            startTime={modalStartTime}
             author={{
               name: authorFor(openVideoModal).name,
               avatar: authorFor(openVideoModal).avatar,

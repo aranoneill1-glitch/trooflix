@@ -46,6 +46,7 @@ export default function ProfileReelViewer({
 
   const trackedViews = useRef<Set<number>>(new Set());
 
+  // Scroll to initial index on mount
   useEffect(() => {
     if (containerRef.current) {
       const container = containerRef.current;
@@ -56,31 +57,48 @@ export default function ProfileReelViewer({
     }
   }, [initialIndex]);
 
+  // BULLETPROOF SCROLL LISTENER (Replaces IntersectionObserver)
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const index = Number((entry.target as HTMLElement).dataset.index);
-            setActiveIndex(index);
-            
-            const videoId = Number((entry.target as HTMLElement).dataset.videoId);
-            if (!trackedViews.current.has(videoId)) {
-              trackedViews.current.add(videoId);
-              trackView(videoId);
-            }
+    let timeoutId: any;
+    const handleScroll = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        const containerCenter = container.clientHeight / 2;
+        let closestIndex = initialIndex;
+        let minDistance = Infinity;
+
+        Array.from(container.children).forEach((child, i) => {
+          const rect = child.getBoundingClientRect();
+          const containerRect = container.getBoundingClientRect();
+          // Calculate element center relative to container
+          const elCenter = (rect.top - containerRect.top) + rect.height / 2;
+          const distance = Math.abs(containerCenter - elCenter);
+          
+          if (distance < minDistance) {
+            minDistance = distance;
+            closestIndex = i;
           }
         });
-      },
-      { threshold: 0.6 }
-    );
 
-    Array.from(container.children).forEach((child) => observer.observe(child));
-    return () => observer.disconnect();
-  }, []);
+        setActiveIndex(closestIndex);
+        
+        const videoId = Number((container.children[closestIndex] as HTMLElement).dataset.videoId);
+        if (!trackedViews.current.has(videoId)) {
+          trackedViews.current.add(videoId);
+          trackView(videoId);
+        }
+      }, 50);
+    };
+
+    container.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+      clearTimeout(timeoutId);
+    };
+  }, [initialIndex]);
 
   return (
     <div className="fixed inset-0 z-[200] bg-black flex flex-col">
@@ -107,7 +125,7 @@ export default function ProfileReelViewer({
             onOpenComments={() => setCommentVideo(v)}
             onOpenShare={() => setShareVideo(v)}
             onCloseViewer={onClose}
-            initialStartTime={i === initialIndex ? startTime : 0} // <-- Pass start time to the active video
+            initialStartTime={i === initialIndex ? startTime : 0}
           />
         ))}
       </div>
@@ -146,19 +164,25 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
+    
     if (isActive) {
-      if (initialStartTime > 0) {
+      v.muted = muted; // Ensure mute state is synced
+      if (initialStartTime > 0 && v.duration) {
         v.currentTime = initialStartTime;
       }
-      v.play().catch(() => {});
-      setPlaying(true);
+      // Force play with a small delay to ensure it's loaded
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
+        }
+      }, 50);
     } else {
       v.pause();
       if (initialStartTime === 0) try { v.currentTime = 0; } catch {}
       setPlaying(false);
       setProgress(0);
     }
-  }, [isActive, initialStartTime]);
+  }, [isActive, initialStartTime, muted]);
 
   const togglePlay = () => {
     const v = videoRef.current;
@@ -249,6 +273,11 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
         playsInline
         muted={muted}
         onTimeUpdate={handleTimeUpdate}
+        onLoadedMetadata={(e) => {
+          if (isActive && initialStartTime > 0) {
+            e.currentTarget.currentTime = initialStartTime;
+          }
+        }}
       />
 
       <AnimatePresence>
