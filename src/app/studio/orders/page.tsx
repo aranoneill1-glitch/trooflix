@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, Package, CheckCircle, Truck, X } from "lucide-react";
+import { ChevronLeft, Package, CheckCircle, Truck, X, Pencil } from "lucide-react";
 import { getCachedUser } from "@/lib/cache";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -16,6 +16,7 @@ type Order = {
   shipping_postal_code: string;
   shipping_country: string;
   tracking_number?: string;
+  shipping_carrier?: string;
   created_at: string;
   order_code: string;
   product: {
@@ -24,15 +25,18 @@ type Order = {
   } | null;
 };
 
+const CARRIERS = ["USPS", "UPS", "FedEx", "DHL", "Royal Mail", "Other"];
+
 export default function StudioOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<number | null>(null);
 
-  // Modal state for tracking number
+  // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [trackingInput, setTrackingInput] = useState("");
+  const [carrierInput, setCarrierInput] = useState("USPS");
 
   const load = async () => {
     const user = await getCachedUser();
@@ -51,26 +55,30 @@ export default function StudioOrders() {
 
   useEffect(() => { load(); }, []);
 
-  const openShipModal = (orderId: number) => {
-    setSelectedOrderId(orderId);
-    setTrackingInput("");
+  const openShipModal = (order: Order) => {
+    setSelectedOrder(order);
+    setTrackingInput(order.tracking_number || "");
+    setCarrierInput(order.shipping_carrier || "USPS");
     setIsModalOpen(true);
   };
 
   const confirmShip = async () => {
-    if (!selectedOrderId || !trackingInput.trim()) return;
-    setUpdating(selectedOrderId);
-    setIsModalOpen(false); // Close instantly for snappy UX
+    if (!selectedOrder || !trackingInput.trim()) return;
+    
+    setUpdating(selectedOrder.id);
+    setIsModalOpen(false);
     
     await fetch("/api/creator/orders", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ 
-        orderId: selectedOrderId, 
+        orderId: selectedOrder.id, 
         status: "shipped", 
-        tracking_number: trackingInput.trim() 
+        tracking_number: trackingInput.trim(),
+        shipping_carrier: carrierInput
       }),
     });
+    
     await load();
     setUpdating(null);
   };
@@ -123,12 +131,22 @@ export default function StudioOrders() {
 
                 <div className="flex items-center gap-3">
                   {o.status === "shipped" ? (
-                    <span className="inline-flex items-center gap-1.5 text-xs font-bold text-green-400 bg-green-500/10 px-3 py-1.5 rounded-full">
-                      <CheckCircle size={14} /> Shipped
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center gap-1.5 text-xs font-bold text-green-400 bg-green-500/10 px-3 py-1.5 rounded-full">
+                        <CheckCircle size={14} /> Shipped
+                      </span>
+                      <button
+                        onClick={() => openShipModal(o)}
+                        disabled={updating === o.id}
+                        className="p-1.5 bg-white/5 hover:bg-white/10 text-white/60 hover:text-white rounded-lg transition"
+                        title="Edit Shipping Info"
+                      >
+                        <Pencil size={14} />
+                      </button>
+                    </div>
                   ) : (
                     <button
-                      onClick={() => openShipModal(o.id)}
+                      onClick={() => openShipModal(o)}
                       disabled={updating === o.id}
                       className="inline-flex items-center gap-1.5 bg-red-600 hover:bg-red-500 text-white font-bold text-xs px-4 py-2 rounded-lg transition disabled:opacity-50"
                     >
@@ -153,7 +171,9 @@ export default function StudioOrders() {
                   {o.tracking_number && (
                     <>
                       <p className="text-xs text-white/40 font-bold uppercase tracking-wider mb-1 mt-3">Tracking #</p>
-                      <p className="font-mono text-sm text-emerald-400">{o.tracking_number}</p>
+                      <p className="font-mono text-sm text-emerald-400">
+                        {o.shipping_carrier ? `${o.shipping_carrier} - ` : ''}{o.tracking_number}
+                      </p>
                     </>
                   )}
                 </div>
@@ -183,9 +203,26 @@ export default function StudioOrders() {
               </button>
               
               <div className="mb-6">
-                <h2 className="text-xl font-bold text-white mb-1">Mark as Shipped</h2>
-                <p className="text-sm text-white/50">You must provide a tracking number to notify the buyer.</p>
+                <h2 className="text-xl font-bold text-white mb-1">
+                  {selectedOrder?.status === "shipped" ? "Edit Shipment" : "Mark as Shipped"}
+                </h2>
+                <p className="text-sm text-white/50">
+                  {selectedOrder?.status === "shipped" 
+                    ? "Update the tracking information for this order." 
+                    : "Provide the shipping details to notify the buyer."}
+                </p>
               </div>
+
+              <label className="text-xs font-bold text-white/50 uppercase tracking-wider block mb-2">Shipping Provider</label>
+              <select
+                value={carrierInput}
+                onChange={(e) => setCarrierInput(e.target.value)}
+                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white outline-none focus:border-red-500 transition mb-4 appearance-none cursor-pointer"
+              >
+                {CARRIERS.map(c => (
+                  <option key={c} value={c} className="bg-[#0a0a0a]">{c}</option>
+                ))}
+              </select>
 
               <label className="text-xs font-bold text-white/50 uppercase tracking-wider block mb-2">Tracking Number</label>
               <input
@@ -202,7 +239,8 @@ export default function StudioOrders() {
                 disabled={!trackingInput.trim()}
                 className="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3.5 rounded-xl transition disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                <Truck size={18} /> Confirm Shipment
+                <Truck size={18} /> 
+                {selectedOrder?.status === "shipped" ? "Update Shipment" : "Confirm Shipment"}
               </button>
             </motion.div>
           </motion.div>
