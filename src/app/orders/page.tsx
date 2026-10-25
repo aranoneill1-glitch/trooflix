@@ -6,19 +6,9 @@ import { ChevronLeft, Package, CheckCircle, Truck } from "lucide-react";
 import { getCachedUser } from "@/lib/cache";
 
 type Order = {
-  id: number;
-  amount_cents: number;
-  status: string;
-  shipping_address: string;
-  shipping_city: string;
-  shipping_postal_code: string;
-  shipping_country: string;
-  tracking_number?: string;
-  shipping_carrier?: string;
-  created_at: string;
-  order_code: string;
-  product: { name: string; image_url: string } | null;
-  creator_name: string;
+  id: number; amount_cents: number; status: string; shipping_address: string; shipping_city: string; shipping_postal_code: string; shipping_country: string;
+  tracking_number?: string; shipping_carrier?: string; created_at: string; order_code: string;
+  product: { name: string; image_url: string } | null; creator_name: string;
 };
 
 export default function MyOrders() {
@@ -28,7 +18,8 @@ export default function MyOrders() {
   useEffect(() => {
     getCachedUser().then((user) => {
       if (!user) return;
-      fetch(`/api/user/orders?userId=${user.id}`)
+      // FORCE NO CACHE HERE
+      fetch(`/api/user/orders?userId=${user.id}&t=${Date.now()}`, { cache: "no-store" })
         .then((r) => r.json())
         .then((d) => setOrders(d.orders || []))
         .catch(() => setOrders([]))
@@ -59,11 +50,7 @@ export default function MyOrders() {
               
               <div className="flex gap-4 flex-1">
                 <div className="w-20 h-20 rounded-lg bg-black flex-shrink-0 overflow-hidden">
-                  {o.product?.image_url ? (
-                    <img src={o.product.image_url} className="w-full h-full object-cover" />
-                  ) : (
-                    <Package size={24} className="m-auto text-white/20 mt-7" />
-                  )}
+                  {o.product?.image_url ? <img src={o.product.image_url} className="w-full h-full object-cover" /> : <Package size={24} className="m-auto text-white/20 mt-7" />}
                 </div>
                 <div>
                   <p className="text-xs text-white/50 mb-1">From {o.creator_name}</p>
@@ -72,26 +59,20 @@ export default function MyOrders() {
                   
                   <div className="flex items-center gap-2 mt-2">
                     <p className="text-xs text-white/40">Ordered on {new Date(o.created_at).toLocaleDateString()}</p>
-                    <span className="text-[10px] font-mono font-bold bg-white/10 text-white/70 px-2 py-0.5 rounded">
-                      {o.order_code}
-                    </span>
+                    <span className="text-[10px] font-mono font-bold bg-white/10 text-white/70 px-2 py-0.5 rounded">{o.order_code}</span>
                   </div>
                 </div>
               </div>
 
               <div className="flex flex-col md:items-end justify-between border-t md:border-t-0 md:border-l border-white/10 pt-4 md:pt-0 md:pl-6">
                 <div className="mb-4 md:mb-0 text-right">
-                  <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full ${
-                    o.status === "shipped" ? "bg-green-500/10 text-green-400" : "bg-yellow-500/10 text-yellow-400"
-                  }`}>
+                  <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full ${o.status === "shipped" ? "bg-green-500/10 text-green-400" : "bg-yellow-500/10 text-yellow-400"}`}>
                     {o.status === "shipped" ? <><Truck size={14} /> Shipped</> : <><CheckCircle size={14} /> Processing</>}
                   </span>
                   {o.tracking_number && (
                     <div className="mt-2 text-xs">
                       <span className="text-white/40">Tracking: </span>
-                      <span className="font-mono text-emerald-400 font-semibold">
-                        {o.shipping_carrier ? `${o.shipping_carrier} - ` : ''}{o.tracking_number}
-                      </span>
+                      <span className="font-mono text-emerald-400 font-semibold">{o.shipping_carrier ? `${o.shipping_carrier} - ` : ''}{o.tracking_number}</span>
                     </div>
                   )}
                 </div>

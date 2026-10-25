@@ -19,10 +19,7 @@ type Order = {
   shipping_carrier?: string;
   created_at: string;
   order_code: string;
-  product: {
-    name: string;
-    image_url: string;
-  } | null;
+  product: { name: string; image_url: string } | null;
 };
 
 const CARRIERS = ["USPS", "UPS", "FedEx", "DHL", "Royal Mail", "Other"];
@@ -33,7 +30,6 @@ export default function StudioOrders() {
   const [updating, setUpdating] = useState<number | null>(null);
   const [filter, setFilter] = useState<"all" | "pending" | "shipped">("all");
 
-  // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [trackingInput, setTrackingInput] = useState("");
@@ -47,7 +43,8 @@ export default function StudioOrders() {
     const cData = await cRes.json();
     
     if (cData.creator && cData.creator.id) {
-      const oRes = await fetch(`/api/creator/orders?creatorId=${cData.creator.id}`);
+      // FORCE NO CACHE HERE
+      const oRes = await fetch(`/api/creator/orders?creatorId=${cData.creator.id}&t=${Date.now()}`, { cache: "no-store" });
       const oData = await oRes.json();
       setOrders(oData.orders || []);
     }
@@ -107,7 +104,6 @@ export default function StudioOrders() {
           <p className="text-white/50 text-sm">Manage merch purchases and shipping addresses.</p>
         </div>
         
-        {/* Filter Tabs */}
         <div className="flex bg-[#0f0f12] border border-white/5 rounded-xl p-1 w-fit">
           <button
             onClick={() => setFilter("all")}
@@ -217,19 +213,14 @@ export default function StudioOrders() {
         )}
       </div>
 
-      {/* Tracking Number Modal */}
       <AnimatePresence>
         {isModalOpen && (
           <motion.div 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
-            exit={{ opacity: 0 }} 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} 
             className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
           >
             <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 20 }} 
-              animate={{ opacity: 1, scale: 1, y: 0 }} 
-              exit={{ opacity: 0, scale: 0.95, y: 20 }} 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} 
               className="relative z-[101] bg-[#0a0a0a] border border-white/10 rounded-3xl w-full max-w-md shadow-2xl p-6"
             >
               <button onClick={() => setIsModalOpen(false)} className="absolute top-4 right-4 p-2 bg-white/5 rounded-full hover:bg-white/10 transition">
@@ -241,40 +232,30 @@ export default function StudioOrders() {
                   {selectedOrder?.status === "shipped" ? "Edit Shipment" : "Mark as Shipped"}
                 </h2>
                 <p className="text-sm text-white/50">
-                  {selectedOrder?.status === "shipped" 
-                    ? "Update the tracking information for this order." 
-                    : "Provide the shipping details to notify the buyer."}
+                  {selectedOrder?.status === "shipped" ? "Update the tracking information for this order." : "Provide the shipping details to notify the buyer."}
                 </p>
               </div>
 
               <label className="text-xs font-bold text-white/50 uppercase tracking-wider block mb-2">Shipping Provider</label>
               <select
-                value={carrierInput}
-                onChange={(e) => setCarrierInput(e.target.value)}
+                value={carrierInput} onChange={(e) => setCarrierInput(e.target.value)}
                 className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white outline-none focus:border-red-500 transition mb-4 appearance-none cursor-pointer"
               >
-                {CARRIERS.map(c => (
-                  <option key={c} value={c} className="bg-[#0a0a0a]">{c}</option>
-                ))}
+                {CARRIERS.map(c => <option key={c} value={c} className="bg-[#0a0a0a]">{c}</option>)}
               </select>
 
               <label className="text-xs font-bold text-white/50 uppercase tracking-wider block mb-2">Tracking Number</label>
               <input
-                type="text"
-                value={trackingInput}
-                onChange={(e) => setTrackingInput(e.target.value)}
+                type="text" value={trackingInput} onChange={(e) => setTrackingInput(e.target.value)}
                 placeholder="e.g. 9400 1000 0000 0000 0000"
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white outline-none focus:border-red-500 transition mb-6"
-                autoFocus
+                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white outline-none focus:border-red-500 transition mb-6" autoFocus
               />
 
               <button
-                onClick={confirmShip}
-                disabled={!trackingInput.trim()}
+                onClick={confirmShip} disabled={!trackingInput.trim()}
                 className="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3.5 rounded-xl transition disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                <Truck size={18} /> 
-                {selectedOrder?.status === "shipped" ? "Update Shipment" : "Confirm Shipment"}
+                <Truck size={18} /> {selectedOrder?.status === "shipped" ? "Update Shipment" : "Confirm Shipment"}
               </button>
             </motion.div>
           </motion.div>
