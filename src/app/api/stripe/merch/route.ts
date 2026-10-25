@@ -26,9 +26,11 @@ export async function POST(req: Request) {
     const { data: userData } = await supabaseAdmin.auth.admin.getUserById(userId);
     const userEmail = userData?.user?.email;
 
+    const baseUrl = process.env.NEXT_PUBLIC_URL || "https://trooflixtv.com";
+
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
-      customer_email: userEmail, // <-- Stripe will email them a receipt automatically
+      customer_email: userEmail,
       line_items: [
         {
           price_data: {
@@ -44,13 +46,14 @@ export async function POST(req: Request) {
         },
       ],
       payment_intent_data: {
-        description: `Trooflix Merch Order`, // <-- Appears on the receipt
+        description: `Trooflix Merch Order`,
       },
       shipping_address_collection: {
         allowed_countries: ["US", "CA", "GB", "AU", "IE", "NZ"],
       },
-      success_url: `${process.env.NEXT_PUBLIC_URL || "https://www.trooflixtv.com"}/podcaster/${creatorSlug}?purchased=1`,
-      cancel_url: `${process.env.NEXT_PUBLIC_URL || "https://www.trooflixtv.com"}/podcaster/${creatorSlug}`,
+      // REDIRECT TO THE NEW SUCCESS PAGE
+      success_url: `${baseUrl}/checkout/success?creator=${creatorSlug}`,
+      cancel_url: `${baseUrl}/podcaster/${creatorSlug}`,
       client_reference_id: userId,
       metadata: {
         type: "merch",
