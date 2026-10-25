@@ -21,6 +21,7 @@ export default function AdminSalesPage() {
   const [orders, setOrders] = useState<SaleOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<"all" | "hold" | "ready">("all");
 
   useEffect(() => {
     fetch("/api/admin/sales")
@@ -50,12 +51,21 @@ export default function AdminSalesPage() {
     return { gross, fees, pendingPayouts, readyPayouts };
   }, [orders]);
 
-  const filtered = orders.filter(
-    (o) =>
+  const filtered = orders.filter((o) => {
+    const matchesSearch =
       o.order_code.toLowerCase().includes(search.toLowerCase()) ||
       o.creator_name.toLowerCase().includes(search.toLowerCase()) ||
-      o.product?.name.toLowerCase().includes(search.toLowerCase())
-  );
+      o.product?.name.toLowerCase().includes(search.toLowerCase());
+      
+    if (!matchesSearch) return false;
+    
+    if (filter === "hold") return o.status !== "shipped";
+    if (filter === "ready") return o.status === "shipped";
+    return true;
+  });
+
+  const pendingCount = orders.filter(o => o.status !== "shipped").length;
+  const readyCount = orders.filter(o => o.status === "shipped").length;
 
   const formatMoney = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 
@@ -110,9 +120,9 @@ export default function AdminSalesPage() {
         </div>
       </div>
 
-      {/* Toolbar */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="relative flex-1 max-w-md">
+      {/* Toolbar & Filter Tabs */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+        <div className="relative flex-1 max-w-md w-full">
           <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" />
           <input
             type="text"
@@ -122,6 +132,27 @@ export default function AdminSalesPage() {
             className="w-full bg-[#0f0f12] border border-white/10 rounded-xl pl-11 pr-4 py-3 text-sm outline-none focus:border-red-500 transition placeholder:text-white/30"
           />
         </div>
+
+        <div className="flex bg-[#0f0f12] border border-white/5 rounded-xl p-1 w-fit">
+          <button
+            onClick={() => setFilter("all")}
+            className={`px-4 py-2 text-sm font-semibold rounded-lg transition ${filter === "all" ? "bg-white/10 text-white" : "text-white/50 hover:text-white"}`}
+          >
+            All ({orders.length})
+          </button>
+          <button
+            onClick={() => setFilter("hold")}
+            className={`px-4 py-2 text-sm font-semibold rounded-lg transition flex items-center gap-1.5 ${filter === "hold" ? "bg-yellow-500/20 text-yellow-400" : "text-white/50 hover:text-white"}`}
+          >
+            <Clock size={14} /> On Hold ({pendingCount})
+          </button>
+          <button
+            onClick={() => setFilter("ready")}
+            className={`px-4 py-2 text-sm font-semibold rounded-lg transition flex items-center gap-1.5 ${filter === "ready" ? "bg-green-500/20 text-green-400" : "text-white/50 hover:text-white"}`}
+          >
+            <Truck size={14} /> Ready to Pay ({readyCount})
+          </button>
+        </div>
       </div>
 
       {/* Orders List */}
@@ -129,7 +160,7 @@ export default function AdminSalesPage() {
         {filtered.length === 0 ? (
           <div className="text-center py-20 bg-[#0f0f12] border border-white/5 rounded-3xl">
             <ShoppingBag size={40} className="mx-auto text-white/20 mb-4" />
-            <p className="text-white/50 text-sm">No sales found.</p>
+            <p className="text-white/50 text-sm">No sales found for this filter.</p>
           </div>
         ) : (
           filtered.map((o) => {

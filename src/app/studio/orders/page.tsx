@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, Package, CheckCircle, Truck, X, Pencil } from "lucide-react";
+import { ChevronLeft, Package, CheckCircle, Truck, X, Pencil, Clock } from "lucide-react";
 import { getCachedUser } from "@/lib/cache";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -31,6 +31,7 @@ export default function StudioOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<number | null>(null);
+  const [filter, setFilter] = useState<"all" | "pending" | "shipped">("all");
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -83,6 +84,15 @@ export default function StudioOrders() {
     setUpdating(null);
   };
 
+  const pendingCount = orders.filter(o => o.status !== "shipped").length;
+  const shippedCount = orders.filter(o => o.status === "shipped").length;
+
+  const filteredOrders = orders.filter(o => {
+    if (filter === "pending") return o.status !== "shipped";
+    if (filter === "shipped") return o.status === "shipped";
+    return true;
+  });
+
   if (loading) return <div className="p-8 text-white/50 text-center">Loading…</div>;
 
   return (
@@ -91,19 +101,43 @@ export default function StudioOrders() {
         <ChevronLeft size={16} /> Back to dashboard
       </Link>
 
-      <h1 className="text-2xl font-black mb-1">Your Orders</h1>
-      <p className="text-white/50 text-sm mb-6">
-        Manage merch purchases and shipping addresses.
-      </p>
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-2xl font-black mb-1">Your Orders</h1>
+          <p className="text-white/50 text-sm">Manage merch purchases and shipping addresses.</p>
+        </div>
+        
+        {/* Filter Tabs */}
+        <div className="flex bg-[#0f0f12] border border-white/5 rounded-xl p-1 w-fit">
+          <button
+            onClick={() => setFilter("all")}
+            className={`px-4 py-2 text-sm font-semibold rounded-lg transition ${filter === "all" ? "bg-white/10 text-white" : "text-white/50 hover:text-white"}`}
+          >
+            All ({orders.length})
+          </button>
+          <button
+            onClick={() => setFilter("pending")}
+            className={`px-4 py-2 text-sm font-semibold rounded-lg transition flex items-center gap-1.5 ${filter === "pending" ? "bg-yellow-500/20 text-yellow-400" : "text-white/50 hover:text-white"}`}
+          >
+            <Clock size={14} /> Pending ({pendingCount})
+          </button>
+          <button
+            onClick={() => setFilter("shipped")}
+            className={`px-4 py-2 text-sm font-semibold rounded-lg transition flex items-center gap-1.5 ${filter === "shipped" ? "bg-green-500/20 text-green-400" : "text-white/50 hover:text-white"}`}
+          >
+            <Truck size={14} /> Shipped ({shippedCount})
+          </button>
+        </div>
+      </div>
 
       <div className="space-y-4">
-        {orders.length === 0 ? (
+        {filteredOrders.length === 0 ? (
           <div className="text-center py-16 bg-[#141418] border border-white/5 rounded-xl">
             <Package size={32} className="mx-auto text-white/20 mb-3" />
-            <p className="text-white/50 text-sm">No orders yet. Share your shop to get sales!</p>
+            <p className="text-white/50 text-sm">No orders found for this filter.</p>
           </div>
         ) : (
-          orders.map(o => (
+          filteredOrders.map(o => (
             <div key={o.id} className="bg-[#141418] border border-white/5 rounded-xl p-5">
               <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                 
