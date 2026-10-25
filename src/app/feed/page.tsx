@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {Heart, MessageCircle, Send, Bookmark, Play, Pause, VolumeX, Volume2, Plus, Share, Repeat2, ChevronLeft, Maximize2} from "lucide-react";
+import {Heart, MessageCircle, Send, Bookmark, Play, Pause, VolumeX, Volume2, Plus, Share, Repeat2, ChevronLeft} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import ShareReelSheet from "@/components/ShareReelSheet";
@@ -236,7 +236,6 @@ export default function FeedPage() {
     return posts;
   }, [posts, filter]);
 
-  // CRITICAL FIX: Calculate the filtered array and index BEFORE passing to modal
   const videosForModal = useMemo(() => displayedPosts.filter(p => p.videoUrl || p.bitchuteUrl), [displayedPosts]);
   const initialModalIndex = useMemo(() => videosForModal.findIndex(p => p.id === openVideoModal?.id), [videosForModal, openVideoModal]);
 
@@ -523,23 +522,18 @@ function PostCard({
 
           <div className="mt-2 rounded-2xl overflow-hidden bg-black relative">
             {hasVideo && (
-              <div className="relative bg-black w-full flex justify-center">
+              <div 
+                className="relative bg-black w-full flex justify-center cursor-pointer"
+                onClick={handleFullScreenClick}
+              >
                 <video
                   ref={videoRef}
                   src={post.videoUrl ?? post.bitchuteUrl ?? ""}
-                  className="w-full max-h-[75vh] object-cover cursor-pointer"
+                  className="w-full max-h-[75vh] object-cover pointer-events-none"
                   muted={muted}
                   loop
                   playsInline
                   preload={isActivePlaying || isNext ? "auto" : "metadata"}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (muted) {
-                      onToggleMute();
-                    } else {
-                      togglePlay();
-                    }
-                  }}
                 />
                 <TextOverlayRenderer overlays={post.textOverlays} />
                 
@@ -563,16 +557,6 @@ function PostCard({
                     className="w-9 h-9 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white border border-white/10 hover:bg-black/80 transition"
                   >
                     {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
-                  </button>
-                </div>
-
-                <div className="absolute bottom-3 right-3 flex items-center gap-2 z-30">
-                  <button
-                    onClick={handleFullScreenClick}
-                    className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white border border-white/10 hover:bg-black/80 transition shadow-lg"
-                    title="Full Screen"
-                  >
-                    <Maximize2 size={20} />
                   </button>
                 </div>
 
@@ -630,16 +614,6 @@ function PostCard({
                 <SaveButton videoId={post.id} variant="icon" />
               </div>
             </div>
-
-            <button
-              onClick={handleFullScreenClick}
-              className="flex items-center text-white/50 hover:text-white group transition"
-              title="Full Screen"
-            >
-              <div className="p-2 rounded-full group-hover:bg-white/10">
-                <Maximize2 size={20} />
-              </div>
-            </button>
           </div>
         </div>
       </div>
