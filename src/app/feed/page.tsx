@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {Heart, MessageCircle, Send, Bookmark, Play, Pause, VolumeX, Volume2, Plus, Share, Repeat2, ChevronLeft} from "lucide-react";
+import {Heart, MessageCircle, Send, Bookmark, Play, Pause, VolumeX, Volume2, Plus, Share, Repeat2, ChevronLeft, Maximize2} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import ShareReelSheet from "@/components/ShareReelSheet";
@@ -14,7 +14,6 @@ import CommentDrawer from "@/components/CommentDrawer";
 import ProfileReelViewer from "@/components/ProfileReelViewer";
 import ViewCount, { trackView } from "@/components/ViewCount";
 import TextOverlayRenderer from "@/components/TextOverlay";
-import XVideoModal from "@/components/XVideoModal";
 import { getCachedUser } from "@/lib/cache";
 import PullToRefresh from "@/components/PullToRefresh";
 import ReportModal from "@/components/ReportModal";
@@ -202,7 +201,6 @@ export default function FeedPage() {
     return { name: "TROOFLIX", handle: "@trooflix", avatar: "", verified: true, tier: "podcaster" as const, href: null };
   };
 
-  // Filter posts for the "Reels" tab
   const displayedPosts = useMemo(() => {
     if (filter === "reels") {
       return posts.filter((p: any) => p.videoUrl || p.bitchuteUrl || p.type === "Reel");
@@ -276,8 +274,8 @@ export default function FeedPage() {
             userId={userId}
             author={authorFor(post)}
             onOpenComments={() => setCommentVideo(post)}
+            onOpenFullScreen={() => setOpenVideoModal(post)}
             isActivePlaying={activePlayingId === post.id}
-            
             showSoundPrompt={showSoundPrompt && activePlayingId === post.id}
             onDismissSoundPrompt={() => {
               setShowSoundPrompt(false);
@@ -323,14 +321,12 @@ export default function FeedPage() {
   );
 }
 
-// ============================================================
-// PostCard
-// ============================================================
 function PostCard({
   post,
   userId,
   author,
   onOpenComments,
+  onOpenFullScreen,
   isActivePlaying,
   isNext,
   showSoundPrompt,
@@ -343,6 +339,7 @@ function PostCard({
   userId: string | null;
   author: { name: string; handle: string; avatar: string; verified: boolean; tier?: "user" | "pro" | "podcaster"; href: string | null };
   onOpenComments: () => void;
+  onOpenFullScreen: () => void;
   isActivePlaying: boolean;
   isNext?: boolean;
   showSoundPrompt: boolean;
@@ -375,7 +372,6 @@ function PostCard({
     if (isActivePlaying) {
       pauseAllOthers(v);
       v.muted = muted;
-      // Force playback immediately
       v.play().catch(() => {});
       setPlaying(true);
     } else {
@@ -531,6 +527,17 @@ function PostCard({
                     className="w-9 h-9 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white border border-white/10 hover:bg-black/80 transition"
                   >
                     {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                  </button>
+                </div>
+
+                {/* Full Screen Button */}
+                <div className="absolute bottom-3 right-3 flex items-center gap-2 z-20">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onOpenFullScreen(); }}
+                    className="w-9 h-9 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white border border-white/10 hover:bg-black/80 transition"
+                    title="Full Screen"
+                  >
+                    <Maximize2 size={18} />
                   </button>
                 </div>
 
