@@ -74,32 +74,28 @@ export async function POST(req: Request) {
       const session = event.data.object as Stripe.Checkout.Session;
       
       if (session.metadata?.type === "merch") {
-        try {
-          const sessionDetails = session as any;
-          const shipping = sessionDetails.collected_information?.shipping_details || sessionDetails.shipping_details;
-          
-          const { error } = await supabaseAdmin.from("merch_orders").insert({
-            buyer_user_id: session.metadata.userId,
-            creator_id: Number(session.metadata.creatorId),
-            product_id: Number(session.metadata.productId),
-            stripe_session_id: session.id,
-            amount_cents: session.amount_total || 0,
-            status: "paid",
-            shipping_name: shipping?.name || null,
-            shipping_address: shipping?.address?.line1 || null,
-            shipping_city: shipping?.address?.city || null,
-            shipping_postal_code: shipping?.address?.postal_code || null,
-            shipping_country: shipping?.address?.country || null,
-          });
+        const sessionDetails = session as any;
+        const shipping = sessionDetails.collected_information?.shipping_details || sessionDetails.shipping_details;
+        
+        // CRITICAL FIX: Use upsert on stripe_session_id to prevent duplicate orders
+        const { error } = await supabaseAdmin.from("merch_orders").upsert({
+          buyer_user_id: session.metadata.userId,
+          creator_id: Number(session.metadata.creatorId),
+          product_id: Number(session.metadata.productId),
+          stripe_session_id: session.id,
+          amount_cents: session.amount_total || 0,
+          status: "paid",
+          shipping_name: shipping?.name || null,
+          shipping_address: shipping?.address?.line1 || null,
+          shipping_city: shipping?.address?.city || null,
+          shipping_postal_code: shipping?.address?.postal_code || null,
+          shipping_country: shipping?.address?.country || null,
+        }, { onConflict: "stripe_session_id" }); // <-- The magic bullet
 
-          if (error) {
-            console.error("[stripe] merch_orders insert failed:", error);
-            // Return the exact database error to Stripe so we can see it
-            return new NextResponse(`Database Error: ${error.message}`, { status: 500 });
-          }
-        } catch (err: any) {
-          console.error("[stripe] merch order fatal crash:", err);
-          return new NextResponse(`Fatal Error: ${err.message}`, { status: 500 });
+        if (error) {
+          console.error("[stripe] merch_orders upsert failed:", error);
+          // Force Stripe to retry later by returning a 500 error
+          return new NextResponse(`Database Error: ${error.message}`, { status: 500 });
         }
       }
     }
