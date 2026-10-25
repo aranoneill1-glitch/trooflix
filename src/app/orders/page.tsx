@@ -14,6 +14,7 @@ type Order = {
   shipping_postal_code: string;
   shipping_country: string;
   created_at: string;
+  order_code: string;
   product: { name: string; image_url: string } | null;
   creator_name: string;
 };
@@ -66,7 +67,15 @@ export default function MyOrders() {
                   <p className="text-xs text-white/50 mb-1">From {o.creator_name}</p>
                   <h3 className="font-bold text-lg">{o.product?.name || "Unknown Product"}</h3>
                   <p className="text-white/60 text-sm">${(o.amount_cents / 100).toFixed(2)}</p>
-                  <p className="text-xs text-white/40 mt-2">Ordered on {new Date(o.created_at).toLocaleDateString()}</p>
+                  
+                  {/* ORDER CODE DISPLAYED HERE */}
+                  <div className="flex items-center gap-2 mt-2">
+                    <p className="text-xs text-white/40">Ordered on {new Date(o.created_at).toLocaleDateString()}</p>
+                    <span className="text-[10px] font-mono font-bold bg-white/10 text-white/70 px-2 py-0.5 rounded">
+                      {o.order_code}
+                    </span>
+                  </div>
+
                 </div>
               </div>
 

@@ -15,6 +15,7 @@ type Order = {
   shipping_postal_code: string;
   shipping_country: string;
   created_at: string;
+  order_code: string;
   product: {
     name: string;
     image_url: string;
@@ -88,7 +89,12 @@ export default function StudioOrders() {
                     )}
                   </div>
                   <div>
-                    <h3 className="font-bold text-lg">{o.product?.name || "Unknown Product"}</h3>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-bold text-lg">{o.product?.name || "Unknown Product"}</h3>
+                      <span className="text-[10px] font-mono font-bold bg-white/10 text-white/70 px-2 py-0.5 rounded">
+                        {o.order_code}
+                      </span>
+                    </div>
                     <p className="text-green-400 font-semibold">${(o.amount_cents / 100).toFixed(2)}</p>
                     <p className="text-xs text-white/40 mt-1">
                       {new Date(o.created_at).toLocaleDateString()} at {new Date(o.created_at).toLocaleTimeString()}
@@ -115,12 +121,18 @@ export default function StudioOrders() {
               </div>
 
               {/* Shipping Address Box */}
-              <div className="mt-4 p-4 bg-black/30 rounded-lg border border-white/5">
-                <p className="text-xs text-white/40 font-bold uppercase tracking-wider mb-2">Ship To:</p>
-                <p className="text-sm font-semibold">{o.shipping_name}</p>
-                <p className="text-sm text-white/70">{o.shipping_address}</p>
-                <p className="text-sm text-white/70">{o.shipping_city}, {o.shipping_postal_code}</p>
-                <p className="text-sm text-white/70">{o.shipping_country}</p>
+              <div className="mt-4 p-4 bg-black/30 rounded-lg border border-white/5 flex flex-col md:flex-row justify-between gap-4">
+                <div>
+                  <p className="text-xs text-white/40 font-bold uppercase tracking-wider mb-2">Ship To:</p>
+                  <p className="text-sm font-semibold text-white/90">{o.shipping_name}</p>
+                  <p className="text-sm text-white/70">{o.shipping_address}</p>
+                  <p className="text-sm text-white/70">{o.shipping_city}, {o.shipping_postal_code}</p>
+                  <p className="text-sm text-white/70">{o.shipping_country}</p>
+                </div>
+                <div className="md:text-right border-t md:border-t-0 md:border-l border-white/10 pt-3 md:pt-0 md:pl-4">
+                  <p className="text-xs text-white/40 font-bold uppercase tracking-wider mb-2">Receipt Code</p>
+                  <p className="font-mono text-sm text-white/80">{o.order_code}</p>
+                </div>
               </div>
             </div>
           ))
