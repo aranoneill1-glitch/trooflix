@@ -13,6 +13,7 @@ type Order = {
   shipping_city: string;
   shipping_postal_code: string;
   shipping_country: string;
+  tracking_number?: string;
   created_at: string;
   order_code: string;
   product: { name: string; image_url: string } | null;
@@ -68,14 +69,12 @@ export default function MyOrders() {
                   <h3 className="font-bold text-lg">{o.product?.name || "Unknown Product"}</h3>
                   <p className="text-white/60 text-sm">${(o.amount_cents / 100).toFixed(2)}</p>
                   
-                  {/* ORDER CODE DISPLAYED HERE */}
                   <div className="flex items-center gap-2 mt-2">
                     <p className="text-xs text-white/40">Ordered on {new Date(o.created_at).toLocaleDateString()}</p>
                     <span className="text-[10px] font-mono font-bold bg-white/10 text-white/70 px-2 py-0.5 rounded">
                       {o.order_code}
                     </span>
                   </div>
-
                 </div>
               </div>
 
@@ -86,8 +85,14 @@ export default function MyOrders() {
                   }`}>
                     {o.status === "shipped" ? <><Truck size={14} /> Shipped</> : <><CheckCircle size={14} /> Processing</>}
                   </span>
+                  {o.tracking_number && (
+                    <div className="mt-2 text-xs">
+                      <span className="text-white/40">Tracking: </span>
+                      <span className="font-mono text-emerald-400 font-semibold">{o.tracking_number}</span>
+                    </div>
+                  )}
                 </div>
-                <div className="text-sm text-white/70 md:text-right">
+                <div className="text-sm text-white/70 md:text-right mt-3">
                   <p className="font-semibold text-white/90">Shipping to:</p>
                   <p>{o.shipping_address}</p>
                   <p>{o.shipping_city}, {o.shipping_postal_code}</p>

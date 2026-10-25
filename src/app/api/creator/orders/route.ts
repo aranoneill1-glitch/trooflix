@@ -21,7 +21,6 @@ export async function GET(req: Request) {
 
     if (error) throw error;
 
-    // Fetch product details to attach to orders
     const productIds = [...new Set(orders?.map(o => o.product_id))];
     const { data: products } = await supabaseAdmin
       .from("products")
@@ -32,6 +31,7 @@ export async function GET(req: Request) {
 
     const enrichedOrders = orders?.map(o => ({
       ...o,
+      order_code: `TRF-${String(o.id).padStart(6, '0')}`,
       product: productsMap.get(o.product_id) || null
     }));
 
@@ -43,12 +43,12 @@ export async function GET(req: Request) {
 
 export async function PATCH(req: Request) {
   try {
-    const { orderId, status } = await req.json();
+    const { orderId, status, tracking_number } = await req.json();
     if (!orderId || !status) return NextResponse.json({ error: "Missing data" }, { status: 400 });
 
     const { error } = await supabaseAdmin
       .from("merch_orders")
-      .update({ status })
+      .update({ status, tracking_number })
       .eq("id", Number(orderId));
 
     if (error) throw error;

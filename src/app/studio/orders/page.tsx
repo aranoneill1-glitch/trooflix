@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, Package, CheckCircle, Clock, Truck } from "lucide-react";
+import { ChevronLeft, Package, CheckCircle, Truck, X } from "lucide-react";
 import { getCachedUser } from "@/lib/cache";
+import { motion, AnimatePresence } from "framer-motion";
 
 type Order = {
   id: number;
@@ -14,6 +15,7 @@ type Order = {
   shipping_city: string;
   shipping_postal_code: string;
   shipping_country: string;
+  tracking_number?: string;
   created_at: string;
   order_code: string;
   product: {
@@ -26,6 +28,11 @@ export default function StudioOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<number | null>(null);
+
+  // Modal state for tracking number
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
+  const [trackingInput, setTrackingInput] = useState("");
 
   const load = async () => {
     const user = await getCachedUser();
@@ -44,12 +51,25 @@ export default function StudioOrders() {
 
   useEffect(() => { load(); }, []);
 
-  const markShipped = async (orderId: number) => {
-    setUpdating(orderId);
+  const openShipModal = (orderId: number) => {
+    setSelectedOrderId(orderId);
+    setTrackingInput("");
+    setIsModalOpen(true);
+  };
+
+  const confirmShip = async () => {
+    if (!selectedOrderId || !trackingInput.trim()) return;
+    setUpdating(selectedOrderId);
+    setIsModalOpen(false); // Close instantly for snappy UX
+    
     await fetch("/api/creator/orders", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ orderId, status: "shipped" }),
+      body: JSON.stringify({ 
+        orderId: selectedOrderId, 
+        status: "shipped", 
+        tracking_number: trackingInput.trim() 
+      }),
     });
     await load();
     setUpdating(null);
@@ -79,7 +99,6 @@ export default function StudioOrders() {
             <div key={o.id} className="bg-[#141418] border border-white/5 rounded-xl p-5">
               <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                 
-                {/* Left Side: Product and Buyer */}
                 <div className="flex gap-4">
                   <div className="w-16 h-16 rounded-lg bg-black flex-shrink-0 overflow-hidden">
                     {o.product?.image_url ? (
@@ -102,7 +121,6 @@ export default function StudioOrders() {
                   </div>
                 </div>
 
-                {/* Right Side: Status and Action */}
                 <div className="flex items-center gap-3">
                   {o.status === "shipped" ? (
                     <span className="inline-flex items-center gap-1.5 text-xs font-bold text-green-400 bg-green-500/10 px-3 py-1.5 rounded-full">
@@ -110,7 +128,7 @@ export default function StudioOrders() {
                     </span>
                   ) : (
                     <button
-                      onClick={() => markShipped(o.id)}
+                      onClick={() => openShipModal(o.id)}
                       disabled={updating === o.id}
                       className="inline-flex items-center gap-1.5 bg-red-600 hover:bg-red-500 text-white font-bold text-xs px-4 py-2 rounded-lg transition disabled:opacity-50"
                     >
@@ -120,7 +138,6 @@ export default function StudioOrders() {
                 </div>
               </div>
 
-              {/* Shipping Address Box */}
               <div className="mt-4 p-4 bg-black/30 rounded-lg border border-white/5 flex flex-col md:flex-row justify-between gap-4">
                 <div>
                   <p className="text-xs text-white/40 font-bold uppercase tracking-wider mb-2">Ship To:</p>
@@ -132,12 +149,65 @@ export default function StudioOrders() {
                 <div className="md:text-right border-t md:border-t-0 md:border-l border-white/10 pt-3 md:pt-0 md:pl-4">
                   <p className="text-xs text-white/40 font-bold uppercase tracking-wider mb-2">Receipt Code</p>
                   <p className="font-mono text-sm text-white/80">{o.order_code}</p>
+                  
+                  {o.tracking_number && (
+                    <>
+                      <p className="text-xs text-white/40 font-bold uppercase tracking-wider mb-1 mt-3">Tracking #</p>
+                      <p className="font-mono text-sm text-emerald-400">{o.tracking_number}</p>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
           ))
         )}
       </div>
+
+      {/* Tracking Number Modal */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }} 
+            className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
+          >
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }} 
+              animate={{ opacity: 1, scale: 1, y: 0 }} 
+              exit={{ opacity: 0, scale: 0.95, y: 20 }} 
+              className="relative z-[101] bg-[#0a0a0a] border border-white/10 rounded-3xl w-full max-w-md shadow-2xl p-6"
+            >
+              <button onClick={() => setIsModalOpen(false)} className="absolute top-4 right-4 p-2 bg-white/5 rounded-full hover:bg-white/10 transition">
+                <X size={18} />
+              </button>
+              
+              <div className="mb-6">
+                <h2 className="text-xl font-bold text-white mb-1">Mark as Shipped</h2>
+                <p className="text-sm text-white/50">You must provide a tracking number to notify the buyer.</p>
+              </div>
+
+              <label className="text-xs font-bold text-white/50 uppercase tracking-wider block mb-2">Tracking Number</label>
+              <input
+                type="text"
+                value={trackingInput}
+                onChange={(e) => setTrackingInput(e.target.value)}
+                placeholder="e.g. 9400 1000 0000 0000 0000"
+                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white outline-none focus:border-red-500 transition mb-6"
+                autoFocus
+              />
+
+              <button
+                onClick={confirmShip}
+                disabled={!trackingInput.trim()}
+                className="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3.5 rounded-xl transition disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                <Truck size={18} /> Confirm Shipment
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
