@@ -43,7 +43,6 @@ export default function MobileBottomNav() {
   const isLongPress = useRef(false);
 
   useEffect(() => {
-    // Completely hide bottom nav if running in Android native app
     if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android') {
       setIsTVApp(true);
     }
@@ -131,13 +130,13 @@ export default function MobileBottomNav() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowLogoutMenu(false)}
-              className="fixed inset-0 z-[90] bg-black/40 backdrop-blur-sm"
+              className="fixed inset-0 z-[300] bg-black/40 backdrop-blur-sm"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="fixed bottom-28 right-6 z-[100] bg-[#1c1c1e] border border-white/10 rounded-2xl p-2 w-48 shadow-2xl select-none"
+              className="fixed bottom-28 right-6 z-[301] bg-[#1c1c1e] border border-white/10 rounded-2xl p-2 w-48 shadow-2xl select-none"
             >
               <button
                 onClick={handleLogout}
@@ -151,8 +150,8 @@ export default function MobileBottomNav() {
         )}
       </AnimatePresence>
 
-      {/* Floating Glass Pill Container */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-[env(safe-area-inset-bottom)] pointer-events-none">
+      {/* Floating Glass Pill Container — z-index raised to 250 so it sits above Reels */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-[250] flex justify-center pb-[env(safe-area-inset-bottom)] pointer-events-none">
         <div className="pointer-events-auto flex items-center justify-around w-[92%] max-w-sm mb-4 px-2 py-2 bg-[#1c1c1e]/80 backdrop-blur-2xl border border-white/10 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
           
           {TABS.map((tab) => {
