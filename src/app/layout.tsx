@@ -17,7 +17,6 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "Trooflix",
   },
-  
 };
 
 export const viewport: Viewport = {
@@ -36,9 +35,30 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/favicon.png" />
         <link rel="apple-touch-icon" href="/favicon.png" />
+        
+        {/* TV Viewport Override */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                function applyTVViewport() {
+                  if (window.Capacitor && window.Capacitor.getPlatform() === 'android') {
+                    var meta = document.querySelector('meta[name="viewport"]');
+                    if (meta) {
+                      meta.setAttribute('content', 'width=1920, initial-scale=1, maximum-scale=1, user-scalable=no');
+                    }
+                  }
+                }
+                applyTVViewport();
+                document.addEventListener('DOMContentLoaded', applyTVViewport);
+                setTimeout(applyTVViewport, 100);
+              })();
+            `,
+          }}
+        />
       </head>
       <PushNotificationManager />
-        <body className={inter.className}>
+      <body className={inter.className}>
         <script
           dangerouslySetInnerHTML={{
             __html: `

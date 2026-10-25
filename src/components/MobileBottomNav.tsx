@@ -33,6 +33,7 @@ const triggerHaptic = async () => {
 export default function MobileBottomNav() {
   const pathname = usePathname();
   const router = useRouter();
+  const [isTVApp, setIsTVApp] = useState(false);
 
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [signedIn, setSignedIn] = useState<boolean | null>(null);
@@ -42,12 +43,21 @@ export default function MobileBottomNav() {
   const isLongPress = useRef(false);
 
   useEffect(() => {
+    // Completely hide bottom nav if running in Android native app
+    if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android') {
+      setIsTVApp(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isTVApp) return;
     TABS.forEach(tab => router.prefetch(tab.path));
     router.prefetch("/profile");
     router.prefetch("/login");
-  }, [router]);
+  }, [router, isTVApp]);
 
   useEffect(() => {
+    if (isTVApp) return;
     const supabase = createClient();
     getCachedUser().then((user) => {
       if (!user) {
@@ -62,7 +72,9 @@ export default function MobileBottomNav() {
         })
         .catch(() => {});
     });
-  }, [pathname]);
+  }, [pathname, isTVApp]);
+
+  if (isTVApp) return null;
 
   const prefetchTab = (path: string) => {
     try {
