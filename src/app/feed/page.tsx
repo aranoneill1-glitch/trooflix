@@ -22,7 +22,7 @@ type Video = {
   id: number;
   title?: string;
   description?: string;
-  type: string;                // "Reel" | "Image" | "Troo"
+  type: string;
   videoUrl?: string;
   bitchuteUrl?: string;
   posterUrl?: string;
@@ -129,6 +129,15 @@ export default function FeedPage() {
   useEffect(() => {
     if (userId !== null || filter === "all") load();
   }, [userId, filter]);
+
+  // Fallback: if no active playing ID is set, make the first post active
+  useEffect(() => {
+    if (posts.length > 0) {
+      if (activePlayingId === null || !posts.some(p => p.id === activePlayingId)) {
+        setActivePlayingId(posts[0].id);
+      }
+    }
+  }, [posts, activePlayingId]);
 
   useEffect(() => {
     if (posts.length === 0) return;
@@ -267,7 +276,7 @@ export default function FeedPage() {
           </div>
         )}
 
-        {displayedPosts.map((post, idx) => { const activeIdx = displayedPosts.findIndex(p => p.id === activePlayingId); return (
+        {displayedPosts.map((post) => (
           <PostCard
             key={post.id}
             post={post}
@@ -288,7 +297,7 @@ export default function FeedPage() {
             muted={muted}
             onToggleMute={() => setMuted((m) => !m)}
           />
-        ); })}
+        ))}
       </div>
 
       {commentVideo && (
@@ -409,7 +418,6 @@ function PostCard({
       className="bg-black border-b border-white/10"
     >
       <div className="flex gap-3 p-3">
-        {/* Left Column - Avatar */}
         <div className="flex-shrink-0">
           {author.href ? (
             <Link href={author.href}>
@@ -432,9 +440,7 @@ function PostCard({
           )}
         </div>
 
-        {/* Right Column - Content */}
         <div className="flex-1 min-w-0">
-          {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1 text-sm truncate">
               {author.href ? (
@@ -475,14 +481,12 @@ function PostCard({
             </div>
           </div>
 
-          {/* Content Text */}
           {post.description && (
             <p className="text-[15px] text-white whitespace-pre-wrap mt-1 mb-2 leading-relaxed">
               {post.description}
             </p>
           )}
 
-          {/* Media */}
           <div className="mt-2 rounded-2xl overflow-hidden bg-black relative">
             {hasVideo && (
               <div className="relative bg-black w-full flex justify-center">
@@ -505,7 +509,6 @@ function PostCard({
                 />
                 <TextOverlayRenderer overlays={post.textOverlays} />
                 
-                {/* Play/Pause overlay */}
                 {!playing && isActivePlaying && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/20 pointer-events-none">
                     <div className="w-16 h-16 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center border border-white/20">
@@ -530,18 +533,17 @@ function PostCard({
                   </button>
                 </div>
 
-                {/* Full Screen Button */}
-                <div className="absolute bottom-3 right-3 flex items-center gap-2 z-20">
+                {/* Full Screen Button on Video */}
+                <div className="absolute bottom-3 right-3 flex items-center gap-2 z-30">
                   <button
                     onClick={(e) => { e.stopPropagation(); onOpenFullScreen(); }}
-                    className="w-9 h-9 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white border border-white/10 hover:bg-black/80 transition"
+                    className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white border border-white/10 hover:bg-black/80 transition shadow-lg"
                     title="Full Screen"
                   >
-                    <Maximize2 size={18} />
+                    <Maximize2 size={20} />
                   </button>
                 </div>
 
-                {/* Tap to Unmute overlay */}
                 {muted && isActivePlaying && (
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
                     <div className="bg-black/60 backdrop-blur-md px-5 py-2.5 rounded-full border border-white/20 flex items-center gap-2">
@@ -597,6 +599,17 @@ function PostCard({
                 <SaveButton videoId={post.id} variant="icon" />
               </div>
             </div>
+
+            {/* Full Screen Button in Action Bar */}
+            <button
+              onClick={onOpenFullScreen}
+              className="flex items-center text-white/50 hover:text-white group transition"
+              title="Full Screen"
+            >
+              <div className="p-2 rounded-full group-hover:bg-white/10">
+                <Maximize2 size={20} />
+              </div>
+            </button>
           </div>
         </div>
       </div>
