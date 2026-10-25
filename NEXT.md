@@ -1,21 +1,16 @@
 # Next session — start here
 
 ## Immediate task
-Avatar upload is broken. Missing R2 env vars in `.env.local`.
-
-### Step 1 — get these 5 values from Cloudflare R2 dashboard:
-- R2_ENDPOINT=https://<account_id>.r2.cloudflarestorage.com
-- R2_ACCESS_KEY_ID=...
-- R2_SECRET_ACCESS_KEY=...
-- R2_BUCKET_NAME=...
-- R2_PUBLIC_URL=https://pub-xxxxx.r2.dev
-
-### Step 2 — add to .env.local AND Vercel env vars
-### Step 3 — npm run dev, test upload at /account
-### Step 4 — npm run build, push, test on trooflixtv.com
+None. The avatar upload bug is resolved.
 
 ## What's done
 - Signup (email + @handle + password, no verification)
 - Login (email OR @handle)
 - DMs (inbox + thread, WhatsApp-style, 3s poll)
 - @handle system with live availability check
+- **Avatar upload fixed:** R2 env vars successfully synced to Vercel Production.
+- **Admin UI:** Moved "Wipe Feed" from the main dashboard to the sidebar footer.
+- **Project Map:** Created `PROJECT_MAP.md` (read this first for full repo context).
+
+## What's next
+- *[Insert next feature/bug here]*
