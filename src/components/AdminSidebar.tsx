@@ -19,12 +19,14 @@ import {
   PlayCircle,
   AlertTriangle,
   Trash2,
+  ShoppingBag,
 } from "lucide-react";
 
 const ITEMS = [
   { label: "Overview", path: "/admin", icon: LayoutDashboard, exact: true },
   { label: "Videos", path: "/admin/videos", icon: Video },
   { label: "Users", path: "/admin/users", icon: Users },
+  { label: "Sales", path: "/admin/sales", icon: ShoppingBag },
   { label: "Reports", path: "/admin/reports", icon: Flag },
   { label: "Podcasters", path: "/admin/podcasters", icon: Mic },
   { label: "Payouts", path: "/admin/payouts", icon: Banknote },
@@ -37,7 +39,6 @@ export default function AdminSidebar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Wipe Feed state
   const [wipeOpen, setWipeOpen] = useState(false);
   const [wipeConfirm, setWipeConfirm] = useState("");
   const [wiping, setWiping] = useState(false);
@@ -72,10 +73,9 @@ export default function AdminSidebar() {
       } else {
         setWipeResult(`✅ Wiped ${d.deleted} posts. Kept ${d.kept} (Loose Change).`);
         setWipeConfirm("");
-        // Slight delay before closing so they can see success message
         setTimeout(() => {
           setWipeOpen(false);
-          window.location.reload(); // Reload to refresh stats on current page
+          window.location.reload();
         }, 2000);
       }
     } catch {
@@ -87,7 +87,6 @@ export default function AdminSidebar() {
 
   const sidebarContent = (
     <>
-      {/* Logo */}
       <div className="px-6 py-6 border-b border-white/5 flex items-center justify-between">
         <Link href="/admin" className="text-2xl font-black tracking-tight block">
           <span className="text-white">TROO</span>
@@ -105,7 +104,6 @@ export default function AdminSidebar() {
         </p>
       </div>
 
-      {/* Nav items */}
       <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
         {ITEMS.map((item) => {
           const Icon = item.icon;
@@ -128,7 +126,6 @@ export default function AdminSidebar() {
         })}
       </nav>
 
-      {/* Footer */}
       <div className="px-3 py-4 border-t border-white/5 space-y-1">
         <button
           onClick={() => {
@@ -163,7 +160,6 @@ export default function AdminSidebar() {
 
   return (
     <>
-      {/* Mobile top bar */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-[#0a0a0c]/95 backdrop-blur border-b border-white/5 flex items-center justify-between px-4 py-3">
         <Link href="/admin" className="text-xl font-black tracking-tight">
           <span className="text-white">TROO</span>
@@ -178,7 +174,6 @@ export default function AdminSidebar() {
         </button>
       </div>
 
-      {/* Mobile drawer */}
       {mobileOpen && (
         <div
           className="md:hidden fixed inset-0 z-50 bg-black/70"
@@ -193,12 +188,10 @@ export default function AdminSidebar() {
         </div>
       )}
 
-      {/* Desktop sidebar */}
       <aside className="hidden md:flex flex-col w-64 shrink-0 h-screen sticky top-0 bg-[#0a0a0c] border-r border-white/5 relative">
         {sidebarContent}
       </aside>
 
-      {/* === WIPE CONFIRM MODAL === */}
       {wipeOpen && (
         <div className="fixed inset-0 z-[500] bg-black/85 flex items-center justify-center px-4">
           <div className="bg-[#0f0f12] border border-red-600/40 rounded-2xl p-6 max-w-md w-full">
