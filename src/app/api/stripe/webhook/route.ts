@@ -65,6 +65,7 @@ export async function POST(req: Request) {
   try {
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
   } catch (err: any) {
+    console.error("Webhook signature verification failed:", err.message);
     return new NextResponse(`Webhook Error: ${err.message}`, { status: 400 });
   }
 
@@ -72,8 +73,11 @@ export async function POST(req: Request) {
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
       if (session.metadata?.type === "merch") {
-        const shipping = (session as any).collected_information?.shipping_details || (session as any).shipping_details;
-        await supabaseAdmin.from("merch_orders").insert({
+        // Robustly extract shipping details (Stripe API v2023+)
+        const sessionDetails = session as any;
+        const shipping = sessionDetails.collected_information?.shipping_details || sessionDetails.shipping_details;
+        
+        const { error } = await supabaseAdmin.from("merch_orders").insert({
           buyer_user_id: session.metadata.userId,
           creator_id: Number(session.metadata.creatorId),
           product_id: Number(session.metadata.productId),
@@ -86,6 +90,12 @@ export async function POST(req: Request) {
           shipping_postal_code: shipping?.address?.postal_code || null,
           shipping_country: shipping?.address?.country || null,
         });
+
+        // CRITICAL FIX: Throw error if Supabase insert fails so Stripe knows to retry
+        if (error) {
+          console.error("[stripe] merch_orders insert failed:", error);
+          throw new Error(`Supabase insert failed: ${error.message}`);
+        }
       }
     }
 
