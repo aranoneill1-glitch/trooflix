@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { ChevronLeft, Package, CheckCircle, Truck } from "lucide-react";
+import { ChevronLeft, Package, CheckCircle, Truck, Loader2 } from "lucide-react";
 import { getCachedUser } from "@/lib/cache";
 
 type Order = {
@@ -14,17 +14,54 @@ type Order = {
 export default function MyOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
+  const pollCount = useRef(0);
 
   useEffect(() => {
-    getCachedUser().then((user) => {
+    let intervalId: NodeJS.Timeout;
+
+    const fetchOrders = async () => {
+      const user = await getCachedUser();
       if (!user) return;
-      // FORCE NO CACHE HERE
-      fetch(`/api/user/orders?userId=${user.id}&t=${Date.now()}`, { cache: "no-store" })
-        .then((r) => r.json())
-        .then((d) => setOrders(d.orders || []))
-        .catch(() => setOrders([]))
-        .finally(() => setLoading(false));
-    });
+
+      try {
+        const r = await fetch(`/api/user/orders?userId=${user.id}&t=${Date.now()}`, { cache: "no-store" });
+        const d = await r.json();
+        const fetchedOrders = d.orders || [];
+        
+        setOrders(fetchedOrders);
+        setLoading(false);
+
+        // If we just bought something (URL has purchased=1) and the webhook hasn't saved it yet
+        const params = new URLSearchParams(window.location.search);
+        const justPurchased = params.get("purchased") === "1";
+
+        if (fetchedOrders.length === 0 || (justPurchased && pollCount.current < 10)) {
+          setSyncing(true);
+          pollCount.current += 1;
+        } else {
+          setSyncing(false);
+          if (intervalId) clearInterval(intervalId);
+        }
+      } catch {
+        setLoading(false);
+      }
+    };
+
+    // Initial fetch
+    fetchOrders();
+
+    // Auto-poll every 2 seconds in case the webhook is still processing
+    intervalId = setInterval(() => {
+      if (pollCount.current < 10) {
+        fetchOrders();
+      } else {
+        clearInterval(intervalId);
+        setSyncing(false);
+      }
+    }, 2000);
+
+    return () => clearInterval(intervalId);
   }, []);
 
   if (loading) return <div className="min-h-screen bg-black text-white p-8 text-center">Loading…</div>;
@@ -35,11 +72,21 @@ export default function MyOrders() {
         <ChevronLeft size={16} /> Back to profile
       </Link>
 
-      <h1 className="text-2xl font-black mb-1">My Orders</h1>
-      <p className="text-white/50 text-sm mb-6">Track your merch purchases.</p>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-black mb-1">My Orders</h1>
+          <p className="text-white/50 text-sm">Track your merch purchases.</p>
+        </div>
+        
+        {syncing && (
+          <div className="flex items-center gap-2 text-xs text-yellow-500 font-semibold bg-yellow-500/10 px-3 py-1.5 rounded-lg">
+            <Loader2 size={14} className="animate-spin" /> Syncing your order...
+          </div>
+        )}
+      </div>
 
       <div className="space-y-4">
-        {orders.length === 0 ? (
+        {orders.length === 0 && !syncing ? (
           <div className="text-center py-16 bg-[#141418] border border-white/5 rounded-xl">
             <Package size={32} className="mx-auto text-white/20 mb-3" />
             <p className="text-white/50 text-sm">You haven't ordered anything yet.</p>
