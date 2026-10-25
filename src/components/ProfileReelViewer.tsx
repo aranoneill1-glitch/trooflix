@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { X, Play, Volume2, VolumeX, MessageCircle, Share, Send, Eye, Heart } from "lucide-react";
+import { X, Play, Volume2, VolumeX, MessageCircle, Send, Eye, Heart, Share } from "lucide-react";
 import LikeButton from "@/components/LikeButton";
 import SaveButton from "@/components/SaveButton";
 import ViewCount, { trackView } from "@/components/ViewCount";
@@ -82,8 +82,8 @@ export default function ProfileReelViewer({
 
   return (
     <div className="fixed inset-0 z-[200] bg-black flex flex-col">
-      <div className="absolute top-0 left-0 right-0 z-50 p-4 pt-[env(safe-area-inset-top)] bg-gradient-to-b from-black/80 to-transparent flex justify-between items-center">
-        <button onClick={onClose} className="p-2 bg-black/40 rounded-full text-white backdrop-blur">
+      <div className="absolute top-0 left-0 right-0 z-50 p-4 pt-[env(safe-area-inset-top)] bg-gradient-to-b from-black/80 to-transparent flex justify-between items-center pointer-events-none">
+        <button onClick={onClose} className="p-2 bg-black/40 rounded-full text-white backdrop-blur pointer-events-auto">
           <X size={24} />
         </button>
       </div>
@@ -131,8 +131,13 @@ export default function ProfileReelViewer({
 
 function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenComments, onOpenShare, onCloseViewer }: any) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const progressBarRef = useRef<HTMLDivElement>(null);
+  
   const [playing, setPlaying] = useState(false);
   const [showHeart, setShowHeart] = useState(false);
+  const [progress, setProgress] = useState(0); // 0 to 1
+  const [isSeeking, setIsSeeking] = useState(false);
+  
   const tapTimeout = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -145,6 +150,7 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
       v.pause();
       try { v.currentTime = 0; } catch {}
       setPlaying(false);
+      setProgress(0);
     }
   }, [isActive]);
 
@@ -161,17 +167,15 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
   };
 
   const handleScreenTap = (e: React.MouseEvent) => {
-    // Ignore taps on actual UI elements
     const target = e.target as HTMLElement;
-    if (target.closest('button') || target.closest('a') || target.closest('.ui-ignore')) return;
+    // Ignore taps on UI elements or the progress bar
+    if (target.closest('button') || target.closest('a') || target.closest('.ui-ignore') || target.closest('.progress-bar-container')) return;
 
     if (tapTimeout.current) {
-      // DOUBLE TAP DETECTED
       clearTimeout(tapTimeout.current);
       tapTimeout.current = null;
       triggerLike();
     } else {
-      // SINGLE TAP DETECTED (Wait 250ms to see if a second tap comes)
       tapTimeout.current = setTimeout(() => {
         togglePlay();
         tapTimeout.current = null;
@@ -183,17 +187,45 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
     setShowHeart(true);
     setTimeout(() => setShowHeart(false), 800);
 
-    // Find the LikeButton and simulate a click on its inner element
     const el = document.getElementById(`like-btn-${video.id}`);
     if (el) {
-      // Try to click the first child (button, div, or svg)
       const clickable = el.querySelector('button') || el.firstElementChild;
-      if (clickable) {
-        (clickable as HTMLElement).click();
-      } else {
-        el.click();
-      }
+      if (clickable) (clickable as HTMLElement).click();
+      else el.click();
     }
+  };
+
+  const handleTimeUpdate = () => {
+    const v = videoRef.current;
+    if (!v || isSeeking || !v.duration) return;
+    setProgress(v.currentTime / v.duration);
+  };
+
+  const handleSeek = (e: React.MouseEvent | React.TouchEvent) => {
+    const bar = progressBarRef.current;
+    const v = videoRef.current;
+    if (!bar || !v || !v.duration) return;
+
+    const rect = bar.getBoundingClientRect();
+    let clientX = 0;
+    
+    if ('touches' in e) clientX = e.touches[0].clientX;
+    else clientX = (e as React.MouseEvent).clientX;
+
+    const percentage = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    setProgress(percentage);
+    v.currentTime = percentage * v.duration;
+  };
+
+  const startSeeking = (e: React.MouseEvent | React.TouchEvent) => {
+    setIsSeeking(true);
+    handleSeek(e);
+  };
+
+  const stopSeeking = () => setIsSeeking(false);
+
+  const handleDrag = (e: React.MouseEvent | React.TouchEvent) => {
+    if (isSeeking) handleSeek(e);
   };
 
   return (
@@ -203,7 +235,6 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
       className="w-full h-full snap-start relative bg-black flex items-center justify-center"
       onClick={handleScreenTap}
     >
-      {/* Video has pointer-events-none so it passes all taps to the wrapper */}
       <video
         ref={videoRef}
         src={video.videoUrl ?? video.bitchuteUrl ?? ""}
@@ -211,6 +242,7 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
         loop
         playsInline
         muted={muted}
+        onTimeUpdate={handleTimeUpdate}
       />
 
       <AnimatePresence>
@@ -227,7 +259,7 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
         )}
       </AnimatePresence>
 
-      {/* Overlay UI has pointer-events-none, but buttons inside have pointer-events-auto */}
+      {/* Overlay UI */}
       <div className="absolute inset-0 flex flex-col justify-end p-4 pb-6 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none z-10">
         
         {/* RIGHT SIDE ACTIONS */}
@@ -258,7 +290,7 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
         </div>
 
         {/* BOTTOM LEFT INFO */}
-        <div className="flex-1 flex flex-col justify-end max-w-[75%] pointer-events-auto mb-2">
+        <div className="flex-1 flex flex-col justify-end max-w-[75%] pointer-events-auto mb-4">
           <Link href={author.profileHref} onClick={onCloseViewer} className="flex items-center gap-2 mb-2 w-max">
             <div className="w-11 h-11 rounded-full bg-gradient-to-br from-red-600 to-red-900 overflow-hidden flex-shrink-0 border border-white/20">
               {author.avatar ? (
@@ -276,7 +308,7 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
           </Link>
 
           {video.title && <h3 className="text-white font-bold text-sm mb-1 drop-shadow-md">{video.title}</h3>}
-          {video.description && <p className="text-white/80 text-xs line-clamp-2 mb-3 drop-shadow-md">{video.description}</p>}
+          {video.description && <p className="text-white/80 text-xs line-clamp-2 mb-2 drop-shadow-md">{video.description}</p>}
         </div>
 
         {!playing && (
@@ -291,6 +323,38 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
            <button onClick={onToggleMute} className="p-2.5 bg-black/50 rounded-full backdrop-blur text-white">
              {muted ? <VolumeX size={20} /> : <Volume2 size={20} />}
            </button>
+        </div>
+      </div>
+
+      {/* DRAGGABLE PROGRESS BAR */}
+      <div 
+        className="absolute bottom-0 left-0 right-0 z-30 progress-bar-container pb-[env(safe-area-inset-bottom)]"
+        onClick={(e) => e.stopPropagation()} // Prevent screen tap
+      >
+        <div 
+          className="relative w-full h-8 flex items-center cursor-pointer group"
+          onMouseDown={startSeeking}
+          onMouseMove={handleDrag}
+          onMouseUp={stopSeeking}
+          onMouseLeave={stopSeeking}
+          onTouchStart={startSeeking}
+          onTouchMove={handleDrag}
+          onTouchEnd={stopSeeking}
+        >
+          {/* Background Track */}
+          <div className="absolute left-0 right-0 h-1 bg-white/20 group-hover:h-1.5 transition-all rounded-full overflow-hidden">
+            {/* Filled Progress */}
+            <div 
+              className="h-full bg-white transition-none" 
+              style={{ width: `${progress * 100}%` }}
+            />
+          </div>
+          
+          {/* Draggable Thumb (Only visible when seeking or hovering) */}
+          <div 
+            className={`absolute h-3 w-3 bg-white rounded-full shadow-md transition-opacity ${isSeeking ? 'opacity-100 scale-125' : 'opacity-0 group-hover:opacity-100'}`}
+            style={{ left: `calc(${progress * 100}% - 6px)` }}
+          />
         </div>
       </div>
     </div>
