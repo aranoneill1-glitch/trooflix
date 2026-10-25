@@ -168,7 +168,6 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
 
   const handleScreenTap = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
-    // Ignore taps on UI elements or the progress bar
     if (target.closest('button') || target.closest('a') || target.closest('.ui-ignore') || target.closest('.progress-bar-container')) return;
 
     if (tapTimeout.current) {
@@ -201,31 +200,32 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
     setProgress(v.currentTime / v.duration);
   };
 
-  const handleSeek = (e: React.MouseEvent | React.TouchEvent) => {
+  const handlePointerSeek = (e: React.PointerEvent) => {
     const bar = progressBarRef.current;
     const v = videoRef.current;
     if (!bar || !v || !v.duration) return;
 
     const rect = bar.getBoundingClientRect();
-    let clientX = 0;
-    
-    if ('touches' in e) clientX = e.touches[0].clientX;
-    else clientX = (e as React.MouseEvent).clientX;
-
+    const clientX = e.clientX;
     const percentage = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    
     setProgress(percentage);
     v.currentTime = percentage * v.duration;
   };
 
-  const startSeeking = (e: React.MouseEvent | React.TouchEvent) => {
+  const handlePointerDown = (e: React.PointerEvent) => {
     setIsSeeking(true);
-    handleSeek(e);
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    handlePointerSeek(e);
   };
 
-  const stopSeeking = () => setIsSeeking(false);
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (isSeeking) handlePointerSeek(e);
+  };
 
-  const handleDrag = (e: React.MouseEvent | React.TouchEvent) => {
-    if (isSeeking) handleSeek(e);
+  const handlePointerUp = (e: React.PointerEvent) => {
+    setIsSeeking(false);
+    (e.target as HTMLElement).releasePointerCapture(e.pointerId);
   };
 
   return (
@@ -260,10 +260,10 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
       </AnimatePresence>
 
       {/* Overlay UI */}
-      <div className="absolute inset-0 flex flex-col justify-end p-4 pb-6 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none z-10">
+      <div className="absolute inset-0 flex flex-col justify-end p-4 pb-24 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none z-10">
         
         {/* RIGHT SIDE ACTIONS */}
-        <div className="absolute right-4 bottom-20 flex flex-col items-center gap-5 pointer-events-auto">
+        <div className="absolute right-4 bottom-28 flex flex-col items-center gap-5 pointer-events-auto">
           <div id={`like-btn-${video.id}`} className="flex flex-col items-center gap-1 text-white drop-shadow-md">
             <LikeButton videoId={video.id} size={26} showCount={true} />
           </div>
@@ -290,7 +290,7 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
         </div>
 
         {/* BOTTOM LEFT INFO */}
-        <div className="flex-1 flex flex-col justify-end max-w-[75%] pointer-events-auto mb-4">
+        <div className="flex-1 flex flex-col justify-end max-w-[75%] pointer-events-auto mb-2">
           <Link href={author.profileHref} onClick={onCloseViewer} className="flex items-center gap-2 mb-2 w-max">
             <div className="w-11 h-11 rounded-full bg-gradient-to-br from-red-600 to-red-900 overflow-hidden flex-shrink-0 border border-white/20">
               {author.avatar ? (
@@ -326,23 +326,22 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
         </div>
       </div>
 
-      {/* DRAGGABLE PROGRESS BAR */}
+      {/* ===== IG-STYLE DRAGGABLE PROGRESS BAR (ABOVE BOTTOM NAV) ===== */}
       <div 
-        className="absolute bottom-0 left-0 right-0 z-30 progress-bar-container pb-[env(safe-area-inset-bottom)]"
-        onClick={(e) => e.stopPropagation()} // Prevent screen tap
+        className="absolute bottom-[85px] left-0 right-0 z-[60] progress-bar-container pointer-events-auto px-4"
+        style={{ touchAction: 'none' }} 
+        onClick={(e) => e.stopPropagation()} 
       >
         <div 
+          ref={progressBarRef}
           className="relative w-full h-8 flex items-center cursor-pointer group"
-          onMouseDown={startSeeking}
-          onMouseMove={handleDrag}
-          onMouseUp={stopSeeking}
-          onMouseLeave={stopSeeking}
-          onTouchStart={startSeeking}
-          onTouchMove={handleDrag}
-          onTouchEnd={stopSeeking}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
         >
           {/* Background Track */}
-          <div className="absolute left-0 right-0 h-1 bg-white/20 group-hover:h-1.5 transition-all rounded-full overflow-hidden">
+          <div className="w-full h-[4px] bg-white/30 group-hover:h-[6px] transition-all rounded-full overflow-hidden">
             {/* Filled Progress */}
             <div 
               className="h-full bg-white transition-none" 
@@ -352,8 +351,8 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
           
           {/* Draggable Thumb (Only visible when seeking or hovering) */}
           <div 
-            className={`absolute h-3 w-3 bg-white rounded-full shadow-md transition-opacity ${isSeeking ? 'opacity-100 scale-125' : 'opacity-0 group-hover:opacity-100'}`}
-            style={{ left: `calc(${progress * 100}% - 6px)` }}
+            className={`absolute h-3.5 w-3.5 bg-white rounded-full shadow-md transition-opacity pointer-events-none ${isSeeking ? 'opacity-100 scale-125' : 'opacity-0 group-hover:opacity-100'}`}
+            style={{ left: `calc(${progress * 100}% - 7px)` }}
           />
         </div>
       </div>
