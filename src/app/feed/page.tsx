@@ -74,7 +74,10 @@ export default function FeedPage() {
   const [commentVideo, setCommentVideo] = useState<Video | null>(null);
   const [activePlayingId, setActivePlayingId] = useState<number | null>(null);
   const [muted, setMuted] = useState(true);
+  
   const [openVideoModal, setOpenVideoModal] = useState<Video | null>(null);
+  const [modalStartTime, setModalStartTime] = useState(0); // <-- Track exact start time
+  
   const [showSoundPrompt, setShowSoundPrompt] = useState(false);
   const postRefs = useRef<Map<number, HTMLElement>>(new Map());
   const trackedIdsRef = useRef<Set<number>>(new Set());
@@ -130,7 +133,6 @@ export default function FeedPage() {
     if (userId !== null || filter === "all") load();
   }, [userId, filter]);
 
-  // Fallback: if no active playing ID is set, make the first post active
   useEffect(() => {
     if (posts.length > 0) {
       if (activePlayingId === null || !posts.some(p => p.id === activePlayingId)) {
@@ -283,8 +285,11 @@ export default function FeedPage() {
             userId={userId}
             author={authorFor(post)}
             onOpenComments={() => setCommentVideo(post)}
-            onOpenFullScreen={() => setOpenVideoModal(post)}
-            isActivePlaying={activePlayingId === post.id}
+            onOpenFullScreen={(startTime) => {
+              setModalStartTime(startTime);
+              setOpenVideoModal(post);
+            }}
+            isActivePlaying={activePlayingId === post.id && !openVideoModal} // Pause feed if modal is open
             showSoundPrompt={showSoundPrompt && activePlayingId === post.id}
             onDismissSoundPrompt={() => {
               setShowSoundPrompt(false);
@@ -314,6 +319,7 @@ export default function FeedPage() {
             videos={displayedPosts.filter(p => p.videoUrl || p.bitchuteUrl)}
             initialIndex={displayedPosts.findIndex(p => p.id === openVideoModal.id)}
             onClose={() => setOpenVideoModal(null)}
+            startTime={modalStartTime} // <-- Pass the exact timestamp
             author={{
               name: authorFor(openVideoModal).name,
               avatar: authorFor(openVideoModal).avatar,
@@ -348,7 +354,7 @@ function PostCard({
   userId: string | null;
   author: { name: string; handle: string; avatar: string; verified: boolean; tier?: "user" | "pro" | "podcaster"; href: string | null };
   onOpenComments: () => void;
-  onOpenFullScreen: () => void;
+  onOpenFullScreen: (currentTime: number) => void;
   isActivePlaying: boolean;
   isNext?: boolean;
   showSoundPrompt: boolean;
@@ -399,6 +405,15 @@ function PostCard({
     } else {
       v.pause();
       setPlaying(false);
+    }
+  };
+
+  const handleFullScreenClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (videoRef.current) {
+      onOpenFullScreen(videoRef.current.currentTime);
+    } else {
+      onOpenFullScreen(0);
     }
   };
 
@@ -517,7 +532,6 @@ function PostCard({
                   </div>
                 )}
 
-                {/* Bottom controls */}
                 <div className="absolute bottom-3 left-3 flex items-center gap-2 z-20">
                   <button
                     onClick={(e) => { e.stopPropagation(); togglePlay(); }}
@@ -533,10 +547,9 @@ function PostCard({
                   </button>
                 </div>
 
-                {/* Full Screen Button on Video */}
                 <div className="absolute bottom-3 right-3 flex items-center gap-2 z-30">
                   <button
-                    onClick={(e) => { e.stopPropagation(); onOpenFullScreen(); }}
+                    onClick={handleFullScreenClick}
                     className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white border border-white/10 hover:bg-black/80 transition shadow-lg"
                     title="Full Screen"
                   >
@@ -564,7 +577,6 @@ function PostCard({
             )}
           </div>
 
-          {/* Action Bar */}
           <div className="flex items-center justify-between mt-3 -ml-2 pr-2">
             <div className="flex items-center text-white/50 hover:text-red-500 group transition">
               <LikeButton videoId={post.id} size={20} showCount />
@@ -600,9 +612,8 @@ function PostCard({
               </div>
             </div>
 
-            {/* Full Screen Button in Action Bar */}
             <button
-              onClick={onOpenFullScreen}
+              onClick={handleFullScreenClick}
               className="flex items-center text-white/50 hover:text-white group transition"
               title="Full Screen"
             >

@@ -29,11 +29,13 @@ export default function ProfileReelViewer({
   initialIndex,
   onClose,
   author,
+  startTime = 0,
 }: {
   videos: Video[];
   initialIndex: number;
   onClose: () => void;
   author: { name: string; avatar: string; verified: boolean; profileHref: string };
+  startTime?: number;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(initialIndex);
@@ -105,6 +107,7 @@ export default function ProfileReelViewer({
             onOpenComments={() => setCommentVideo(v)}
             onOpenShare={() => setShareVideo(v)}
             onCloseViewer={onClose}
+            initialStartTime={i === initialIndex ? startTime : 0} // <-- Pass start time to the active video
           />
         ))}
       </div>
@@ -129,13 +132,13 @@ export default function ProfileReelViewer({
   );
 }
 
-function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenComments, onOpenShare, onCloseViewer }: any) {
+function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenComments, onOpenShare, onCloseViewer, initialStartTime = 0 }: any) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const progressBarRef = useRef<HTMLDivElement>(null);
   
   const [playing, setPlaying] = useState(false);
   const [showHeart, setShowHeart] = useState(false);
-  const [progress, setProgress] = useState(0); // 0 to 1
+  const [progress, setProgress] = useState(0);
   const [isSeeking, setIsSeeking] = useState(false);
   
   const tapTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -144,15 +147,18 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
     const v = videoRef.current;
     if (!v) return;
     if (isActive) {
+      if (initialStartTime > 0) {
+        v.currentTime = initialStartTime;
+      }
       v.play().catch(() => {});
       setPlaying(true);
     } else {
       v.pause();
-      try { v.currentTime = 0; } catch {}
+      if (initialStartTime === 0) try { v.currentTime = 0; } catch {}
       setPlaying(false);
       setProgress(0);
     }
-  }, [isActive]);
+  }, [isActive, initialStartTime]);
 
   const togglePlay = () => {
     const v = videoRef.current;
@@ -259,10 +265,8 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
         )}
       </AnimatePresence>
 
-      {/* Overlay UI */}
       <div className="absolute inset-0 flex flex-col justify-end p-4 pb-24 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none z-10">
         
-        {/* RIGHT SIDE ACTIONS */}
         <div className="absolute right-4 bottom-28 flex flex-col items-center gap-5 pointer-events-auto">
           <div id={`like-btn-${video.id}`} className="flex flex-col items-center gap-1 text-white drop-shadow-md">
             <LikeButton videoId={video.id} size={26} showCount={true} />
@@ -289,7 +293,6 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
           </div>
         </div>
 
-        {/* BOTTOM LEFT INFO */}
         <div className="flex-1 flex flex-col justify-end max-w-[75%] pointer-events-auto mb-2">
           <Link href={author.profileHref} onClick={onCloseViewer} className="flex items-center gap-2 mb-2 w-max">
             <div className="w-11 h-11 rounded-full bg-gradient-to-br from-red-600 to-red-900 overflow-hidden flex-shrink-0 border border-white/20">
@@ -326,7 +329,6 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
         </div>
       </div>
 
-      {/* ===== IG-STYLE DRAGGABLE PROGRESS BAR (ABOVE BOTTOM NAV) ===== */}
       <div 
         className="absolute bottom-[85px] left-0 right-0 z-[60] progress-bar-container pointer-events-auto px-4"
         style={{ touchAction: 'none' }} 
@@ -340,16 +342,13 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
           onPointerUp={handlePointerUp}
           onPointerCancel={handlePointerUp}
         >
-          {/* Background Track */}
           <div className="w-full h-[4px] bg-white/30 group-hover:h-[6px] transition-all rounded-full overflow-hidden">
-            {/* Filled Progress */}
             <div 
               className="h-full bg-white transition-none" 
               style={{ width: `${progress * 100}%` }}
             />
           </div>
           
-          {/* Draggable Thumb (Only visible when seeking or hovering) */}
           <div 
             className={`absolute h-3.5 w-3.5 bg-white rounded-full shadow-md transition-opacity pointer-events-none ${isSeeking ? 'opacity-100 scale-125' : 'opacity-0 group-hover:opacity-100'}`}
             style={{ left: `calc(${progress * 100}% - 7px)` }}
