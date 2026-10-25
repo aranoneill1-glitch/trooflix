@@ -117,7 +117,6 @@ export default function FeedPage() {
       let closestId: number | null = null;
       let minDistance = Infinity;
 
-      // EXPLICIT TYPES ADDED HERE TO FIX THE TSC ERROR
       postRefs.current.forEach((el: HTMLElement, id: number) => {
         const rect = el.getBoundingClientRect();
         if (rect.bottom > 0 && rect.top < window.innerHeight) {

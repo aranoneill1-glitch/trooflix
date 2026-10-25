@@ -27,6 +27,7 @@ function VideoSlide({ video, index, isActive, author, muted, onToggleMute, onOpe
       const playPromise = v.play();
       if (playPromise !== undefined) {
         playPromise.then(() => setPlaying(true)).catch(() => {
+          // If browser blocks unmuted autoplay, force mute and try again
           v.muted = true;
           v.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
         });
@@ -53,6 +54,12 @@ function VideoSlide({ video, index, isActive, author, muted, onToggleMute, onOpe
       className="w-full h-full snap-start relative bg-black flex items-center justify-center"
       onClick={togglePlay}
     >
+      {/* 
+        THE MAGIC FIX: 
+        key={video.id} forces React to completely destroy and rebuild the video tag on swipe.
+        autoPlay={isActive} forces instant playback.
+        onCanPlay ensures it plays the exact millisecond it loads.
+      */}
       <video
         key={video.id} 
         ref={videoRef}
@@ -62,6 +69,12 @@ function VideoSlide({ video, index, isActive, author, muted, onToggleMute, onOpe
         playsInline
         muted={muted}
         preload="auto"
+        autoPlay={isActive}
+        onCanPlay={(e) => {
+          if (isActive) {
+            e.currentTarget.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
+          }
+        }}
       />
 
       {!playing && (
@@ -130,14 +143,12 @@ export default function ProfileReelViewer({
   onClose,
   author,
   getAuthor,
-  startTime = 0,
 }: {
   videos: any[];
   initialIndex: number;
   onClose: () => void;
   author?: Author;
   getAuthor?: (video: any) => Author;
-  startTime?: number;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(initialIndex);
@@ -155,18 +166,21 @@ export default function ProfileReelViewer({
     }
   }, [initialIndex]);
 
+  // BULLETPROOF CENTER DETECTION
   const handleScroll = () => {
     if (!containerRef.current) return;
     const container = containerRef.current;
-    const centerY = container.clientHeight / 2;
+    const containerRect = container.getBoundingClientRect();
+    const containerCenterY = containerRect.top + containerRect.height / 2;
     
     let closestIndex = activeIndex;
     let minDistance = Infinity;
 
     Array.from(container.children).forEach((child, i) => {
       const el = child as HTMLElement;
-      const elCenter = el.offsetTop + el.clientHeight / 2;
-      const distance = Math.abs(centerY - elCenter);
+      const elRect = el.getBoundingClientRect();
+      const elCenterY = elRect.top + elRect.height / 2;
+      const distance = Math.abs(containerCenterY - elCenterY);
       
       if (distance < minDistance) {
         minDistance = distance;
@@ -211,22 +225,8 @@ export default function ProfileReelViewer({
         })}
       </div>
 
-      {commentVideo && (
-        <CommentDrawer
-          videoId={commentVideo.id}
-          title={commentVideo.title || "Comments"}
-          onClose={() => setCommentVideo(null)}
-        />
-      )}
-
-      {shareVideo && (
-        <ShareReelSheet
-          open={!!shareVideo}
-          onClose={() => setShareVideo(null)}
-          videoId={shareVideo.id}
-          videoTitle={shareVideo.title || ""}
-        />
-      )}
+      {commentVideo && <CommentDrawer videoId={commentVideo.id} title={commentVideo.title || "Comments"} onClose={() => setCommentVideo(null)} />}
+      {shareVideo && <ShareReelSheet open={!!shareVideo} onClose={() => setShareVideo(null)} videoId={shareVideo.id} videoTitle={shareVideo.title || ""} />}
     </div>
   );
 }
