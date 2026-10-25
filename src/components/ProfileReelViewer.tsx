@@ -115,7 +115,6 @@ export default function ProfileReelViewer({
         style={{ scrollSnapType: "y mandatory" }}
       >
         {videos.map((v, i) => {
-          // Resolve the specific author for this video
           const displayAuthor = getAuthor ? getAuthor(v) : (author || { name: "User", avatar: "", verified: false, profileHref: "#" });
           
           return (
@@ -167,20 +166,19 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
   
   const tapTimeout = useRef<NodeJS.Timeout | null>(null);
 
+  // BULLETPROOF PLAY LOGIC
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
     
     if (isActive) {
       v.muted = muted;
-      if (initialStartTime > 0 && v.duration) {
+      // If it's the initial video and has a start time, seek to it
+      if (initialStartTime > 0 && v.readyState > 0) {
         v.currentTime = initialStartTime;
       }
-      setTimeout(() => {
-        if (videoRef.current) {
-          videoRef.current.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
-        }
-      }, 100);
+      // Try to play immediately
+      v.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
     } else {
       v.pause();
       if (initialStartTime === 0) try { v.currentTime = 0; } catch {}
@@ -193,8 +191,7 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
     const v = videoRef.current;
     if (!v) return;
     if (v.paused) {
-      v.play().catch(() => {});
-      setPlaying(true);
+      v.play().then(() => setPlaying(true)).catch(() => {});
     } else {
       v.pause();
       setPlaying(false);
@@ -277,10 +274,20 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
         loop
         playsInline
         muted={muted}
+        autoPlay={isActive} 
+        preload="auto"
         onTimeUpdate={handleTimeUpdate}
+        onPlay={() => setPlaying(true)}
+        onPause={() => setPlaying(false)}
         onLoadedMetadata={(e) => {
           if (isActive && initialStartTime > 0) {
             e.currentTarget.currentTime = initialStartTime;
+          }
+        }}
+        onCanPlay={(e) => {
+          // Ensure it plays when ready
+          if (isActive) {
+             e.currentTarget.play().catch(() => {});
           }
         }}
       />
@@ -348,7 +355,7 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
           {video.description && <p className="text-white/80 text-xs line-clamp-2 mb-2 drop-shadow-md">{video.description}</p>}
         </div>
 
-        {!playing && (
+        {!playing && isActive && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
              <div className="p-5 bg-black/50 rounded-full backdrop-blur text-white">
                <Play size={40} fill="white" />
