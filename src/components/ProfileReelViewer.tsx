@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { X, Play, Volume2, VolumeX, MessageCircle, Send, Eye, Heart, Share } from "lucide-react";
 import LikeButton from "@/components/LikeButton";
@@ -13,21 +13,23 @@ import { motion, AnimatePresence } from "framer-motion";
 
 type Author = { name: string; avatar: string; verified: boolean; profileHref: string };
 
-function VideoSlide({ video, index, isActive, author, muted, onToggleMute, onOpenComments, onOpenShare }: any) {
+function VideoSlide({ video, index, isActive, isNext, isPrev, author, muted, onToggleMute, onOpenComments, onOpenShare }: any) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
 
-  useEffect(() => {
+  // useLayoutEffect triggers instantly before the browser paints the screen
+  useLayoutEffect(() => {
     const v = videoRef.current;
     if (!v) return;
 
     if (isActive) {
       v.currentTime = 0;
       v.muted = muted;
+      // Force play instantly
       const playPromise = v.play();
       if (playPromise !== undefined) {
         playPromise.then(() => setPlaying(true)).catch(() => {
-          // If browser blocks unmuted autoplay, force mute and try again
+          // If autoplay is blocked, force mute and try again
           v.muted = true;
           v.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
         });
@@ -55,29 +57,26 @@ function VideoSlide({ video, index, isActive, author, muted, onToggleMute, onOpe
       onClick={togglePlay}
     >
       {/* 
-        THE MAGIC FIX: 
-        key={video.id} forces React to completely destroy and rebuild the video tag on swipe.
-        autoPlay={isActive} forces instant playback.
-        onCanPlay ensures it plays the exact millisecond it loads.
+        TOP-TIER OPTIMIZATIONS:
+        1. poster={video.posterUrl} -> Prevents black screen, shows image instantly.
+        2. preload="auto" on next/prev -> Pre-buffers the videos you will swipe to next.
+        3. key={video.id} -> Forces React to rebuild the video tag cleanly on swipe.
       */}
       <video
         key={video.id} 
         ref={videoRef}
         src={video.videoUrl ?? video.bitchuteUrl}
+        poster={video.posterUrl}
         className="w-full h-full object-contain pointer-events-none"
         loop
         playsInline
         muted={muted}
-        preload="auto"
+        preload={isActive || isNext || isPrev ? "auto" : "metadata"}
         autoPlay={isActive}
-        onCanPlay={(e) => {
-          if (isActive) {
-            e.currentTarget.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
-          }
-        }}
       />
 
-      {!playing && (
+      {/* Only show the play button if it's the active video and it's paused */}
+      {!playing && isActive && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
           <div className="p-5 bg-black/50 rounded-full backdrop-blur text-white">
             <Play size={40} fill="white" />
@@ -166,7 +165,6 @@ export default function ProfileReelViewer({
     }
   }, [initialIndex]);
 
-  // BULLETPROOF CENTER DETECTION
   const handleScroll = () => {
     if (!containerRef.current) return;
     const container = containerRef.current;
@@ -209,12 +207,17 @@ export default function ProfileReelViewer({
       >
         {videos.map((v, i) => {
           const displayAuthor = getAuthor ? getAuthor(v) : (author || { name: "User", avatar: "", verified: false, profileHref: "#" });
+          const isNext = i === activeIndex + 1;
+          const isPrev = i === activeIndex - 1;
+          
           return (
             <VideoSlide
               key={v.id}
               video={v}
               index={i}
               isActive={activeIndex === i}
+              isNext={isNext}
+              isPrev={isPrev}
               author={displayAuthor}
               muted={muted}
               onToggleMute={() => setMuted((m: boolean) => !m)}
