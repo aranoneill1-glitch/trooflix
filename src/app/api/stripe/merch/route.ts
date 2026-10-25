@@ -22,8 +22,13 @@ export async function POST(req: Request) {
 
     if (!product) return NextResponse.json({ error: "Product not found" }, { status: 404 });
 
+    // Fetch user email to send the Stripe receipt
+    const { data: userData } = await supabaseAdmin.auth.admin.getUserById(userId);
+    const userEmail = userData?.user?.email;
+
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
+      customer_email: userEmail, // <-- Stripe will email them a receipt automatically
       line_items: [
         {
           price_data: {
@@ -38,6 +43,9 @@ export async function POST(req: Request) {
           quantity: 1,
         },
       ],
+      payment_intent_data: {
+        description: `Trooflix Merch Order`, // <-- Appears on the receipt
+      },
       shipping_address_collection: {
         allowed_countries: ["US", "CA", "GB", "AU", "IE", "NZ"],
       },
