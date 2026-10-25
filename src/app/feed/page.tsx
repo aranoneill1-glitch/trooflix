@@ -151,7 +151,6 @@ export default function FeedPage() {
     }
   }, [posts.length]);
 
-  // BULLETPROOF SCROLL LISTENER FOR FEED
   useEffect(() => {
     if (posts.length === 0) return;
     
@@ -165,7 +164,6 @@ export default function FeedPage() {
 
         postRefs.current.forEach((el, id) => {
           const rect = el.getBoundingClientRect();
-          // Check if element is visible
           if (rect.bottom > 0 && rect.top < window.innerHeight) {
             const elCenter = rect.top + rect.height / 2;
             const distance = Math.abs(viewportCenter - elCenter);
@@ -183,7 +181,7 @@ export default function FeedPage() {
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll(); // Call once initially
+    handleScroll();
 
     return () => {
       window.removeEventListener("scroll", handleScroll);
@@ -237,6 +235,10 @@ export default function FeedPage() {
     }
     return posts;
   }, [posts, filter]);
+
+  // CRITICAL FIX: Calculate the filtered array and index BEFORE passing to modal
+  const videosForModal = useMemo(() => displayedPosts.filter(p => p.videoUrl || p.bitchuteUrl), [displayedPosts]);
+  const initialModalIndex = useMemo(() => videosForModal.findIndex(p => p.id === openVideoModal?.id), [videosForModal, openVideoModal]);
 
   return (
     <>
@@ -333,17 +335,15 @@ export default function FeedPage() {
       )}
 
       <AnimatePresence>
-        {openVideoModal && (
+        {openVideoModal && initialModalIndex !== -1 && (
           <ProfileReelViewer
-            videos={displayedPosts.filter(p => p.videoUrl || p.bitchuteUrl)}
-            initialIndex={displayedPosts.findIndex(p => p.id === openVideoModal.id)}
+            videos={videosForModal}
+            initialIndex={initialModalIndex}
             onClose={() => setOpenVideoModal(null)}
             startTime={modalStartTime}
-            author={{
-              name: authorFor(openVideoModal).name,
-              avatar: authorFor(openVideoModal).avatar,
-              verified: authorFor(openVideoModal).verified,
-              profileHref: authorFor(openVideoModal).href || "#"
+            getAuthor={(v) => {
+              const a = authorFor(v as any);
+              return { name: a.name, avatar: a.avatar, verified: a.verified, profileHref: a.href || "#" };
             }}
           />
         )}

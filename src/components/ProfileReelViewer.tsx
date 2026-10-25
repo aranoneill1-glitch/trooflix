@@ -24,17 +24,21 @@ type Video = {
   viewCount?: number;
 };
 
+type Author = { name: string; avatar: string; verified: boolean; profileHref: string };
+
 export default function ProfileReelViewer({
   videos,
   initialIndex,
   onClose,
   author,
+  getAuthor,
   startTime = 0,
 }: {
   videos: Video[];
   initialIndex: number;
   onClose: () => void;
-  author: { name: string; avatar: string; verified: boolean; profileHref: string };
+  author?: Author;
+  getAuthor?: (video: Video) => Author;
   startTime?: number;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -46,7 +50,6 @@ export default function ProfileReelViewer({
 
   const trackedViews = useRef<Set<number>>(new Set());
 
-  // Scroll to initial index on mount
   useEffect(() => {
     if (containerRef.current) {
       const container = containerRef.current;
@@ -57,7 +60,6 @@ export default function ProfileReelViewer({
     }
   }, [initialIndex]);
 
-  // BULLETPROOF SCROLL LISTENER (Replaces IntersectionObserver)
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -73,7 +75,6 @@ export default function ProfileReelViewer({
         Array.from(container.children).forEach((child, i) => {
           const rect = child.getBoundingClientRect();
           const containerRect = container.getBoundingClientRect();
-          // Calculate element center relative to container
           const elCenter = (rect.top - containerRect.top) + rect.height / 2;
           const distance = Math.abs(containerCenter - elCenter);
           
@@ -113,21 +114,26 @@ export default function ProfileReelViewer({
         className="flex-1 overflow-y-auto snap-y snap-mandatory scrollbar-hide"
         style={{ scrollSnapType: "y mandatory" }}
       >
-        {videos.map((v, i) => (
-          <ReelItem
-            key={v.id}
-            video={v}
-            index={i}
-            isActive={activeIndex === i}
-            author={author}
-            muted={muted}
-            onToggleMute={() => setMuted((m) => !m)}
-            onOpenComments={() => setCommentVideo(v)}
-            onOpenShare={() => setShareVideo(v)}
-            onCloseViewer={onClose}
-            initialStartTime={i === initialIndex ? startTime : 0}
-          />
-        ))}
+        {videos.map((v, i) => {
+          // Resolve the specific author for this video
+          const displayAuthor = getAuthor ? getAuthor(v) : (author || { name: "User", avatar: "", verified: false, profileHref: "#" });
+          
+          return (
+            <ReelItem
+              key={v.id}
+              video={v}
+              index={i}
+              isActive={activeIndex === i}
+              author={displayAuthor}
+              muted={muted}
+              onToggleMute={() => setMuted((m) => !m)}
+              onOpenComments={() => setCommentVideo(v)}
+              onOpenShare={() => setShareVideo(v)}
+              onCloseViewer={onClose}
+              initialStartTime={i === initialIndex ? startTime : 0}
+            />
+          );
+        })}
       </div>
 
       {commentVideo && (
@@ -166,16 +172,15 @@ function ReelItem({ video, index, isActive, author, muted, onToggleMute, onOpenC
     if (!v) return;
     
     if (isActive) {
-      v.muted = muted; // Ensure mute state is synced
+      v.muted = muted;
       if (initialStartTime > 0 && v.duration) {
         v.currentTime = initialStartTime;
       }
-      // Force play with a small delay to ensure it's loaded
       setTimeout(() => {
         if (videoRef.current) {
           videoRef.current.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
         }
-      }, 50);
+      }, 100);
     } else {
       v.pause();
       if (initialStartTime === 0) try { v.currentTime = 0; } catch {}
