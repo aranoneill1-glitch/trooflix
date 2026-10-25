@@ -262,12 +262,12 @@ function PostCard({ post, author, onOpenComments, onOpenFullScreen, isActivePlay
           <div className="mt-2 rounded-2xl overflow-hidden bg-black relative">
             {post.videoUrl && (
               <div className="relative bg-black w-full flex justify-center cursor-pointer" onClick={handleVideoClick}>
-                {/* TOP-TIER: Preload auto and poster for instant feed loading */}
+                {/* FIXED: h-auto and object-contain so the video is not cropped */}
                 <video 
                   ref={videoRef} 
                   src={post.videoUrl || post.bitchuteUrl} 
                   poster={post.posterUrl}
-                  className="w-full max-h-[75vh] object-cover pointer-events-none" 
+                  className="w-full h-auto max-h-[75vh] object-contain pointer-events-none" 
                   muted={muted} 
                   loop 
                   playsInline 

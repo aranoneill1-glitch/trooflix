@@ -15,9 +15,12 @@ type Author = { name: string; avatar: string; verified: boolean; profileHref: st
 
 function VideoSlide({ video, index, isActive, isNext, isPrev, author, muted, onToggleMute, onOpenComments, onOpenShare }: any) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const progressBarRef = useRef<HTMLDivElement>(null);
+  
   const [playing, setPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [isSeeking, setIsSeeking] = useState(false);
 
-  // useLayoutEffect triggers instantly before the browser paints the screen
   useLayoutEffect(() => {
     const v = videoRef.current;
     if (!v) return;
@@ -25,11 +28,9 @@ function VideoSlide({ video, index, isActive, isNext, isPrev, author, muted, onT
     if (isActive) {
       v.currentTime = 0;
       v.muted = muted;
-      // Force play instantly
       const playPromise = v.play();
       if (playPromise !== undefined) {
         playPromise.then(() => setPlaying(true)).catch(() => {
-          // If autoplay is blocked, force mute and try again
           v.muted = true;
           v.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
         });
@@ -37,6 +38,7 @@ function VideoSlide({ video, index, isActive, isNext, isPrev, author, muted, onT
     } else {
       v.pause();
       setPlaying(false);
+      setProgress(0);
     }
   }, [isActive, muted]);
 
@@ -51,17 +53,45 @@ function VideoSlide({ video, index, isActive, isNext, isPrev, author, muted, onT
     }
   };
 
+  const handleTimeUpdate = () => {
+    const v = videoRef.current;
+    if (!v || isSeeking || !v.duration) return;
+    setProgress(v.currentTime / v.duration);
+  };
+
+  const handlePointerSeek = (e: React.PointerEvent) => {
+    const bar = progressBarRef.current;
+    const v = videoRef.current;
+    if (!bar || !v || !v.duration) return;
+
+    const rect = bar.getBoundingClientRect();
+    const clientX = e.clientX;
+    const percentage = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    
+    setProgress(percentage);
+    v.currentTime = percentage * v.duration;
+  };
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    setIsSeeking(true);
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    handlePointerSeek(e);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (isSeeking) handlePointerSeek(e);
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    setIsSeeking(false);
+    (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+  };
+
   return (
     <div 
       className="w-full h-full snap-start relative bg-black flex items-center justify-center"
       onClick={togglePlay}
     >
-      {/* 
-        TOP-TIER OPTIMIZATIONS:
-        1. poster={video.posterUrl} -> Prevents black screen, shows image instantly.
-        2. preload="auto" on next/prev -> Pre-buffers the videos you will swipe to next.
-        3. key={video.id} -> Forces React to rebuild the video tag cleanly on swipe.
-      */}
       <video
         key={video.id} 
         ref={videoRef}
@@ -73,9 +103,9 @@ function VideoSlide({ video, index, isActive, isNext, isPrev, author, muted, onT
         muted={muted}
         preload={isActive || isNext || isPrev ? "auto" : "metadata"}
         autoPlay={isActive}
+        onTimeUpdate={handleTimeUpdate}
       />
 
-      {/* Only show the play button if it's the active video and it's paused */}
       {!playing && isActive && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
           <div className="p-5 bg-black/50 rounded-full backdrop-blur text-white">
@@ -130,6 +160,34 @@ function VideoSlide({ video, index, isActive, isNext, isPrev, author, muted, onT
            <button onClick={onToggleMute} className="p-2.5 bg-black/50 rounded-full backdrop-blur text-white">
              {muted ? <VolumeX size={20} /> : <Volume2 size={20} />}
            </button>
+        </div>
+      </div>
+
+      {/* IG-STYLE DRAGGABLE PROGRESS BAR */}
+      <div 
+        className="absolute bottom-[85px] left-0 right-0 z-[60] progress-bar-container pointer-events-auto px-4"
+        style={{ touchAction: 'none' }} 
+        onClick={(e) => e.stopPropagation()} 
+      >
+        <div 
+          ref={progressBarRef}
+          className="relative w-full h-8 flex items-center cursor-pointer group"
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+        >
+          <div className="w-full h-[4px] bg-white/30 group-hover:h-[6px] transition-all rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-white transition-none" 
+              style={{ width: `${progress * 100}%` }}
+            />
+          </div>
+          
+          <div 
+            className={`absolute h-3.5 w-3.5 bg-white rounded-full shadow-md transition-opacity pointer-events-none ${isSeeking ? 'opacity-100 scale-125' : 'opacity-0 group-hover:opacity-100'}`}
+            style={{ left: `calc(${progress * 100}% - 7px)` }}
+          />
         </div>
       </div>
     </div>
@@ -207,17 +265,14 @@ export default function ProfileReelViewer({
       >
         {videos.map((v, i) => {
           const displayAuthor = getAuthor ? getAuthor(v) : (author || { name: "User", avatar: "", verified: false, profileHref: "#" });
-          const isNext = i === activeIndex + 1;
-          const isPrev = i === activeIndex - 1;
-          
           return (
             <VideoSlide
               key={v.id}
               video={v}
               index={i}
               isActive={activeIndex === i}
-              isNext={isNext}
-              isPrev={isPrev}
+              isNext={i === activeIndex + 1}
+              isPrev={i === activeIndex - 1}
               author={displayAuthor}
               muted={muted}
               onToggleMute={() => setMuted((m: boolean) => !m)}
