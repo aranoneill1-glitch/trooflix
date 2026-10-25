@@ -14,6 +14,7 @@ type Order = {
   shipping_postal_code: string;
   shipping_country: string;
   tracking_number?: string;
+  shipping_carrier?: string;
   created_at: string;
   order_code: string;
   product: { name: string; image_url: string } | null;
@@ -88,7 +89,9 @@ export default function MyOrders() {
                   {o.tracking_number && (
                     <div className="mt-2 text-xs">
                       <span className="text-white/40">Tracking: </span>
-                      <span className="font-mono text-emerald-400 font-semibold">{o.tracking_number}</span>
+                      <span className="font-mono text-emerald-400 font-semibold">
+                        {o.shipping_carrier ? `${o.shipping_carrier} - ` : ''}{o.tracking_number}
+                      </span>
                     </div>
                   )}
                 </div>

@@ -43,12 +43,12 @@ export async function GET(req: Request) {
 
 export async function PATCH(req: Request) {
   try {
-    const { orderId, status, tracking_number } = await req.json();
+    const { orderId, status, tracking_number, shipping_carrier } = await req.json();
     if (!orderId || !status) return NextResponse.json({ error: "Missing data" }, { status: 400 });
 
     const { error } = await supabaseAdmin
       .from("merch_orders")
-      .update({ status, tracking_number })
+      .update({ status, tracking_number, shipping_carrier })
       .eq("id", Number(orderId));
 
     if (error) throw error;
