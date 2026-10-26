@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { 
   Play, Search, Lock, ShoppingBag, Sparkles, Plus, Settings, 
-  Grid3x3, List, Eye, X, Camera, Bookmark, Wallet, LogOut, Loader2, MessageCircle, Share, MoreHorizontal
+  Grid3x3, List, Eye, X, Camera, Bookmark, Wallet, LogOut, Loader2, MessageCircle, Share, MoreHorizontal,
+  Home, Video
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import TopBar from "@/components/TopBar";
@@ -61,7 +62,7 @@ export default function UnifiedCreatorHub() {
   const [tab, setTab] = useState<Tab>("home");
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [videoFilter, setVideoFilter] = useState<string>("all"); // <-- NEW FILTER STATE
+  const [videoFilter, setVideoFilter] = useState<string>("all");
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
 
   const [premiumData, setPremiumData] = useState<{ enabled: boolean; price_cents: number } | null>(null);
@@ -219,16 +220,12 @@ export default function UnifiedCreatorHub() {
   const latest = filteredVideos[0];
   const isOwner = userId && creator?.ownerUserId === userId;
 
-  // Get unique video types for the filter pills
   const availableTypes = useMemo(() => {
     const types = new Set<string>();
-    freeVideos.forEach(v => {
-      if (v.type) types.add(v.type);
-    });
+    freeVideos.forEach(v => { if (v.type) types.add(v.type); });
     return Array.from(types);
   }, [freeVideos]);
 
-  // Apply the selected filter
   const displayedFreeVideos = videoFilter === "all" 
     ? freeVideos 
     : freeVideos.filter(v => v.type?.toLowerCase() === videoFilter.toLowerCase());
@@ -244,12 +241,10 @@ export default function UnifiedCreatorHub() {
         <div className="h-screen flex items-center justify-center"><Loader2 className="animate-spin text-red-600" size={32} /></div>
       ) : (
         <>
-          {/* BANNER */}
           <div className="relative w-full h-[25vh] md:h-[35vh] overflow-hidden mt-16 md:mt-20">
             <img src={creator?.heroBackdropUrl || latest?.backdropUrl || ""} alt="" className="w-full h-full object-cover object-center opacity-70" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/60 to-transparent" />
             
-            {/* OWNER CONTROLS (Top Right) */}
             {isOwner && (
               <div className="absolute top-4 right-4 md:top-6 md:right-8 z-20 flex gap-2">
                 <button onClick={() => setEditOpen(true)} className="p-2.5 bg-black/50 backdrop-blur-md border border-white/10 rounded-full hover:bg-black/80 transition text-white shadow-lg">
@@ -263,8 +258,6 @@ export default function UnifiedCreatorHub() {
           </div>
 
           <div className="max-w-5xl mx-auto px-4 md:px-8 relative z-10 -mt-12 md:-mt-16">
-            
-            {/* HEADER */}
             <div className="flex items-start gap-4 md:gap-6 mb-5">
               <div className="relative w-20 h-20 md:w-28 md:h-28 rounded-full overflow-hidden border-4 border-[#050505] bg-[#1c1c1e] flex items-center justify-center flex-shrink-0 shadow-xl group">
                 {creator?.photoUrl ? <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" /> : <span className="text-3xl md:text-5xl font-black">{creator?.name?.[0]?.toUpperCase()}</span>}
@@ -285,14 +278,12 @@ export default function UnifiedCreatorHub() {
               </div>
             </div>
 
-            {/* BIO */}
             {creator?.description && (
               <p className="text-sm md:text-base text-white/80 max-w-3xl leading-relaxed mb-5 whitespace-pre-wrap">
                 {creator.description}
               </p>
             )}
 
-            {/* ACTIONS */}
             <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-6">
               {!isOwner && (
                 <>
@@ -325,12 +316,24 @@ export default function UnifiedCreatorHub() {
               )}
             </div>
 
-            {/* TABS */}
-            <div className="flex w-full border-b border-white/10 mb-6 overflow-x-auto scrollbar-hide">
-              <button onClick={() => setTab("home")} className={`pb-3 text-sm font-bold transition-all border-b-2 mr-8 ${tab === "home" ? "border-white text-white" : "border-transparent text-white/40 hover:text-white"}`}>Home</button>
-              <button onClick={() => setTab("videos")} className={`pb-3 text-sm font-bold transition-all border-b-2 mr-8 ${tab === "videos" ? "border-white text-white" : "border-transparent text-white/40 hover:text-white"}`}>Videos</button>
-              {premiumData?.enabled && <button onClick={() => setTab("premium")} className={`pb-3 text-sm font-bold transition-all border-b-2 flex items-center gap-1.5 mr-8 ${tab === "premium" ? "border-yellow-500 text-yellow-500" : "border-transparent text-white/40 hover:text-white"}`}><Sparkles size={14}/> Premium</button>}
-              {products.length > 0 && <button onClick={() => setTab("shop")} className={`pb-3 text-sm font-bold transition-all border-b-2 flex items-center gap-1.5 mr-8 ${tab === "shop" ? "border-white text-white" : "border-transparent text-white/40 hover:text-white"}`}><ShoppingBag size={14}/> Shop</button>}
+            {/* ICON TABS */}
+            <div className="flex w-full border-b border-white/10 mb-6 justify-around md:justify-start md:gap-12">
+              <button onClick={() => setTab("home")} title="Home" className={`flex-1 md:flex-none flex justify-center pb-3 transition-all border-b-2 ${tab === "home" ? "border-white text-white" : "border-transparent text-white/40 hover:text-white"}`}>
+                <Home size={22} />
+              </button>
+              <button onClick={() => setTab("videos")} title="Videos" className={`flex-1 md:flex-none flex justify-center pb-3 transition-all border-b-2 ${tab === "videos" ? "border-white text-white" : "border-transparent text-white/40 hover:text-white"}`}>
+                <Video size={22} />
+              </button>
+              {premiumData?.enabled && (
+                <button onClick={() => setTab("premium")} title="Premium" className={`flex-1 md:flex-none flex justify-center pb-3 transition-all border-b-2 ${tab === "premium" ? "border-yellow-500 text-yellow-500" : "border-transparent text-white/40 hover:text-white"}`}>
+                  <Sparkles size={22} />
+                </button>
+              )}
+              {products.length > 0 && (
+                <button onClick={() => setTab("shop")} title="Shop" className={`flex-1 md:flex-none flex justify-center pb-3 transition-all border-b-2 ${tab === "shop" ? "border-white text-white" : "border-transparent text-white/40 hover:text-white"}`}>
+                  <ShoppingBag size={22} />
+                </button>
+              )}
             </div>
           </div>
 
@@ -409,7 +412,6 @@ export default function UnifiedCreatorHub() {
                   </div>
                 </div>
 
-                {/* SUB-FILTER PILLS */}
                 {availableTypes.length > 0 && (
                   <div className="flex gap-2 overflow-x-auto scrollbar-hide mb-6 pb-2">
                     <button
