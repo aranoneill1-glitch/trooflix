@@ -136,11 +136,11 @@ export default function MobileBottomNav() {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="fixed bottom-28 right-6 z-[301] bg-[#0f172a]/95 backdrop-blur-3xl border border-blue-500/30 rounded-2xl p-2 w-48 shadow-[0_0_30px_rgba(59,130,246,0.2)] select-none"
+              className="fixed bottom-28 right-6 z-[301] bg-[#1c1c1e] border border-white/10 rounded-2xl p-2 w-48 shadow-2xl select-none"
             >
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center justify-center gap-2 p-3 text-red-400 font-bold hover:bg-red-500/10 rounded-xl transition select-none"
+                className="w-full flex items-center justify-center gap-2 p-3 text-red-500 font-bold hover:bg-red-500/10 rounded-xl transition select-none"
                 style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none" }}
               >
                 <LogOut size={18} /> Log Out
@@ -150,9 +150,9 @@ export default function MobileBottomNav() {
         )}
       </AnimatePresence>
 
-      {/* TERAFAB-INSPIRED FLOATING DOCK */}
+      {/* Floating Glass Pill Container — z-index raised to 250 so it sits above Reels */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-[250] flex justify-center pb-[env(safe-area-inset-bottom)] pointer-events-none">
-        <div className="pointer-events-auto flex items-center justify-around w-[92%] max-w-sm mb-4 px-2 py-2 bg-gradient-to-r from-[#0a122e]/90 to-[#05081c]/90 backdrop-blur-3xl border border-blue-500/20 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.8),0_0_20px_rgba(59,130,246,0.15)]">
+        <div className="pointer-events-auto flex items-center justify-around w-[92%] max-w-sm mb-4 px-2 py-2 bg-[#1c1c1e]/80 backdrop-blur-2xl border border-white/10 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
           
           {TABS.map((tab) => {
             const active = isActive(tab.path);
@@ -164,7 +164,7 @@ export default function MobileBottomNav() {
                 onClick={triggerHaptic}
                 onMouseEnter={() => prefetchTab(tab.path)}
                 onTouchStart={() => prefetchTab(tab.path)}
-                className="flex flex-col items-center justify-center w-12 h-12 rounded-full relative group"
+                className="flex flex-col items-center justify-center w-12 h-12 rounded-full"
               >
                 <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }}>
                   {tab.customImage ? (
@@ -173,23 +173,17 @@ export default function MobileBottomNav() {
                       alt=""
                       draggable={false}
                       style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", pointerEvents: "none" }}
-                      className={`w-[26px] h-[26px] object-contain transition-all duration-300 ${
-                        active ? "opacity-100 drop-shadow-[0_0_10px_rgba(59,130,246,0.8)]" : "opacity-50 hover:opacity-80 grayscale"
+                      className={`w-[26px] h-[26px] object-contain transition-opacity ${
+                        active ? "opacity-100" : "opacity-60 hover:opacity-80"
                       }`}
                     />
                   ) : (
                     <tab.icon
                       size={26}
-                      className={`transition-all duration-300 ${
-                        active ? "text-blue-400 drop-shadow-[0_0_10px_rgba(59,130,246,0.8)]" : "text-white/40 hover:text-white/70"
-                      }`}
+                      className={active ? "text-white" : "text-white/60 hover:text-white/80"}
                     />
                   )}
                 </motion.div>
-                {/* Active Glow Dot */}
-                {active && (
-                  <span className="absolute bottom-0 w-1 h-1 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(59,130,246,1)]" />
-                )}
               </Link>
             );
           })}
@@ -213,31 +207,24 @@ export default function MobileBottomNav() {
                   alt=""
                   draggable={false}
                   style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", pointerEvents: "none" }}
-                  className={`w-7 h-7 rounded-full object-cover transition-all duration-300 ${
-                    profileActive 
-                      ? "ring-2 ring-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.6)]" 
-                      : "ring-1 ring-white/20 grayscale hover:grayscale-0"
+                  className={`w-7 h-7 rounded-full object-cover ${
+                    profileActive ? "ring-2 ring-white" : "ring-1 ring-white/30"
                   }`}
                 />
               ) : signedIn === false ? (
-                <div className={`w-7 h-7 rounded-full bg-white/10 flex items-center justify-center transition-all ${
-                  profileActive ? "ring-2 ring-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.6)]" : ""
-                }`}>
+                <div className={`w-7 h-7 rounded-full bg-white/10 flex items-center justify-center ${profileActive ? "ring-2 ring-white" : ""}`}>
                   <span className="w-3 h-3 rounded-full border-2 border-white/70" />
                 </div>
               ) : (
                 <div
-                  className={`w-7 h-7 rounded-full bg-gradient-to-br from-blue-600 to-indigo-900 flex items-center justify-center text-[10px] font-bold transition-all ${
-                    profileActive ? "ring-2 ring-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.6)]" : ""
+                  className={`w-7 h-7 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-[10px] font-bold ${
+                    profileActive ? "ring-2 ring-white" : ""
                   }`}
                 >
                   •
                 </div>
               )}
             </motion.div>
-            {profileActive && (
-              <span className="absolute bottom-0 w-1 h-1 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(59,130,246,1)]" />
-            )}
           </div>
           
         </div>
