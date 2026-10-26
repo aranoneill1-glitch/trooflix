@@ -103,8 +103,8 @@ export async function POST(req: Request) {
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 userId: ownerId,
-                title: "New Like ❤️",
-                body: `${likerName} liked your post!`,
+                title: `${likerName} ❤️`,
+                body: `liked your post`,
                 url: `/feed?reel=${vid}`
               })
             });

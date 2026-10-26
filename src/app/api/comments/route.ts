@@ -90,8 +90,8 @@ export async function POST(req: Request) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             userId: ownerId,
-            title: "New Comment 💬",
-            body: `${commenterName} commented: "${trimmed.substring(0, 40)}${trimmed.length > 40 ? '...' : ''}"`,
+            title: `${commenterName} 💬`,
+            body: `commented: "${trimmed.substring(0, 40)}${trimmed.length > 40 ? '...' : ''}"`,
             url: `/feed?reel=${videoId}`
           })
         });

@@ -43,7 +43,7 @@ export async function POST(req: Request) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userId: recipientId,
-          title: `New Message from ${senderName}`,
+          title: `${senderName} 💬`,
           body: trimmed.substring(0, 80) + (trimmed.length > 80 ? "..." : ""),
           url: `/messages/${senderId}`
         })

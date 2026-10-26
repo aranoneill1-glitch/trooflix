@@ -61,8 +61,8 @@ export async function POST(req: Request) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               userId: targetUserId,
-              title: "New Follower 🎉",
-              body: `${followerName} started following you!`,
+              title: `${followerName} 🎉`,
+              body: `started following you!`,
               url: `/podcaster/${creator.slug || ""}`
             })
           });
