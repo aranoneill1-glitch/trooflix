@@ -34,3 +34,63 @@ input, textarea, select, button {
 }
 
 
+
+/* =========================================
+   LIGHT MODE OVERRIDES
+   ========================================= */
+.light-mode {
+  color-scheme: light;
+}
+.light-mode body {
+  background-color: #f9fafb !important;
+  color: #111827 !important;
+}
+.light-mode .bg-black,
+.light-mode .bg-\[\#050505\],
+.light-mode .bg-\[\#0a0a0a\],
+.light-mode .bg-\[\#0f0f12\],
+.light-mode .bg-\[\#141414\],
+.light-mode .bg-\[\#141418\],
+.light-mode .bg-\[\#1c1c1e\],
+.light-mode .bg-\[\#1a1a1f\] {
+  background-color: #ffffff !important;
+  border-color: #e5e7eb !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+}
+.light-mode .text-white,
+.light-mode .text-white\/90,
+.light-mode .text-white\/80 {
+  color: #111827 !important;
+}
+.light-mode .text-white\/70,
+.light-mode .text-white\/60,
+.light-mode .text-white\/50,
+.light-mode .text-white\/40,
+.light-mode .text-white\/30 {
+  color: #4b5563 !important;
+}
+.light-mode .border-white\/5,
+.light-mode .border-white\/10,
+.light-mode .border-white\/20,
+.light-mode .border-white\/30 {
+  border-color: #e5e7eb !important;
+}
+.light-mode .bg-black\/40,
+.light-mode .bg-black\/50,
+.light-mode .bg-black\/60,
+.light-mode .bg-black\/70,
+.light-mode .bg-black\/80 {
+  background-color: rgba(255, 255, 255, 0.85) !important;
+}
+.light-mode .bg-white\/5,
+.light-mode .bg-white\/10,
+.light-mode .bg-white\/15,
+.light-mode .bg-white\/20 {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+.light-mode .text-black {
+  color: #ffffff !important;
+}
+.light-mode .bg-white {
+  background-color: #111827 !important;
+}
