@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient as createServerClient } from "@supabase/supabase-js";
+import { kv } from "@vercel/kv";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
@@ -12,18 +13,15 @@ const supabaseAdmin = createServerClient(
 );
 
 const GRACE_PERIOD_DAYS = 14;
+const CREATORS_KEY = "trooflix:creators";
 
 function getPeriodEnd(sub: Stripe.Subscription): number {
   const firstItem = sub.items.data[0];
-  return (firstItem as any)?.current_period_end
-    ?? (sub as any).current_period_end
-    ?? Math.floor(Date.now() / 1000);
+  return (firstItem as any)?.current_period_end ?? (sub as any).current_period_end ?? Math.floor(Date.now() / 1000);
 }
 
 function getSubscriptionId(invoice: Stripe.Invoice): string | null {
-  const id = (invoice as any).subscription
-    || (invoice.parent as any)?.subscription_details?.subscription
-    || null;
+  const id = (invoice as any).subscription || (invoice.parent as any)?.subscription_details?.subscription || null;
   if (!id) return null;
   return typeof id === "string" ? id : id.id;
 }
@@ -38,22 +36,15 @@ async function upsertCreatorSubscription(subscription: Stripe.Subscription) {
   const periodEnd = getPeriodEnd(subscription);
   const priceCents = subscription.items.data[0]?.price?.unit_amount ?? 0;
 
-  const { error } = await supabaseAdmin.from("creator_subscriptions").upsert(
+  await supabaseAdmin.from("creator_subscriptions").upsert(
     {
-      subscriber_user_id: userId,
-      creator_id: creatorId,
-      stripe_subscription_id: subscription.id,
-      stripe_customer_id: subscription.customer as string,
-      stripe_price_id: subscription.items.data[0]?.price?.id ?? "",
-      status: subscription.status,
-      price_cents: priceCents,
-      current_period_end: new Date(periodEnd * 1000).toISOString(),
-      cancel_at_period_end: subscription.cancel_at_period_end,
-      updated_at: new Date().toISOString(),
+      subscriber_user_id: userId, creator_id: creatorId, stripe_subscription_id: subscription.id,
+      stripe_customer_id: subscription.customer as string, stripe_price_id: subscription.items.data[0]?.price?.id ?? "",
+      status: subscription.status, price_cents: priceCents, current_period_end: new Date(periodEnd * 1000).toISOString(),
+      cancel_at_period_end: subscription.cancel_at_period_end, updated_at: new Date().toISOString(),
     },
     { onConflict: "stripe_subscription_id" }
   );
-  if (error) console.error("[stripe] creator_subscriptions upsert failed:", error);
 }
 
 export async function POST(req: Request) {
@@ -65,7 +56,6 @@ export async function POST(req: Request) {
   try {
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
   } catch (err: any) {
-    console.error("Webhook signature verification failed:", err.message);
     return new NextResponse(`Webhook Error: ${err.message}`, { status: 400 });
   }
 
@@ -77,11 +67,19 @@ export async function POST(req: Request) {
         const sessionDetails = session as any;
         const shipping = sessionDetails.collected_information?.shipping_details || sessionDetails.shipping_details;
         
-        // CRITICAL FIX: Use upsert on stripe_session_id to prevent duplicate orders
+        // FIX: Safely extract metadata into variables to satisfy TypeScript
+        const userId = session.metadata?.userId;
+        const creatorId = session.metadata?.creatorId;
+        const productId = session.metadata?.productId;
+
+        if (!userId || !creatorId || !productId) {
+          return new NextResponse("Missing metadata", { status: 400 });
+        }
+        
         const { error } = await supabaseAdmin.from("merch_orders").upsert({
-          buyer_user_id: session.metadata.userId,
-          creator_id: Number(session.metadata.creatorId),
-          product_id: Number(session.metadata.productId),
+          buyer_user_id: userId,
+          creator_id: Number(creatorId),
+          product_id: Number(productId),
           stripe_session_id: session.id,
           amount_cents: session.amount_total || 0,
           status: "paid",
@@ -90,12 +88,29 @@ export async function POST(req: Request) {
           shipping_city: shipping?.address?.city || null,
           shipping_postal_code: shipping?.address?.postal_code || null,
           shipping_country: shipping?.address?.country || null,
-        }, { onConflict: "stripe_session_id" }); // <-- The magic bullet
+        }, { onConflict: "stripe_session_id" });
 
-        if (error) {
-          console.error("[stripe] merch_orders upsert failed:", error);
-          // Force Stripe to retry later by returning a 500 error
-          return new NextResponse(`Database Error: ${error.message}`, { status: 500 });
+        if (error) return new NextResponse(`Database Error: ${error.message}`, { status: 500 });
+
+        // Push Notification for Order
+        try {
+          const creators = (await kv.get<any[]>(CREATORS_KEY)) || [];
+          const creator = creators.find((c: any) => Number(c.id) === Number(creatorId));
+          
+          if (creator && creator.ownerUserId) {
+            await fetch(`${process.env.NEXT_PUBLIC_URL || "https://www.trooflixtv.com"}/api/push/send`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                userId: creator.ownerUserId,
+                title: "💰 Cha-Ching! New Order",
+                body: `You just sold an item for $${((session.amount_total || 0) / 100).toFixed(2)}!`,
+                url: `/studio/orders`
+              })
+            });
+          }
+        } catch (err) {
+          console.warn("Push notification failed", err);
         }
       }
     }
@@ -158,7 +173,6 @@ export async function POST(req: Request) {
 
     return new NextResponse("OK", { status: 200 });
   } catch (e: any) {
-    console.error("Webhook fatal error:", e);
     return new NextResponse(`Fatal: ${e.message}`, { status: 500 });
   }
 }
