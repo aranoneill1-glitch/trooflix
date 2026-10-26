@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import VideoThumbnail from "@/components/VideoThumbnail";
 import { Camera,
   Grid3x3,
   Play,
@@ -776,13 +777,7 @@ export default function ProfilePage() {
                         draggable={false}
                       >
                         {(p.videoUrl || p.bitchuteUrl) ? (
-                          <video
-                            src={`${p.videoUrl || p.bitchuteUrl}#t=0.1`}
-                            className="w-full h-full object-cover pointer-events-none"
-                            preload="metadata"
-                            muted
-                            playsInline
-                          />
+                          <VideoThumbnail src={p.videoUrl || p.bitchuteUrl || ""} poster={p.posterUrl} className="w-full h-full object-cover pointer-events-none" />
                         ) : (
                           <img
                             src={p.posterUrl || p.backdropUrl}
@@ -821,13 +816,7 @@ export default function ProfilePage() {
                         draggable={false}
                       >
                         {(p.videoUrl || p.bitchuteUrl) ? (
-                          <video
-                            src={`${p.videoUrl || p.bitchuteUrl}#t=0.1`}
-                            className="w-12 h-16 rounded object-cover flex-shrink-0 pointer-events-none"
-                            preload="metadata"
-                            muted
-                            playsInline
-                          />
+                          <VideoThumbnail src={p.videoUrl || p.bitchuteUrl || ""} poster={p.posterUrl} className="w-12 h-16 rounded object-cover flex-shrink-0 pointer-events-none" />
                         ) : (
                           <img
                             src={p.posterUrl || p.backdropUrl}
@@ -911,13 +900,7 @@ export default function ProfilePage() {
                         draggable={false}
                       >
                         {(p.videoUrl || p.bitchuteUrl) ? (
-                          <video
-                            src={`${p.videoUrl || p.bitchuteUrl}#t=0.1`}
-                            className="w-full h-full object-cover pointer-events-none"
-                            preload="metadata"
-                            muted
-                            playsInline
-                          />
+                          <VideoThumbnail src={p.videoUrl || p.bitchuteUrl || ""} poster={p.posterUrl} className="w-full h-full object-cover pointer-events-none" />
                         ) : (
                           <img
                             src={p.posterUrl || p.backdropUrl}
@@ -967,13 +950,7 @@ export default function ProfilePage() {
                         draggable={false}
                       >
                         {(p.videoUrl || p.bitchuteUrl) ? (
-                          <video
-                            src={`${p.videoUrl || p.bitchuteUrl}#t=0.1`}
-                            className="w-12 h-16 rounded object-cover flex-shrink-0 pointer-events-none"
-                            preload="metadata"
-                            muted
-                            playsInline
-                          />
+                          <VideoThumbnail src={p.videoUrl || p.bitchuteUrl || ""} poster={p.posterUrl} className="w-12 h-16 rounded object-cover flex-shrink-0 pointer-events-none" />
                         ) : (
                           <img
                             src={p.posterUrl || p.backdropUrl}
