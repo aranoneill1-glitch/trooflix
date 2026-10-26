@@ -30,6 +30,7 @@ import TopBar from "@/components/TopBar";
 import { createClient } from "@/utils/supabase/client";
 import { clearUserCache } from "@/lib/cache";
 import CollectionsRow from "@/components/CollectionsRow";
+import MerchRow from "@/components/MerchRow";
 import SaveButton from "@/components/SaveButton";
 import LikeButton from "@/components/LikeButton";
 import SearchResults from "@/components/SearchResults";
@@ -81,7 +82,7 @@ const NAV_TABS: string[] = ["Home", "Podcasts", "Feed"];
 export default function Home() {
   const router = useRouter();
   const [videos, setVideos] = useState<Video[]>([]);
-  const [merchandise, setMerchandise] = useState<Video[]>([]);
+  const [merchandise, setMerchandise] = useState<any[]>([]);
   const [books, setBooks] = useState<Video[]>([]);
   const [likeCounts, setLikeCounts] = useState<Record<number, number>>({});
   const [creators, setCreators] = useState<any[]>([]);
@@ -538,7 +539,7 @@ export default function Home() {
             {/* NEW ROWS UNDER TRENDING */}
             {latestDocs.length > 0 && <Row title="Latest Documentaries" items={latestDocs} onSelect={handleCardSelect} onPlay={requestPlay} showCreator={true} creators={creators} />}
             {latestPodcasts.length > 0 && <Row title="Latest Podcasts" items={latestPodcasts} onSelect={handleCardSelect} onPlay={requestPlay} showCreator={true} creators={creators} />}
-            {merchandise.length > 0 && <Row title="Latest Merchandise" items={merchandise} onSelect={handleCardSelect} onPlay={requestPlay} />}
+            {merchandise.length > 0 && <MerchRow title="Latest Merchandise" items={merchandise} />}
             {books.length > 0 && <Row title="Latest Books" items={books} onSelect={handleCardSelect} onPlay={requestPlay} />}
 
             {loaded && videos.length === 0 && (
