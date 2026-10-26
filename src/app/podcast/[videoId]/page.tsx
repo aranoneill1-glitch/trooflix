@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ThumbsUp, Share, Bookmark, ChevronLeft , MoreHorizontal} from "lucide-react";
+import { Play, Share, ChevronLeft, MoreHorizontal, List } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import FollowButton from "@/components/FollowButton";
@@ -18,6 +18,9 @@ import InlineComments from "@/components/InlineComments";
 import PaywallGate from "@/components/PaywallGate";
 import ReportModal from "@/components/ReportModal";
 import WatchTimeTracker from "@/components/WatchTimeTracker";
+import AppleVideoPlayer from "@/components/AppleVideoPlayer";
+
+type Chapter = { title: string; time: number };
 
 type Video = {
   id: number;
@@ -32,6 +35,7 @@ type Video = {
   uploaderUserId?: string | null;
   createdAt?: string;
   viewCount?: number;
+  chapters?: Chapter[];
 };
 
 type Creator = {
@@ -51,6 +55,12 @@ function timeAgo(iso?: string): string {
   return new Date(iso).toLocaleDateString();
 }
 
+function formatTime(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
 export default function WatchPage() {
   const params = useParams();
   const router = useRouter();
@@ -63,16 +73,15 @@ export default function WatchPage() {
   const [showShare, setShowShare] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [followerCount, setFollowerCount] = useState<number | null>(null);
+  const [isPlayerOpen, setIsPlayerOpen] = useState(false);
 
   useEffect(() => {
-    // Get the current user for the Watch Time Tracker
     getCachedUser().then((u) => {
       if (u) setUserId(u.id);
     });
 
     getCachedCreators().then(async (creatorsList) => {
       const list: Creator[] = Array.isArray(creatorsList) ? creatorsList : [];
-      
       const res = await fetch(`/api/videos`, { cache: "no-store" });
       const allVideos = await res.json();
       const found = allVideos.find((v: any) => v.id === videoId);
@@ -115,7 +124,6 @@ export default function WatchPage() {
   return (
     <main className="min-h-screen bg-black text-white pb-24 lg:pb-0">
       
-      {/* Background Watch Time Tracker */}
       {userId && video.creatorId && (
         <WatchTimeTracker 
           userId={userId} 
@@ -128,7 +136,6 @@ export default function WatchPage() {
 
       <div className="pt-20 md:pt-24 max-w-7xl mx-auto px-0 md:px-8">
         
-        {/* Back button */}
         <button
           onClick={() => router.back()}
           className="flex items-center gap-1 text-white/50 hover:text-white transition px-4 md:px-0 mb-4 text-sm"
@@ -138,42 +145,62 @@ export default function WatchPage() {
 
         <div className="flex flex-col lg:flex-row gap-8">
           
-          {/* Main Content (Left) */}
           <div className="flex-1 min-w-0">
             
-            {/* Video Player — wrapped in PaywallGate */}
+            {/* Video Thumbnail → Click to launch AppleVideoPlayer */}
             <PaywallGate contentType={video.type}>
-              {({ videoRef, onTimeUpdate, onContextMenu, onSeeking, onPlay }) => (
-                <div className="relative w-full aspect-video bg-black md:rounded-xl overflow-hidden shadow-2xl">
-                  <video
-                    ref={videoRef}
-                    src={video.videoUrl ?? video.bitchuteUrl ?? ""}
-                    poster={video.posterUrl}
-                    className="w-full h-full object-contain"
-                    controls
-                    autoPlay
-                    playsInline
-                    onTimeUpdate={onTimeUpdate}
-                    onContextMenu={onContextMenu}
-                    onSeeking={onSeeking}
-                    onPlay={onPlay}
-                    disablePictureInPicture
-                    controlsList="nodownload noremoteplayback"
+              {() => (
+                <div 
+                  className="relative w-full aspect-video bg-black md:rounded-xl overflow-hidden shadow-2xl group cursor-pointer"
+                  onClick={() => setIsPlayerOpen(true)}
+                >
+                  <img 
+                    src={video.posterUrl} 
+                    alt={video.title}
+                    className="w-full h-full object-cover"
                   />
+                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition flex items-center justify-center">
+                    <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center group-hover:scale-110 transition">
+                      <Play size={36} fill="white" className="text-white ml-1" />
+                    </div>
+                  </div>
                   <TextOverlayRenderer overlays={video.textOverlays} />
                 </div>
               )}
             </PaywallGate>
 
-            {/* Title */}
+            {/* CHAPTERS LIST (visible under the video) */}
+            {video.chapters && video.chapters.length > 0 && (
+              <div className="mt-4 bg-[#141418] md:rounded-xl p-4 mx-4 md:mx-0">
+                <div className="flex items-center gap-2 mb-3">
+                  <List size={16} className="text-white/60" />
+                  <h3 className="text-sm font-bold text-white/80">Chapters</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
+                  {video.chapters.map((ch, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setIsPlayerOpen(true)}
+                      className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition text-left group"
+                    >
+                      <span className="text-xs font-mono text-white/40 group-hover:text-white/70 transition">
+                        {formatTime(ch.time)}
+                      </span>
+                      <span className="text-sm text-white/80 group-hover:text-white transition truncate">
+                        {ch.title}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <h1 className="text-xl md:text-2xl font-bold mt-4 px-4 md:px-0">
               {video.title}
             </h1>
 
-            {/* Channel Row (if creator exists) */}
             {creator && (
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mt-4 px-4 md:px-0">
-                {/* Left: Channel Info */}
                 <div className="flex items-center gap-3">
                   <Link href={`/podcaster/${creator.slug}`} className="w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden border border-white/10 flex-shrink-0">
                     {creator.photoUrl ? (
@@ -200,7 +227,6 @@ export default function WatchPage() {
               </div>
             )}
 
-            {/* Action Bar — always shows */}
             <div className="flex items-center gap-2 overflow-x-auto pb-2 mt-4 px-4 md:px-0 scrollbar-hide">
               <div className="flex items-center bg-white/10 rounded-full overflow-hidden flex-shrink-0">
                 <div className="px-4 py-2 hover:bg-white/20 transition cursor-pointer flex items-center gap-2">
@@ -228,7 +254,6 @@ export default function WatchPage() {
               </button>
             </div>
 
-            {/* Description Box */}
             <div className="mt-4 bg-[#141418] md:rounded-xl p-4 mx-4 md:mx-0">
               <div className="flex items-center gap-1.5 text-sm font-bold mb-2 text-white/80">
                 <span className="inline-block"><ViewCount videoId={video.id} /></span>
@@ -241,17 +266,12 @@ export default function WatchPage() {
               </p>
             </div>
 
-            {/* Comments Section */}
             <div className="px-4 md:px-0">
               <InlineComments videoId={video.id} />
             </div>
           </div>
 
-          {/* Right Sidebar (Recommendations) - Optional, we can add later */}
-          <div className="hidden lg:block w-80 flex-shrink-0">
-            {/* Placeholder for "Up Next" videos */}
-          </div>
-
+          <div className="hidden lg:block w-80 flex-shrink-0" />
         </div>
       </div>
 
@@ -270,6 +290,18 @@ export default function WatchPage() {
         contentType="post"
         contentId={video.id}
       />
+
+      {/* THE REAL PLAYER */}
+      {isPlayerOpen && (
+        <AppleVideoPlayer
+          src={video.videoUrl ?? video.bitchuteUrl ?? ""}
+          poster={video.posterUrl}
+          title={video.title}
+          onClose={() => setIsPlayerOpen(false)}
+          textOverlays={video.textOverlays}
+          chapters={video.chapters || []}
+        />
+      )}
     </main>
   );
 }
