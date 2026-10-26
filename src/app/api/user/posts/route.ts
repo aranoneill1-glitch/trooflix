@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { kv } from "@vercel/kv";
 
 const VIDEOS_KEY = "trooflix:videos";
+const CREATORS_KEY = "trooflix:creators";
 
 export async function POST(req: Request) {
   try {
@@ -11,6 +12,11 @@ export async function POST(req: Request) {
     if (!userId || !title || !videoUrl) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
+
+    // CRITICAL FIX: Look up the creator ID for this user so the Studio can find it
+    const creators = (await kv.get<any[]>(CREATORS_KEY)) || [];
+    const creator = creators.find((c: any) => String(c.ownerUserId) === String(userId));
+    const creatorId = creator ? creator.id : null;
 
     const videos = (await kv.get<any[]>(VIDEOS_KEY)) || [];
 
@@ -23,11 +29,11 @@ export async function POST(req: Request) {
       backdropUrl: backdropUrl || "",
       type: type || "Reel",
       category: category || "Uncategorized",
-      creatorId: null,
+      creatorId: creatorId, // <-- This is now correctly linked!
       uploaderUserId: userId,
       createdAt: new Date().toISOString(),
-      status: status || "published", // <-- NEW
-      scheduledAt: scheduledAt || null, // <-- NEW
+      status: status || "published",
+      scheduledAt: scheduledAt || null,
       viewCount: 0,
       access_type: "free",
     };
