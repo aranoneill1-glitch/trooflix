@@ -29,6 +29,7 @@ import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import { createClient } from "@/utils/supabase/client";
+import EnablePush from "@/components/EnablePush";
 import { clearUserCache } from "@/lib/cache";
 import { getCachedUser } from "@/lib/cache";
 
@@ -1437,6 +1438,7 @@ export default function ProfilePage() {
                 <div>
                   <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2 px-2">Billing</p>
                   <div className="space-y-1">
+                    <div className="px-3 py-2"><EnablePush /></div>
                     {profile?.has_pass === true ? (
                       <button onClick={() => { setDashOpen(false); handleManageSubscription(); }} disabled={portalLoading} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition group text-left disabled:opacity-50">
                         <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition"><Sparkles size={16} className="text-yellow-400" /></div>
