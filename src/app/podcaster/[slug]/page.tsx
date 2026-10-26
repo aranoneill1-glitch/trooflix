@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { 
   Play, Search, Lock, ShoppingBag, Sparkles, Plus, Settings, 
-  Grid3x3, List, Eye, X, Camera, Bookmark, Wallet, LogOut, Loader2, MessageCircle, Share
+  Grid3x3, List, Eye, X, Camera, Bookmark, Wallet, LogOut, Loader2, MessageCircle, Share, MoreHorizontal
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import TopBar from "@/components/TopBar";
@@ -229,117 +229,109 @@ export default function UnifiedCreatorHub() {
         <div className="h-screen flex items-center justify-center"><Loader2 className="animate-spin text-red-600" size={32} /></div>
       ) : (
         <>
-          {/* CLEANER, SHORTER BANNER */}
-          <div className="relative w-full h-[25vh] md:h-[35vh] overflow-hidden mt-16 md:mt-20">
-            <img src={creator?.heroBackdropUrl || latest?.backdropUrl || ""} alt="" className="w-full h-full object-cover object-center opacity-80" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/60 to-transparent" />
+          {/* CINEMATIC BANNER */}
+          <div className="relative w-full h-[35vh] md:h-[45vh] overflow-hidden mt-16 md:mt-20">
+            <img src={creator?.heroBackdropUrl || latest?.backdropUrl || ""} alt="" className="w-full h-full object-cover object-center" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/60 to-black/30" />
+            
+            {/* MANAGE BUTTON (Top Right) */}
+            {isOwner && (
+              <div className="absolute top-6 right-4 md:right-8 z-20 flex gap-2">
+                <button onClick={() => setEditOpen(true)} className="p-2.5 bg-black/50 backdrop-blur-md border border-white/20 rounded-full hover:bg-black/70 transition text-white shadow-lg">
+                  <Settings size={18} />
+                </button>
+                <button onClick={() => setDashOpen(true)} className="p-2.5 bg-black/50 backdrop-blur-md border border-white/20 rounded-full hover:bg-black/70 transition text-white shadow-lg">
+                  <MoreHorizontal size={18} />
+                </button>
+              </div>
+            )}
           </div>
 
-          <div className="max-w-6xl mx-auto px-4 md:px-8 relative z-10 -mt-16 md:-mt-20">
+          <div className="max-w-6xl mx-auto px-4 md:px-8 relative z-10 -mt-16 md:-mt-24">
             
-            {/* INSTAGRAM-STYLE HEADER */}
-            <div className="flex items-end gap-5 md:gap-8 mb-6">
-              <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-[#050505] bg-[#1c1c1e] flex items-center justify-center flex-shrink-0 shadow-2xl group">
+            {/* HEADER - Clean, Apple TV+ Style */}
+            <div className="flex flex-col md:flex-row items-center md:items-end gap-6 md:gap-8 mb-8">
+              
+              <div className="relative w-28 h-28 md:w-36 md:h-36 rounded-full overflow-hidden border-4 border-[#050505] bg-[#1c1c1e] flex items-center justify-center flex-shrink-0 shadow-2xl group">
                 {creator?.photoUrl ? <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" /> : <span className="text-4xl md:text-6xl font-black">{creator?.name?.[0]?.toUpperCase()}</span>}
-                {isOwner && (
-                  <button onClick={() => fileInputRef.current?.click()} className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                    {uploading ? <Loader2 className="animate-spin text-white" /> : <Camera className="text-white" size={24} />}
-                  </button>
+              </div>
+
+              <div className="flex-1 text-center md:text-left pb-2">
+                <div className="flex items-center justify-center md:justify-start gap-2 mb-1">
+                  <h1 className="text-3xl md:text-5xl font-black tracking-tight drop-shadow-lg">{creator?.name}</h1>
+                  {creator?.isVerified && <VerifiedBadge size={24} variant="gold" />}
+                </div>
+                <p className="text-sm md:text-base text-white/50 mb-2">@{creator?.slug}</p>
+                
+                <div className="flex items-center justify-center md:justify-start gap-4 text-sm font-semibold text-white/80 mb-4">
+                  <span>{videos.length} Videos</span>
+                  <span className="w-1 h-1 rounded-full bg-white/30" />
+                  <span>{followerCount !== null ? followerCount.toLocaleString() : "0"} Followers</span>
+                </div>
+              </div>
+
+              {/* PRIMARY ACTIONS */}
+              <div className="flex items-center gap-2 w-full md:w-auto pb-2">
+                {!isOwner && (
+                  <>
+                    <button onClick={async () => {
+                      if (!userId) return router.push("/login");
+                      await fetch("/api/follows", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId, creatorId: creator?.id }) });
+                      setFollowerCount((c) => (c || 0) + 1);
+                      alert("Followed creator!");
+                    }} className="flex-1 md:flex-none justify-center bg-white text-black font-bold px-8 py-3 rounded-xl text-sm transition hover:scale-105 shadow-xl">
+                      Follow
+                    </button>
+                    {premiumData?.enabled && (
+                      hasSub ? <div className="flex-1 md:flex-none justify-center bg-green-500/10 text-green-400 border border-green-500/30 px-5 py-3 rounded-xl text-sm font-bold flex items-center gap-2"><Sparkles size={16} /> Member</div>
+                      : <button onClick={handleSubscribe} disabled={checkoutLoading} className="flex-1 md:flex-none justify-center bg-yellow-500 text-black hover:bg-yellow-400 px-6 py-3 rounded-xl text-sm font-bold transition shadow-xl flex items-center gap-2"><Sparkles size={16} /> {checkoutLoading ? "..." : `Join $${(premiumData.price_cents / 100).toFixed(2)}/mo`}</button>
+                    )}
+                    <Link href={`/messages/${creator?.ownerUserId}`} className="p-3 bg-white/10 border border-white/20 hover:bg-white/20 rounded-xl transition flex-shrink-0">
+                      <MessageCircle size={20} />
+                    </Link>
+                  </>
                 )}
               </div>
-              <input ref={fileInputRef} type="file" accept="image/*" onChange={onAvatarChange} className="hidden" />
-
-              <div className="flex gap-6 md:gap-10 pb-2">
-                <div className="text-center">
-                  <p className="text-lg md:text-2xl font-black">{videos.length}</p>
-                  <p className="text-xs md:text-sm text-white/50">uploads</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-lg md:text-2xl font-black">{followerCount !== null ? followerCount.toLocaleString() : "—"}</p>
-                  <p className="text-xs md:text-sm text-white/50">followers</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-lg md:text-2xl font-black">0</p>
-                  <p className="text-xs md:text-sm text-white/50">following</p>
-                </div>
-              </div>
             </div>
 
-            {/* NAME & BIO */}
-            <div className="mb-5">
-              <div className="flex items-center gap-2 mb-1">
-                <h1 className="text-2xl md:text-4xl font-black tracking-tight">{creator?.name}</h1>
-                {creator?.isVerified && <VerifiedBadge size={20} variant="gold" />}
-              </div>
-              <p className="text-sm md:text-base text-white/50 mb-3">@{creator?.slug}</p>
-              {creator?.description && <p className="text-sm md:text-base text-white/80 max-w-2xl leading-relaxed">{creator.description}</p>}
-            </div>
+            {/* BIO */}
+            {creator?.description && (
+              <p className="text-center md:text-left text-sm md:text-base text-white/70 max-w-3xl mb-8 leading-relaxed">
+                {creator.description}
+              </p>
+            )}
 
-            {/* CLEAN ACTION BUTTONS */}
-            <div className="flex flex-wrap items-center gap-2.5 md:gap-3 mb-8">
-              {isOwner ? (
-                <>
-                  <button onClick={() => setEditOpen(true)} className="flex-1 md:flex-none justify-center bg-white/10 text-white border border-white/20 font-semibold px-4 py-2 rounded-lg text-sm transition hover:bg-white/20 flex items-center gap-2">
-                    <Settings size={16} /> Edit Profile
-                  </button>
-                  <button onClick={() => setDashOpen(true)} className="flex-1 md:flex-none justify-center bg-white/10 text-white border border-white/20 font-semibold px-4 py-2 rounded-lg text-sm transition hover:bg-white/20 flex items-center gap-2">
-                    <Grid3x3 size={16} /> Dashboard
-                  </button>
-                  <Link href="/studio" className="flex-1 md:flex-none justify-center bg-yellow-500 text-black font-bold px-4 py-2 rounded-lg text-sm transition hover:scale-105 flex items-center gap-2">
-                    <Plus size={16} /> Studio
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <button onClick={async () => {
-                    if (!userId) return router.push("/login");
-                    await fetch("/api/follows", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId, creatorId: creator?.id }) });
-                    setFollowerCount((c) => (c || 0) + 1);
-                    alert("Followed creator!");
-                  }} className="flex-1 md:flex-none justify-center bg-white text-black font-bold px-6 py-2 rounded-lg text-sm transition hover:scale-105 shadow-lg flex items-center gap-2">
-                    + Follow
-                  </button>
-                  <Link href={`/messages/${creator?.ownerUserId}`} className="flex-1 md:flex-none justify-center bg-white/10 text-white border border-white/20 font-semibold px-4 py-2 rounded-lg text-sm transition hover:bg-white/20 flex items-center gap-2">
-                    <MessageCircle size={16} /> Message
-                  </Link>
-                  {premiumData?.enabled && (
-                    hasSub ? <div className="flex-1 md:flex-none justify-center bg-green-500/10 text-green-400 border border-green-500/30 px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2"><Sparkles size={16} /> Subscribed</div>
-                    : <button onClick={handleSubscribe} disabled={checkoutLoading} className="flex-1 md:flex-none justify-center bg-yellow-500 text-black hover:bg-yellow-400 px-4 py-2 rounded-lg text-sm font-bold transition shadow-lg flex items-center gap-2"><Sparkles size={16} /> {checkoutLoading ? "Loading..." : `Join Premium`}</button>
-                  )}
-                </>
-              )}
-            </div>
-
-            {/* STICKY TABS */}
-            <div className="flex justify-center mb-8 md:sticky md:top-20 z-40">
-              <div className="flex gap-1 p-1 bg-[#0a0a0a]/80 backdrop-blur-xl border border-white/10 rounded-lg shadow-2xl overflow-x-auto scrollbar-hide w-full md:w-auto">
-                <button onClick={() => setTab("home")} className={`flex-1 md:flex-none px-6 py-2 rounded-md text-sm font-semibold transition-all ${tab === "home" ? "bg-white/15 text-white shadow-sm" : "text-white/50 hover:text-white"}`}>Home</button>
-                <button onClick={() => setTab("videos")} className={`flex-1 md:flex-none px-6 py-2 rounded-md text-sm font-semibold transition-all ${tab === "videos" ? "bg-white/15 text-white shadow-sm" : "text-white/50 hover:text-white"}`}>Videos</button>
-                {premiumData?.enabled && <button onClick={() => setTab("premium")} className={`flex-1 md:flex-none px-6 py-2 rounded-md text-sm font-semibold transition-all flex items-center justify-center gap-1.5 ${tab === "premium" ? "bg-yellow-500/20 text-yellow-400 shadow-sm" : "text-white/50 hover:text-white"}`}><Sparkles size={14} /> Premium</button>}
-                {products.length > 0 && <button onClick={() => setTab("shop")} className={`flex-1 md:flex-none px-6 py-2 rounded-md text-sm font-semibold transition-all flex items-center justify-center gap-1.5 ${tab === "shop" ? "bg-white/15 text-white shadow-sm" : "text-white/50 hover:text-white"}`}><ShoppingBag size={14} /> Shop</button>}
-              </div>
+            {/* SLEEK FLUID TABS */}
+            <div className="flex w-full border-b border-white/10 mb-8 overflow-x-auto scrollbar-hide">
+              <button onClick={() => setTab("home")} className={`flex-1 min-w-[80px] pb-3 text-sm font-bold transition-all border-b-2 ${tab === "home" ? "border-white text-white" : "border-transparent text-white/40 hover:text-white"}`}>Home</button>
+              <button onClick={() => setTab("videos")} className={`flex-1 min-w-[80px] pb-3 text-sm font-bold transition-all border-b-2 ${tab === "videos" ? "border-white text-white" : "border-transparent text-white/40 hover:text-white"}`}>Videos</button>
+              {premiumData?.enabled && <button onClick={() => setTab("premium")} className={`flex-1 min-w-[80px] pb-3 text-sm font-bold transition-all border-b-2 flex justify-center items-center gap-1.5 ${tab === "premium" ? "border-yellow-500 text-yellow-500" : "border-transparent text-white/40 hover:text-white"}`}><Sparkles size={14}/> Premium</button>}
+              {products.length > 0 && <button onClick={() => setTab("shop")} className={`flex-1 min-w-[80px] pb-3 text-sm font-bold transition-all border-b-2 flex justify-center items-center gap-1.5 ${tab === "shop" ? "border-white text-white" : "border-transparent text-white/40 hover:text-white"}`}><ShoppingBag size={14}/> Shop</button>}
             </div>
           </div>
 
-          <div className="max-w-6xl mx-auto px-4 md:px-8 py-4 md:py-8 min-h-[50vh]">
+          <div className="max-w-6xl mx-auto px-4 md:px-8 py-2 min-h-[50vh]">
             {/* HOME TAB */}
             {tab === "home" && (
               <div className="space-y-12">
                 {latest && (
-                  <div className="relative rounded-2xl overflow-hidden bg-[#0a0a0a] border border-white/10 shadow-2xl group cursor-pointer" onClick={() => handleVideoClick(latest)}>
-                    <div className="absolute inset-0 opacity-20 blur-[80px] scale-110 pointer-events-none"><img src={latest.posterUrl} alt="" className="w-full h-full object-cover" /></div>
-                    <div className="relative z-10 flex flex-col md:flex-row gap-6 p-6 md:p-10">
-                      <div className="w-full md:w-1/2 aspect-video rounded-xl overflow-hidden bg-black flex-shrink-0 relative shadow-2xl">
-                        <img src={latest.posterUrl} alt="" className={`w-full h-full object-cover group-hover:scale-105 transition duration-500 ${latest.access_type && latest.access_type !== "free" && !hasSub ? 'blur-sm opacity-60' : ''}`} />
+                  <div className="relative rounded-3xl overflow-hidden group cursor-pointer" onClick={() => handleVideoClick(latest)}>
+                    <div className="absolute inset-0 opacity-30 blur-[100px] scale-110 pointer-events-none"><img src={latest.posterUrl} alt="" className="w-full h-full object-cover" /></div>
+                    <div className="relative z-10 flex flex-col md:flex-row gap-8 p-4 md:p-8 bg-black/40 backdrop-blur-md border border-white/10 rounded-3xl">
+                      <div className="w-full md:w-[55%] aspect-video rounded-2xl overflow-hidden bg-black flex-shrink-0 relative shadow-[0_0_40px_rgba(0,0,0,0.8)]">
+                        <img src={latest.posterUrl} alt="" className={`w-full h-full object-cover group-hover:scale-105 transition duration-700 ${latest.access_type && latest.access_type !== "free" && !hasSub ? 'blur-sm opacity-60' : ''}`} />
                         <div className="absolute inset-0 flex items-center justify-center">
-                          {latest.access_type && latest.access_type !== "free" && !hasSub ? <div className="bg-black/60 px-6 py-4 rounded-xl flex flex-col items-center"><Lock size={32} className="text-red-500 mb-2" /><span className="text-sm font-bold text-white">PREMIUM</span></div>
-                          : <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition"><Play size={28} fill="white" className="text-white ml-1" /></div>}
+                          {latest.access_type && latest.access_type !== "free" && !hasSub ? <div className="bg-black/60 px-6 py-4 rounded-2xl flex flex-col items-center"><Lock size={32} className="text-red-500 mb-2" /><span className="text-sm font-bold text-white">PREMIUM</span></div>
+                          : <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-90 group-hover:scale-100"><Play size={36} fill="white" className="text-white ml-1" /></div>}
                         </div>
                       </div>
-                      <div className="flex-1 flex flex-col justify-center py-2">
-                        <p className="text-xs font-bold text-red-500 uppercase tracking-widest mb-2">{latest.type} · LATEST DROP</p>
-                        <h3 className="text-xl md:text-3xl font-black mb-3 line-clamp-3 group-hover:text-red-500 transition-colors">{latest.title}</h3>
-                        <p className="text-sm text-white/60 line-clamp-3 leading-relaxed">{latest.description}</p>
+                      <div className="flex-1 flex flex-col justify-center py-4">
+                        <p className="text-xs font-black text-red-500 uppercase tracking-widest mb-3 drop-shadow-md">{latest.type} · LATEST DROP</p>
+                        <h3 className="text-2xl md:text-4xl font-black mb-4 leading-tight drop-shadow-lg group-hover:text-red-400 transition-colors">{latest.title}</h3>
+                        <p className="text-sm md:text-base text-white/70 line-clamp-3 leading-relaxed mb-6">{latest.description}</p>
+                        <div className="flex items-center gap-3">
+                           <span className="px-4 py-2 bg-white text-black font-bold text-sm rounded-lg group-hover:scale-105 transition-transform">Watch Now</span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -347,31 +339,33 @@ export default function UnifiedCreatorHub() {
 
                 {freeVideos.length > 0 && (
                   <div>
-                    <div className="flex items-center justify-between mb-4"><h2 className="text-lg md:text-xl font-bold">Recent Uploads</h2><button onClick={() => setTab("videos")} className="text-xs font-semibold text-white/50 hover:text-white">View All</button></div>
-                    <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4">
+                    <div className="flex items-center justify-between mb-5"><h2 className="text-xl md:text-2xl font-black">Recent Uploads</h2><button onClick={() => setTab("videos")} className="text-sm font-bold text-white/50 hover:text-white transition">View All</button></div>
+                    <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-6">
                       {freeVideos.slice(0, 6).map(v => (
-                        <div key={v.id} onClick={() => handleVideoClick(v)} className="flex-shrink-0 w-[200px] md:w-[260px] cursor-pointer group">
-                          <div className="aspect-video rounded-lg overflow-hidden bg-[#0f0f12] mb-2 relative border border-white/5">
+                        <div key={v.id} onClick={() => handleVideoClick(v)} className="flex-shrink-0 w-[220px] md:w-[300px] cursor-pointer group">
+                          <div className="aspect-video rounded-xl overflow-hidden bg-[#0f0f12] mb-3 relative border border-white/5">
                             <img src={v.posterUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition"></div>
                           </div>
-                          <p className="text-sm font-semibold line-clamp-2 group-hover:text-white text-white/90">{v.title}</p>
+                          <p className="text-sm md:text-base font-bold line-clamp-2 mb-1 group-hover:text-red-400 transition-colors">{v.title}</p>
+                          <p className="text-xs text-white/40">{v.viewCount?.toLocaleString() || 0} views</p>
                         </div>
                       ))}
                     </div>
                   </div>
                 )}
-
+                
                 {products.length > 0 && (
                   <div>
-                    <div className="flex items-center justify-between mb-4"><h2 className="text-lg md:text-xl font-bold flex items-center gap-2"><ShoppingBag size={18} className="text-red-500"/> Creator Shop</h2><button onClick={() => setTab("shop")} className="text-xs font-semibold text-white/50 hover:text-white">Visit Shop</button></div>
-                    <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4">
+                    <div className="flex items-center justify-between mb-5"><h2 className="text-xl md:text-2xl font-black flex items-center gap-2"><ShoppingBag size={22} className="text-red-500"/> Creator Shop</h2><button onClick={() => setTab("shop")} className="text-sm font-bold text-white/50 hover:text-white transition">Visit Shop</button></div>
+                    <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-6">
                       {products.slice(0, 4).map(p => (
-                        <div key={p.id} onClick={() => handleBuyProduct(p.id)} className="flex-shrink-0 w-[140px] md:w-[180px] cursor-pointer group">
-                          <div className="aspect-square rounded-lg overflow-hidden bg-[#0f0f12] mb-2 relative border border-white/5">
+                        <div key={p.id} onClick={() => handleBuyProduct(p.id)} className="flex-shrink-0 w-[160px] md:w-[200px] cursor-pointer group">
+                          <div className="aspect-square rounded-2xl overflow-hidden bg-[#0f0f12] mb-3 relative border border-white/5">
                             <img src={p.image_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-                            <div className="absolute bottom-2 right-2 bg-black/80 px-2 py-0.5 rounded text-[10px] font-bold text-green-400">${(p.price_cents / 100).toFixed(2)}</div>
+                            <div className="absolute bottom-2 right-2 bg-black/80 backdrop-blur-md px-2.5 py-1 rounded-lg text-xs font-black text-green-400 shadow-lg">${(p.price_cents / 100).toFixed(2)}</div>
                           </div>
-                          <p className="text-sm font-semibold line-clamp-1 text-white/90">{p.name}</p>
+                          <p className="text-sm font-bold line-clamp-1 group-hover:text-white text-white/80">{p.name}</p>
                         </div>
                       ))}
                     </div>
@@ -384,40 +378,40 @@ export default function UnifiedCreatorHub() {
             {tab === "videos" && (
               <div>
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                  <h2 className="text-xl font-bold">All Content</h2>
+                  <h2 className="text-2xl font-black">All Content</h2>
                   <div className="flex items-center gap-3">
-                    <div className="relative w-full md:w-56">
+                    <div className="relative w-full md:w-64">
                       <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
-                      <input type="text" placeholder="Search videos..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-[#1c1c1e] border border-white/10 rounded-lg pl-9 pr-3 py-2 text-sm outline-none focus:border-white/30" />
+                      <input type="text" placeholder="Search videos..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl pl-9 pr-3 py-2.5 text-sm outline-none focus:border-white/30" />
                     </div>
-                    <div className="flex items-center gap-1 bg-[#1c1c1e] p-1 rounded-lg border border-white/10">
-                      <button onClick={() => setViewMode("grid")} className={`p-1.5 rounded transition ${viewMode === "grid" ? "bg-white/15 text-white" : "text-white/40"}`}><Grid3x3 size={16} /></button>
-                      <button onClick={() => setViewMode("list")} className={`p-1.5 rounded transition ${viewMode === "list" ? "bg-white/15 text-white" : "text-white/40"}`}><List size={16} /></button>
+                    <div className="flex items-center gap-1 bg-[#1c1c1e] p-1 rounded-xl border border-white/10">
+                      <button onClick={() => setViewMode("grid")} className={`p-2 rounded-lg transition ${viewMode === "grid" ? "bg-white/15 text-white" : "text-white/40 hover:text-white"}`}><Grid3x3 size={16} /></button>
+                      <button onClick={() => setViewMode("list")} className={`p-2 rounded-lg transition ${viewMode === "list" ? "bg-white/15 text-white" : "text-white/40 hover:text-white"}`}><List size={16} /></button>
                     </div>
                   </div>
                 </div>
 
                 {freeVideos.length === 0 ? <p className="text-center text-white/50 py-16 text-sm">No videos found.</p>
                 : viewMode === "grid" ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {freeVideos.map(v => (
                       <div key={v.id} onClick={() => handleVideoClick(v)} className="cursor-pointer group flex flex-col">
-                        <div className="aspect-video rounded-lg overflow-hidden bg-[#0f0f12] mb-2 relative border border-white/5">
+                        <div className="aspect-video rounded-xl overflow-hidden bg-[#0f0f12] mb-3 relative border border-white/5 shadow-lg">
                           <img src={v.posterUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy" />
-                          <div className="absolute bottom-2 left-2 bg-black/70 px-1.5 py-0.5 rounded text-[10px] font-bold text-white"><Eye size={10} className="inline mr-1" />{(v.viewCount || 0).toLocaleString()}</div>
+                          <div className="absolute bottom-2 left-2 bg-black/70 backdrop-blur-sm px-2 py-1 rounded text-[10px] font-bold text-white"><Eye size={10} className="inline mr-1" />{(v.viewCount || 0).toLocaleString()}</div>
                         </div>
-                        <p className="text-sm font-semibold line-clamp-2 mb-1 group-hover:text-white text-white/90">{v.title}</p>
+                        <p className="text-sm md:text-base font-bold line-clamp-2 mb-1 group-hover:text-red-400 transition-colors">{v.title}</p>
                         <p className="text-xs text-white/40">{v.type}</p>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {freeVideos.map(v => (
-                      <div key={v.id} onClick={() => handleVideoClick(v)} className="flex items-center gap-4 p-3 rounded-lg bg-[#0f0f12] hover:bg-[#1c1c1e] transition cursor-pointer border border-white/5">
-                        <div className="w-20 h-12 rounded overflow-hidden bg-black flex-shrink-0 relative"><img src={v.posterUrl} alt="" className="w-full h-full object-cover" /></div>
-                        <div className="flex-1 min-w-0"><p className="text-sm font-semibold truncate text-white/90">{v.title}</p><p className="text-xs text-white/40 mt-1">{v.type} · {(v.viewCount || 0).toLocaleString()} views</p></div>
-                        <Play size={16} fill="white" className="text-white/40 flex-shrink-0" />
+                      <div key={v.id} onClick={() => handleVideoClick(v)} className="flex items-center gap-4 p-3 rounded-xl bg-[#0f0f12] hover:bg-[#1c1c1e] transition cursor-pointer border border-white/5">
+                        <div className="w-28 h-16 rounded-lg overflow-hidden bg-black flex-shrink-0 relative"><img src={v.posterUrl} alt="" className="w-full h-full object-cover" /></div>
+                        <div className="flex-1 min-w-0"><p className="text-sm font-bold truncate">{v.title}</p><p className="text-xs text-white/40 mt-1">{v.type} · {(v.viewCount || 0).toLocaleString()} views</p></div>
+                        <Play size={20} fill="white" className="text-white/40 flex-shrink-0" />
                       </div>
                     ))}
                   </div>
@@ -428,22 +422,25 @@ export default function UnifiedCreatorHub() {
             {/* PREMIUM TAB */}
             {tab === "premium" && premiumData?.enabled && (
               <div>
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                  <h2 className="text-xl font-bold flex items-center gap-2"><Sparkles size={20} className="text-yellow-500" /> Premium Content</h2>
-                  {!hasSub && <button onClick={handleSubscribe} className="bg-yellow-500 text-black hover:bg-yellow-400 px-4 py-2 rounded-lg text-sm font-bold shadow-lg">Join for ${(premiumData.price_cents / 100).toFixed(2)}/mo</button>}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                  <div>
+                    <h2 className="text-2xl font-black flex items-center gap-2"><Sparkles size={24} className="text-yellow-500" /> Premium Content</h2>
+                    <p className="text-sm text-white/50 mt-1">Exclusive videos for your superfans.</p>
+                  </div>
+                  {!hasSub && <button onClick={handleSubscribe} className="bg-yellow-500 text-black hover:bg-yellow-400 px-8 py-3 rounded-xl text-sm font-bold shadow-xl transition hover:scale-105">Join for ${(premiumData.price_cents / 100).toFixed(2)}/mo</button>}
                 </div>
                 {premiumVideos.length === 0 ? <p className="text-center text-white/50 py-16 text-sm">No premium content yet.</p>
                 : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {premiumVideos.map(v => {
                       const isLocked = !hasSub;
                       return (
                         <div key={v.id} onClick={() => !isLocked && handleVideoClick(v)} className={`relative group ${isLocked ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
-                          <div className="aspect-video rounded-lg overflow-hidden bg-[#0f0f12] mb-2 relative border border-yellow-500/20">
-                            <img src={v.posterUrl} alt="" className={`w-full h-full object-cover transition duration-500 ${isLocked ? 'blur-md opacity-50' : 'group-hover:scale-105'}`} />
-                            {isLocked && <div className="absolute inset-0 flex items-center justify-center"><div className="bg-black/60 px-3 py-1.5 rounded-lg border border-white/10 flex items-center gap-1.5"><Lock size={14} className="text-yellow-500" /><span className="text-[10px] font-bold text-white uppercase tracking-wider">Premium</span></div></div>}
+                          <div className="aspect-video rounded-xl overflow-hidden bg-[#0f0f12] mb-3 relative border border-yellow-500/30 shadow-[0_0_20px_rgba(234,179,8,0.1)]">
+                            <img src={v.posterUrl} alt="" className={`w-full h-full object-cover transition duration-500 ${isLocked ? 'blur-md opacity-40' : 'group-hover:scale-105'}`} />
+                            {isLocked && <div className="absolute inset-0 flex items-center justify-center"><div className="bg-black/80 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 flex items-center gap-2"><Lock size={16} className="text-yellow-500" /><span className="text-xs font-bold text-white tracking-wide">PREMIUM</span></div></div>}
                           </div>
-                          <p className="text-sm font-semibold line-clamp-2 mb-1 text-white/90">{v.title}</p>
+                          <p className="text-sm md:text-base font-bold line-clamp-2 mb-1">{v.title}</p>
                           <p className="text-xs text-white/40">{v.type}</p>
                         </div>
                       );
@@ -456,20 +453,23 @@ export default function UnifiedCreatorHub() {
             {/* SHOP TAB */}
             {tab === "shop" && (
               <div>
-                <h2 className="text-xl font-bold mb-6 flex items-center gap-2"><ShoppingBag size={20} className="text-red-500"/> Creator Merch</h2>
-                {products.length === 0 ? <div className="text-center py-20 bg-[#0a0a0a] rounded-xl border border-white/5"><ShoppingBag size={32} className="mx-auto text-white/20 mb-3" /><p className="text-white/50 text-sm">No products available yet.</p></div>
+                <div className="mb-8">
+                   <h2 className="text-2xl md:text-3xl font-black flex items-center gap-3"><ShoppingBag size={28} className="text-red-500"/> Creator Merch</h2>
+                   <p className="text-sm text-white/50 mt-1">Support {creator?.name} by picking up some gear.</p>
+                </div>
+                {products.length === 0 ? <div className="text-center py-24 bg-[#0a0a0a] rounded-3xl border border-white/5"><ShoppingBag size={48} className="mx-auto text-white/20 mb-4" /><p className="text-white/50 text-lg">No products available yet.</p></div>
                 : (
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                     {products.map((p) => (
-                      <div key={p.id} className="group bg-[#0a0a0a] border border-white/5 rounded-xl p-3 flex flex-col hover:border-white/20 transition">
-                        <div className="aspect-square rounded-lg overflow-hidden bg-[#0f0f12] mb-3 relative">
+                      <div key={p.id} className="group bg-[#0a0a0a] border border-white/5 rounded-2xl p-4 flex flex-col hover:border-white/20 transition hover:-translate-y-1 shadow-xl">
+                        <div className="aspect-square rounded-xl overflow-hidden bg-[#0f0f12] mb-4 relative">
                           <img src={p.image_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
                         </div>
-                        <h3 className="font-bold text-sm mb-1 truncate text-white/90">{p.name}</h3>
-                        <p className="text-xs text-white/50 mb-3 flex-1 line-clamp-2">{p.description}</p>
-                        <div className="flex items-center justify-between mt-auto pt-3 border-t border-white/5">
-                          <span className="text-base font-black text-white">${(p.price_cents / 100).toFixed(2)}</span>
-                          <button onClick={() => handleBuyProduct(p.id)} className="bg-white text-black font-bold px-3 py-1.5 rounded-lg text-xs hover:scale-105 transition shadow-lg">Buy</button>
+                        <h3 className="font-bold text-lg mb-1 truncate">{p.name}</h3>
+                        <p className="text-sm text-white/50 mb-6 flex-1 line-clamp-2">{p.description}</p>
+                        <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/5">
+                          <span className="text-xl font-black text-white">${(p.price_cents / 100).toFixed(2)}</span>
+                          <button onClick={() => handleBuyProduct(p.id)} className="bg-white text-black font-bold px-5 py-2.5 rounded-xl text-sm hover:scale-105 transition shadow-lg">Buy Now</button>
                         </div>
                       </div>
                     ))}
@@ -478,7 +478,7 @@ export default function UnifiedCreatorHub() {
               </div>
             )}
           </div>
-          <div className="h-16" />
+          <div className="h-24" />
         </>
       )}
       <MobileBottomNav />
@@ -489,13 +489,13 @@ export default function UnifiedCreatorHub() {
       <AnimatePresence>
         {editOpen && (
           <div className="fixed inset-0 z-[500] bg-black/80 flex items-center justify-center px-4">
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="bg-[#0f0f12] rounded-2xl p-6 w-full max-w-md border border-white/10">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="bg-[#0f0f12] rounded-2xl p-6 w-full max-w-md border border-white/10 shadow-2xl">
               <div className="flex items-center justify-between mb-4"><h3 className="font-bold text-lg">Edit Profile</h3><button onClick={() => setEditOpen(false)} className="p-1 hover:bg-white/10 rounded"><X size={18} /></button></div>
               <label className="text-xs font-bold text-white/50 block mb-1">Display Name</label>
               <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2.5 mb-3 outline-none focus:border-red-600 text-sm" />
               <label className="text-xs font-bold text-white/50 block mb-1">Bio</label>
               <textarea value={editBio} onChange={(e) => setEditBio(e.target.value)} rows={4} className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2.5 mb-4 outline-none focus:border-red-600 resize-none text-sm" />
-              <button onClick={saveEdit} className="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-xl transition text-sm">Save Changes</button>
+              <button onClick={saveEdit} className="w-full bg-white text-black hover:bg-gray-200 font-bold py-3 rounded-xl transition text-sm">Save Changes</button>
             </motion.div>
           </div>
         )}
@@ -506,7 +506,7 @@ export default function UnifiedCreatorHub() {
         {dashOpen && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setDashOpen(false)} className="fixed inset-0 z-[500] bg-black/80 backdrop-blur-sm" />
-            <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 30, stiffness: 300 }} className="fixed left-0 right-0 bottom-0 z-[501] bg-[#0a0a0a]/95 backdrop-blur-2xl rounded-t-3xl md:max-w-md md:mx-auto md:rounded-3xl md:bottom-4 border-t md:border border-white/10 flex flex-col max-h-[85vh]">
+            <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 30, stiffness: 300 }} className="fixed left-0 right-0 bottom-0 z-[501] bg-[#0a0a0a]/95 backdrop-blur-2xl rounded-t-3xl md:max-w-md md:mx-auto md:rounded-3xl md:bottom-4 border-t md:border border-white/10 flex flex-col max-h-[85vh] shadow-2xl">
               <div className="flex justify-center pt-3 pb-1 shrink-0"><div className="w-12 h-1.5 rounded-full bg-white/20" /></div>
               <div className="flex items-center justify-between px-5 py-3 border-b border-white/5 shrink-0">
                 <div className="flex items-center gap-3">
@@ -517,19 +517,19 @@ export default function UnifiedCreatorHub() {
               </div>
               <div className="p-4 space-y-6 overflow-y-auto scrollbar-hide">
                 <div>
-                  <p className="text-[10px] font-bold text-white/40 uppercase mb-2 px-2">Account</p>
-                  <Link href="/studio" className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition"><Settings size={16} className="text-white/70" /><span className="text-sm font-medium">Creator Studio</span></Link>
-                  <Link href="/orders" className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition"><ShoppingBag size={16} className="text-white/70" /><span className="text-sm font-medium">My Orders</span></Link>
-                  <Link href="/my-list" className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition"><Bookmark size={16} className="text-white/70" /><span className="text-sm font-medium">My List</span></Link>
-                  <Link href="/profile/wallet" className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition"><Wallet size={16} className="text-white/70" /><span className="text-sm font-medium">Wallet</span></Link>
+                  <p className="text-[10px] font-bold text-white/40 uppercase mb-2 px-2 tracking-widest">Creator Tools</p>
+                  <Link href="/studio" className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-yellow-500/10 transition text-yellow-400 font-semibold"><Settings size={18} /><span className="text-sm">Creator Studio</span></Link>
+                  <Link href="/profile/wallet" className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-yellow-500/10 transition text-yellow-400 font-semibold"><Wallet size={18} /><span className="text-sm">Creator Wallet</span></Link>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-white/40 uppercase mb-2 px-2">Billing</p>
-                  <div className="px-3 py-2"><EnablePush /></div>
-                  <button onClick={handleManageSubscription} disabled={portalLoading} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition text-left disabled:opacity-50"><Sparkles size={16} className="text-yellow-400" /><span className="text-sm font-medium">{portalLoading ? "Opening…" : "Manage Subscription"}</span></button>
+                  <p className="text-[10px] font-bold text-white/40 uppercase mb-2 px-2 tracking-widest">Account</p>
+                  <Link href="/orders" className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-white/5 transition"><ShoppingBag size={18} className="text-white/70" /><span className="text-sm font-medium">My Orders</span></Link>
+                  <Link href="/my-list" className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-white/5 transition"><Bookmark size={18} className="text-white/70" /><span className="text-sm font-medium">My List</span></Link>
+                  <div className="px-3 py-2 mt-2"><EnablePush /></div>
+                  <button onClick={handleManageSubscription} disabled={portalLoading} className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-white/5 transition text-left disabled:opacity-50"><Sparkles size={18} className="text-yellow-400" /><span className="text-sm font-medium">{portalLoading ? "Opening…" : "Manage Subscription"}</span></button>
                 </div>
               </div>
-              <div className="p-4 border-t border-white/5 shrink-0">
+              <div className="p-4 border-t border-white/5 shrink-0 pb-[env(safe-area-inset-bottom)]">
                 <button onClick={logout} className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-500 font-bold text-sm transition"><LogOut size={16} /> Log out</button>
               </div>
             </motion.div>
