@@ -5,13 +5,12 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { 
   Play, Search, Lock, ShoppingBag, Sparkles, Plus, Settings, 
-  Grid3x3, List, Eye, X, Camera, Bookmark, Wallet, LogOut, Loader2, MessageCircle, Share, MoreHorizontal, BookOpen
+  Grid3x3, List, Eye, X, Camera, Bookmark, Wallet, LogOut, Loader2, MessageCircle, Share, MoreHorizontal, BookOpen, ChevronRight 
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import VerifiedBadge from "@/components/VerifiedBadge";
-import ProfileReelViewer from "@/components/ProfileReelViewer";
 import EnablePush from "@/components/EnablePush";
 import { getCachedCreators, getCachedUser, clearUserCache } from "@/lib/cache";
 import { createClient } from "@/utils/supabase/client";
@@ -43,7 +42,7 @@ type Creator = {
   ownerUserId?: string;
 };
 
-type Tab = "home" | "library" | "store" | "premium";
+type ViewMode = "home" | "library" | "store" | "premium";
 
 export default function UnifiedCreatorHub() {
   const params = useParams();
@@ -59,10 +58,10 @@ export default function UnifiedCreatorHub() {
   const [notFound, setNotFound] = useState(false);
   const [followerCount, setFollowerCount] = useState<number | null>(null);
   
-  const [tab, setTab] = useState<Tab>("home");
+  const [viewMode, setViewMode] = useState<ViewMode>("home");
   const [searchQuery, setSearchQuery] = useState("");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [videoFilter, setVideoFilter] = useState<string>("all");
+  const [gridMode, setGridMode] = useState<"grid" | "list">("grid");
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
 
   const [premiumData, setPremiumData] = useState<{ enabled: boolean; price_cents: number } | null>(null);
@@ -117,10 +116,8 @@ export default function UnifiedCreatorHub() {
       setFollowerCount(fData.count ?? 0);
       setProducts(pData.products || []);
       
-      // Filter books by this creator
       const allBooks = Array.isArray(booksData) ? booksData : [];
-      const creatorBooks = allBooks.filter((b: any) => String(b.creator_id) === String(found.id));
-      setBooks(creatorBooks);
+      setBooks(allBooks.filter((b: any) => String(b.creator_id) === String(found.id)));
 
       if (premData.enabled) setPremiumData({ enabled: true, price_cents: premData.price_cents });
       if (subData.hasSub) setHasSub(true);
@@ -255,28 +252,9 @@ export default function UnifiedCreatorHub() {
     <main className="min-h-screen bg-[#050505] text-white pb-24 lg:pb-0">
       <TopBar />
 
-      {/* CINEMATIC BANNER */}
-      <div className="relative w-full h-[30vh] md:h-[40vh] overflow-hidden mt-16 md:mt-20">
-        <img src={creator?.heroBackdropUrl || latest?.backdropUrl || ""} alt="" className="w-full h-full object-cover object-center opacity-70" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/60 to-transparent" />
-        
-        {/* OWNER CONTROLS (Top Right, only for the creator) */}
-        {isOwner && (
-          <div className="absolute top-4 right-4 md:top-6 md:right-8 z-20 flex gap-2">
-            <button onClick={() => setEditOpen(true)} className="p-2.5 bg-black/50 backdrop-blur-md border border-white/10 rounded-full hover:bg-black/80 transition text-white shadow-lg">
-              <Settings size={18} />
-            </button>
-            <button onClick={() => setDashOpen(true)} className="p-2.5 bg-black/50 backdrop-blur-md border border-white/10 rounded-full hover:bg-black/80 transition text-white shadow-lg">
-              <MoreHorizontal size={18} />
-            </button>
-          </div>
-        )}
-      </div>
-
-      <div className="max-w-5xl mx-auto px-4 md:px-8 relative z-10 -mt-12 md:-mt-16">
-        
-        {/* HEADER */}
-        <div className="flex items-start gap-4 md:gap-6 mb-5">
+      {/* HEADER SECTION (Avatar + Info) */}
+      <div className="max-w-6xl mx-auto px-4 md:px-8 pt-24 md:pt-28 mb-6 relative z-20">
+        <div className="flex items-start gap-4 md:gap-6">
           <div className="relative w-20 h-20 md:w-28 md:h-28 rounded-full overflow-hidden border-4 border-[#050505] bg-[#1c1c1e] flex items-center justify-center flex-shrink-0 shadow-xl group">
             {creator?.photoUrl ? <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" /> : <span className="text-3xl md:text-5xl font-black">{creator?.name?.[0]?.toUpperCase()}</span>}
             {isOwner && (
@@ -302,22 +280,18 @@ export default function UnifiedCreatorHub() {
           </div>
         </div>
 
-        {/* BIO */}
+        {/* BIO & ACTIONS */}
         {creator?.description && (
-          <p className="text-sm md:text-base text-white/80 max-w-3xl leading-relaxed mb-5 whitespace-pre-wrap">
-            {creator.description}
-          </p>
+          <p className="text-sm md:text-base text-white/80 max-w-3xl leading-relaxed mt-4 whitespace-pre-wrap">{creator.description}</p>
         )}
 
-        {/* ACTION BUTTONS */}
-        <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-6">
+        <div className="flex flex-wrap items-center gap-2 md:gap-3 mt-4 mb-6">
           {!isOwner && (
             <>
               <button onClick={async () => {
                 if (!userId) return router.push("/login");
                 await fetch("/api/follows", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId, creatorId: creator?.id }) });
                 setFollowerCount((c) => (c || 0) + 1);
-                alert("Followed creator!");
               }} className="flex-1 md:flex-none justify-center bg-white text-black font-bold px-6 py-2.5 rounded-lg text-sm transition hover:bg-gray-200 shadow-md">
                 Follow
               </button>
@@ -330,77 +304,74 @@ export default function UnifiedCreatorHub() {
               )}
             </>
           )}
+          {isOwner && (
+            <div className="flex gap-2">
+              <button onClick={() => setEditOpen(true)} className="bg-white/10 hover:bg-white/20 text-white font-semibold px-4 py-2 rounded-lg text-sm flex items-center gap-2 transition"><Settings size={16} /> Edit Profile</button>
+              <button onClick={() => setDashOpen(true)} className="bg-white/10 hover:bg-white/20 text-white font-semibold px-4 py-2 rounded-lg text-sm flex items-center gap-2 transition"><MoreHorizontal size={16} /> Dashboard</button>
+            </div>
+          )}
         </div>
 
-        {/* 4 CLEAN TABS */}
-        <div className="flex w-full border-b border-white/10 mb-6 overflow-x-auto scrollbar-hide justify-around md:justify-start md:gap-12">
-          <button onClick={() => setTab("home")} className={`flex-1 md:flex-none flex justify-center pb-3 text-sm font-bold transition-all border-b-2 ${tab === "home" ? "border-white text-white" : "border-transparent text-white/40 hover:text-white"}`}>Home</button>
-          <button onClick={() => setTab("library")} className={`flex-1 md:flex-none flex justify-center pb-3 text-sm font-bold transition-all border-b-2 ${tab === "library" ? "border-white text-white" : "border-transparent text-white/40 hover:text-white"}`}>Library</button>
-          <button onClick={() => setTab("store")} className={`flex-1 md:flex-none flex justify-center pb-3 text-sm font-bold transition-all border-b-2 ${tab === "store" ? "border-white text-white" : "border-transparent text-white/40 hover:text-white"}`}>Store</button>
-          {premiumData?.enabled && <button onClick={() => setTab("premium")} className={`flex-1 md:flex-none flex justify-center pb-3 text-sm font-bold transition-all border-b-2 ${tab === "premium" ? "border-yellow-500 text-yellow-500" : "border-transparent text-white/40 hover:text-white"}`}>Premium</button>}
+        {/* TABS */}
+        <div className="flex w-full border-b border-white/10 mb-6 overflow-x-auto scrollbar-hide gap-6 md:gap-12">
+          <button onClick={() => setViewMode("home")} className={`pb-3 text-sm font-bold transition-all border-b-2 ${viewMode === "home" ? "border-white text-white" : "border-transparent text-white/40 hover:text-white"}`}>Home</button>
+          <button onClick={() => setViewMode("library")} className={`pb-3 text-sm font-bold transition-all border-b-2 ${viewMode === "library" ? "border-white text-white" : "border-transparent text-white/40 hover:text-white"}`}>Library</button>
+          <button onClick={() => setViewMode("store")} className={`pb-3 text-sm font-bold transition-all border-b-2 ${viewMode === "store" ? "border-white text-white" : "border-transparent text-white/40 hover:text-white"}`}>Store</button>
+          {premiumData?.enabled && <button onClick={() => setViewMode("premium")} className={`pb-3 text-sm font-bold transition-all border-b-2 ${viewMode === "premium" ? "border-yellow-500 text-yellow-500" : "border-transparent text-white/40 hover:text-white"}`}>Premium</button>}
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 md:px-8 py-4 min-h-[50vh]">
+      <div className="max-w-6xl mx-auto px-4 md:px-8 min-h-[50vh]">
         
-        {/* === HOME TAB === */}
-        {tab === "home" && (
-          <div className="space-y-12">
+        {/* === HOME TAB (Hero + Rows) === */}
+        {viewMode === "home" && (
+          <div className="space-y-10">
+            {/* CINEMATIC HERO */}
             {latest && (
-              <div className="relative rounded-2xl overflow-hidden group cursor-pointer" onClick={() => handleVideoClick(latest)}>
-                <div className="relative z-10 flex flex-col md:flex-row gap-6 p-4 md:p-6 bg-[#0a0a0a] border border-white/5 rounded-2xl hover:border-white/20 transition">
-                  <div className="w-full md:w-[50%] aspect-video rounded-xl overflow-hidden bg-black flex-shrink-0 relative">
-                    <img src={latest.posterUrl} alt="" className={`w-full h-full object-cover group-hover:scale-105 transition duration-500 ${latest.access_type && latest.access_type !== "free" && !hasSub ? 'blur-sm opacity-60' : ''}`} />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      {latest.access_type && latest.access_type !== "free" && !hasSub ? <div className="bg-black/60 px-4 py-2 rounded-lg flex items-center gap-2"><Lock size={16} className="text-red-500" /><span className="text-xs font-bold text-white">PREMIUM</span></div>
-                      : <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"><Play size={28} fill="white" className="text-white ml-1" /></div>}
-                    </div>
-                  </div>
-                  <div className="flex-1 flex flex-col justify-center py-2">
-                    <p className="text-[10px] font-black text-red-500 uppercase tracking-widest mb-2">{latest.type} · LATEST DROP</p>
-                    <h3 className="text-xl md:text-3xl font-black mb-2 line-clamp-2 leading-tight">{latest.title}</h3>
-                    <p className="text-sm text-white/60 line-clamp-2 leading-relaxed">{latest.description}</p>
-                  </div>
+              <div className="relative w-full h-[40vh] md:h-[55vh] rounded-3xl overflow-hidden group cursor-pointer shadow-2xl border border-white/10" onClick={() => handleVideoClick(latest)}>
+                <img src={latest.backdropUrl || latest.posterUrl} alt="" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-700" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/60 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#050505]/90 via-transparent to-transparent" />
+                
+                <div className="absolute bottom-0 left-0 p-6 md:p-12 max-w-2xl">
+                  <p className="text-xs md:text-sm tracking-[0.3em] text-red-500 font-bold mb-3">LATEST {latest.type.toUpperCase()}</p>
+                  <h2 className="text-3xl md:text-6xl font-black mb-4 leading-tight drop-shadow-lg">{latest.title}</h2>
+                  <p className="text-sm md:text-base text-white/70 line-clamp-2 md:line-clamp-3 mb-6">{latest.description}</p>
+                  <button className="flex items-center gap-2 bg-white text-black font-bold px-6 md:px-8 py-2.5 md:py-3 rounded-xl shadow-xl hover:scale-105 transition">
+                    <Play size={20} fill="currentColor" /> Watch Now
+                  </button>
                 </div>
               </div>
             )}
 
-            {freeVideos.length > 0 && (
-              <div>
-                <div className="flex items-center justify-between mb-4"><h2 className="text-lg md:text-xl font-bold">Recent Uploads</h2><button onClick={() => setTab("library")} className="text-xs font-semibold text-white/50 hover:text-white">View All</button></div>
-                <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4">
-                  {freeVideos.slice(0, 6).map(v => (
-                    <div key={v.id} onClick={() => handleVideoClick(v)} className="flex-shrink-0 w-[200px] md:w-[260px] cursor-pointer group">
-                      <div className="aspect-video rounded-lg overflow-hidden bg-[#0f0f12] mb-2 relative border border-white/5">
-                        <img src={v.posterUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-                      </div>
-                      <p className="text-sm font-semibold line-clamp-2 group-hover:text-white text-white/90">{v.title}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
+            {/* ROWS */}
+            <CreatorRow title="Recent Uploads" items={freeVideos} onSelect={handleVideoClick} />
+            {premiumVideos.length > 0 && <CreatorRow title="Premium Exclusives" items={premiumVideos} onSelect={handleVideoClick} isPremium />}
+            
+            {/* MERCH & BOOKS ROW */}
             {(products.length > 0 || books.length > 0) && (
               <div>
-                <div className="flex items-center justify-between mb-4"><h2 className="text-lg md:text-xl font-bold flex items-center gap-2"><ShoppingBag size={18} className="text-red-500"/> Creator Store</h2><button onClick={() => setTab("store")} className="text-xs font-semibold text-white/50 hover:text-white">Visit Store</button></div>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl md:text-2xl font-black">Merch & Books</h2>
+                  <button onClick={() => setViewMode("store")} className="text-xs font-bold text-white/50 hover:text-white flex items-center gap-1">View All <ChevronRight size={14}/></button>
+                </div>
                 <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4">
-                  {products.slice(0, 2).map(p => (
+                  {products.map(p => (
                     <div key={`p-${p.id}`} onClick={() => handleBuyProduct(p.id)} className="flex-shrink-0 w-[140px] md:w-[180px] cursor-pointer group">
-                      <div className="aspect-square rounded-lg overflow-hidden bg-[#0f0f12] mb-2 relative border border-white/5">
+                      <div className="aspect-square rounded-xl overflow-hidden bg-[#0f0f12] mb-2 relative border border-white/5">
                         <img src={p.image_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-                        <div className="absolute bottom-2 right-2 bg-black/80 px-2 py-0.5 rounded text-[10px] font-bold text-green-400">${(p.price_cents / 100).toFixed(2)}</div>
+                        <div className="absolute top-2 left-2 bg-black/70 px-2 py-0.5 rounded text-[9px] font-bold text-white">MERCH</div>
                       </div>
-                      <p className="text-sm font-semibold line-clamp-1 text-white/90">{p.name}</p>
+                      <p className="text-sm font-bold truncate">{p.name}</p>
                     </div>
                   ))}
-                  {books.slice(0, 2).map(b => (
+                  {books.map(b => (
                     <div key={`b-${b.id}`} onClick={() => handleBuyBook(b.id)} className="flex-shrink-0 w-[140px] md:w-[180px] cursor-pointer group">
-                      <div className="aspect-square rounded-lg overflow-hidden bg-[#0f0f12] mb-2 relative border border-white/5">
+                      <div className="aspect-square rounded-xl overflow-hidden bg-[#0f0f12] mb-2 relative border border-white/5">
                         <img src={b.cover_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-                        <div className="absolute bottom-2 right-2 bg-black/80 px-2 py-0.5 rounded text-[10px] font-bold text-blue-400">${(b.price_cents / 100).toFixed(2)}</div>
+                        <div className="absolute top-2 left-2 bg-black/70 px-2 py-0.5 rounded text-[9px] font-bold text-white">BOOK</div>
                       </div>
-                      <p className="text-sm font-semibold line-clamp-1 text-white/90">{b.title}</p>
+                      <p className="text-sm font-bold truncate">{b.title}</p>
                     </div>
                   ))}
                 </div>
@@ -410,9 +381,9 @@ export default function UnifiedCreatorHub() {
         )}
 
         {/* === LIBRARY TAB === */}
-        {tab === "library" && (
+        {viewMode === "library" && (
           <div>
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
               <h2 className="text-xl font-bold">All Content</h2>
               <div className="flex items-center gap-3">
                 <div className="relative w-full md:w-56">
@@ -420,8 +391,8 @@ export default function UnifiedCreatorHub() {
                   <input type="text" placeholder="Search videos..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-[#1c1c1e] border border-white/10 rounded-lg pl-9 pr-3 py-2 text-sm outline-none focus:border-white/30" />
                 </div>
                 <div className="flex items-center gap-1 bg-[#1c1c1e] p-1 rounded-lg border border-white/10">
-                  <button onClick={() => setViewMode("grid")} className={`p-1.5 rounded transition ${viewMode === "grid" ? "bg-white/15 text-white" : "text-white/40"}`}><Grid3x3 size={16} /></button>
-                  <button onClick={() => setViewMode("list")} className={`p-1.5 rounded transition ${viewMode === "list" ? "bg-white/15 text-white" : "text-white/40"}`}><List size={16} /></button>
+                  <button onClick={() => setGridMode("grid")} className={`p-1.5 rounded transition ${gridMode === "grid" ? "bg-white/15 text-white" : "text-white/40"}`}><Grid3x3 size={16} /></button>
+                  <button onClick={() => setGridMode("list")} className={`p-1.5 rounded transition ${gridMode === "list" ? "bg-white/15 text-white" : "text-white/40"}`}><List size={16} /></button>
                 </div>
               </div>
             </div>
@@ -436,7 +407,7 @@ export default function UnifiedCreatorHub() {
             )}
 
             {displayedFreeVideos.length === 0 ? <p className="text-center text-white/50 py-16 text-sm">No videos found.</p>
-            : viewMode === "grid" ? (
+            : gridMode === "grid" ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {displayedFreeVideos.map(v => (
                   <div key={v.id} onClick={() => handleVideoClick(v)} className="cursor-pointer group flex flex-col">
@@ -464,7 +435,7 @@ export default function UnifiedCreatorHub() {
         )}
 
         {/* === STORE TAB === */}
-        {tab === "store" && (
+        {viewMode === "store" && (
           <div>
             <div className="mb-8">
               <h2 className="text-2xl font-black flex items-center gap-2"><ShoppingBag size={24} className="text-red-500"/> Creator Store</h2>
@@ -509,7 +480,7 @@ export default function UnifiedCreatorHub() {
         )}
 
         {/* === PREMIUM TAB === */}
-        {tab === "premium" && premiumData?.enabled && (
+        {viewMode === "premium" && premiumData?.enabled && (
           <div>
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
               <div>
@@ -594,5 +565,49 @@ export default function UnifiedCreatorHub() {
         )}
       </AnimatePresence>
     </main>
+  );
+}
+
+// Helper component for creator rows
+function CreatorRow({ title, items, onSelect, isPremium = false }: { title: string; items: Video[]; onSelect: (v: Video) => void; isPremium?: boolean }) {
+  if (items.length === 0) return null;
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl md:text-2xl font-black flex items-center gap-2">
+          {isPremium && <Sparkles size={20} className="text-yellow-500" />}
+          {title}
+        </h2>
+        <button className="text-xs font-bold text-white/50 hover:text-white flex items-center gap-1">View All <ChevronRight size={14}/></button>
+      </div>
+      <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4">
+        {items.slice(0, 10).map(v => {
+          const isLocked = isPremium;
+          return (
+            <div key={v.id} onClick={() => !isLocked && onSelect(v)} className={`flex-shrink-0 w-[200px] md:w-[280px] group ${isLocked ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+              <div className="aspect-video rounded-xl overflow-hidden bg-[#0f0f12] mb-2 relative border border-white/5 group-hover:border-white/20 transition">
+                <img src={v.posterUrl} alt="" className={`w-full h-full object-cover group-hover:scale-105 transition duration-500 ${isLocked ? 'blur-md opacity-50' : ''}`} />
+                {isLocked && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="bg-black/60 px-3 py-1.5 rounded-lg border border-white/10 flex items-center gap-1.5">
+                      <Lock size={14} className="text-yellow-500" /><span className="text-[10px] font-bold text-white uppercase tracking-wider">Premium</span>
+                    </div>
+                  </div>
+                )}
+                {!isLocked && (
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition bg-black/20">
+                    <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center">
+                      <Play size={20} fill="white" className="text-white ml-0.5" />
+                    </div>
+                  </div>
+                )}
+              </div>
+              <p className="text-sm font-bold truncate group-hover:text-white text-white/90">{v.title}</p>
+              <p className="text-xs text-white/40 mt-1">{v.type} · {(v.viewCount || 0).toLocaleString()} views</p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }
