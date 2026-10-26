@@ -57,6 +57,8 @@ type Video = {
   creatorId?: number | null;
   uploaderUserId?: string | null;
   textOverlays?: any[];
+  progressSeconds?: number;
+  progressDuration?: number;
 };
 
 const CATEGORIES: string[] = [
@@ -79,6 +81,8 @@ const NAV_TABS: string[] = ["Home", "Podcasts", "Feed"];
 export default function Home() {
   const router = useRouter();
   const [videos, setVideos] = useState<Video[]>([]);
+  const [merchandise, setMerchandise] = useState<Video[]>([]);
+  const [books, setBooks] = useState<Video[]>([]);
   const [likeCounts, setLikeCounts] = useState<Record<number, number>>({});
   const [creators, setCreators] = useState<any[]>([]);
   const { search } = useSearch();
@@ -133,10 +137,11 @@ export default function Home() {
   const [showVideoIntro, setShowVideoIntro] = useState(false);
   const [pendingVideo, setPendingVideo] = useState<Video | null>(null);
 
-  // Load videos + creators once
+  // Load videos, merch, books, + creators once
   useEffect(() => {
     getCachedCreators().then(setCreators).catch(() => {});
     getCachedUser().then(setUser);
+    
     fetch("/api/videos", { cache: "no-store" })
       .then((r) => r.json())
       .then((data) => {
@@ -145,6 +150,50 @@ export default function Home() {
         setLoaded(true);
       })
       .catch(() => setLoaded(true));
+
+    // Fetch Merch
+    fetch("/api/merchandise", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setMerchandise(data.map((p: any) => ({
+            id: p.id,
+            title: p.name,
+            description: p.description || "",
+            category: "Merchandise",
+            type: "Merchandise",
+            featured: false,
+            posterUrl: p.image_url || "",
+            backdropUrl: p.image_url || "",
+            year: new Date().getFullYear(),
+            rating: "NR",
+            match: 100,
+            duration: "",
+          })));
+        }
+      }).catch(() => {});
+
+    // Fetch Books
+    fetch("/api/books", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setBooks(data.map((b: any) => ({
+            id: b.id,
+            title: b.title,
+            description: b.description || "",
+            category: "Books",
+            type: "Book",
+            featured: false,
+            posterUrl: b.cover_url || "",
+            backdropUrl: b.cover_url || "",
+            year: new Date().getFullYear(),
+            rating: "NR",
+            match: 100,
+            duration: "",
+          })));
+        }
+      }).catch(() => {});
   }, []);
 
   // Load progress + listen for changes
@@ -179,6 +228,25 @@ export default function Home() {
     .filter(isDocOrPodcast)
     .sort((a, b) => (likeCounts[b.id] || 0) - (likeCounts[a.id] || 0))
     .slice(0, 20);
+
+  const latestDocs = videos
+    .filter((v) => v.type === "Documentary")
+    .sort((a, b) => b.id - a.id)
+    .slice(0, 20);
+
+  const latestPodcasts = videos
+    .filter((v) => v.type === "Podcast")
+    .sort((a, b) => b.id - a.id)
+    .slice(0, 20);
+
+  // Continue Watching
+  const continueWatching = progressList
+    .map(p => {
+      const video = videos.find(v => v.id === p.id);
+      return video ? { ...video, progressSeconds: p.seconds, progressDuration: p.duration } : null;
+    })
+    .filter(Boolean)
+    .slice(0, 10) as Video[];
 
   let displayVideos = videos;
   if (activeCategory) displayVideos = videos.filter((v) => v.category === activeCategory);
@@ -215,6 +283,16 @@ export default function Home() {
     setPendingVideo(null);
   };
   const showingFiltered = activeCategory || activeTab !== "Home" || filtered;
+
+  const handleCardSelect = (item: Video) => {
+    if (item.type === "Merchandise") {
+      router.push("/merchandise");
+    } else if (item.type === "Book") {
+      router.push("/books");
+    } else {
+      setSelected(item);
+    }
+  };
 
   return (
     <>
@@ -403,7 +481,20 @@ export default function Home() {
               }}
               activeCategory={activeCategory}
             />
-            {newReleases.length > 0 && <Row title="New Releases" items={newReleases} onSelect={setSelected} onPlay={requestPlay} showCreator={true} creators={creators} />}
+
+            {/* CONTINUE WATCHING */}
+            {continueWatching.length > 0 && (
+              <Row 
+                title="Continue Watching" 
+                items={continueWatching} 
+                onSelect={handleCardSelect} 
+                onPlay={requestPlay} 
+                showCreator={true} 
+                creators={creators} 
+              />
+            )}
+
+            {newReleases.length > 0 && <Row title="New Releases" items={newReleases} onSelect={handleCardSelect} onPlay={requestPlay} showCreator={true} creators={creators} />}
             {/* New Creators Row */}
             {creators && creators.length > 0 && (
               <div className="mt-6">
@@ -441,7 +532,14 @@ export default function Home() {
               </div>
             )}
 
-            {trending.length > 0 && <Row title="Trending Now" items={trending} onSelect={setSelected} onPlay={requestPlay} showCreator={true} creators={creators} />}
+            {trending.length > 0 && <Row title="Trending Now" items={trending} onSelect={handleCardSelect} onPlay={requestPlay} showCreator={true} creators={creators} />}
+            
+            {/* NEW ROWS UNDER TRENDING */}
+            {latestDocs.length > 0 && <Row title="Latest Documentaries" items={latestDocs} onSelect={handleCardSelect} onPlay={requestPlay} showCreator={true} creators={creators} />}
+            {latestPodcasts.length > 0 && <Row title="Latest Podcasts" items={latestPodcasts} onSelect={handleCardSelect} onPlay={requestPlay} showCreator={true} creators={creators} />}
+            {merchandise.length > 0 && <Row title="Latest Merchandise" items={merchandise} onSelect={handleCardSelect} onPlay={requestPlay} />}
+            {books.length > 0 && <Row title="Latest Books" items={books} onSelect={handleCardSelect} onPlay={requestPlay} />}
+
             {loaded && videos.length === 0 && (
               <div className="px-8 py-20 text-center text-white/50">
                 <p className="text-xl mb-2">No videos yet</p>
@@ -538,8 +636,6 @@ function TopNav({ activeTab, setActiveTab, searchOpen, setSearchOpen, search, se
     </nav>
   );
 }
-
-/* ============ MOBILE BOTTOM NAV ============ */
 
 /* ============ HERO ============ */
 function Hero({ video, onPlay, onMore }: { video: Video; onPlay: () => void; onMore: () => void }) {
@@ -665,6 +761,10 @@ function Grid({ items, onSelect, onPlay }: { items: Video[]; onSelect: (v: Video
 
 /* ============ CARD ============ */
 function Card({ item, hovered, onHover, onLeave, onSelect, onPlay, showCreator, creator }: any) {
+  const progress = item.progressSeconds && item.progressDuration 
+    ? (item.progressSeconds / item.progressDuration) * 100 
+    : 0;
+
   return (
     <motion.div
       onMouseEnter={onHover}
@@ -677,8 +777,15 @@ function Card({ item, hovered, onHover, onLeave, onSelect, onPlay, showCreator, 
     >
       <img src={item.posterUrl} alt={item.title} className="w-full h-full object-cover" loading="lazy" />
 
+      {/* Progress Bar for Continue Watching */}
+      {progress > 0 && (
+        <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-white/20 z-20">
+          <div className="h-full bg-red-600" style={{ width: `${progress}%` }} />
+        </div>
+      )}
+
       {/* Bottom label — avatar (optional) + video title */}
-      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/70 to-transparent p-2 md:p-2.5 flex items-center gap-2">
+      <div className={`absolute inset-x-0 ${progress > 0 ? 'bottom-[3px]' : 'bottom-0'} bg-gradient-to-t from-black via-black/70 to-transparent p-2 md:p-2.5 flex items-center gap-2`}>
         {showCreator && creator && (
           creator.photoUrl ? (
             <img
