@@ -1,146 +1,118 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useState } from "react";
 import Link from "next/link";
-import {
-  Home, Upload, Video, Settings, LogOut, ChevronLeft, DollarSign, ShoppingBag, Package,
+import { usePathname } from "next/navigation";
+import { 
+  LayoutDashboard, PlaySquare, DollarSign, Settings, 
+  Menu, X, Home, LogOut 
 } from "lucide-react";
-import { createClient } from "@/utils/supabase/client";
-import { clearUserCache, getCachedUser } from "@/lib/cache";
+import { motion, AnimatePresence } from "framer-motion";
+import { getCachedUser, clearUserCache } from "@/lib/cache";
+import { useRouter } from "next/navigation";
 
-type Creator = {
-  id: number;
-  name: string;
-  slug: string;
-  photoUrl?: string;
-};
-
-const NAV = [
-  { label: "Overview", path: "/studio", icon: Home },
-  { label: "Episodes", path: "/studio/episodes", icon: Video },
-  { label: "Subscription", path: "/studio/premium", icon: DollarSign },
-  { label: "Shop", path: "/studio/shop", icon: ShoppingBag },
-  { label: "Orders", path: "/studio/orders", icon: Package },
+const NAV_ITEMS = [
+  { label: "Dashboard", path: "/studio", icon: LayoutDashboard, exact: true },
+  { label: "Content", path: "/studio/episodes", icon: PlaySquare },
+  { label: "Monetization", path: "/studio/premium", icon: DollarSign },
   { label: "Settings", path: "/studio/settings", icon: Settings },
 ];
 
-export default function CreatorLayout({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
+export default function StudioLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const [state, setState] = useState<"loading" | "ok" | "unauth" | "not-approved">("loading");
-  const [creator, setCreator] = useState<Creator | null>(null);
+  const router = useRouter();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  useEffect(() => {
-    const supabase = createClient();
-    getCachedUser().then((user) => {
-      if (!user) {
-        router.replace("/login");
-        setState("unauth");
-        return;
-      }
-      fetch(`/api/profile?user_id=${user.id}`)
-        .then((r) => r.json())
-        .then((profileData) => {
-          const tier = profileData.profile?.tier;
-          if (tier === "podcaster") {
-            fetch(`/api/me/creator?user_id=${user.id}`)
-              .then((r) => r.json())
-              .then((cr) => {
-                const creatorInfo = {
-                  id: cr.creator?.id || user.id,
-                  name: cr.creator?.name || profileData.profile?.display_name || profileData.profile?.username || "Creator",
-                  slug: cr.creator?.slug || profileData.profile?.username || "",
-                  photoUrl: cr.creator?.photoUrl || profileData.profile?.avatar_url || "",
-                };
-                setCreator(creatorInfo);
-                setState("ok");
-              });
-            return;
-          }
-          router.replace("/apply");
-          setState("not-approved");
-        })
-        .catch(() => {
-          router.replace("/login");
-          setState("unauth");
-        });
-    });
-  }, [router]);
+  const isActive = (item: any) => {
+    if (item.exact) return pathname === item.path;
+    return pathname.startsWith(item.path);
+  };
 
-  if (state !== "ok") {
-    return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <p className="text-white/50">
-          {state === "loading" && "Checking access…"}
-          {state === "unauth" && "Redirecting to sign in…"}
-          {state === "not-approved" && "You're not an approved creator."}
-        </p>
+  const handleLogout = async () => {
+    clearUserCache();
+    router.push("/");
+  };
+
+  const SidebarContent = (
+    <>
+      <div className="flex items-center justify-between px-6 py-6 border-b border-white/5">
+        <Link href="/" className="flex flex-col">
+          <span className="text-xl font-black tracking-tight">
+            <span className="text-white">TROO</span><span className="text-red-600">FLIX</span>
+          </span>
+          <span className="text-[10px] tracking-[0.3em] text-yellow-500 font-bold mt-1">STUDIO</span>
+        </Link>
+        <button onClick={() => setMobileOpen(false)} className="md:hidden p-2 text-white/50 hover:text-white bg-white/5 rounded-full">
+          <X size={18} />
+        </button>
       </div>
-    );
-  }
 
-  const isActive = (path: string) => path === "/studio" ? pathname === "/studio" : pathname.startsWith(path);
+      <nav className="flex-1 px-4 py-6 space-y-1">
+        {NAV_ITEMS.map((item) => {
+          const active = isActive(item);
+          return (
+            <Link
+              key={item.path}
+              href={item.path}
+              onClick={() => setMobileOpen(false)}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                active 
+                  ? "bg-yellow-500/10 text-yellow-400 font-semibold border border-yellow-500/20" 
+                  : "text-white/60 hover:text-white hover:bg-white/5 font-medium"
+              }`}
+            >
+              <item.icon size={18} className={active ? "text-yellow-500" : ""} />
+              {item.label}
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="p-4 border-t border-white/5 space-y-2">
+        <Link href="/" className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-white/60 hover:text-white hover:bg-white/5 transition">
+          <Home size={18} /> View Site
+        </Link>
+        <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-red-400 hover:bg-red-500/10 transition">
+          <LogOut size={18} /> Log Out
+        </button>
+      </div>
+    </>
+  );
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white flex flex-col md:flex-row">
-      {/* Sidebar (desktop) */}
-      <aside className="hidden md:flex flex-col w-64 border-r border-white/10 bg-[#0a0a0a] px-3 py-5">
-        <Link href="/" className="flex items-center gap-2 text-xs text-white/50 hover:text-white px-2 mb-6 transition">
-          <ChevronLeft size={14} /> Back to Trooflix
+    <div className="min-h-screen bg-black flex flex-col md:flex-row">
+      {/* Mobile Top Bar */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-[#0a0a0c]/95 backdrop-blur border-b border-white/5 flex items-center justify-between px-4 py-3">
+        <Link href="/" className="text-lg font-black tracking-tight">
+          <span className="text-white">TROO</span><span className="text-red-600">FLIX</span>
+          <span className="text-[10px] tracking-[0.3em] text-yellow-500 font-bold ml-2">STUDIO</span>
         </Link>
-        <div className="flex items-center gap-3 px-2 mb-6">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center overflow-hidden">
-            {creator?.photoUrl ? <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" /> : <span className="font-bold">{(creator?.name?.[0] || "?").toUpperCase()}</span>}
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold truncate">{creator?.name}</p>
-            <p className="text-[10px] text-green-400">● Creator</p>
-          </div>
-        </div>
-        <nav className="space-y-1 flex-1">
-          {NAV.map((n) => {
-            const active = isActive(n.path);
-            return (
-              <Link key={n.path} href={n.path} className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition ${active ? "bg-white/10 text-white font-semibold" : "text-white/60 hover:bg-white/5 hover:text-white"}`}>
-                <n.icon size={18} />
-                {n.label}
-              </Link>
-            );
-          })}
-        </nav>
-        <button onClick={async () => { const supabase = createClient(); await supabase.auth.signOut(); clearUserCache(); router.push("/"); }} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-red-400 hover:bg-red-500/10 transition mt-4">
-          <LogOut size={18} /> Log out
+        <button onClick={() => setMobileOpen(true)} className="p-2 text-white/80 hover:text-white bg-white/5 rounded-lg">
+          <Menu size={20} />
         </button>
-      </aside>
-
-      {/* Mobile top bar */}
-      <div className="md:hidden sticky top-0 z-40 bg-[#0a0a0a]/90 backdrop-blur-xl border-b border-white/10 px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center overflow-hidden flex-shrink-0">
-            {creator?.photoUrl ? <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" /> : <span className="text-xs font-bold">{(creator?.name?.[0] || "?").toUpperCase()}</span>}
-          </div>
-          <p className="text-sm font-semibold truncate">{creator?.name}</p>
-        </div>
-        <Link href="/" className="text-xs text-white/50 hover:text-white flex-shrink-0">Exit</Link>
       </div>
 
-      <main className="flex-1 min-w-0 pb-32 md:pb-0">{children}</main>
+      {/* Mobile Drawer */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setMobileOpen(false)} className="md:hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm" />
+            <motion.aside initial={{ x: "-100%" }} animate={{ x: 0 }} exit={{ x: "-100%" }} transition={{ type: "spring", damping: 25, stiffness: 200 }} className="md:hidden fixed top-0 left-0 h-full w-[280px] bg-[#0a0a0c] border-r border-white/5 flex flex-col z-[60]">
+              {SidebarContent}
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
 
-      {/* FLOATING GLASS STUDIO NAV */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-[env(safe-area-inset-bottom)] pointer-events-none">
-        <div className="pointer-events-auto flex items-center overflow-x-auto scrollbar-hide w-[95%] max-w-lg mb-4 px-2 py-2 bg-[#1c1c1e]/80 backdrop-blur-2xl border border-white/10 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
-          {NAV.map((n) => {
-            const active = isActive(n.path);
-            return (
-              <Link key={n.path} href={n.path} className={`flex flex-col items-center justify-center min-w-[64px] h-12 rounded-full transition-all ${active ? "bg-white/10 text-white" : "text-white/50 hover:text-white/80"}`}>
-                <n.icon size={20} className={active ? "text-red-500" : ""} />
-                <span className={`text-[9px] mt-0.5 font-semibold ${active ? "text-white" : ""}`}>{n.label}</span>
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:flex flex-col w-64 shrink-0 h-screen sticky top-0 bg-[#0a0a0c] border-r border-white/5">
+        {SidebarContent}
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 pt-16 md:pt-0 pb-10 overflow-x-hidden">
+        {children}
+      </main>
     </div>
   );
 }
