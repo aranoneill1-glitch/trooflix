@@ -8,16 +8,14 @@ export const dynamic = "force-dynamic";
 
 export async function GET(
   req: Request, 
-  { params }: { params: Promise<{ slug: string }> } // <-- FIX: params is now a Promise in Next.js 15+
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = await params; // <-- Await the params
+    const { slug } = await params;
     const creators = (await kv.get<any[]>(CREATORS_KEY)) || [];
     const creator = creators.find((c) => c.slug === slug);
 
-    if (!creator) {
-      return new NextResponse("Creator not found", { status: 404 });
-    }
+    if (!creator) return new NextResponse("Creator not found", { status: 404 });
 
     const allVideos = (await kv.get<any[]>(VIDEOS_KEY)) || [];
     const podcasts = allVideos.filter((v) => 
@@ -27,17 +25,16 @@ export async function GET(
     ).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     const baseUrl = "https://www.trooflixtv.com";
+    const creatorHubUrl = `${baseUrl}/podcaster/${creator.slug}`;
     
-    // Construct the XML
     let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>${creator.name}</title>
-    <link>${baseUrl}/podcaster/${creator.slug}</link>
+    <link>${creatorHubUrl}</link>
     <language>en-us</language>
-    <copyright>All rights reserved</copyright>
-    <itunes:author>${creator.name}</itunes:author>
-    <description>${creator.description || "A podcast on Trooflix."}</description>
+    <itunes:author>${creator.name} (Hosted by Trooflix)</itunes:author>
+    <description>${creator.description || "A podcast hosted on Trooflix."}</description>
     <itunes:image href="${creator.photoUrl || `${baseUrl}/icon.png`}" />
     <itunes:category text="Society &amp; Culture" />
     <itunes:explicit>false</itunes:explicit>
@@ -48,9 +45,12 @@ export async function GET(
       const mediaUrl = ep.videoUrl || ep.bitchuteUrl;
       if (!mediaUrl) return; 
 
+      const trooflixFooter = `\n\n---\n🎥 Watch the video version, access exclusive premium content, and shop merch at: ${creatorHubUrl}`;
+      const fullDescription = (ep.description || "No description provided.") + trooflixFooter;
+
       xml += `    <item>
       <title><![CDATA[${ep.title}]]></title>
-      <description><![CDATA[${ep.description || ""}]]></description>
+      <description><![CDATA[${fullDescription}]]></description>
       <pubDate>${pubDate}</pubDate>
       <enclosure url="${mediaUrl}" length="0" type="video/mp4" />
       <guid isPermaLink="false">${ep.id}</guid>
