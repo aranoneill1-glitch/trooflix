@@ -38,12 +38,21 @@ export async function POST(req: Request) {
       const { error } = await supabaseAdmin.from("follows").insert({ follower_id: userId, creator_id: Number(creatorId) });
       if (error) throw error;
 
-      // Push Notification
       try {
         const creators = (await kv.get<any[]>(CREATORS_KEY)) || [];
         const creator = creators.find((c: any) => Number(c.id) === Number(creatorId));
         
-        if (creator && creator.ownerUserId && creator.ownerUserId !== userId) {
+        // We check creator.ownerUserId. If KV fails, we fallback to checking Supabase profiles via creator slug
+        let targetUserId = creator?.ownerUserId;
+
+        if (!targetUserId && creator?.slug) {
+           const { data: profile } = await supabaseAdmin.from("profiles").select("user_id").eq("username", creator.slug).maybeSingle();
+           if (profile) targetUserId = profile.user_id;
+        }
+
+        console.log(`[Follow] User ${userId} followed creator ${creatorId}. Target owner found: ${targetUserId}`);
+
+        if (targetUserId && targetUserId !== userId) {
           const { data: profile } = await supabaseAdmin.from("profiles").select("display_name, username").eq("user_id", userId).maybeSingle();
           const followerName = profile?.display_name || profile?.username || "Someone";
 
@@ -51,15 +60,18 @@ export async function POST(req: Request) {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              userId: creator.ownerUserId,
+              userId: targetUserId,
               title: "New Follower 🎉",
               body: `${followerName} started following you!`,
-              url: `/podcaster/${creator.slug}`
+              url: `/podcaster/${creator.slug || ""}`
             })
           });
+          console.log(`[Follow] Push sent successfully to ${targetUserId}`);
+        } else {
+          console.log(`[Follow] Skipped notification (Target owner not found, or followed own profile)`);
         }
       } catch (err) {
-        console.warn("Push notification failed", err);
+        console.error("[Follow] Push notification failed:", err);
       }
 
       return NextResponse.json({ ok: true, following: true });
