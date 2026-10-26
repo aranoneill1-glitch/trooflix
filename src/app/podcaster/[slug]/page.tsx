@@ -61,6 +61,7 @@ export default function UnifiedCreatorHub() {
   const [tab, setTab] = useState<Tab>("home");
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [videoFilter, setVideoFilter] = useState<string>("all"); // <-- NEW FILTER STATE
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
 
   const [premiumData, setPremiumData] = useState<{ enabled: boolean; price_cents: number } | null>(null);
@@ -218,6 +219,20 @@ export default function UnifiedCreatorHub() {
   const latest = filteredVideos[0];
   const isOwner = userId && creator?.ownerUserId === userId;
 
+  // Get unique video types for the filter pills
+  const availableTypes = useMemo(() => {
+    const types = new Set<string>();
+    freeVideos.forEach(v => {
+      if (v.type) types.add(v.type);
+    });
+    return Array.from(types);
+  }, [freeVideos]);
+
+  // Apply the selected filter
+  const displayedFreeVideos = videoFilter === "all" 
+    ? freeVideos 
+    : freeVideos.filter(v => v.type?.toLowerCase() === videoFilter.toLowerCase());
+
   if (notFound) return (
     <main className="min-h-screen bg-black text-white"><TopBar /><div className="pt-32 text-center"><p className="text-white/50 mb-4">Creator not found</p><Link href="/creators" className="text-red-500 hover:underline">← Back</Link></div><MobileBottomNav /></main>
   );
@@ -249,15 +264,12 @@ export default function UnifiedCreatorHub() {
 
           <div className="max-w-5xl mx-auto px-4 md:px-8 relative z-10 -mt-12 md:-mt-16">
             
-            {/* HEADER: Instagram / Twitter Style */}
+            {/* HEADER */}
             <div className="flex items-start gap-4 md:gap-6 mb-5">
-              
-              {/* Avatar */}
               <div className="relative w-20 h-20 md:w-28 md:h-28 rounded-full overflow-hidden border-4 border-[#050505] bg-[#1c1c1e] flex items-center justify-center flex-shrink-0 shadow-xl group">
                 {creator?.photoUrl ? <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" /> : <span className="text-3xl md:text-5xl font-black">{creator?.name?.[0]?.toUpperCase()}</span>}
               </div>
 
-              {/* Name + Stats */}
               <div className="flex-1 pt-1 md:pt-2 min-w-0">
                 <div className="flex items-center gap-1.5 md:gap-2 mb-0.5">
                   <h1 className="text-2xl md:text-4xl font-black tracking-tight truncate">{creator?.name}</h1>
@@ -280,7 +292,7 @@ export default function UnifiedCreatorHub() {
               </p>
             )}
 
-            {/* ACTIONS (Left Aligned) */}
+            {/* ACTIONS */}
             <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-6">
               {!isOwner && (
                 <>
@@ -313,7 +325,7 @@ export default function UnifiedCreatorHub() {
               )}
             </div>
 
-            {/* TABS (Netflix Style Underline) */}
+            {/* TABS */}
             <div className="flex w-full border-b border-white/10 mb-6 overflow-x-auto scrollbar-hide">
               <button onClick={() => setTab("home")} className={`pb-3 text-sm font-bold transition-all border-b-2 mr-8 ${tab === "home" ? "border-white text-white" : "border-transparent text-white/40 hover:text-white"}`}>Home</button>
               <button onClick={() => setTab("videos")} className={`pb-3 text-sm font-bold transition-all border-b-2 mr-8 ${tab === "videos" ? "border-white text-white" : "border-transparent text-white/40 hover:text-white"}`}>Videos</button>
@@ -383,7 +395,7 @@ export default function UnifiedCreatorHub() {
             {/* VIDEOS TAB */}
             {tab === "videos" && (
               <div>
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                   <h2 className="text-xl font-bold">All Content</h2>
                   <div className="flex items-center gap-3">
                     <div className="relative w-full md:w-56">
@@ -397,10 +409,39 @@ export default function UnifiedCreatorHub() {
                   </div>
                 </div>
 
-                {freeVideos.length === 0 ? <p className="text-center text-white/50 py-16 text-sm">No videos found.</p>
+                {/* SUB-FILTER PILLS */}
+                {availableTypes.length > 0 && (
+                  <div className="flex gap-2 overflow-x-auto scrollbar-hide mb-6 pb-2">
+                    <button
+                      onClick={() => setVideoFilter("all")}
+                      className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition border ${
+                        videoFilter === "all"
+                          ? "bg-white text-black border-white"
+                          : "bg-[#1c1c1e] text-white/60 border-white/10 hover:text-white"
+                      }`}
+                    >
+                      All
+                    </button>
+                    {availableTypes.map((type) => (
+                      <button
+                        key={type}
+                        onClick={() => setVideoFilter(type)}
+                        className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition border capitalize ${
+                          videoFilter === type
+                            ? "bg-white text-black border-white"
+                            : "bg-[#1c1c1e] text-white/60 border-white/10 hover:text-white"
+                        }`}
+                      >
+                        {type}s
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {displayedFreeVideos.length === 0 ? <p className="text-center text-white/50 py-16 text-sm">No videos found.</p>
                 : viewMode === "grid" ? (
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {freeVideos.map(v => (
+                    {displayedFreeVideos.map(v => (
                       <div key={v.id} onClick={() => handleVideoClick(v)} className="cursor-pointer group flex flex-col">
                         <div className="aspect-video rounded-lg overflow-hidden bg-[#0f0f12] mb-2 relative border border-white/5">
                           <img src={v.posterUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy" />
@@ -413,7 +454,7 @@ export default function UnifiedCreatorHub() {
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {freeVideos.map(v => (
+                    {displayedFreeVideos.map(v => (
                       <div key={v.id} onClick={() => handleVideoClick(v)} className="flex items-center gap-4 p-3 rounded-lg bg-[#0f0f12] hover:bg-[#1c1c1e] transition cursor-pointer border border-white/5">
                         <div className="w-20 h-12 rounded overflow-hidden bg-black flex-shrink-0 relative"><img src={v.posterUrl} alt="" className="w-full h-full object-cover" /></div>
                         <div className="flex-1 min-w-0"><p className="text-sm font-semibold truncate text-white/90">{v.title}</p><p className="text-xs text-white/40 mt-1">{v.type} · {(v.viewCount || 0).toLocaleString()} views</p></div>
