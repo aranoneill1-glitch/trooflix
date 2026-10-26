@@ -7,13 +7,12 @@ const CREATORS_KEY = "trooflix:creators";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { userId, title, description, videoUrl, posterUrl, backdropUrl, type, category, status, scheduledAt } = body;
+    const { userId, title, description, videoUrl, posterUrl, backdropUrl, type, category, status, scheduledAt, chapters } = body;
 
     if (!userId || !title || !videoUrl) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // CRITICAL FIX: Look up the creator ID for this user so the Studio can find it
     const creators = (await kv.get<any[]>(CREATORS_KEY)) || [];
     const creator = creators.find((c: any) => String(c.ownerUserId) === String(userId));
     const creatorId = creator ? creator.id : null;
@@ -29,11 +28,12 @@ export async function POST(req: Request) {
       backdropUrl: backdropUrl || "",
       type: type || "Reel",
       category: category || "Uncategorized",
-      creatorId: creatorId, // <-- This is now correctly linked!
+      creatorId: creatorId,
       uploaderUserId: userId,
       createdAt: new Date().toISOString(),
       status: status || "published",
       scheduledAt: scheduledAt || null,
+      chapters: chapters || [], // <-- Added Chapters
       viewCount: 0,
       access_type: "free",
     };

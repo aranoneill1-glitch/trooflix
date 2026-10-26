@@ -2,10 +2,20 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Upload, Image as ImageIcon, Check, ChevronLeft, Calendar, Clock } from "lucide-react";
+import { Upload, Image as ImageIcon, Check, ChevronLeft, Plus, Trash2, List } from "lucide-react";
 import Link from "next/link";
 import { getCachedUser } from "@/lib/cache";
 import { grabVideoPoster } from "@/lib/grabVideoPoster";
+
+type ChapterInput = { title: string; timeStr: string };
+
+// Helper to convert "MM:SS" or "HH:MM:SS" to seconds
+const parseTime = (timeStr: string) => {
+  const parts = timeStr.split(":").map(Number);
+  if (parts.length === 2) return parts[0] * 60 + parts[1];
+  if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+  return 0;
+};
 
 export default function UploadVideoPage() {
   const router = useRouter();
@@ -19,7 +29,10 @@ export default function UploadVideoPage() {
   const [posterUrl, setPosterUrl] = useState("");
   const [backdropUrl, setBackdropUrl] = useState("");
 
-  // NEW: Publish Settings
+  // NEW: Chapters state
+  const [chapters, setChapters] = useState<ChapterInput[]>([]);
+
+  // Publish Settings
   const [publishMode, setPublishMode] = useState<"published" | "draft" | "scheduled">("published");
   const [scheduledAt, setScheduledAt] = useState("");
 
@@ -77,11 +90,25 @@ export default function UploadVideoPage() {
     } catch (err: any) { setError(err.message); } finally { setUploadingVideo(false); }
   };
 
+  const addChapter = () => setChapters([...chapters, { title: "", timeStr: "" }]);
+  const updateChapter = (index: number, field: keyof ChapterInput, value: string) => {
+    const newChapters = [...chapters];
+    newChapters[index][field] = value;
+    setChapters(newChapters);
+  };
+  const removeChapter = (index: number) => setChapters(chapters.filter((_, i) => i !== index));
+
   const submit = async () => {
     setError("");
     if (!title.trim()) return setError("Title is required.");
     if (!videoUrl) return setError("Upload a video file first.");
     if (publishMode === "scheduled" && !scheduledAt) return setError("Please select a date and time to schedule.");
+
+    // Parse chapters into { title, time: number }
+    const parsedChapters = chapters
+      .filter(c => c.title.trim() && c.timeStr.trim())
+      .map(c => ({ title: c.title.trim(), time: parseTime(c.timeStr) }))
+      .sort((a, b) => a.time - b.time);
 
     setSubmitting(true);
     try {
@@ -98,6 +125,7 @@ export default function UploadVideoPage() {
         backdropUrl,
         status: publishMode,
         scheduledAt: publishMode === "scheduled" ? new Date(scheduledAt).toISOString() : null,
+        chapters: parsedChapters, // <-- Send to API
       };
       
       const res = await fetch("/api/user/posts", {
@@ -179,7 +207,32 @@ export default function UploadVideoPage() {
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} maxLength={800} placeholder="What's this video about?" className="w-full bg-black/40 border border-white/10 rounded px-3 py-2.5 outline-none focus:border-red-600 resize-none" />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* CHAPTERS SECTION */}
+        <div className="border-t border-white/10 pt-5">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <label className="text-sm font-bold block">Chapters</label>
+              <p className="text-xs text-white/40">Optional. Help viewers jump to specific topics.</p>
+            </div>
+            <button onClick={addChapter} className="text-xs font-bold bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg flex items-center gap-1 transition">
+              <Plus size={14} /> Add Chapter
+            </button>
+          </div>
+          
+          {chapters.length > 0 && (
+            <div className="space-y-2 mb-3">
+              {chapters.map((ch, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <input type="text" placeholder="00:00" value={ch.timeStr} onChange={(e) => updateChapter(i, "timeStr", e.target.value)} className="w-20 bg-black/40 border border-white/10 rounded px-2 py-1.5 text-sm text-center outline-none focus:border-red-600 font-mono" />
+                  <input type="text" placeholder="Chapter Title" value={ch.title} onChange={(e) => updateChapter(i, "title", e.target.value)} className="flex-1 bg-black/40 border border-white/10 rounded px-3 py-1.5 text-sm outline-none focus:border-red-600" />
+                  <button onClick={() => removeChapter(i)} className="p-2 text-red-400 hover:bg-red-500/10 rounded transition"><Trash2 size={16} /></button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-white/10 pt-5">
           <div>
             <label className="text-xs text-white/50 block mb-2">Poster (2:3 portrait)</label>
             <label className="block border-2 border-dashed border-white/10 hover:border-red-600/50 rounded-xl p-4 text-center cursor-pointer transition">
@@ -208,12 +261,7 @@ export default function UploadVideoPage() {
           {publishMode === "scheduled" && (
             <div className="mt-3">
               <label className="text-xs text-white/50 block mb-1">Date & Time</label>
-              <input 
-                type="datetime-local" 
-                value={scheduledAt}
-                onChange={(e) => setScheduledAt(e.target.value)}
-                className="w-full bg-black/40 border border-white/10 rounded px-3 py-2.5 outline-none focus:border-yellow-500 text-white scheme-dark" 
-              />
+              <input type="datetime-local" value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded px-3 py-2.5 outline-none focus:border-yellow-500 text-white scheme-dark" />
             </div>
           )}
         </div>
