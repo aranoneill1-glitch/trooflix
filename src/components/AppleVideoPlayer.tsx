@@ -37,7 +37,7 @@ export default function AppleVideoPlayer({
   const [showSleepMenu, setShowSleepMenu] = useState(false);
   const [showChaptersMenu, setShowChaptersMenu] = useState(false);
 
-  // NEW: Hide the bottom nav when player opens
+  // Hide the bottom nav when player opens
   useEffect(() => {
     document.dispatchEvent(new Event("player-open"));
     return () => {
@@ -135,22 +135,23 @@ export default function AppleVideoPlayer({
         </div>
       </div>
 
-      {/* CENTER CONTROLS */}
-      <div className={`absolute inset-0 z-40 flex items-center justify-center gap-8 transition-opacity duration-300 pointer-events-none ${showControls ? "opacity-100" : "opacity-0"}`}>
-        <button onClick={(e) => { e.stopPropagation(); skip(-10); }} className="pointer-events-auto w-20 h-20 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10 relative">
-          <RotateCcw size={32} strokeWidth={1.5} /><span className="absolute text-[10px] font-bold mt-1">10</span>
-        </button>
-        <button onClick={(e) => { e.stopPropagation(); togglePlay(); }} className="pointer-events-auto w-24 h-24 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10">
-          {isPlaying ? <Pause size={48} fill="white" /> : <Play size={48} fill="white" className="ml-2" />}
-        </button>
-        <button onClick={(e) => { e.stopPropagation(); skip(10); }} className="pointer-events-auto w-20 h-20 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10 relative">
-          <RotateCw size={32} strokeWidth={1.5} /><span className="absolute text-[10px] font-bold mt-1">10</span>
-        </button>
-      </div>
-
-      {/* BOTTOM CONTROLS */}
+      {/* BOTTOM CONTROLS (Thumb-Friendly) */}
       <div className={`absolute bottom-0 left-0 right-0 z-50 p-4 md:p-6 pb-[env(safe-area-inset-bottom)] mb-4 transition-opacity duration-300 pointer-events-none ${showControls ? "opacity-100" : "opacity-0"}`}>
         
+        {/* NEW: Playback Controls (Moved to bottom) */}
+        <div className="pointer-events-auto flex items-center justify-center gap-8 mb-5">
+          <button onClick={(e) => { e.stopPropagation(); skip(-10); }} className="w-14 h-14 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10 relative">
+            <RotateCcw size={24} strokeWidth={1.5} /><span className="absolute text-[9px] font-bold mt-0.5">10</span>
+          </button>
+          <button onClick={(e) => { e.stopPropagation(); togglePlay(); }} className="w-20 h-20 bg-white/20 backdrop-blur-md border border-white/30 rounded-full flex items-center justify-center text-white hover:bg-white/30 transition shadow-xl">
+            {isPlaying ? <Pause size={36} fill="white" /> : <Play size={36} fill="white" className="ml-1" />}
+          </button>
+          <button onClick={(e) => { e.stopPropagation(); skip(10); }} className="w-14 h-14 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10 relative">
+            <RotateCw size={24} strokeWidth={1.5} /><span className="absolute text-[9px] font-bold mt-0.5">10</span>
+          </button>
+        </div>
+
+        {/* Toolbar (Speed, Sleep Timer, Chapters) */}
         <div className="pointer-events-auto flex items-center justify-center gap-2 mb-3 relative menu-container">
           <div className="relative">
             <button onClick={() => { setShowSpeedMenu(!showSpeedMenu); setShowSleepMenu(false); setShowChaptersMenu(false); }} className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold backdrop-blur-md border transition ${playbackRate !== 1 ? "bg-blue-500/20 text-blue-400 border-blue-500/30" : "bg-[#1c1c1e]/80 text-white/80 border-white/10"}`}>
