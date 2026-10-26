@@ -158,20 +158,7 @@ export default function Home() {
       .then((data) => {
         const _products = data.products || [];
         if (Array.isArray(_products)) {
-          setMerchandise(_products.map((p: any) => ({
-            id: p.id,
-            title: p.name,
-            description: p.description || "",
-            category: "Merchandise",
-            type: "Merchandise",
-            featured: false,
-            posterUrl: p.image_url || "",
-            backdropUrl: p.image_url || "",
-            year: new Date().getFullYear(),
-            rating: "NR",
-            match: 100,
-            duration: "",
-          })));
+          setMerchandise(_products);
         }
       }).catch(() => {});
 
