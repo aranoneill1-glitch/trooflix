@@ -15,6 +15,8 @@ type Video = {
   description: string;
   type: string;
   posterUrl: string;
+  videoUrl?: string;
+  bitchuteUrl?: string;
   backdropUrl: string;
   creatorId?: number | null;
   createdAt?: string;
@@ -342,7 +344,9 @@ export default function PodcasterProfilePage() {
                       
                       <div className="relative z-10 flex flex-col md:flex-row gap-6 p-6 md:p-10">
                         <div className="w-full md:w-1/2 aspect-video rounded-2xl overflow-hidden bg-black flex-shrink-0 relative shadow-2xl">
-                          {latest.posterUrl ? (
+                          {(latest.videoUrl || latest.bitchuteUrl) ? (
+                            <video src={`${latest.videoUrl || latest.bitchuteUrl}#t=0.1`} className={`w-full h-full object-cover group-hover:scale-105 transition duration-500 pointer-events-none ${latest.access_type && latest.access_type !== "free" && !hasSub ? 'blur-sm opacity-60' : ''}`} preload="auto" muted playsInline />
+                          ) : latest.posterUrl ? (
                             <img src={latest.posterUrl} alt="" className={`w-full h-full object-cover group-hover:scale-105 transition duration-500 ${latest.access_type && latest.access_type !== "free" && !hasSub ? 'blur-sm opacity-60' : ''}`} />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center"><Play size={48} className="text-white/30" /></div>
@@ -439,7 +443,9 @@ export default function PodcasterProfilePage() {
                       {list.map((v) => (
                         <div key={v.id} onClick={() => handleVideoClick(v)} className="cursor-pointer group flex flex-col">
                           <div className="aspect-video rounded-2xl overflow-hidden bg-[#0f0f12] mb-4 relative shadow-lg border border-white/5">
-                            {v.posterUrl ? (
+                            {(v.videoUrl || v.bitchuteUrl) ? (
+                              <video src={`${v.videoUrl || v.bitchuteUrl}#t=0.1`} className={`w-full h-full object-cover group-hover:scale-105 transition duration-500 pointer-events-none ${v.access_type && v.access_type !== "free" && !hasSub ? 'blur-sm opacity-60' : ''}`} preload="auto" muted playsInline />
+                            ) : v.posterUrl ? (
                               <img src={v.posterUrl} alt="" className={`w-full h-full object-cover group-hover:scale-105 transition duration-500 ${v.access_type && v.access_type !== "free" && !hasSub ? 'blur-sm opacity-60' : ''}`} loading="lazy" />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center"><Play size={24} className="text-white/30" /></div>
@@ -517,7 +523,9 @@ function VideoCard({ video, onClick, hasSub }: { video: Video; onClick: () => vo
   return (
     <div onClick={onClick} className="cursor-pointer group flex flex-col">
       <div className="aspect-video rounded-2xl overflow-hidden bg-[#0f0f12] mb-4 relative shadow-lg border border-white/5">
-        {video.posterUrl ? (
+        {(video.videoUrl || video.bitchuteUrl) ? (
+          <video src={`${video.videoUrl || video.bitchuteUrl}#t=0.1`} className={`w-full h-full object-cover group-hover:scale-105 transition duration-500 pointer-events-none ${video.access_type && video.access_type !== "free" && !hasSub ? 'blur-sm opacity-60' : ''}`} preload="auto" muted playsInline />
+        ) : video.posterUrl ? (
           <img src={video.posterUrl} alt="" className={`w-full h-full object-cover group-hover:scale-105 transition duration-500 ${video.access_type && video.access_type !== "free" && !hasSub ? 'blur-sm opacity-60' : ''}`} loading="lazy" />
         ) : (
           <div className="w-full h-full flex items-center justify-center"><Play size={24} className="text-white/30" /></div>

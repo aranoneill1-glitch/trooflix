@@ -275,7 +275,11 @@ export default function UserProfilePage() {
                         onClick={() => activeTab === "reels" ? setViewerIndex(idx) : router.push(`/podcast/${p.id}`)}
                         className="relative aspect-[4/5] bg-[#141418] rounded-xl overflow-hidden cursor-pointer group"
                       >
-                        <img src={p.posterUrl || p.backdropUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition duration-300" loading="lazy" />
+                        {(p.videoUrl || p.bitchuteUrl) ? (
+    <video src={`${p.videoUrl || p.bitchuteUrl}#t=0.1`} className="w-full h-full object-cover group-hover:scale-105 transition duration-300 pointer-events-none" preload="auto" muted playsInline />
+  ) : (
+    <img src={p.posterUrl || p.backdropUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition duration-300" loading="lazy" />
+  )}
                         {activeTab === "reels" && (
                           <div className="absolute top-1 right-1">
                             <Play size={14} fill="white" className="text-white drop-shadow" />
@@ -295,7 +299,11 @@ export default function UserProfilePage() {
                         onClick={() => activeTab === "reels" ? setViewerIndex(idx) : router.push(`/podcast/${p.id}`)}
                         className="flex items-center gap-3 p-2 rounded-lg bg-[#141418] hover:bg-white/5 transition cursor-pointer"
                       >
-                        <img src={p.posterUrl || p.backdropUrl} alt="" className="w-12 h-16 rounded object-cover flex-shrink-0" loading="lazy" />
+                        {(p.videoUrl || p.bitchuteUrl) ? (
+    <video src={`${p.videoUrl || p.bitchuteUrl}#t=0.1`} className="w-12 h-16 rounded object-cover flex-shrink-0 pointer-events-none" preload="auto" muted playsInline />
+  ) : (
+    <img src={p.posterUrl || p.backdropUrl} alt="" className="w-12 h-16 rounded object-cover flex-shrink-0" loading="lazy" />
+  )}
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold truncate">{p.title || "Untitled"}</p>
                           <p className="text-xs text-white/50 flex items-center gap-1 mt-1">
@@ -325,7 +333,11 @@ export default function UserProfilePage() {
                         onClick={() => router.push(`/podcast/${p.id}`)}
                         className="relative aspect-[4/5] bg-[#141418] rounded-xl overflow-hidden cursor-pointer group"
                       >
-                        <img src={p.posterUrl || p.backdropUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition duration-300" loading="lazy" />
+                        {(p.videoUrl || p.bitchuteUrl) ? (
+    <video src={`${p.videoUrl || p.bitchuteUrl}#t=0.1`} className="w-full h-full object-cover group-hover:scale-105 transition duration-300 pointer-events-none" preload="auto" muted playsInline />
+  ) : (
+    <img src={p.posterUrl || p.backdropUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition duration-300" loading="lazy" />
+  )}
                         
                         {p.access_type === "pass" && (
                           <div className="absolute bottom-1 right-1 bg-red-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow z-10">TF</div>
