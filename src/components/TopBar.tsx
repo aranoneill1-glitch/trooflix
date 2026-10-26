@@ -6,7 +6,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { useSearch } from "@/context/SearchContext";
 import { Search, Menu, X, MessageCircle, Plus } from "lucide-react";
 import UserMenu from "@/components/UserMenu";
-import ThemeToggle from "@/components/ThemeToggle";
 import NotificationBell from "@/components/NotificationBell";
 import CreateSheet from "@/components/CreateSheet";
 
@@ -153,8 +152,7 @@ export default function TopBar({ onMenu }: Props) {
           >
             <MessageCircle size={20} />
           </Link>
-          <ThemeToggle />
-<UserMenu />
+          <UserMenu />
         </div>
       </div>
     </nav>
