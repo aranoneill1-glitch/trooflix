@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { X, Play, Pause, Volume2, VolumeX, RotateCcw, RotateCw } from "lucide-react";
+import { X, Play, Pause, Volume2, VolumeX, RotateCcw, RotateCw, Gauge, Moon, List, Check } from "lucide-react";
 import TextOverlayRenderer from "@/components/TextOverlay";
+import { AnimatePresence, motion } from "framer-motion";
+
+type Chapter = { title: string; time: number };
 
 export default function AppleVideoPlayer({
   src,
@@ -10,12 +13,14 @@ export default function AppleVideoPlayer({
   title,
   onClose,
   textOverlays,
+  chapters = [],
 }: {
   src: string;
   poster?: string;
   title: string;
   onClose: () => void;
   textOverlays?: any[];
+  chapters?: Chapter[];
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(true);
@@ -25,13 +30,74 @@ export default function AppleVideoPlayer({
   const [isMuted, setIsMuted] = useState(false);
   const controlsTimeout = useRef<NodeJS.Timeout | null>(null);
 
+  // Podcast State
+  const [playbackRate, setPlaybackRate] = useState(1);
+  const [sleepTimer, setSleepTimer] = useState<number | null>(null); // timestamp
+  const [showSpeedMenu, setShowSpeedMenu] = useState(false);
+  const [showSleepMenu, setShowSleepMenu] = useState(false);
+  const [showChaptersMenu, setShowChaptersMenu] = useState(false);
+
+  // 1. Media Session API (Background Audio & Lock Screen)
+  useEffect(() => {
+    if (typeof window === "undefined" || !("mediaSession" in navigator)) return;
+
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: title || "Trooflix Audio",
+      artist: "Trooflix",
+      album: "Trooflix Podcasts",
+      artwork: [
+        { src: poster || "/icon.png", sizes: "512x512", type: "image/png" },
+      ],
+    });
+
+    navigator.mediaSession.setActionHandler("play", () => {
+      videoRef.current?.play();
+      setIsPlaying(true);
+    });
+    navigator.mediaSession.setActionHandler("pause", () => {
+      videoRef.current?.pause();
+      setIsPlaying(false);
+    });
+    navigator.mediaSession.setActionHandler("seekbackward", () => skip(-15));
+    navigator.mediaSession.setActionHandler("seekforward", () => skip(15));
+    navigator.mediaSession.setActionHandler("seekto", (details) => {
+      if (details.seekTime && videoRef.current) {
+        videoRef.current.currentTime = details.seekTime;
+      }
+    });
+
+    return () => {
+      navigator.mediaSession.setActionHandler("play", null);
+      navigator.mediaSession.setActionHandler("pause", null);
+      navigator.mediaSession.setActionHandler("seekbackward", null);
+      navigator.mediaSession.setActionHandler("seekforward", null);
+      navigator.mediaSession.setActionHandler("seekto", null);
+    };
+  }, [title, poster]);
+
+  // 2. Sleep Timer Logic
+  useEffect(() => {
+    if (!sleepTimer) return;
+    
+    const interval = setInterval(() => {
+      if (Date.now() >= sleepTimer) {
+        videoRef.current?.pause();
+        setIsPlaying(false);
+        setSleepTimer(null);
+        clearInterval(interval);
+      }
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, [sleepTimer]);
+
   // Auto-hide controls when playing
   useEffect(() => {
     if (controlsTimeout.current) clearTimeout(controlsTimeout.current);
 
-    if (isPlaying) {
+    if (isPlaying && !showSpeedMenu && !showSleepMenu && !showChaptersMenu) {
       setShowControls(true);
-      controlsTimeout.current = setTimeout(() => setShowControls(false), 1000);
+      controlsTimeout.current = setTimeout(() => setShowControls(false), 3000);
     } else {
       setShowControls(true);
     }
@@ -39,12 +105,12 @@ export default function AppleVideoPlayer({
     return () => {
       if (controlsTimeout.current) clearTimeout(controlsTimeout.current);
     };
-  }, [isPlaying]);
+  }, [isPlaying, showSpeedMenu, showSleepMenu, showChaptersMenu]);
 
-  // Tap screen to toggle controls
   const handleScreenTap = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
-    if (target.closest('button') || target.closest('input')) return;
+    // Ignore clicks on buttons, inputs, or menus
+    if (target.closest('button') || target.closest('input') || target.closest('.menu-container')) return;
 
     setShowControls((prev) => {
       const next = !prev;
@@ -58,17 +124,17 @@ export default function AppleVideoPlayer({
 
   const formatTime = (time: number) => {
     if (isNaN(time)) return "0:00";
-    const m = Math.floor(time / 60);
+    const h = Math.floor(time / 3600);
+    const m = Math.floor((time % 3600) / 60);
     const s = Math.floor(time % 60);
+    if (h > 0) return `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
     return `${m}:${s.toString().padStart(2, "0")}`;
   };
 
   const formatRemaining = (time: number) => {
     if (isNaN(time)) return "-0:00";
     const rem = duration - time;
-    const m = Math.floor(rem / 60);
-    const s = Math.floor(rem % 60);
-    return `-${m}:${s.toString().padStart(2, "0")}`;
+    return `-${formatTime(rem)}`;
   };
 
   const togglePlay = () => {
@@ -88,6 +154,21 @@ export default function AppleVideoPlayer({
     if (videoRef.current) videoRef.current.currentTime += amount;
   };
 
+  const changeSpeed = (rate: number) => {
+    setPlaybackRate(rate);
+    if (videoRef.current) videoRef.current.playbackRate = rate;
+    setShowSpeedMenu(false);
+  };
+
+  const setTimer = (minutes: number | null) => {
+    if (minutes === null) {
+      setSleepTimer(null);
+    } else {
+      setSleepTimer(Date.now() + minutes * 60 * 1000);
+    }
+    setShowSleepMenu(false);
+  };
+
   return (
     <div 
       className="fixed inset-0 z-[200] bg-black flex items-center justify-center select-none"
@@ -96,6 +177,7 @@ export default function AppleVideoPlayer({
       <video
         ref={videoRef}
         src={src}
+        poster={poster}
         className="w-full h-full object-contain pointer-events-none"
         autoPlay
         playsInline
@@ -115,12 +197,20 @@ export default function AppleVideoPlayer({
         >
           <X size={24} />
         </button>
-        <button 
-          onClick={() => { if(videoRef.current) videoRef.current.muted = !isMuted; setIsMuted(!isMuted); }} 
-          className="pointer-events-auto w-12 h-12 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10"
-        >
-          {isMuted ? <VolumeX size={22} /> : <Volume2 size={22} />}
-        </button>
+        
+        <div className="flex items-center gap-2 pointer-events-auto">
+          {sleepTimer && (
+            <div className="px-3 py-1.5 bg-blue-500/20 text-blue-400 text-xs font-bold rounded-full border border-blue-500/30 flex items-center gap-1">
+              <Moon size={12} /> Timer Active
+            </div>
+          )}
+          <button 
+            onClick={() => { if(videoRef.current) videoRef.current.muted = !isMuted; setIsMuted(!isMuted); }} 
+            className="w-12 h-12 bg-[#1c1c1e]/80 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-[#1c1c1e] transition border border-white/10"
+          >
+            {isMuted ? <VolumeX size={22} /> : <Volume2 size={22} />}
+          </button>
+        </div>
       </div>
 
       {/* CENTER CONTROLS */}
@@ -150,8 +240,77 @@ export default function AppleVideoPlayer({
       </div>
 
       {/* BOTTOM CONTROLS */}
-      <div className={`absolute bottom-0 left-0 right-0 z-50 p-6 pb-[env(safe-area-inset-bottom)] mb-6 transition-opacity duration-300 pointer-events-none ${showControls ? "opacity-100" : "opacity-0"}`}>
+      <div className={`absolute bottom-0 left-0 right-0 z-50 p-4 md:p-6 pb-[env(safe-area-inset-bottom)] mb-4 transition-opacity duration-300 pointer-events-none ${showControls ? "opacity-100" : "opacity-0"}`}>
         
+        {/* Toolbar (Speed, Sleep Timer, Chapters) */}
+        <div className="pointer-events-auto flex items-center justify-center gap-2 mb-3 relative menu-container">
+          
+          {/* Speed Menu */}
+          <div className="relative">
+            <button 
+              onClick={() => { setShowSpeedMenu(!showSpeedMenu); setShowSleepMenu(false); setShowChaptersMenu(false); }}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold backdrop-blur-md border transition ${playbackRate !== 1 ? "bg-blue-500/20 text-blue-400 border-blue-500/30" : "bg-[#1c1c1e]/80 text-white/80 border-white/10"}`}
+            >
+              <Gauge size={16} /> {playbackRate}x
+            </button>
+            <AnimatePresence>
+              {showSpeedMenu && (
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-32 bg-[#0f0f12]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden py-1">
+                  {[1, 1.25, 1.5, 1.75, 2].map((rate) => (
+                    <button key={rate} onClick={() => changeSpeed(rate)} className="w-full flex items-center justify-between px-4 py-2 text-sm text-white hover:bg-white/10 transition">
+                      {rate}x {playbackRate === rate && <Check size={14} className="text-blue-400" />}
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Sleep Timer Menu */}
+          <div className="relative">
+            <button 
+              onClick={() => { setShowSleepMenu(!showSleepMenu); setShowSpeedMenu(false); setShowChaptersMenu(false); }}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold backdrop-blur-md border transition ${sleepTimer ? "bg-blue-500/20 text-blue-400 border-blue-500/30" : "bg-[#1c1c1e]/80 text-white/80 border-white/10"}`}
+            >
+              <Moon size={16} /> Sleep
+            </button>
+            <AnimatePresence>
+              {showSleepMenu && (
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-40 bg-[#0f0f12]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden py-1">
+                  <button onClick={() => setTimer(null)} className="w-full flex items-center justify-between px-4 py-2 text-sm text-white hover:bg-white/10 transition">Off {sleepTimer === null && <Check size={14} className="text-blue-400" />}</button>
+                  <button onClick={() => setTimer(15)} className="w-full flex items-center justify-between px-4 py-2 text-sm text-white hover:bg-white/10 transition">15 minutes</button>
+                  <button onClick={() => setTimer(30)} className="w-full flex items-center justify-between px-4 py-2 text-sm text-white hover:bg-white/10 transition">30 minutes</button>
+                  <button onClick={() => setTimer(45)} className="w-full flex items-center justify-between px-4 py-2 text-sm text-white hover:bg-white/10 transition">45 minutes</button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Chapters Menu */}
+          {chapters.length > 0 && (
+            <div className="relative">
+              <button 
+                onClick={() => { setShowChaptersMenu(!showChaptersMenu); setShowSpeedMenu(false); setShowSleepMenu(false); }}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold bg-[#1c1c1e]/80 text-white/80 border border-white/10 backdrop-blur-md"
+              >
+                <List size={16} /> Chapters
+              </button>
+              <AnimatePresence>
+                {showChaptersMenu && (
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="absolute bottom-full right-0 mb-2 w-64 max-h-60 overflow-y-auto bg-[#0f0f12]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl py-1 scrollbar-hide">
+                    {chapters.map((ch, i) => (
+                      <button key={i} onClick={() => { if(videoRef.current) videoRef.current.currentTime = ch.time; setShowChaptersMenu(false); }} className="w-full flex flex-col items-start px-4 py-2 hover:bg-white/10 transition border-b border-white/5 last:border-0">
+                        <span className="text-sm font-semibold text-white">{ch.title}</span>
+                        <span className="text-xs text-white/50">{formatTime(ch.time)}</span>
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
+        </div>
+
         {/* Glass Time Pill Bar */}
         <div className="pointer-events-auto w-full bg-[#1c1c1e]/80 backdrop-blur-md rounded-full px-5 py-4 flex items-center gap-4 border border-white/10 shadow-2xl">
           <span className="text-white text-sm font-medium tabular-nums tracking-wide">
