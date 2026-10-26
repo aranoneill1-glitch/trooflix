@@ -2,20 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { 
-  Video as VideoIcon, 
-  Plus, 
-  Trash2, 
-  Eye, 
-  Heart, 
-  MessageCircle, 
-  ArrowUpDown,
-  MoreVertical,
-  Edit2,
-  BarChart2,
-  CheckCircle2
-} from "lucide-react";
+import { Video as VideoIcon, Plus, Trash2, Eye, Heart, MessageCircle, ArrowUpDown, MoreVertical, Edit2, BarChart2, CheckCircle2, Clock, FileText } from "lucide-react";
 import { getCachedUser } from "@/lib/cache";
+import { motion, AnimatePresence } from "framer-motion";
 
 type Video = {
   id: number;
@@ -31,6 +20,7 @@ type Video = {
   access_type?: string;
   category?: string;
   status?: string;
+  scheduledAt?: string;
 };
 
 type SortMode = "newest" | "oldest" | "plays" | "likes";
@@ -61,7 +51,8 @@ export default function StudioEpisodes() {
         setLoading(false);
         return;
       }
-      const vRes = await fetch(`/api/creators/videos?creatorId=${cr.creator.id}`, { cache: "no-store" }).then((r) => r.json());
+      // FETCH DASHBOARD=TRUE so we see drafts and scheduled
+      const vRes = await fetch(`/api/creators/videos?creatorId=${cr.creator.id}&dashboard=true`, { cache: "no-store" }).then((r) => r.json());
       setVideos(Array.isArray(vRes.videos) ? vRes.videos : []);
 
       try {
@@ -78,6 +69,13 @@ export default function StudioEpisodes() {
 
   useEffect(() => {
     load();
+  }, []);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClick = () => setOpenMenuId(null);
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
   }, []);
 
   const sorted = useMemo(() => {
@@ -203,11 +201,11 @@ export default function StudioEpisodes() {
             return (
               <div
                 key={v.id}
-                className={`relative flex flex-col xl:flex-row xl:items-center gap-4 bg-[#0f0f12] border border-white/[0.06] hover:border-white/20 rounded-2xl p-3 md:p-4 transition-all duration-200 ${
+                className={`relative flex flex-col lg:flex-row lg:items-center gap-4 bg-[#0f0f12] border border-white/[0.06] hover:border-white/20 rounded-2xl p-3 md:p-4 transition-all duration-200 ${
                   isMenuOpen ? "z-50 ring-1 ring-white/10" : "z-10"
                 }`}
               >
-                {/* 1. Thumbnail & Title Group */}
+                {/* 1. Thumbnail & Title */}
                 <div className="flex items-center gap-4 flex-1 min-w-0">
                   <div className="w-24 h-16 md:w-32 md:h-20 rounded-lg overflow-hidden flex-shrink-0 bg-black border border-white/5">
                     {v.posterUrl ? (
@@ -218,25 +216,36 @@ export default function StudioEpisodes() {
                       </div>
                     )}
                   </div>
-                  <div className="flex-1 min-w-0 py-1 pr-2">
-                    {/* Removed truncate, using leading-snug so long titles wrap nicely */}
-                    <p className="text-base md:text-lg font-bold text-white/90 mb-1 leading-snug">
-                      {v.title}
-                    </p>
+                  <div className="flex-1 min-w-0 py-1">
+                    <p className="text-base md:text-lg font-bold truncate text-white/90 mb-1">{v.title}</p>
                     <div className="flex items-center flex-wrap gap-x-2 gap-y-1 text-xs text-white/50">
                       <span className="font-medium">{v.type || "Episode"}</span>
                       <span>·</span>
                       <span>{v.createdAt ? new Date(v.createdAt).toLocaleDateString() : "—"}</span>
                       <span>·</span>
-                      <span className="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
-                        <CheckCircle2 size={10} /> {status}
-                      </span>
+                      
+                      {/* STATUS BADGE */}
+                      {status === "published" && (
+                        <span className="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
+                          <CheckCircle2 size={10} /> Published
+                        </span>
+                      )}
+                      {status === "draft" && (
+                        <span className="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-gray-400 bg-gray-500/10 px-2 py-0.5 rounded-md border border-gray-500/20">
+                          <FileText size={10} /> Draft
+                        </span>
+                      )}
+                      {status === "scheduled" && (
+                        <span className="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider text-yellow-400 bg-yellow-500/10 px-2 py-0.5 rounded-md border border-yellow-500/20">
+                          <Clock size={10} /> Scheduled
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
 
                 {/* 2. Stats */}
-                <div className="flex items-center gap-4 text-xs font-medium text-white/60 xl:w-44 shrink-0 xl:border-l xl:border-white/5 xl:pl-4">
+                <div className="flex items-center gap-4 text-xs font-medium text-white/60 lg:w-48 shrink-0 lg:border-l lg:border-white/5 lg:pl-4">
                   <span className="inline-flex items-center gap-1.5" title="Plays">
                     <Eye size={14} className="text-orange-400" /> {(v.viewCount || 0).toLocaleString()}
                   </span>
@@ -249,7 +258,7 @@ export default function StudioEpisodes() {
                 </div>
 
                 {/* 3. Controls */}
-                <div className="flex items-center gap-2 shrink-0 xl:w-auto">
+                <div className="flex items-center gap-2 shrink-0 lg:w-auto">
                   <select
                     value={v.category || "Uncategorized"}
                     onChange={(e) => updateCategory(v, e.target.value)}
@@ -280,49 +289,47 @@ export default function StudioEpisodes() {
                   {/* 3-Dots Menu */}
                   <div className="relative">
                     <button
-                      onClick={() => setOpenMenuId(isMenuOpen ? null : v.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenMenuId(isMenuOpen ? null : v.id);
+                      }}
                       className={`p-2 rounded-lg transition ${isMenuOpen ? 'bg-white/10 text-white' : 'text-white/40 hover:text-white hover:bg-white/10'}`}
                     >
                       <MoreVertical size={18} />
                     </button>
 
                     {isMenuOpen && (
-                      <>
-                        {/* Invisible click-away overlay */}
-                        <div 
-                          className="fixed inset-0 z-[90]" 
-                          onClick={() => setOpenMenuId(null)}
-                        />
-                        {/* Dropdown Menu */}
-                        <div className="absolute right-0 top-full mt-2 w-40 bg-[#18181b] border border-white/10 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] z-[100] py-1 overflow-hidden">
-                          <button
-                            onClick={() => {
-                              setOpenMenuId(null);
-                              alert("Edit feature coming soon!");
-                            }}
-                            className="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white/70 hover:text-white hover:bg-white/5 transition"
-                          >
-                            <Edit2 size={14} /> Edit
-                          </button>
-                          <button
-                            onClick={() => {
-                              setOpenMenuId(null);
-                              alert("Analytics feature coming soon!");
-                            }}
-                            className="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white/70 hover:text-white hover:bg-white/5 transition"
-                          >
-                            <BarChart2 size={14} /> Analytics
-                          </button>
-                          <div className="h-px bg-white/5 my-1" />
-                          <button
-                            onClick={() => handleDelete(v)}
-                            disabled={deleting === v.id}
-                            className="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 transition disabled:opacity-50"
-                          >
-                            <Trash2 size={14} /> Delete
-                          </button>
-                        </div>
-                      </>
+                      <div 
+                        className="absolute right-0 top-full mt-2 w-40 bg-[#18181b] border border-white/10 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] z-[100] py-1 overflow-hidden"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          onClick={() => {
+                            setOpenMenuId(null);
+                            alert("Edit feature coming soon!");
+                          }}
+                          className="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white/70 hover:text-white hover:bg-white/5 transition"
+                        >
+                          <Edit2 size={14} /> Edit
+                        </button>
+                        <button
+                          onClick={() => {
+                            setOpenMenuId(null);
+                            alert("Analytics feature coming soon!");
+                          }}
+                          className="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white/70 hover:text-white hover:bg-white/5 transition"
+                        >
+                          <BarChart2 size={14} /> Analytics
+                        </button>
+                        <div className="h-px bg-white/5 my-1" />
+                        <button
+                          onClick={() => handleDelete(v)}
+                          disabled={deleting === v.id}
+                          className="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 transition disabled:opacity-50"
+                        >
+                          <Trash2 size={14} /> Delete
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>
