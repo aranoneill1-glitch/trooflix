@@ -35,6 +35,15 @@ function timeAgo(iso: string): string {
   return `${Math.floor(diff / 604800)}w`;
 }
 
+const urlBase64ToUint8Array = (base64String: string) => {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+  return outputArray;
+};
+
 export default function NotificationBell() {
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -43,9 +52,67 @@ export default function NotificationBell() {
   const [userId, setUserId] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Push Notification State
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [pushLoading, setPushLoading] = useState(false);
+
   useEffect(() => {
     getCachedUser().then((u) => setUserId(u?.id || null));
   }, []);
+
+  // Check push status on mount
+  useEffect(() => {
+    if ("serviceWorker" in navigator && "PushManager" in window) {
+      navigator.serviceWorker.ready.then((reg) => {
+        reg.pushManager.getSubscription().then((sub) => {
+          if (sub) setPushEnabled(true);
+        });
+      });
+    }
+  }, []);
+
+  const togglePush = async () => {
+    if (pushLoading || !userId) return;
+    setPushLoading(true);
+    
+    try {
+      if (pushEnabled) {
+        // Turn OFF
+        const reg = await navigator.serviceWorker.ready;
+        const sub = await reg.pushManager.getSubscription();
+        if (sub) {
+          await sub.unsubscribe();
+          await fetch('/api/push/subscribe', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ endpoint: sub.endpoint })
+          });
+        }
+        setPushEnabled(false);
+      } else {
+        // Turn ON
+        const reg = await navigator.serviceWorker.register('/sw.js');
+        const perm = await Notification.requestPermission();
+        if (perm === 'granted') {
+          const sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!)
+          });
+          
+          await fetch('/api/push/subscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ subscription: sub, userId })
+          });
+          setPushEnabled(true);
+        }
+      }
+    } catch (err) {
+      console.error("Push toggle error:", err);
+    } finally {
+      setPushLoading(false);
+    }
+  };
 
   // Fetch notifications when user is known + on mount
   useEffect(() => {
@@ -151,14 +218,28 @@ export default function NotificationBell() {
             transition={{ duration: 0.15 }}
             className="absolute right-0 top-full mt-2 w-80 max-h-[70vh] overflow-y-auto bg-[#0f0f12] border border-white/10 rounded-xl shadow-2xl z-[200]"
           >
-            <div className="sticky top-0 bg-[#0f0f12] border-b border-white/10 px-4 py-3 flex items-center justify-between">
+            {/* HEADER WITH TOGGLE SWITCH */}
+            <div className="sticky top-0 bg-[#0f0f12] border-b border-white/10 px-4 py-3 flex items-center justify-between z-10">
               <p className="text-sm font-bold">Notifications</p>
-              <button
-                onClick={() => setOpen(false)}
-                className="text-white/40 hover:text-white text-xs"
-              >
-                Close
-              </button>
+              
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-white/50">
+                  Push Alerts
+                </span>
+                <button
+                  onClick={togglePush}
+                  disabled={pushLoading}
+                  className={`relative w-8 h-4 rounded-full transition-colors ${
+                    pushEnabled ? "bg-green-500" : "bg-white/20"
+                  } ${pushLoading ? "opacity-50" : ""}`}
+                >
+                  <span
+                    className={`absolute top-[2px] left-[2px] w-3 h-3 bg-white rounded-full transition-transform ${
+                      pushEnabled ? "translate-x-4" : "translate-x-0"
+                    }`}
+                  />
+                </button>
+              </div>
             </div>
 
             {notifications.length === 0 ? (
