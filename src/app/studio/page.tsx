@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Video, Eye, Users, Heart, Plus, DollarSign, TrendingUp, Wallet, Upload, ShoppingBag } from "lucide-react";
+import { Video, Eye, Users, Heart, Plus, DollarSign, TrendingUp, Wallet, Upload, ShoppingBag, Trash2 } from "lucide-react";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import { getCachedUser } from "@/lib/cache";
 
@@ -32,54 +32,71 @@ export default function StudioOverview() {
   const [premiumStats, setPremiumStats] = useState({ subscribers: 0, gross: 0, net: 0 });
   const [totals, setTotals] = useState({ plays: 0, likes: 0, comments: 0, followers: 0 });
 
-  useEffect(() => {
-    (async () => {
+  const loadData = async () => {
+    try {
+      const user = await getCachedUser();
+      if (!user) return;
+
+      const cr = await fetch(`/api/me/creator?user_id=${user.id}`).then((r) => r.json());
+      if (!cr.creator) { setLoading(false); return; }
+      setCreator(cr.creator);
+
+      const vRes = await fetch(`/api/creators/videos?creatorId=${cr.creator.id}`, { cache: "no-store" }).then((r) => r.json());
+      const myVideos: Video[] = Array.isArray(vRes.videos) ? vRes.videos : [];
+      setVideos(myVideos);
+      
       try {
-        const user = await getCachedUser();
-        if (!user) return;
-
-        const cr = await fetch(`/api/me/creator?user_id=${user.id}`).then((r) => r.json());
-        if (!cr.creator) { setLoading(false); return; }
-        setCreator(cr.creator);
-
-        const vRes = await fetch(`/api/creators/videos?creatorId=${cr.creator.id}`, { cache: "no-store" }).then((r) => r.json());
-        const myVideos: Video[] = Array.isArray(vRes.videos) ? vRes.videos : [];
-        setVideos(myVideos);
-        
-        try {
-          const pRes = await fetch(`/api/creator/premium?user_id=${user.id}`).then(r => r.json());
-          if (pRes.stats) {
-            setPremiumStats({
-              subscribers: pRes.stats.active_subscribers,
-              gross: pRes.stats.monthly_gross_cents,
-              net: pRes.stats.monthly_net_cents
-            });
-          }
-        } catch {}
-
-        const totalPlays = myVideos.reduce((s, v) => s + (v.viewCount || 0), 0);
-        let totalLikes = 0;
-        try {
-          const likesRes = await fetch("/api/like-counts").then((r) => r.json());
-          const counts = likesRes.counts || {};
-          totalLikes = myVideos.reduce((s, v) => s + (counts[v.id] || 0), 0);
-        } catch {}
-        let totalFollowers = 0;
-        try {
-          const followRes = await fetch(`/api/follow-count?creator_id=${cr.creator.id}`).then((r) => r.json());
-          totalFollowers = followRes.count || 0;
-        } catch {}
-
-        setTotals({ plays: totalPlays, likes: totalLikes, comments: 0, followers: totalFollowers });
+        const pRes = await fetch(`/api/creator/premium?user_id=${user.id}`).then(r => r.json());
+        if (pRes.stats) {
+          setPremiumStats({
+            subscribers: pRes.stats.active_subscribers,
+            gross: pRes.stats.monthly_gross_cents,
+            net: pRes.stats.monthly_net_cents
+          });
+        }
       } catch {}
-      setLoading(false);
-    })();
+
+      const totalPlays = myVideos.reduce((s, v) => s + (v.viewCount || 0), 0);
+      let totalLikes = 0;
+      try {
+        const likesRes = await fetch("/api/like-counts").then((r) => r.json());
+        const counts = likesRes.counts || {};
+        totalLikes = myVideos.reduce((s, v) => s + (counts[v.id] || 0), 0);
+      } catch {}
+      let totalFollowers = 0;
+      try {
+        const followRes = await fetch(`/api/follow-count?creator_id=${cr.creator.id}`).then((r) => r.json());
+        totalFollowers = followRes.count || 0;
+      } catch {}
+
+      setTotals({ plays: totalPlays, likes: totalLikes, comments: 0, followers: totalFollowers });
+    } catch {}
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    loadData();
   }, []);
+
+  const handleDelete = async (videoId: number) => {
+    if (!confirm("Are you sure you want to delete this video? This cannot be undone.")) return;
+    try {
+      const user = await getCachedUser();
+      if (!user) return;
+      const res = await fetch(`/api/user/posts?id=${videoId}&userId=${user.id}`, { method: "DELETE" });
+      if (res.ok) {
+        setVideos((prev) => prev.filter((v) => v.id !== videoId));
+      } else {
+        alert("Failed to delete video");
+      }
+    } catch {
+      alert("Network error");
+    }
+  };
 
   const initials = creator?.name ? creator.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase() : "?";
 
-  // Calculate Setup Fee Progress ($15 threshold)
-  const setupFeeThreshold = 1500; // $15.00 in cents
+  const setupFeeThreshold = 1500;
   const amountRecouped = Math.min(premiumStats.gross, setupFeeThreshold);
   const progressPercent = (amountRecouped / setupFeeThreshold) * 100;
   const isSetupFeePaid = premiumStats.gross >= setupFeeThreshold;
@@ -173,15 +190,15 @@ export default function StudioOverview() {
             </div>
           </div>
 
-          {/* Recent Activity (Mocked for now, but pulls real numbers) */}
+          {/* Recent Content with Quick Delete */}
           <div className="bg-[#0f0f12] border border-white/5 rounded-2xl p-6">
             <h2 className="text-lg font-bold mb-4">Recent Content</h2>
             {videos.length === 0 ? (
               <p className="text-sm text-white/50 text-center py-8">No videos uploaded yet. <Link href="/studio/upload" className="text-red-400 hover:underline">Upload your first video</Link></p>
             ) : (
               <div className="space-y-3">
-                {videos.slice(0, 3).map(v => (
-                  <div key={v.id} className="flex items-center gap-4 p-3 rounded-xl bg-black/40 border border-white/5">
+                {videos.slice(0, 4).map(v => (
+                  <div key={v.id} className="flex items-center gap-4 p-3 rounded-xl bg-black/40 border border-white/5 group">
                     <div className="w-16 h-10 rounded overflow-hidden bg-black flex-shrink-0">
                       {v.posterUrl ? <img src={v.posterUrl} alt="" className="w-full h-full object-cover" /> : <Video size={16} className="m-auto text-white/30 mt-2" />}
                     </div>
@@ -189,7 +206,14 @@ export default function StudioOverview() {
                       <p className="text-sm font-bold truncate">{v.title}</p>
                       <p className="text-xs text-white/40">{(v.viewCount || 0).toLocaleString()} views</p>
                     </div>
-                    <Link href="/studio/episodes" className="text-xs font-bold text-white/50 hover:text-white">Manage</Link>
+                    <button 
+                      onClick={() => handleDelete(v.id)} 
+                      className="p-2 text-red-500/50 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition opacity-0 group-hover:opacity-100"
+                      title="Delete Video"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                    <Link href="/studio/episodes" className="text-xs font-bold text-white/50 hover:text-white px-2">Manage</Link>
                   </div>
                 ))}
               </div>
