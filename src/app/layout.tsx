@@ -5,7 +5,6 @@ import "./globals.css";
 import TVNavigation from "@/components/TVNavigation";
 import { SearchProvider } from "@/context/SearchContext";
 import CacheWarmer from "@/components/CacheWarmer";
-import HelpWidget from "@/components/HelpWidget";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -85,7 +84,6 @@ export default function RootLayout({
             `,
           }}
         />
-        <HelpWidget />
         <SearchProvider>
           <CacheWarmer />
           <TVNavigation />
