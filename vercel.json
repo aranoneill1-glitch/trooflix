@@ -9,12 +9,5 @@
         }
       ]
     }
-  ],
-  "routes": [
-    {
-      "src": "/api/stripe/webhook",
-      "dest": "/api/stripe/webhook",
-      "continue": true
-    }
   ]
 }
