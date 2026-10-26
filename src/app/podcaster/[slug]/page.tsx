@@ -252,8 +252,38 @@ export default function UnifiedCreatorHub() {
     <main className="min-h-screen bg-[#050505] text-white pb-24 lg:pb-0">
       <TopBar />
 
-      {/* HEADER SECTION */}
-      <div className="max-w-5xl mx-auto px-4 md:px-8 pt-24 md:pt-28 mb-6 relative z-20">
+      {/* CINEMATIC HERO AT THE VERY TOP */}
+      {latest && (
+        <div className="relative w-full h-[45vh] md:h-[60vh] overflow-hidden group cursor-pointer" onClick={() => handleVideoClick(latest)}>
+          <img src={latest.backdropUrl || latest.posterUrl} alt="" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-700" />
+          
+          <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/70 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#050505]/95 via-[#050505]/40 to-transparent" />
+          
+          <div className="relative z-10 flex flex-col justify-end h-full max-w-5xl mx-auto px-4 md:px-8 pb-32 md:pb-40">
+            <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-xs md:text-sm tracking-[0.3em] text-red-500 font-bold mb-3 uppercase">
+              {creator?.name || "TROOFLIX"} PRESENTS
+            </motion.p>
+            <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-4xl md:text-6xl lg:text-7xl font-black leading-[1.05] mb-4 tracking-tight drop-shadow-2xl">
+              {latest.title}
+            </motion.h1>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="flex items-center gap-3 text-sm md:text-base mb-4 flex-wrap">
+              <span className="text-white/80">{new Date(latest.createdAt || Date.now()).getFullYear()}</span>
+              <span className="border border-white/40 px-1.5 py-0.5 text-xs rounded">TV-MA</span>
+              <span className="text-white/80">{latest.type}</span>
+            </motion.div>
+            
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="flex gap-3">
+              <button className="flex items-center gap-2 bg-white text-black font-bold px-6 md:px-8 py-2.5 md:py-3 rounded-xl shadow-xl hover:bg-gray-200 transition-all active:scale-95">
+                <Play size={20} fill="currentColor" /> Watch Now
+              </button>
+            </motion.div>
+          </div>
+        </div>
+      )}
+
+      {/* HEADER SECTION (Overlapping the Hero) */}
+      <div className={`max-w-5xl mx-auto px-4 md:px-8 relative z-20 ${latest ? "-mt-20 md:-mt-28" : "pt-24 md:pt-28"}`}>
         <div className="flex items-start gap-4 md:gap-6">
           <div className="relative w-20 h-20 md:w-28 md:h-28 rounded-full overflow-hidden border-4 border-[#050505] bg-[#1c1c1e] flex items-center justify-center flex-shrink-0 shadow-xl group">
             {creator?.photoUrl ? <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" /> : <span className="text-3xl md:text-5xl font-black">{creator?.name?.[0]?.toUpperCase()}</span>}
@@ -323,81 +353,47 @@ export default function UnifiedCreatorHub() {
 
       <div className="min-h-[50vh]">
         
-        {/* === HOME TAB (Hero + Rows) === */}
+        {/* === HOME TAB (Rows Only, Hero is at the top now) === */}
         {viewMode === "home" && (
-          <div className="space-y-10">
-            {/* CINEMATIC FULL-WIDTH HERO */}
-            {latest && (
-              <div className="relative w-full h-[40vh] md:h-[60vh] overflow-hidden group cursor-pointer" onClick={() => handleVideoClick(latest)}>
-                <img src={latest.backdropUrl || latest.posterUrl} alt="" className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-700" />
-                
-                {/* Heavy Gradients to ensure text is readable */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/70 to-transparent" />
-                <div className="absolute inset-0 bg-gradient-to-r from-[#050505]/95 via-[#050505]/40 to-transparent" />
-                
-                <div className="relative z-10 flex flex-col justify-center h-full max-w-5xl mx-auto px-4 md:px-8 pt-20 md:pt-24 pb-0">
-                  <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-xs md:text-sm tracking-[0.3em] text-red-500 font-bold mb-3">
-                    TROOFLIX PRESENTS
-                  </motion.p>
-                  <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-4xl md:text-6xl lg:text-7xl font-black leading-[1.05] mb-4 tracking-tight drop-shadow-2xl">
-                    {latest.title}
-                  </motion.h1>
-                  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="flex items-center gap-3 text-sm md:text-base mb-4 flex-wrap">
-                    <span className="text-white/80">{new Date(latest.createdAt || Date.now()).getFullYear()}</span>
-                    <span className="border border-white/40 px-1.5 py-0.5 text-xs rounded">TV-MA</span>
-                    <span className="text-white/80">{latest.type}</span>
-                  </motion.div>
-                  
-                  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="flex gap-3">
-                    <button className="flex items-center gap-2 bg-white text-black font-bold px-6 md:px-8 py-2.5 md:py-3 rounded-xl shadow-xl hover:bg-gray-200 transition-all active:scale-95">
-                      <Play size={20} fill="currentColor" /> Watch Now
-                    </button>
-                  </motion.div>
+          <div className="max-w-5xl mx-auto px-4 md:px-8 space-y-10 pt-4">
+            <CreatorRow title="Recent Uploads" items={freeVideos} onSelect={handleVideoClick} />
+            {premiumVideos.length > 0 && <CreatorRow title="Premium Exclusives" items={premiumVideos} onSelect={handleVideoClick} isPremium />}
+            
+            {/* MERCH & BOOKS ROW */}
+            {(products.length > 0 || books.length > 0) && (
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl md:text-2xl font-black">Merch & Books</h2>
+                  <button onClick={() => setViewMode("store")} className="text-xs font-bold text-white/50 hover:text-white flex items-center gap-1">View All <ChevronRight size={14}/></button>
+                </div>
+                <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4">
+                  {products.map(p => (
+                    <div key={`p-${p.id}`} onClick={() => handleBuyProduct(p.id)} className="flex-shrink-0 w-[140px] md:w-[180px] cursor-pointer group">
+                      <div className="aspect-square rounded-xl overflow-hidden bg-[#0f0f12] mb-2 relative border border-white/5">
+                        <img src={p.image_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                        <div className="absolute top-2 left-2 bg-black/70 px-2 py-0.5 rounded text-[9px] font-bold text-white">MERCH</div>
+                      </div>
+                      <p className="text-sm font-bold truncate">{p.name}</p>
+                    </div>
+                  ))}
+                  {books.map(b => (
+                    <div key={`b-${b.id}`} onClick={() => handleBuyBook(b.id)} className="flex-shrink-0 w-[140px] md:w-[180px] cursor-pointer group">
+                      <div className="aspect-square rounded-xl overflow-hidden bg-[#0f0f12] mb-2 relative border border-white/5">
+                        <img src={b.cover_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                        <div className="absolute top-2 left-2 bg-black/70 px-2 py-0.5 rounded text-[9px] font-bold text-white">BOOK</div>
+                      </div>
+                      <p className="text-sm font-bold truncate">{b.title}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
-
-            {/* ROWS SECTION (Constrained Width) */}
-            <div className="max-w-5xl mx-auto px-4 md:px-8">
-              <CreatorRow title="Recent Uploads" items={freeVideos} onSelect={handleVideoClick} />
-              {premiumVideos.length > 0 && <CreatorRow title="Premium Exclusives" items={premiumVideos} onSelect={handleVideoClick} isPremium />}
-              
-              {/* MERCH & BOOKS ROW */}
-              {(products.length > 0 || books.length > 0) && (
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-xl md:text-2xl font-black">Merch & Books</h2>
-                    <button onClick={() => setViewMode("store")} className="text-xs font-bold text-white/50 hover:text-white flex items-center gap-1">View All <ChevronRight size={14}/></button>
-                  </div>
-                  <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4">
-                    {products.map(p => (
-                      <div key={`p-${p.id}`} onClick={() => handleBuyProduct(p.id)} className="flex-shrink-0 w-[140px] md:w-[180px] cursor-pointer group">
-                        <div className="aspect-square rounded-xl overflow-hidden bg-[#0f0f12] mb-2 relative border border-white/5">
-                          <img src={p.image_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-                          <div className="absolute top-2 left-2 bg-black/70 px-2 py-0.5 rounded text-[9px] font-bold text-white">MERCH</div>
-                        </div>
-                        <p className="text-sm font-bold truncate">{p.name}</p>
-                      </div>
-                    ))}
-                    {books.map(b => (
-                      <div key={`b-${b.id}`} onClick={() => handleBuyBook(b.id)} className="flex-shrink-0 w-[140px] md:w-[180px] cursor-pointer group">
-                        <div className="aspect-square rounded-xl overflow-hidden bg-[#0f0f12] mb-2 relative border border-white/5">
-                          <img src={b.cover_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-                          <div className="absolute top-2 left-2 bg-black/70 px-2 py-0.5 rounded text-[9px] font-bold text-white">BOOK</div>
-                        </div>
-                        <p className="text-sm font-bold truncate">{b.title}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
           </div>
         )}
 
         {/* === LIBRARY TAB === */}
         {viewMode === "library" && (
-          <div className="max-w-5xl mx-auto px-4 md:px-8">
+          <div className="max-w-5xl mx-auto px-4 md:px-8 pt-4">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
               <h2 className="text-xl font-bold">All Content</h2>
               <div className="flex items-center gap-3">
@@ -451,7 +447,7 @@ export default function UnifiedCreatorHub() {
 
         {/* === STORE TAB === */}
         {viewMode === "store" && (
-          <div className="max-w-5xl mx-auto px-4 md:px-8">
+          <div className="max-w-5xl mx-auto px-4 md:px-8 pt-4">
             <div className="mb-8">
               <h2 className="text-2xl font-black flex items-center gap-2"><ShoppingBag size={24} className="text-red-500"/> Creator Store</h2>
               <p className="text-sm text-white/50 mt-1">Support {creator?.name} by picking up merch or their books.</p>
@@ -496,7 +492,7 @@ export default function UnifiedCreatorHub() {
 
         {/* === PREMIUM TAB === */}
         {viewMode === "premium" && premiumData?.enabled && (
-          <div className="max-w-5xl mx-auto px-4 md:px-8">
+          <div className="max-w-5xl mx-auto px-4 md:px-8 pt-4">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
               <div>
                 <h2 className="text-xl font-bold flex items-center gap-2"><Sparkles size={20} className="text-yellow-500" /> Premium Content</h2>
