@@ -70,12 +70,6 @@ const CATEGORIES: string[] = [
 
 const NAV_TABS: string[] = ["Home", "Podcasts", "Feed"];
 
-function formatTime(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = Math.floor(seconds % 60);
-  return `${m}:${s.toString().padStart(2, "0")}`;
-}
-
 export default function Home() {
   const router = useRouter();
   const [videos, setVideos] = useState<Video[]>([]);
@@ -219,7 +213,6 @@ export default function Home() {
     else setSelected(item);
   };
 
-  // INSTANT PLAY: Modal closes, Player opens immediately
   const handleInstantPlay = (video: Video) => {
     setSelected(null); 
     setPlaying(video);
@@ -338,19 +331,21 @@ export default function Home() {
         </>
       )}
 
+      {/* MODAL AND PLAYER (No overlapping animations to prevent the poster flash) */}
       <AnimatePresence>
         {selected && <DetailModal item={selected} onClose={() => setSelected(null)} onPlay={handleInstantPlay} creators={creators} />}
-        {playing && (
-          <AppleVideoPlayer
-            src={playing.videoUrl ?? playing.bitchuteUrl ?? ""}
-            poster={playing.posterUrl}
-            title={playing.title}
-            textOverlays={playing?.textOverlays}
-            chapters={playing.chapters || []}
-            onClose={() => setPlaying(null)}
-          />
-        )}
       </AnimatePresence>
+
+      {playing && (
+        <AppleVideoPlayer
+          src={playing.videoUrl ?? playing.bitchuteUrl ?? ""}
+          // Removed the poster prop so it goes straight to black/video instead of flashing the card
+          title={playing.title}
+          textOverlays={playing?.textOverlays}
+          chapters={playing.chapters || []}
+          onClose={() => setPlaying(null)}
+        />
+      )}
     </main>
     </PullToRefresh>
     <MobileBottomNav />
