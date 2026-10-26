@@ -152,11 +152,12 @@ export default function Home() {
       .catch(() => setLoaded(true));
 
     // Fetch Merch
-    fetch("/api/merchandise", { cache: "no-store" })
+    fetch("/api/products/global", { cache: "no-store" })
       .then((r) => r.json())
       .then((data) => {
-        if (Array.isArray(data)) {
-          setMerchandise(data.map((p: any) => ({
+        const _products = data.products || [];
+        if (Array.isArray(_products)) {
+          setMerchandise(_products.map((p: any) => ({
             id: p.id,
             title: p.name,
             description: p.description || "",

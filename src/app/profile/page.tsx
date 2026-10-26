@@ -396,7 +396,7 @@ export default function ProfilePage() {
                     {(mobileTab === "posts" ? visibleImagePosts : visibleReels).map((p: any, idx: number) => (
                       <div key={p.id} onClick={() => setViewerIndex(idx)} className="relative aspect-[4/5] bg-[#141418] rounded-xl overflow-hidden cursor-pointer" onPointerDown={() => startLongPress(p)} onPointerUp={cancelLongPress} onPointerLeave={cancelLongPress} onPointerCancel={cancelLongPress} onContextMenu={(e) => { e.preventDefault(); setActionSheetFor(p); }} style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", userSelect: "none", touchAction: "manipulation" }} draggable={false}>
                         {(p.videoUrl || p.bitchuteUrl) ? (
-                          <video src={`${p.videoUrl || p.bitchuteUrl}#t=0.1`} className="w-full h-full object-cover pointer-events-none" preload="auto" muted playsInline />
+                          <video src={`${p.videoUrl || p.bitchuteUrl}#t=0.001`} className="w-full h-full object-cover pointer-events-none" preload="metadata" muted playsInline />
                         ) : (
                           <img src={p.posterUrl || p.backdropUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
                         )}
@@ -410,7 +410,7 @@ export default function ProfilePage() {
                     {(mobileTab === "posts" ? visibleImagePosts : visibleReels).map((p, idx) => (
                       <Link key={p.id} href={p.creatorId ? `/podcaster/_/${p.id}` : `/feed`} className="flex items-center gap-3 p-2 rounded-lg bg-[#141418] hover:bg-white/5 transition" onPointerDown={() => startLongPress(p)} onPointerUp={cancelLongPress} onPointerLeave={cancelLongPress} onPointerCancel={cancelLongPress} onContextMenu={(e) => { e.preventDefault(); setActionSheetFor(p); }} style={{ WebkitTouchCallout: "none" }} draggable={false}>
                         {(p.videoUrl || p.bitchuteUrl) ? (
-                          <video src={`${p.videoUrl || p.bitchuteUrl}#t=0.1`} className="w-12 h-16 rounded object-cover flex-shrink-0 pointer-events-none" preload="auto" muted playsInline />
+                          <video src={`${p.videoUrl || p.bitchuteUrl}#t=0.001`} className="w-12 h-16 rounded object-cover flex-shrink-0 pointer-events-none" preload="metadata" muted playsInline />
                         ) : (
                           <img src={p.posterUrl || p.backdropUrl} alt="" className="w-12 h-16 rounded object-cover flex-shrink-0" loading="lazy" />
                         )}
@@ -438,7 +438,7 @@ export default function ProfilePage() {
                     {visiblePremium.map((p, idx) => (
                       <div key={p.id} onClick={() => router.push(p.creatorId ? `/podcaster/_/${p.id}` : `/feed`)} className="relative aspect-[4/5] bg-[#141418] rounded-xl overflow-hidden cursor-pointer" onPointerDown={() => startLongPress(p)} onPointerUp={cancelLongPress} onPointerLeave={cancelLongPress} onPointerCancel={cancelLongPress} onContextMenu={(e) => { e.preventDefault(); setActionSheetFor(p); }} onDragStart={(e) => e.preventDefault()} style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", userSelect: "none", touchAction: "manipulation" }} draggable={false}>
                         {(p.videoUrl || p.bitchuteUrl) ? (
-                          <video src={`${p.videoUrl || p.bitchuteUrl}#t=0.1`} className="w-full h-full object-cover pointer-events-none" preload="auto" muted playsInline />
+                          <video src={`${p.videoUrl || p.bitchuteUrl}#t=0.001`} className="w-full h-full object-cover pointer-events-none" preload="metadata" muted playsInline />
                         ) : (
                           <img src={p.posterUrl || p.backdropUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
                         )}
@@ -454,7 +454,7 @@ export default function ProfilePage() {
                     {visiblePremium.map((p, idx) => (
                       <Link key={p.id} href={p.creatorId ? `/podcaster/_/${p.id}` : `/feed`} className="flex items-center gap-3 p-2 rounded-lg bg-[#141418] hover:bg-white/5 transition" onPointerDown={() => startLongPress(p)} onPointerUp={cancelLongPress} onPointerLeave={cancelLongPress} onPointerCancel={cancelLongPress} onClick={(e) => handleTileClick(p, e)} onContextMenu={(e) => { e.preventDefault(); setActionSheetFor(p); }} style={{ WebkitTouchCallout: "none" }} draggable={false}>
                         {(p.videoUrl || p.bitchuteUrl) ? (
-                          <video src={`${p.videoUrl || p.bitchuteUrl}#t=0.1`} className="w-12 h-16 rounded object-cover flex-shrink-0 pointer-events-none" preload="auto" muted playsInline />
+                          <video src={`${p.videoUrl || p.bitchuteUrl}#t=0.001`} className="w-12 h-16 rounded object-cover flex-shrink-0 pointer-events-none" preload="metadata" muted playsInline />
                         ) : (
                           <img src={p.posterUrl || p.backdropUrl} alt="" className="w-12 h-16 rounded object-cover flex-shrink-0" loading="lazy" />
                         )}

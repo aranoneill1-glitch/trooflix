@@ -276,7 +276,7 @@ export default function UserProfilePage() {
                         className="relative aspect-[4/5] bg-[#141418] rounded-xl overflow-hidden cursor-pointer group"
                       >
                         {(p.videoUrl || p.bitchuteUrl) ? (
-    <video src={`${p.videoUrl || p.bitchuteUrl}#t=0.1`} className="w-full h-full object-cover group-hover:scale-105 transition duration-300 pointer-events-none" preload="auto" muted playsInline />
+    <video src={`${p.videoUrl || p.bitchuteUrl}#t=0.001`} className="w-full h-full object-cover group-hover:scale-105 transition duration-300 pointer-events-none" preload="metadata" muted playsInline />
   ) : (
     <img src={p.posterUrl || p.backdropUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition duration-300" loading="lazy" />
   )}
@@ -300,7 +300,7 @@ export default function UserProfilePage() {
                         className="flex items-center gap-3 p-2 rounded-lg bg-[#141418] hover:bg-white/5 transition cursor-pointer"
                       >
                         {(p.videoUrl || p.bitchuteUrl) ? (
-    <video src={`${p.videoUrl || p.bitchuteUrl}#t=0.1`} className="w-12 h-16 rounded object-cover flex-shrink-0 pointer-events-none" preload="auto" muted playsInline />
+    <video src={`${p.videoUrl || p.bitchuteUrl}#t=0.001`} className="w-12 h-16 rounded object-cover flex-shrink-0 pointer-events-none" preload="metadata" muted playsInline />
   ) : (
     <img src={p.posterUrl || p.backdropUrl} alt="" className="w-12 h-16 rounded object-cover flex-shrink-0" loading="lazy" />
   )}
@@ -334,7 +334,7 @@ export default function UserProfilePage() {
                         className="relative aspect-[4/5] bg-[#141418] rounded-xl overflow-hidden cursor-pointer group"
                       >
                         {(p.videoUrl || p.bitchuteUrl) ? (
-    <video src={`${p.videoUrl || p.bitchuteUrl}#t=0.1`} className="w-full h-full object-cover group-hover:scale-105 transition duration-300 pointer-events-none" preload="auto" muted playsInline />
+    <video src={`${p.videoUrl || p.bitchuteUrl}#t=0.001`} className="w-full h-full object-cover group-hover:scale-105 transition duration-300 pointer-events-none" preload="metadata" muted playsInline />
   ) : (
     <img src={p.posterUrl || p.backdropUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition duration-300" loading="lazy" />
   )}
