@@ -51,7 +51,6 @@ export default function UnifiedCreatorHub() {
   const slug = params.slug as string;
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const backdropInputRef = useRef<HTMLInputElement>(null);
 
   const [creator, setCreator] = useState<Creator | null>(null);
   const [videos, setVideos] = useState<Video[]>([]);
@@ -75,7 +74,6 @@ export default function UnifiedCreatorHub() {
   const [editName, setEditName] = useState("");
   const [editBio, setEditBio] = useState("");
   const [uploading, setUploading] = useState(false);
-  const [uploadingBackdrop, setUploadingBackdrop] = useState(false);
   const [statusMsg, setStatusMsg] = useState("");
 
   // Dashboard State
@@ -102,7 +100,6 @@ export default function UnifiedCreatorHub() {
       const user = await getCachedUser();
       if (user) setUserId(user.id);
 
-      // Fetch Data
       const [vData, fData, pData, premData, reelsData, subData] = await Promise.all([
         fetch(`/api/creators/videos?creatorId=${found.id}`, { cache: "no-store" }).then((r) => r.json()),
         fetch(`/api/follow-count?creator_id=${found.id}`).then((r) => r.json()),
@@ -112,7 +109,6 @@ export default function UnifiedCreatorHub() {
         (user && found.id) ? fetch(`/api/creator/check-sub?userId=${user.id}&creatorId=${found.id}`).then(r => r.json()).catch(() => ({ hasSub: false })) : Promise.resolve({ hasSub: false })
       ]);
 
-      // Merge creator videos and user reels
       const cVids = Array.isArray(vData.videos) ? vData.videos : [];
       const uPosts = Array.isArray(reelsData.posts) ? reelsData.posts : [];
       
@@ -264,6 +260,7 @@ export default function UnifiedCreatorHub() {
                 </div>
                 {creator?.description && <p className="text-sm md:text-lg text-white/70 max-w-3xl mb-6 line-clamp-2 md:line-clamp-none">{creator.description}</p>}
 
+                {/* ACTION BUTTONS */}
                 <div className="flex flex-wrap items-center gap-3 md:gap-4">
                   {isOwner ? (
                     <>
@@ -276,6 +273,11 @@ export default function UnifiedCreatorHub() {
                       <Link href="/studio" className="bg-yellow-500 text-black font-bold px-6 py-2.5 rounded-xl text-sm transition hover:scale-105 flex items-center gap-2">
                         <Plus size={18} /> Studio
                       </Link>
+                      {products.length > 0 && (
+                        <button onClick={() => setTab("shop")} className={`${tab === "shop" ? "bg-white text-black" : "bg-white/10 text-white border border-white/20 hover:bg-white/20"} font-bold px-6 py-2.5 rounded-xl text-sm transition flex items-center gap-2`}>
+                          <ShoppingBag size={18} /> Shop
+                        </button>
+                      )}
                     </>
                   ) : (
                     <>
@@ -291,18 +293,23 @@ export default function UnifiedCreatorHub() {
                         hasSub ? <div className="bg-green-500/10 text-green-400 border border-green-500/30 px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2"><Sparkles size={18} /> Premium Member</div>
                         : <button onClick={handleSubscribe} disabled={checkoutLoading} className="bg-yellow-500 text-black hover:bg-yellow-400 px-5 py-2.5 rounded-xl text-sm font-bold transition shadow-lg flex items-center gap-2"><Sparkles size={18} /> {checkoutLoading ? "Loading..." : `Join Premium $${(premiumData.price_cents / 100).toFixed(2)}/mo`}</button>
                       )}
+                      {products.length > 0 && (
+                        <button onClick={() => setTab("shop")} className={`${tab === "shop" ? "bg-white text-black" : "bg-white/10 text-white border border-white/20 hover:bg-white/20"} font-bold px-6 py-2.5 rounded-xl text-sm transition flex items-center gap-2`}>
+                          <ShoppingBag size={18} /> Shop
+                        </button>
+                      )}
                     </>
                   )}
                 </div>
               </div>
             </div>
 
+            {/* STICKY TABS (Shop removed from here) */}
             <div className="flex justify-center mt-8 mb-8 md:sticky md:top-20 z-40">
               <div className="flex gap-2 p-1.5 bg-[#0a0a0a]/80 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl overflow-x-auto scrollbar-hide">
                 <button onClick={() => setTab("home")} className={`px-6 md:px-8 py-2 rounded-full text-sm font-semibold transition-all ${tab === "home" ? "bg-white text-black shadow-md" : "text-white/60 hover:text-white"}`}>Home</button>
                 <button onClick={() => setTab("videos")} className={`px-6 md:px-8 py-2 rounded-full text-sm font-semibold transition-all ${tab === "videos" ? "bg-white text-black shadow-md" : "text-white/60 hover:text-white"}`}>Videos</button>
                 {premiumData?.enabled && <button onClick={() => setTab("premium")} className={`px-6 md:px-8 py-2 rounded-full text-sm font-semibold transition-all flex items-center gap-1.5 ${tab === "premium" ? "bg-yellow-500 text-black shadow-md" : "text-yellow-500/70 hover:text-yellow-400"}`}><Sparkles size={14} /> Premium</button>}
-                {products.length > 0 && <button onClick={() => setTab("shop")} className={`px-6 md:px-8 py-2 rounded-full text-sm font-semibold transition-all flex items-center gap-1.5 ${tab === "shop" ? "bg-white text-black shadow-md" : "text-white/60 hover:text-white"}`}><ShoppingBag size={14} /> Shop</button>}
               </div>
             </div>
           </div>
