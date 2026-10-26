@@ -34,6 +34,7 @@ export default function MobileBottomNav() {
   const pathname = usePathname();
   const router = useRouter();
   const [isTVApp, setIsTVApp] = useState(false);
+  const [isPlayerOpen, setIsPlayerOpen] = useState(false);
 
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [signedIn, setSignedIn] = useState<boolean | null>(null);
@@ -41,6 +42,18 @@ export default function MobileBottomNav() {
   
   const pressTimer = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
+
+  // Listen for player open/close events to hide the nav
+  useEffect(() => {
+    const handleOpen = () => setIsPlayerOpen(true);
+    const handleClose = () => setIsPlayerOpen(false);
+    document.addEventListener("player-open", handleOpen);
+    document.addEventListener("player-close", handleClose);
+    return () => {
+      document.removeEventListener("player-open", handleOpen);
+      document.removeEventListener("player-close", handleClose);
+    };
+  }, []);
 
   useEffect(() => {
     if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android') {
@@ -73,7 +86,8 @@ export default function MobileBottomNav() {
     });
   }, [pathname, isTVApp]);
 
-  if (isTVApp) return null;
+  // Hide completely if TV app OR video player is open
+  if (isTVApp || isPlayerOpen) return null;
 
   const prefetchTab = (path: string) => {
     try {
@@ -150,7 +164,6 @@ export default function MobileBottomNav() {
         )}
       </AnimatePresence>
 
-      {/* Floating Glass Pill Container — z-index raised to 250 so it sits above Reels */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-[250] flex justify-center pb-[env(safe-area-inset-bottom)] pointer-events-none">
         <div className="pointer-events-auto flex items-center justify-around w-[92%] max-w-sm mb-4 px-2 py-2 bg-[#1c1c1e]/80 backdrop-blur-2xl border border-white/10 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
           
@@ -188,7 +201,6 @@ export default function MobileBottomNav() {
             );
           })}
 
-          {/* Profile Avatar */}
           <div
             onClick={handleAvatarClick}
             onMouseDown={startPress}
