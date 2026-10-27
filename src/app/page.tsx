@@ -303,11 +303,11 @@ export default function Home() {
                   <div className="mt-6">
                     <div className="flex items-end justify-between px-4 md:px-12 mb-6 mt-8">
                       <div>
-                        <p className="text-[10px] md:text-xs tracking-[0.4em] text-white/50 font-semibold mb-1">
-                          WHO TO WATCH RIGHT NOW
+                        <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-1">
+                          THE HOME OF INDEPENDENT VOICES
                         </p>
-                        <h2 className="text-2xl md:text-4xl font-black tracking-tight">
-                          The Hot <span className="text-red-600">List</span>
+                        <h2 className="text-2xl md:text-4xl font-black tracking-tight text-white">
+                          Discover Creators
                         </h2>
                       </div>
                       <Link href="/creators" className="text-xs font-semibold text-white/50 hover:text-white transition pb-1 md:pb-2">View all</Link>
