@@ -9,7 +9,6 @@ import {
   MessageCircle, Share, MoreHorizontal, BookOpen, ChevronLeft, ChevronRight
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import EnablePush from "@/components/EnablePush";
@@ -190,31 +189,29 @@ export default function CreatorProfilePage() {
   
   const isOwner = userId && creator?.ownerUserId === userId;
 
-  // Generate a tagline based on content
   const roles = [];
   if (videosOnly.length > 0) roles.push("Filmmaker");
   if (podcastsOnly.length > 0) roles.push("Podcaster");
   roles.push("Creator");
   const tagline = roles.join(" · ");
 
-  if (notFound) return <main className="min-h-screen bg-[#080808] text-white"><TopBar /><div className="pt-32 text-center"><p className="text-white/50 mb-4">Creator not found</p><Link href="/creators" className="text-[#E53945] hover:underline">← Back</Link></div><MobileBottomNav /></main>;
+  if (notFound) return <main className="min-h-screen bg-[#080808] text-white"><div className="pt-32 text-center"><p className="text-white/50 mb-4">Creator not found</p><Link href="/creators" className="text-[#E53945] hover:underline">← Back</Link></div><MobileBottomNav /></main>;
   if (loading) return <main className="min-h-screen bg-[#080808] flex items-center justify-center"><Loader2 className="animate-spin text-[#E53945]" size={32} /></main>;
 
   return (
     <main className="min-h-screen bg-[#080808] text-white pb-24 font-sans">
-      <TopBar />
-
-      {/* BANNER SECTION */}
-      <div className="relative w-full h-[30vh] md:h-[40vh]">
+      
+      {/* BANNER SECTION (Now edge-to-edge at the top) */}
+      <div className="relative w-full h-[35vh] md:h-[45vh]">
         <img src={creator?.heroBackdropUrl || latestVideo?.backdropUrl || ""} alt="" className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#080808] via-[#080808]/40 to-black/40" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#080808] via-[#080808]/20 to-black/60" />
         
-        {/* Top Controls */}
-        <div className="absolute top-0 left-0 right-0 p-4 pt-24 md:pt-28 flex justify-between items-center z-20">
-          <button onClick={() => router.back()} className="p-2 bg-black/40 backdrop-blur-md rounded-full text-white hover:bg-black/60 transition">
+        {/* Top Controls (Using Safe Area Padding) */}
+        <div className="absolute top-0 left-0 right-0 p-4 pt-[calc(env(safe-area-inset-top)+1rem)] md:pt-6 flex justify-between items-center z-20">
+          <button onClick={() => router.back()} className="p-2.5 bg-black/40 backdrop-blur-md rounded-full text-white hover:bg-black/60 transition shadow-lg border border-white/10">
             <ChevronLeft size={24} />
           </button>
-          <button className="p-2 bg-black/40 backdrop-blur-md rounded-full text-white hover:bg-black/60 transition">
+          <button className="p-2.5 bg-black/40 backdrop-blur-md rounded-full text-white hover:bg-black/60 transition shadow-lg border border-white/10">
             <Share size={20} />
           </button>
         </div>
