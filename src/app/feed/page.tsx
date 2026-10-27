@@ -2,10 +2,10 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { Play, MoreVertical, VolumeX, Volume2, Maximize } from "lucide-react";
+import { Play, Pause, MoreVertical, VolumeX, Volume2, Plus, XCircle } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import { getCachedCreators } from "@/lib/cache";
+import { getCachedCreators, getCachedUser } from "@/lib/cache";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import AppleVideoPlayer from "@/components/AppleVideoPlayer";
 
@@ -30,6 +30,8 @@ type Creator = {
   isVerified?: boolean;
 };
 
+const TABS = ["All", "Music", "Podcasts", "Following", "Audiobooks"];
+
 function timeAgo(iso?: string): string {
   if (!iso) return "Just now";
   const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
@@ -44,8 +46,11 @@ export default function FeedPage() {
   const [creators, setCreators] = useState<Creator[]>([]);
   const [loading, setLoading] = useState(true);
   const [fullScreenVideo, setFullScreenVideo] = useState<Video | null>(null);
+  const [activeTab, setActiveTab] = useState("Podcasts");
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
+    getCachedUser().then(setUser);
     Promise.all([
       fetch("/api/videos", { cache: "no-store" }).then(r => r.json()),
       getCachedCreators()
@@ -69,25 +74,116 @@ export default function FeedPage() {
     return creators.find(c => c.id === id);
   };
 
+  // Filter videos based on tab
+  const filteredVideos = activeTab === "All" || activeTab === "Podcasts" 
+    ? videos 
+    : videos.filter(v => v.type === activeTab);
+
+  const featuredVideo = filteredVideos[0];
+  const moreVideos = filteredVideos.slice(1);
+
   return (
     <main className="min-h-screen bg-[#0a0a0a] text-white pb-24 font-sans">
       <TopBar />
 
-      <div className="pt-20 md:pt-24 max-w-2xl mx-auto">
+      {/* STICKY TOP TABS */}
+      <div className="sticky top-[60px] md:top-[72px] z-40 bg-[#0a0a0a]/95 backdrop-blur-xl pt-3 pb-3">
+        <div className="max-w-2xl mx-auto px-4 md:px-6 flex items-center gap-2 overflow-x-auto scrollbar-hide">
+          
+          {/* User Avatar Circle */}
+          <Link href="/profile" className="w-9 h-9 rounded-full bg-[#1c1c1e] border border-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden mr-2">
+            {user?.user_metadata?.avatar_url ? (
+              <img src={user.user_metadata.avatar_url} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-sm font-bold text-[#E53945]">A</span>
+            )}
+          </Link>
+
+          {/* Tabs */}
+          {TABS.map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-colors border ${
+                activeTab === tab
+                  ? "bg-[#E53945] text-white border-[#E53945] shadow-lg"
+                  : "bg-[#1c1c1e] text-white/70 border-white/10 hover:bg-[#2c2c2e] hover:text-white"
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="pt-4 max-w-2xl mx-auto">
         {loading ? (
           <div className="flex justify-center py-20">
-            <div className="w-8 h-8 border-4 border-red-600/30 border-t-red-600 rounded-full animate-spin" />
+            <div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" />
           </div>
         ) : (
           <div className="flex flex-col">
-            {videos.map((v) => (
+            
+            {/* SECTION HEADER */}
+            <h2 className="text-2xl font-bold px-4 mb-4">Episodes to try</h2>
+
+            {/* FEATURED VIDEO CARD */}
+            {featuredVideo && (
               <FeedVideoCard
-                key={v.id}
-                video={v}
-                creator={getCreator(v.creatorId)}
-                onFullScreen={() => setFullScreenVideo(v)}
+                video={featuredVideo}
+                creator={getCreator(featuredVideo.creatorId)}
+                onFullScreen={() => setFullScreenVideo(featuredVideo)}
               />
-            ))}
+            )}
+
+            {/* SECOND SECTION HEADER (Matches your screenshot) */}
+            <h2 className="text-2xl font-bold px-4 mt-2 mb-4">Episodes to try</h2>
+
+            {/* HORIZONTAL LIST CARDS */}
+            <div className="space-y-4 px-4">
+              {moreVideos.map((v) => {
+                const creator = getCreator(v.creatorId);
+                return (
+                  <div key={v.id} className="bg-gradient-to-r from-red-950/40 to-[#0a0a0a] border border-red-900/30 rounded-xl p-3 flex flex-col gap-3">
+                    <div className="flex gap-3">
+                      <div className="w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
+                        <img src={v.posterUrl} alt="" className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-sm font-bold text-white leading-tight line-clamp-2">{v.title}</h3>
+                        <p className="text-xs text-white/60 mt-1 flex items-center gap-1">
+                          {creator?.name || "Creator"} 
+                          {creator?.isVerified && <VerifiedBadge size={10} variant="gold" />}
+                          • {timeAgo(v.createdAt)} • {v.duration || "34 min"}
+                        </p>
+                      </div>
+                      <button className="text-white/40 hover:text-white h-fit">
+                        <MoreVertical size={18} />
+                      </button>
+                    </div>
+                    
+                    {v.description && (
+                      <p className="text-xs text-white/50 line-clamp-2">{v.description}</p>
+                    )}
+
+                    <div className="flex items-center justify-between mt-1">
+                      <button className="flex items-center gap-1.5 bg-black/40 hover:bg-black/60 px-3 py-1.5 rounded-full border border-white/5 transition">
+                        <XCircle size={14} className="text-white/60" />
+                        <span className="text-xs font-bold text-white/70">Preview episode</span>
+                      </button>
+                      <div className="flex items-center gap-2">
+                        <button className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/10 transition">
+                          <Plus size={16} />
+                        </button>
+                        <Link href={`/podcast/${v.id}`} className="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 transition">
+                          <Play size={14} fill="black" className="ml-0.5" />
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
@@ -117,6 +213,22 @@ function FeedVideoCard({ video, creator, onFullScreen }: { video: Video, creator
 
   const videoSrc = video.videoUrl || video.bitchuteUrl || "";
 
+  // Handle Auto-play on mount
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    
+    // Attempt autoplay
+    v.play().then(() => {
+      setIsPlaying(true);
+    }).catch(() => {
+      // Autoplay failed (likely because it's not muted)
+      v.muted = true;
+      setIsMuted(true);
+      v.play().then(() => setIsPlaying(true)).catch(() => {});
+    });
+  }, []);
+
   const togglePlay = async () => {
     const v = videoRef.current;
     if (!v || !videoSrc) return;
@@ -127,7 +239,6 @@ function FeedVideoCard({ video, creator, onFullScreen }: { video: Video, creator
         setIsPlaying(true);
       } catch (err) {
         console.error("Playback failed:", err);
-        setIsPlaying(false);
       }
     } else {
       v.pause();
@@ -172,7 +283,7 @@ function FeedVideoCard({ video, creator, onFullScreen }: { video: Video, creator
   if (!videoSrc) return null;
 
   return (
-    <div className="w-full mb-10">
+    <div className="w-full mb-8">
       
       {/* VIDEO CONTAINER */}
       <div className="relative w-full aspect-video bg-black group overflow-hidden cursor-pointer" onClick={togglePlay}>
@@ -196,12 +307,19 @@ function FeedVideoCard({ video, creator, onFullScreen }: { video: Video, creator
           </div>
         )}
 
-        {/* Top Overlays */}
+        {/* Top Left Duration */}
         <div className="absolute top-4 left-4 bg-black/80 px-2 py-1 rounded text-xs font-bold text-white z-10 pointer-events-none">
-          {video.duration || "1:34:29"}
+          {video.duration || "1:35:01"}
         </div>
         
-        <div className="absolute top-4 right-4 flex flex-col gap-3 z-20">
+        {/* Right Side Controls */}
+        <div className="absolute top-1/2 -translate-y-1/2 right-4 flex flex-col gap-4 z-20">
+          <button 
+            className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white border border-white/20 hover:bg-black/80 transition"
+          >
+            <Plus size={20} />
+          </button>
+          
           <button 
             onClick={(e) => { e.stopPropagation(); setIsMuted(!isMuted); if(videoRef.current) videoRef.current.muted = !isMuted; }} 
             className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white border border-white/20 hover:bg-black/80 transition"
@@ -210,48 +328,42 @@ function FeedVideoCard({ video, creator, onFullScreen }: { video: Video, creator
           </button>
           
           <button 
-            onClick={(e) => { e.stopPropagation(); onFullScreen(); }} 
-            className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white border border-white/20 hover:bg-black/80 transition"
+            onClick={(e) => { e.stopPropagation(); togglePlay(); }} 
+            className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-2xl hover:scale-105 transition"
           >
-            <Maximize size={20} />
+            {isPlaying ? <Pause size={20} fill="black" /> : <Play size={20} fill="black" className="ml-1" />}
           </button>
         </div>
-
-        {/* Center Play Icon (Only shows when paused) */}
-        {!isPlaying && !error && (
-          <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-            <div className="w-16 h-16 rounded-full bg-white/90 text-black flex items-center justify-center shadow-2xl backdrop-blur-sm">
-              <Play size={28} fill="black" className="ml-1" />
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* RED STATUS BAR (Draggable) */}
-      <div 
-        className="relative w-full h-1.5 bg-[#1c1c1e] cursor-pointer group z-30"
-        style={{ touchAction: 'none' }}
-        onClick={(e) => e.stopPropagation()}
-      >
+      {/* RED STATUS BAR (Draggable) with Green Dot */}
+      <div className="flex items-center gap-2 mt-1">
+        <div className="w-2.5 h-2.5 rounded-full bg-[#1ed760] flex-shrink-0 ml-2" />
         <div 
-          ref={progressBarRef}
-          className="absolute inset-0 w-full h-full flex items-center"
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerCancel={handlePointerUp}
+          className="relative flex-1 h-1.5 bg-[#1c1c1e] cursor-pointer group z-30"
+          style={{ touchAction: 'none' }}
+          onClick={(e) => e.stopPropagation()}
         >
-          <div className="w-full h-full bg-[#1c1c1e] group-hover:h-2 transition-all relative overflow-hidden">
+          <div 
+            ref={progressBarRef}
+            className="absolute inset-0 w-full h-full flex items-center"
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerUp}
+          >
+            <div className="w-full h-full bg-[#1c1c1e] group-hover:h-2 transition-all relative overflow-hidden">
+              <div 
+                className="h-full bg-[#E53945]" 
+                style={{ width: `${progress * 100}%` }}
+              />
+            </div>
+            
             <div 
-              className="h-full bg-[#E53945]" 
-              style={{ width: `${progress * 100}%` }}
+              className={`absolute h-3 w-3 bg-[#E53945] rounded-full shadow-md transition-opacity pointer-events-none ${isSeeking ? 'opacity-100 scale-125' : 'opacity-0 group-hover:opacity-100'}`}
+              style={{ left: `calc(${progress * 100}% - 6px)` }}
             />
           </div>
-          
-          <div 
-            className={`absolute h-3 w-3 bg-[#E53945] rounded-full shadow-md transition-opacity pointer-events-none ${isSeeking ? 'opacity-100 scale-125' : 'opacity-0 group-hover:opacity-100'}`}
-            style={{ left: `calc(${progress * 100}% - 6px)` }}
-          />
         </div>
       </div>
 
@@ -260,7 +372,7 @@ function FeedVideoCard({ video, creator, onFullScreen }: { video: Video, creator
         <div className="flex gap-3">
           
           {/* SQUARE AVATAR */}
-          <Link href={`/podcaster/${creator?.slug || ''}`} className="w-10 h-10 rounded-md overflow-hidden bg-[#1c1c1e] flex-shrink-0 block">
+          <Link href={`/podcaster/${creator?.slug || ''}`} className="w-11 h-11 rounded-md overflow-hidden bg-[#1c1c1e] flex-shrink-0 block">
             {creator?.photoUrl ? (
               <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" />
             ) : (
@@ -290,13 +402,6 @@ function FeedVideoCard({ video, creator, onFullScreen }: { video: Video, creator
             <MoreVertical size={20} />
           </button>
         </div>
-
-        {/* DESCRIPTION */}
-        {video.description && (
-          <p className="mt-3 text-sm text-white/70 line-clamp-2 leading-relaxed pl-[52px]">
-            {video.description}
-          </p>
-        )}
       </div>
     </div>
   );
