@@ -6,27 +6,27 @@ import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 
 const MAIN_CATEGORIES = [
-  { name: "Documentaries", color: "bg-[#E13377]" },
-  { name: "Podcasts", color: "bg-[#006450]" },
-  { name: "Films", color: "bg-[#1e3264]" },
-  { name: "Book Store", color: "bg-[#8400e7]" },
+  { name: "Documentaries", image: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=600&auto=format&fit=crop" }, // Placeholder until you send the link
+  { name: "Podcasts", image: "https://unsplash.com/photos/Qruwi3Ur3Ak/download?force=true&w=600" },
+  { name: "Films", image: "https://unsplash.com/photos/mVv8igQaWoI/download?force=true&w=600" },
+  { name: "Book Store", image: "https://unsplash.com/photos/_nm_mZ4Cs2I/download?force=true&w=600" },
 ];
 
 const BROWSE_ALL = [
-  { name: "History", image: "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=600&auto=format&fit=crop" },
-  { name: "Politics & Geopolitics", image: "https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?q=80&w=600&auto=format&fit=crop" },
-  { name: "War & Conflict", image: "https://images.unsplash.com/photo-1508614589041-895b88991e3e?q=80&w=600&auto=format&fit=crop" },
-  { name: "True Crime & Justice", image: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=600&auto=format&fit=crop" },
-  { name: "Conspiracy & Unsolved", image: "https://images.unsplash.com/photo-1518676590629-3dcbd9c5a5c9?q=80&w=600&auto=format&fit=crop" },
-  { name: "Society & Culture", image: "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?q=80&w=600&auto=format&fit=crop" },
-  { name: "Business & Finance", image: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=600&auto=format&fit=crop" },
-  { name: "Science & Technology", image: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=600&auto=format&fit=crop" },
-  { name: "Environment & Nature", image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=600&auto=format&fit=crop" },
-  { name: "Religion & Spirituality", image: "https://images.unsplash.com/photo-1548625149-fc4a29cf7092?q=80&w=600&auto=format&fit=crop" },
-  { name: "Ancient History", image: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?q=80&w=600&auto=format&fit=crop" },
-  { name: "Comedy", image: "https://images.unsplash.com/photo-1585699324551-f6c309eedeca?q=80&w=600&auto=format&fit=crop" },
-  { name: "News", image: "https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=600&auto=format&fit=crop" },
-  { name: "Gaming", image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=600&auto=format&fit=crop" },
+  { name: "History", image: "https://unsplash.com/photos/JioCsloIYro/download?force=true&w=600" },
+  { name: "Politics & Geopolitics", image: "https://unsplash.com/photos/2J5-T03yGQU/download?force=true&w=600" },
+  { name: "War & Conflict", image: "https://unsplash.com/photos/IdtzzG9oxHo/download?force=true&w=600" },
+  { name: "True Crime & Justice", image: "https://unsplash.com/photos/yYpmCA32U_M/download?force=true&w=600" },
+  { name: "Conspiracy & Unsolved", image: "https://unsplash.com/photos/BxELNNMN88Y/download?force=true&w=600" },
+  { name: "Society & Culture", image: "https://unsplash.com/photos/ehdsg7SHm6A/download?force=true&w=600" },
+  { name: "Business & Finance", image: "https://unsplash.com/photos/8lnbXtxFGZw/download?force=true&w=600" },
+  { name: "Science & Technology", image: "https://unsplash.com/photos/gMpwyM4Lyuw/download?force=true&w=600" },
+  { name: "Environment & Nature", image: "https://unsplash.com/photos/1Z2niiBPg5A/download?force=true&w=600" },
+  { name: "Religion & Spirituality", image: "https://unsplash.com/photos/UVssyWRCB24/download?force=true&w=600" },
+  { name: "Ancient History", image: "https://unsplash.com/photos/4Wue5DQnxSw/download?force=true&w=600" },
+  { name: "Comedy", image: "https://unsplash.com/photos/jvNoSUrQkgU/download?force=true&w=600" },
+  { name: "News", image: "https://unsplash.com/photos/hWJsOnaWTqs/download?force=true&w=600" },
+  { name: "Gaming", image: "https://unsplash.com/photos/lTQKvoDQd2A/download?force=true&w=600" },
 ];
 
 // Mock data to match your screenshot exactly
@@ -141,12 +141,17 @@ export default function SearchPage() {
           </div>
         ) : (
           <>
-            {/* Top Main Categories Grid */}
+            {/* Top Main Categories Grid - Now with Images */}
             <div className="grid grid-cols-2 gap-4 mb-8">
               {MAIN_CATEGORIES.map((cat) => (
-                <div key={cat.name} className={`${cat.color} rounded-lg p-4 h-24 relative overflow-hidden cursor-pointer hover:brightness-110 transition`}>
-                  <h2 className="text-xl font-bold relative z-10">{cat.name}</h2>
-                  <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-black/20 rotate-25 transform shadow-lg rounded-md" />
+                <div key={cat.name} className="rounded-lg p-4 h-24 relative overflow-hidden cursor-pointer group shadow-lg">
+                  <img 
+                    src={cat.image} 
+                    alt={cat.name} 
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-500" 
+                  />
+                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors" />
+                  <h2 className="text-xl font-bold relative z-10 text-white drop-shadow-md">{cat.name}</h2>
                 </div>
               ))}
             </div>
