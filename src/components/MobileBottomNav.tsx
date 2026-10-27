@@ -165,7 +165,7 @@ export default function MobileBottomNav() {
       </AnimatePresence>
 
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-[250] flex justify-center pb-[env(safe-area-inset-bottom)] pointer-events-none">
-        <div className="pointer-events-auto flex items-center justify-around w-[85%] max-w-[300px] mb-4 px-4 py-2 bg-[#1c1c1e]/80 backdrop-blur-2xl border border-white/10 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
+        <div className="pointer-events-auto flex items-center justify-around w-[85%] max-w-[300px] mb-3 px-4 py-1.5 bg-[#1c1c1e]/80 backdrop-blur-2xl border border-white/10 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
           
           {TABS.map((tab) => {
             const active = isActive(tab.path);
@@ -177,7 +177,7 @@ export default function MobileBottomNav() {
                 onClick={triggerHaptic}
                 onMouseEnter={() => prefetchTab(tab.path)}
                 onTouchStart={() => prefetchTab(tab.path)}
-                className="flex flex-col items-center justify-center w-12 h-12 rounded-full"
+                className="flex flex-col items-center justify-center w-11 h-10 rounded-full"
               >
                 <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }}>
                   {tab.customImage ? (
@@ -209,7 +209,7 @@ export default function MobileBottomNav() {
             onTouchStart={startPress}
             onTouchEnd={cancelPress}
             onTouchCancel={cancelPress}
-            className="flex flex-col items-center justify-center w-12 h-12 rounded-full cursor-pointer select-none"
+            className="flex flex-col items-center justify-center w-11 h-10 rounded-full cursor-pointer select-none"
             style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none" }}
           >
             <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }}>
