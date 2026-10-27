@@ -326,7 +326,7 @@ export default function Home() {
                 <div className="mt-8 pb-32">
                   <div className="px-4 md:px-12 mb-6 mt-4">
                     <p className="text-[10px] md:text-xs tracking-[0.4em] text-white/50 font-semibold mb-1">
-                      LATEST UPLOADS
+                      LATEST CONTENT
                     </p>
                     <h2 className="text-2xl md:text-4xl font-black tracking-tight">
                       Don't Miss A <span className="text-red-600">Thing</span>
