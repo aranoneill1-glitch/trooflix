@@ -321,11 +321,17 @@ export default function Home() {
                     </div>
                   </div>
                 )}
+
                 {/* What's going on today (Feed) */}
                 <div className="mt-8 pb-32">
-                  <h2 className="text-2xl md:text-3xl font-bold mb-6 flex items-center gap-2 px-4 md:px-12">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#1ed760] animate-pulse"></span>What's going on today
-                  </h2>
+                  <div className="px-4 md:px-12 mb-6 mt-4">
+                    <p className="text-[10px] md:text-xs tracking-[0.4em] text-white/50 font-semibold mb-1">
+                      LATEST UPLOADS
+                    </p>
+                    <h2 className="text-2xl md:text-4xl font-black tracking-tight">
+                      Don't Miss A <span className="text-red-600">Thing</span>
+                    </h2>
+                  </div>
                   <div className="flex flex-col gap-4 md:gap-8">
                     {[...videos].sort((a: any, b: any) => {
                       const at = a.createdAt ? new Date(a.createdAt).getTime() : a.id;
@@ -343,7 +349,6 @@ export default function Home() {
         </>
       )}
 
-      {/* MODAL AND PLAYER (No overlapping animations to prevent the poster flash) */}
       <AnimatePresence>
         {selected && <DetailModal item={selected} onClose={() => setSelected(null)} onPlay={handleInstantPlay} creators={creators} />}
       </AnimatePresence>
@@ -351,7 +356,6 @@ export default function Home() {
       {playing && (
         <AppleVideoPlayer
           src={playing.videoUrl ?? playing.bitchuteUrl ?? ""}
-          // Removed the poster prop so it goes straight to black/video instead of flashing the card
           title={playing.title}
           textOverlays={playing?.textOverlays}
           chapters={playing.chapters || []}
