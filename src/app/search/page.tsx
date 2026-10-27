@@ -6,27 +6,27 @@ import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 
 const MAIN_CATEGORIES = [
-  { name: "Documentaries", color: "bg-[#E13377]/20", image: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=300&auto=format&fit=crop" },
-  { name: "Podcasts", color: "bg-[#1DB954]/20", image: "https://unsplash.com/photos/Qruwi3Ur3Ak/download?force=true&w=300" },
-  { name: "Independent Films", color: "bg-[#2E77D0]/20", image: "https://unsplash.com/photos/mVv8igQaWoI/download?force=true&w=300" },
-  { name: "Books", color: "bg-[#8400e7]/20", image: "https://unsplash.com/photos/_nm_mZ4Cs2I/download?force=true&w=300" },
+  { name: "Documentaries", color: "bg-[#E13377]/60", image: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=300&auto=format&fit=crop" },
+  { name: "Podcasts", color: "bg-[#1DB954]/60", image: "https://unsplash.com/photos/Qruwi3Ur3Ak/download?force=true&w=300" },
+  { name: "Independent Films", color: "bg-[#2E77D0]/60", image: "https://unsplash.com/photos/mVv8igQaWoI/download?force=true&w=300" },
+  { name: "Books", color: "bg-[#8400e7]/60", image: "https://unsplash.com/photos/_nm_mZ4Cs2I/download?force=true&w=300" },
 ];
 
 const BROWSE_ALL = [
-  { name: "History", color: "bg-[#8b5cf6]/20", image: "https://unsplash.com/photos/JioCsloIYro/download?force=true&w=300" },
-  { name: "Politics & Geopolitics", color: "bg-[#006450]/20", image: "https://unsplash.com/photos/2J5-T03yGQU/download?force=true&w=300" },
-  { name: "War & Conflict", color: "bg-[#E53945]/20", image: "https://unsplash.com/photos/IdtzzG9oxHo/download?force=true&w=300" },
-  { name: "True Crime & Justice", color: "bg-[#1e3264]/20", image: "https://unsplash.com/photos/yYpmCA32U_M/download?force=true&w=300" },
-  { name: "Conspiracy & Mystery", color: "bg-[#7d4b96]/20", image: "https://unsplash.com/photos/BxELNNMN88Y/download?force=true&w=300" },
-  { name: "Society & Culture", color: "bg-[#e86f2c]/20", image: "https://unsplash.com/photos/ehdsg7SHm6A/download?force=true&w=300" },
-  { name: "Business & Finance", color: "bg-[#b28b00]/20", image: "https://unsplash.com/photos/8lnbXtxFGZw/download?force=true&w=300" },
-  { name: "Science & Technology", color: "bg-[#0d73ec]/20", image: "https://unsplash.com/photos/gMpwyM4Lyuw/download?force=true&w=300" },
-  { name: "Environment & Nature", color: "bg-[#00897b]/20", image: "https://unsplash.com/photos/1Z2niiBPg5A/download?force=true&w=300" },
-  { name: "Religion & Spirituality", color: "bg-[#4527A0]/20", image: "https://unsplash.com/photos/UVssyWRCB24/download?force=true&w=300" },
-  { name: "Ancient Civilisation", color: "bg-[#bf360c]/20", image: "https://unsplash.com/photos/4Wue5DQnxSw/download?force=true&w=300" },
-  { name: "Comedy", color: "bg-[#ff9800]/20", image: "https://unsplash.com/photos/jvNoSUrQkgU/download?force=true&w=300" },
-  { name: "News", color: "bg-[#c62828]/20", image: "https://unsplash.com/photos/hWJsOnaWTqs/download?force=true&w=300" },
-  { name: "Gaming", color: "bg-[#673ab7]/20", image: "https://unsplash.com/photos/lTQKvoDQd2A/download?force=true&w=300" },
+  { name: "History", color: "bg-[#8b5cf6]/60", image: "https://unsplash.com/photos/JioCsloIYro/download?force=true&w=300" },
+  { name: "Politics & Geopolitics", color: "bg-[#006450]/60", image: "https://unsplash.com/photos/2J5-T03yGQU/download?force=true&w=300" },
+  { name: "War & Conflict", color: "bg-[#E53945]/60", image: "https://unsplash.com/photos/IdtzzG9oxHo/download?force=true&w=300" },
+  { name: "True Crime & Justice", color: "bg-[#1e3264]/60", image: "https://unsplash.com/photos/yYpmCA32U_M/download?force=true&w=300" },
+  { name: "Conspiracy & Mystery", color: "bg-[#7d4b96]/60", image: "https://unsplash.com/photos/BxELNNMN88Y/download?force=true&w=300" },
+  { name: "Society & Culture", color: "bg-[#e86f2c]/60", image: "https://unsplash.com/photos/ehdsg7SHm6A/download?force=true&w=300" },
+  { name: "Business & Finance", color: "bg-[#b28b00]/60", image: "https://unsplash.com/photos/8lnbXtxFGZw/download?force=true&w=300" },
+  { name: "Science & Technology", color: "bg-[#0d73ec]/60", image: "https://unsplash.com/photos/gMpwyM4Lyuw/download?force=true&w=300" },
+  { name: "Environment & Nature", color: "bg-[#00897b]/60", image: "https://unsplash.com/photos/1Z2niiBPg5A/download?force=true&w=300" },
+  { name: "Religion & Spirituality", color: "bg-[#4527A0]/60", image: "https://unsplash.com/photos/UVssyWRCB24/download?force=true&w=300" },
+  { name: "Ancient Civilisation", color: "bg-[#bf360c]/60", image: "https://unsplash.com/photos/4Wue5DQnxSw/download?force=true&w=300" },
+  { name: "Comedy", color: "bg-[#ff9800]/60", image: "https://unsplash.com/photos/jvNoSUrQkgU/download?force=true&w=300" },
+  { name: "News", color: "bg-[#c62828]/60", image: "https://unsplash.com/photos/hWJsOnaWTqs/download?force=true&w=300" },
+  { name: "Gaming", color: "bg-[#673ab7]/60", image: "https://unsplash.com/photos/lTQKvoDQd2A/download?force=true&w=300" },
 ];
 
 // Mock data to match your screenshot exactly
@@ -65,13 +65,13 @@ export default function SearchPage() {
           {isSearching ? (
             <div className="flex items-center gap-3 mb-6">
               <div className="relative flex-1">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                   <Search className="h-5 w-5 text-white/50" />
                 </div>
                 <input
                   type="text"
                   autoFocus
-                  className="w-full bg-white/10 backdrop-blur-xl text-white placeholder:text-white/50 rounded-xl py-3 pl-10 pr-10 border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/30 shadow-lg"
+                  className="w-full bg-white/10 backdrop-blur-xl text-white placeholder:text-white/50 rounded-full py-3 pl-11 pr-10 border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/30 shadow-lg"
                   placeholder="Search creators, shows, documentaries..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
@@ -79,7 +79,7 @@ export default function SearchPage() {
                 {query && (
                   <button 
                     onClick={() => setQuery("")}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center"
                   >
                     <div className="bg-white/30 rounded-full p-0.5">
                       <X className="h-4 w-4 text-black" />
@@ -99,7 +99,7 @@ export default function SearchPage() {
                 </div>
                 <input
                   type="text"
-                  className="w-full bg-white/10 backdrop-blur-xl text-white font-medium placeholder:text-white/50 rounded-xl py-3.5 pl-11 pr-4 border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/30 cursor-pointer shadow-[0_8px_32px_rgba(0,0,0,0.3)] transition-all"
+                  className="w-full bg-white/10 backdrop-blur-xl text-white font-medium placeholder:text-white/50 rounded-full py-3.5 pl-11 pr-4 border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/30 cursor-pointer shadow-[0_8px_32px_rgba(0,0,0,0.3)] transition-all"
                   placeholder="Search creators, shows, documentaries..."
                   value={query}
                   onClick={() => setIsSearching(true)}
