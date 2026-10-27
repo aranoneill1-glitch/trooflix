@@ -367,8 +367,8 @@ function Hero({ video, onPlay, onMore }: { video: Video; onPlay: () => void; onM
           <span className="text-white/70">{video.year}</span><span className="border border-white/40 px-1.5 py-0.5 text-xs">{video.rating}</span><span className="text-white/70">{video.type}</span>
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="flex gap-3">
-          <button onClick={onPlay} className="flex items-center gap-2 bg-white/20 backdrop-blur-xl border border-white/30 text-white font-bold px-6 md:px-8 py-2.5 md:py-3 rounded-xl shadow-lg hover:bg-white/30 transition-all active:scale-95"><Play size={20} fill="currentColor" /> Play</button>
-          <button onClick={onMore} className="flex items-center gap-2 bg-black/40 backdrop-blur-xl border border-white/20 text-white font-semibold px-5 md:px-7 py-2.5 md:py-3 rounded-xl shadow-lg hover:bg-black/60 transition-all active:scale-95"><Info size={20} /> More Info</button>
+          <button onClick={onPlay} className="flex items-center gap-2 bg-red-600/80 backdrop-blur-xl border border-red-500/50 text-white font-bold px-8 py-3 rounded-full shadow-[0_0_20px_rgba(220,38,38,0.4)] hover:bg-red-600 transition-all active:scale-95"><Play size={20} fill="currentColor" /> Watch Now</button>
+          <button onClick={onMore} className="flex items-center gap-2 bg-white/10 backdrop-blur-xl border border-white/20 text-white font-semibold px-8 py-3 rounded-full shadow-lg hover:bg-white/20 transition-all active:scale-95"><Info size={20} /> More Info</button>
         </motion.div>
       </div>
     </section>
