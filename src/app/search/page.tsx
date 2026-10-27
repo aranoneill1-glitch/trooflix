@@ -174,12 +174,12 @@ export default function SearchPage() {
               <div className="grid grid-cols-2 gap-4">
                 {BROWSE_ALL.map((cat) => (
                   <div key={cat.name} className={`${cat.color} backdrop-blur-xl border border-white/20 rounded-xl p-4 h-24 relative overflow-hidden cursor-pointer group shadow-lg hover:bg-white/10 transition-colors`}>
-                    <h2 className="text-lg font-bold relative z-10 text-white drop-shadow-md leading-tight">{cat.name}</h2>
+                    <h2 className="text-lg font-bold absolute bottom-4 left-4 z-10 text-white drop-shadow-md leading-tight pr-10">{cat.name}</h2>
                     {/* Tilted Image */}
                     <img 
                       src={cat.image} 
                       alt={cat.name} 
-                      className="absolute -right-2 -bottom-2 w-16 h-16 md:w-20 md:h-20 object-cover rotate-[25deg] shadow-2xl rounded-sm group-hover:scale-105 transition-transform duration-500 border border-white/10" 
+                      className="absolute -right-2 -top-2 w-16 h-16 md:w-20 md:h-20 object-cover rotate-[25deg] shadow-2xl rounded-sm group-hover:scale-105 transition-transform duration-500 border border-white/10" 
                     />
                   </div>
                 ))}
