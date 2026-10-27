@@ -147,11 +147,13 @@ export default function SearchPage() {
               ))}
             </div>
 
-            {/* New Explore Collections Header */}
-            <div className="mb-6 mt-2">
-              <p className="text-[11px] font-bold tracking-[0.2em] text-gray-400 uppercase mb-1">EXPLORE OUR COLLECTIONS</p>
-              <h2 className="text-[28px] font-extrabold leading-tight tracking-tight">
-                Discover Something <span className="text-[#E53945]">Real</span>
+            {/* New Explore Collections Header (Exact Match) */}
+            <div className="mb-4 mt-2">
+              <p className="text-[10px] md:text-xs tracking-[0.4em] text-white/50 font-semibold mb-1">
+                EXPLORE OUR COLLECTIONS
+              </p>
+              <h2 className="text-2xl md:text-4xl font-black tracking-tight">
+                Discover Something <span className="text-red-600">Real</span>
               </h2>
             </div>
 
