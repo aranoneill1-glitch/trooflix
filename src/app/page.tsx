@@ -569,9 +569,20 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
   const [isSeeking, setIsSeeking] = useState(false);
   const [error, setError] = useState(false);
   const [showControls, setShowControls] = useState(true);
+  const [timeLeft, setTimeLeft] = useState<string>(video.duration || '0:00');
   const controlsTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const videoSrc = video.videoUrl || video.bitchuteUrl || '';
+
+  const formatTime = (seconds: number) => {
+    if (isNaN(seconds) || seconds < 0) return '0:00';
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+    return hrs > 0 
+      ? `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+      : `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   const handleInteraction = () => {
     setShowControls(true);
@@ -584,7 +595,6 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
     }
   };
 
-  // Handle Intersection Observer to trigger parent state
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -602,7 +612,6 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
     return () => observer.disconnect();
   }, [onSetActive]);
 
-  // Play/Pause based on whether this card is the active one
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
@@ -619,7 +628,6 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
     }
   }, [isActive]);
 
-  // Control visibility timer
   useEffect(() => {
     if (isPlaying) {
       handleInteraction();
@@ -653,6 +661,13 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
     const v = videoRef.current;
     if (!v || isSeeking || !v.duration) return;
     setProgress(v.currentTime / v.duration);
+    setTimeLeft(formatTime(v.duration - v.currentTime));
+  };
+
+  const handleLoadedMetadata = () => {
+    const v = videoRef.current;
+    if (!v || !v.duration) return;
+    setTimeLeft(formatTime(v.duration));
   };
 
   const handlePointerSeek = (e: React.PointerEvent) => {
@@ -707,6 +722,7 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
           muted={isMuted}
           preload="metadata"
           onTimeUpdate={handleTimeUpdate}
+          onLoadedMetadata={handleLoadedMetadata}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
           onError={() => setError(true)}
@@ -719,9 +735,9 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
           </div>
         )}
 
-        {/* Top Left Duration */}
+        {/* Top Left Time Remaining */}
         <div className={`absolute top-4 left-4 bg-black/60 px-2 py-1 rounded text-xs font-bold text-white z-10 pointer-events-none backdrop-blur-sm transition-opacity duration-500 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
-          {video.duration || '1:22:39'}
+          {timeLeft || '0:00'}
         </div>
         
         {/* Right Side Controls */}
@@ -816,5 +832,6 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
     </div>
   );
 }
+
 
 
