@@ -89,15 +89,6 @@ export default function FeedPage() {
       {/* STICKY TOP TABS */}
       <div className="sticky top-[60px] md:top-[72px] z-40 bg-[#0a0a0a]/95 backdrop-blur-xl pt-3 pb-3">
         <div className="max-w-2xl mx-auto px-4 md:px-6 flex items-center gap-2 overflow-x-auto scrollbar-hide">
-          
-          {/* User Avatar Circle */}
-          <Link href="/profile" className="w-9 h-9 rounded-full bg-[#1c1c1e] border border-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden mr-2">
-            {user?.user_metadata?.avatar_url ? (
-              <img src={user.user_metadata.avatar_url} alt="" className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-sm font-bold text-[#E53945]">A</span>
-            )}
-          </Link>
 
           {/* Tabs */}
           {TABS.map((tab) => (
