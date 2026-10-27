@@ -12,12 +12,6 @@ const MAIN_CATEGORIES = [
   { name: "Book Store", color: "bg-[#8400e7]" },
 ];
 
-const DISCOVER_CATEGORIES = [
-  { name: "#croatian pop", image: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80" },
-  { name: "#bosnian pop", image: "https://images.unsplash.com/photo-1493225457124-a1a2a5f5c918?w=500&q=80" },
-  { name: "#proud", image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500&q=80" },
-];
-
 const BROWSE_ALL = [
   { name: "History", color: "bg-[#8b5cf6]" },
   { name: "Politics & Geopolitics", color: "bg-[#006450]" },
@@ -153,16 +147,12 @@ export default function SearchPage() {
               ))}
             </div>
 
-            {/* Discover something new */}
-            <h2 className="text-2xl font-bold mb-4">Discover something new</h2>
-            <div className="flex gap-4 overflow-x-auto scrollbar-hide mb-8 pb-2">
-              {DISCOVER_CATEGORIES.map((cat) => (
-                <div key={cat.name} className="min-w-[160px] h-[200px] relative rounded-lg overflow-hidden cursor-pointer group bg-[#1c1c1e]">
-                  <img src={cat.image} alt={cat.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                  <h3 className="absolute bottom-3 left-3 text-lg font-bold">{cat.name}</h3>
-                </div>
-              ))}
+            {/* New Explore Collections Header */}
+            <div className="mb-6 mt-2">
+              <p className="text-[11px] font-bold tracking-[0.2em] text-gray-400 uppercase mb-1">EXPLORE OUR COLLECTIONS</p>
+              <h2 className="text-[28px] font-extrabold leading-tight tracking-tight">
+                Discover Something <span className="text-[#E53945]">Real</span>
+              </h2>
             </div>
 
             {/* Browse All Grid */}
