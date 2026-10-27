@@ -411,7 +411,7 @@ function Hero({ video, onPlay, onMore }: { video: Video; onPlay: () => void; onM
       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
       <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/20 to-transparent" />
       <div className="relative z-10 flex flex-col justify-center h-full px-4 md:px-12 max-w-2xl pt-20 md:pt-24 pb-0">
-        <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-xs md:text-sm tracking-[0.3em] text-red-500 font-bold mb-3">TROOFLIX PRESENTS</motion.p>
+        <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-xs md:text-sm tracking-[0.3em] font-extrabold mb-3"><span className="text-white">TROOFLIX</span> <span className="text-red-600">PRESENTS</span></motion.p>
         <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-4xl md:text-6xl lg:text-7xl font-black leading-[1.05] mb-4 tracking-tight">{video.title}</motion.h1>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="flex items-center gap-3 text-sm mb-4 flex-wrap">
           <span className="text-white/70">{video.year}</span><span className="border border-white/40 px-1.5 py-0.5 text-xs">{video.rating}</span><span className="text-white/70">{video.type}</span>
