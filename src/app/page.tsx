@@ -18,7 +18,7 @@ import {
   Play, Info, ChevronLeft, ChevronRight, X,
   Search, Bell, HomeIcon, Menu,
   Compass, LogOut, LogIn, Users, ShoppingBag, Sparkles, BookOpen, Flame, List,
-  CheckCircle2, Pause, VolumeX, Volume2, MoreVertical, Plus
+  CheckCircle2, Pause, VolumeX, Volume2, MoreVertical, Plus, Maximize
 } from "lucide-react";
 import AppleVideoPlayer from "@/components/AppleVideoPlayer";
 import PullToRefresh from "@/components/PullToRefresh";
@@ -373,7 +373,7 @@ export default function Home() {
                       return bt - at;
                     }).slice(0, 20).map((v: any) => {
                       const creator = creators.find((c: any) => c.id === v.creatorId);
-                      return <HomeFeedCard key={v.id} video={v} creator={creator} onMore={() => handleCardSelect(v)} isActive={activeVideoId === v.id} onSetActive={() => setActiveVideoId(v.id)} />;
+                      return <HomeFeedCard key={v.id} video={v} creator={creator} onMore={() => handleCardSelect(v)} onPlay={() => handleInstantPlay(v)} isActive={activeVideoId === v.id} onSetActive={() => setActiveVideoId(v.id)} />;
                     })}
                   </div>
                 </div>
@@ -559,7 +559,7 @@ function DetailModal({ item, onClose, onPlay, creators }: { item: Video; onClose
 }
 
 /* ============ HOME FEED CARD ============ */
-function HomeFeedCard({ video, creator, onMore, isActive, onSetActive }: { video: any, creator: any, onMore: () => void, isActive: boolean, onSetActive: () => void }) {
+function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }: { video: any, creator: any, onMore: () => void, onPlay: () => void, isActive: boolean, onSetActive: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   
@@ -727,10 +727,10 @@ function HomeFeedCard({ video, creator, onMore, isActive, onSetActive }: { video
         {/* Right Side Controls */}
         <div className={`absolute top-1/2 -translate-y-1/2 right-4 flex flex-col gap-4 z-20 transition-opacity duration-500 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
           <button 
-            onClick={(e) => { e.stopPropagation(); onMore(); }}
+            onClick={(e) => { e.stopPropagation(); onPlay(); }}
             className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 hover:bg-black/60 transition"
           >
-            <Plus size={20} />
+            <Maximize size={20} />
           </button>
           
           <button 
