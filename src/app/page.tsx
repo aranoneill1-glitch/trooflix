@@ -80,6 +80,7 @@ export default function Home() {
   const { search } = useSearch();
   const [selected, setSelected] = useState<Video | null>(null);
   const [playing, setPlaying] = useState<Video | null>(null);
+  const [activeVideoId, setActiveVideoId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState("Home");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -321,7 +322,7 @@ export default function Home() {
                   </div>
                 )}
                 {/* What's going on today (Feed) */}
-                <div className="mt-8 pb-8">
+                <div className="mt-8 pb-32">
                   <h2 className="text-2xl md:text-3xl font-bold mb-6 flex items-center gap-2 px-4 md:px-12">
                     <span className="w-2.5 h-2.5 rounded-full bg-[#1ed760] animate-pulse"></span>What's going on today
                   </h2>
@@ -332,7 +333,7 @@ export default function Home() {
                       return bt - at;
                     }).slice(0, 20).map((v: any) => {
                       const creator = creators.find((c: any) => c.id === v.creatorId);
-                      return <HomeFeedCard key={v.id} video={v} creator={creator} onMore={() => handleCardSelect(v)} />;
+                      return <HomeFeedCard key={v.id} video={v} creator={creator} onMore={() => handleCardSelect(v)} isActive={activeVideoId === v.id} onSetActive={() => setActiveVideoId(v.id)} />;
                     })}
                   </div>
                 </div>
@@ -520,7 +521,7 @@ function DetailModal({ item, onClose, onPlay, creators }: { item: Video; onClose
 }
 
 /* ============ HOME FEED CARD ============ */
-function HomeFeedCard({ video, creator, onMore }: { video: any, creator: any, onMore: () => void }) {
+function HomeFeedCard({ video, creator, onMore, isActive, onSetActive }: { video: any, creator: any, onMore: () => void, isActive: boolean, onSetActive: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   
@@ -532,22 +533,12 @@ function HomeFeedCard({ video, creator, onMore }: { video: any, creator: any, on
 
   const videoSrc = video.videoUrl || video.bitchuteUrl || '';
 
-  // Auto-play on scroll
+  // Handle Intersection Observer to trigger parent state
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        const v = videoRef.current;
-        if (!v) return;
-        
         if (entry.isIntersecting && entry.intersectionRatio > 0.6) {
-          v.play().then(() => setIsPlaying(true)).catch(() => {
-            v.muted = true;
-            setIsMuted(true);
-            v.play().then(() => setIsPlaying(true)).catch(() => {});
-          });
-        } else {
-          v.pause();
-          setIsPlaying(false);
+          onSetActive();
         }
       },
       { threshold: [0.6] }
@@ -558,7 +549,24 @@ function HomeFeedCard({ video, creator, onMore }: { video: any, creator: any, on
     }
     
     return () => observer.disconnect();
-  }, []);
+  }, [onSetActive]);
+
+  // Play/Pause based on whether this card is the active one
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+
+    if (isActive) {
+      v.play().then(() => setIsPlaying(true)).catch(() => {
+        v.muted = true;
+        setIsMuted(true);
+        v.play().then(() => setIsPlaying(true)).catch(() => {});
+      });
+    } else {
+      v.pause();
+      setIsPlaying(false);
+    }
+  }, [isActive]);
 
   const togglePlay = async () => {
     const v = videoRef.current;
@@ -614,7 +622,7 @@ function HomeFeedCard({ video, creator, onMore }: { video: any, creator: any, on
   if (!videoSrc) return null;
 
   return (
-    <div ref={containerRef} className="w-full relative flex flex-col group/feed mb-6 md:mb-0">
+    <div ref={containerRef} className="w-full relative flex flex-col group/feed pb-10 mb-4 border-b border-white/10">
       
       {/* VIDEO CONTAINER - Wall to Wall */}
       <div className="relative w-full aspect-video bg-black overflow-hidden cursor-pointer" onClick={togglePlay}>
@@ -670,7 +678,7 @@ function HomeFeedCard({ video, creator, onMore }: { video: any, creator: any, on
       </div>
 
       {/* PROGRESS BAR (Draggable) with Green Dot */}
-      <div className="flex items-center gap-2 mt-1 px-2">
+      <div className="flex items-center gap-2 mt-2 px-4 md:px-12">
         <div className="w-2.5 h-2.5 rounded-full bg-[#1ed760] flex-shrink-0" />
         <div 
           className="relative flex-1 h-1.5 bg-[#1c1c1e] cursor-pointer group z-30"
@@ -699,11 +707,11 @@ function HomeFeedCard({ video, creator, onMore }: { video: any, creator: any, on
       </div>
 
       {/* INFO SECTION */}
-      <div className="px-4 py-3">
-        <div className="flex gap-3">
+      <div className="px-4 md:px-12 pt-4">
+        <div className="flex gap-4">
           
           {/* SQUARE AVATAR */}
-          <div className="w-11 h-11 rounded-md overflow-hidden bg-[#1c1c1e] flex-shrink-0 block">
+          <div className="w-12 h-12 rounded-lg overflow-hidden bg-[#1c1c1e] flex-shrink-0 block shadow-sm">
             {creator?.photoUrl ? (
               <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" />
             ) : (
@@ -715,11 +723,11 @@ function HomeFeedCard({ video, creator, onMore }: { video: any, creator: any, on
 
           {/* TITLE & CREATOR */}
           <div className="flex-1 min-w-0">
-            <h2 className="text-base font-bold text-white leading-tight mb-1 line-clamp-2">
+            <h2 className="text-lg font-bold text-white leading-tight mb-1 line-clamp-2">
               {video.title}
             </h2>
             <div className="flex items-center gap-1.5 text-sm text-white/60">
-              <span className="truncate hover:text-white transition">
+              <span className="truncate hover:text-white transition font-medium">
                 {creator?.name || 'Creator'}
               </span>
               {creator?.isVerified && <CheckCircle2 size={14} className="text-[#1ed760]" fill="currentColor" />}
@@ -737,3 +745,4 @@ function HomeFeedCard({ video, creator, onMore }: { video: any, creator: any, on
     </div>
   );
 }
+
