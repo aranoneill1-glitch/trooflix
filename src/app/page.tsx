@@ -327,6 +327,43 @@ export default function Home() {
                   </div>
                 )}
 
+                {/* Video Cards Row */}
+                <div className="mt-8 mb-4">
+                  <div className="px-4 md:px-12 mb-4">
+                    <p className="text-[10px] md:text-xs tracking-[0.4em] text-white/50 font-semibold mb-1">
+                      EXPLORE MORE
+                    </p>
+                    <h2 className="text-2xl md:text-4xl font-black tracking-tight">
+                      More To <span className="text-red-600">Watch</span>
+                    </h2>
+                  </div>
+                  <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide px-4 md:px-12 pb-4">
+                    {videos.slice(1, 11).map((v: any) => {
+                      const creator = creators.find((c: any) => c.id === v.creatorId);
+                      return (
+                        <div key={v.id} onClick={() => handleCardSelect(v)} className="flex-shrink-0 w-[220px] md:w-[280px] cursor-pointer group">
+                          <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-[#1c1c1e] mb-2 border border-white/5 shadow-lg">
+                            <img src={v.posterUrl || v.backdropUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                            <div className="absolute inset-0 bg-black/20" />
+                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center border border-white/20">
+                                <Play size={16} className="ml-1 text-white" fill="white" />
+                              </div>
+                            </div>
+                            {v.duration && (
+                              <div className="absolute bottom-2 right-2 bg-black/80 px-1.5 py-0.5 rounded text-[10px] font-bold text-white backdrop-blur-sm">
+                                {v.duration}
+                              </div>
+                            )}
+                          </div>
+                          <h3 className="text-sm font-bold text-white leading-tight line-clamp-2 group-hover:text-red-500 transition-colors mb-1">{v.title}</h3>
+                          <p className="text-xs text-white/50 truncate">{creator?.name || 'Creator'}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 {/* What's going on today (Feed) */}
                 <div className="mt-8 pb-32">
                   <div className="px-4 md:px-12 mb-6 mt-4">
