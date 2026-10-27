@@ -15,7 +15,7 @@ const MAIN_CATEGORIES = [
 const BROWSE_ALL = [
   { name: "History", color: "bg-[#8b5cf6]/60", image: "https://unsplash.com/photos/JioCsloIYro/download?force=true&w=300" },
   { name: "Politics & Geopolitics", color: "bg-[#006450]/60", image: "https://unsplash.com/photos/2J5-T03yGQU/download?force=true&w=300" },
-  { name: "War & Conflict", color: "bg-[#E53945]/60", image: "https://unsplash.com/photos/IdtzzG9oxHo/download?force=true&w=300" },
+  { name: "War & Conflict", color: "bg-[#E53945]/60", image: "https://images.unsplash.com/photo-5Mj4PO7KIFc?q=80&w=300&auto=format&fit=crop" },
   { name: "True Crime & Justice", color: "bg-[#1e3264]/60", image: "https://unsplash.com/photos/yYpmCA32U_M/download?force=true&w=300" },
   { name: "Conspiracy & Mystery", color: "bg-[#7d4b96]/60", image: "https://unsplash.com/photos/BxELNNMN88Y/download?force=true&w=300" },
   { name: "Society & Culture", color: "bg-[#e86f2c]/60", image: "https://unsplash.com/photos/ehdsg7SHm6A/download?force=true&w=300" },
@@ -26,7 +26,7 @@ const BROWSE_ALL = [
   { name: "Ancient Civilisation", color: "bg-[#bf360c]/60", image: "https://unsplash.com/photos/4Wue5DQnxSw/download?force=true&w=300" },
   { name: "Comedy", color: "bg-[#ff9800]/60", image: "https://unsplash.com/photos/jvNoSUrQkgU/download?force=true&w=300" },
   { name: "News", color: "bg-[#c62828]/60", image: "https://unsplash.com/photos/hWJsOnaWTqs/download?force=true&w=300" },
-  { name: "Gaming", color: "bg-[#673ab7]/60", image: "https://unsplash.com/photos/lTQKvoDQd2A/download?force=true&w=300" },
+  { name: "Gaming", color: "bg-[#673ab7]/60", image: "https://images.unsplash.com/photo-Mf23RF8xArY?q=80&w=300&auto=format&fit=crop" },
 ];
 
 // Mock data to match your screenshot exactly
@@ -174,12 +174,12 @@ export default function SearchPage() {
               <div className="grid grid-cols-2 gap-4">
                 {BROWSE_ALL.map((cat) => (
                   <div key={cat.name} className={`${cat.color} backdrop-blur-xl border border-white/20 rounded-xl p-4 h-24 relative overflow-hidden cursor-pointer group shadow-lg hover:bg-white/10 transition-colors`}>
-                    <h2 className="text-lg font-bold absolute bottom-4 left-4 z-10 text-white drop-shadow-md leading-tight pr-10">{cat.name}</h2>
+                    <h2 className="text-lg font-bold relative z-10 text-white drop-shadow-md leading-tight">{cat.name}</h2>
                     {/* Tilted Image */}
                     <img 
                       src={cat.image} 
                       alt={cat.name} 
-                      className="absolute -right-2 -top-2 w-16 h-16 md:w-20 md:h-20 object-cover rotate-[25deg] shadow-2xl rounded-sm group-hover:scale-105 transition-transform duration-500 border border-white/10" 
+                      className="absolute -right-2 -bottom-2 w-16 h-16 md:w-20 md:h-20 object-cover rotate-[25deg] shadow-2xl rounded-sm group-hover:scale-105 transition-transform duration-500 border border-white/10" 
                     />
                   </div>
                 ))}
