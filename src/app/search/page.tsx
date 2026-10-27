@@ -1,21 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Camera, X, MoreHorizontal, Plus, CheckCircle2 } from "lucide-react";
+import { Search, X, MoreHorizontal, Plus, CheckCircle2 } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 
 const MAIN_CATEGORIES = [
-  { name: "Music", color: "bg-[#E13377]" },
+  { name: "Documentaries", color: "bg-[#E13377]" },
   { name: "Podcasts", color: "bg-[#006450]" },
-  { name: "Audiobooks", color: "bg-[#1e3264]" },
-  { name: "Live Events", color: "bg-[#8400e7]" },
+  { name: "Films", color: "bg-[#1e3264]" },
+  { name: "Book Store", color: "bg-[#8400e7]" },
 ];
 
 const DISCOVER_CATEGORIES = [
-  { name: "#croatian pop", image: "https://images.unsplash.com/photo-1516280440502-861d6c619b6e?w=500&q=80" },
+  { name: "#croatian pop", image: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&q=80" },
   { name: "#bosnian pop", image: "https://images.unsplash.com/photo-1493225457124-a1a2a5f5c918?w=500&q=80" },
-  { name: "#proud", image: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&q=80" },
+  { name: "#proud", image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500&q=80" },
 ];
 
 const BROWSE_ALL = [
@@ -57,7 +57,7 @@ export default function SearchPage() {
     <main className="min-h-screen bg-[#0a0a0a] text-white pb-24 font-sans">
       {!isSearching && <TopBar />}
 
-      <div className={`max-w-2xl mx-auto px-4 ${isSearching ? "pt-6" : "pt-4"}`}>
+      <div className={`max-w-2xl mx-auto px-4 ${isSearching ? "pt-6" : "pt-20"}`}>
         
         {/* Header Area */}
         {isSearching ? (
@@ -70,7 +70,7 @@ export default function SearchPage() {
                 type="text"
                 autoFocus
                 className="w-full bg-[#242424] text-white placeholder:text-gray-400 rounded-md py-2.5 pl-10 pr-10 focus:outline-none"
-                placeholder="What do you want to listen to?"
+                placeholder="What are you looking for?"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
               />
@@ -91,23 +91,19 @@ export default function SearchPage() {
           </div>
         ) : (
           <>
-            <h1 className="text-3xl font-bold mb-4">Search</h1>
             <div className="relative mb-6">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Search className="h-5 w-5 text-black" />
               </div>
               <input
                 type="text"
-                className="w-full bg-white text-black font-medium placeholder:text-gray-500 rounded-lg py-3 pl-10 pr-12 focus:outline-none focus:ring-2 focus:ring-white/50 cursor-pointer"
-                placeholder="What do you want to listen to?"
+                className="w-full bg-white text-black font-medium placeholder:text-gray-500 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-white/50 cursor-pointer"
+                placeholder="What are you looking for?"
                 value={query}
                 onClick={() => setIsSearching(true)}
                 onChange={(e) => setQuery(e.target.value)}
                 readOnly={!isSearching}
               />
-              <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                <Camera className="h-6 w-6 text-black cursor-pointer hover:text-gray-600" />
-              </div>
             </div>
           </>
         )}
@@ -161,7 +157,7 @@ export default function SearchPage() {
             <h2 className="text-2xl font-bold mb-4">Discover something new</h2>
             <div className="flex gap-4 overflow-x-auto scrollbar-hide mb-8 pb-2">
               {DISCOVER_CATEGORIES.map((cat) => (
-                <div key={cat.name} className="min-w-[160px] h-[200px] relative rounded-lg overflow-hidden cursor-pointer group">
+                <div key={cat.name} className="min-w-[160px] h-[200px] relative rounded-lg overflow-hidden cursor-pointer group bg-[#1c1c1e]">
                   <img src={cat.image} alt={cat.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                   <h3 className="absolute bottom-3 left-3 text-lg font-bold">{cat.name}</h3>
