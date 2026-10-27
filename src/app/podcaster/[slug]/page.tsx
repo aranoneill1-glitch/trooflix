@@ -228,7 +228,7 @@ export default function CreatorProfilePage() {
       <div className="max-w-3xl mx-auto px-4 md:px-8 relative z-30 -mt-16 md:-mt-24">
         
         {/* Avatar */}
-        <div className="relative w-28 h-28 md:w-36 md:h-36 rounded-full overflow-hidden border-4 border-[#080808] bg-[#202020] flex items-center justify-center shadow-2xl group mb-4">
+        <div className="relative w-28 h-28 md:w-36 md:h-36 rounded-3xl overflow-hidden border-4 border-[#080808] bg-[#202020] flex items-center justify-center shadow-2xl group mb-4">
           {creator?.photoUrl ? <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" /> : <span className="text-4xl md:text-5xl font-black">{creator?.name?.[0]?.toUpperCase()}</span>}
           {isOwner && (
             <button onClick={() => fileInputRef.current?.click()} className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">

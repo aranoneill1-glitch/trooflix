@@ -309,8 +309,8 @@ export default function Home() {
                     <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide px-4 md:px-12 pb-4">
                       {[...creators].sort((a: any, b: any) => Number(b.id) - Number(a.id)).slice(0, 15).map((c: any) => (
                         <Link key={c.id} href={`/podcaster/${c.slug}`} className="flex flex-col items-center gap-2 flex-shrink-0 group w-[80px] md:w-[100px]">
-                          <div className="w-16 h-16 md:w-20 md:h-20 rounded-full p-[2px] bg-gradient-to-tr from-red-600 to-orange-500 group-hover:scale-105 transition-transform">
-                            <div className="w-full h-full rounded-full border-2 border-black overflow-hidden bg-[#1c1c1e]">
+                          <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl p-[2px] bg-gradient-to-tr from-red-600 to-orange-500 group-hover:scale-105 transition-transform">
+                            <div className="w-full h-full rounded-2xl border-2 border-black overflow-hidden bg-[#1c1c1e]">
                               {c.photoUrl ? <img src={c.photoUrl} alt={c.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xl font-bold text-white">{c.name?.[0]?.toUpperCase() || "?"}</div>}
                             </div>
                           </div>
@@ -495,7 +495,7 @@ function DetailModal({ item, onClose, onPlay, creators }: { item: Video; onClose
         <div className="p-5 md:p-10 space-y-5">
           {item.description && <p className="text-white/90 leading-relaxed text-sm md:text-base">{item.description}</p>}
           <div className="flex items-center gap-3 pt-2 border-t border-white/10">
-            {uploaderPhoto ? <img src={uploaderPhoto} alt={uploaderName} className="w-10 h-10 md:w-11 md:h-11 rounded-full object-cover border border-white/20" /> : <div className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center font-bold text-white">{uploaderInitial}</div>}
+            {uploaderPhoto ? <img src={uploaderPhoto} alt={uploaderName} className="w-10 h-10 md:w-11 md:h-11 rounded-xl object-cover border border-white/20" /> : <div className="w-10 h-10 md:w-11 md:h-11 rounded-xl bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center font-bold text-white">{uploaderInitial}</div>}
             <div className="min-w-0 flex-1">
               <p className="text-[11px] uppercase tracking-widest text-white/40">Uploaded by</p>
               {uploaderSlug ? <a href={`/podcaster/${uploaderSlug}`} className="font-semibold text-white hover:underline block truncate">{uploaderName}</a> : <p className="font-semibold text-white truncate">{uploaderName}</p>}

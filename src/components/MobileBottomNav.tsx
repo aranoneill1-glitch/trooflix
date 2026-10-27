@@ -219,7 +219,7 @@ export default function MobileBottomNav() {
                   alt=""
                   draggable={false}
                   style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", pointerEvents: "none" }}
-                  className={`w-7 h-7 rounded-full object-cover ${
+                  className={`w-7 h-7 rounded-xl object-cover ${
                     profileActive ? "ring-2 ring-white" : "ring-1 ring-white/30"
                   }`}
                 />
@@ -229,7 +229,7 @@ export default function MobileBottomNav() {
                 </div>
               ) : (
                 <div
-                  className={`w-7 h-7 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-[10px] font-bold ${
+                  className={`w-7 h-7 rounded-xl bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-[10px] font-bold ${
                     profileActive ? "ring-2 ring-white" : ""
                   }`}
                 >
