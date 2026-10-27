@@ -133,9 +133,9 @@ export default function PlusPage() {
               ))}
             </ul>
 
-            <button className="w-full bg-white hover:bg-gray-200 text-black font-bold py-3.5 rounded-xl transition shadow-lg">
+            <Link href="/why-us" className="w-full flex items-center justify-center bg-white hover:bg-gray-200 text-black font-bold py-3.5 rounded-xl transition shadow-lg">
               Become a Creator
-            </button>
+            </Link>
           </div>
 
         </div>
