@@ -17,7 +17,8 @@ import { useRouter } from "next/navigation";
 import {
   Play, Info, ChevronLeft, ChevronRight, X,
   Search, Bell, HomeIcon, Menu,
-  Compass, LogOut, LogIn, Users, ShoppingBag, Sparkles, BookOpen, Flame, List
+  Compass, LogOut, LogIn, Users, ShoppingBag, Sparkles, BookOpen, Flame, List,
+  CheckCircle2
 } from "lucide-react";
 import AppleVideoPlayer from "@/components/AppleVideoPlayer";
 import PullToRefresh from "@/components/PullToRefresh";
@@ -307,9 +308,9 @@ export default function Home() {
                     </div>
                     <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide px-4 md:px-12 pb-4">
                       {[...creators].slice(0, 15).map((c: any) => (
-                        <Link key={c.id} href={`/podcaster/${c.slug}`} className="flex flex-col items-center gap-2 flex-shrink-0 group w-[80px] md:w-[100px]">
-                          <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl p-[2px] bg-gradient-to-tr from-red-600 to-orange-500 group-hover:scale-105 transition-transform">
-                            <div className="w-full h-full rounded-2xl border-2 border-black overflow-hidden bg-[#1c1c1e]">
+                        <Link key={c.id} href={`/podcaster/${c.slug}`} className="flex flex-col items-center gap-2 flex-shrink-0 group w-[96px] md:w-[112px]">
+                          <div className="w-20 h-20 md:w-24 md:h-24 rounded-full p-[2px] bg-gradient-to-tr from-red-600 to-orange-500 group-hover:scale-105 transition-transform">
+                            <div className="w-full h-full rounded-full border-2 border-black overflow-hidden bg-[#1c1c1e]">
                               {c.photoUrl ? <img src={c.photoUrl} alt={c.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xl font-bold text-white">{c.name?.[0]?.toUpperCase() || "?"}</div>}
                             </div>
                           </div>
@@ -319,33 +320,54 @@ export default function Home() {
                     </div>
                   </div>
                 )}
-                {continueWatching.length > 0 && <Row title="Continue Watching" items={continueWatching} onSelect={handleCardSelect} onPlay={handleInstantPlay} showCreator={true} creators={creators} />}
-                {newReleases.length > 0 && <Row title="New Releases" items={newReleases} onSelect={handleCardSelect} onPlay={handleInstantPlay} showCreator={true} creators={creators} />}
-                {creators && creators.length > 0 && (
-                  <div className="mt-6">
-                    <div className="flex items-center justify-between px-4 md:px-12 mb-4">
-                      <h2 className="text-lg md:text-xl font-bold flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>Just Joined</h2>
-                      <Link href="/podcasts" className="text-xs font-semibold text-white/50 hover:text-white transition">View all</Link>
-                    </div>
-                    <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide px-4 md:px-12 pb-4">
-                      {[...creators].sort((a: any, b: any) => Number(b.id) - Number(a.id)).slice(0, 15).map((c: any) => (
-                        <Link key={c.id} href={`/podcaster/${c.slug}`} className="flex flex-col items-center gap-2 flex-shrink-0 group w-[80px] md:w-[100px]">
-                          <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl p-[2px] bg-gradient-to-tr from-red-600 to-orange-500 group-hover:scale-105 transition-transform">
-                            <div className="w-full h-full rounded-2xl border-2 border-black overflow-hidden bg-[#1c1c1e]">
-                              {c.photoUrl ? <img src={c.photoUrl} alt={c.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xl font-bold text-white">{c.name?.[0]?.toUpperCase() || "?"}</div>}
-                            </div>
+                {/* What's going on today (Feed) */}
+                <div className="mt-8 px-4 md:px-12 pb-8">
+                  <h2 className="text-2xl md:text-3xl font-bold mb-6 flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse"></span>What's going on today
+                  </h2>
+                  <div className="flex flex-col gap-4 md:gap-6">
+                    {[...videos].sort((a: any, b: any) => {
+                      const at = a.createdAt ? new Date(a.createdAt).getTime() : a.id;
+                      const bt = b.createdAt ? new Date(b.createdAt).getTime() : b.id;
+                      return bt - at;
+                    }).slice(0, 20).map((v: any) => {
+                      const creator = creators.find((c: any) => c.id === v.creatorId);
+                      return (
+                        <div key={v.id} onClick={() => handleCardSelect(v)} className="bg-[#1c1c1e] hover:bg-[#242426] transition-colors border border-white/5 rounded-2xl p-3 md:p-4 flex flex-col md:flex-row gap-4 cursor-pointer group shadow-lg">
+                          
+                          {/* Thumbnail */}
+                          <div className="relative w-full md:w-64 aspect-video md:aspect-auto md:h-36 rounded-xl overflow-hidden shrink-0 bg-black">
+                            <img src={v.posterUrl || v.backdropUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                            <div className="absolute inset-0 bg-black/20" />
+                            <button onClick={(e) => { e.stopPropagation(); handleInstantPlay(v); }} className="absolute bottom-3 right-3 w-10 h-10 bg-white/20 backdrop-blur-md border border-white/30 text-white rounded-full flex items-center justify-center hover:scale-110 transition shadow-lg opacity-0 group-hover:opacity-100 md:opacity-100">
+                              <Play size={18} fill="currentColor" className="ml-0.5" />
+                            </button>
+                            {v.duration && (
+                              <div className="absolute bottom-3 left-3 bg-black/80 px-2 py-0.5 rounded text-[10px] font-bold text-white backdrop-blur-sm">
+                                {v.duration}
+                              </div>
+                            )}
                           </div>
-                          <span className="text-xs font-semibold text-white/80 group-hover:text-white transition truncate w-full text-center">{c.name || "New Creator"}</span>
-                        </Link>
-                      ))}
-                    </div>
+
+                          {/* Info */}
+                          <div className="flex flex-col justify-center flex-1 min-w-0 py-1">
+                            <h3 className="text-lg font-bold text-white mb-2 leading-tight group-hover:text-red-500 transition-colors line-clamp-2">{v.title}</h3>
+                            
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="w-6 h-6 rounded-full overflow-hidden bg-white/10 shrink-0">
+                                {creator?.photoUrl ? <img src={creator.photoUrl} alt={creator.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-white/70">{creator?.name?.[0] || '?'}</div>}
+                              </div>
+                              <span className="text-sm font-semibold text-white/70 hover:text-white transition truncate">{creator?.name || 'Creator'}</span>
+                              {creator?.isVerified && <CheckCircle2 size={14} className="text-[#1ed760] shrink-0" fill="currentColor" />}
+                            </div>
+
+                            <p className="text-sm text-white/50 line-clamp-2 hidden md:block">{v.description || "Watch this incredible new upload from our creators."}</p>
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
-                )}
-                {trending.length > 0 && <Row title="Trending Now" items={trending} onSelect={handleCardSelect} onPlay={handleInstantPlay} showCreator={true} creators={creators} />}
-                {latestDocs.length > 0 && <Row title="Latest Documentaries" items={latestDocs} onSelect={handleCardSelect} onPlay={handleInstantPlay} showCreator={true} creators={creators} />}
-                {latestPodcasts.length > 0 && <Row title="Latest Podcasts" items={latestPodcasts} onSelect={handleCardSelect} onPlay={handleInstantPlay} showCreator={true} creators={creators} />}
-                {merchandise.length > 0 && <MerchRow title="Latest Merchandise" items={merchandise} />}
-                {books.length > 0 && <Row title="Latest Books" items={books} onSelect={handleCardSelect} onPlay={handleInstantPlay} />}
+                </div>
               </>
             )}
           </div>
