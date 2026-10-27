@@ -80,9 +80,12 @@ export default function RootLayout({
                 }, { passive: false });
                 // Register PWA service worker
                 if ('serviceWorker' in navigator) {
-                  window.addEventListener('load', function () {
-                    navigator.serviceWorker.register('/sw.js').catch(function () {});
+                  window.addEventListener('load', function() {
+                    navigator.serviceWorker.register('/sw.js').catch(function (err) {
+                      console.warn('SW registration failed: ', err);
+                    });
                   });
+                });
                 }
               })();
             `,
