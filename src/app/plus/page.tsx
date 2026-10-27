@@ -69,8 +69,12 @@ export default function PlusPage() {
             Ad-free. No mainstream pollution. Just raw content.
           </h3>
           <p className="text-lg md:text-xl text-white/50 max-w-2xl mx-auto font-medium leading-relaxed">
-            Sick of the same recycled Hollywood scripts, the endless commercials, and the corporate agenda being shoved down your throat? Trooflix is your escape. Get unlimited, completely ad-free access to hard-hitting documentaries, independent films, and unfiltered podcasts that actually challenge the narrative. No ulterior motive. Just the raw truth from creators who aren't afraid to speak.
+            Sick of the same recycled Hollywood scripts, the endless commercials, and the corporate agenda being shoved down your throat? Get unlimited, completely ad-free access to hard-hitting documentaries, independent films, and unfiltered podcasts that actually challenge the narrative. No ulterior motive. Just the raw truth from creators who aren't afraid to speak.
           </p>
+
+          <Link href="/signup" className="mt-10 inline-block bg-white text-black font-bold px-10 py-4 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.4)] text-lg">
+            Sign Up
+          </Link>
         </motion.div>
 
       </div>
