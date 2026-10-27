@@ -63,7 +63,7 @@ export default function CreatorsPage() {
             <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
           </Link>
           <Link href="/upgrade" className="w-full sm:w-auto bg-white/5 hover:bg-white/10 text-white font-semibold px-8 py-4 rounded-full border border-white/10 backdrop-blur-md transition-all duration-300 text-lg">
-            View Pricing
+            Why Trooflix
           </Link>
         </motion.div>
       </div>
