@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { Play, Pause, MoreVertical, VolumeX, Volume2, Maximize } from "lucide-react";
+import { Play, MoreVertical, VolumeX, Volume2, Maximize } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { getCachedCreators } from "@/lib/cache";
@@ -113,16 +113,22 @@ function FeedVideoCard({ video, creator, onFullScreen }: { video: Video, creator
   const [isMuted, setIsMuted] = useState(true);
   const [progress, setProgress] = useState(0);
   const [isSeeking, setIsSeeking] = useState(false);
+  const [error, setError] = useState(false);
 
-  // Format the URL to force the browser to load the first frame
-  const videoSrc = `${video.videoUrl ?? video.bitchuteUrl ?? ""}#t=0.1`;
+  const videoSrc = video.videoUrl || video.bitchuteUrl || "";
 
-  const togglePlay = () => {
+  const togglePlay = async () => {
     const v = videoRef.current;
-    if (!v) return;
+    if (!v || !videoSrc) return;
+    
     if (v.paused) {
-      v.play().catch(() => {});
-      setIsPlaying(true);
+      try {
+        await v.play();
+        setIsPlaying(true);
+      } catch (err) {
+        console.error("Playback failed:", err);
+        setIsPlaying(false);
+      }
     } else {
       v.pause();
       setIsPlaying(false);
@@ -163,24 +169,32 @@ function FeedVideoCard({ video, creator, onFullScreen }: { video: Video, creator
     (e.target as HTMLElement).releasePointerCapture(e.pointerId);
   };
 
+  if (!videoSrc) return null;
+
   return (
     <div className="w-full mb-10">
       
       {/* VIDEO CONTAINER */}
       <div className="relative w-full aspect-video bg-black group overflow-hidden cursor-pointer" onClick={togglePlay}>
         
-        {/* The actual video element, no poster, ready to play from the first frame */}
         <video
           ref={videoRef}
           src={videoSrc}
           className="w-full h-full object-cover"
           playsInline
           muted={isMuted}
-          preload="metadata"
+          preload="auto"
           onTimeUpdate={handleTimeUpdate}
           onPlay={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
+          onError={() => setError(true)}
         />
+
+        {error && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/80">
+            <p className="text-white/50 text-sm">Video unavailable</p>
+          </div>
+        )}
 
         {/* Top Overlays */}
         <div className="absolute top-4 left-4 bg-black/80 px-2 py-1 rounded text-xs font-bold text-white z-10 pointer-events-none">
@@ -195,7 +209,6 @@ function FeedVideoCard({ video, creator, onFullScreen }: { video: Video, creator
             {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
           </button>
           
-          {/* Full Screen Button */}
           <button 
             onClick={(e) => { e.stopPropagation(); onFullScreen(); }} 
             className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white border border-white/20 hover:bg-black/80 transition"
@@ -205,7 +218,7 @@ function FeedVideoCard({ video, creator, onFullScreen }: { video: Video, creator
         </div>
 
         {/* Center Play Icon (Only shows when paused) */}
-        {!isPlaying && (
+        {!isPlaying && !error && (
           <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
             <div className="w-16 h-16 rounded-full bg-white/90 text-black flex items-center justify-center shadow-2xl backdrop-blur-sm">
               <Play size={28} fill="black" className="ml-1" />
