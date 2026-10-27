@@ -19,16 +19,16 @@ const DISCOVER_CATEGORIES = [
 ];
 
 const BROWSE_ALL = [
-  { name: "Made For You", color: "bg-[#8b5cf6]" },
-  { name: "Upcoming releases", color: "bg-[#006450]" },
-  { name: "New Releases", color: "bg-[#e13377]" },
-  { name: "Pop", color: "bg-[#1e3264]" },
-  { name: "Hip-Hop", color: "bg-[#477d95]" },
-  { name: "Rock", color: "bg-[#006450]" },
-  { name: "Latin", color: "bg-[#1e3264]" },
-  { name: "Charts", color: "bg-[#8b5cf6]" },
-  { name: "Educational", color: "bg-[#477d95]" },
-  { name: "Documentary", color: "bg-[#2a2a2a]" },
+  { name: "History", color: "bg-[#8b5cf6]" },
+  { name: "Politics & Geopolitics", color: "bg-[#006450]" },
+  { name: "War & Conflict", color: "bg-[#e13377]" },
+  { name: "Economics", color: "bg-[#1e3264]" },
+  { name: "Science & Tech", color: "bg-[#477d95]" },
+  { name: "Society & Culture", color: "bg-[#006450]" },
+  { name: "Health & Wellness", color: "bg-[#8b5cf6]" },
+  { name: "Environment", color: "bg-[#1e3264]" },
+  { name: "True Crime", color: "bg-[#2a2a2a]" },
+  { name: "Current Events", color: "bg-[#477d95]" },
 ];
 
 // Mock data to match your screenshot exactly
