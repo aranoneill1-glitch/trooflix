@@ -9,6 +9,10 @@ import CacheWarmer from "@/components/CacheWarmer";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
+  icons: {
+    icon: "/icon.jpg",
+    apple: "/icon.jpg",
+  },
   title: "Trooflix",
   description: "Documentaries, films, and podcasts. Uncensored.",
   manifest: "/manifest.json",
