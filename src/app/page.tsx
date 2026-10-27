@@ -18,7 +18,7 @@ import {
   Play, Info, ChevronLeft, ChevronRight, X,
   Search, Bell, HomeIcon, Menu,
   Compass, LogOut, LogIn, Users, ShoppingBag, Sparkles, BookOpen, Flame, List,
-  CheckCircle2
+  CheckCircle2, Pause, VolumeX, Volume2, MoreVertical, Plus
 } from "lucide-react";
 import AppleVideoPlayer from "@/components/AppleVideoPlayer";
 import PullToRefresh from "@/components/PullToRefresh";
@@ -321,50 +321,18 @@ export default function Home() {
                   </div>
                 )}
                 {/* What's going on today (Feed) */}
-                <div className="mt-8 px-4 md:px-12 pb-8">
-                  <h2 className="text-2xl md:text-3xl font-bold mb-6 flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse"></span>What's going on today
+                <div className="mt-8 pb-8">
+                  <h2 className="text-2xl md:text-3xl font-bold mb-6 flex items-center gap-2 px-4 md:px-12">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#1ed760] animate-pulse"></span>What's going on today
                   </h2>
-                  <div className="flex flex-col gap-4 md:gap-6">
+                  <div className="flex flex-col gap-4 md:gap-8">
                     {[...videos].sort((a: any, b: any) => {
                       const at = a.createdAt ? new Date(a.createdAt).getTime() : a.id;
                       const bt = b.createdAt ? new Date(b.createdAt).getTime() : b.id;
                       return bt - at;
                     }).slice(0, 20).map((v: any) => {
                       const creator = creators.find((c: any) => c.id === v.creatorId);
-                      return (
-                        <div key={v.id} onClick={() => handleCardSelect(v)} className="bg-[#1c1c1e] hover:bg-[#242426] transition-colors border border-white/5 rounded-2xl p-3 md:p-4 flex flex-col md:flex-row gap-4 cursor-pointer group shadow-lg">
-                          
-                          {/* Thumbnail */}
-                          <div className="relative w-full md:w-64 aspect-video md:aspect-auto md:h-36 rounded-xl overflow-hidden shrink-0 bg-black">
-                            <img src={v.posterUrl || v.backdropUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                            <div className="absolute inset-0 bg-black/20" />
-                            <button onClick={(e) => { e.stopPropagation(); handleInstantPlay(v); }} className="absolute bottom-3 right-3 w-10 h-10 bg-white/20 backdrop-blur-md border border-white/30 text-white rounded-full flex items-center justify-center hover:scale-110 transition shadow-lg opacity-0 group-hover:opacity-100 md:opacity-100">
-                              <Play size={18} fill="currentColor" className="ml-0.5" />
-                            </button>
-                            {v.duration && (
-                              <div className="absolute bottom-3 left-3 bg-black/80 px-2 py-0.5 rounded text-[10px] font-bold text-white backdrop-blur-sm">
-                                {v.duration}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Info */}
-                          <div className="flex flex-col justify-center flex-1 min-w-0 py-1">
-                            <h3 className="text-lg font-bold text-white mb-2 leading-tight group-hover:text-red-500 transition-colors line-clamp-2">{v.title}</h3>
-                            
-                            <div className="flex items-center gap-2 mb-3">
-                              <div className="w-6 h-6 rounded-full overflow-hidden bg-white/10 shrink-0">
-                                {creator?.photoUrl ? <img src={creator.photoUrl} alt={creator.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-white/70">{creator?.name?.[0] || '?'}</div>}
-                              </div>
-                              <span className="text-sm font-semibold text-white/70 hover:text-white transition truncate">{creator?.name || 'Creator'}</span>
-                              {creator?.isVerified && <CheckCircle2 size={14} className="text-[#1ed760] shrink-0" fill="currentColor" />}
-                            </div>
-
-                            <p className="text-sm text-white/50 line-clamp-2 hidden md:block">{v.description || "Watch this incredible new upload from our creators."}</p>
-                          </div>
-                        </div>
-                      )
+                      return <HomeFeedCard key={v.id} video={v} creator={creator} onMore={() => handleCardSelect(v)} />;
                     })}
                   </div>
                 </div>
@@ -548,5 +516,224 @@ function DetailModal({ item, onClose, onPlay, creators }: { item: Video; onClose
         </div>
       </motion.div>
     </motion.div>
+  );
+}
+
+/* ============ HOME FEED CARD ============ */
+function HomeFeedCard({ video, creator, onMore }: { video: any, creator: any, onMore: () => void }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const [progress, setProgress] = useState(0);
+  const [isSeeking, setIsSeeking] = useState(false);
+  const [error, setError] = useState(false);
+
+  const videoSrc = video.videoUrl || video.bitchuteUrl || '';
+
+  // Auto-play on scroll
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const v = videoRef.current;
+        if (!v) return;
+        
+        if (entry.isIntersecting && entry.intersectionRatio > 0.6) {
+          v.play().then(() => setIsPlaying(true)).catch(() => {
+            v.muted = true;
+            setIsMuted(true);
+            v.play().then(() => setIsPlaying(true)).catch(() => {});
+          });
+        } else {
+          v.pause();
+          setIsPlaying(false);
+        }
+      },
+      { threshold: [0.6] }
+    );
+    
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+    
+    return () => observer.disconnect();
+  }, []);
+
+  const togglePlay = async () => {
+    const v = videoRef.current;
+    if (!v || !videoSrc) return;
+    
+    if (v.paused) {
+      try {
+        await v.play();
+        setIsPlaying(true);
+      } catch (err) {
+        console.error('Playback failed:', err);
+      }
+    } else {
+      v.pause();
+      setIsPlaying(false);
+    }
+  };
+
+  const handleTimeUpdate = () => {
+    const v = videoRef.current;
+    if (!v || isSeeking || !v.duration) return;
+    setProgress(v.currentTime / v.duration);
+  };
+
+  const handlePointerSeek = (e: React.PointerEvent) => {
+    const bar = e.currentTarget as HTMLDivElement;
+    const v = videoRef.current;
+    if (!bar || !v || !v.duration) return;
+
+    const rect = bar.getBoundingClientRect();
+    const clientX = e.clientX;
+    const percentage = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    
+    setProgress(percentage);
+    v.currentTime = percentage * v.duration;
+  };
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    setIsSeeking(true);
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    handlePointerSeek(e);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (isSeeking) handlePointerSeek(e);
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    setIsSeeking(false);
+    (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+  };
+
+  if (!videoSrc) return null;
+
+  return (
+    <div ref={containerRef} className="w-full relative flex flex-col group/feed mb-6 md:mb-0">
+      
+      {/* VIDEO CONTAINER - Wall to Wall */}
+      <div className="relative w-full aspect-video bg-black overflow-hidden cursor-pointer" onClick={togglePlay}>
+        
+        <video
+          ref={videoRef}
+          src={videoSrc}
+          className="w-full h-full object-cover"
+          playsInline
+          muted={isMuted}
+          preload="metadata"
+          onTimeUpdate={handleTimeUpdate}
+          onPlay={() => setIsPlaying(true)}
+          onPause={() => setIsPlaying(false)}
+          onError={() => setError(true)}
+          loop
+        />
+
+        {error && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/80">
+            <p className="text-white/50 text-sm">Video unavailable</p>
+          </div>
+        )}
+
+        {/* Top Left Duration */}
+        <div className="absolute top-4 left-4 bg-black/60 px-2 py-1 rounded text-xs font-bold text-white z-10 pointer-events-none backdrop-blur-sm">
+          {video.duration || '1:22:39'}
+        </div>
+        
+        {/* Right Side Controls */}
+        <div className="absolute top-1/2 -translate-y-1/2 right-4 flex flex-col gap-4 z-20">
+          <button 
+            onClick={(e) => { e.stopPropagation(); onMore(); }}
+            className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 hover:bg-black/60 transition"
+          >
+            <Plus size={20} />
+          </button>
+          
+          <button 
+            onClick={(e) => { e.stopPropagation(); setIsMuted(!isMuted); if(videoRef.current) videoRef.current.muted = !isMuted; }} 
+            className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 hover:bg-black/60 transition"
+          >
+            {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+          </button>
+          
+          <button 
+            onClick={(e) => { e.stopPropagation(); togglePlay(); }} 
+            className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-2xl hover:scale-105 transition"
+          >
+            {isPlaying ? <Pause size={20} fill="black" /> : <Play size={20} fill="black" className="ml-1" />}
+          </button>
+        </div>
+      </div>
+
+      {/* PROGRESS BAR (Draggable) with Green Dot */}
+      <div className="flex items-center gap-2 mt-1 px-2">
+        <div className="w-2.5 h-2.5 rounded-full bg-[#1ed760] flex-shrink-0" />
+        <div 
+          className="relative flex-1 h-1.5 bg-[#1c1c1e] cursor-pointer group z-30"
+          style={{ touchAction: 'none' }}
+        >
+          <div 
+            className="absolute inset-0 w-full h-full flex items-center"
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerUp}
+          >
+            <div className="w-full h-full bg-[#1c1c1e] group-hover:h-2 transition-all relative overflow-hidden rounded-full">
+              <div 
+                className="h-full bg-[#E53945]" 
+                style={{ width: `${progress * 100}%` }}
+              />
+            </div>
+            
+            <div 
+              className={`absolute h-3 w-3 bg-[#E53945] rounded-full shadow-md transition-opacity pointer-events-none ${isSeeking ? 'opacity-100 scale-125' : 'opacity-0 group-hover:opacity-100'}`}
+              style={{ left: `calc(${progress * 100}% - 6px)` }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* INFO SECTION */}
+      <div className="px-4 py-3">
+        <div className="flex gap-3">
+          
+          {/* SQUARE AVATAR */}
+          <div className="w-11 h-11 rounded-md overflow-hidden bg-[#1c1c1e] flex-shrink-0 block">
+            {creator?.photoUrl ? (
+              <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-[#E53945] flex items-center justify-center font-bold text-sm text-white">
+                {creator?.name?.[0] || '?'}
+              </div>
+            )}
+          </div>
+
+          {/* TITLE & CREATOR */}
+          <div className="flex-1 min-w-0">
+            <h2 className="text-base font-bold text-white leading-tight mb-1 line-clamp-2">
+              {video.title}
+            </h2>
+            <div className="flex items-center gap-1.5 text-sm text-white/60">
+              <span className="truncate hover:text-white transition">
+                {creator?.name || 'Creator'}
+              </span>
+              {creator?.isVerified && <CheckCircle2 size={14} className="text-[#1ed760]" fill="currentColor" />}
+              <span>•</span>
+              <span>{video.createdAt ? new Date(video.createdAt).toLocaleDateString() : 'Just now'}</span>
+            </div>
+          </div>
+
+          {/* THREE DOTS */}
+          <button onClick={onMore} className="p-1 text-white/50 hover:text-white h-fit">
+            <MoreVertical size={20} />
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
