@@ -13,16 +13,20 @@ const MAIN_CATEGORIES = [
 ];
 
 const BROWSE_ALL = [
-  { name: "History", image: "https://images.unsplash.com/photo-1461360228754-6e81c478b882?w=500&q=80" },
-  { name: "Politics & Geopolitics", image: "https://images.unsplash.com/photo-1555848962-6e79363ec58f?w=500&q=80" },
-  { name: "War & Conflict", image: "https://images.unsplash.com/photo-1579912205439-4cef16dc975e?w=500&q=80" },
-  { name: "Economics", image: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=500&q=80" },
-  { name: "Science & Tech", image: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=500&q=80" },
-  { name: "Society & Culture", image: "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=500&q=80" },
-  { name: "Health & Wellness", image: "https://images.unsplash.com/photo-1505576399279-565b52d4ac71?w=500&q=80" },
-  { name: "Environment", image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=500&q=80" },
-  { name: "True Crime", image: "https://images.unsplash.com/photo-1509248961158-e54f6934749c?w=500&q=80" },
-  { name: "Current Events", image: "https://images.unsplash.com/photo-1495020689067-958852a7765e?w=500&q=80" },
+  { name: "History", image: "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=600&auto=format&fit=crop" },
+  { name: "Politics & Geopolitics", image: "https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?q=80&w=600&auto=format&fit=crop" },
+  { name: "War & Conflict", image: "https://images.unsplash.com/photo-1508614589041-895b88991e3e?q=80&w=600&auto=format&fit=crop" },
+  { name: "True Crime & Justice", image: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=600&auto=format&fit=crop" },
+  { name: "Conspiracy & Unsolved", image: "https://images.unsplash.com/photo-1518676590629-3dcbd9c5a5c9?q=80&w=600&auto=format&fit=crop" },
+  { name: "Society & Culture", image: "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?q=80&w=600&auto=format&fit=crop" },
+  { name: "Business & Finance", image: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=600&auto=format&fit=crop" },
+  { name: "Science & Technology", image: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=600&auto=format&fit=crop" },
+  { name: "Environment & Nature", image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=600&auto=format&fit=crop" },
+  { name: "Religion & Spirituality", image: "https://images.unsplash.com/photo-1548625149-fc4a29cf7092?q=80&w=600&auto=format&fit=crop" },
+  { name: "Ancient History", image: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?q=80&w=600&auto=format&fit=crop" },
+  { name: "Comedy", image: "https://images.unsplash.com/photo-1585699324551-f6c309eedeca?q=80&w=600&auto=format&fit=crop" },
+  { name: "News", image: "https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=600&auto=format&fit=crop" },
+  { name: "Gaming", image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=600&auto=format&fit=crop" },
 ];
 
 // Mock data to match your screenshot exactly
