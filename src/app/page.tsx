@@ -534,8 +534,21 @@ function HomeFeedCard({ video, creator, onMore, isActive, onSetActive }: { video
   const [progress, setProgress] = useState(0);
   const [isSeeking, setIsSeeking] = useState(false);
   const [error, setError] = useState(false);
+  const [showControls, setShowControls] = useState(true);
+  const controlsTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const videoSrc = video.videoUrl || video.bitchuteUrl || '';
+
+  const handleInteraction = () => {
+    setShowControls(true);
+    if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
+    
+    if (isPlaying) {
+      controlsTimerRef.current = setTimeout(() => {
+        setShowControls(false);
+      }, 4000);
+    }
+  };
 
   // Handle Intersection Observer to trigger parent state
   useEffect(() => {
@@ -571,6 +584,19 @@ function HomeFeedCard({ video, creator, onMore, isActive, onSetActive }: { video
       setIsPlaying(false);
     }
   }, [isActive]);
+
+  // Control visibility timer
+  useEffect(() => {
+    if (isPlaying) {
+      handleInteraction();
+    } else {
+      setShowControls(true);
+      if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
+    }
+    return () => {
+      if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
+    };
+  }, [isPlaying]);
 
   const togglePlay = async () => {
     const v = videoRef.current;
@@ -612,15 +638,18 @@ function HomeFeedCard({ video, creator, onMore, isActive, onSetActive }: { video
     setIsSeeking(true);
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
     handlePointerSeek(e);
+    handleInteraction();
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
     if (isSeeking) handlePointerSeek(e);
+    handleInteraction();
   };
 
   const handlePointerUp = (e: React.PointerEvent) => {
     setIsSeeking(false);
     (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+    handleInteraction();
   };
 
   if (!videoSrc) return null;
@@ -629,7 +658,12 @@ function HomeFeedCard({ video, creator, onMore, isActive, onSetActive }: { video
     <div ref={containerRef} className="w-full relative flex flex-col group/feed pb-10 mb-4 border-b border-white/10">
       
       {/* VIDEO CONTAINER - Wall to Wall */}
-      <div className="relative w-full aspect-video bg-black overflow-hidden cursor-pointer" onClick={togglePlay}>
+      <div 
+        className="relative w-full aspect-video bg-black overflow-hidden cursor-pointer" 
+        onClick={() => { handleInteraction(); togglePlay(); }}
+        onMouseMove={handleInteraction}
+        onTouchStart={handleInteraction}
+      >
         
         <video
           ref={videoRef}
@@ -652,12 +686,12 @@ function HomeFeedCard({ video, creator, onMore, isActive, onSetActive }: { video
         )}
 
         {/* Top Left Duration */}
-        <div className="absolute top-4 left-4 bg-black/60 px-2 py-1 rounded text-xs font-bold text-white z-10 pointer-events-none backdrop-blur-sm">
+        <div className={`absolute top-4 left-4 bg-black/60 px-2 py-1 rounded text-xs font-bold text-white z-10 pointer-events-none backdrop-blur-sm transition-opacity duration-500 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
           {video.duration || '1:22:39'}
         </div>
         
         {/* Right Side Controls */}
-        <div className="absolute top-1/2 -translate-y-1/2 right-4 flex flex-col gap-4 z-20">
+        <div className={`absolute top-1/2 -translate-y-1/2 right-4 flex flex-col gap-4 z-20 transition-opacity duration-500 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
           <button 
             onClick={(e) => { e.stopPropagation(); onMore(); }}
             className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 hover:bg-black/60 transition"
@@ -666,14 +700,14 @@ function HomeFeedCard({ video, creator, onMore, isActive, onSetActive }: { video
           </button>
           
           <button 
-            onClick={(e) => { e.stopPropagation(); setIsMuted(!isMuted); if(videoRef.current) videoRef.current.muted = !isMuted; }} 
+            onClick={(e) => { e.stopPropagation(); setIsMuted(!isMuted); if(videoRef.current) videoRef.current.muted = !isMuted; handleInteraction(); }} 
             className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 hover:bg-black/60 transition"
           >
             {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
           </button>
           
           <button 
-            onClick={(e) => { e.stopPropagation(); togglePlay(); }} 
+            onClick={(e) => { e.stopPropagation(); togglePlay(); handleInteraction(); }} 
             className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-2xl hover:scale-105 transition"
           >
             {isPlaying ? <Pause size={20} fill="black" /> : <Play size={20} fill="black" className="ml-1" />}
@@ -681,9 +715,8 @@ function HomeFeedCard({ video, creator, onMore, isActive, onSetActive }: { video
         </div>
       </div>
 
-      {/* PROGRESS BAR (Draggable) with Green Dot */}
-      <div className="flex items-center gap-2 mt-2 px-4 md:px-12">
-        <div className="w-2.5 h-2.5 rounded-full bg-[#1ed760] flex-shrink-0" />
+      {/* PROGRESS BAR (Draggable) */}
+      <div className="flex items-center mt-2 px-4 md:px-12">
         <div 
           className="relative flex-1 h-1.5 bg-[#1c1c1e] cursor-pointer group z-30"
           style={{ touchAction: 'none' }}
@@ -749,4 +782,5 @@ function HomeFeedCard({ video, creator, onMore, isActive, onSetActive }: { video
     </div>
   );
 }
+
 
