@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
-import { Search, MessageCircle, Podcast, LogOut, Home } from "lucide-react";
+import { Search, MessageCircle, LogOut, Home } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Capacitor } from "@capacitor/core";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
@@ -13,12 +13,22 @@ import { getCachedUser, clearUserCache } from "@/lib/cache";
 const TABS: {
   icon?: any;
   customImage?: string;
+  customNode?: any;
   label: string;
   path: string;
 }[] = [
   { icon: Home, label: "Home", path: "/" },
   { icon: Search, label: "Search", path: "/search" },
-  { icon: Podcast, label: "Creators", path: "/creators" },
+  { 
+    customNode: (
+      <div className="flex flex-col items-center justify-center leading-none pt-1">
+        <span className="text-[10px] font-black text-white tracking-tight">TROOFLIX</span>
+        <span className="text-[8px] font-bold text-[#E53945] tracking-[0.2em] uppercase mt-1">Plus</span>
+      </div>
+    ), 
+    label: "Plus", 
+    path: "/plus" 
+  },
   { icon: MessageCircle, label: "Messages", path: "/messages" },
 ];
 
@@ -190,6 +200,10 @@ export default function MobileBottomNav() {
                         active ? "opacity-100" : "opacity-60 hover:opacity-80"
                       }`}
                     />
+                  ) : tab.customNode ? (
+                    <div className={`transition-opacity ${active ? "opacity-100" : "opacity-60 hover:opacity-80"}`}>
+                      {tab.customNode}
+                    </div>
                   ) : (
                     <tab.icon
                       size={26}
