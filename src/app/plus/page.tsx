@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Check, Sparkles, Video, ArrowLeft } from "lucide-react";
+import { Check, Sparkles, Video, ArrowLeft, Play, ShieldCheck } from "lucide-react";
 import { getCachedUser } from "@/lib/cache";
 import MobileBottomNav from "@/components/MobileBottomNav";
 
@@ -25,7 +25,7 @@ export default function PlusPage() {
     );
   }
 
-  // LOGGED IN STATE (Placeholder for now - we will build the content page next)
+  // LOGGED IN STATE (Placeholder)
   if (user) {
     return (
       <main className="min-h-screen bg-[#0a0a0a] text-white pb-24 font-sans">
@@ -38,33 +38,67 @@ export default function PlusPage() {
     );
   }
 
-  // LOGGED OUT STATE (Pricing Page)
+  // LOGGED OUT STATE (Combined Landing Page + Pricing)
   return (
-    <main className="min-h-screen bg-[#0a0a0a] text-white pb-24 font-sans relative overflow-hidden">
+    <main className="min-h-screen bg-[#0a0a0a] text-white font-sans relative overflow-hidden">
+      
       {/* Background ambient glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-[#E53945]/10 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[600px] bg-[#E53945]/10 blur-[120px] rounded-full pointer-events-none" />
 
-      <div className="relative z-10 max-w-2xl mx-auto px-4 pt-12 pb-10">
-        
-        {/* Back Button */}
-        <Link href="/" className="inline-flex items-center gap-2 text-white/50 hover:text-white transition mb-8 text-sm font-semibold">
-          <ArrowLeft size={16} /> Back to Home
+      {/* Back Button */}
+      <div className="absolute top-6 left-4 z-50">
+        <Link href="/" className="inline-flex items-center gap-2 text-white/50 hover:text-white transition text-sm font-semibold bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full">
+          <ArrowLeft size={16} /> Back
         </Link>
+      </div>
 
-        {/* Header */}
-        <div className="text-center mb-10">
-          <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-2">
-            UPGRADE YOUR EXPERIENCE
-          </p>
-          <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-3">
-            Choose Your <span className="text-[#E53945]">Path</span>
+      <div className="relative z-10 max-w-2xl mx-auto px-4 pt-24 pb-32">
+        
+        {/* =========================================
+            HERO 1: THE CREATOR PITCH 
+        ========================================= */}
+        <div className="text-center mb-16">
+          <h1 className="text-4xl md:text-6xl font-black tracking-tight leading-[1.05] mb-5">
+            Stop letting Big Tech <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#E53945] to-[#ff7e85]">eat your lunch.</span>
           </h1>
-          <p className="text-white/50 text-sm md:text-base max-w-md mx-auto">
-            Join the home of independent voices. Whether you want to watch or create, we have a plan for you.
+          <p className="text-base md:text-lg text-white/60 leading-relaxed font-medium">
+            Traditional platforms take massive cuts and hide your content behind algorithms. Trooflix was built for creators who are tired of sharing their revenue with billionaires and being censored in the process.
           </p>
         </div>
 
-        {/* Pricing Cards */}
+        {/* Divider */}
+        <div className="w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mb-16" />
+
+        {/* =========================================
+            HERO 2: THE VIEWER PITCH 
+        ========================================= */}
+        <div className="text-center mb-16">
+          <div className="w-12 h-12 mx-auto bg-[#E53945]/10 rounded-xl flex items-center justify-center mb-6 border border-[#E53945]/20">
+            <Play className="text-[#E53945] ml-1" size={24} fill="currentColor" />
+          </div>
+          <h2 className="text-4xl md:text-5xl font-black tracking-tight leading-[1.05] mb-3">
+            Uncensored. Unfiltered. <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#E53945] to-[#ff7e85]">Unbought.</span>
+          </h2>
+          <h3 className="text-xl md:text-2xl font-bold text-white mb-5">
+            No ads. No mainstream pollution. Just raw content.
+          </h3>
+          <p className="text-base md:text-lg text-white/60 leading-relaxed font-medium">
+            You're sick of the same recycled Hollywood scripts, the endless commercials, and the corporate agendas shoved down your throat. Trooflix Plus is your escape. Get unlimited access to hard-hitting documentaries, independent films, and unfiltered podcasts that actually challenge the narrative. No algorithms. No spin. Just the raw truth from creators who aren't afraid to speak.
+          </p>
+        </div>
+
+        {/* =========================================
+            PRICING SECTION
+        ========================================= */}
+        <div id="pricing" className="text-center mb-8">
+          <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-2">
+            CHOOSE YOUR PATH
+          </p>
+          <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-8">
+            Join The Revolution
+          </h2>
+        </div>
+
         <div className="flex flex-col gap-6">
           
           {/* Trooflix Plus (Viewer) Card */}
@@ -122,7 +156,7 @@ export default function PlusPage() {
               <span className="text-white/50 text-sm font-medium mb-1">/ month</span>
             </div>
             <p className="text-xs text-[#1ed760] font-semibold mb-6 flex items-center gap-1">
-              <Check size={12} /> Free to start. No credit card required.
+              <ShieldCheck size={14} /> Free to start. No credit card required.
             </p>
 
             <ul className="space-y-3 mb-8">
