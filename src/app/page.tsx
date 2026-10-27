@@ -328,15 +328,7 @@ export default function Home() {
                 )}
 
                 {/* Video Cards Row */}
-                <div className="mt-8 mb-4">
-                  <div className="px-4 md:px-12 mb-4">
-                    <p className="text-[10px] md:text-xs tracking-[0.4em] text-white/50 font-semibold mb-1">
-                      EXPLORE MORE
-                    </p>
-                    <h2 className="text-2xl md:text-4xl font-black tracking-tight">
-                      More To <span className="text-red-600">Watch</span>
-                    </h2>
-                  </div>
+                <div className="mt-2 mb-8">
                   <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide px-4 md:px-12 pb-4">
                     {videos.slice(1, 11).map((v: any) => {
                       const creator = creators.find((c: any) => c.id === v.creatorId);
