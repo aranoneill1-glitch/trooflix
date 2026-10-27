@@ -30,7 +30,7 @@ type Creator = {
   isVerified?: boolean;
 };
 
-const TABS = ["All", "Music", "Podcasts", "Following", "Audiobooks"];
+const TABS = ["All", "Podcasts", "Documentaries", "Following"];
 
 function timeAgo(iso?: string): string {
   if (!iso) return "Just now";
