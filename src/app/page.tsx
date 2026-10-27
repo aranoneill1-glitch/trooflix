@@ -301,11 +301,16 @@ export default function Home() {
                 {/* Trending Creators */}
                 {creators && creators.length > 0 && (
                   <div className="mt-6">
-                    <div className="flex items-center justify-between px-4 md:px-12 mb-4">
-                      <h2 className="text-lg md:text-xl font-bold flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse"></span>Trending Creators
-                      </h2>
-                      <Link href="/creators" className="text-xs font-semibold text-white/50 hover:text-white transition">View all</Link>
+                    <div className="flex items-end justify-between px-4 md:px-12 mb-6 mt-8">
+                      <div>
+                        <p className="text-[10px] md:text-xs tracking-[0.4em] text-white/50 font-semibold mb-1">
+                          WHO TO WATCH RIGHT NOW
+                        </p>
+                        <h2 className="text-2xl md:text-4xl font-black tracking-tight">
+                          The Hot <span className="text-red-600">List</span>
+                        </h2>
+                      </div>
+                      <Link href="/creators" className="text-xs font-semibold text-white/50 hover:text-white transition pb-1 md:pb-2">View all</Link>
                     </div>
                     <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide px-4 md:px-12 pb-4">
                       {[...creators].slice(0, 15).map((c: any) => (
