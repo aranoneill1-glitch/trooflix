@@ -46,12 +46,16 @@ type Video = {
   textOverlays?: any[];
 };
 
-const CATEGORIES = [
+// Mock data for categories to match your screenshot perfectly
+const CATEGORIES_TOP = [
   { name: "History", img: "https://images.unsplash.com/photo-1599812680155-e9a864f8bf9b?auto=format&fit=crop&q=80&w=600" },
   { name: "Politics & Geopolitics", img: "https://images.unsplash.com/photo-1555848962-6e79363ec58f?auto=format&fit=crop&q=80&w=600" },
   { name: "War & Conflict", img: "https://images.unsplash.com/photo-1579912437766-789cd0530b3d?auto=format&fit=crop&q=80&w=600" },
   { name: "True Crime & Justice", img: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80&w=600" },
   { name: "Conspiracy & Unsolved", img: "https://images.unsplash.com/photo-1509248961158-e54f6934749c?auto=format&fit=crop&q=80&w=600" },
+];
+
+const CATEGORIES_BOTTOM = [
   { name: "Society & Culture", img: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&q=80&w=600" },
   { name: "Business & Finance", img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=600" },
   { name: "Science & Technology", img: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=600" },
@@ -68,7 +72,6 @@ export default function Home() {
   const [playing, setPlaying] = useState<Video | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  const [progressList, setProgressList] = useState<any[]>([]);
 
   useEffect(() => {
     getCachedCreators().then(setCreators).catch(() => {});
@@ -81,15 +84,9 @@ export default function Home() {
       .catch(() => setLoaded(true));
   }, []);
 
-  useEffect(() => {
-    setProgressList(getAllProgress());
-    const onProg = () => setProgressList(getAllProgress());
-    window.addEventListener("progress-changed", onProg);
-    return () => window.removeEventListener("progress-changed", onProg);
-  }, []);
-
   const hero = videos.find(v => v.featured) || videos[0];
-  const newReleases = videos.slice(0, 10);
+  // Limit to 6 videos to match the exact layout
+  const newReleases = videos.slice(0, 6);
 
   const handleInstantPlay = (video: Video) => {
     setSelected(null); 
@@ -102,32 +99,33 @@ export default function Home() {
     <main className="min-h-screen bg-[#050505] text-white overflow-x-hidden pb-20 lg:pb-0">
       <TopBar onMenu={() => setDrawerOpen(true)} />
 
-      {/* HERO SECTION */}
+      {/* HERO SECTION (Tighter, shorter height) */}
       {loaded && hero && (
-        <div className="relative w-full h-[65vh] md:h-[80vh] overflow-hidden">
+        <div className="relative w-full h-[55vh] md:h-[60vh] overflow-hidden">
           <img src={hero.backdropUrl || hero.posterUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
           
-          <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/50 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-[#050505]/60 to-transparent" />
+          {/* Stronger gradients to ensure text readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/70 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-[#050505]/50 to-transparent" />
           
-          <div className="relative z-10 flex flex-col justify-center h-full max-w-[1400px] mx-auto px-6 md:px-12 pt-20">
-            <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-xs md:text-sm tracking-[0.2em] text-red-500 font-bold mb-3 uppercase">
+          <div className="relative z-10 flex flex-col justify-end h-full max-w-[1400px] mx-auto px-6 md:px-12 pb-16">
+            <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-[10px] md:text-xs tracking-[0.25em] text-red-500 font-bold mb-2 uppercase">
               Trooflix Original
             </motion.p>
             
-            <motion.h1 style={{ fontFamily: 'var(--font-bebas)' }} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-6xl md:text-8xl lg:text-9xl font-normal tracking-wide leading-[0.9] mb-4">
+            <motion.h1 style={{ fontFamily: 'var(--font-bebas)' }} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-5xl md:text-7xl lg:text-[5.5rem] font-normal tracking-wide leading-[1] mb-2 drop-shadow-lg">
               {hero.title}
             </motion.h1>
             
-            <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="text-sm md:text-lg font-bold tracking-wide mb-6">
-              THE MAN BEHIND THE MONEY.
+            <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="text-xs md:text-sm font-bold tracking-[0.15em] mb-4 uppercase">
+              The Man Behind The Money.
             </motion.p>
             
             <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-sm md:text-base text-white/70 max-w-xl mb-6 leading-relaxed">
               {hero.description}
             </motion.p>
             
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="flex items-center gap-3 text-xs md:text-sm font-semibold text-white/70 mb-8 uppercase tracking-wider">
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="flex items-center gap-3 text-xs md:text-sm font-semibold text-white/80 mb-8 uppercase tracking-wider">
               <span>{hero.year || "2026"}</span>
               <span className="text-white/30">|</span>
               <span>{hero.type || "Documentary"}</span>
@@ -136,50 +134,69 @@ export default function Home() {
             </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="flex items-center gap-3">
-              <button onClick={() => handleInstantPlay(hero)} className="flex items-center gap-2 bg-white text-black font-bold px-6 md:px-8 py-3 rounded-lg hover:bg-gray-200 transition shadow-lg">
-                <Play size={20} fill="currentColor" /> Watch Now
+              <button onClick={() => handleInstantPlay(hero)} className="flex items-center gap-2 bg-white text-black font-bold px-6 md:px-8 py-2.5 md:py-3 rounded-lg hover:bg-gray-200 transition shadow-lg">
+                <Play size={18} fill="currentColor" /> Watch Now
               </button>
-              <button onClick={() => setSelected(hero)} className="flex items-center gap-2 bg-transparent border border-white/30 text-white font-bold px-6 md:px-8 py-3 rounded-lg hover:bg-white/10 transition">
-                <Info size={20} /> More Info
+              <button onClick={() => setSelected(hero)} className="flex items-center gap-2 bg-transparent border border-white/30 text-white font-bold px-6 md:px-8 py-2.5 md:py-3 rounded-lg hover:bg-white/10 transition">
+                <Info size={18} /> More Info
               </button>
             </motion.div>
 
             {/* Slider Indicators */}
-            <div className="absolute bottom-8 left-6 md:left-12 flex gap-2">
-              <div className="w-6 h-1 bg-red-600 rounded-full" />
-              <div className="w-6 h-1 bg-white/20 rounded-full" />
-              <div className="w-6 h-1 bg-white/20 rounded-full" />
+            <div className="absolute bottom-6 left-6 md:left-12 flex gap-2">
+              <div className="w-8 h-1 bg-red-600 rounded-full" />
+              <div className="w-8 h-1 bg-white/20 rounded-full" />
+              <div className="w-8 h-1 bg-white/20 rounded-full" />
             </div>
           </div>
         </div>
       )}
 
-      <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-12 space-y-16">
+      <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-10 space-y-12">
         
-        {/* EXPLORE BY SUBJECT */}
+        {/* EXPLORE BY SUBJECT (Exact 5 / 4 grid layout) */}
         <section>
-          <div className="flex items-end justify-between mb-6">
+          <div className="flex items-end justify-between mb-5">
             <div>
-              <p className="text-xs tracking-[0.2em] text-white/40 font-bold mb-1 uppercase">Discover our collections</p>
-              <h2 className="text-3xl md:text-4xl font-black">Explore by <span className="text-red-500">Subject</span></h2>
+              <p className="text-[10px] tracking-[0.2em] text-white/40 font-bold mb-1 uppercase">Discover our collections</p>
+              <h2 className="text-2xl md:text-3xl font-black">Explore by <span className="text-red-500">Subject</span></h2>
             </div>
             <Link href="/collections" className="text-xs font-bold text-white/50 hover:text-white flex items-center gap-1 transition">
               View All <ChevronRight size={14} />
             </Link>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
-            {CATEGORIES.map((cat, i) => (
+          {/* Top Row (5 items) */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-3 md:mb-4">
+            {CATEGORIES_TOP.map((cat) => (
               <Link 
                 key={cat.name} 
                 href={`/collections/${cat.name.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`}
-                className={`relative rounded-xl overflow-hidden group border border-white/5 ${i >= 5 ? 'md:col-span-1' : 'md:col-span-1'}`}
-                style={{ aspectRatio: '16/10' }}
+                className="relative rounded-lg overflow-hidden group border border-white/5"
+                style={{ aspectRatio: '16/9' }}
               >
                 <img src={cat.img} alt={cat.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-700 opacity-60 group-hover:opacity-80" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-                <div className="absolute bottom-4 left-4 pr-4">
-                  <h3 className="text-xs md:text-sm font-bold uppercase tracking-wider leading-tight text-white">{cat.name}</h3>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                <div className="absolute bottom-3 left-3 pr-2">
+                  <h3 className="text-[10px] md:text-xs font-bold uppercase tracking-wider leading-tight text-white">{cat.name}</h3>
+                </div>
+              </Link>
+            ))}
+          </div>
+          
+          {/* Bottom Row (4 items) */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+            {CATEGORIES_BOTTOM.map((cat) => (
+              <Link 
+                key={cat.name} 
+                href={`/collections/${cat.name.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`}
+                className="relative rounded-lg overflow-hidden group border border-white/5"
+                style={{ aspectRatio: '16/9' }}
+              >
+                <img src={cat.img} alt={cat.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-700 opacity-60 group-hover:opacity-80" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                <div className="absolute bottom-3 left-3 pr-2">
+                  <h3 className="text-[10px] md:text-xs font-bold uppercase tracking-wider leading-tight text-white">{cat.name}</h3>
                 </div>
               </Link>
             ))}
@@ -188,21 +205,21 @@ export default function Home() {
 
         {/* NEW RELEASES */}
         <section>
-          <div className="flex items-end justify-between mb-6">
-            <h2 className="text-3xl md:text-4xl font-black">New <span className="text-red-500">Releases</span></h2>
+          <div className="flex items-end justify-between mb-5">
+            <h2 className="text-2xl md:text-3xl font-black">New <span className="text-red-500">Releases</span></h2>
             <Link href="/documentaries" className="text-xs font-bold text-white/50 hover:text-white flex items-center gap-1 transition">
               View All <ChevronRight size={14} />
             </Link>
           </div>
           
-          <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4">
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-4 md:gap-5">
             {newReleases.map(v => (
-              <div key={v.id} onClick={() => handleInstantPlay(v)} className="flex-shrink-0 w-[160px] md:w-[220px] cursor-pointer group">
+              <div key={v.id} onClick={() => handleInstantPlay(v)} className="cursor-pointer group flex flex-col">
                 <div className="aspect-[2/3] rounded-lg overflow-hidden bg-[#0f0f12] mb-3 relative border border-white/5">
                   <img src={v.posterUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
                 </div>
-                <p className="text-sm font-bold truncate group-hover:text-red-400 transition-colors">{v.title}</p>
-                <p className="text-[10px] text-white/40 uppercase tracking-wider mt-1">{v.type || "Documentary"}</p>
+                <p className="text-sm font-bold truncate group-hover:text-red-400 transition-colors leading-tight">{v.title}</p>
+                <p className="text-[10px] text-white/40 uppercase tracking-wider mt-1.5">{v.type || "Documentary"}</p>
                 <p className="text-[10px] text-white/40">{v.year || "2026"}</p>
               </div>
             ))}
@@ -211,7 +228,7 @@ export default function Home() {
 
       </div>
 
-      {/* DRAWER NAVIGATION (Kept from before) */}
+      {/* DRAWER NAVIGATION */}
       <AnimatePresence>
         {drawerOpen && (
           <>
@@ -222,7 +239,7 @@ export default function Home() {
                 <button onClick={() => setDrawerOpen(false)} className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition text-white/70 hover:text-white"><X size={18} /></button>
               </div>
               <div className="flex-1 overflow-y-auto scrollbar-hide p-4">
-                 <p className="text-sm text-white/50">Navigation Menu (Simplified for this view)</p>
+                 <p className="text-sm text-white/50">Navigation Menu</p>
               </div>
             </motion.aside>
           </>
