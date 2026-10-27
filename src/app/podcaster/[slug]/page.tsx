@@ -60,6 +60,7 @@ export default function CreatorProfilePage() {
   const [followerCount, setFollowerCount] = useState<number | null>(null);
   
   const [tab, setTab] = useState<Tab>("home");
+  const [optionsOpen, setOptionsOpen] = useState(false); // For the 3 dots menu
 
   const [premiumData, setPremiumData] = useState<{ enabled: boolean; price_cents: number } | null>(null);
   const [hasSub, setHasSub] = useState(false);
@@ -134,6 +135,13 @@ export default function CreatorProfilePage() {
 
   useEffect(() => { loadData(); }, [slug]);
 
+  // Close options menu on outside click
+  useEffect(() => {
+    const handleClick = () => setOptionsOpen(false);
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
+  }, []);
+
   const handleSubscribe = async () => {
     if (isIOS) return alert("To subscribe, please visit trooflixtv.com on your web browser.");
     if (!userId) return router.push("/login");
@@ -201,13 +209,11 @@ export default function CreatorProfilePage() {
   return (
     <main className="min-h-screen bg-[#080808] text-white pb-24 font-sans">
       
-      {/* BANNER SECTION (Shorter height) */}
+      {/* BANNER SECTION */}
       <div className="relative w-full h-[22vh] md:h-[30vh]">
         <img src={creator?.heroBackdropUrl || latestVideo?.backdropUrl || ""} alt="" className="w-full h-full object-cover" />
-        {/* Gradient that doesn't hide the top of the image */}
         <div className="absolute inset-0 bg-gradient-to-t from-[#080808] via-[#080808]/40 to-transparent" />
         
-        {/* Top Controls */}
         <div className="absolute top-0 left-0 right-0 p-4 pt-[calc(env(safe-area-inset-top)+1rem)] md:pt-6 flex justify-between items-center z-20">
           <button onClick={() => router.back()} className="p-2.5 bg-black/40 backdrop-blur-md rounded-full text-white hover:bg-black/60 transition shadow-lg border border-white/10">
             <ChevronLeft size={24} />
@@ -218,7 +224,7 @@ export default function CreatorProfilePage() {
         </div>
       </div>
 
-      {/* PROFILE INFO (Pulled up to overlap the short banner) */}
+      {/* PROFILE INFO */}
       <div className="max-w-3xl mx-auto px-4 md:px-8 relative z-30 -mt-16 md:-mt-24">
         
         {/* Avatar */}
@@ -261,26 +267,59 @@ export default function CreatorProfilePage() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-8">
+        <div className="flex items-center gap-2 md:gap-3 mb-8 relative">
           {!isOwner && (
             <>
+              {/* White Follow Button */}
               <button onClick={async () => {
                 if (!userId) return router.push("/login");
                 await fetch("/api/follows", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId, creatorId: creator?.id }) });
                 setFollowerCount((c) => (c || 0) + 1);
-              }} className="flex-1 md:flex-none justify-center bg-[#E53945] hover:bg-[#E53945]/90 text-white font-bold px-6 py-3 rounded-full text-sm transition shadow-lg flex items-center gap-2">
+              }} className="flex-1 md:flex-none justify-center bg-white text-black hover:bg-gray-200 font-bold px-6 py-3 rounded-full text-sm transition shadow-lg flex items-center gap-2">
                 <Plus size={18} /> Follow
               </button>
-              <Link href={`/messages/${creator?.ownerUserId}`} className="flex-1 md:flex-none justify-center bg-[#1c1c1e] border border-[#303030] text-white font-semibold px-6 py-3 rounded-full text-sm transition hover:bg-[#202020] flex items-center gap-2">
-                <MessageCircle size={18} /> Message
-              </Link>
+
+              {/* Red Subscribe Button */}
               {premiumData?.enabled && (
-                hasSub ? <div className="flex-1 md:flex-none justify-center bg-green-500/10 text-green-400 border border-green-500/30 px-6 py-3 rounded-full text-sm font-bold flex items-center gap-2"><Sparkles size={18} /> Member</div>
-                : <button onClick={handleSubscribe} disabled={checkoutLoading} className="flex-1 md:flex-none justify-center bg-[#F5B041] text-black hover:bg-[#F5B041]/90 px-6 py-3 rounded-full text-sm font-bold transition shadow-lg flex items-center gap-2"><Sparkles size={18} /> Join ${(premiumData.price_cents / 100).toFixed(2)}/mo</button>
+                hasSub ? (
+                  <div className="flex-1 md:flex-none justify-center bg-green-500/10 text-green-400 border border-green-500/30 px-6 py-3 rounded-full text-sm font-bold flex items-center gap-2">
+                    <Sparkles size={18} /> Member
+                  </div>
+                ) : (
+                  <button onClick={handleSubscribe} disabled={checkoutLoading} className="flex-1 md:flex-none justify-center bg-[#E53945] text-white hover:bg-[#E53945]/90 px-6 py-3 rounded-full text-sm font-bold transition shadow-lg flex items-center gap-2">
+                    <Sparkles size={18} /> Join ${(premiumData.price_cents / 100).toFixed(2)}/mo
+                  </button>
+                )
               )}
-              <button className="p-3 bg-[#1c1c1e] border border-[#303030] hover:bg-[#202020] rounded-full text-white transition">
-                <MoreHorizontal size={18} />
-              </button>
+
+              {/* 3 Dots Menu with Message */}
+              <div className="relative">
+                <button 
+                  onClick={(e) => { e.stopPropagation(); setOptionsOpen(!optionsOpen); }}
+                  className="p-3 bg-[#1c1c1e] border border-[#303030] hover:bg-[#202020] rounded-full text-white transition flex items-center justify-center h-[46px] w-[46px]"
+                >
+                  <MoreHorizontal size={18} />
+                </button>
+                
+                <AnimatePresence>
+                  {optionsOpen && (
+                    <motion.div 
+                      initial={{ opacity: 0, scale: 0.95, y: 10 }} 
+                      animate={{ opacity: 1, scale: 1, y: 0 }} 
+                      exit={{ opacity: 0, scale: 0.95, y: 10 }} 
+                      className="absolute right-0 top-full mt-2 w-48 bg-[#171717] border border-[#303030] rounded-xl shadow-2xl py-2 z-50 overflow-hidden"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Link 
+                        href={`/messages/${creator?.ownerUserId}`}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-white hover:bg-[#202020] transition"
+                      >
+                        <MessageCircle size={16} className="text-white/60" /> Message
+                      </Link>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </>
           )}
         </div>
