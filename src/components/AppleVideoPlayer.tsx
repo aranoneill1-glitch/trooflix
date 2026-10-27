@@ -140,8 +140,26 @@ export default function AppleVideoPlayer({
       {/* BOTTOM CONTROLS - Clean & Minimal */}
       <div className={`absolute bottom-0 left-0 right-0 z-50 p-6 pb-[env(safe-area-inset-bottom)] mb-4 transition-opacity duration-300 pointer-events-none ${showControls ? "opacity-100" : "opacity-0"}`}>
         
+        {/* Seek Bar - Moved to top of controls, highly sensitive */}
+        <div className="pointer-events-auto w-full px-2 flex items-center gap-4 mb-8">
+          <span className="text-white text-sm font-medium tabular-nums tracking-wide">{formatTime(currentTime)}</span>
+          <div className="relative flex-1 flex items-center h-6">
+            <input 
+              type="range" 
+              min={0} 
+              max={duration || 0} 
+              step={0.1} 
+              value={currentTime} 
+              onChange={handleSeek} 
+              className="w-full absolute inset-0 h-[3px] my-auto bg-white/30 rounded-full appearance-none outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full cursor-pointer z-10 shadow-lg" 
+            />
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 h-[3px] bg-white rounded-full pointer-events-none" style={{ width: `${(currentTime / (duration || 1)) * 100}%` }} />
+          </div>
+          <span className="text-white/60 text-sm font-medium tabular-nums tracking-wide">{formatRemaining(currentTime)}</span>
+        </div>
+
         {/* Playback Controls */}
-        <div className="pointer-events-auto flex items-center justify-center gap-12 mb-8">
+        <div className="pointer-events-auto flex items-center justify-center gap-12 mb-6">
           <button onClick={(e) => { e.stopPropagation(); skip(-10); }} className="w-14 h-14 flex items-center justify-center text-white hover:opacity-70 transition relative">
             <RotateCcw size={28} strokeWidth={2} /><span className="absolute text-[10px] font-bold mt-0.5">10</span>
           </button>
@@ -155,8 +173,8 @@ export default function AppleVideoPlayer({
           </button>
         </div>
 
-        {/* Toolbar (Speed, Sleep Timer, Chapters) - Now borderless */}
-        <div className="pointer-events-auto flex items-center justify-center gap-4 mb-6 relative menu-container">
+        {/* Toolbar (Speed, Sleep Timer, Chapters) */}
+        <div className="pointer-events-auto flex items-center justify-center gap-4 relative menu-container">
           <div className="relative">
             <button onClick={() => { setShowSpeedMenu(!showSpeedMenu); setShowSleepMenu(false); setShowChaptersMenu(false); }} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold transition ${playbackRate !== 1 ? "text-blue-400" : "text-white/70 hover:text-white"}`}>
               <Gauge size={16} /> {playbackRate}x
@@ -209,15 +227,6 @@ export default function AppleVideoPlayer({
           )}
         </div>
 
-        {/* Seek Bar - Now borderless */}
-        <div className="pointer-events-auto w-full px-2 flex items-center gap-4">
-          <span className="text-white text-sm font-medium tabular-nums tracking-wide">{formatTime(currentTime)}</span>
-          <div className="relative flex-1 flex items-center h-4">
-            <input type="range" min={0} max={duration || 0} value={currentTime} onChange={handleSeek} className="w-full absolute inset-0 h-[3px] my-auto bg-white/30 rounded-full appearance-none outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full cursor-pointer z-10 shadow-lg" />
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 h-[3px] bg-white rounded-full pointer-events-none" style={{ width: `${(currentTime / (duration || 1)) * 100}%` }} />
-          </div>
-          <span className="text-white/60 text-sm font-medium tabular-nums tracking-wide">{formatRemaining(currentTime)}</span>
-        </div>
       </div>
     </div>
   );
