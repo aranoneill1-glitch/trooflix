@@ -13,16 +13,16 @@ const MAIN_CATEGORIES = [
 ];
 
 const BROWSE_ALL = [
-  { name: "History", color: "bg-[#8b5cf6]" },
-  { name: "Politics & Geopolitics", color: "bg-[#006450]" },
-  { name: "War & Conflict", color: "bg-[#e13377]" },
-  { name: "Economics", color: "bg-[#1e3264]" },
-  { name: "Science & Tech", color: "bg-[#477d95]" },
-  { name: "Society & Culture", color: "bg-[#006450]" },
-  { name: "Health & Wellness", color: "bg-[#8b5cf6]" },
-  { name: "Environment", color: "bg-[#1e3264]" },
-  { name: "True Crime", color: "bg-[#2a2a2a]" },
-  { name: "Current Events", color: "bg-[#477d95]" },
+  { name: "History", image: "https://images.unsplash.com/photo-1461360228754-6e81c478b882?w=500&q=80" },
+  { name: "Politics & Geopolitics", image: "https://images.unsplash.com/photo-1555848962-6e79363ec58f?w=500&q=80" },
+  { name: "War & Conflict", image: "https://images.unsplash.com/photo-1579912205439-4cef16dc975e?w=500&q=80" },
+  { name: "Economics", image: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=500&q=80" },
+  { name: "Science & Tech", image: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=500&q=80" },
+  { name: "Society & Culture", image: "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=500&q=80" },
+  { name: "Health & Wellness", image: "https://images.unsplash.com/photo-1505576399279-565b52d4ac71?w=500&q=80" },
+  { name: "Environment", image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=500&q=80" },
+  { name: "True Crime", image: "https://images.unsplash.com/photo-1509248961158-e54f6934749c?w=500&q=80" },
+  { name: "Current Events", image: "https://images.unsplash.com/photo-1495020689067-958852a7765e?w=500&q=80" },
 ];
 
 // Mock data to match your screenshot exactly
@@ -147,7 +147,7 @@ export default function SearchPage() {
               ))}
             </div>
 
-            {/* New Explore Collections Header (Exact Match) */}
+            {/* New Explore Collections Header */}
             <div className="mb-4 mt-2">
               <p className="text-[10px] md:text-xs tracking-[0.4em] text-white/50 font-semibold mb-1">
                 EXPLORE OUR COLLECTIONS
@@ -157,12 +157,18 @@ export default function SearchPage() {
               </h2>
             </div>
 
-            {/* Browse All Grid */}
+            {/* Browse All Grid with Images */}
             <div className="grid grid-cols-2 gap-4">
               {BROWSE_ALL.map((cat) => (
-                <div key={cat.name} className={`${cat.color} rounded-lg p-4 h-24 relative overflow-hidden cursor-pointer hover:brightness-110 transition`}>
-                  <h2 className="text-lg font-bold relative z-10">{cat.name}</h2>
-                  <div className="absolute -right-2 -bottom-2 w-16 h-16 bg-black/20 -rotate-12 transform shadow-lg rounded-md" />
+                <div key={cat.name} className="rounded-lg p-4 h-24 relative overflow-hidden cursor-pointer group shadow-lg">
+                  <img 
+                    src={cat.image} 
+                    alt={cat.name} 
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-500" 
+                  />
+                  {/* Dark overlay to ensure text is readable */}
+                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-colors" />
+                  <h2 className="text-lg font-bold relative z-10 text-white drop-shadow-md leading-tight">{cat.name}</h2>
                 </div>
               ))}
             </div>
