@@ -23,7 +23,6 @@ import SaveButton from "@/components/SaveButton";
 import LikeButton from "@/components/LikeButton";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import TextOverlayRenderer from "@/components/TextOverlay";
-import { getAllProgress } from "@/lib/progress";
 import { getCachedCreators, getCachedUser } from "@/lib/cache";
 
 type Video = {
@@ -46,20 +45,19 @@ type Video = {
   textOverlays?: any[];
 };
 
-// Mock data for categories to match your screenshot perfectly
 const CATEGORIES_TOP = [
-  { name: "History", img: "https://images.unsplash.com/photo-1599812680155-e9a864f8bf9b?auto=format&fit=crop&q=80&w=600" },
-  { name: "Politics & Geopolitics", img: "https://images.unsplash.com/photo-1555848962-6e79363ec58f?auto=format&fit=crop&q=80&w=600" },
-  { name: "War & Conflict", img: "https://images.unsplash.com/photo-1579912437766-789cd0530b3d?auto=format&fit=crop&q=80&w=600" },
-  { name: "True Crime & Justice", img: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80&w=600" },
-  { name: "Conspiracy & Unsolved", img: "https://images.unsplash.com/photo-1509248961158-e54f6934749c?auto=format&fit=crop&q=80&w=600" },
+  { name: "History", color: "from-amber-900 to-black", bg: "url('https://images.unsplash.com/photo-1599812680155-e9a864f8bf9b?auto=format&fit=crop&q=80&w=600')" },
+  { name: "Politics & Geopolitics", color: "from-blue-900 to-black", bg: "url('https://images.unsplash.com/photo-1555848962-6e79363ec58f?auto=format&fit=crop&q=80&w=600')" },
+  { name: "War & Conflict", color: "from-stone-800 to-black", bg: "url('https://images.unsplash.com/photo-1579912437766-789cd0530b3d?auto=format&fit=crop&q=80&w=600')" },
+  { name: "True Crime & Justice", color: "from-red-950 to-black", bg: "url('https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80&w=600')" },
+  { name: "Conspiracy & Unsolved", color: "from-purple-950 to-black", bg: "url('https://images.unsplash.com/photo-1509248961158-e54f6934749c?auto=format&fit=crop&q=80&w=600')" },
 ];
 
 const CATEGORIES_BOTTOM = [
-  { name: "Society & Culture", img: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&q=80&w=600" },
-  { name: "Business & Finance", img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=600" },
-  { name: "Science & Technology", img: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=600" },
-  { name: "Environment & Nature", img: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=600" },
+  { name: "Society & Culture", color: "from-pink-950 to-black", bg: "url('https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&q=80&w=600')" },
+  { name: "Business & Finance", color: "from-emerald-950 to-black", bg: "url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=600')" },
+  { name: "Science & Technology", color: "from-cyan-950 to-black", bg: "url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=600')" },
+  { name: "Environment & Nature", color: "from-green-950 to-black", bg: "url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=600')" },
 ];
 
 export default function Home() {
@@ -85,7 +83,6 @@ export default function Home() {
   }, []);
 
   const hero = videos.find(v => v.featured) || videos[0];
-  // Limit to 6 videos to match the exact layout
   const newReleases = videos.slice(0, 6);
 
   const handleInstantPlay = (video: Video) => {
@@ -99,33 +96,32 @@ export default function Home() {
     <main className="min-h-screen bg-[#050505] text-white overflow-x-hidden pb-20 lg:pb-0">
       <TopBar onMenu={() => setDrawerOpen(true)} />
 
-      {/* HERO SECTION (Tighter, shorter height) */}
+      {/* HERO SECTION - Fixed Overlap & Size */}
       {loaded && hero && (
-        <div className="relative w-full h-[55vh] md:h-[60vh] overflow-hidden">
+        <div className="relative w-full h-[70vh] mt-16 md:mt-0">
           <img src={hero.backdropUrl || hero.posterUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
           
-          {/* Stronger gradients to ensure text readability */}
           <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/70 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-[#050505]/50 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-[#050505]/60 to-transparent" />
           
-          <div className="relative z-10 flex flex-col justify-end h-full max-w-[1400px] mx-auto px-6 md:px-12 pb-16">
+          <div className="relative z-10 flex flex-col justify-end h-full max-w-[1400px] mx-auto px-6 md:px-12 pb-12 md:pb-20">
             <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-[10px] md:text-xs tracking-[0.25em] text-red-500 font-bold mb-2 uppercase">
               Trooflix Original
             </motion.p>
             
-            <motion.h1 style={{ fontFamily: 'var(--font-bebas)' }} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-5xl md:text-7xl lg:text-[5.5rem] font-normal tracking-wide leading-[1] mb-2 drop-shadow-lg">
+            <motion.h1 style={{ fontFamily: 'var(--font-bebas)' }} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-5xl md:text-7xl font-normal tracking-wide leading-none mb-3 drop-shadow-lg">
               {hero.title}
             </motion.h1>
             
-            <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="text-xs md:text-sm font-bold tracking-[0.15em] mb-4 uppercase">
+            <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="text-xs md:text-sm font-bold tracking-[0.1em] mb-4 uppercase">
               The Man Behind The Money.
             </motion.p>
             
-            <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-sm md:text-base text-white/70 max-w-xl mb-6 leading-relaxed">
+            <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-sm md:text-base text-white/70 max-w-lg mb-6 leading-relaxed line-clamp-3">
               {hero.description}
             </motion.p>
             
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="flex items-center gap-3 text-xs md:text-sm font-semibold text-white/80 mb-8 uppercase tracking-wider">
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="flex items-center gap-3 text-[11px] md:text-xs font-bold text-white/80 mb-8 uppercase tracking-wider">
               <span>{hero.year || "2026"}</span>
               <span className="text-white/30">|</span>
               <span>{hero.type || "Documentary"}</span>
@@ -134,29 +130,29 @@ export default function Home() {
             </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="flex items-center gap-3">
-              <button onClick={() => handleInstantPlay(hero)} className="flex items-center gap-2 bg-white text-black font-bold px-6 md:px-8 py-2.5 md:py-3 rounded-lg hover:bg-gray-200 transition shadow-lg">
-                <Play size={18} fill="currentColor" /> Watch Now
+              <button onClick={() => handleInstantPlay(hero)} className="flex items-center gap-2 bg-white text-black font-bold px-6 py-2.5 rounded-md hover:bg-gray-200 transition shadow-lg text-sm">
+                <Play size={16} fill="currentColor" /> Watch Now
               </button>
-              <button onClick={() => setSelected(hero)} className="flex items-center gap-2 bg-transparent border border-white/30 text-white font-bold px-6 md:px-8 py-2.5 md:py-3 rounded-lg hover:bg-white/10 transition">
-                <Info size={18} /> More Info
+              <button onClick={() => setSelected(hero)} className="flex items-center gap-2 bg-transparent border border-white/30 text-white font-bold px-6 py-2.5 rounded-md hover:bg-white/10 transition text-sm">
+                <Info size={16} /> More Info
               </button>
             </motion.div>
 
             {/* Slider Indicators */}
-            <div className="absolute bottom-6 left-6 md:left-12 flex gap-2">
-              <div className="w-8 h-1 bg-red-600 rounded-full" />
-              <div className="w-8 h-1 bg-white/20 rounded-full" />
-              <div className="w-8 h-1 bg-white/20 rounded-full" />
+            <div className="absolute bottom-6 md:bottom-10 left-6 md:left-12 flex gap-2">
+              <div className="w-6 h-[2px] bg-red-600 rounded-full" />
+              <div className="w-6 h-[2px] bg-white/20 rounded-full" />
+              <div className="w-6 h-[2px] bg-white/20 rounded-full" />
             </div>
           </div>
         </div>
       )}
 
-      <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-10 space-y-12">
+      <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-10 space-y-12 relative z-20">
         
-        {/* EXPLORE BY SUBJECT (Exact 5 / 4 grid layout) */}
+        {/* EXPLORE BY SUBJECT */}
         <section>
-          <div className="flex items-end justify-between mb-5">
+          <div className="flex items-end justify-between mb-4">
             <div>
               <p className="text-[10px] tracking-[0.2em] text-white/40 font-bold mb-1 uppercase">Discover our collections</p>
               <h2 className="text-2xl md:text-3xl font-black">Explore by <span className="text-red-500">Subject</span></h2>
@@ -172,10 +168,10 @@ export default function Home() {
               <Link 
                 key={cat.name} 
                 href={`/collections/${cat.name.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`}
-                className="relative rounded-lg overflow-hidden group border border-white/5"
+                className={`relative rounded-lg overflow-hidden group border border-white/5 bg-gradient-to-br ${cat.color}`}
                 style={{ aspectRatio: '16/9' }}
               >
-                <img src={cat.img} alt={cat.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-700 opacity-60 group-hover:opacity-80" />
+                <div className="absolute inset-0 opacity-40 group-hover:opacity-60 transition duration-700 bg-cover bg-center mix-blend-overlay" style={{ backgroundImage: cat.bg }} />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
                 <div className="absolute bottom-3 left-3 pr-2">
                   <h3 className="text-[10px] md:text-xs font-bold uppercase tracking-wider leading-tight text-white">{cat.name}</h3>
@@ -190,10 +186,10 @@ export default function Home() {
               <Link 
                 key={cat.name} 
                 href={`/collections/${cat.name.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`}
-                className="relative rounded-lg overflow-hidden group border border-white/5"
+                className={`relative rounded-lg overflow-hidden group border border-white/5 bg-gradient-to-br ${cat.color}`}
                 style={{ aspectRatio: '16/9' }}
               >
-                <img src={cat.img} alt={cat.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition duration-700 opacity-60 group-hover:opacity-80" />
+                <div className="absolute inset-0 opacity-40 group-hover:opacity-60 transition duration-700 bg-cover bg-center mix-blend-overlay" style={{ backgroundImage: cat.bg }} />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
                 <div className="absolute bottom-3 left-3 pr-2">
                   <h3 className="text-[10px] md:text-xs font-bold uppercase tracking-wider leading-tight text-white">{cat.name}</h3>
@@ -205,7 +201,7 @@ export default function Home() {
 
         {/* NEW RELEASES */}
         <section>
-          <div className="flex items-end justify-between mb-5">
+          <div className="flex items-end justify-between mb-4">
             <h2 className="text-2xl md:text-3xl font-black">New <span className="text-red-500">Releases</span></h2>
             <Link href="/documentaries" className="text-xs font-bold text-white/50 hover:text-white flex items-center gap-1 transition">
               View All <ChevronRight size={14} />
