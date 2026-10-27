@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
-import { Play, MessageCircle, Podcast, LogOut, Home } from "lucide-react";
+import { Search, MessageCircle, Podcast, LogOut, Home } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Capacitor } from "@capacitor/core";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
@@ -17,7 +17,7 @@ const TABS: {
   path: string;
 }[] = [
   { icon: Home, label: "Home", path: "/" },
-  { icon: Play, label: "Feed", path: "/feed" },
+  { icon: Search, label: "Search", path: "/search" },
   { icon: Podcast, label: "Creators", path: "/creators" },
   { icon: MessageCircle, label: "Messages", path: "/messages" },
 ];

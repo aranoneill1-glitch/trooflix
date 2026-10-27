@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useSearch } from "@/context/SearchContext";
-import { Search, Menu, X, MessageCircle, Plus } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Menu, MessageCircle, Plus } from "lucide-react";
 import UserMenu from "@/components/UserMenu";
 import NotificationBell from "@/components/NotificationBell";
 import CreateSheet from "@/components/CreateSheet";
@@ -21,10 +20,7 @@ type Props = {
 
 export default function TopBar({ onMenu }: Props) {
   const pathname = usePathname();
-  const router = useRouter();
-  const { search, setSearch, clearSearch } = useSearch();
   const [scrolled, setScrolled] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   
   useEffect(() => {
@@ -92,56 +88,6 @@ export default function TopBar({ onMenu }: Props) {
 
       {/* Right side */}
       <div className="ml-auto flex items-center gap-4 md:gap-5">
-        {searchOpen ? (
-          <div className="flex items-center gap-2 bg-black/80 border border-white/30 rounded px-3 py-1.5">
-            <Search size={16} className="text-white/70" />
-            <input
-              autoFocus
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && search) {
-                  router.push(`/?q=${encodeURIComponent(search)}`);
-                  setSearchOpen(false);
-                }
-                if (e.key === "Escape") setSearchOpen(false);
-              }}
-              onBlur={() => !search && setSearchOpen(false)}
-              placeholder="Titles, categories"
-              className="bg-transparent outline-none text-sm w-32 md:w-64 text-white"
-            />
-            {search && (
-              <button
-                onClick={() => {
-                  clearSearch();
-                  setSearchOpen(false);
-                }}
-                className="text-white/60 hover:text-white transition"
-                aria-label="Clear search"
-              >
-                <X size={16} />
-              </button>
-            )}
-          </div>
-        ) : (
-          <>
-            <button
-              onClick={() => setSearchOpen(true)}
-              className="hidden md:flex text-white/90 hover:text-white transition"
-              aria-label="Search"
-            >
-              <Search size={20} />
-            </button>
-            <Link
-              href="/search"
-              className="md:hidden text-white/90 hover:text-white transition"
-              aria-label="Search"
-            >
-              <Search size={20} />
-            </Link>
-          </>
-        )}
-
         <NotificationBell />
 
         <div className="hidden md:flex items-center gap-3">
