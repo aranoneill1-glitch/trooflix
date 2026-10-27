@@ -69,7 +69,7 @@ export default function PlusPage() {
             Ad-free. No mainstream pollution. Just raw content.
           </h3>
           <p className="text-lg md:text-xl text-white/50 max-w-2xl mx-auto font-medium leading-relaxed">
-            You're sick of the same recycled Hollywood scripts, the endless commercials, and the corporate agendas shoved down your throat. Trooflix Plus is your escape. Get unlimited, completely ad-free access to hard-hitting documentaries, independent films, and unfiltered podcasts that actually challenge the narrative. No algorithms. No spin. Just the raw truth from creators who aren't afraid to speak.
+            Sick of the same recycled Hollywood scripts, the endless commercials, and the corporate agendas shoved down your throat? Trooflix is your escape. Get unlimited, completely ad-free access to hard-hitting documentaries, independent films, and unfiltered podcasts that actually challenge the narrative. No ulterior motive. Just the raw truth from creators who aren't afraid to speak.
           </p>
         </motion.div>
 
