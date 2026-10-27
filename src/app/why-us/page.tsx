@@ -49,8 +49,7 @@ export default function CreatorsPage() {
           className="relative z-10 text-lg md:text-xl text-white/50 max-w-2xl mx-auto mb-12 font-medium leading-relaxed"
         >
           Traditional platforms take massive cuts and hide your content behind algorithms. 
-          Trooflix was built for creators who are tired of sharing their revenue with billionaires.
-          At Trooflix, we don't wear small hats.
+          Trooflix was built for creators who are tired of sharing their revenue with billionaires and being censored in the process.
         </motion.p>
         
         <motion.div 
