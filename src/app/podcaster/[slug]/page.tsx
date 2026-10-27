@@ -201,12 +201,13 @@ export default function CreatorProfilePage() {
   return (
     <main className="min-h-screen bg-[#080808] text-white pb-24 font-sans">
       
-      {/* BANNER SECTION (Now edge-to-edge at the top) */}
-      <div className="relative w-full h-[35vh] md:h-[45vh]">
+      {/* BANNER SECTION (Shorter height) */}
+      <div className="relative w-full h-[22vh] md:h-[30vh]">
         <img src={creator?.heroBackdropUrl || latestVideo?.backdropUrl || ""} alt="" className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#080808] via-[#080808]/20 to-black/60" />
+        {/* Gradient that doesn't hide the top of the image */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#080808] via-[#080808]/40 to-transparent" />
         
-        {/* Top Controls (Using Safe Area Padding) */}
+        {/* Top Controls */}
         <div className="absolute top-0 left-0 right-0 p-4 pt-[calc(env(safe-area-inset-top)+1rem)] md:pt-6 flex justify-between items-center z-20">
           <button onClick={() => router.back()} className="p-2.5 bg-black/40 backdrop-blur-md rounded-full text-white hover:bg-black/60 transition shadow-lg border border-white/10">
             <ChevronLeft size={24} />
@@ -217,8 +218,8 @@ export default function CreatorProfilePage() {
         </div>
       </div>
 
-      {/* PROFILE INFO */}
-      <div className="max-w-3xl mx-auto px-4 md:px-8 relative z-30 -mt-20 md:-mt-24">
+      {/* PROFILE INFO (Pulled up to overlap the short banner) */}
+      <div className="max-w-3xl mx-auto px-4 md:px-8 relative z-30 -mt-16 md:-mt-24">
         
         {/* Avatar */}
         <div className="relative w-28 h-28 md:w-36 md:h-36 rounded-full overflow-hidden border-4 border-[#080808] bg-[#202020] flex items-center justify-center shadow-2xl group mb-4">
