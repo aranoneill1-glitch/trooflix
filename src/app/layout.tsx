@@ -1,13 +1,12 @@
 import PushNotificationManager from "@/components/PushNotificationManager";
 import type { Metadata, Viewport } from "next";
-import { Inter, Bebas_Neue } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import TVNavigation from "@/components/TVNavigation";
 import { SearchProvider } from "@/context/SearchContext";
 import CacheWarmer from "@/components/CacheWarmer";
 
 const inter = Inter({ subsets: ["latin"] });
-const bebas = Bebas_Neue({ weight: "400", subsets: ["latin"], variable: "--font-bebas" });
 
 export const metadata: Metadata = {
   title: "Trooflix",
@@ -36,6 +35,8 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/favicon.png" />
         <link rel="apple-touch-icon" href="/favicon.png" />
+        
+        {/* TV Viewport Override */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -57,20 +58,23 @@ export default function RootLayout({
         />
       </head>
       <PushNotificationManager />
-      <body className={`${inter.className} ${bebas.variable}`}>
+      <body className={inter.className}>
         <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
+                // Block iOS Safari pinch-zoom via gesture events
                 ['gesturestart', 'gesturechange', 'gestureend'].forEach(function(evt) {
                   document.addEventListener(evt, function(e) { e.preventDefault(); }, { passive: false });
                 });
+                // Block double-tap zoom
                 var lastTouch = 0;
                 document.addEventListener('touchend', function(e) {
                   var now = Date.now();
                   if (now - lastTouch <= 300) { e.preventDefault(); }
                   lastTouch = now;
                 }, { passive: false });
+                // Register PWA service worker
                 if ('serviceWorker' in navigator) {
                   window.addEventListener('load', function () {
                     navigator.serviceWorker.register('/sw.js').catch(function () {});

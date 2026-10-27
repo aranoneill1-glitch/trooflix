@@ -5,14 +5,19 @@ if (typeof window !== "undefined") {
     document.body.innerHTML = '<div style="background:#000;color:#f00;padding:20px;font-family:monospace;font-size:14px;white-space:pre-wrap;">ERROR: ' + msg + '\n\nLine: ' + line + ':' + col + '\n\nURL: ' + url + '</div>';
     return false;
   };
+  window.addEventListener("unhandledrejection", function(e) {
+    document.body.innerHTML = '<div style="background:#000;color:#f00;padding:20px;font-family:monospace;font-size:14px;white-space:pre-wrap;">PROMISE ERROR: ' + (e.reason && e.reason.message ? e.reason.message : String(e.reason)) + '</div>';
+  });
 }
 
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { 
-  Play, Info, ChevronRight, X, Search, Menu, Users, Compass, LogOut, LogIn, ChevronLeft
+import {
+  Play, Info, ChevronLeft, ChevronRight, X,
+  Search, Bell, HomeIcon, Menu,
+  Compass, LogOut, LogIn, Users, ShoppingBag, Sparkles, BookOpen, Flame, List
 } from "lucide-react";
 import AppleVideoPlayer from "@/components/AppleVideoPlayer";
 import PullToRefresh from "@/components/PullToRefresh";
@@ -21,12 +26,17 @@ import { useSearch } from "@/context/SearchContext";
 import TopBar from "@/components/TopBar";
 import { createClient } from "@/utils/supabase/client";
 import { clearUserCache } from "@/lib/cache";
+import CollectionsRow from "@/components/CollectionsRow";
+import MerchRow from "@/components/MerchRow";
 import SaveButton from "@/components/SaveButton";
 import LikeButton from "@/components/LikeButton";
+import SearchResults from "@/components/SearchResults";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import TextOverlayRenderer from "@/components/TextOverlay";
 import { getAllProgress } from "@/lib/progress";
 import { getCachedCreators, getCachedUser } from "@/lib/cache";
+
+type Chapter = { title: string; time: number };
 
 type Video = {
   id: number;
@@ -46,42 +56,104 @@ type Video = {
   creatorId?: number | null;
   uploaderUserId?: string | null;
   textOverlays?: any[];
-  viewCount?: number;
+  progressSeconds?: number;
+  progressDuration?: number;
+  chapters?: Chapter[];
 };
 
-const COLLECTIONS = [
-  { name: "History", img: "https://images.unsplash.com/photo-1599812680155-e9a864f8bf9b?auto=format&fit=crop&q=80&w=600" },
-  { name: "Politics & Geopolitics", img: "https://images.unsplash.com/photo-1555848962-6e79363ec58f?auto=format&fit=crop&q=80&w=600" },
-  { name: "War & Conflict", img: "https://images.unsplash.com/photo-1579912437766-789cd0530b3d?auto=format&fit=crop&q=80&w=600" },
-  { name: "True Crime & Justice", img: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80&w=600" },
-  { name: "Conspiracy & Unsolved", img: "https://images.unsplash.com/photo-1509248961158-e54f6934749c?auto=format&fit=crop&q=80&w=600" },
-  { name: "Society & Culture", img: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&q=80&w=600" },
-  { name: "Business & Finance", img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=600" },
-  { name: "Science & Technology", img: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=600" },
-  { name: "Environment & Nature", img: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=600" },
+const CATEGORIES: string[] = [
+  "History", "Politics & Geopolitics", "War & Conflict", "True Crime & Justice", 
+  "Conspiracy & Unsolved", "Society & Culture", "Business & Finance", 
+  "Science & Technology", "Environment & Nature", "Religion & Spirituality", 
+  "Comedy & Satire", "News & Current Events",
 ];
+
+const NAV_TABS: string[] = ["Home", "Podcasts", "Feed"];
 
 export default function Home() {
   const router = useRouter();
   const [videos, setVideos] = useState<Video[]>([]);
+  const [merchandise, setMerchandise] = useState<any[]>([]);
+  const [books, setBooks] = useState<Video[]>([]);
+  const [likeCounts, setLikeCounts] = useState<Record<number, number>>({});
   const [creators, setCreators] = useState<any[]>([]);
   const { search } = useSearch();
-  
   const [selected, setSelected] = useState<Video | null>(null);
   const [playing, setPlaying] = useState<Video | null>(null);
+  const [activeTab, setActiveTab] = useState("Home");
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    clearUserCache();
+    setDrawerOpen(false);
+    router.push("/");
+    router.refresh();
+  };
+
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [isTV, setIsTV] = useState(false);
+
+  useEffect(() => {
+    const ua = navigator.userAgent || "";
+    const chromeMatch = ua.match(/Chrome\/(\d+)/);
+    const chromeVersion = chromeMatch ? parseInt(chromeMatch[1]) : 999;
+    const isOldChrome = chromeVersion <= 100;
+    const isTVUA = /AFT|Silk|Android TV|BRAVIA|HbbTV|SmartTV|Tizen|Web0S|FireTV/i.test(ua);
+    setIsTV(isTVUA || isOldChrome || window.location.search.includes("tv=1"));
+  }, []);
+
+  useEffect(() => {
+    try {
+      const seen = localStorage.getItem("trooflix:visited");
+      const isUnique = !seen;
+      if (isUnique) localStorage.setItem("trooflix:visited", "1");
+      fetch("/api/track-visit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isUnique }),
+      }).catch(() => {});
+    } catch (_) {}
+  }, []);
+
   const [loaded, setLoaded] = useState(false);
   const [progressList, setProgressList] = useState<any[]>([]);
 
   useEffect(() => {
     getCachedCreators().then(setCreators).catch(() => {});
+    getCachedUser().then(setUser);
+    
     fetch("/api/videos", { cache: "no-store" })
       .then((r) => r.json())
       .then((data) => {
-        setVideos(Array.isArray(data) ? data : []);
+        const all = Array.isArray(data) ? data : [];
+        setVideos(all);
         setLoaded(true);
       })
       .catch(() => setLoaded(true));
+
+    fetch("/api/products/global", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((data) => {
+        const _products = data.products || [];
+        if (Array.isArray(_products)) setMerchandise(_products);
+      }).catch(() => {});
+
+    fetch("/api/books", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setBooks(data.map((b: any) => ({
+            id: b.id, title: b.title, description: b.description || "", category: "Books", type: "Book",
+            featured: false, posterUrl: b.cover_url || "", backdropUrl: b.cover_url || "",
+            year: new Date().getFullYear(), rating: "NR", match: 100, duration: "",
+          })));
+        }
+      }).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -91,19 +163,55 @@ export default function Home() {
     return () => window.removeEventListener("progress-changed", onProg);
   }, []);
 
-  // Data slicing
-  const hero = videos.find(v => v.featured) || videos[0];
-  
-  const newReleases = [...videos].sort((a, b) => b.id - a.id).slice(0, 10);
-  
-  const trooflixSelection = videos.filter(v => v.match >= 90).slice(0, 10);
-  
-  const mostWatched = [...videos].sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0)).slice(0, 10);
-  
-  const continueWatching = progressList.map(p => {
-    const v = videos.find(x => x.id === p.id);
-    return v ? { ...v, progressSeconds: p.seconds, progressDuration: p.duration } : null;
-  }).filter(Boolean).slice(0, 10) as any[];
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const heroPool = videos.filter((v) => v.featured);
+  const [heroIndex, setHeroIndex] = useState(0);
+
+  const isDocOrPodcast = (v: Video) => !v.uploaderUserId && (v.type === "Documentary" || v.type === "Podcast");
+
+  const newReleases = videos.filter(isDocOrPodcast).sort((a, b) => b.id - a.id).slice(0, 20);
+  const trending = videos.filter(isDocOrPodcast).sort((a, b) => (likeCounts[b.id] || 0) - (likeCounts[a.id] || 0)).slice(0, 20);
+  const latestDocs = videos.filter((v) => v.type === "Documentary").sort((a, b) => b.id - a.id).slice(0, 20);
+  const latestPodcasts = videos.filter((v) => v.type === "Podcast").sort((a, b) => b.id - a.id).slice(0, 20);
+
+  const continueWatching = progressList
+    .map(p => {
+      const video = videos.find(v => v.id === p.id);
+      return video ? { ...video, progressSeconds: p.seconds, progressDuration: p.duration } : null;
+    })
+    .filter(Boolean).slice(0, 10) as Video[];
+
+  let displayVideos = videos;
+  if (activeCategory) displayVideos = videos.filter((v) => v.category === activeCategory);
+  else if (activeTab === "Movies") displayVideos = videos.filter((v) => v.type === "Movie");
+  else if (activeTab === "Documentaries") displayVideos = videos.filter((v) => v.type === "Documentary");
+  else if (activeTab === "Podcasts") displayVideos = videos.filter((v) => v.type === "Podcast");
+  else if (activeTab === "Series") displayVideos = videos.filter((v) => v.type === "Series");
+
+  const filtered = search ? videos.filter((v) => v.title.toLowerCase().includes(search.toLowerCase())) : null;
+
+  useEffect(() => {
+    if (heroPool.length <= 1) {
+      setHeroIndex(0);
+      return;
+    }
+    const interval = setInterval(() => setHeroIndex((prev) => (prev + 1) % heroPool.length), 7000);
+    return () => clearInterval(interval);
+  }, [heroPool.length]);
+
+  const hero = heroPool[heroIndex] || videos[0];
+  const showingFiltered = activeCategory || activeTab !== "Home" || filtered;
+
+  const handleCardSelect = (item: Video) => {
+    if (item.type === "Merchandise") router.push("/merchandise");
+    else if (item.type === "Book") router.push("/books");
+    else setSelected(item);
+  };
 
   const handleInstantPlay = (video: Video) => {
     setSelected(null); 
@@ -113,125 +221,117 @@ export default function Home() {
   return (
     <>
     <PullToRefresh onRefresh={async () => { window.location.reload(); }}>
-    {/* 1. COLOR PALETTE: Main Background #080808 */}
-    <main className="min-h-screen bg-[#080808] text-white overflow-x-hidden pb-20 lg:pb-0 font-sans selection:bg-[#E53945] selection:text-white">
+    <main className="min-h-screen bg-black text-white overflow-x-hidden pb-20 lg:pb-0">
       <TopBar onMenu={() => setDrawerOpen(true)} />
 
-      {/* CINEMATIC HERO */}
-      {loaded && hero && (
-        <div className="relative w-full h-[75vh] md:h-[85vh] overflow-hidden">
-          <img src={hero.backdropUrl || hero.posterUrl} alt={hero.title} className="absolute inset-0 w-full h-full object-cover object-[center_20%]" />
-          
-          {/* Layered Gradients for readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#080808] via-[#080808]/50 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#080808] via-[#080808]/80 to-transparent w-full md:w-2/3" />
-          
-          <div className="relative z-10 flex flex-col justify-end h-full max-w-[1400px] mx-auto px-6 md:px-12 pb-16 md:pb-24">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-2xl">
-              <p className="text-[10px] md:text-xs tracking-[0.25em] text-[#E53945] font-bold mb-3 uppercase">
-                Trooflix Original
-              </p>
-              
-              <h1 style={{ fontFamily: 'var(--font-bebas)' }} className="text-5xl md:text-7xl lg:text-8xl font-normal tracking-wide leading-[0.95] mb-4 drop-shadow-2xl">
-                {hero.title}
-              </h1>
-              
-              <p className="text-sm md:text-base text-[#B3B3B3] mb-6 leading-relaxed line-clamp-3">
-                {hero.description}
-              </p>
-              
-              <div className="flex items-center gap-3 text-[11px] md:text-sm font-semibold text-[#858585] mb-8 uppercase tracking-wider">
-                <span className="text-white">{hero.year || "2026"}</span>
-                <span className="text-[#303030]">|</span>
-                <span>{hero.type || "Documentary"}</span>
-                <span className="text-[#303030]">|</span>
-                <span>{hero.duration || "6 Episodes"}</span>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <button onClick={() => handleInstantPlay(hero)} className="flex items-center gap-2 bg-white text-black font-bold px-8 py-3 rounded-md hover:bg-gray-200 transition-colors shadow-lg">
-                  <Play size={18} fill="currentColor" /> Watch Now
-                </button>
-                <button onClick={() => setSelected(hero)} className="flex items-center gap-2 bg-transparent border border-[#303030] text-white font-bold px-8 py-3 rounded-md hover:bg-[#171717] transition-colors">
-                  <Info size={18} /> More Info
-                </button>
-              </div>
-            </motion.div>
-
-            {/* Slider Indicators */}
-            <div className="absolute bottom-6 md:bottom-10 left-6 md:left-12 flex gap-2">
-              <div className="w-8 h-[2px] bg-[#E53945] rounded-full" />
-              <div className="w-8 h-[2px] bg-[#303030] rounded-full" />
-              <div className="w-8 h-[2px] bg-[#303030] rounded-full" />
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-12 space-y-16 relative z-20">
-        
-        {/* DISCOVER OUR COLLECTIONS */}
-        <section>
-          <div className="flex items-end justify-between mb-6">
-            <div>
-              <p className="text-[10px] tracking-[0.2em] text-[#858585] font-bold mb-1 uppercase">Discover our collections</p>
-              <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Explore by <span className="text-[#E53945]">Subject</span></h2>
-            </div>
-            <Link href="/collections" className="text-xs font-bold text-[#858585] hover:text-white flex items-center gap-1 transition-colors">
-              View All <ChevronRight size={14} />
-            </Link>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-4">
-            {COLLECTIONS.slice(0, 5).map((cat) => (
-              <CollectionCard key={cat.name} cat={cat} />
-            ))}
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-            {COLLECTIONS.slice(5, 9).map((cat) => (
-              <CollectionCard key={cat.name} cat={cat} />
-            ))}
-          </div>
-        </section>
-
-        {/* CONTINUE WATCHING */}
-        {continueWatching.length > 0 && (
-          <ContentRow title="Continue Watching" items={continueWatching} onPlay={handleInstantPlay} showProgress />
-        )}
-
-        {/* NEW RELEASES */}
-        {newReleases.length > 0 && (
-          <ContentRow title="New Releases" items={newReleases} onPlay={handleInstantPlay} />
-        )}
-
-        {/* THE TROOFLIX SELECTION */}
-        {trooflixSelection.length > 0 && (
-          <ContentRow title="The Trooflix Selection" items={trooflixSelection} onPlay={handleInstantPlay} />
-        )}
-
-        {/* MOST WATCHED */}
-        {mostWatched.length > 0 && (
-          <ContentRow title="Most Watched" items={mostWatched} onPlay={handleInstantPlay} />
-        )}
-
-      </div>
-
-      {/* DRAWER NAVIGATION */}
       <AnimatePresence>
         {drawerOpen && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[290]" onClick={() => setDrawerOpen(false)} />
-            <motion.aside initial={{ x: -320 }} animate={{ x: 0 }} exit={{ x: -320 }} transition={{ type: "spring", damping: 25, stiffness: 200 }} className="fixed top-0 left-0 h-screen w-[300px] bg-[#101010] border-r border-[#303030] z-[300] flex flex-col">
-              <div className="flex items-center justify-between p-6 border-b border-[#303030]">
-                <span className="text-2xl font-black tracking-tight"><span className="text-white">TROO</span><span className="text-[#E53945]">FLIX</span></span>
-                <button onClick={() => setDrawerOpen(false)} className="p-2 bg-[#171717] rounded-full text-white"><X size={18} /></button>
+            <motion.aside initial={{ x: -320 }} animate={{ x: 0 }} exit={{ x: -320 }} transition={{ type: "spring", damping: 25, stiffness: 200 }} className="fixed top-0 left-0 h-screen w-[300px] bg-[#0a0a0a]/95 backdrop-blur-2xl border-r border-white/10 z-[300] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] flex flex-col shadow-2xl overflow-hidden">
+              <div className="flex items-center justify-between p-6 border-b border-white/5 shrink-0">
+                <span className="text-2xl font-black tracking-tight"><span className="text-white">TROO</span><span className="text-red-600">FLIX</span></span>
+                <button onClick={() => setDrawerOpen(false)} className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition text-white/70 hover:text-white"><X size={18} /></button>
               </div>
-              <div className="p-4"><p className="text-sm text-[#858585]">Navigation Menu</p></div>
+              <div className="flex-1 overflow-y-auto scrollbar-hide p-4 space-y-4 overscroll-contain">
+                <div className="space-y-1">
+                  <Link href="/" onClick={() => setDrawerOpen(false)} className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white font-bold"><HomeIcon size={20} className="text-white/50" /> Home</Link>
+                  <Link href="/creators" onClick={() => setDrawerOpen(false)} className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white/70 hover:text-white font-medium"><Users size={20} className="text-white/50" /> Creators</Link>
+                  <Link href="/feed" onClick={() => setDrawerOpen(false)} className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white/70 hover:text-white font-medium"><Play size={20} className="text-white/50" /> Feed</Link>
+                </div>
+                <div className="h-px bg-white/5 mx-2" />
+                <div className="space-y-1">
+                  <details className="group">
+                    <summary className="flex items-center justify-between px-4 py-3 rounded-xl hover:bg-white/5 transition cursor-pointer list-none text-white/70 hover:text-white font-medium">
+                      <div className="flex items-center gap-4"><Compass size={20} className="text-white/50" /> Categories</div>
+                      <ChevronRight size={16} className="text-white/40 group-open:rotate-90 transition-transform duration-200" />
+                    </summary>
+                    <div className="mt-1 space-y-1 pl-12 pr-4">
+                      {CATEGORIES.map((cat: string) => (
+                        <button key={cat} onClick={() => { setActiveCategory(cat === activeCategory ? null : cat); setActiveTab("Home"); setDrawerOpen(false); }} className={`block w-full text-left px-3 py-2 rounded-lg text-sm transition ${activeCategory === cat ? "text-red-500 bg-red-500/10 font-semibold" : "text-white/50 hover:text-white hover:bg-white/5"}`}>{cat}</button>
+                      ))}
+                    </div>
+                  </details>
+                </div>
+                <div className="h-px bg-white/5 mx-2" />
+                <div className="space-y-1">
+                  <Link href="/books" onClick={() => setDrawerOpen(false)} className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white/70 hover:text-white font-medium"><BookOpen size={20} className="text-white/50" /> Book Store</Link>
+                  <Link href="/merchandise" onClick={() => setDrawerOpen(false)} className="flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-white/5 transition text-white/70 hover:text-white font-medium"><ShoppingBag size={20} className="text-white/50" /> Creator Merchandise</Link>
+                </div>
+              </div>
+              <div className="p-4 border-t border-white/5 shrink-0 space-y-3 bg-black/40">
+                {user ? (
+                  <button onClick={handleLogout} className="flex items-center justify-center gap-2 w-full px-4 py-3.5 rounded-xl bg-red-600 hover:bg-red-500 text-white transition font-bold shadow-lg shadow-red-600/20"><LogOut size={18} /> Log Out</button>
+                ) : (
+                  <Link href="/login" onClick={() => setDrawerOpen(false)} className="flex items-center justify-center gap-2 w-full px-4 py-3.5 rounded-xl bg-red-600 hover:bg-red-500 text-white transition font-bold shadow-lg shadow-red-600/20"><LogIn size={18} /> Log In</Link>
+                )}
+              </div>
             </motion.aside>
           </>
         )}
       </AnimatePresence>
 
+      {loaded && (
+        <>
+          {!showingFiltered && hero && (
+            <AnimatePresence mode="wait">
+              <motion.div key={hero.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.8 }} className="w-full">
+                <Hero video={hero} onPlay={() => handleInstantPlay(hero)} onMore={() => setSelected(hero)} />
+              </motion.div>
+            </AnimatePresence>
+          )}
+          {showingFiltered && <div className="h-20 md:h-24" />}
+
+          <div className="relative z-10 pt-2 md:pt-6 pb-32 md:pb-20 space-y-2 md:space-y-6">
+            {filtered && <SearchResults search={search} videos={videos} creators={creators} onVideoClick={setSelected} />}
+
+            {!filtered && showingFiltered && (
+              <div className="px-4 md:px-12">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl md:text-3xl font-bold">{activeCategory || activeTab}</h2>
+                  {activeCategory && <button onClick={() => setActiveCategory(null)} className="text-sm text-white/50 hover:text-white transition">Clear filter</button>}
+                </div>
+                {displayVideos.length === 0 ? <p className="text-white/40">No videos yet.</p> : <Grid items={displayVideos} onSelect={setSelected} onPlay={handleInstantPlay} />}
+              </div>
+            )}
+
+            {loaded && !filtered && !showingFiltered && (
+              <>
+                <CollectionsRow onSelectCategory={(cat) => { setActiveCategory(cat === activeCategory ? null : cat); setActiveTab("Home"); }} activeCategory={activeCategory} />
+                {continueWatching.length > 0 && <Row title="Continue Watching" items={continueWatching} onSelect={handleCardSelect} onPlay={handleInstantPlay} showCreator={true} creators={creators} />}
+                {newReleases.length > 0 && <Row title="New Releases" items={newReleases} onSelect={handleCardSelect} onPlay={handleInstantPlay} showCreator={true} creators={creators} />}
+                {creators && creators.length > 0 && (
+                  <div className="mt-6">
+                    <div className="flex items-center justify-between px-4 md:px-12 mb-4">
+                      <h2 className="text-lg md:text-xl font-bold flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>Just Joined</h2>
+                      <Link href="/podcasts" className="text-xs font-semibold text-white/50 hover:text-white transition">View all</Link>
+                    </div>
+                    <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide px-4 md:px-12 pb-4">
+                      {[...creators].sort((a: any, b: any) => Number(b.id) - Number(a.id)).slice(0, 15).map((c: any) => (
+                        <Link key={c.id} href={`/podcaster/${c.slug}`} className="flex flex-col items-center gap-2 flex-shrink-0 group w-[80px] md:w-[100px]">
+                          <div className="w-16 h-16 md:w-20 md:h-20 rounded-full p-[2px] bg-gradient-to-tr from-red-600 to-orange-500 group-hover:scale-105 transition-transform">
+                            <div className="w-full h-full rounded-full border-2 border-black overflow-hidden bg-[#1c1c1e]">
+                              {c.photoUrl ? <img src={c.photoUrl} alt={c.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xl font-bold text-white">{c.name?.[0]?.toUpperCase() || "?"}</div>}
+                            </div>
+                          </div>
+                          <span className="text-xs font-semibold text-white/80 group-hover:text-white transition truncate w-full text-center">{c.name || "New Creator"}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {trending.length > 0 && <Row title="Trending Now" items={trending} onSelect={handleCardSelect} onPlay={handleInstantPlay} showCreator={true} creators={creators} />}
+                {latestDocs.length > 0 && <Row title="Latest Documentaries" items={latestDocs} onSelect={handleCardSelect} onPlay={handleInstantPlay} showCreator={true} creators={creators} />}
+                {latestPodcasts.length > 0 && <Row title="Latest Podcasts" items={latestPodcasts} onSelect={handleCardSelect} onPlay={handleInstantPlay} showCreator={true} creators={creators} />}
+                {merchandise.length > 0 && <MerchRow title="Latest Merchandise" items={merchandise} />}
+                {books.length > 0 && <Row title="Latest Books" items={books} onSelect={handleCardSelect} onPlay={handleInstantPlay} />}
+              </>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* MODAL AND PLAYER (No overlapping animations to prevent the poster flash) */}
       <AnimatePresence>
         {selected && <DetailModal item={selected} onClose={() => setSelected(null)} onPlay={handleInstantPlay} creators={creators} />}
       </AnimatePresence>
@@ -239,9 +339,10 @@ export default function Home() {
       {playing && (
         <AppleVideoPlayer
           src={playing.videoUrl ?? playing.bitchuteUrl ?? ""}
+          // Removed the poster prop so it goes straight to black/video instead of flashing the card
           title={playing.title}
           textOverlays={playing?.textOverlays}
-          chapters={(playing as any).chapters || []}
+          chapters={playing.chapters || []}
           onClose={() => setPlaying(null)}
         />
       )}
@@ -252,112 +353,154 @@ export default function Home() {
   );
 }
 
-/* ============ COMPONENTS ============ */
-
-function CollectionCard({ cat }: { cat: { name: string, img: string } }) {
+/* ============ HERO ============ */
+function Hero({ video, onPlay, onMore }: { video: Video; onPlay: () => void; onMore: () => void }) {
   return (
-    <Link 
-      href={`/collections/${cat.name.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`}
-      className="relative rounded-lg overflow-hidden group bg-[#202020] border border-[#303030] hover:border-white/30 transition-colors block"
-      style={{ aspectRatio: '16/9' }}
-    >
-      <img src={cat.img} alt={cat.name} className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-500" />
-      <div className="absolute inset-0 bg-gradient-to-t from-[#080808] via-[#080808]/40 to-transparent" />
-      <div className="absolute bottom-3 left-3 pr-2">
-        <h3 className="text-[10px] md:text-xs font-bold uppercase tracking-wider leading-tight text-white drop-shadow-md">{cat.name}</h3>
+    <section className="relative h-[40vh] md:h-[65vh] w-full">
+      <img src={video.backdropUrl} alt={video.title} className="absolute inset-0 w-full h-full object-cover" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/20 to-transparent" />
+      <div className="relative z-10 flex flex-col justify-center h-full px-4 md:px-12 max-w-2xl pt-20 md:pt-24 pb-0">
+        <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-xs md:text-sm tracking-[0.3em] text-red-500 font-bold mb-3">TROOFLIX PRESENTS</motion.p>
+        <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-4xl md:text-6xl lg:text-7xl font-black leading-[1.05] mb-4 tracking-tight">{video.title}</motion.h1>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="flex items-center gap-3 text-sm mb-4 flex-wrap">
+          <span className="text-white/70">{video.year}</span><span className="border border-white/40 px-1.5 py-0.5 text-xs">{video.rating}</span><span className="text-white/70">{video.type}</span>
+        </motion.div>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="flex gap-3">
+          <button onClick={onPlay} className="flex items-center gap-2 bg-white/20 backdrop-blur-xl border border-white/30 text-white font-bold px-6 md:px-8 py-2.5 md:py-3 rounded-xl shadow-lg hover:bg-white/30 transition-all active:scale-95"><Play size={20} fill="currentColor" /> Play</button>
+          <button onClick={onMore} className="flex items-center gap-2 bg-black/40 backdrop-blur-xl border border-white/20 text-white font-semibold px-5 md:px-7 py-2.5 md:py-3 rounded-xl shadow-lg hover:bg-black/60 transition-all active:scale-95"><Info size={20} /> More Info</button>
+        </motion.div>
       </div>
-    </Link>
+    </section>
   );
 }
 
-function ContentRow({ title, items, onPlay, showProgress = false }: { title: string; items: Video[]; onPlay: (v: Video) => void; showProgress?: boolean }) {
+/* ============ ROW ============ */
+function Row({ title, items, onSelect, onPlay, showCreator, creators }: { title: string; items: Video[]; onSelect: (v: Video) => void; onPlay: (v: Video) => void; showCreator?: boolean; creators?: any[] }) {
   const ref = useRef<HTMLDivElement>(null);
-  
-  const scroll = (dir: "left" | "right") => { 
-    if (!ref.current) return; 
-    const amount = ref.current.clientWidth * 0.75; 
-    ref.current.scrollBy({ left: dir === "left" ? -amount : amount, behavior: "smooth" }); 
-  };
+  const [hovered, setHovered] = useState<number | null>(null);
+  const scroll = (dir: "left" | "right") => { if (!ref.current) return; const amount = ref.current.clientWidth * 0.8; ref.current.scrollBy({ left: dir === "left" ? -amount : amount, behavior: "smooth" }); };
 
   return (
-    <section className="relative group/row">
-      <div className="flex items-end justify-between mb-4">
-        <h2 className="text-xl md:text-2xl font-bold tracking-tight">{title}</h2>
-        <button className="text-xs font-bold text-[#858585] hover:text-white flex items-center gap-1 transition-colors">
-          View All <ChevronRight size={14} />
-        </button>
-      </div>
-      
+    <div className="relative group/row">
+      <h2 className="text-lg md:text-xl font-bold px-4 md:px-12 mb-3">{title}</h2>
       <div className="relative">
-        <button onClick={() => scroll("left")} className="absolute left-0 top-0 bottom-0 z-30 w-12 bg-gradient-to-r from-[#080808] to-transparent opacity-0 group-hover/row:opacity-100 transition-opacity flex items-center justify-start pl-2">
-          <ChevronLeft size={28} className="text-white/70 hover:text-white" />
-        </button>
-
-        <div ref={ref} className="flex gap-4 overflow-x-auto scrollbar-hide pb-4 scroll-smooth">
+        <button onClick={() => scroll("left")} className="hidden md:flex absolute left-0 top-0 bottom-0 z-30 w-12 bg-black/60 hover:bg-black/80 opacity-0 group-hover/row:opacity-100 transition items-center justify-center"><ChevronLeft size={32} /></button>
+        <div ref={ref} className="flex gap-1.5 md:gap-2 overflow-x-auto scrollbar-hide px-4 md:px-12 pb-6 scroll-smooth">
           {items.map((item) => (
-            <div 
-              key={item.id} 
-              onClick={() => onPlay(item)} 
-              className="flex-shrink-0 w-[140px] md:w-[180px] lg:w-[210px] cursor-pointer group/card"
-            >
-              <div className="aspect-[2/3] rounded-lg overflow-hidden bg-[#202020] mb-3 relative border border-[#303030] group-hover/card:border-[#E53945]/50 transition-colors">
-                <img src={item.posterUrl} alt={item.title} className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-500" loading="lazy" />
-                
-                {/* Progress Bar for Continue Watching */}
-                {showProgress && (item as any).progressSeconds && (
-                  <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#303030]">
-                    <div className="h-full bg-[#E53945]" style={{ width: `${((item as any).progressSeconds / (item as any).progressDuration) * 100}%` }} />
-                  </div>
-                )}
-              </div>
-              
-              <p className="text-sm font-bold text-white group-hover/card:text-[#E53945] transition-colors truncate">{item.title}</p>
-              <p className="text-[10px] text-[#858585] uppercase tracking-wider mt-1">{item.type || "Documentary"}</p>
-              <p className="text-[10px] text-[#858585]">{item.year || "2026"}</p>
-            </div>
+            <Card key={item.id} item={item} hovered={hovered === item.id} onHover={() => setHovered(item.id)} onLeave={() => setHovered(null)} onSelect={onSelect} onPlay={onPlay} showCreator={showCreator}
+              creator={showCreator && creators && item.creatorId ? creators.find((c: any) => c.id === item.creatorId) || null : null}
+            />
           ))}
         </div>
-
-        <button onClick={() => scroll("right")} className="absolute right-0 top-0 bottom-0 z-30 w-12 bg-gradient-to-l from-[#080808] to-transparent opacity-0 group-hover/row:opacity-100 transition-opacity flex items-center justify-end pr-2">
-          <ChevronRight size={28} className="text-white/70 hover:text-white" />
-        </button>
+        <button onClick={() => scroll("right")} className="hidden md:flex absolute right-0 top-0 bottom-0 z-30 w-12 bg-black/60 hover:bg-black/80 opacity-0 group-hover/row:opacity-100 transition items-center justify-center"><ChevronRight size={32} /></button>
       </div>
-    </section>
+    </div>
+  );
+}
+
+/* ============ GRID ============ */
+function Grid({ items, onSelect, onPlay }: { items: Video[]; onSelect: (v: Video) => void; onPlay: (v: Video) => void }) {
+  const [hovered, setHovered] = useState<number | null>(null);
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 md:gap-3">
+      {items.map((item) => (
+        <Card key={item.id} item={item} hovered={hovered === item.id} onHover={() => setHovered(item.id)} onLeave={() => setHovered(null)} onSelect={onSelect} onPlay={onPlay} />
+      ))}
+    </div>
+  );
+}
+
+/* ============ CARD ============ */
+function Card({ item, hovered, onHover, onLeave, onSelect, onPlay, showCreator, creator }: any) {
+  const progress = item.progressSeconds && item.progressDuration ? (item.progressSeconds / item.progressDuration) * 100 : 0;
+  return (
+    <motion.div onMouseEnter={onHover} onMouseLeave={onLeave} onClick={() => onSelect(item)} animate={{ scale: hovered ? 1.08 : 1 }} transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }} data-tv-focus
+      className="relative flex-shrink-0 w-[110px] md:w-[140px] aspect-[2/3] rounded overflow-hidden cursor-pointer z-10 hover:z-40 shadow-lg">
+      <img src={item.posterUrl} alt={item.title} className="w-full h-full object-cover" loading="lazy" />
+      {progress > 0 && <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-white/20 z-20"><div className="h-full bg-red-600" style={{ width: `${progress}%` }} /></div>}
+      <div className={`absolute inset-x-0 ${progress > 0 ? 'bottom-[3px]' : 'bottom-0'} bg-gradient-to-t from-black via-black/70 to-transparent p-2 md:p-2.5 flex items-center gap-2`}>
+        {showCreator && creator && (creator.photoUrl ? <img src={creator.photoUrl} alt="" className="w-5 h-5 md:w-6 md:h-6 rounded-full object-cover flex-shrink-0 border border-white/20" /> : <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-[9px] font-bold flex-shrink-0">{(creator.name?.[0] || "?").toUpperCase()}</div>)}
+        <p className="text-[11px] md:text-xs font-bold leading-tight line-clamp-2 text-white">{item.title}</p>
+      </div>
+      {hovered && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }} className="hidden md:flex absolute inset-0 bg-gradient-to-t from-black via-black/90 to-black/40 p-3 flex-col justify-end">
+          <p className="text-sm font-bold mb-2 line-clamp-2">{item.title}</p>
+          <div className="flex items-center gap-2 text-[10px] mb-2.5 flex-wrap"><span className="text-green-500 font-bold">{item.match}%</span><span className="border border-white/50 px-1">{item.rating}</span><span className="text-white/80">{item.year}</span></div>
+          <div className="flex gap-1.5">
+            <button onClick={(e) => { e.stopPropagation(); onPlay(item); }} className="bg-white text-black rounded-full p-1.5 hover:bg-white/80"><Play size={12} fill="black" /></button>
+            <div className="border border-white/60 rounded-full p-1.5 hover:border-white" onClick={(e) => e.stopPropagation()}><SaveButton videoId={item.id} variant="icon" size={12} /></div>
+            <div className="border border-white/60 rounded-full p-1.5 hover:border-white" onClick={(e) => e.stopPropagation()}><LikeButton videoId={item.id} size={12} showCount={false} /></div>
+          </div>
+        </motion.div>
+      )}
+    </motion.div>
   );
 }
 
 /* ============ MODAL ============ */
 function DetailModal({ item, onClose, onPlay, creators }: { item: Video; onClose: () => void; onPlay: (v: Video) => void; creators?: any[] }) {
   const modalContentRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { if (modalContentRef.current) modalContentRef.current.scrollTop = 0; }, [item.id]);
+
   const uploader = item.creatorId ? (creators || []).find((c: any) => c.id === item.creatorId) || null : null;
   const uploaderName = uploader?.name || "TROOFLIX";
   const uploaderPhoto = uploader?.photoUrl || "";
   const uploaderSlug = uploader?.slug || "";
-  
+  const uploaderInitial = uploaderName.charAt(0).toUpperCase();
+
+  const previewRef = useRef<HTMLVideoElement>(null);
+  const [previewReady, setPreviewReady] = useState(false);
+  const videoSrc = item.videoUrl ?? item.bitchuteUrl ?? "";
+
+  useEffect(() => {
+    if (!videoSrc) return;
+    const v = previewRef.current;
+    if (!v) return;
+    const onMeta = () => { try { const dur = v.duration; if (isFinite(dur) && dur > 0) v.currentTime = Math.min(300, dur / 3); } catch {} };
+    const onCanPlay = () => { setPreviewReady(true); v.play().catch(() => {}); };
+    v.addEventListener("loadedmetadata", onMeta);
+    v.addEventListener("canplay", onCanPlay);
+    return () => { v.removeEventListener("loadedmetadata", onMeta); v.removeEventListener("canplay", onCanPlay); v.pause(); try { v.removeAttribute("src"); v.load(); } catch {} };
+  }, [videoSrc]);
+
+  const metaParts: string[] = [item.category];
+  if (item.duration && item.duration.trim()) metaParts.push(item.duration);
+  if (item.year) metaParts.push(String(item.year));
+  if (item.rating) metaParts.push(item.rating);
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4" onClick={onClose}>
-      <motion.div key={item.id} ref={modalContentRef} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.2 }} className="bg-[#101010] border border-[#303030] shadow-2xl rounded-xl relative w-full max-w-4xl overflow-y-auto" style={{ maxHeight: "90dvh" }} onClick={(e) => e.stopPropagation()}>
+      <motion.div key={item.id} ref={modalContentRef} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.2 }} className="bg-[#141414] shadow-2xl rounded-lg relative w-full max-w-4xl overflow-y-auto" style={{ maxHeight: "90dvh" }} onClick={(e) => e.stopPropagation()}>
         <div className="relative h-[260px] md:h-[420px] w-full overflow-hidden">
-          <img src={item.backdropUrl} alt={item.title} className="absolute inset-0 w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#101010] via-[#101010]/50 to-transparent" />
-          <button onClick={onClose} className="absolute top-4 right-4 z-20 bg-black/60 hover:bg-black/90 rounded-full p-2 transition text-white"><X size={20} /></button>
-          <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10">
-            <h2 className="text-3xl md:text-5xl font-black mb-4 drop-shadow-lg">{item.title}</h2>
-            <div className="flex gap-3 flex-wrap">
-              <button onClick={() => onPlay(item)} className="flex items-center gap-2 bg-white text-black font-bold px-8 py-3 rounded-md shadow-lg hover:bg-gray-200 transition-all active:scale-95"><Play size={18} fill="currentColor" /> Play</button>
+          <img src={item.backdropUrl} alt={item.title} className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${previewReady ? "opacity-0" : "opacity-100"}`} />
+          {videoSrc && (
+            <>
+              <video ref={previewRef} src={videoSrc} muted playsInline preload="metadata" className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${previewReady ? "opacity-100" : "opacity-0"}`} />
+              <TextOverlayRenderer overlays={item.textOverlays} />
+            </>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-[#141414]/30 to-transparent" />
+          <button onClick={onClose} className="absolute top-3 right-3 md:top-4 md:right-4 z-20 bg-black/70 hover:bg-black/90 rounded-full p-2 transition" aria-label="Close"><X size={20} /></button>
+
+          <div className="absolute bottom-0 left-0 right-0 p-5 md:p-10">
+            <h2 className="text-3xl md:text-5xl font-black mb-2 md:mb-3 drop-shadow-lg">{item.title}</h2>
+            <p className="text-sm md:text-base text-white/70 mb-4 md:mb-5">{metaParts.join(" · ")}</p>
+            <div className="flex gap-2 md:gap-3 flex-wrap">
+              <button onClick={() => onPlay(item)} className="flex items-center gap-2 bg-white/20 backdrop-blur-xl border border-white/30 text-white font-bold px-6 md:px-8 py-2.5 md:py-3 rounded-xl shadow-lg hover:bg-white/30 transition-all active:scale-95"><Play size={18} fill="currentColor" /> Play</button>
               <SaveButton videoId={item.id} variant="labeled" size={18} />
             </div>
           </div>
         </div>
-        <div className="p-6 md:p-10 space-y-6">
-          <p className="text-[#B3B3B3] leading-relaxed text-sm md:text-base">{item.description}</p>
-          <div className="flex items-center gap-3 pt-4 border-t border-[#303030]">
-            {uploaderPhoto ? <img src={uploaderPhoto} alt={uploaderName} className="w-10 h-10 rounded-full object-cover" /> : <div className="w-10 h-10 rounded-full bg-[#202020] flex items-center justify-center font-bold text-white">{uploaderName[0]}</div>}
+        <div className="p-5 md:p-10 space-y-5">
+          {item.description && <p className="text-white/90 leading-relaxed text-sm md:text-base">{item.description}</p>}
+          <div className="flex items-center gap-3 pt-2 border-t border-white/10">
+            {uploaderPhoto ? <img src={uploaderPhoto} alt={uploaderName} className="w-10 h-10 md:w-11 md:h-11 rounded-full object-cover border border-white/20" /> : <div className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center font-bold text-white">{uploaderInitial}</div>}
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] uppercase tracking-widest text-[#858585]">Uploaded by</p>
-              <p className="font-semibold text-white truncate">{uploaderName}</p>
+              <p className="text-[11px] uppercase tracking-widest text-white/40">Uploaded by</p>
+              {uploaderSlug ? <a href={`/podcaster/${uploaderSlug}`} className="font-semibold text-white hover:underline block truncate">{uploaderName}</a> : <p className="font-semibold text-white truncate">{uploaderName}</p>}
             </div>
-            <div className="w-10 h-10 flex items-center justify-center rounded-full bg-[#171717] hover:bg-[#202020] transition flex-shrink-0"><LikeButton videoId={item.id} size={20} stacked /></div>
+            <div className="w-11 h-11 md:w-12 md:h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition flex-shrink-0"><LikeButton videoId={item.id} size={22} stacked /></div>
           </div>
         </div>
       </motion.div>
