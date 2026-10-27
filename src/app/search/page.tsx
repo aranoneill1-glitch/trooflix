@@ -8,8 +8,8 @@ import MobileBottomNav from "@/components/MobileBottomNav";
 const MAIN_CATEGORIES = [
   { name: "Documentaries", color: "bg-[#E13377]", image: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=300&auto=format&fit=crop" },
   { name: "Podcasts", color: "bg-[#1DB954]", image: "https://unsplash.com/photos/Qruwi3Ur3Ak/download?force=true&w=300" },
-  { name: "Films", color: "bg-[#2E77D0]", image: "https://unsplash.com/photos/mVv8igQaWoI/download?force=true&w=300" },
-  { name: "Book Store", color: "bg-[#8400e7]", image: "https://unsplash.com/photos/_nm_mZ4Cs2I/download?force=true&w=300" },
+  { name: "Independent Films", color: "bg-[#2E77D0]", image: "https://unsplash.com/photos/mVv8igQaWoI/download?force=true&w=300" },
+  { name: "Books", color: "bg-[#8400e7]", image: "https://unsplash.com/photos/_nm_mZ4Cs2I/download?force=true&w=300" },
 ];
 
 const BROWSE_ALL = [
@@ -17,13 +17,13 @@ const BROWSE_ALL = [
   { name: "Politics & Geopolitics", color: "bg-[#006450]", image: "https://unsplash.com/photos/2J5-T03yGQU/download?force=true&w=300" },
   { name: "War & Conflict", color: "bg-[#E53945]", image: "https://unsplash.com/photos/IdtzzG9oxHo/download?force=true&w=300" },
   { name: "True Crime & Justice", color: "bg-[#1e3264]", image: "https://unsplash.com/photos/yYpmCA32U_M/download?force=true&w=300" },
-  { name: "Conspiracy & Unsolved", color: "bg-[#7d4b96]", image: "https://unsplash.com/photos/BxELNNMN88Y/download?force=true&w=300" },
+  { name: "Conspiracy & Mystery", color: "bg-[#7d4b96]", image: "https://unsplash.com/photos/BxELNNMN88Y/download?force=true&w=300" },
   { name: "Society & Culture", color: "bg-[#e86f2c]", image: "https://unsplash.com/photos/ehdsg7SHm6A/download?force=true&w=300" },
   { name: "Business & Finance", color: "bg-[#b28b00]", image: "https://unsplash.com/photos/8lnbXtxFGZw/download?force=true&w=300" },
   { name: "Science & Technology", color: "bg-[#0d73ec]", image: "https://unsplash.com/photos/gMpwyM4Lyuw/download?force=true&w=300" },
   { name: "Environment & Nature", color: "bg-[#00897b]", image: "https://unsplash.com/photos/1Z2niiBPg5A/download?force=true&w=300" },
   { name: "Religion & Spirituality", color: "bg-[#4527A0]", image: "https://unsplash.com/photos/UVssyWRCB24/download?force=true&w=300" },
-  { name: "Ancient History", color: "bg-[#bf360c]", image: "https://unsplash.com/photos/4Wue5DQnxSw/download?force=true&w=300" },
+  { name: "Ancient Civilisation", color: "bg-[#bf360c]", image: "https://unsplash.com/photos/4Wue5DQnxSw/download?force=true&w=300" },
   { name: "Comedy", color: "bg-[#ff9800]", image: "https://unsplash.com/photos/jvNoSUrQkgU/download?force=true&w=300" },
   { name: "News", color: "bg-[#c62828]", image: "https://unsplash.com/photos/hWJsOnaWTqs/download?force=true&w=300" },
   { name: "Gaming", color: "bg-[#673ab7]", image: "https://unsplash.com/photos/lTQKvoDQd2A/download?force=true&w=300" },
