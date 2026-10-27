@@ -224,7 +224,7 @@ export default function MobileBottomNav() {
                   }`}
                 />
               ) : signedIn === false ? (
-                <div className={`w-7 h-7 rounded-full bg-white/10 flex items-center justify-center ${profileActive ? "ring-2 ring-white" : ""}`}>
+                <div className={`w-7 h-7 rounded-xl bg-white/10 flex items-center justify-center ${profileActive ? "ring-2 ring-white" : ""}`}>
                   <span className="w-3 h-3 rounded-full border-2 border-white/70" />
                 </div>
               ) : (

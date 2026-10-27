@@ -218,7 +218,7 @@ export default function CreatorsPage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {filteredCreators.map(c => (
                 <Link key={c.id} href={`/podcaster/${c.slug}`} className="bg-[#171717] border border-[#303030] rounded-2xl p-4 flex flex-col items-center hover:border-[#E53945]/50 transition-colors">
-                  <img src={c.photoUrl} className="w-20 h-20 rounded-full object-cover mb-3" />
+                  <img src={c.photoUrl} className="w-20 h-20 rounded-xl object-cover mb-3" />
                   <p className="font-bold text-white">{c.name}</p>
                   <p className="text-xs text-white/40 mt-1 line-clamp-1">{c.category || "Creator"}</p>
                 </Link>

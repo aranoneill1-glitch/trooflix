@@ -380,7 +380,7 @@ export default function PodcastersPage() {
             }`}
           >
             {c.photoUrl ? (
-              <img src={c.photoUrl} alt={c.name} className="w-12 h-12 object-cover rounded-full" />
+              <img src={c.photoUrl} alt={c.name} className="w-12 h-12 object-cover rounded-xl" />
             ) : (
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-white font-bold">
                 {c.name[0]?.toUpperCase() || "?"}

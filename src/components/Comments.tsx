@@ -315,7 +315,7 @@ export default function Comments({ videoId }: { videoId: number }) {
               style={{ background: userAvatar ? "transparent" : avatarColor(user.email) }}
             >
               {userAvatar ? (
-                <img src={userAvatar} alt="" className="w-full h-full object-cover rounded-full" />
+                <img src={userAvatar} alt="" className="w-full h-full object-cover rounded-xl" />
               ) : (
                 initial(user.email)
               )}
@@ -516,7 +516,7 @@ export default function Comments({ videoId }: { videoId: number }) {
                         style={{ background: userAvatar ? "transparent" : avatarColor(user.email) }}
                       >
                         {userAvatar ? (
-                          <img src={userAvatar} alt="" className="w-full h-full object-cover rounded-full" />
+                          <img src={userAvatar} alt="" className="w-full h-full object-cover rounded-xl" />
                         ) : (
                           initial(user.email)
                         )}

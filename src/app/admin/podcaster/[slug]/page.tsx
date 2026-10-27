@@ -254,7 +254,7 @@ export default function PodcasterVideosPage() {
           </Link>
           <div className="flex items-center gap-3 ml-auto">
             {creator.photoUrl ? (
-              <img src={creator.photoUrl} alt={creator.name} className="w-10 h-10 object-cover rounded-full" />
+              <img src={creator.photoUrl} alt={creator.name} className="w-10 h-10 object-cover rounded-xl" />
             ) : (
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center font-bold">
                 {creator.name[0]?.toUpperCase()}
