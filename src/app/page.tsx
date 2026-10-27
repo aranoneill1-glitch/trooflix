@@ -331,7 +331,6 @@ export default function Home() {
         </>
       )}
 
-      {/* MODAL AND PLAYER (No overlapping animations to prevent the poster flash) */}
       <AnimatePresence>
         {selected && <DetailModal item={selected} onClose={() => setSelected(null)} onPlay={handleInstantPlay} creators={creators} />}
       </AnimatePresence>
@@ -339,7 +338,6 @@ export default function Home() {
       {playing && (
         <AppleVideoPlayer
           src={playing.videoUrl ?? playing.bitchuteUrl ?? ""}
-          // Removed the poster prop so it goes straight to black/video instead of flashing the card
           title={playing.title}
           textOverlays={playing?.textOverlays}
           chapters={playing.chapters || []}

@@ -35,8 +35,6 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/favicon.png" />
         <link rel="apple-touch-icon" href="/favicon.png" />
-        
-        {/* TV Viewport Override */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -63,18 +61,15 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
-                // Block iOS Safari pinch-zoom via gesture events
                 ['gesturestart', 'gesturechange', 'gestureend'].forEach(function(evt) {
                   document.addEventListener(evt, function(e) { e.preventDefault(); }, { passive: false });
                 });
-                // Block double-tap zoom
                 var lastTouch = 0;
                 document.addEventListener('touchend', function(e) {
                   var now = Date.now();
                   if (now - lastTouch <= 300) { e.preventDefault(); }
                   lastTouch = now;
                 }, { passive: false });
-                // Register PWA service worker
                 if ('serviceWorker' in navigator) {
                   window.addEventListener('load', function () {
                     navigator.serviceWorker.register('/sw.js').catch(function () {});
