@@ -1,12 +1,13 @@
 import PushNotificationManager from "@/components/PushNotificationManager";
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Bebas_Neue } from "next/font/google";
 import "./globals.css";
 import TVNavigation from "@/components/TVNavigation";
 import { SearchProvider } from "@/context/SearchContext";
 import CacheWarmer from "@/components/CacheWarmer";
 
 const inter = Inter({ subsets: ["latin"] });
+const bebas = Bebas_Neue({ weight: "400", subsets: ["latin"], variable: "--font-bebas" });
 
 export const metadata: Metadata = {
   title: "Trooflix",
@@ -56,7 +57,7 @@ export default function RootLayout({
         />
       </head>
       <PushNotificationManager />
-      <body className={inter.className}>
+      <body className={`${inter.className} ${bebas.variable}`}>
         <script
           dangerouslySetInnerHTML={{
             __html: `
