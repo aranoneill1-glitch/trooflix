@@ -58,13 +58,13 @@ export default function CreatorsPage() {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="relative z-10 flex flex-col sm:flex-row items-center justify-center gap-4 w-full"
         >
-          <Link href="/signup?type=podcaster" className="group w-full sm:w-auto bg-white text-black font-bold px-8 py-4 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.3)] text-lg flex items-center justify-center gap-2">
+          <Link href="/why-us" className="group w-full sm:w-auto bg-white text-black font-bold px-8 py-4 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.3)] text-lg flex items-center justify-center gap-2">
             Apply as a Creator 
             <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
           </Link>
-          <Link href="/upgrade" className="w-full sm:w-auto bg-white/5 hover:bg-white/10 text-white font-semibold px-8 py-4 rounded-full border border-white/10 backdrop-blur-md transition-all duration-300 text-lg">
+          <button className="w-full sm:w-auto bg-white/5 hover:bg-white/10 text-white font-semibold px-8 py-4 rounded-full border border-white/10 backdrop-blur-md transition-all duration-300 text-lg">
             Why Trooflix
-          </Link>
+          </button>
         </motion.div>
       </div>
 
