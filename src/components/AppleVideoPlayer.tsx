@@ -28,7 +28,7 @@ export default function AppleVideoPlayer({
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isMuted, setIsMuted] = useState(false);
-  const [isSeeking, setIsSeeking] = useState(false); // NEW: Track if dragging
+  const [isSeeking, setIsSeeking] = useState(false);
   const controlsTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // Podcast State
@@ -74,7 +74,7 @@ export default function AppleVideoPlayer({
     return () => clearInterval(interval);
   }, [sleepTimer]);
 
-  // Control Visibility Logic (Now checks for isSeeking)
+  // Control Visibility Logic
   useEffect(() => {
     if (controlsTimeout.current) clearTimeout(controlsTimeout.current);
     
@@ -140,11 +140,11 @@ export default function AppleVideoPlayer({
         </div>
       </div>
 
-      {/* BOTTOM CONTROLS - Clean & Minimal */}
-      <div className={`absolute bottom-0 left-0 right-0 z-50 p-6 pb-[env(safe-area-inset-bottom)] mb-6 transition-opacity duration-300 pointer-events-none ${showControls ? "opacity-100" : "opacity-0"}`}>
+      {/* BOTTOM CONTROLS */}
+      <div className={`absolute bottom-0 left-0 right-0 z-50 p-6 pb-[env(safe-area-inset-bottom)] mb-4 transition-opacity duration-300 pointer-events-none ${showControls ? "opacity-100" : "opacity-0"}`}>
         
         {/* Seek Bar */}
-        <div className="pointer-events-auto w-full px-2 flex items-center gap-4 mb-10">
+        <div className="pointer-events-auto w-full px-2 flex items-center gap-4 mb-8">
           <span className="text-white text-sm font-medium tabular-nums tracking-wide w-12 text-center">{formatTime(currentTime)}</span>
           <div className="relative flex-1 flex items-center h-8">
             <input 
@@ -165,72 +165,62 @@ export default function AppleVideoPlayer({
           <span className="text-white/60 text-sm font-medium tabular-nums tracking-wide w-12 text-center">{formatRemaining(currentTime)}</span>
         </div>
 
-        {/* Playback & Toolbar Controls */}
-        <div className="pointer-events-auto flex items-center justify-center gap-14 relative menu-container">
+        {/* Playback Controls */}
+        <div className="pointer-events-auto flex items-center justify-center gap-12 mb-6">
+          <button onClick={(e) => { e.stopPropagation(); skip(-10); }} className="w-14 h-14 flex items-center justify-center text-white hover:opacity-70 transition relative">
+            <RotateCcw size={28} strokeWidth={2} /><span className="absolute text-[10px] font-bold mt-0.5">10</span>
+          </button>
           
-          {/* LEFT SIDE GROUP */}
-          <div className="relative flex flex-col items-center">
-            {/* Skip Back Button */}
-            <button onClick={(e) => { e.stopPropagation(); skip(-10); }} className="w-14 h-14 flex items-center justify-center text-white hover:opacity-70 transition relative">
-              <RotateCcw size={32} strokeWidth={1.5} /><span className="absolute text-[11px] font-bold mt-1">10</span>
-            </button>
-            
-            {/* Speed Menu (Floating below) */}
-            <div className="absolute top-full mt-6">
-              <button onClick={() => { setShowSpeedMenu(!showSpeedMenu); setShowSleepMenu(false); setShowChaptersMenu(false); }} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold transition ${playbackRate !== 1 ? "text-blue-400" : "text-white/70 hover:text-white"}`}>
-                <Gauge size={16} /> {playbackRate}x
-              </button>
-              <AnimatePresence>
-                {showSpeedMenu && (
-                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-32 bg-[#0f0f12]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden py-1 z-[100]">
-                    {[1, 1.25, 1.5, 1.75, 2].map((rate) => (
-                      <button key={rate} onClick={() => changeSpeed(rate)} className="w-full flex items-center justify-between px-4 py-2 text-sm text-white hover:bg-white/10 transition">{rate}x {playbackRate === rate && <Check size={14} className="text-blue-400" />}</button>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-
-          {/* CENTER: Play/Pause Button */}
-          <button onClick={(e) => { e.stopPropagation(); togglePlay(); }} className="w-20 h-20 rounded-full border-[3px] border-white flex items-center justify-center text-white hover:scale-105 transition shadow-[0_0_20px_rgba(255,255,255,0.2)]">
+          <button onClick={(e) => { e.stopPropagation(); togglePlay(); }} className="w-20 h-20 rounded-full border-[3px] border-white flex items-center justify-center text-white hover:scale-105 transition">
             {isPlaying ? <Pause size={36} fill="white" /> : <Play size={36} fill="white" className="ml-1" />}
           </button>
+          
+          <button onClick={(e) => { e.stopPropagation(); skip(10); }} className="w-14 h-14 flex items-center justify-center text-white hover:opacity-70 transition relative">
+            <RotateCw size={28} strokeWidth={2} /><span className="absolute text-[10px] font-bold mt-0.5">10</span>
+          </button>
+        </div>
 
-          {/* RIGHT SIDE GROUP */}
-          <div className="relative flex flex-col items-center">
-            {/* Skip Forward Button */}
-            <button onClick={(e) => { e.stopPropagation(); skip(10); }} className="w-14 h-14 flex items-center justify-center text-white hover:opacity-70 transition relative">
-              <RotateCw size={32} strokeWidth={1.5} /><span className="absolute text-[11px] font-bold mt-1">10</span>
+        {/* Toolbar (Speed, Sleep Timer, Chapters) */}
+        <div className="pointer-events-auto flex items-center justify-center gap-4 relative menu-container">
+          <div className="relative z-50">
+            <button onClick={() => { setShowSpeedMenu(!showSpeedMenu); setShowSleepMenu(false); setShowChaptersMenu(false); }} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold transition ${playbackRate !== 1 ? "text-blue-400" : "text-white/70 hover:text-white"}`}>
+              <Gauge size={16} /> {playbackRate}x
             </button>
-            
-            {/* Sleep Menu (Floating below) */}
-            <div className="absolute top-full mt-6">
-              <button onClick={() => { setShowSleepMenu(!showSleepMenu); setShowSpeedMenu(false); setShowChaptersMenu(false); }} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold transition ${sleepTimer ? "text-blue-400" : "text-white/70 hover:text-white"}`}>
-                <Moon size={16} /> Sleep
-              </button>
-              <AnimatePresence>
-                {showSleepMenu && (
-                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="absolute bottom-full right-0 mb-2 w-40 bg-[#0f0f12]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden py-1 z-[100]">
-                    <button onClick={() => setTimer(null)} className="w-full flex items-center justify-between px-4 py-2 text-sm text-white hover:bg-white/10 transition">Off {sleepTimer === null && <Check size={14} className="text-blue-400" />}</button>
-                    <button onClick={() => setTimer(15)} className="w-full flex items-center justify-between px-4 py-2 text-sm text-white hover:bg-white/10 transition">15 minutes</button>
-                    <button onClick={() => setTimer(30)} className="w-full flex items-center justify-between px-4 py-2 text-sm text-white hover:bg-white/10 transition">30 minutes</button>
-                    <button onClick={() => setTimer(45)} className="w-full flex items-center justify-between px-4 py-2 text-sm text-white hover:bg-white/10 transition">45 minutes</button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+            <AnimatePresence>
+              {showSpeedMenu && (
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-32 bg-[#0f0f12]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden py-1 z-[100]">
+                  {[1, 1.25, 1.5, 1.75, 2].map((rate) => (
+                    <button key={rate} onClick={() => changeSpeed(rate)} className="w-full flex items-center justify-between px-4 py-2 text-sm text-white hover:bg-white/10 transition">{rate}x {playbackRate === rate && <Check size={14} className="text-blue-400" />}</button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
-          {/* Chapters Button (Hidden for now unless you want it specifically placed, I placed it absolute in the center bottom to not break layout) */}
+          <div className="relative z-50">
+            <button onClick={() => { setShowSleepMenu(!showSleepMenu); setShowSpeedMenu(false); setShowChaptersMenu(false); }} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold transition ${sleepTimer ? "text-blue-400" : "text-white/70 hover:text-white"}`}>
+              <Moon size={16} /> Sleep
+            </button>
+            <AnimatePresence>
+              {showSleepMenu && (
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-40 bg-[#0f0f12]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden py-1 z-[100]">
+                  <button onClick={() => setTimer(null)} className="w-full flex items-center justify-between px-4 py-2 text-sm text-white hover:bg-white/10 transition">Off {sleepTimer === null && <Check size={14} className="text-blue-400" />}</button>
+                  <button onClick={() => setTimer(15)} className="w-full flex items-center justify-between px-4 py-2 text-sm text-white hover:bg-white/10 transition">15 minutes</button>
+                  <button onClick={() => setTimer(30)} className="w-full flex items-center justify-between px-4 py-2 text-sm text-white hover:bg-white/10 transition">30 minutes</button>
+                  <button onClick={() => setTimer(45)} className="w-full flex items-center justify-between px-4 py-2 text-sm text-white hover:bg-white/10 transition">45 minutes</button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
           {chapters.length > 0 && (
-             <div className="absolute -bottom-12 left-1/2 -translate-x-1/2">
-               <button onClick={() => { setShowChaptersMenu(!showChaptersMenu); setShowSpeedMenu(false); setShowSleepMenu(false); }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold text-white/70 hover:text-white transition">
+            <div className="relative z-50">
+              <button onClick={() => { setShowChaptersMenu(!showChaptersMenu); setShowSpeedMenu(false); setShowSleepMenu(false); }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold text-white/70 hover:text-white transition">
                 <List size={16} /> Chapters
               </button>
               <AnimatePresence>
                 {showChaptersMenu && (
-                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 max-h-60 overflow-y-auto bg-[#0f0f12]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl py-1 scrollbar-hide z-[100]">
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="absolute bottom-full right-0 mb-4 w-64 max-h-60 overflow-y-auto bg-[#0f0f12]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl py-1 scrollbar-hide z-[100]">
                     {chapters.map((ch, i) => (
                       <button key={i} onClick={() => { if(videoRef.current) videoRef.current.currentTime = ch.time; setShowChaptersMenu(false); }} className="w-full flex flex-col items-start px-4 py-2 hover:bg-white/10 transition border-b border-white/5 last:border-0">
                         <span className="text-sm font-semibold text-white">{ch.title}</span>
@@ -240,10 +230,10 @@ export default function AppleVideoPlayer({
                   </motion.div>
                 )}
               </AnimatePresence>
-             </div>
+            </div>
           )}
-
         </div>
+
       </div>
     </div>
   );
