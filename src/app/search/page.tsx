@@ -15,7 +15,7 @@ const MAIN_CATEGORIES = [
 const BROWSE_ALL = [
   { name: "History", color: "bg-[#8b5cf6]/60", image: "https://unsplash.com/photos/JioCsloIYro/download?force=true&w=300" },
   { name: "Politics & Geopolitics", color: "bg-[#006450]/60", image: "https://unsplash.com/photos/2J5-T03yGQU/download?force=true&w=300" },
-  { name: "War & Conflict", color: "bg-[#E53945]/60", image: "https://images.unsplash.com/photo-5Mj4PO7KIFc?q=80&w=300&auto=format&fit=crop" },
+  { name: "War & Conflict", color: "bg-[#E53945]/60", image: "https://images.unsplash.com/photo-1579912205439-4cef16dc975e?q=80&w=300&auto=format&fit=crop" },
   { name: "True Crime & Justice", color: "bg-[#1e3264]/60", image: "https://unsplash.com/photos/yYpmCA32U_M/download?force=true&w=300" },
   { name: "Conspiracy & Mystery", color: "bg-[#7d4b96]/60", image: "https://unsplash.com/photos/BxELNNMN88Y/download?force=true&w=300" },
   { name: "Society & Culture", color: "bg-[#e86f2c]/60", image: "https://unsplash.com/photos/ehdsg7SHm6A/download?force=true&w=300" },
@@ -26,7 +26,7 @@ const BROWSE_ALL = [
   { name: "Ancient Civilisation", color: "bg-[#bf360c]/60", image: "https://unsplash.com/photos/4Wue5DQnxSw/download?force=true&w=300" },
   { name: "Comedy", color: "bg-[#ff9800]/60", image: "https://unsplash.com/photos/jvNoSUrQkgU/download?force=true&w=300" },
   { name: "News", color: "bg-[#c62828]/60", image: "https://unsplash.com/photos/hWJsOnaWTqs/download?force=true&w=300" },
-  { name: "Gaming", color: "bg-[#673ab7]/60", image: "https://images.unsplash.com/photo-Mf23RF8xArY?q=80&w=300&auto=format&fit=crop" },
+  { name: "Gaming", color: "bg-[#673ab7]/60", image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=300&auto=format&fit=crop" },
 ];
 
 // Mock data to match your screenshot exactly
