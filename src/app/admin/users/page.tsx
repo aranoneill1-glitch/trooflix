@@ -10,7 +10,7 @@ type Profile = {
   display_name?: string | null;
   username?: string | null;
   avatar_url?: string | null;
-  tier?: "user" | "pro" | "podcaster";
+  tier?: "user" | "podcaster";
   is_verified?: boolean;
 };
 
@@ -38,7 +38,7 @@ export default function AdminUsersPage() {
     load();
   }, []);
 
-  const setTier = async (userId: string, tier: "user" | "pro" | "podcaster") => {
+  const setTier = async (userId: string, tier: "user" | "podcaster") => {
     setUpdating(userId);
     try {
       const res = await fetch("/api/admin/set-tier", {
@@ -179,14 +179,13 @@ export default function AdminUsersPage() {
               <select
                 value={u.tier || "user"}
                 onChange={(e) =>
-                  setTier(u.user_id, e.target.value as "user" | "pro" | "podcaster")
+                  setTier(u.user_id, e.target.value as "user" | "podcaster")
                 }
                 disabled={updating === u.user_id}
                 className="bg-black/40 border border-white/10 rounded px-3 py-1.5 text-sm outline-none focus:border-red-600 disabled:opacity-50"
               >
-                <option value="user">User</option>
-                <option value="pro">Pro</option>
-                <option value="podcaster">Podcaster</option>
+                <option value="user">TrooPass</option>
+                <option value="podcaster">Creator</option>
               </select>
 
               <button
