@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
-import { Search, LogOut, Home, ShoppingBag, Plus, Video, Radio, X } from "lucide-react";
+import { Search, LogOut, Home, ShoppingBag, Camera, Video, Radio, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Capacitor } from "@capacitor/core";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
@@ -265,7 +265,7 @@ export default function MobileBottomNav() {
                 whileTap={{ scale: 0.9 }} 
                 className="w-10 h-10 bg-[#E53945] rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(229,57,69,0.4)] border-2 border-[#0a0a0a]"
               >
-                <Plus size={24} className="text-white" strokeWidth={3} />
+                <Camera size={22} className="text-white" strokeWidth={2.5} />
               </motion.div>
             </div>
           ) : (
