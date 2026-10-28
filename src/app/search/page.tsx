@@ -1,58 +1,64 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Search, X, Play, UserPlus, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
-import { Search, X, MoreHorizontal, Plus, CheckCircle2 } from "lucide-react";
 import MobileBottomNav from "@/components/MobileBottomNav";
-
-const MAIN_CATEGORIES = [
-  { name: "Documentaries", color: "bg-[#E13377]/60", image: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=300&auto=format&fit=crop" },
-  { name: "Podcasts", color: "bg-[#1DB954]/60", image: "https://unsplash.com/photos/Qruwi3Ur3Ak/download?force=true&w=300" },
-  { name: "Independent Films", color: "bg-[#2E77D0]/60", image: "https://unsplash.com/photos/mVv8igQaWoI/download?force=true&w=300" },
-  { name: "Books", color: "bg-[#8400e7]/60", image: "https://unsplash.com/photos/_nm_mZ4Cs2I/download?force=true&w=300" },
-];
-
-const BROWSE_ALL = [
-  { name: "History", color: "bg-[#8b5cf6]/60", image: "https://unsplash.com/photos/JioCsloIYro/download?force=true&w=300" },
-  { name: "Politics & Geopolitics", color: "bg-[#006450]/60", image: "https://unsplash.com/photos/2J5-T03yGQU/download?force=true&w=300" },
-  { name: "War & Conflict", color: "bg-[#E53945]/60", image: "https://images.unsplash.com/photo-1579912205439-4cef16dc975e?q=80&w=300&auto=format&fit=crop" },
-  { name: "True Crime & Justice", color: "bg-[#1e3264]/60", image: "https://unsplash.com/photos/yYpmCA32U_M/download?force=true&w=300" },
-  { name: "Conspiracy & Mystery", color: "bg-[#7d4b96]/60", image: "https://unsplash.com/photos/BxELNNMN88Y/download?force=true&w=300" },
-  { name: "Society & Culture", color: "bg-[#e86f2c]/60", image: "https://unsplash.com/photos/ehdsg7SHm6A/download?force=true&w=300" },
-  { name: "Business & Finance", color: "bg-[#b28b00]/60", image: "https://unsplash.com/photos/8lnbXtxFGZw/download?force=true&w=300" },
-  { name: "Science & Technology", color: "bg-[#0d73ec]/60", image: "https://unsplash.com/photos/gMpwyM4Lyuw/download?force=true&w=300" },
-  { name: "Environment & Nature", color: "bg-[#00897b]/60", image: "https://unsplash.com/photos/1Z2niiBPg5A/download?force=true&w=300" },
-  { name: "Religion & Spirituality", color: "bg-[#4527A0]/60", image: "https://unsplash.com/photos/UVssyWRCB24/download?force=true&w=300" },
-  { name: "Ancient Civilisation", color: "bg-[#bf360c]/60", image: "https://unsplash.com/photos/4Wue5DQnxSw/download?force=true&w=300" },
-  { name: "Comedy", color: "bg-[#ff9800]/60", image: "https://unsplash.com/photos/jvNoSUrQkgU/download?force=true&w=300" },
-  { name: "News", color: "bg-[#c62828]/60", image: "https://unsplash.com/photos/hWJsOnaWTqs/download?force=true&w=300" },
-  { name: "Gaming", color: "bg-[#673ab7]/60", image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=300&auto=format&fit=crop" },
-];
-
-const MOCK_RESULTS = [
-  { id: 1, type: "artist", title: "Dr. Dre", subtitle: "Artist", image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&q=80", verified: true },
-  { id: 2, type: "artist", title: "Dreletronic", subtitle: "Artist", image: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=200&q=80", verified: false },
-  { id: 3, type: "song", title: "Still D.R.E.", subtitle: "Song • Dr. Dre, Snoop Dogg", image: "https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=200&q=80", explicit: true },
-  { id: 4, type: "song", title: "Dream Come True", subtitle: "Song • Freya Skye, Malachi Barton, Z...", image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200&q=80", explicit: false },
-  { id: 5, type: "song", title: "Dreiton", subtitle: "Song • C418", image: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=200&q=80", explicit: false },
-  { id: 6, type: "artist", title: "Dregermajster Crew", subtitle: "Artist", image: "https://images.unsplash.com/photo-1520872024865-3ff2805d8bb3?w=200&q=80", verified: false },
-  { id: 7, type: "song", title: "(dream)", subtitle: "Song • salvia palth", image: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=200&q=80", explicit: false },
-  { id: 8, type: "artist", title: "Drake", subtitle: "Artist", image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80", verified: true },
-  { id: 9, type: "album", title: "2001", subtitle: "Album • Dr. Dre", image: "https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=200&q=80", explicit: true },
-];
+import { createClient } from "@/utils/supabase/client";
 
 export default function SearchPage() {
   const [query, setQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  
+  const [allVideos, setAllVideos] = useState<any[]>([]);
+  const [allCreators, setAllCreators] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      const supabase = createClient();
+      
+      // Fetch real videos from Vercel KV
+      const videosPromise = fetch("/api/videos", { cache: "no-store" })
+        .then(r => r.json())
+        .catch(() => []);
+
+      // Fetch real creators from Supabase
+      const creatorsPromise = supabase
+        .from("profiles")
+        .select("creator_id, display_name, username, avatar_url, is_verified, tier")
+        .eq("tier", "creator")
+        .then(res => res.data || []);
+
+      const [videosData, creatorsData] = await Promise.all([videosPromise, creatorsPromise]);
+      
+      setAllVideos(Array.isArray(videosData) ? videosData : []);
+      setAllCreators(Array.isArray(creatorsData) ? creatorsData : []);
+      setLoading(false);
+    }
+    loadData();
+  }, []);
 
   const handleCancel = () => {
     setQuery("");
     setIsSearching(false);
   };
 
+  // Filter logic
+  const filteredVideos = query.length > 0 ? allVideos.filter(v => 
+    v.title?.toLowerCase().includes(query.toLowerCase()) || 
+    v.description?.toLowerCase().includes(query.toLowerCase())
+  ) : [];
+
+  const filteredCreators = query.length > 0 ? allCreators.filter(c => 
+    c.display_name?.toLowerCase().includes(query.toLowerCase()) || 
+    c.username?.toLowerCase().includes(query.toLowerCase())
+  ) : [];
+
+  const hasResults = filteredVideos.length > 0 || filteredCreators.length > 0;
+
   return (
     <main className="min-h-screen bg-[#0a0a0a] text-white pb-24 font-sans relative">
-      {/* Background ambient glow for glass effect */}
       <div className="fixed top-0 left-0 w-full h-96 bg-gradient-to-b from-white/5 to-transparent pointer-events-none z-0" />
       
       <div className="relative z-10">
@@ -69,7 +75,7 @@ export default function SearchPage() {
                   <input
                     type="text"
                     autoFocus
-                    className="w-full bg-white/10 backdrop-blur-xl text-white placeholder:text-white/50 rounded-full py-3 pl-11 pr-12 border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/30 shadow-lg"
+                    className="w-full bg-white/10 backdrop-blur-xl text-white placeholder:text-white/50 rounded-full py-3 pl-11 pr-10 border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/30 shadow-lg text-[15px]"
                     placeholder="Search creators, shows, documentaries..."
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
@@ -109,76 +115,93 @@ export default function SearchPage() {
 
           {/* SCROLLING CONTENT */}
           <div className="px-4 pt-4">
-            {isSearching ? (
-              <div className="flex flex-col space-y-4 pb-10">
-                {MOCK_RESULTS.map((item) => (
-                  <div key={item.id} className="flex items-center justify-between group cursor-pointer hover:bg-white/5 p-1 -mx-1 rounded-md transition">
-                    <div className="flex items-center gap-4 flex-1 min-w-0">
-                      {item.type === "artist" ? (
-                        <img src={item.image} alt={item.title} className="w-12 h-12 rounded-full object-cover shrink-0" />
-                      ) : (
-                        <img src={item.image} alt={item.title} className="w-12 h-12 rounded-sm object-cover shrink-0" />
-                      )}
-                      <div className="flex flex-col min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          {item.explicit && (
-                            <span className="bg-gray-500 text-black text-[10px] font-bold px-1 rounded-sm flex items-center justify-center">E</span>
-                          )}
-                          <span className="text-white font-semibold text-base truncate">{item.title}</span>
-                          {item.verified && <CheckCircle2 size={16} className="text-[#1ed760] shrink-0" fill="currentColor" />}
-                        </div>
-                        <span className="text-sm text-gray-400 truncate">
-                          {item.subtitle}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4 pl-2 shrink-0">
-                      {item.type !== "artist" && (
-                        <MoreHorizontal size={20} className="text-gray-400 opacity-0 group-hover:opacity-100 transition" />
-                      )}
-                      <Plus size={24} className="text-gray-400 hover:text-white transition" />
+            {loading ? (
+              <div className="flex justify-center py-20">
+                <div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" />
+              </div>
+            ) : isSearching || query.length > 0 ? (
+              
+              // SEARCH RESULTS VIEW
+              <div className="flex flex-col space-y-6 pb-10">
+                {!hasResults && query.length > 0 && (
+                  <div className="text-center py-10 text-white/50">
+                    No results found for "{query}".
+                  </div>
+                )}
+
+                {/* Creators Section */}
+                {filteredCreators.length > 0 && (
+                  <div>
+                    <h3 className="text-xs font-bold text-white/40 uppercase tracking-wider mb-3">Creators</h3>
+                    <div className="flex flex-col space-y-3">
+                      {filteredCreators.map((creator) => (
+                        <Link key={creator.creator_id} href={`/podcaster/${creator.username || creator.creator_id}`} className="flex items-center gap-4 group hover:bg-white/5 p-2 -mx-2 rounded-xl transition">
+                          <div className="w-12 h-12 rounded-full overflow-hidden bg-[#1c1c1e] shrink-0 border border-white/10">
+                            {creator.avatar_url ? (
+                              <img src={creator.avatar_url} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center font-bold text-lg text-white/50">
+                                {creator.display_name?.[0] || "C"}
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-white font-bold text-base group-hover:text-[#E53945] transition-colors">{creator.display_name}</span>
+                              {creator.is_verified && <CheckCircle2 size={14} className="text-[#1ed760]" fill="currentColor" />}
+                            </div>
+                            <span className="text-sm text-white/50">@{creator.username}</span>
+                          </div>
+                        </Link>
+                      ))}
                     </div>
                   </div>
+                )}
+
+                {/* Videos Section */}
+                {filteredVideos.length > 0 && (
+                  <div>
+                    <h3 className="text-xs font-bold text-white/40 uppercase tracking-wider mb-3">Videos & Podcasts</h3>
+                    <div className="flex flex-col space-y-3">
+                      {filteredVideos.map((video) => (
+                        <Link key={video.id} href={`/watch/${video.id}`} className="flex items-center gap-4 group hover:bg-white/5 p-2 -mx-2 rounded-xl transition">
+                          <div className="relative w-28 h-16 rounded-lg overflow-hidden bg-[#1c1c1e] shrink-0 border border-white/10">
+                            <img src={video.posterUrl || video.backdropUrl} alt="" className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Play size={16} fill="white" />
+                            </div>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <span className="text-white font-bold text-sm block truncate group-hover:text-[#E53945] transition-colors">{video.title}</span>
+                            <span className="text-xs text-white/50">{video.type || "Video"} • {video.duration}</span>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+            ) : (
+              
+              // CATEGORY GRID VIEW (When not searching)
+              <div className="grid grid-cols-2 gap-4 mb-8">
+                {[
+                  { name: "Documentaries", color: "bg-[#E13377]/60", image: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=300&auto=format&fit=crop" },
+                  { name: "Podcasts", color: "bg-[#1DB954]/60", image: "https://unsplash.com/photos/Qruwi3Ur3Ak/download?force=true&w=300" },
+                  { name: "Independent Films", color: "bg-[#2E77D0]/60", image: "https://unsplash.com/photos/mVv8igQaWoI/download?force=true&w=300" },
+                  { name: "Books", color: "bg-[#8400e7]/60", image: "https://unsplash.com/photos/_nm_mZ4Cs2I/download?force=true&w=300" },
+                ].map((cat) => (
+                  <Link key={cat.name} href={`/search/${encodeURIComponent(cat.name.toLowerCase().replace(/ & /g, "-").replace(/ /g, "-"))}`} className={`${cat.color} backdrop-blur-xl border border-white/20 rounded-xl p-4 h-24 relative overflow-hidden cursor-pointer group shadow-lg hover:bg-white/10 transition-colors block`}>
+                    <h2 className="text-xl font-bold relative z-10 text-white drop-shadow-md">{cat.name}</h2>
+                    <img 
+                      src={cat.image} 
+                      alt={cat.name} 
+                      className="absolute -right-2 -bottom-2 w-20 h-20 object-cover rotate-[25deg] shadow-2xl rounded-sm group-hover:scale-105 transition-transform duration-500 border border-white/10" 
+                    />
+                  </Link>
                 ))}
               </div>
-            ) : (
-              <>
-                {/* Top Main Categories Grid */}
-                <div className="grid grid-cols-2 gap-4 mb-8">
-                  {MAIN_CATEGORIES.map((cat) => (
-                    <Link key={cat.name} href={`/search/${encodeURIComponent(cat.name.toLowerCase().replace(/ & /g, "-").replace(/ /g, "-"))}`} className={`${cat.color} backdrop-blur-xl border border-white/20 rounded-xl p-4 h-24 relative overflow-hidden cursor-pointer group shadow-lg hover:bg-white/10 transition-colors block`}>
-                      <h2 className="text-xl font-bold relative z-10 text-white drop-shadow-md">{cat.name}</h2>
-                      <img 
-                        src={cat.image} 
-                        alt={cat.name} 
-                        className="absolute -right-2 -bottom-2 w-20 h-20 object-cover rotate-[25deg] shadow-2xl rounded-sm group-hover:scale-105 transition-transform duration-500 border border-white/10" 
-                      /></Link>
-                  ))}
-                </div>
-
-                {/* New Explore Collections Header */}
-                <div className="mb-4 mt-2">
-                  <p className="text-[10px] md:text-xs tracking-[0.4em] text-white/50 font-semibold mb-1">
-                    EXPLORE OUR COLLECTIONS
-                  </p>
-                  <h2 className="text-2xl md:text-4xl font-black tracking-tight">
-                    Discover Something <span className="text-red-600">Real</span>
-                  </h2>
-                </div>
-
-                {/* Browse All Grid */}
-                <div className="grid grid-cols-2 gap-4">
-                  {BROWSE_ALL.map((cat) => (
-                    <Link key={cat.name} href={`/search/${encodeURIComponent(cat.name.toLowerCase().replace(/ & /g, "-").replace(/ /g, "-"))}`} className={`${cat.color} backdrop-blur-xl border border-white/20 rounded-xl p-4 h-24 relative overflow-hidden cursor-pointer group shadow-lg hover:bg-white/10 transition-colors block`}>
-                      <h2 className="text-lg font-bold relative z-10 text-white drop-shadow-md leading-tight">{cat.name}</h2>
-                      <img 
-                        src={cat.image} 
-                        alt={cat.name} 
-                        className="absolute -right-2 -bottom-2 w-16 h-16 md:w-20 md:h-20 object-cover rotate-[25deg] shadow-2xl rounded-sm group-hover:scale-105 transition-transform duration-500 border border-white/10" 
-                      /></Link>
-                  ))}
-                </div>
-              </>
             )}
           </div>
 
