@@ -109,10 +109,14 @@ export default function CreatorDashboardPage() {
           xHandle: editForm.x
         })
       });
+      
+      const data = await res.json();
+      
       if (res.ok) {
-        const data = await res.json();
         setProfile(data.profile);
         setIsEditModalOpen(false);
+      } else {
+        alert("Failed to save: " + (data.error || "Unknown error. Did you add the new columns to Supabase?"));
       }
     } catch (err) {
       console.error(err);
@@ -148,18 +152,52 @@ export default function CreatorDashboardPage() {
             
             <div className="p-4 overflow-y-auto space-y-4 max-h-[60vh]">
               <div>
-                <label className="block text-xs font-bold text-white/60 mb-1">Profile Picture URL</label>
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full overflow-hidden bg-black shrink-0">
-                    {editForm.avatarUrl ? <img src={editForm.avatarUrl} className="w-full h-full object-cover" /> : <Camera className="m-auto mt-3 text-white/30" size={20} />}
+                <label className="block text-xs font-bold text-white/60 mb-1">Profile Picture</label>
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-full overflow-hidden bg-black shrink-0 border border-white/10 relative group cursor-pointer" onClick={() => document.getElementById('avatar-upload')?.click()}>
+                    {editForm.avatarUrl ? (
+                      <img src={editForm.avatarUrl} className="w-full h-full object-cover" />
+                    ) : (
+                      <Camera className="m-auto mt-5 text-white/30" size={24} />
+                    )}
+                    <div className="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center">
+                      <Pencil size={16} className="text-white" />
+                    </div>
                   </div>
-                  <input 
-                    type="text" 
-                    value={editForm.avatarUrl}
-                    onChange={(e) => setEditForm({...editForm, avatarUrl: e.target.value})}
-                    className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-sm text-white focus:border-[#E53945] outline-none"
-                    placeholder="https://..."
-                  />
+                  <div className="flex-1">
+                    <input 
+                      id="avatar-upload"
+                      type="file" 
+                      accept="image/*"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        
+                        // Show loading state
+                        setSavingProfile(true);
+                        const formData = new FormData();
+                        formData.append("file", file);
+                        
+                        try {
+                          const res = await fetch("/api/upload-avatar", { method: "POST", body: formData });
+                          const data = await res.json();
+                          if (data.url) {
+                            setEditForm({...editForm, avatarUrl: data.url});
+                          } else {
+                            alert("Upload failed: " + data.error);
+                          }
+                        } catch (err) {
+                          alert("Error uploading image");
+                        } finally {
+                          setSavingProfile(false);
+                        }
+                      }}
+                      className="hidden"
+                    />
+                    <button onClick={() => document.getElementById('avatar-upload')?.click()} className="bg-white/10 hover:bg-white/20 text-white text-xs font-bold py-2 px-4 rounded-lg transition">
+                      Select Photo
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -532,18 +570,52 @@ export default function CreatorDashboardPage() {
             
             <div className="p-4 overflow-y-auto space-y-4 max-h-[60vh]">
               <div>
-                <label className="block text-xs font-bold text-white/60 mb-1">Profile Picture URL</label>
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full overflow-hidden bg-black shrink-0">
-                    {editForm.avatarUrl ? <img src={editForm.avatarUrl} className="w-full h-full object-cover" /> : <Camera className="m-auto mt-3 text-white/30" size={20} />}
+                <label className="block text-xs font-bold text-white/60 mb-1">Profile Picture</label>
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-full overflow-hidden bg-black shrink-0 border border-white/10 relative group cursor-pointer" onClick={() => document.getElementById('avatar-upload')?.click()}>
+                    {editForm.avatarUrl ? (
+                      <img src={editForm.avatarUrl} className="w-full h-full object-cover" />
+                    ) : (
+                      <Camera className="m-auto mt-5 text-white/30" size={24} />
+                    )}
+                    <div className="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center">
+                      <Pencil size={16} className="text-white" />
+                    </div>
                   </div>
-                  <input 
-                    type="text" 
-                    value={editForm.avatarUrl}
-                    onChange={(e) => setEditForm({...editForm, avatarUrl: e.target.value})}
-                    className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-sm text-white focus:border-[#E53945] outline-none"
-                    placeholder="https://..."
-                  />
+                  <div className="flex-1">
+                    <input 
+                      id="avatar-upload"
+                      type="file" 
+                      accept="image/*"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        
+                        // Show loading state
+                        setSavingProfile(true);
+                        const formData = new FormData();
+                        formData.append("file", file);
+                        
+                        try {
+                          const res = await fetch("/api/upload-avatar", { method: "POST", body: formData });
+                          const data = await res.json();
+                          if (data.url) {
+                            setEditForm({...editForm, avatarUrl: data.url});
+                          } else {
+                            alert("Upload failed: " + data.error);
+                          }
+                        } catch (err) {
+                          alert("Error uploading image");
+                        } finally {
+                          setSavingProfile(false);
+                        }
+                      }}
+                      className="hidden"
+                    />
+                    <button onClick={() => document.getElementById('avatar-upload')?.click()} className="bg-white/10 hover:bg-white/20 text-white text-xs font-bold py-2 px-4 rounded-lg transition">
+                      Select Photo
+                    </button>
+                  </div>
                 </div>
               </div>
 
