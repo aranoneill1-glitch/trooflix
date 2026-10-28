@@ -21,6 +21,28 @@ export default function UploadContentPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
+  // Helper to upload directly to R2
+  const uploadToR2 = async (file: File) => {
+    const res = await fetch("/api/r2-upload", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ filename: file.name, contentType: file.type }),
+    });
+    
+    const { uploadUrl, publicUrl, error } = await res.json();
+    if (error) throw new Error(error);
+
+    // PUT the file directly to Cloudflare
+    const uploadRes = await fetch(uploadUrl, {
+      method: "PUT",
+      body: file,
+      headers: { "Content-Type": file.type },
+    });
+
+    if (!uploadRes.ok) throw new Error("Failed to upload to R2");
+    return publicUrl;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -39,24 +61,14 @@ export default function UploadContentPage() {
       let uploadedMediaUrl = "";
       let uploadedThumbnailUrl = "";
 
-      // 1. Upload Media File if it exists
+      // 1. Upload Media File directly to R2
       if (mediaFile) {
-        const mediaData = new FormData();
-        mediaData.append("file", mediaFile);
-        const mediaRes = await fetch("/api/upload", { method: "POST", body: mediaData });
-        const mediaJson = await mediaRes.json();
-        if (mediaJson.url) uploadedMediaUrl = mediaJson.url;
-        else throw new Error("Media upload failed");
+        uploadedMediaUrl = await uploadToR2(mediaFile);
       }
 
-      // 2. Upload Thumbnail File if it exists
+      // 2. Upload Thumbnail File directly to R2
       if (thumbnailFile) {
-        const thumbData = new FormData();
-        thumbData.append("file", thumbnailFile);
-        const thumbRes = await fetch("/api/upload", { method: "POST", body: thumbData });
-        const thumbJson = await thumbRes.json();
-        if (thumbJson.url) uploadedThumbnailUrl = thumbJson.url;
-        else throw new Error("Thumbnail upload failed");
+        uploadedThumbnailUrl = await uploadToR2(thumbnailFile);
       }
 
       // 3. Save to Vercel KV
@@ -80,9 +92,9 @@ export default function UploadContentPage() {
       setTimeout(() => {
         router.push("/creator-dashboard");
       }, 2000);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Upload failed. Check the console.");
+      alert("Upload failed: " + err.message);
     } finally {
       setLoading(false);
     }
@@ -111,13 +123,12 @@ export default function UploadContentPage() {
           </Link>
           <div>
             <h1 className="text-2xl font-bold">Upload Content</h1>
-            <p className="text-sm text-white/50">Post to the Feed, Categories, and your Profile.</p>
+            <p className="text-sm text-white/50">Files upload directly to Cloudflare R2.</p>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           
-          {/* Type Selector */}
           <div className="grid grid-cols-3 gap-2">
             <button type="button" onClick={() => setContentType("video")} className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition ${contentType === "video" ? "bg-[#E53945]/10 border-[#E53945] text-[#E53945]" : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10"}`}>
               <Video size={24} />
@@ -133,7 +144,6 @@ export default function UploadContentPage() {
             </button>
           </div>
 
-          {/* Form Fields */}
           <div className="space-y-4">
             <div>
               <label className="block text-xs font-bold text-white/60 mb-1">Title</label>
@@ -147,48 +157,24 @@ export default function UploadContentPage() {
 
             {contentType !== "tweet" && (
               <>
-                {/* Media File Upload */}
                 <div>
                   <label className="block text-xs font-bold text-white/60 mb-1">Media File (Video or Audio)</label>
-                  <div 
-                    onClick={() => document.getElementById('media-upload')?.click()}
-                    className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] hover:bg-white/5 transition"
-                  >
+                  <div onClick={() => document.getElementById('media-upload')?.click()} className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] hover:bg-white/5 transition">
                     <UploadCloud size={24} className="text-white/50 mb-2" />
-                    <span className="text-sm font-bold text-white">
-                      {mediaFile ? mediaFile.name : "Tap to select video or audio"}
-                    </span>
-                    <span className="text-xs text-white/40 mt-1">MP4, MOV, MP3 (Max 50MB)</span>
+                    <span className="text-sm font-bold text-white">{mediaFile ? mediaFile.name : "Tap to select video or audio"}</span>
+                    <span className="text-xs text-white/40 mt-1">MP4, MOV, MP3</span>
                   </div>
-                  <input 
-                    id="media-upload" 
-                    type="file" 
-                    accept="video/*,audio/*" 
-                    onChange={(e) => setMediaFile(e.target.files?.[0] || null)} 
-                    className="hidden" 
-                  />
+                  <input id="media-upload" type="file" accept="video/*,audio/*" onChange={(e) => setMediaFile(e.target.files?.[0] || null)} className="hidden" />
                 </div>
 
-                {/* Thumbnail File Upload */}
                 <div>
                   <label className="block text-xs font-bold text-white/60 mb-1">Thumbnail Image</label>
-                  <div 
-                    onClick={() => document.getElementById('thumb-upload')?.click()}
-                    className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] hover:bg-white/5 transition"
-                  >
+                  <div onClick={() => document.getElementById('thumb-upload')?.click()} className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] hover:bg-white/5 transition">
                     <ImageIcon size={24} className="text-white/50 mb-2" />
-                    <span className="text-sm font-bold text-white">
-                      {thumbnailFile ? thumbnailFile.name : "Tap to select thumbnail image"}
-                    </span>
+                    <span className="text-sm font-bold text-white">{thumbnailFile ? thumbnailFile.name : "Tap to select thumbnail image"}</span>
                     <span className="text-xs text-white/40 mt-1">JPG, PNG, WEBP</span>
                   </div>
-                  <input 
-                    id="thumb-upload" 
-                    type="file" 
-                    accept="image/*" 
-                    onChange={(e) => setThumbnailFile(e.target.files?.[0] || null)} 
-                    className="hidden" 
-                  />
+                  <input id="thumb-upload" type="file" accept="image/*" onChange={(e) => setThumbnailFile(e.target.files?.[0] || null)} className="hidden" />
                 </div>
               </>
             )}
