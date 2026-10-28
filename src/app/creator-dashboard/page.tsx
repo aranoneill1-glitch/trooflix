@@ -502,9 +502,9 @@ export default function CreatorDashboardPage() {
         {isDashboardView && (
           <div className="animate-in fade-in duration-300 space-y-8">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <Link href="/creator-dashboard/upload" className="bg-[#1c1c1e] border border-white/10 hover:border-[#E53945] p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
+              <Link href="/creator-dashboard/manage-content" className="bg-[#1c1c1e] border border-white/10 hover:border-[#E53945] p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
                 <Video className="text-[#E53945]" size={24} />
-                <span className="text-xs font-bold">Upload Content</span>
+                <span className="text-xs font-bold">Manage Content</span>
               </Link>
               <Link href="/studio/shop" className="bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
                 <ShoppingBag className="text-white" size={24} />
