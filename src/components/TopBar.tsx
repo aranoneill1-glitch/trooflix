@@ -88,6 +88,13 @@ export default function TopBar({ onMenu }: Props) {
 
       {/* Right side */}
       <div className="ml-auto flex items-center gap-4 md:gap-5">
+        <Link
+          href="/messages"
+          className="text-white/90 hover:text-white transition flex md:hidden"
+          aria-label="Messages"
+        >
+          <MessageCircle size={20} />
+        </Link>
         <NotificationBell />
 
         <div className="hidden md:flex items-center gap-3">
