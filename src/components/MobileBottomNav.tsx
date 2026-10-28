@@ -230,7 +230,10 @@ export default function MobileBottomNav() {
           >
             <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }}>
               <div className="flex flex-col items-center justify-center leading-none pt-1">
-                <span className="text-[10px] font-black text-white tracking-tight">TROOFLIX</span>
+                <div className="flex items-center">
+                  <span className="text-[20px] font-black text-white tracking-tighter">T</span>
+                  <span className="text-[20px] font-black text-[#E53945] tracking-tighter">F</span>
+                </div>
                 <span className={`text-[8px] font-bold tracking-[0.2em] uppercase mt-1 ${isCreator ? 'text-blue-400' : 'text-[#E53945]'}`}>
                   {isCreator ? "Creator" : "Plus"}
                 </span>
