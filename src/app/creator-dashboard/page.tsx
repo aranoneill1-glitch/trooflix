@@ -23,7 +23,6 @@ const DEMO_UPLOADS = [
   { id: 2, title: "The Truth About Big Tech", image: "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=500&q=80", status: "Published", views: "840", date: "4 days ago" },
 ];
 
-
 const InstagramIcon = ({ size = 16 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
@@ -86,6 +85,8 @@ export default function CreatorDashboardPage() {
       <TopBar />
 
       <div className="max-w-4xl mx-auto px-4 pt-24 pb-6">
+        
+        {/* TOP TOGGLE ROW */}
         <div className="flex items-center justify-between mb-6">
           <div className="w-10"></div>
           
@@ -113,11 +114,9 @@ export default function CreatorDashboardPage() {
           </Link>
         </div>
 
-        {/* CREATOR PROFILE HEADER */}
-        <div className="flex flex-row items-start gap-4 md:gap-6 mb-8 w-full">
-          
-          {/* AVATAR ON THE LEFT */}
-          <div className="w-24 h-24 md:w-32 md:h-32 rounded-full p-[3px] bg-gradient-to-tr from-[#E53945] to-orange-500 shrink-0">
+        {/* PROFILE HEADER */}
+        <div className="flex items-center gap-4 mb-6 w-full">
+          <div className="w-24 h-24 md:w-28 md:h-28 rounded-full p-[3px] bg-gradient-to-tr from-[#E53945] to-orange-500 shrink-0">
             <div className="w-full h-full rounded-full border-4 border-[#09090B] overflow-hidden bg-[#1c1c1e]">
               {profile?.avatar_url ? (
                 <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
@@ -127,17 +126,13 @@ export default function CreatorDashboardPage() {
             </div>
           </div>
 
-          {/* RIGHT COLUMN: Name, Stats, Handles, Bio */}
-          <div className="flex-1 min-w-0 flex flex-col justify-center">
-            
-            {/* 1. Name & Username */}
-            <h1 className="text-2xl md:text-3xl font-black flex items-center gap-2 truncate text-white">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl md:text-3xl font-black flex items-center gap-2 text-white truncate">
               {displayName} {profile?.is_verified && <VerifiedBadge size={20} variant="gold" />}
             </h1>
             <p className="text-sm md:text-base text-white/50 mb-3 truncate">@{username}</p>
-
-            {/* 2. Followers / Subscribers / Posts */}
-            <div className="flex gap-6 text-sm mb-4">
+            
+            <div className="flex gap-6 text-sm">
               <div>
                 <span className="font-bold text-white block text-lg">1.2K</span> 
                 <span className="text-white/50 text-[10px] uppercase tracking-wider">Followers</span>
@@ -151,30 +146,27 @@ export default function CreatorDashboardPage() {
                 <span className="text-white/50 text-[10px] uppercase tracking-wider">Posts</span>
               </div>
             </div>
-
-            {/* 3. Social Handles */}
-            <div className="flex items-center gap-4 mb-4">
-              <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors">
-                <InstagramIcon size={16} />
-                <span className="text-xs font-semibold">@sseca_insta</span>
-              </a>
-              <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors">
-                <XIcon size={16} />
-                <span className="text-xs font-semibold">@sseca_x</span>
-              </a>
-            </div>
-
-            {/* 4. Bio */}
-            <p className="text-sm text-white/60 leading-relaxed line-clamp-3">
-              Independent filmmaker and podcast host. Uncovering the truth the mainstream won't touch. Subscribe for exclusive documentaries and unfiltered conversations.
-            </p>
           </div>
         </div>
 
-        
+        {/* SOCIAL HANDLES */}
+        <div className="flex items-center gap-4 mb-6">
+          <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors">
+            <InstagramIcon size={16} />
+            <span className="text-xs font-semibold">@sseca_insta</span>
+          </a>
+          <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors">
+            <XIcon size={16} />
+            <span className="text-xs font-semibold">@sseca_x</span>
+          </a>
+        </div>
 
-        
+        {/* BIO */}
+        <p className="text-sm text-white/60 mb-8 leading-relaxed">
+          Independent filmmaker and podcast host. Uncovering the truth the mainstream won't touch. Subscribe for exclusive documentaries and unfiltered conversations.
+        </p>
 
+        {/* PROFILE VIEW */}
         {!isDashboardView && (
           <div className="animate-in fade-in duration-300">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
@@ -224,6 +216,7 @@ export default function CreatorDashboardPage() {
           </div>
         )}
 
+        {/* DASHBOARD VIEW */}
         {isDashboardView && (
           <div className="animate-in fade-in duration-300 space-y-8">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -286,6 +279,7 @@ export default function CreatorDashboardPage() {
             </div>
           </div>
         )}
+
       </div>
 
       <MobileBottomNav />
