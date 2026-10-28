@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { 
-  Wallet, TrendingUp, Users, Settings, Video, Radio, 
+  Eye, Wallet, TrendingUp, Users, Settings, Video, Radio, 
   ShoppingBag, BarChart3, ExternalLink, ArrowRight, CheckCircle2, DollarSign, MessageSquare
 } from "lucide-react";
 import TopBar from "@/components/TopBar";
@@ -15,6 +15,7 @@ export default function CreatorDashboardPage() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [viewAsUser, setViewAsUser] = useState(false);
 
   // Mock Data
   const MOCK_REVENUE = 1250.00;
@@ -95,28 +96,48 @@ export default function CreatorDashboardPage() {
           </div>
 
           <div className="flex items-center gap-2 pb-2">
-            <Link 
-              href="/creator-dashboard/inbox" 
-              className="flex items-center gap-2 bg-[#E53945] hover:bg-[#d12e39] text-white font-bold px-4 py-2 rounded-xl transition text-sm shadow-lg shadow-[#E53945]/20"
+            {!viewAsUser && (
+              <Link 
+                href="/creator-dashboard/inbox" 
+                className="flex items-center gap-2 bg-[#E53945] hover:bg-[#d12e39] text-white font-bold px-4 py-2 rounded-xl transition text-sm shadow-lg shadow-[#E53945]/20"
+              >
+                <MessageSquare size={16} /> Inbox
+              </Link>
+            )}
+            
+            <button 
+              onClick={() => setViewAsUser(!viewAsUser)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl transition text-sm font-bold ${
+                viewAsUser 
+                  ? 'bg-[#E53945] text-white shadow-lg shadow-[#E53945]/20' 
+                  : 'bg-white/10 hover:bg-white/20 text-white'
+              }`}
             >
-              <MessageSquare size={16} /> Inbox
-            </Link>
-            <Link 
-              href={`/podcaster/${profile?.username || "creator"}`} 
-              className="hidden md:flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold px-4 py-2 rounded-xl transition text-sm"
-            >
-              <ExternalLink size={16} /> View Page
-            </Link>
-            <Link 
-              href="/creator-dashboard/settings" 
-              className="p-2 bg-white/10 hover:bg-white/20 text-white rounded-xl transition"
-            >
-              <Settings size={20} />
-            </Link>
+              <Eye size={16} /> {viewAsUser ? 'Exit Preview' : 'View as User'}
+            </button>
+
+            {!viewAsUser && (
+              <Link 
+                href={`/podcaster/${profile?.username || "creator"}`} 
+                className="hidden md:flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold px-4 py-2 rounded-xl transition text-sm"
+              >
+                <ExternalLink size={16} /> View Page
+              </Link>
+            )}
+            {!viewAsUser && (
+              <Link 
+                href="/creator-dashboard/settings" 
+                className="p-2 bg-white/10 hover:bg-white/20 text-white rounded-xl transition"
+              >
+                <Settings size={20} />
+              </Link>
+            )}
           </div>
         </div>
 
-        {/* FINANCIAL STATS GRID */}
+        {!viewAsUser && (
+        <>
+          {/* FINANCIAL STATS GRID */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           
           <div className="bg-gradient-to-br from-[#E53945]/20 to-[#1c1c1e] border border-[#E53945]/30 p-4 rounded-2xl relative overflow-hidden">
@@ -238,6 +259,8 @@ export default function CreatorDashboardPage() {
           </div>
         </div>
 
+        </>
+      )}
       </div>
 
       <MobileBottomNav />
