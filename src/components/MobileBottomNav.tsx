@@ -65,7 +65,9 @@ export default function MobileBottomNav() {
         .then((d) => {
           if (d.profile?.avatar_url) setAvatarUrl(d.profile.avatar_url);
           // LIVE ROLE CHECK: Check if the user is a creator
-          if (d.profile?.role === 'creator' || d.profile?.is_creator === true) {
+          // Check the 'tier' column. If they have a tier that isn't 'free' or 'viewer', they are a creator.
+          const tier = d.profile?.tier?.toLowerCase();
+          if (tier === 'creator' || tier === 'podcaster' || tier === 'pro') {
             setIsCreator(true);
           } else {
             setIsCreator(false);
