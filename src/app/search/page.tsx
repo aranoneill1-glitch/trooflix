@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Search, X, MoreHorizontal, Plus, CheckCircle2 } from "lucide-react";
 import MobileBottomNav from "@/components/MobileBottomNav";
 
@@ -145,14 +146,13 @@ export default function SearchPage() {
                 {/* Top Main Categories Grid */}
                 <div className="grid grid-cols-2 gap-4 mb-8">
                   {MAIN_CATEGORIES.map((cat) => (
-                    <div key={cat.name} className={`${cat.color} backdrop-blur-xl border border-white/20 rounded-xl p-4 h-24 relative overflow-hidden cursor-pointer group shadow-lg hover:bg-white/10 transition-colors`}>
+                    <Link key={cat.name} href={`/search/${encodeURIComponent(cat.name.toLowerCase().replace(/ & /g, "-").replace(/ /g, "-"))}`} className={`${cat.color} backdrop-blur-xl border border-white/20 rounded-xl p-4 h-24 relative overflow-hidden cursor-pointer group shadow-lg hover:bg-white/10 transition-colors block`}>
                       <h2 className="text-xl font-bold relative z-10 text-white drop-shadow-md">{cat.name}</h2>
                       <img 
                         src={cat.image} 
                         alt={cat.name} 
                         className="absolute -right-2 -bottom-2 w-20 h-20 object-cover rotate-[25deg] shadow-2xl rounded-sm group-hover:scale-105 transition-transform duration-500 border border-white/10" 
-                      />
-                    </div>
+                      /></Link>
                   ))}
                 </div>
 
@@ -169,14 +169,13 @@ export default function SearchPage() {
                 {/* Browse All Grid */}
                 <div className="grid grid-cols-2 gap-4">
                   {BROWSE_ALL.map((cat) => (
-                    <div key={cat.name} className={`${cat.color} backdrop-blur-xl border border-white/20 rounded-xl p-4 h-24 relative overflow-hidden cursor-pointer group shadow-lg hover:bg-white/10 transition-colors`}>
+                    <Link key={cat.name} href={`/search/${encodeURIComponent(cat.name.toLowerCase().replace(/ & /g, "-").replace(/ /g, "-"))}`} className={`${cat.color} backdrop-blur-xl border border-white/20 rounded-xl p-4 h-24 relative overflow-hidden cursor-pointer group shadow-lg hover:bg-white/10 transition-colors block`}>
                       <h2 className="text-lg font-bold relative z-10 text-white drop-shadow-md leading-tight">{cat.name}</h2>
                       <img 
                         src={cat.image} 
                         alt={cat.name} 
                         className="absolute -right-2 -bottom-2 w-16 h-16 md:w-20 md:h-20 object-cover rotate-[25deg] shadow-2xl rounded-sm group-hover:scale-105 transition-transform duration-500 border border-white/10" 
-                      />
-                    </div>
+                      /></Link>
                   ))}
                 </div>
               </>
