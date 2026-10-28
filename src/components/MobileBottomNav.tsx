@@ -265,8 +265,9 @@ export default function MobileBottomNav() {
                 whileTap={{ scale: 0.9 }} 
                 className="w-10 h-10 bg-[#E53945] rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(229,57,69,0.4)] border-2 border-[#0a0a0a]"
               >
-                <Camera size={22} className="text-white" strokeWidth={2.5} />
+                <Video size={22} className="text-white" strokeWidth={2.5} />
               </motion.div>
+              <span className="text-[9px] font-semibold tracking-wide text-white mt-1">Create</span>
             </div>
           ) : (
             // Viewer: Standard Profile Avatar
