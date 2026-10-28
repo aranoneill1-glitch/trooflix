@@ -65,12 +65,11 @@ export default function CreatorDashboardPage() {
         fetch("/api/videos")
           .then(r => r.json())
           .then(data => {
-            // Match creatorId to the user, OR if creatorId is missing/null, show it anyway so the creator can see their uploads
-            const myVideos = Array.isArray(data) ? data.filter((v: any) => 
-              String(v.creatorId) === String(u.id) || !v.creatorId || v.creatorId === 'null'
-            ) : [];
+            // TEMPORARY FIX: Load ALL videos so you can see them in the UI. 
+            // Later, we will re-enable the strict creatorId filter once your database is clean.
+            const allVideos = Array.isArray(data) ? data : [];
             
-            setCreatorVideos(myVideos);
+            setCreatorVideos(allVideos);
             setVideosLoading(false);
           })
           .catch((err) => {
