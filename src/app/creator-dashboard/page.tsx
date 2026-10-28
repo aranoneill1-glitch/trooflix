@@ -113,70 +113,65 @@ export default function CreatorDashboardPage() {
           </Link>
         </div>
 
-        <div className="flex flex-col mb-8 w-full">
+        {/* CREATOR PROFILE HEADER */}
+        <div className="flex flex-row items-start gap-4 md:gap-6 mb-8 w-full">
           
-          {/* Top Row: Avatar on left, Stats on right */}
-          <div className="flex flex-row items-start gap-4 w-full">
-            
-            {/* Avatar & Name Column */}
-            <div className="flex flex-col items-center shrink-0 w-24 md:w-32">
-              <div className="w-24 h-24 md:w-32 md:h-32 rounded-full p-[3px] bg-gradient-to-tr from-[#E53945] to-orange-500">
-                <div className="w-full h-full rounded-full border-4 border-[#09090B] overflow-hidden bg-[#1c1c1e]">
-                  {profile?.avatar_url ? (
-                    <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-4xl font-bold">{displayName.charAt(0)}</div>
-                  )}
-                </div>
-              </div>
-              <h1 className="text-xl md:text-2xl font-black flex items-center gap-1 mt-3 text-center w-full justify-center">
-                <span className="truncate">{displayName}</span>
-                {profile?.is_verified && <VerifiedBadge size={18} variant="gold" />}
-              </h1>
-              <p className="text-sm text-white/50 truncate w-full text-center mt-0.5">@{username}</p>
-            </div>
-
-            {/* Stats & Socials Column */}
-            <div className="flex-1 min-w-0 flex flex-col justify-start pt-2 pl-2">
-              
-              {/* Stats pulled to the top */}
-              <div className="flex gap-6 text-sm mb-4">
-                <div>
-                  <span className="font-bold text-white block text-xl">1.2K</span> 
-                  <span className="text-white/50 text-[10px] uppercase tracking-wider">Followers</span>
-                </div>
-                <div>
-                  <span className="font-bold text-white block text-xl">{MOCK_SUBSCRIBERS}</span> 
-                  <span className="text-white/50 text-[10px] uppercase tracking-wider">Subscribers</span>
-                </div>
-                <div>
-                  <span className="font-bold text-white block text-xl">45</span> 
-                  <span className="text-white/50 text-[10px] uppercase tracking-wider">Posts</span>
-                </div>
-              </div>
-
-              {/* Social Handles below stats */}
-              <div className="flex flex-col gap-2">
-                <a href="#" className="flex items-center gap-2 text-white/60 hover:text-white transition-colors">
-                  <InstagramIcon size={16} />
-                  <span className="text-xs font-semibold">@sseca_insta</span>
-                </a>
-                <a href="#" className="flex items-center gap-2 text-white/60 hover:text-white transition-colors">
-                  <XIcon size={16} />
-                  <span className="text-xs font-semibold">@sseca_x</span>
-                </a>
-              </div>
+          {/* AVATAR ON THE LEFT */}
+          <div className="w-24 h-24 md:w-32 md:h-32 rounded-full p-[3px] bg-gradient-to-tr from-[#E53945] to-orange-500 shrink-0">
+            <div className="w-full h-full rounded-full border-4 border-[#09090B] overflow-hidden bg-[#1c1c1e]">
+              {profile?.avatar_url ? (
+                <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-3xl font-bold">{displayName.charAt(0)}</div>
+              )}
             </div>
           </div>
 
-          
+          {/* RIGHT COLUMN: Name, Stats, Handles, Bio */}
+          <div className="flex-1 min-w-0 flex flex-col justify-center">
+            
+            {/* 1. Name & Username */}
+            <h1 className="text-2xl md:text-3xl font-black flex items-center gap-2 truncate text-white">
+              {displayName} {profile?.is_verified && <VerifiedBadge size={20} variant="gold" />}
+            </h1>
+            <p className="text-sm md:text-base text-white/50 mb-3 truncate">@{username}</p>
 
-          {/* Bio below everything */}
-          <p className="text-sm text-white/60 mt-4 leading-relaxed">
-            Independent filmmaker and podcast host. Uncovering the truth the mainstream won't touch. Subscribe for exclusive documentaries and unfiltered conversations.
-          </p>
+            {/* 2. Followers / Subscribers / Posts */}
+            <div className="flex gap-6 text-sm mb-4">
+              <div>
+                <span className="font-bold text-white block text-lg">1.2K</span> 
+                <span className="text-white/50 text-[10px] uppercase tracking-wider">Followers</span>
+              </div>
+              <div>
+                <span className="font-bold text-white block text-lg">{MOCK_SUBSCRIBERS}</span> 
+                <span className="text-white/50 text-[10px] uppercase tracking-wider">Subscribers</span>
+              </div>
+              <div>
+                <span className="font-bold text-white block text-lg">45</span> 
+                <span className="text-white/50 text-[10px] uppercase tracking-wider">Posts</span>
+              </div>
+            </div>
 
+            {/* 3. Social Handles */}
+            <div className="flex items-center gap-4 mb-4">
+              <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors">
+                <InstagramIcon size={16} />
+                <span className="text-xs font-semibold">@sseca_insta</span>
+              </a>
+              <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors">
+                <XIcon size={16} />
+                <span className="text-xs font-semibold">@sseca_x</span>
+              </a>
+            </div>
+
+            {/* 4. Bio */}
+            <p className="text-sm text-white/60 leading-relaxed line-clamp-3">
+              Independent filmmaker and podcast host. Uncovering the truth the mainstream won't touch. Subscribe for exclusive documentaries and unfiltered conversations.
+            </p>
+          </div>
         </div>
+
+        
 
         
 
