@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
-import { Search, LogOut, Home, Video, MessageCircle, Radio, X } from "lucide-react";
+import { Search, LogOut, Home, Video, MessageCircle, Radio, X, ShoppingBag } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Capacitor } from "@capacitor/core";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
@@ -249,13 +249,22 @@ export default function MobileBottomNav() {
             </Link>
           )}
 
-          {/* TAB 4: MESSAGES */}
-          <Link href="/messages" className="flex flex-col items-center justify-center w-14 h-12 rounded-full">
-            <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex flex-col items-center gap-1">
-              <MessageCircle size={22} className={isActive("/messages") ? "text-white" : "text-white/60 hover:text-white/80"} />
-              <span className={`text-[9px] font-semibold tracking-wide ${isActive("/messages") ? "text-white" : "text-white/60"}`}>Messages</span>
-            </motion.div>
-          </Link>
+          {/* TAB 4: DYNAMIC (MESSAGES FOR CREATOR / STORE FOR VIEWER) */}
+          {isCreator ? (
+            <Link href="/messages" className="flex flex-col items-center justify-center w-14 h-12 rounded-full">
+              <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex flex-col items-center gap-1">
+                <MessageCircle size={22} className={isActive("/messages") ? "text-white" : "text-white/60 hover:text-white/80"} />
+                <span className={`text-[9px] font-semibold tracking-wide ${isActive("/messages") ? "text-white" : "text-white/60"}`}>Messages</span>
+              </motion.div>
+            </Link>
+          ) : (
+            <Link href="/marketplace" className="flex flex-col items-center justify-center w-14 h-12 rounded-full">
+              <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex flex-col items-center gap-1">
+                <ShoppingBag size={22} className={isActive("/marketplace") ? "text-white" : "text-white/60 hover:text-white/80"} />
+                <span className={`text-[9px] font-semibold tracking-wide ${isActive("/marketplace") ? "text-white" : "text-white/60"}`}>Store</span>
+              </motion.div>
+            </Link>
+          )}
 
           {/* TAB 5: DYNAMIC FAR RIGHT (CREATOR DASHBOARD / PROFILE AVATAR) */}
           {isCreator ? (
