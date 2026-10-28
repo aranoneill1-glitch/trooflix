@@ -146,27 +146,29 @@ export default function MobileBottomNav() {
       </AnimatePresence>
 
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-[250] flex justify-center pb-[env(safe-area-inset-bottom)] pointer-events-none">
-        <div className="pointer-events-auto flex items-center justify-around w-[92%] max-w-[360px] mb-8 px-2 py-1.5 bg-[#1c1c1e]/80 backdrop-blur-2xl border border-white/10 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
+        <div className="pointer-events-auto flex items-center justify-around w-[92%] max-w-[360px] mb-8 px-2 py-2 bg-[#1c1c1e]/80 backdrop-blur-2xl border border-white/10 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
           
           {/* TAB 1: HOME */}
           <Link
             href="/"
             onClick={() => Capacitor.isNativePlatform() && Haptics.impact({ style: ImpactStyle.Light })}
-            className="flex flex-col items-center justify-center w-12 h-10 rounded-full"
+            className="flex flex-col items-center justify-center w-14 h-12 rounded-full"
           >
-            <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }}>
-              <Home size={24} className={isActive("/") ? "text-white" : "text-white/60 hover:text-white/80"} />
+            <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex flex-col items-center gap-1">
+              <Home size={22} className={isActive("/") ? "text-white" : "text-white/60 hover:text-white/80"} />
+              <span className={`text-[9px] font-semibold tracking-wide ${isActive("/") ? "text-white" : "text-white/60"}`}>Home</span>
             </motion.div>
           </Link>
 
-          {/* TAB 2: SEARCH */}
+          {/* TAB 2: EXPLORE (SEARCH) */}
           <Link
             href="/search"
             onClick={() => Capacitor.isNativePlatform() && Haptics.impact({ style: ImpactStyle.Light })}
-            className="flex flex-col items-center justify-center w-12 h-10 rounded-full"
+            className="flex flex-col items-center justify-center w-14 h-12 rounded-full"
           >
-            <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }}>
-              <Search size={24} className={isActive("/search") ? "text-white" : "text-white/60 hover:text-white/80"} />
+            <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex flex-col items-center gap-1">
+              <Search size={22} className={isActive("/search") ? "text-white" : "text-white/60 hover:text-white/80"} />
+              <span className={`text-[9px] font-semibold tracking-wide ${isActive("/search") ? "text-white" : "text-white/60"}`}>Explore</span>
             </motion.div>
           </Link>
 
@@ -174,7 +176,7 @@ export default function MobileBottomNav() {
           <Link
             href={isCreator ? "/creator-dashboard" : "/plus"}
             onClick={() => Capacitor.isNativePlatform() && Haptics.impact({ style: ImpactStyle.Light })}
-            className="flex flex-col items-center justify-center w-14 h-10 rounded-full"
+            className="flex flex-col items-center justify-center w-14 h-12 rounded-full"
           >
             <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }}>
               <div className="flex flex-col items-center justify-center leading-none pt-1">
@@ -186,14 +188,15 @@ export default function MobileBottomNav() {
             </motion.div>
           </Link>
 
-          {/* TAB 4: MARKETPLACE */}
+          {/* TAB 4: STORE (MARKETPLACE) */}
           <Link
             href="/marketplace"
             onClick={() => Capacitor.isNativePlatform() && Haptics.impact({ style: ImpactStyle.Light })}
-            className="flex flex-col items-center justify-center w-12 h-10 rounded-full"
+            className="flex flex-col items-center justify-center w-14 h-12 rounded-full"
           >
-            <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }}>
-              <ShoppingBag size={24} className={isActive("/marketplace") ? "text-white" : "text-white/60 hover:text-white/80"} />
+            <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex flex-col items-center gap-1">
+              <ShoppingBag size={22} className={isActive("/marketplace") ? "text-white" : "text-white/60 hover:text-white/80"} />
+              <span className={`text-[9px] font-semibold tracking-wide ${isActive("/marketplace") ? "text-white" : "text-white/60"}`}>Store</span>
             </motion.div>
           </Link>
 
@@ -206,33 +209,34 @@ export default function MobileBottomNav() {
             onTouchStart={startPress}
             onTouchEnd={cancelPress}
             onTouchCancel={cancelPress}
-            className="flex flex-col items-center justify-center w-12 h-10 rounded-full cursor-pointer select-none"
+            className="flex flex-col items-center justify-center w-14 h-12 rounded-full cursor-pointer select-none"
             style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none" }}
           >
-            <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }}>
+            <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex flex-col items-center gap-1">
               {avatarUrl ? (
                 <img
                   src={avatarUrl}
                   alt=""
                   draggable={false}
                   style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", pointerEvents: "none" }}
-                  className={`w-7 h-7 rounded-xl object-cover ${
+                  className={`w-6 h-6 rounded-lg object-cover ${
                     profileActive ? "ring-2 ring-white" : "ring-1 ring-white/30"
                   }`}
                 />
               ) : signedIn === false ? (
-                <div className={`w-7 h-7 rounded-xl bg-white/10 flex items-center justify-center ${profileActive ? "ring-2 ring-white" : ""}`}>
-                  <span className="w-3 h-3 rounded-full border-2 border-white/70" />
+                <div className={`w-6 h-6 rounded-lg bg-white/10 flex items-center justify-center ${profileActive ? "ring-2 ring-white" : ""}`}>
+                  <span className="w-2.5 h-2.5 rounded-full border-2 border-white/70" />
                 </div>
               ) : (
                 <div
-                  className={`w-7 h-7 rounded-xl bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-[10px] font-bold ${
+                  className={`w-6 h-6 rounded-lg bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-[10px] font-bold ${
                     profileActive ? "ring-2 ring-white" : ""
                   }`}
                 >
                   •
                 </div>
               )}
+              <span className={`text-[9px] font-semibold tracking-wide ${profileActive ? "text-white" : "text-white/60"}`}>Profile</span>
             </motion.div>
           </div>
           
