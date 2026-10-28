@@ -98,8 +98,9 @@ export default function CreatorDashboardPage() {
           </Link>
         </div>
 
-        <div className="flex flex-col md:flex-row items-start md:items-end gap-4 mb-8">
-          {/* Avatar moved to left */}
+        <div className="flex flex-row items-center gap-4 mb-8 w-full">
+          
+          {/* Avatar on the left */}
           <div className="w-24 h-24 md:w-28 md:h-28 rounded-full p-[3px] bg-gradient-to-tr from-[#E53945] to-orange-500 shrink-0">
             <div className="w-full h-full rounded-full border-4 border-[#09090B] overflow-hidden bg-[#1c1c1e]">
               {profile?.avatar_url ? (
@@ -110,17 +111,26 @@ export default function CreatorDashboardPage() {
             </div>
           </div>
 
-          {/* Name & Stats moved next to avatar */}
-          <div className="flex-1 pb-2">
-            <h1 className="text-2xl font-black flex items-center gap-2">
+          {/* Name, Handle & Stats on the right */}
+          <div className="flex-1 min-w-0 flex flex-col justify-center">
+            <h1 className="text-xl md:text-2xl font-black flex items-center gap-2 truncate">
               {displayName} {profile?.is_verified && <VerifiedBadge size={18} variant="gold" />}
             </h1>
-            <p className="text-sm text-white/50 mb-3">@{username}</p>
+            <p className="text-sm text-white/50 mb-3 truncate">@{username}</p>
             
-            <div className="flex gap-6 text-sm">
-              <div className="text-left"><span className="font-bold text-white block">1.2K</span> <span className="text-white/50 text-xs">Followers</span></div>
-              <div className="text-left"><span className="font-bold text-white block">{MOCK_SUBSCRIBERS}</span> <span className="text-white/50 text-xs">Subscribers</span></div>
-              <div className="text-left"><span className="font-bold text-white block">45</span> <span className="text-white/50 text-xs">Posts</span></div>
+            <div className="flex gap-5 text-sm">
+              <div>
+                <span className="font-bold text-white block text-base">1.2K</span> 
+                <span className="text-white/50 text-[10px] uppercase tracking-wider">Followers</span>
+              </div>
+              <div>
+                <span className="font-bold text-white block text-base">{MOCK_SUBSCRIBERS}</span> 
+                <span className="text-white/50 text-[10px] uppercase tracking-wider">Subscribers</span>
+              </div>
+              <div>
+                <span className="font-bold text-white block text-base">45</span> 
+                <span className="text-white/50 text-[10px] uppercase tracking-wider">Posts</span>
+              </div>
             </div>
           </div>
         </div>
