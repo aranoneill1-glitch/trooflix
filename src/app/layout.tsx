@@ -1,4 +1,3 @@
-import IntroAnimation from "@/components/IntroAnimation";
 import PushNotificationManager from "@/components/PushNotificationManager";
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
@@ -64,7 +63,6 @@ export default function RootLayout({
       </head>
       <PushNotificationManager />
       <body className={inter.className}>
-        <IntroAnimation />
         <script
           dangerouslySetInnerHTML={{
             __html: `
