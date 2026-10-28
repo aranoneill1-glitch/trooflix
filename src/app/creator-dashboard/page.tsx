@@ -72,9 +72,7 @@ export default function CreatorDashboardPage() {
 
       <div className="max-w-4xl mx-auto px-4 pt-24 pb-6">
         <div className="flex items-center justify-between mb-6">
-          <Link href="/creator-dashboard/settings" className="p-2.5 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition">
-            <ArrowRight className="rotate-180" size={20} />
-          </Link>
+          <div className="w-10"></div>
           
           <div className="flex bg-[#1c1c1e] p-1 rounded-full border border-white/10 shadow-lg">
             <button
@@ -100,8 +98,9 @@ export default function CreatorDashboardPage() {
           </Link>
         </div>
 
-        <div className="flex flex-col items-center text-center mb-8">
-          <div className="w-28 h-28 rounded-full p-[3px] bg-gradient-to-tr from-[#E53945] to-orange-500 mb-4">
+        <div className="flex flex-col md:flex-row items-start md:items-end gap-4 mb-8">
+          {/* Avatar moved to left */}
+          <div className="w-24 h-24 md:w-28 md:h-28 rounded-full p-[3px] bg-gradient-to-tr from-[#E53945] to-orange-500 shrink-0">
             <div className="w-full h-full rounded-full border-4 border-[#09090B] overflow-hidden bg-[#1c1c1e]">
               {profile?.avatar_url ? (
                 <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
@@ -110,15 +109,19 @@ export default function CreatorDashboardPage() {
               )}
             </div>
           </div>
-          <h1 className="text-2xl font-black flex items-center gap-2">
-            {displayName} {profile?.is_verified && <VerifiedBadge size={18} variant="gold" />}
-          </h1>
-          <p className="text-sm text-white/50 mb-4">@{username}</p>
-          
-          <div className="flex gap-6 text-sm mb-6">
-            <div className="text-center"><span className="font-bold text-white">1.2K</span> <span className="text-white/50">Followers</span></div>
-            <div className="text-center"><span className="font-bold text-white">{MOCK_SUBSCRIBERS}</span> <span className="text-white/50">Subscribers</span></div>
-            <div className="text-center"><span className="font-bold text-white">45</span> <span className="text-white/50">Posts</span></div>
+
+          {/* Name & Stats moved next to avatar */}
+          <div className="flex-1 pb-2">
+            <h1 className="text-2xl font-black flex items-center gap-2">
+              {displayName} {profile?.is_verified && <VerifiedBadge size={18} variant="gold" />}
+            </h1>
+            <p className="text-sm text-white/50 mb-3">@{username}</p>
+            
+            <div className="flex gap-6 text-sm">
+              <div className="text-left"><span className="font-bold text-white block">1.2K</span> <span className="text-white/50 text-xs">Followers</span></div>
+              <div className="text-left"><span className="font-bold text-white block">{MOCK_SUBSCRIBERS}</span> <span className="text-white/50 text-xs">Subscribers</span></div>
+              <div className="text-left"><span className="font-bold text-white block">45</span> <span className="text-white/50 text-xs">Posts</span></div>
+            </div>
           </div>
         </div>
 
