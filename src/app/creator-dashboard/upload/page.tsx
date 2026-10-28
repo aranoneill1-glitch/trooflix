@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Video, Mic, MessageSquare, UploadCloud, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Video, Mic, MessageSquare, UploadCloud, CheckCircle2, Image as ImageIcon } from "lucide-react";
 import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
@@ -14,8 +14,10 @@ export default function UploadContentPage() {
   const [contentType, setContentType] = useState<"video" | "podcast" | "tweet">("video");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [posterUrl, setPosterUrl] = useState("");
-  const [mediaUrl, setMediaUrl] = useState("");
+  
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -34,7 +36,30 @@ export default function UploadContentPage() {
         .eq("user_id", user.id)
         .single();
 
-      // Post to the Vercel KV API
+      let uploadedMediaUrl = "";
+      let uploadedThumbnailUrl = "";
+
+      // 1. Upload Media File if it exists
+      if (mediaFile) {
+        const mediaData = new FormData();
+        mediaData.append("file", mediaFile);
+        const mediaRes = await fetch("/api/upload", { method: "POST", body: mediaData });
+        const mediaJson = await mediaRes.json();
+        if (mediaJson.url) uploadedMediaUrl = mediaJson.url;
+        else throw new Error("Media upload failed");
+      }
+
+      // 2. Upload Thumbnail File if it exists
+      if (thumbnailFile) {
+        const thumbData = new FormData();
+        thumbData.append("file", thumbnailFile);
+        const thumbRes = await fetch("/api/upload", { method: "POST", body: thumbData });
+        const thumbJson = await thumbRes.json();
+        if (thumbJson.url) uploadedThumbnailUrl = thumbJson.url;
+        else throw new Error("Thumbnail upload failed");
+      }
+
+      // 3. Save to Vercel KV
       const res = await fetch("/api/videos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -43,13 +68,13 @@ export default function UploadContentPage() {
           description: description,
           type: contentType === "video" ? "Documentary" : contentType === "podcast" ? "Podcast" : "Tweet",
           creatorId: profile?.creator_id || null,
-          videoUrl: contentType === "tweet" ? "" : mediaUrl, // Tweets don't have video URLs
-          posterUrl: posterUrl || `https://images.unsplash.com/photo-1516280440502-861d6c619b6e?w=500&q=80`,
+          videoUrl: contentType === "tweet" ? "" : uploadedMediaUrl, 
+          posterUrl: uploadedThumbnailUrl || `https://images.unsplash.com/photo-1516280440502-861d6c619b6e?w=500&q=80`,
           category: "Uncensored"
         })
       });
 
-      if (!res.ok) throw new Error("Failed to upload");
+      if (!res.ok) throw new Error("Failed to save video data");
 
       setSuccess(true);
       setTimeout(() => {
@@ -122,21 +147,55 @@ export default function UploadContentPage() {
 
             {contentType !== "tweet" && (
               <>
+                {/* Media File Upload */}
                 <div>
-                  <label className="block text-xs font-bold text-white/60 mb-1">Media URL (Video/Audio link)</label>
-                  <input required type="url" value={mediaUrl} onChange={e => setMediaUrl(e.target.value)} className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#E53945]" placeholder="https://..." />
-                  <p className="text-[10px] text-white/40 mt-1">Paste your Cloudflare R2 or Bitchute link here.</p>
+                  <label className="block text-xs font-bold text-white/60 mb-1">Media File (Video or Audio)</label>
+                  <div 
+                    onClick={() => document.getElementById('media-upload')?.click()}
+                    className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] hover:bg-white/5 transition"
+                  >
+                    <UploadCloud size={24} className="text-white/50 mb-2" />
+                    <span className="text-sm font-bold text-white">
+                      {mediaFile ? mediaFile.name : "Tap to select video or audio"}
+                    </span>
+                    <span className="text-xs text-white/40 mt-1">MP4, MOV, MP3 (Max 50MB)</span>
+                  </div>
+                  <input 
+                    id="media-upload" 
+                    type="file" 
+                    accept="video/*,audio/*" 
+                    onChange={(e) => setMediaFile(e.target.files?.[0] || null)} 
+                    className="hidden" 
+                  />
                 </div>
+
+                {/* Thumbnail File Upload */}
                 <div>
-                  <label className="block text-xs font-bold text-white/60 mb-1">Thumbnail URL</label>
-                  <input type="url" value={posterUrl} onChange={e => setPosterUrl(e.target.value)} className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#E53945]" placeholder="https://..." />
+                  <label className="block text-xs font-bold text-white/60 mb-1">Thumbnail Image</label>
+                  <div 
+                    onClick={() => document.getElementById('thumb-upload')?.click()}
+                    className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] hover:bg-white/5 transition"
+                  >
+                    <ImageIcon size={24} className="text-white/50 mb-2" />
+                    <span className="text-sm font-bold text-white">
+                      {thumbnailFile ? thumbnailFile.name : "Tap to select thumbnail image"}
+                    </span>
+                    <span className="text-xs text-white/40 mt-1">JPG, PNG, WEBP</span>
+                  </div>
+                  <input 
+                    id="thumb-upload" 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={(e) => setThumbnailFile(e.target.files?.[0] || null)} 
+                    className="hidden" 
+                  />
                 </div>
               </>
             )}
           </div>
 
           <button disabled={loading} type="submit" className="w-full bg-[#E53945] hover:bg-[#d12e39] text-white font-bold py-4 rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-[#E53945]/20">
-            {loading ? "Publishing..." : <><UploadCloud size={20} /> Publish {contentType}</>}
+            {loading ? "Uploading..." : <><UploadCloud size={20} /> Publish {contentType}</>}
           </button>
         </form>
       </div>
