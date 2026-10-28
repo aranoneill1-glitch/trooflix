@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, X, Play, UserPlus, CheckCircle2 } from "lucide-react";
+import { Search, X, Play, CheckCircle2, User } from "lucide-react";
 import Link from "next/link";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { createClient } from "@/utils/supabase/client";
@@ -35,27 +35,28 @@ export default function SearchPage() {
   const [isSearching, setIsSearching] = useState(false);
   
   const [allVideos, setAllVideos] = useState<any[]>([]);
-  const [allCreators, setAllCreators] = useState<any[]>([]);
+  const [allProfiles, setAllProfiles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadData() {
       const supabase = createClient();
       
+      // Fetch ALL videos from Vercel KV
       const videosPromise = fetch("/api/videos", { cache: "no-store" })
         .then(r => r.json())
         .catch(() => []);
 
-      const creatorsPromise = supabase
+      // Fetch ALL profiles from Supabase (Creators and Users)
+      const profilesPromise = supabase
         .from("profiles")
-        .select("creator_id, display_name, username, avatar_url, is_verified, tier")
-        .eq("tier", "creator")
+        .select("user_id, creator_id, display_name, username, avatar_url, is_verified, tier")
         .then(res => res.data || []);
 
-      const [videosData, creatorsData] = await Promise.all([videosPromise, creatorsPromise]);
+      const [videosData, profilesData] = await Promise.all([videosPromise, profilesPromise]);
       
       setAllVideos(Array.isArray(videosData) ? videosData : []);
-      setAllCreators(Array.isArray(creatorsData) ? creatorsData : []);
+      setAllProfiles(Array.isArray(profilesData) ? profilesData : []);
       setLoading(false);
     }
     loadData();
@@ -66,17 +67,21 @@ export default function SearchPage() {
     setIsSearching(false);
   };
 
+  // 1. Filter Profiles (Users & Creators)
+  const filteredProfiles = query.length > 0 ? allProfiles.filter(p => 
+    p.display_name?.toLowerCase().includes(query.toLowerCase()) || 
+    p.username?.toLowerCase().includes(query.toLowerCase())
+  ) : [];
+
+  // 2. Filter Videos (All Types)
   const filteredVideos = query.length > 0 ? allVideos.filter(v => 
     v.title?.toLowerCase().includes(query.toLowerCase()) || 
-    v.description?.toLowerCase().includes(query.toLowerCase())
+    v.description?.toLowerCase().includes(query.toLowerCase()) ||
+    v.type?.toLowerCase().includes(query.toLowerCase()) ||
+    v.category?.toLowerCase().includes(query.toLowerCase())
   ) : [];
 
-  const filteredCreators = query.length > 0 ? allCreators.filter(c => 
-    c.display_name?.toLowerCase().includes(query.toLowerCase()) || 
-    c.username?.toLowerCase().includes(query.toLowerCase())
-  ) : [];
-
-  const hasResults = filteredVideos.length > 0 || filteredCreators.length > 0;
+  const hasResults = filteredVideos.length > 0 || filteredProfiles.length > 0;
 
   return (
     <main className="min-h-screen bg-[#0a0a0a] text-white pb-24 font-sans relative">
@@ -97,7 +102,7 @@ export default function SearchPage() {
                     type="text"
                     autoFocus
                     className="w-full bg-white/10 backdrop-blur-xl text-white placeholder:text-white/50 rounded-full py-3 pl-11 pr-10 border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/30 shadow-lg text-[15px]"
-                    placeholder="Search creators, shows, documentaries..."
+                    placeholder="Search creators, users, videos, podcasts..."
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                   />
@@ -124,7 +129,7 @@ export default function SearchPage() {
                 <input
                   type="text"
                   className="w-full bg-white/10 backdrop-blur-xl text-white font-medium text-[15px] placeholder:text-white/50 rounded-full py-3.5 pl-11 pr-6 border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/30 cursor-pointer shadow-[0_8px_32px_rgba(0,0,0,0.3)] transition-all"
-                  placeholder="Search creators, shows, documentaries..."
+                  placeholder="Search creators, users, videos, podcasts..."
                   value={query}
                   onClick={() => setIsSearching(true)}
                   onChange={(e) => setQuery(e.target.value)}
@@ -143,46 +148,56 @@ export default function SearchPage() {
             ) : isSearching || query.length > 0 ? (
               
               // SEARCH RESULTS VIEW
-              <div className="flex flex-col space-y-6 pb-10">
+              <div className="flex flex-col space-y-8 pb-10">
                 {!hasResults && query.length > 0 && (
                   <div className="text-center py-10 text-white/50">
                     No results found for "{query}".
                   </div>
                 )}
 
-                {/* Creators Section */}
-                {filteredCreators.length > 0 && (
+                {/* Profiles Section (Creators & Users) */}
+                {filteredProfiles.length > 0 && (
                   <div>
-                    <h3 className="text-xs font-bold text-white/40 uppercase tracking-wider mb-3">Creators</h3>
+                    <h3 className="text-xs font-bold text-white/40 uppercase tracking-wider mb-3">Creators & Users</h3>
                     <div className="flex flex-col space-y-3">
-                      {filteredCreators.map((creator) => (
-                        <Link key={creator.creator_id} href={`/podcaster/${creator.username || creator.creator_id}`} className="flex items-center gap-4 group hover:bg-white/5 p-2 -mx-2 rounded-xl transition">
-                          <div className="w-12 h-12 rounded-full overflow-hidden bg-[#1c1c1e] shrink-0 border border-white/10">
-                            {creator.avatar_url ? (
-                              <img src={creator.avatar_url} alt="" className="w-full h-full object-cover" />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center font-bold text-lg text-white/50">
-                                {creator.display_name?.[0] || "C"}
-                              </div>
-                            )}
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-white font-bold text-base group-hover:text-[#E53945] transition-colors">{creator.display_name}</span>
-                              {creator.is_verified && <CheckCircle2 size={14} className="text-[#1ed760]" fill="currentColor" />}
+                      {filteredProfiles.map((profile) => {
+                        // Determine where to link (creator hub vs user profile)
+                        const profileLink = profile.tier === 'creator' || profile.creator_id 
+                          ? `/podcaster/${profile.username || profile.creator_id}` 
+                          : `/u/${profile.username || profile.user_id}`;
+
+                        return (
+                          <Link key={profile.user_id} href={profileLink} className="flex items-center gap-4 group hover:bg-white/5 p-2 -mx-2 rounded-xl transition">
+                            <div className="w-12 h-12 rounded-full overflow-hidden bg-[#1c1c1e] shrink-0 border border-white/10">
+                              {profile.avatar_url ? (
+                                <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center font-bold text-lg text-white/50">
+                                  {profile.display_name?.[0] || <User size={18} />}
+                                </div>
+                              )}
                             </div>
-                            <span className="text-sm text-white/50">@{creator.username}</span>
-                          </div>
-                        </Link>
-                      ))}
+                            <div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-white font-bold text-base group-hover:text-[#E53945] transition-colors">{profile.display_name || "User"}</span>
+                                {profile.is_verified && <CheckCircle2 size={14} className="text-[#1ed760]" fill="currentColor" />}
+                                {profile.tier === 'creator' && (
+                                  <span className="text-[9px] font-bold text-blue-400 bg-blue-400/10 px-1.5 py-0.5 rounded-sm uppercase tracking-wider">Creator</span>
+                                )}
+                              </div>
+                              <span className="text-sm text-white/50">@{profile.username || "user"}</span>
+                            </div>
+                          </Link>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
 
-                {/* Videos Section */}
+                {/* Videos Section (All Types) */}
                 {filteredVideos.length > 0 && (
                   <div>
-                    <h3 className="text-xs font-bold text-white/40 uppercase tracking-wider mb-3">Videos & Podcasts</h3>
+                    <h3 className="text-xs font-bold text-white/40 uppercase tracking-wider mb-3">Videos, Podcasts & More</h3>
                     <div className="flex flex-col space-y-3">
                       {filteredVideos.map((video) => (
                         <Link key={video.id} href={`/watch/${video.id}`} className="flex items-center gap-4 group hover:bg-white/5 p-2 -mx-2 rounded-xl transition">
@@ -191,10 +206,15 @@ export default function SearchPage() {
                             <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                               <Play size={16} fill="white" />
                             </div>
+                            {video.duration && (
+                              <div className="absolute bottom-1 right-1 bg-black/80 px-1 py-0.5 rounded text-[9px] font-bold">
+                                {video.duration}
+                              </div>
+                            )}
                           </div>
                           <div className="flex-1 min-w-0">
                             <span className="text-white font-bold text-sm block truncate group-hover:text-[#E53945] transition-colors">{video.title}</span>
-                            <span className="text-xs text-white/50">{video.type || "Video"} • {video.duration}</span>
+                            <span className="text-xs text-white/50">{video.type || "Video"} {video.category ? `• ${video.category}` : ''}</span>
                           </div>
                         </Link>
                       ))}
