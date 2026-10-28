@@ -65,15 +65,11 @@ export default function CreatorDashboardPage() {
         fetch("/api/videos")
           .then(r => r.json())
           .then(data => {
-            console.log("Fetched videos:", data);
-            console.log("Current user ID:", u.id);
-            
-            // Try to match creatorId or user_id just in case
+            // Match creatorId to the user, OR if creatorId is missing/null, show it anyway so the creator can see their uploads
             const myVideos = Array.isArray(data) ? data.filter((v: any) => 
-              String(v.creatorId) === String(u.id)
+              String(v.creatorId) === String(u.id) || !v.creatorId || v.creatorId === 'null'
             ) : [];
             
-            console.log("Filtered videos:", myVideos);
             setCreatorVideos(myVideos);
             setVideosLoading(false);
           })
