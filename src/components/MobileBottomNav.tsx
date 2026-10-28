@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
-import { Search, MessageCircle, LogOut, Home } from "lucide-react";
+import { Search, LogOut, Home } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Capacitor } from "@capacitor/core";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
@@ -29,7 +29,6 @@ const TABS: {
     label: "Plus", 
     path: "/plus" 
   },
-  { icon: MessageCircle, label: "Messages", path: "/messages" },
 ];
 
 const triggerHaptic = async () => {
