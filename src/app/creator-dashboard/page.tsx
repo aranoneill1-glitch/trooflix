@@ -19,10 +19,7 @@ const MOCK_REVENUE = 1250.00;
 const MOCK_SUBSCRIBERS = 142;
 const MOCK_TOTAL_VIEWS = 45200;
 
-const DEMO_UPLOADS = [
-  { id: 1, title: "The Last Days Of The Big Lie", image: "https://images.unsplash.com/photo-1516280440502-861d6c619b6e?w=500&q=80", status: "Published", views: "1.2K", date: "2 days ago" },
-  { id: 2, title: "The Truth About Big Tech", image: "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=500&q=80", status: "Published", views: "840", date: "4 days ago" },
-];
+
 
 const InstagramIcon = ({ size = 16 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -326,48 +323,6 @@ function CreatorDashboardContent() {
                 <BarChart3 className="text-white" size={24} />
                 <span className="text-xs font-bold">Analytics</span>
               </Link>
-            </div>
-
-            {/* FINANCIAL STATS */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-gradient-to-br from-[#E53945]/20 to-[#1c1c1e] border border-[#E53945]/30 p-5 rounded-2xl">
-                <Wallet className="text-[#E53945]/50 mb-2" size={24} />
-                <p className="text-xs text-white/60 font-semibold mb-1">Gross Revenue</p>
-                <h3 className="text-3xl font-black text-white">${MOCK_REVENUE.toLocaleString('en-US', { minimumFractionDigits: 2 })}</h3>
-                <p className="text-[10px] text-[#1ed760] font-bold mt-1">↑ 12% this month</p>
-              </div>
-              <div className="bg-[#1c1c1e] border border-white/10 p-5 rounded-2xl">
-                <Users className="text-white/20 mb-2" size={24} />
-                <p className="text-xs text-white/60 font-semibold mb-1">Subscribers</p>
-                <h3 className="text-3xl font-black text-white">{MOCK_SUBSCRIBERS}</h3>
-                <p className="text-[10px] text-white/40 font-medium mt-1">Premium members</p>
-              </div>
-              <div className="bg-[#1c1c1e] border border-white/10 p-5 rounded-2xl">
-                <Eye className="text-white/20 mb-2" size={24} />
-                <p className="text-xs text-white/60 font-semibold mb-1">Total Views</p>
-                <h3 className="text-3xl font-black text-white">{(MOCK_TOTAL_VIEWS / 1000).toFixed(1)}K</h3>
-                <p className="text-[10px] text-white/40 font-medium mt-1">All time</p>
-              </div>
-            </div>
-
-            {/* LATEST UPLOADS */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold">Latest Uploads</h2>
-                <Link href="/creator-dashboard/manage-content" className="text-xs font-semibold text-[#E53945] hover:text-white transition">View All</Link>
-              </div>
-              <div className="space-y-3">
-                {DEMO_UPLOADS.map((upload) => (
-                  <div key={upload.id} className="flex items-center gap-4 bg-[#1c1c1e] border border-white/10 p-3 rounded-2xl">
-                    <img src={upload.image} alt="" className="w-20 h-12 object-cover rounded-lg shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold truncate">{upload.title}</p>
-                      <p className="text-xs text-white/50">{upload.views} views • {upload.date}</p>
-                    </div>
-                    <span className="text-[10px] font-bold text-[#1ed760] bg-[#1ed760]/10 px-2 py-1 rounded-md hidden md:block">PUBLISHED</span>
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
         )}
