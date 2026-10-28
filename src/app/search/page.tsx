@@ -6,6 +6,30 @@ import Link from "next/link";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { createClient } from "@/utils/supabase/client";
 
+const MAIN_CATEGORIES = [
+  { name: "Documentaries", color: "bg-[#E13377]/60", image: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=300&auto=format&fit=crop" },
+  { name: "Podcasts", color: "bg-[#1DB954]/60", image: "https://unsplash.com/photos/Qruwi3Ur3Ak/download?force=true&w=300" },
+  { name: "Independent Films", color: "bg-[#2E77D0]/60", image: "https://unsplash.com/photos/mVv8igQaWoI/download?force=true&w=300" },
+  { name: "Books", color: "bg-[#8400e7]/60", image: "https://unsplash.com/photos/_nm_mZ4Cs2I/download?force=true&w=300" },
+];
+
+const BROWSE_ALL = [
+  { name: "History", color: "bg-[#8b5cf6]/60", image: "https://unsplash.com/photos/JioCsloIYro/download?force=true&w=300" },
+  { name: "Politics & Geopolitics", color: "bg-[#006450]/60", image: "https://unsplash.com/photos/2J5-T03yGQU/download?force=true&w=300" },
+  { name: "War & Conflict", color: "bg-[#E53945]/60", image: "https://images.unsplash.com/photo-1579912205439-4cef16dc975e?q=80&w=300&auto=format&fit=crop" },
+  { name: "True Crime & Justice", color: "bg-[#1e3264]/60", image: "https://unsplash.com/photos/yYpmCA32U_M/download?force=true&w=300" },
+  { name: "Conspiracy & Mystery", color: "bg-[#7d4b96]/60", image: "https://unsplash.com/photos/BxELNNMN88Y/download?force=true&w=300" },
+  { name: "Society & Culture", color: "bg-[#e86f2c]/60", image: "https://unsplash.com/photos/ehdsg7SHm6A/download?force=true&w=300" },
+  { name: "Business & Finance", color: "bg-[#b28b00]/60", image: "https://unsplash.com/photos/8lnbXtxFGZw/download?force=true&w=300" },
+  { name: "Science & Technology", color: "bg-[#0d73ec]/60", image: "https://unsplash.com/photos/gMpwyM4Lyuw/download?force=true&w=300" },
+  { name: "Environment & Nature", color: "bg-[#00897b]/60", image: "https://unsplash.com/photos/1Z2niiBPg5A/download?force=true&w=300" },
+  { name: "Religion & Spirituality", color: "bg-[#4527A0]/60", image: "https://unsplash.com/photos/UVssyWRCB24/download?force=true&w=300" },
+  { name: "Ancient Civilisation", color: "bg-[#bf360c]/60", image: "https://unsplash.com/photos/4Wue5DQnxSw/download?force=true&w=300" },
+  { name: "Comedy", color: "bg-[#ff9800]/60", image: "https://unsplash.com/photos/jvNoSUrQkgU/download?force=true&w=300" },
+  { name: "News", color: "bg-[#c62828]/60", image: "https://unsplash.com/photos/hWJsOnaWTqs/download?force=true&w=300" },
+  { name: "Gaming", color: "bg-[#673ab7]/60", image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=300&auto=format&fit=crop" },
+];
+
 export default function SearchPage() {
   const [query, setQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
@@ -18,12 +42,10 @@ export default function SearchPage() {
     async function loadData() {
       const supabase = createClient();
       
-      // Fetch real videos from Vercel KV
       const videosPromise = fetch("/api/videos", { cache: "no-store" })
         .then(r => r.json())
         .catch(() => []);
 
-      // Fetch real creators from Supabase
       const creatorsPromise = supabase
         .from("profiles")
         .select("creator_id, display_name, username, avatar_url, is_verified, tier")
@@ -44,7 +66,6 @@ export default function SearchPage() {
     setIsSearching(false);
   };
 
-  // Filter logic
   const filteredVideos = query.length > 0 ? allVideos.filter(v => 
     v.title?.toLowerCase().includes(query.toLowerCase()) || 
     v.description?.toLowerCase().includes(query.toLowerCase())
@@ -185,23 +206,42 @@ export default function SearchPage() {
             ) : (
               
               // CATEGORY GRID VIEW (When not searching)
-              <div className="grid grid-cols-2 gap-4 mb-8">
-                {[
-                  { name: "Documentaries", color: "bg-[#E13377]/60", image: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=300&auto=format&fit=crop" },
-                  { name: "Podcasts", color: "bg-[#1DB954]/60", image: "https://unsplash.com/photos/Qruwi3Ur3Ak/download?force=true&w=300" },
-                  { name: "Independent Films", color: "bg-[#2E77D0]/60", image: "https://unsplash.com/photos/mVv8igQaWoI/download?force=true&w=300" },
-                  { name: "Books", color: "bg-[#8400e7]/60", image: "https://unsplash.com/photos/_nm_mZ4Cs2I/download?force=true&w=300" },
-                ].map((cat) => (
-                  <Link key={cat.name} href={`/search/${encodeURIComponent(cat.name.toLowerCase().replace(/ & /g, "-").replace(/ /g, "-"))}`} className={`${cat.color} backdrop-blur-xl border border-white/20 rounded-xl p-4 h-24 relative overflow-hidden cursor-pointer group shadow-lg hover:bg-white/10 transition-colors block`}>
-                    <h2 className="text-xl font-bold relative z-10 text-white drop-shadow-md">{cat.name}</h2>
-                    <img 
-                      src={cat.image} 
-                      alt={cat.name} 
-                      className="absolute -right-2 -bottom-2 w-20 h-20 object-cover rotate-[25deg] shadow-2xl rounded-sm group-hover:scale-105 transition-transform duration-500 border border-white/10" 
-                    />
-                  </Link>
-                ))}
-              </div>
+              <>
+                <div className="grid grid-cols-2 gap-4 mb-8">
+                  {MAIN_CATEGORIES.map((cat) => (
+                    <Link key={cat.name} href={`/search/${encodeURIComponent(cat.name.toLowerCase().replace(/ & /g, "-").replace(/ /g, "-"))}`} className={`${cat.color} backdrop-blur-xl border border-white/20 rounded-xl p-4 h-24 relative overflow-hidden cursor-pointer group shadow-lg hover:bg-white/10 transition-colors block`}>
+                      <h2 className="text-xl font-bold relative z-10 text-white drop-shadow-md">{cat.name}</h2>
+                      <img 
+                        src={cat.image} 
+                        alt={cat.name} 
+                        className="absolute -right-2 -bottom-2 w-20 h-20 object-cover rotate-[25deg] shadow-2xl rounded-sm group-hover:scale-105 transition-transform duration-500 border border-white/10" 
+                      />
+                    </Link>
+                  ))}
+                </div>
+
+                <div className="mb-4 mt-2">
+                  <p className="text-[10px] md:text-xs tracking-[0.4em] text-white/50 font-semibold mb-1">
+                    EXPLORE OUR COLLECTIONS
+                  </p>
+                  <h2 className="text-2xl md:text-4xl font-black tracking-tight">
+                    Discover Something <span className="text-red-600">Real</span>
+                  </h2>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 pb-10">
+                  {BROWSE_ALL.map((cat) => (
+                    <Link key={cat.name} href={`/search/${encodeURIComponent(cat.name.toLowerCase().replace(/ & /g, "-").replace(/ /g, "-"))}`} className={`${cat.color} backdrop-blur-xl border border-white/20 rounded-xl p-4 h-24 relative overflow-hidden cursor-pointer group shadow-lg hover:bg-white/10 transition-colors block`}>
+                      <h2 className="text-lg font-bold relative z-10 text-white drop-shadow-md leading-tight">{cat.name}</h2>
+                      <img 
+                        src={cat.image} 
+                        alt={cat.name} 
+                        className="absolute -right-2 -bottom-2 w-16 h-16 md:w-20 md:h-20 object-cover rotate-[25deg] shadow-2xl rounded-sm group-hover:scale-105 transition-transform duration-500 border border-white/10" 
+                      />
+                    </Link>
+                  ))}
+                </div>
+              </>
             )}
           </div>
 
