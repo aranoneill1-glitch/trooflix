@@ -6,6 +6,7 @@ import {
   Wallet, TrendingUp, Users, Settings, Video, Radio, 
   ShoppingBag, BarChart3, ExternalLink, ArrowRight, CheckCircle2, 
   DollarSign, MessageSquare, Eye, UserPlus, Star, Music, Play
+, Pencil
 } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
@@ -97,12 +98,20 @@ export default function CreatorDashboardPage() {
 
           <div className="flex items-center gap-2 pb-2">
             {!viewAsUser && (
-              <Link 
-                href="/creator-dashboard/inbox" 
-                className="flex items-center gap-2 bg-[#E53945] hover:bg-[#d12e39] text-white font-bold px-4 py-2 rounded-xl transition text-sm shadow-lg shadow-[#E53945]/20"
-              >
-                <MessageSquare size={16} /> Inbox
-              </Link>
+              <>
+                <Link 
+                  href="/creator-dashboard/inbox" 
+                  className="flex items-center gap-2 bg-[#E53945] hover:bg-[#d12e39] text-white font-bold px-4 py-2 rounded-xl transition text-sm shadow-lg shadow-[#E53945]/20"
+                >
+                  <MessageSquare size={16} /> Inbox
+                </Link>
+                <Link 
+                  href="/creator-dashboard/settings" 
+                  className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold px-4 py-2 rounded-xl transition text-sm border border-white/10"
+                >
+                  <Pencil size={16} /> Edit Profile
+                </Link>
+              </>
             )}
             
             <button 
