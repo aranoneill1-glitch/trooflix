@@ -19,11 +19,7 @@ export default function MobileBottomNav() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [signedIn, setSignedIn] = useState<boolean | null>(null);
   const [showLogoutMenu, setShowLogoutMenu] = useState(false);
-
-  // ---- CREATOR MODE TOGGLE ----
-  // For now, we simulate the user role. Later, you can replace this with actual Supabase user data.
   const [isCreator, setIsCreator] = useState(false); 
-  // -----------------------------
   
   const pressTimer = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
@@ -46,12 +42,11 @@ export default function MobileBottomNav() {
     }
   }, []);
 
-  // Prefetch the tabs based on role
   useEffect(() => {
     if (isTVApp) return;
     router.prefetch("/");
     router.prefetch("/search");
-    router.prefetch(isCreator ? "/creator-dashboard" : "/plus"); // Dynamic prefetch
+    router.prefetch(isCreator ? "/creator-dashboard" : "/plus");
     router.prefetch("/profile");
     router.prefetch("/login");
   }, [router, isTVApp, isCreator]);
@@ -69,8 +64,12 @@ export default function MobileBottomNav() {
         .then((r) => r.json())
         .then((d) => {
           if (d.profile?.avatar_url) setAvatarUrl(d.profile.avatar_url);
-          // If your Supabase profile has a role field, you would do:
-          // if (d.profile?.role === 'creator') setIsCreator(true);
+          // LIVE ROLE CHECK: Check if the user is a creator
+          if (d.profile?.role === 'creator' || d.profile?.is_creator === true) {
+            setIsCreator(true);
+          } else {
+            setIsCreator(false);
+          }
         })
         .catch(() => {});
     });
@@ -149,7 +148,6 @@ export default function MobileBottomNav() {
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-[250] flex justify-center pb-[env(safe-area-inset-bottom)] pointer-events-none">
         <div className="pointer-events-auto flex items-center justify-around w-[85%] max-w-[320px] mb-8 px-2 py-1.5 bg-[#1c1c1e]/80 backdrop-blur-2xl border border-white/10 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
           
-          {/* TAB 1: HOME */}
           <Link
             href="/"
             onClick={() => Capacitor.isNativePlatform() && Haptics.impact({ style: ImpactStyle.Light })}
@@ -160,7 +158,6 @@ export default function MobileBottomNav() {
             </motion.div>
           </Link>
 
-          {/* TAB 2: SEARCH */}
           <Link
             href="/search"
             onClick={() => Capacitor.isNativePlatform() && Haptics.impact({ style: ImpactStyle.Light })}
@@ -171,7 +168,7 @@ export default function MobileBottomNav() {
             </motion.div>
           </Link>
 
-          {/* TAB 3: DYNAMIC (PLUS vs CREATOR) */}
+          {/* DYNAMIC TAB: PLUS vs CREATOR */}
           <Link
             href={isCreator ? "/creator-dashboard" : "/plus"}
             onClick={() => Capacitor.isNativePlatform() && Haptics.impact({ style: ImpactStyle.Light })}
@@ -187,7 +184,6 @@ export default function MobileBottomNav() {
             </motion.div>
           </Link>
 
-          {/* TAB 4: PROFILE AVATAR */}
           <div
             onClick={handleAvatarClick}
             onMouseDown={startPress}
