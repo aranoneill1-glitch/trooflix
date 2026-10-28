@@ -44,6 +44,8 @@ export default function CreatorDashboardPage() {
   const [isDashboardView, setIsDashboardView] = useState(false);
   const [contentView, setContentView] = useState<"grid" | "list">("grid");
   const [creatorVideos, setCreatorVideos] = useState<any[]>([]);
+  const [creatorMerch, setCreatorMerch] = useState<any[]>([]);
+  const [activeContentTab, setActiveContentTab] = useState<"All" | "Podcasts" | "Videos" | "Store">("All");
   const [videosLoading, setVideosLoading] = useState(true);
 
   useEffect(() => {
@@ -59,17 +61,22 @@ export default function CreatorDashboardPage() {
           .catch(() => setLoading(false));
 
         // Fetch real videos
-        fetch("/api/videos")
-          .then(r => r.json())
-          .then(data => {
-            // Filter videos that belong to this creator
-            const myVideos = Array.isArray(data) ? data.filter((v: any) => 
-              v.creatorId === u.id || v.uploaderUserId === u.id || v.userId === u.id
-            ) : [];
-            setCreatorVideos(myVideos);
-            setVideosLoading(false);
-          })
-          .catch(() => setVideosLoading(false));
+        Promise.all([
+          fetch("/api/videos").then(r => r.json()).catch(() => []),
+          fetch("/api/merchandise").then(r => r.json()).catch(() => []) // Assuming you have a merch endpoint
+        ]).then(([videosData, merchData]) => {
+          const myVideos = Array.isArray(videosData) ? videosData.filter((v: any) => 
+            v.creatorId === u.id || v.uploaderUserId === u.id || v.userId === u.id
+          ) : [];
+          
+          const myMerch = Array.isArray(merchData) ? merchData.filter((m: any) => 
+            m.creatorId === u.id || m.userId === u.id
+          ) : [];
+
+          setCreatorVideos(myVideos);
+          setCreatorMerch(myMerch);
+          setVideosLoading(false);
+        }).catch(() => setVideosLoading(false));
       } else {
         setLoading(false);
       }
@@ -95,6 +102,14 @@ export default function CreatorDashboardPage() {
 
   const displayName = profile?.display_name || "Creator Name";
   const username = profile?.username || "creator";
+
+  const filteredContent = activeContentTab === "All" 
+    ? creatorVideos 
+    : activeContentTab === "Podcasts"
+      ? creatorVideos.filter(v => v.type?.toLowerCase() === 'podcast')
+      : activeContentTab === "Videos"
+        ? creatorVideos.filter(v => v.type?.toLowerCase() !== 'podcast' && v.type?.toLowerCase() !== 'merch')
+        : creatorMerch;
 
   return (
     <main className="min-h-screen bg-[#09090B] text-white pb-32 font-sans selection:bg-[#E53945]/30">
@@ -208,15 +223,25 @@ export default function CreatorDashboardPage() {
               </button>
             </div>
 
+            {/* TABS & VIEW TOGGLE */}
             <div className="flex items-center justify-between border-b border-white/10 mb-6">
               <div className="flex items-center gap-8">
-                <button className="pb-3 text-sm font-bold text-white border-b-2 border-[#E53945]">All</button>
-                <button className="pb-3 text-sm font-bold text-white/50 hover:text-white">Podcasts</button>
-                <button className="pb-3 text-sm font-bold text-white/50 hover:text-white">Videos</button>
-                <button className="pb-3 text-sm font-bold text-white/50 hover:text-white">Store</button>
+                {(["All", "Podcasts", "Videos", "Store"] as const).map((tab) => (
+                  <button 
+                    key={tab}
+                    onClick={() => setActiveContentTab(tab)}
+                    className={`pb-3 text-sm font-bold transition-colors ${
+                      activeContentTab === tab 
+                        ? "text-white border-b-2 border-[#E53945]" 
+                        : "text-white/50 hover:text-white"
+                    }`}
+                  >
+                    {tab}
+                  </button>
+                ))}
               </div>
 
-              {/* VIEW TOGGLE (Grid vs List) */}
+              {/* VIEW TOGGLE */}
               <div className="flex items-center gap-1 bg-[#1c1c1e] p-1 rounded-lg mb-2">
                 <button
                   onClick={() => setContentView("grid")}
@@ -235,65 +260,67 @@ export default function CreatorDashboardPage() {
               </div>
             </div>
 
-            {/* GRID VIEW */}
-            {contentView === "grid" && (
+            {/* CONTENT AREA */}
+            {videosLoading ? (
+              <div className="flex justify-center py-20">
+                <div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" />
+              </div>
+            ) : filteredContent.length === 0 ? (
+              <div className="text-center py-20 text-white/50">
+                No {activeContentTab.toLowerCase()} found yet.
+              </div>
+            ) : contentView === "grid" ? (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {videosLoading ? (
-                  <div className="col-span-full flex justify-center py-10">
-                    <div className="w-6 h-6 border-2 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" />
-                  </div>
-                ) : creatorVideos.length === 0 ? (
-                  <div className="col-span-full text-center py-10 text-white/50">
-                    No content uploaded yet.
-                  </div>
-                ) : (
-                  creatorVideos.map((video) => (
-                    <div key={video.id} className="bg-[#1c1c1e] border border-white/10 rounded-2xl overflow-hidden group cursor-pointer">
-                      <div className="relative aspect-square">
-                        <img 
-                          src={video.posterUrl || video.backdropUrl || "https://images.unsplash.com/photo-1516280440502-861d6c619b6e?w=500&q=80"} 
-                          alt={video.title} 
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
-                        />
-                        <div className={`absolute top-2 left-2 text-white text-[10px] font-bold px-2 py-0.5 rounded-sm ${video.type?.toLowerCase() === 'podcast' ? 'bg-blue-500' : 'bg-[#E53945]'}`}>
-                          {video.type || "VIDEO"}
-                        </div>
-                      </div>
-                      <div className="p-3">
-                        <h3 className="text-sm font-bold leading-tight line-clamp-1">{video.title}</h3>
-                        <p className="text-xs text-white/50 mt-1">{video.duration || "Recently added"}</p>
+                {filteredContent.map((item) => (
+                  <div key={item.id} className="bg-[#1c1c1e] border border-white/10 rounded-2xl overflow-hidden group cursor-pointer">
+                    <div className="relative aspect-square">
+                      <img 
+                        src={item.posterUrl || item.imageUrl || item.backdropUrl || "https://images.unsplash.com/photo-1516280440502-861d6c619b6e?w=500&q=80"} 
+                        alt={item.title || item.name} 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                      />
+                      <div className={`absolute top-2 left-2 text-white text-[10px] font-bold px-2 py-0.5 rounded-sm ${
+                        item.type?.toLowerCase() === 'podcast' ? 'bg-blue-500' : 
+                        item.price ? 'bg-[#E53945]' : 'bg-[#E53945]'
+                      }`}>
+                        {item.price ? 'MERCH' : item.type || "VIDEO"}
                       </div>
                     </div>
-                  ))
-                )}
+                    <div className="p-3">
+                      <h3 className="text-sm font-bold leading-tight line-clamp-1">{item.title || item.name}</h3>
+                      <p className="text-xs text-white/50 mt-1">
+                        {item.price ? `$${item.price.toFixed(2)}` : item.duration || "Recently added"}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
-            )}
-
-            
-            {contentView === "list" && (
+            ) : (
               <div className="flex flex-col gap-3">
-                <div className="flex items-center gap-4 bg-[#1c1c1e] border border-white/10 rounded-2xl p-3 cursor-pointer hover:bg-[#242426] transition-colors">
-                  <div className="w-24 h-16 rounded-lg overflow-hidden shrink-0 relative">
-                    <img src="https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=500&q=80" alt="Podcast" className="w-full h-full object-cover" />
-                    <div className="absolute top-1 left-1 bg-blue-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-sm">PODCAST</div>
+                {filteredContent.map((item) => (
+                  <div key={item.id} className="flex items-center gap-4 bg-[#1c1c1e] border border-white/10 rounded-2xl p-3 cursor-pointer hover:bg-[#242426] transition-colors">
+                    <div className="w-24 h-16 rounded-lg overflow-hidden shrink-0 relative">
+                      <img 
+                        src={item.posterUrl || item.imageUrl || item.backdropUrl || "https://images.unsplash.com/photo-1516280440502-861d6c619b6e?w=500&q=80"} 
+                        alt={item.title || item.name} 
+                        className="w-full h-full object-cover" 
+                      />
+                      <div className={`absolute top-1 left-1 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-sm ${
+                        item.type?.toLowerCase() === 'podcast' ? 'bg-blue-500' : 
+                        item.price ? 'bg-[#E53945]' : 'bg-[#E53945]'
+                      }`}>
+                        {item.price ? 'MERCH' : item.type || "VIDEO"}
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-bold text-white truncate">{item.title || item.name}</h3>
+                      <p className="text-xs text-white/50 mt-1">
+                        {item.price ? `$${item.price.toFixed(2)}` : item.duration || "Recently added"}
+                      </p>
+                    </div>
+                    <ChevronRight size={18} className="text-white/30 shrink-0" />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-bold text-white truncate">The Truth About Big Tech</h3>
-                    <p className="text-xs text-white/50 mt-1">Ep. 42 • 45 min</p>
-                  </div>
-                  <ChevronRight size={18} className="text-white/30 shrink-0" />
-                </div>
-                <div className="flex items-center gap-4 bg-[#1c1c1e] border border-white/10 rounded-2xl p-3 cursor-pointer hover:bg-[#242426] transition-colors">
-                  <div className="w-24 h-16 rounded-lg overflow-hidden shrink-0 relative">
-                    <img src="https://images.unsplash.com/photo-1516280440502-861d6c619b6e?w=500&q=80" alt="Video" className="w-full h-full object-cover" />
-                    <div className="absolute top-1 left-1 bg-[#E53945] text-white text-[8px] font-bold px-1.5 py-0.5 rounded-sm">VIDEO</div>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-bold text-white truncate">The Last Days Of The Big Lie</h3>
-                    <p className="text-xs text-white/50 mt-1">1:35:01 • 12K views</p>
-                  </div>
-                  <ChevronRight size={18} className="text-white/30 shrink-0" />
-                </div>
+                ))}
               </div>
             )}
           </div>
