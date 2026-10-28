@@ -210,7 +210,7 @@ export default function MobileBottomNav() {
 
       {/* BOTTOM NAV BAR */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-[250] flex justify-center pb-[env(safe-area-inset-bottom)] pointer-events-none">
-        <div className="pointer-events-auto flex items-center justify-around w-[92%] max-w-[360px] mb-8 px-2 py-2 bg-[#1c1c1e]/80 backdrop-blur-2xl border border-white/10 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
+        <div className="pointer-events-auto flex items-center justify-around w-[92%] max-w-[360px] mb-8 px-2 py-2 bg-black border border-white/20 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
           
           {/* TAB 1: HOME */}
           <Link href="/" className="flex flex-col items-center justify-center w-14 h-12 rounded-full">
