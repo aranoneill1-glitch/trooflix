@@ -70,7 +70,6 @@ export default function CreatorDashboardPage() {
     <main className="min-h-screen bg-[#09090B] text-white pb-32 font-sans selection:bg-[#E53945]/30">
       <TopBar />
 
-      {/* HEADER / TOGGLE */}
       <div className="max-w-4xl mx-auto px-4 pt-24 pb-6">
         <div className="flex items-center justify-between mb-6">
           <Link href="/creator-dashboard/settings" className="p-2.5 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition">
@@ -101,7 +100,6 @@ export default function CreatorDashboardPage() {
           </Link>
         </div>
 
-        {/* PROFILE HEADER (Always visible) */}
         <div className="flex flex-col items-center text-center mb-8">
           <div className="w-28 h-28 rounded-full p-[3px] bg-gradient-to-tr from-[#E53945] to-orange-500 mb-4">
             <div className="w-full h-full rounded-full border-4 border-[#09090B] overflow-hidden bg-[#1c1c1e]">
@@ -124,12 +122,8 @@ export default function CreatorDashboardPage() {
           </div>
         </div>
 
-        {/* =========================================
-            VIEW 1: THE PUBLIC PROFILE (Fan View)
-        ========================================= */}
         {!isDashboardView && (
           <div className="animate-in fade-in duration-300">
-            {/* Action Buttons */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
               <button className="flex items-center justify-center gap-2 bg-white text-black font-bold py-3 rounded-xl hover:bg-gray-200 transition shadow-lg">
                 <UserPlus size={18} /> Follow
@@ -145,7 +139,6 @@ export default function CreatorDashboardPage() {
               </button>
             </div>
 
-            {/* Content Tabs */}
             <div className="flex items-center justify-center gap-8 border-b border-white/10 mb-6">
               <button className="pb-3 text-sm font-bold text-white border-b-2 border-[#E53945]">All</button>
               <button className="pb-3 text-sm font-bold text-white/50 hover:text-white">Podcasts</button>
@@ -153,7 +146,6 @@ export default function CreatorDashboardPage() {
               <button className="pb-3 text-sm font-bold text-white/50 hover:text-white">Store</button>
             </div>
 
-            {/* Content Grid */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div className="bg-[#1c1c1e] border border-white/10 rounded-2xl overflow-hidden group cursor-pointer">
                 <div className="relative aspect-square">
@@ -179,13 +171,8 @@ export default function CreatorDashboardPage() {
           </div>
         )}
 
-        {/* =========================================
-            VIEW 2: THE CREATOR DASHBOARD (Business View)
-        ========================================= */}
         {isDashboardView && (
           <div className="animate-in fade-in duration-300 space-y-8">
-            
-            {/* QUICK ACTIONS */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <Link href="/creator-dashboard/upload" className="bg-[#1c1c1e] border border-white/10 hover:border-[#E53945] p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
                 <Video className="text-[#E53945]" size={24} />
@@ -205,7 +192,6 @@ export default function CreatorDashboardPage() {
               </Link>
             </div>
 
-            {/* FINANCIAL STATS */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-gradient-to-br from-[#E53945]/20 to-[#1c1c1e] border border-[#E53945]/30 p-5 rounded-2xl">
                 <Wallet className="text-[#E53945]/50 mb-2" size={24} />
@@ -227,7 +213,6 @@ export default function CreatorDashboardPage() {
               </div>
             </div>
 
-            {/* LATEST UPLOADS */}
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold">Latest Uploads</h2>
@@ -246,10 +231,8 @@ export default function CreatorDashboardPage() {
                 ))}
               </div>
             </div>
-
           </div>
         )}
-
       </div>
 
       <MobileBottomNav />
