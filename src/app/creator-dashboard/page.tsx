@@ -61,22 +61,17 @@ export default function CreatorDashboardPage() {
           .catch(() => setLoading(false));
 
         // Fetch real videos
-        Promise.all([
-          fetch("/api/videos").then(r => r.json()).catch(() => []),
-          fetch("/api/merchandise").then(r => r.json()).catch(() => []) // Assuming you have a merch endpoint
-        ]).then(([videosData, merchData]) => {
-          const myVideos = Array.isArray(videosData) ? videosData.filter((v: any) => 
-            v.creatorId === u.id || v.uploaderUserId === u.id || v.userId === u.id
-          ) : [];
-          
-          const myMerch = Array.isArray(merchData) ? merchData.filter((m: any) => 
-            m.creatorId === u.id || m.userId === u.id
-          ) : [];
-
-          setCreatorVideos(myVideos);
-          setCreatorMerch(myMerch);
-          setVideosLoading(false);
-        }).catch(() => setVideosLoading(false));
+        // Fetch only videos for now, using strict string comparison
+        fetch("/api/videos")
+          .then(r => r.json())
+          .then(data => {
+            const myVideos = Array.isArray(data) ? data.filter((v: any) => 
+              String(v.creatorId) === String(u.id)
+            ) : [];
+            setCreatorVideos(myVideos);
+            setVideosLoading(false);
+          })
+          .catch(() => setVideosLoading(false));
       } else {
         setLoading(false);
       }
