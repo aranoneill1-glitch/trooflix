@@ -19,7 +19,12 @@ export default function MobileBottomNav() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [signedIn, setSignedIn] = useState<boolean | null>(null);
   const [showLogoutMenu, setShowLogoutMenu] = useState(false);
-  const [isCreator, setIsCreator] = useState(false); 
+  const [isCreator, setIsCreator] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("isCreator") === "true";
+    }
+    return false;
+  }); 
   
   // Create Menu State
   const [showCreateMenu, setShowCreateMenu] = useState(false);
@@ -68,11 +73,9 @@ export default function MobileBottomNav() {
         .then((d) => {
           if (d.profile?.avatar_url) setAvatarUrl(d.profile.avatar_url);
           const tier = d.profile?.tier?.toLowerCase();
-          if (tier === 'creator' || tier === 'podcaster' || tier === 'pro') {
-            setIsCreator(true);
-          } else {
-            setIsCreator(false);
-          }
+          const isC = tier === 'creator' || tier === 'podcaster' || tier === 'pro';
+          setIsCreator(isC);
+          localStorage.setItem("isCreator", isC ? "true" : "false");
         })
         .catch(() => {});
     });
@@ -91,6 +94,7 @@ export default function MobileBottomNav() {
     const supabase = createClient();
     await supabase.auth.signOut();
     clearUserCache();
+    localStorage.removeItem("isCreator");
     setShowLogoutMenu(false);
     router.push("/");
     router.refresh();
