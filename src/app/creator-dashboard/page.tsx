@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { 
   Wallet, TrendingUp, Users, Settings, Video, Radio, 
-  ShoppingBag, BarChart3, ExternalLink, ArrowRight, CheckCircle2, DollarSign
+  ShoppingBag, BarChart3, ExternalLink, ArrowRight, CheckCircle2, DollarSign, MessageSquare
 } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
@@ -96,10 +96,16 @@ export default function CreatorDashboardPage() {
 
           <div className="flex items-center gap-2 pb-2">
             <Link 
-              href={`/podcaster/${profile?.username || "creator"}`} 
-              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold px-4 py-2 rounded-xl transition text-sm"
+              href="/creator-dashboard/inbox" 
+              className="flex items-center gap-2 bg-[#E53945] hover:bg-[#d12e39] text-white font-bold px-4 py-2 rounded-xl transition text-sm shadow-lg shadow-[#E53945]/20"
             >
-              <ExternalLink size={16} /> View Public Page
+              <MessageSquare size={16} /> Inbox
+            </Link>
+            <Link 
+              href={`/podcaster/${profile?.username || "creator"}`} 
+              className="hidden md:flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold px-4 py-2 rounded-xl transition text-sm"
+            >
+              <ExternalLink size={16} /> View Page
             </Link>
             <Link 
               href="/creator-dashboard/settings" 
