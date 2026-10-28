@@ -10,35 +10,6 @@ import { Haptics, ImpactStyle } from "@capacitor/haptics";
 import { createClient } from "@/utils/supabase/client";
 import { getCachedUser, clearUserCache } from "@/lib/cache";
 
-const TABS: {
-  icon?: any;
-  customImage?: string;
-  customNode?: any;
-  label: string;
-  path: string;
-}[] = [
-  { icon: Home, label: "Home", path: "/" },
-  { icon: Search, label: "Search", path: "/search" },
-  { 
-    customNode: (
-      <div className="flex flex-col items-center justify-center leading-none pt-1">
-        <span className="text-[10px] font-black text-white tracking-tight">TROOFLIX</span>
-        <span className="text-[8px] font-bold text-[#E53945] tracking-[0.2em] uppercase mt-1">Plus</span>
-      </div>
-    ), 
-    label: "Plus", 
-    path: "/plus" 
-  },
-];
-
-const triggerHaptic = async () => {
-  if (Capacitor.isNativePlatform()) {
-    try {
-      await Haptics.impact({ style: ImpactStyle.Light });
-    } catch (e) {}
-  }
-};
-
 export default function MobileBottomNav() {
   const pathname = usePathname();
   const router = useRouter();
@@ -48,6 +19,11 @@ export default function MobileBottomNav() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [signedIn, setSignedIn] = useState<boolean | null>(null);
   const [showLogoutMenu, setShowLogoutMenu] = useState(false);
+
+  // ---- CREATOR MODE TOGGLE ----
+  // For now, we simulate the user role. Later, you can replace this with actual Supabase user data.
+  const [isCreator, setIsCreator] = useState(false); 
+  // -----------------------------
   
   const pressTimer = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
@@ -70,12 +46,15 @@ export default function MobileBottomNav() {
     }
   }, []);
 
+  // Prefetch the tabs based on role
   useEffect(() => {
     if (isTVApp) return;
-    TABS.forEach(tab => router.prefetch(tab.path));
+    router.prefetch("/");
+    router.prefetch("/search");
+    router.prefetch(isCreator ? "/creator-dashboard" : "/plus"); // Dynamic prefetch
     router.prefetch("/profile");
     router.prefetch("/login");
-  }, [router, isTVApp]);
+  }, [router, isTVApp, isCreator]);
 
   useEffect(() => {
     if (isTVApp) return;
@@ -90,20 +69,14 @@ export default function MobileBottomNav() {
         .then((r) => r.json())
         .then((d) => {
           if (d.profile?.avatar_url) setAvatarUrl(d.profile.avatar_url);
+          // If your Supabase profile has a role field, you would do:
+          // if (d.profile?.role === 'creator') setIsCreator(true);
         })
         .catch(() => {});
     });
   }, [pathname, isTVApp]);
 
-  // Hide completely if TV app OR video player is open
   if (isTVApp || isPlayerOpen) return null;
-
-  const prefetchTab = (path: string) => {
-    try {
-      // @ts-ignore
-      router.prefetch?.(path);
-    } catch {}
-  };
 
   const isActive = (path: string) => {
     if (path === "/") return pathname === "/";
@@ -125,7 +98,7 @@ export default function MobileBottomNav() {
     isLongPress.current = false;
     pressTimer.current = setTimeout(() => {
       isLongPress.current = true;
-      triggerHaptic();
+      if (Capacitor.isNativePlatform()) Haptics.impact({ style: ImpactStyle.Light });
       setShowLogoutMenu(true);
     }, 600);
   };
@@ -174,46 +147,47 @@ export default function MobileBottomNav() {
       </AnimatePresence>
 
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-[250] flex justify-center pb-[env(safe-area-inset-bottom)] pointer-events-none">
-        <div className="pointer-events-auto flex items-center justify-around w-[85%] max-w-[300px] mb-8 px-4 py-1.5 bg-[#1c1c1e]/80 backdrop-blur-2xl border border-white/10 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
+        <div className="pointer-events-auto flex items-center justify-around w-[85%] max-w-[320px] mb-8 px-2 py-1.5 bg-[#1c1c1e]/80 backdrop-blur-2xl border border-white/10 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
           
-          {TABS.map((tab) => {
-            const active = isActive(tab.path);
-            return (
-              <Link
-                key={tab.path}
-                href={tab.path}
-                prefetch={true}
-                onClick={triggerHaptic}
-                onMouseEnter={() => prefetchTab(tab.path)}
-                onTouchStart={() => prefetchTab(tab.path)}
-                className="flex flex-col items-center justify-center w-11 h-10 rounded-full"
-              >
-                <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }}>
-                  {tab.customImage ? (
-                    <img
-                      src={tab.customImage}
-                      alt=""
-                      draggable={false}
-                      style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", pointerEvents: "none" }}
-                      className={`w-[26px] h-[26px] object-contain transition-opacity ${
-                        active ? "opacity-100" : "opacity-60 hover:opacity-80"
-                      }`}
-                    />
-                  ) : tab.customNode ? (
-                    <div className={`transition-opacity ${active ? "opacity-100" : "opacity-60 hover:opacity-80"}`}>
-                      {tab.customNode}
-                    </div>
-                  ) : (
-                    <tab.icon
-                      size={26}
-                      className={active ? "text-white" : "text-white/60 hover:text-white/80"}
-                    />
-                  )}
-                </motion.div>
-              </Link>
-            );
-          })}
+          {/* TAB 1: HOME */}
+          <Link
+            href="/"
+            onClick={() => Capacitor.isNativePlatform() && Haptics.impact({ style: ImpactStyle.Light })}
+            className="flex flex-col items-center justify-center w-12 h-10 rounded-full"
+          >
+            <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }}>
+              <Home size={24} className={isActive("/") ? "text-white" : "text-white/60 hover:text-white/80"} />
+            </motion.div>
+          </Link>
 
+          {/* TAB 2: SEARCH */}
+          <Link
+            href="/search"
+            onClick={() => Capacitor.isNativePlatform() && Haptics.impact({ style: ImpactStyle.Light })}
+            className="flex flex-col items-center justify-center w-12 h-10 rounded-full"
+          >
+            <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }}>
+              <Search size={24} className={isActive("/search") ? "text-white" : "text-white/60 hover:text-white/80"} />
+            </motion.div>
+          </Link>
+
+          {/* TAB 3: DYNAMIC (PLUS vs CREATOR) */}
+          <Link
+            href={isCreator ? "/creator-dashboard" : "/plus"}
+            onClick={() => Capacitor.isNativePlatform() && Haptics.impact({ style: ImpactStyle.Light })}
+            className="flex flex-col items-center justify-center w-14 h-10 rounded-full"
+          >
+            <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }}>
+              <div className="flex flex-col items-center justify-center leading-none pt-1">
+                <span className="text-[10px] font-black text-white tracking-tight">TROOFLIX</span>
+                <span className={`text-[8px] font-bold tracking-[0.2em] uppercase mt-1 ${isCreator ? 'text-blue-400' : 'text-[#E53945]'}`}>
+                  {isCreator ? "Creator" : "Plus"}
+                </span>
+              </div>
+            </motion.div>
+          </Link>
+
+          {/* TAB 4: PROFILE AVATAR */}
           <div
             onClick={handleAvatarClick}
             onMouseDown={startPress}
@@ -222,7 +196,7 @@ export default function MobileBottomNav() {
             onTouchStart={startPress}
             onTouchEnd={cancelPress}
             onTouchCancel={cancelPress}
-            className="flex flex-col items-center justify-center w-11 h-10 rounded-full cursor-pointer select-none"
+            className="flex flex-col items-center justify-center w-12 h-10 rounded-full cursor-pointer select-none"
             style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none" }}
           >
             <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }}>
