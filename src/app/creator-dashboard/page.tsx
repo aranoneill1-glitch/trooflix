@@ -114,12 +114,13 @@ export default function CreatorDashboardPage() {
           </Link>
         </div>
 
-        {/* PROFILE HEADER: Avatar + Name on Left, Stats on Right */}
-        <div className="flex items-start justify-between mb-6 w-full">
+        {/* PROFILE HEADER */}
+        <div className="flex flex-col mb-6 w-full">
           
-          {/* LEFT: Avatar + Name + Username */}
-          <div className="flex flex-col items-center w-24 md:w-28 shrink-0">
-            <div className="w-24 h-24 md:w-28 md:h-28 rounded-full p-[3px] bg-gradient-to-tr from-[#E53945] to-orange-500">
+          {/* TOP ROW: Avatar & Stats */}
+          <div className="flex items-center gap-4 w-full">
+            {/* Avatar */}
+            <div className="w-24 h-24 md:w-28 md:h-28 rounded-full p-[3px] bg-gradient-to-tr from-[#E53945] to-orange-500 shrink-0">
               <div className="w-full h-full rounded-full border-4 border-[#09090B] overflow-hidden bg-[#1c1c1e]">
                 {profile?.avatar_url ? (
                   <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
@@ -128,41 +129,46 @@ export default function CreatorDashboardPage() {
                 )}
               </div>
             </div>
-            <h1 className="text-lg md:text-xl font-black flex items-center gap-1 mt-2 text-center">
-              {displayName} {profile?.is_verified && <VerifiedBadge size={14} variant="gold" />}
+
+            {/* Stats & Socials */}
+            <div className="flex-1 flex flex-col justify-center">
+              <div className="flex justify-between md:justify-start md:gap-8 mb-2 px-2">
+                <div className="text-center md:text-left">
+                  <span className="font-bold text-white block text-xl">1.2K</span> 
+                  <span className="text-white/50 text-[10px] uppercase tracking-wider">Followers</span>
+                </div>
+                <div className="text-center md:text-left">
+                  <span className="font-bold text-white block text-xl">{MOCK_SUBSCRIBERS}</span> 
+                  <span className="text-white/50 text-[10px] uppercase tracking-wider">Subscribers</span>
+                </div>
+                <div className="text-center md:text-left">
+                  <span className="font-bold text-white block text-xl">45</span> 
+                  <span className="text-white/50 text-[10px] uppercase tracking-wider">Posts</span>
+                </div>
+              </div>
+
+              {/* Social Handles */}
+              <div className="flex items-center gap-4 px-2 mt-1">
+                <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors">
+                  <InstagramIcon size={14} />
+                  <span className="text-xs font-semibold">@sseca_insta</span>
+                </a>
+                <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors">
+                  <XIcon size={14} />
+                  <span className="text-xs font-semibold">@sseca_x</span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* BOTTOM ROW: Name & Username */}
+          <div className="mt-4 px-1">
+            <h1 className="text-2xl md:text-3xl font-black flex items-center gap-2 text-white">
+              {displayName} {profile?.is_verified && <VerifiedBadge size={20} variant="gold" />}
             </h1>
-            <p className="text-xs text-white/50 text-center">@{username}</p>
+            <p className="text-sm md:text-base text-white/50">@{username}</p>
           </div>
 
-          {/* RIGHT: Stats + Socials */}
-          <div className="flex-1 min-w-0 flex flex-col justify-center pl-4 pt-2">
-            <div className="flex gap-6 text-sm mb-4">
-              <div>
-                <span className="font-bold text-white block text-xl">1.2K</span> 
-                <span className="text-white/50 text-[10px] uppercase tracking-wider">Followers</span>
-              </div>
-              <div>
-                <span className="font-bold text-white block text-xl">{MOCK_SUBSCRIBERS}</span> 
-                <span className="text-white/50 text-[10px] uppercase tracking-wider">Subscribers</span>
-              </div>
-              <div>
-                <span className="font-bold text-white block text-xl">45</span> 
-                <span className="text-white/50 text-[10px] uppercase tracking-wider">Posts</span>
-              </div>
-            </div>
-
-            {/* Social Handles */}
-            <div className="flex items-center gap-4">
-              <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors">
-                <InstagramIcon size={16} />
-                <span className="text-xs font-semibold">@sseca_insta</span>
-              </a>
-              <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors">
-                <XIcon size={16} />
-                <span className="text-xs font-semibold">@sseca_x</span>
-              </a>
-            </div>
-          </div>
         </div>
 
         {/* BIO */}
