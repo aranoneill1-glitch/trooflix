@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
-import { Search, LogOut, Home } from "lucide-react";
+import { Search, LogOut, Home, ShoppingBag } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Capacitor } from "@capacitor/core";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
@@ -24,7 +24,6 @@ export default function MobileBottomNav() {
   const pressTimer = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
 
-  // Listen for player open/close events to hide the nav
   useEffect(() => {
     const handleOpen = () => setIsPlayerOpen(true);
     const handleClose = () => setIsPlayerOpen(false);
@@ -47,6 +46,7 @@ export default function MobileBottomNav() {
     router.prefetch("/");
     router.prefetch("/search");
     router.prefetch(isCreator ? "/creator-dashboard" : "/plus");
+    router.prefetch("/marketplace");
     router.prefetch("/profile");
     router.prefetch("/login");
   }, [router, isTVApp, isCreator]);
@@ -64,8 +64,6 @@ export default function MobileBottomNav() {
         .then((r) => r.json())
         .then((d) => {
           if (d.profile?.avatar_url) setAvatarUrl(d.profile.avatar_url);
-          // LIVE ROLE CHECK: Check if the user is a creator
-          // Check the 'tier' column. If they have a tier that isn't 'free' or 'viewer', they are a creator.
           const tier = d.profile?.tier?.toLowerCase();
           if (tier === 'creator' || tier === 'podcaster' || tier === 'pro') {
             setIsCreator(true);
@@ -148,8 +146,9 @@ export default function MobileBottomNav() {
       </AnimatePresence>
 
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-[250] flex justify-center pb-[env(safe-area-inset-bottom)] pointer-events-none">
-        <div className="pointer-events-auto flex items-center justify-around w-[85%] max-w-[320px] mb-8 px-2 py-1.5 bg-[#1c1c1e]/80 backdrop-blur-2xl border border-white/10 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
+        <div className="pointer-events-auto flex items-center justify-around w-[92%] max-w-[360px] mb-8 px-2 py-1.5 bg-[#1c1c1e]/80 backdrop-blur-2xl border border-white/10 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
           
+          {/* TAB 1: HOME */}
           <Link
             href="/"
             onClick={() => Capacitor.isNativePlatform() && Haptics.impact({ style: ImpactStyle.Light })}
@@ -160,6 +159,7 @@ export default function MobileBottomNav() {
             </motion.div>
           </Link>
 
+          {/* TAB 2: SEARCH */}
           <Link
             href="/search"
             onClick={() => Capacitor.isNativePlatform() && Haptics.impact({ style: ImpactStyle.Light })}
@@ -170,7 +170,7 @@ export default function MobileBottomNav() {
             </motion.div>
           </Link>
 
-          {/* DYNAMIC TAB: PLUS vs CREATOR */}
+          {/* TAB 3: DYNAMIC (PLUS vs CREATOR) */}
           <Link
             href={isCreator ? "/creator-dashboard" : "/plus"}
             onClick={() => Capacitor.isNativePlatform() && Haptics.impact({ style: ImpactStyle.Light })}
@@ -186,6 +186,18 @@ export default function MobileBottomNav() {
             </motion.div>
           </Link>
 
+          {/* TAB 4: MARKETPLACE */}
+          <Link
+            href="/marketplace"
+            onClick={() => Capacitor.isNativePlatform() && Haptics.impact({ style: ImpactStyle.Light })}
+            className="flex flex-col items-center justify-center w-12 h-10 rounded-full"
+          >
+            <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }}>
+              <ShoppingBag size={24} className={isActive("/marketplace") ? "text-white" : "text-white/60 hover:text-white/80"} />
+            </motion.div>
+          </Link>
+
+          {/* TAB 5: PROFILE AVATAR */}
           <div
             onClick={handleAvatarClick}
             onMouseDown={startPress}
