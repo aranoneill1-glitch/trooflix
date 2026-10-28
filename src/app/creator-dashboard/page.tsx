@@ -133,16 +133,16 @@ export default function CreatorDashboardPage() {
             {/* Stats */}
             <div className="flex-1 flex justify-around md:justify-start md:gap-8 px-2">
               <div className="text-center md:text-left">
-                <span className="font-bold text-white block text-base">1.2K</span> 
-                <span className="text-white/50 text-[10px] uppercase tracking-wider">Followers</span>
+                <span className="font-bold text-white block text-xl">1.2K</span> 
+                <span className="text-white/50 text-[11px] uppercase tracking-wider">Followers</span>
               </div>
               <div className="text-center md:text-left">
-                <span className="font-bold text-white block text-base">{MOCK_SUBSCRIBERS}</span> 
-                <span className="text-white/50 text-[10px] uppercase tracking-wider">Subscribers</span>
+                <span className="font-bold text-white block text-xl">{MOCK_SUBSCRIBERS}</span> 
+                <span className="text-white/50 text-[11px] uppercase tracking-wider">Subscribers</span>
               </div>
               <div className="text-center md:text-left">
-                <span className="font-bold text-white block text-base">45</span> 
-                <span className="text-white/50 text-[10px] uppercase tracking-wider">Posts</span>
+                <span className="font-bold text-white block text-xl">45</span> 
+                <span className="text-white/50 text-[11px] uppercase tracking-wider">Posts</span>
               </div>
             </div>
           </div>
