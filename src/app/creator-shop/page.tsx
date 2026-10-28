@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { 
-  Plus, Edit, Trash2, Tag, Package, DollarSign, TrendingUp, 
-  ArrowLeft, Search, MoreVertical 
+  Plus, Edit, Trash2, Package, DollarSign, TrendingUp, 
+  Search, MoreVertical, ShoppingBag
 } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
@@ -25,7 +25,7 @@ export default function CreatorShopPage() {
 
       const supabase = createClient();
       
-      // 1. Get the creator_id from the profile
+      // 1. Get the creator_id from the user's profile
       const { data: profile } = await supabase
         .from("profiles")
         .select("creator_id")
@@ -33,10 +33,18 @@ export default function CreatorShopPage() {
         .single();
 
       if (profile?.creator_id) {
-        // 2. Fetch real products and orders
+        // 2. Fetch real products and completed orders
         const [productsRes, ordersRes] = await Promise.all([
-          supabase.from("products").select("*").eq("creator_id", profile.creator_id).order('created_at', { ascending: false }),
-          supabase.from("merch_orders").select("*").eq("creator_id", profile.creator_id).eq("status", "paid")
+          supabase
+            .from("products")
+            .select("*")
+            .eq("creator_id", profile.creator_id)
+            .order('created_at', { ascending: false }),
+          supabase
+            .from("merch_orders")
+            .select("*")
+            .eq("creator_id", profile.creator_id)
+            .eq("status", "paid") // Only count paid orders as revenue
         ]);
 
         if (productsRes.data) setProducts(productsRes.data);
@@ -47,9 +55,12 @@ export default function CreatorShopPage() {
     loadShop();
   }, []);
 
-  const filteredProducts = products.filter(p => p.name?.toLowerCase().includes(search.toLowerCase()));
+  // Filter products based on search
+  const filteredProducts = products.filter(p => 
+    p.name?.toLowerCase().includes(search.toLowerCase())
+  );
 
-  // Calculate real stats from the database
+  // Calculate real stats
   const totalRevenueCents = orders.reduce((acc, o) => acc + (o.amount_cents || 0), 0);
   const totalSold = orders.length;
   const activeListings = products.filter(p => p.active).length;
@@ -68,17 +79,23 @@ export default function CreatorShopPage() {
 
       <div className="max-w-4xl mx-auto pt-24 px-4 md:px-8">
         
+        {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
           <div>
-            <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-1 uppercase">Creator Shop</p>
-            <h1 className="text-4xl md:text-5xl font-black tracking-tight">Manage Your <span className="text-[#E53945]">Store</span></h1>
+            <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-1 uppercase">
+              Creator Shop
+            </p>
+            <h1 className="text-4xl md:text-5xl font-black tracking-tight">
+              Manage Your <span className="text-[#E53945]">Store</span>
+            </h1>
           </div>
+          
           <button className="flex items-center justify-center gap-2 bg-[#E53945] hover:bg-[#d12e39] text-white font-bold px-6 py-3 rounded-xl transition shadow-lg shadow-[#E53945]/20 w-full md:w-auto">
             <Plus size={18} /> Add New Product
           </button>
         </div>
 
-        {/* REAL Stats Cards */}
+        {/* Real Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="bg-[#1c1c1e] border border-white/10 p-5 rounded-2xl relative overflow-hidden">
             <DollarSign className="absolute top-4 right-4 text-[#1ed760]/20" size={40} />
@@ -97,6 +114,7 @@ export default function CreatorShopPage() {
           </div>
         </div>
 
+        {/* Search */}
         <div className="relative mb-6">
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
             <Search className="h-5 w-5 text-white/40" />
@@ -110,10 +128,15 @@ export default function CreatorShopPage() {
           />
         </div>
 
+        {/* Product Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filteredProducts.length === 0 ? (
-            <div className="col-span-full text-center py-12 text-white/50">
-              No products found. Click "Add New Product" to create your first listing.
+            <div className="col-span-full text-center py-16 bg-[#1c1c1e] border border-white/10 rounded-2xl">
+              <ShoppingBag size={40} className="mx-auto text-white/20 mb-3" />
+              <p className="text-white/50">You haven't added any products yet.</p>
+              <button className="mt-4 text-[#E53945] font-bold hover:text-white transition">
+                Create your first listing
+              </button>
             </div>
           ) : (
             filteredProducts.map((product) => (
@@ -124,7 +147,13 @@ export default function CreatorShopPage() {
                 className="bg-[#1c1c1e] border border-white/10 rounded-2xl p-4 flex gap-4 group hover:border-white/20 transition-colors"
               >
                 <div className="w-24 h-24 rounded-xl overflow-hidden bg-black shrink-0 relative">
-                  <img src={product.image_url || "/placeholder.jpg"} alt={product.name} className="w-full h-full object-cover" />
+                  {product.image_url ? (
+                    <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-white/20">
+                      <ShoppingBag size={24} />
+                    </div>
+                  )}
                 </div>
                 
                 <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
@@ -165,6 +194,7 @@ export default function CreatorShopPage() {
         </div>
 
       </div>
+
       <MobileBottomNav />
     </main>
   );
