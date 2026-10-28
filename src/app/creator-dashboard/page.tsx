@@ -2,348 +2,913 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { 
-  Wallet, TrendingUp, Users, Settings, Video, Radio, 
-  ShoppingBag, BarChart3, ExternalLink, ArrowRight, CheckCircle2, 
-  DollarSign, MessageSquare, Eye, UserPlus, Star, Music, Play
-, Pencil
+import {
+  Wallet,
+  TrendingUp,
+  Users,
+  Settings,
+  Video,
+  BarChart3,
+  ArrowRight,
+  CheckCircle2,
+  DollarSign,
+  MessageSquare,
+  Eye,
+  UserPlus,
+  Star,
+  Music,
+  Pencil,
+  ChevronRight,
+  Play,
+  Plus,
+  Bell,
+  MoreHorizontal,
+  Clock3,
+  Sparkles,
+  ShoppingBag,
+  LayoutDashboard,
+  Upload,
+  CircleHelp,
 } from "lucide-react";
+
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import { getCachedUser } from "@/lib/cache";
+
+const ACCENT = "#E53945";
+
+const MOCK_REVENUE = 1250;
+const MOCK_SUBSCRIBERS = 142;
+const MOCK_TOTAL_VIEWS = 45200;
+
+const DEMO_ACTIVITY = [
+  {
+    id: 1,
+    icon: "member",
+    title: "New premium subscriber",
+    description: "A new member joined your channel.",
+    time: "2 hours ago",
+  },
+  {
+    id: 2,
+    icon: "views",
+    title: "Content milestone reached",
+    description: "Your latest video reached 10,000 views.",
+    time: "5 hours ago",
+  },
+];
+
+const DEMO_UPLOADS = [
+  {
+    id: 1,
+    title: "The Last Days Of The Big Lie",
+    image:
+      "https://images.unsplash.com/photo-1516280440502-861d6c619b6e?w=500&q=80",
+    status: "Published",
+    views: "1.2K",
+    date: "2 days ago",
+  },
+  {
+    id: 2,
+    title: "The Truth About Big Tech",
+    image:
+      "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=500&q=80",
+    status: "Published",
+    views: "840",
+    date: "4 days ago",
+  },
+];
+
+function formatMoney(amount: number) {
+  return amount.toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+function SectionHeading({
+  title,
+  action,
+  href,
+}: {
+  title: string;
+  action?: string;
+  href?: string;
+}) {
+  return (
+    <div className="mb-4 flex items-center justify-between gap-3">
+      <h2 className="text-[15px] font-bold tracking-tight text-white sm:text-base">
+        {title}
+      </h2>
+
+      {action && href && (
+        <Link
+          href={href}
+          className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-white/55 transition hover:text-white"
+        >
+          {action}
+          <ChevronRight size={14} />
+        </Link>
+      )}
+    </div>
+  );
+}
+
+function MiniChart() {
+  return (
+    <svg
+      viewBox="0 0 320 72"
+      preserveAspectRatio="none"
+      className="h-[66px] w-full"
+      role="img"
+      aria-label="Illustrative upward revenue trend"
+    >
+      <defs>
+        <linearGradient id="revenueFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={ACCENT} stopOpacity="0.28" />
+          <stop offset="100%" stopColor={ACCENT} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+
+      <path
+        d="M0,56 C18,51 24,57 40,44 S65,49 82,35 S110,43 126,28 S151,39 171,24 S198,31 216,18 S244,27 263,12 S296,17 320,4 L320,72 L0,72 Z"
+        fill="url(#revenueFill)"
+      />
+
+      <path
+        d="M0,56 C18,51 24,57 40,44 S65,49 82,35 S110,43 126,28 S151,39 171,24 S198,31 216,18 S244,27 263,12 S296,17 320,4"
+        fill="none"
+        stroke={ACCENT}
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
 
 export default function CreatorDashboardPage() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [viewAsUser, setViewAsUser] = useState(false);
-  const [userViewTab, setUserViewTab] = useState<"all" | "podcasts" | "videos">("all");
-
-  // Mock Data
-  const MOCK_REVENUE = 1250.00;
-  const MOCK_SUBSCRIBERS = 142;
-  const MOCK_TOTAL_VIEWS = 45200;
+  const [userViewTab, setUserViewTab] = useState<
+    "all" | "podcasts" | "videos"
+  >("all");
+  const [analyticsTab, setAnalyticsTab] = useState<
+    "views" | "revenue" | "subscribers"
+  >("views");
+  const [period, setPeriod] = useState<"7 days" | "30 days" | "90 days">(
+    "30 days"
+  );
 
   useEffect(() => {
-    getCachedUser().then((u) => {
-      if (u) {
-        setUser(u);
-        fetch(`/api/profile?user_id=${u.id}`)
-          .then((r) => r.json())
-          .then((d) => {
-            setProfile(d.profile);
-            setLoading(false);
-          })
-          .catch(() => setLoading(false));
-      } else {
-        setLoading(false);
+    let active = true;
+
+    async function loadDashboard() {
+      try {
+        const currentUser = await getCachedUser();
+
+        if (!active) return;
+
+        if (!currentUser) {
+          setLoading(false);
+          return;
+        }
+
+        setUser(currentUser);
+
+        const response = await fetch(
+          `/api/profile?user_id=${encodeURIComponent(currentUser.id)}`
+        );
+
+        if (!response.ok) {
+          throw new Error("Unable to load creator profile");
+        }
+
+        const data = await response.json();
+
+        if (active) {
+          setProfile(data.profile ?? null);
+        }
+      } catch (error) {
+        console.error("Creator dashboard loading error:", error);
+      } finally {
+        if (active) setLoading(false);
       }
-    });
+    }
+
+    loadDashboard();
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" />
-      </div>
+      <main className="flex min-h-screen items-center justify-center bg-[#09090B]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.03]">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-white/10 border-t-[#E53945]" />
+          </div>
+          <p className="text-xs font-medium tracking-wide text-white/40">
+            OPENING CREATOR STUDIO
+          </p>
+        </div>
+      </main>
     );
   }
 
   if (!user) {
     return (
-      <main className="min-h-screen bg-[#0a0a0a] text-white flex flex-col items-center justify-center px-4">
-        <h1 className="text-2xl font-bold mb-4">Please log in to access Creator Studio</h1>
-        <Link href="/login" className="bg-[#E53945] text-white font-bold px-8 py-3 rounded-full">Log In</Link>
+      <main className="flex min-h-screen flex-col items-center justify-center bg-[#09090B] px-6 text-center text-white">
+        <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04]">
+          <LayoutDashboard size={28} className="text-[#E53945]" />
+        </div>
+
+        <h1 className="text-2xl font-bold tracking-tight">
+          Your Creator Studio
+        </h1>
+
+        <p className="mt-3 max-w-xs text-sm leading-6 text-white/45">
+          Log in to manage your content, grow your audience and access your
+          creator tools.
+        </p>
+
+        <Link
+          href="/login"
+          className="mt-7 inline-flex min-h-12 items-center justify-center rounded-xl bg-[#E53945] px-8 text-sm font-bold text-white transition hover:bg-[#cf303b]"
+        >
+          Log In
+        </Link>
       </main>
     );
   }
 
+  const displayName = profile?.display_name || "Creator Name";
+  const username = profile?.username || "creator";
+
   return (
-    <main className="min-h-screen bg-[#0a0a0a] text-white pb-32 font-sans selection:bg-[#E53945]/30">
+    <main
+      className="min-h-screen overflow-x-hidden bg-[#09090B] pb-[calc(104px+env(safe-area-inset-bottom))] font-sans text-white selection:bg-[#E53945]/30"
+      style={{ WebkitTapHighlightColor: "transparent" }}
+    >
       <TopBar />
 
-      {/* IDENTITY HEADER (Banner & Avatar) */}
-      <div className="relative w-full h-40 md:h-56 bg-[#1c1c1e]">
-        {profile?.backdrop_url ? (
-          <img src={profile.backdrop_url} alt="Banner" className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-r from-red-900/40 to-[#0a0a0a]" />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent" />
-      </div>
+      <div className="mx-auto w-full max-w-6xl px-4 pt-5 sm:px-6 sm:pt-8 lg:px-8">
+        {/* MOBILE-FIRST CREATOR HEADER */}
+        <section className="relative mb-7 overflow-hidden rounded-2xl border border-white/[0.07] bg-[#111114] sm:rounded-3xl">
+          {profile?.backdrop_url && (
+            <div className="absolute inset-0">
+              <img
+                src={profile.backdrop_url}
+                alt=""
+                className="h-full w-full object-cover opacity-25"
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#111114] via-[#111114]/90 to-[#111114]/65" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#111114] via-transparent to-transparent" />
+            </div>
+          )}
 
-      <div className="max-w-4xl mx-auto px-4 md:px-8 relative -mt-16 md:-mt-20">
-        
-        {/* Profile Info Row */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
-          <div className="flex items-end gap-4">
-            <div className="w-24 h-24 md:w-32 md:h-32 rounded-2xl border-4 border-[#0a0a0a] overflow-hidden bg-[#1c1c1e] shadow-2xl shrink-0">
-              {profile?.avatar_url ? (
-                <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-3xl font-bold">
-                  {profile?.display_name?.[0] || "C"}
+          <div className="relative p-4 sm:p-6">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="relative h-[58px] w-[58px] shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-[#202024] sm:h-[68px] sm:w-[68px]">
+                  {profile?.avatar_url ? (
+                    <img
+                      src={profile.avatar_url}
+                      alt={displayName}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-2xl font-bold text-white">
+                      {displayName.charAt(0).toUpperCase()}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-            <div className="pb-2">
-              <h1 className="text-2xl md:text-3xl font-black flex items-center gap-2">
-                {profile?.display_name || "Creator Name"}
-                {profile?.is_verified && <VerifiedBadge size={20} variant="gold" />}
-              </h1>
-              <p className="text-sm text-white/50">@{profile?.username || "creator"}</p>
-            </div>
-          </div>
 
-          <div className="flex items-center gap-2 pb-2">
-            {!viewAsUser && (
-              <>
-                <Link 
-                  href="/creator-dashboard/inbox" 
-                  className="flex items-center gap-2 bg-[#E53945] hover:bg-[#d12e39] text-white font-bold px-4 py-2 rounded-xl transition text-sm shadow-lg shadow-[#E53945]/20"
-                >
-                  <MessageSquare size={16} /> Inbox
-                </Link>
-                <Link 
-                  href="/creator-dashboard/settings" 
-                  className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold px-4 py-2 rounded-xl transition text-sm border border-white/10"
-                >
-                  <Pencil size={16} /> Edit Profile
-                </Link>
-              </>
-            )}
-            
-            <button 
-              onClick={() => setViewAsUser(!viewAsUser)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl transition text-sm font-bold ${
-                viewAsUser 
-                  ? 'bg-[#E53945] text-white shadow-lg shadow-[#E53945]/20' 
-                  : 'bg-white/10 hover:bg-white/20 text-white'
-              }`}
-            >
-              <Eye size={16} /> {viewAsUser ? 'Exit Preview' : 'View as User'}
-            </button>
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <h1 className="max-w-[190px] truncate text-lg font-extrabold tracking-tight sm:max-w-none sm:text-xl">
+                      {displayName}
+                    </h1>
+                    {profile?.is_verified && (
+                      <VerifiedBadge size={18} variant="gold" />
+                    )}
+                  </div>
 
-            {!viewAsUser && (
-              <Link 
-                href="/creator-dashboard/settings" 
-                className="p-2 bg-white/10 hover:bg-white/20 text-white rounded-xl transition"
+                  <p className="mt-1 truncate text-xs text-white/45 sm:text-sm">
+                    @{username}
+                  </p>
+
+                  <div className="mt-2 flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/50">
+                      Creator Studio
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <Link
+                href="/creator-dashboard/settings"
+                aria-label="Creator settings"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.04] text-white/65 transition hover:bg-white/10 hover:text-white"
               >
-                <Settings size={20} />
+                <Settings size={18} />
               </Link>
-            )}
+            </div>
+
+            <div className="mt-5 flex items-center gap-2">
+              <Link
+                href="/creator-dashboard/settings"
+                className="inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-xl border border-white/[0.09] bg-white/[0.04] px-3 text-xs font-bold transition hover:bg-white/[0.08] sm:flex-none sm:px-5"
+              >
+                <Pencil size={14} />
+                Edit Profile
+              </Link>
+
+              <button
+                onClick={() => setViewAsUser(!viewAsUser)}
+                className={`inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-xl px-3 text-xs font-bold transition sm:flex-none sm:px-5 ${
+                  viewAsUser
+                    ? "bg-[#E53945] text-white"
+                    : "border border-white/[0.09] bg-white/[0.04] text-white/80 hover:bg-white/[0.08]"
+                }`}
+              >
+                <Eye size={14} />
+                {viewAsUser ? "Exit Preview" : "Preview Profile"}
+              </button>
+            </div>
           </div>
-        </div>
+        </section>
 
-        {/* =========================================
-            VIEWER MODE (View as User)
-        ========================================= */}
-        {viewAsUser && (
-          <div className="animate-in fade-in duration-300">
-            {/* Public Action Buttons */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
-              <button className="flex items-center justify-center gap-2 bg-white text-black font-bold py-3 rounded-xl hover:bg-gray-200 transition shadow-lg">
-                <UserPlus size={18} /> Follow
-              </button>
-              <button className="flex items-center justify-center gap-2 bg-[#E53945] text-white font-bold py-3 rounded-xl hover:bg-[#d12e39] transition shadow-lg shadow-[#E53945]/20">
-                <Star size={18} fill="currentColor" /> Subscribe
-              </button>
-              <button className="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-xl transition border border-white/10">
-                <ShoppingBag size={18} /> Shop
-              </button>
-              <button className="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-xl transition border border-white/10">
-                <MessageSquare size={18} /> Message
-              </button>
+        {/* PUBLIC PROFILE PREVIEW */}
+        {viewAsUser ? (
+          <section className="animate-in fade-in duration-300">
+            <div className="mb-6">
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#E53945]">
+                Public preview
+              </p>
+              <h2 className="mt-1 text-2xl font-extrabold tracking-tight">
+                Discover this creator
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-white/45">
+                This is a preview of how your creator profile could appear to
+                viewers.
+              </p>
             </div>
 
-            {/* Content Tabs */}
-            <div className="flex items-center gap-6 border-b border-white/10 mb-6">
-              <button 
-                onClick={() => setUserViewTab("all")}
-                className={`pb-3 text-sm font-bold transition-colors ${userViewTab === "all" ? "text-white border-b-2 border-[#E53945]" : "text-white/50 hover:text-white"}`}
-              >
-                All
+            <div className="mb-7 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <button className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-white text-sm font-bold text-black transition hover:bg-white/90">
+                <UserPlus size={16} />
+                Follow
               </button>
-              <button 
-                onClick={() => setUserViewTab("podcasts")}
-                className={`pb-3 text-sm font-bold transition-colors ${userViewTab === "podcasts" ? "text-white border-b-2 border-[#E53945]" : "text-white/50 hover:text-white"}`}
-              >
-                Podcasts
+
+              <button className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#E53945] text-sm font-bold text-white transition hover:bg-[#cf303b]">
+                <Star size={16} fill="currentColor" />
+                Subscribe
               </button>
-              <button 
-                onClick={() => setUserViewTab("videos")}
-                className={`pb-3 text-sm font-bold transition-colors ${userViewTab === "videos" ? "text-white border-b-2 border-[#E53945]" : "text-white/50 hover:text-white"}`}
-              >
-                Videos
+
+              <button className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.04] text-sm font-bold transition hover:bg-white/[0.08]">
+                <ShoppingBag size={16} />
+                Shop
               </button>
+
+              <Link
+                href="/creator-dashboard/inbox"
+                className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.04] text-sm font-bold transition hover:bg-white/[0.08]"
+              >
+                <MessageSquare size={16} />
+                Message
+              </Link>
             </div>
 
-            {/* Content Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-              {/* Mock Podcast */}
+            <div className="mb-5 flex gap-6 border-b border-white/[0.08]">
+              {(["all", "podcasts", "videos"] as const).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setUserViewTab(tab)}
+                  className={`relative pb-3 text-sm font-semibold capitalize transition ${
+                    userViewTab === tab
+                      ? "text-white"
+                      : "text-white/40 hover:text-white/75"
+                  }`}
+                >
+                  {tab === "all" ? "All Content" : tab}
+                  {userViewTab === tab && (
+                    <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-[#E53945]" />
+                  )}
+                </button>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
               {(userViewTab === "all" || userViewTab === "podcasts") && (
-                <div className="bg-[#1c1c1e] border border-white/10 rounded-2xl overflow-hidden group cursor-pointer">
-                  <div className="relative aspect-square">
-                    <img src="https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=500&q=80" alt="Podcast" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    <div className="absolute top-2 left-2 bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-sm flex items-center gap-1">
-                      <Music size={10} /> PODCAST
-                    </div>
+                <div className="group overflow-hidden rounded-2xl border border-white/[0.07] bg-[#141418]">
+                  <div className="relative aspect-[4/3] overflow-hidden">
+                    <img
+                      src="https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=500&q=80"
+                      alt="Podcast studio"
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                    />
+                    <span className="absolute left-2 top-2 rounded-md bg-black/75 px-2 py-1 text-[9px] font-bold uppercase tracking-wider">
+                      Podcast
+                    </span>
                   </div>
                   <div className="p-3">
-                    <h3 className="text-sm font-bold leading-tight mb-1 line-clamp-1">The Truth About Big Tech</h3>
-                    <p className="text-xs text-white/50">Ep. 42 • 45 min</p>
+                    <h3 className="line-clamp-2 text-sm font-bold leading-5">
+                      The Truth About Big Tech
+                    </h3>
+                    <p className="mt-1.5 text-[11px] text-white/40">
+                      Episode 42 · 45 min
+                    </p>
                   </div>
                 </div>
               )}
 
-              {/* Mock Video */}
               {(userViewTab === "all" || userViewTab === "videos") && (
-                <div className="bg-[#1c1c1e] border border-white/10 rounded-2xl overflow-hidden group cursor-pointer">
-                  <div className="relative aspect-square">
-                    <img src="https://images.unsplash.com/photo-1516280440502-861d6c619b6e?w=500&q=80" alt="Video" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    <div className="absolute top-2 left-2 bg-[#E53945] text-white text-[10px] font-bold px-2 py-0.5 rounded-sm flex items-center gap-1">
-                      <Video size={10} /> VIDEO
+                <div className="group overflow-hidden rounded-2xl border border-white/[0.07] bg-[#141418]">
+                  <div className="relative aspect-[4/3] overflow-hidden">
+                    <img
+                      src="https://images.unsplash.com/photo-1516280440502-861d6c619b6e?w=500&q=80"
+                      alt="Video production"
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                    />
+                    <span className="absolute left-2 top-2 rounded-md bg-[#E53945] px-2 py-1 text-[9px] font-bold uppercase tracking-wider">
+                      Video
+                    </span>
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 transition group-hover:opacity-100">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black">
+                        <Play size={16} fill="currentColor" />
+                      </span>
                     </div>
                   </div>
                   <div className="p-3">
-                    <h3 className="text-sm font-bold leading-tight mb-1 line-clamp-1">The Last Days Of The Big Lie</h3>
-                    <p className="text-xs text-white/50">1:35:01 • 12K views</p>
+                    <h3 className="line-clamp-2 text-sm font-bold leading-5">
+                      The Last Days Of The Big Lie
+                    </h3>
+                    <p className="mt-1.5 text-[11px] text-white/40">
+                      1h 35m · 12K views
+                    </p>
                   </div>
                 </div>
               )}
 
-              {/* Mock Merch */}
               {userViewTab === "all" && (
-                <div className="bg-[#1c1c1e] border border-white/10 rounded-2xl overflow-hidden group cursor-pointer">
-                  <div className="relative aspect-square">
-                    <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500&q=80" alt="Merch" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    <div className="absolute top-2 left-2 bg-white text-black text-[10px] font-bold px-2 py-0.5 rounded-sm flex items-center gap-1">
-                      <ShoppingBag size={10} /> MERCH
-                    </div>
+                <div className="group overflow-hidden rounded-2xl border border-white/[0.07] bg-[#141418]">
+                  <div className="relative aspect-[4/3] overflow-hidden">
+                    <img
+                      src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500&q=80"
+                      alt="Creator merchandise"
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                    />
+                    <span className="absolute left-2 top-2 rounded-md bg-white px-2 py-1 text-[9px] font-bold uppercase tracking-wider text-black">
+                      Merch
+                    </span>
                   </div>
                   <div className="p-3">
-                    <h3 className="text-sm font-bold leading-tight mb-1 line-clamp-1">Classic Logo Tee</h3>
-                    <p className="text-xs text-[#E53945] font-bold">$25.00</p>
+                    <h3 className="line-clamp-2 text-sm font-bold leading-5">
+                      Classic Logo Tee
+                    </h3>
+                    <p className="mt-1.5 text-xs font-bold text-[#E53945]">
+                      $25.00
+                    </p>
                   </div>
                 </div>
               )}
             </div>
-          </div>
-        )}
+          </section>
+        ) : (
+          <>
+            {/* DASHBOARD INTRODUCTION */}
+            <section className="mb-6">
+              <div className="flex items-end justify-between gap-3">
+                <div>
+                  <p className="mb-1.5 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-[#E53945]">
+                    <Sparkles size={12} />
+                    Your workspace
+                  </p>
 
-        {/* =========================================
-            CREATOR MODE (The Studio)
-        ========================================= */}
-        {!viewAsUser && (
-          <div className="animate-in fade-in duration-300">
-            <h2 className="text-lg font-bold mb-4">Quick Actions</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-              <Link href="/creator-dashboard/upload" className="group bg-[#1c1c1e] border border-white/10 hover:border-[#E53945] p-5 rounded-2xl flex flex-col items-center justify-center gap-3 transition-colors">
-                <div className="w-12 h-12 rounded-full bg-[#E53945]/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Video className="text-[#E53945]" size={24} />
-                </div>
-                <span className="text-sm font-bold text-white group-hover:text-[#E53945] transition-colors">Upload Content</span>
-              </Link>
-              <button className="group bg-[#1c1c1e] border border-white/10 p-5 rounded-2xl flex flex-col items-center justify-center gap-3 opacity-60 cursor-not-allowed">
-                <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center">
-                  <Radio className="text-blue-400" size={24} />
-                </div>
-                <span className="text-sm font-bold text-white">Go Live</span>
-                <span className="text-[9px] text-white/50 uppercase tracking-widest font-bold">Coming Soon</span>
-              </button>
-              <Link href="/creator-dashboard/shop" className="group bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-5 rounded-2xl flex flex-col items-center justify-center gap-3 transition-colors">
-                <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <ShoppingBag className="text-white" size={24} />
-                </div>
-                <span className="text-sm font-bold text-white">Manage Shop</span>
-              </Link>
-              <Link href="/creator-dashboard/analytics" className="group bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-5 rounded-2xl flex flex-col items-center justify-center gap-3 transition-colors">
-                <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <BarChart3 className="text-white" size={24} />
-                </div>
-                <span className="text-sm font-bold text-white">View Analytics</span>
-              </Link>
-            </div>
+                  <h2 className="text-[26px] font-extrabold leading-tight tracking-[-0.04em] sm:text-3xl">
+                    Welcome back.
+                  </h2>
 
-            {/* FINANCIAL STATS GRID */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              <div className="bg-gradient-to-br from-[#E53945]/20 to-[#1c1c1e] border border-[#E53945]/30 p-4 rounded-2xl relative overflow-hidden">
-                <Wallet className="absolute top-4 right-4 text-[#E53945]/40" size={32} />
-                <p className="text-xs text-white/60 font-semibold mb-1">Gross Revenue</p>
-                <h3 className="text-2xl md:text-3xl font-black text-white">
-                  ${MOCK_REVENUE.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                </h3>
-                <p className="text-[10px] text-[#1ed760] font-bold mt-1">↑ 12% this month</p>
-              </div>
-              <div className="bg-[#1c1c1e] border border-white/10 p-4 rounded-2xl relative overflow-hidden">
-                <Users className="absolute top-4 right-4 text-white/10" size={32} />
-                <p className="text-xs text-white/60 font-semibold mb-1">Subscribers</p>
-                <h3 className="text-2xl md:text-3xl font-black text-white">{MOCK_SUBSCRIBERS}</h3>
-                <p className="text-[10px] text-white/40 font-medium mt-1">Premium members</p>
-              </div>
-              <div className="bg-[#1c1c1e] border border-white/10 p-4 rounded-2xl relative overflow-hidden">
-                <TrendingUp className="absolute top-4 right-4 text-white/10" size={32} />
-                <p className="text-xs text-white/60 font-semibold mb-1">Total Views</p>
-                <h3 className="text-2xl md:text-3xl font-black text-white">{(MOCK_TOTAL_VIEWS / 1000).toFixed(1)}K</h3>
-                <p className="text-[10px] text-white/40 font-medium mt-1">All time</p>
-              </div>
-              
-            </div>
+                  <p className="mt-1.5 text-xs text-white/45 sm:text-sm">
+                    Here's your channel at a glance.
+                  </p>
+                </div>
 
-            {/* QUICK ACTIONS GRID */}
-            {/* RECENT ACTIVITY */}
-            <div className="grid md:grid-cols-2 gap-8">
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-bold">Recent Activity</h2>
-                </div>
-                <div className="bg-[#1c1c1e] border border-white/10 rounded-2xl p-4 space-y-4">
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-[#1ed760]/20 flex items-center justify-center shrink-0 mt-0.5">
-                      <DollarSign size={16} className="text-[#1ed760]" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium"><span className="font-bold">User_482</span> subscribed to your Premium tier.</p>
-                      <p className="text-xs text-white/40">2 hours ago</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center shrink-0 mt-0.5">
-                      <CheckCircle2 size={16} className="text-white" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">Your video <span className="font-bold">"The Big Lie"</span> hit 10,000 views.</p>
-                      <p className="text-xs text-white/40">5 hours ago</p>
-                    </div>
-                  </div>
-                </div>
+                <Link
+                  href="/creator-dashboard/upload"
+                  className="mb-0.5 flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-[#E53945] px-3.5 text-xs font-bold text-white shadow-lg shadow-[#E53945]/10 transition hover:bg-[#cf303b] sm:px-5 sm:text-sm"
+                >
+                  <Plus size={17} strokeWidth={2.5} />
+                  <span>Upload</span>
+                </Link>
               </div>
+            </section>
 
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-bold">Latest Uploads</h2>
-                  <Link href="/creator-dashboard/content" className="text-xs font-semibold text-[#E53945] hover:text-white transition">View All</Link>
-                </div>
-                <div className="bg-[#1c1c1e] border border-white/10 rounded-2xl p-4 space-y-3">
-                  {[1, 2].map((i) => (
-                    <div key={i} className="flex items-center gap-3 bg-black/20 p-2 rounded-xl">
-                      <img src="https://images.unsplash.com/photo-1516280440502-861d6c619b6e?w=200&q=80" alt="Thumb" className="w-16 h-10 object-cover rounded-md" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold truncate">The Last Days Of The Big Lie</p>
-                        <p className="text-xs text-white/50">1.2K views • 2 days ago</p>
+            {/* QUICK ACTIONS */}
+            <section className="mb-8">
+              <div className="flex gap-2.5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <Link
+                  href="/creator-dashboard/upload"
+                  className="flex min-h-[42px] shrink-0 items-center gap-2 rounded-xl border border-[#E53945]/25 bg-[#E53945]/[0.09] px-3.5 text-xs font-semibold text-white transition hover:bg-[#E53945]/15"
+                >
+                  <Upload size={15} className="text-[#E53945]" />
+                  Upload Content
+                </Link>
+
+                <Link
+                  href="/creator-dashboard/analytics"
+                  className="flex min-h-[42px] shrink-0 items-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.035] px-3.5 text-xs font-semibold text-white/80 transition hover:bg-white/[0.07]"
+                >
+                  <BarChart3 size={15} className="text-white/55" />
+                  Analytics
+                </Link>
+
+                <Link
+                  href="/creator-dashboard/content"
+                  className="flex min-h-[42px] shrink-0 items-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.035] px-3.5 text-xs font-semibold text-white/80 transition hover:bg-white/[0.07]"
+                >
+                  <Video size={15} className="text-white/55" />
+                  My Content
+                </Link>
+
+                <Link
+                  href="/creator-shop"
+                  className="flex min-h-[42px] shrink-0 items-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.035] px-3.5 text-xs font-semibold text-white/80 transition hover:bg-white/[0.07]"
+                >
+                  <ShoppingBag size={15} className="text-white/55" />
+                  My Shop
+                </Link>
+              </div>
+            </section>
+
+            {/* FEATURED REVENUE CARD */}
+            <section className="mb-4">
+              <div className="relative overflow-hidden rounded-2xl border border-[#E53945]/20 bg-[#141114] p-5 sm:rounded-3xl sm:p-7">
+                <div className="pointer-events-none absolute -right-12 -top-20 h-52 w-52 rounded-full bg-[#E53945]/[0.09] blur-3xl" />
+
+                <div className="relative">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#E53945]/10">
+                        <Wallet size={16} className="text-[#E53945]" />
                       </div>
-                      <button className="p-2 text-white/50 hover:text-white bg-white/5 rounded-full transition">
-                        <ArrowRight size={14} />
-                      </button>
+                      <p className="text-xs font-semibold text-white/60">
+                        Total creator revenue
+                      </p>
                     </div>
+
+                    <span className="rounded-full border border-white/[0.08] bg-white/[0.035] px-2.5 py-1 text-[10px] font-semibold text-white/45">
+                      Sample data
+                    </span>
+                  </div>
+
+                  <div className="mt-5 flex items-end justify-between gap-3">
+                    <div>
+                      <h3 className="text-[34px] font-extrabold leading-none tracking-[-0.055em] sm:text-4xl">
+                        {formatMoney(MOCK_REVENUE)}
+                      </h3>
+
+                      <div className="mt-3 flex items-center gap-1.5">
+                        <TrendingUp
+                          size={13}
+                          className="text-emerald-400"
+                        />
+                        <span className="text-xs font-bold text-emerald-400">
+                          +12%
+                        </span>
+                        <span className="text-[11px] text-white/40">
+                          this month
+                        </span>
+                      </div>
+                    </div>
+
+                    <Link
+                      href="/creator-dashboard/analytics"
+                      aria-label="View earnings analytics"
+                      className="mb-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.04] text-white/70 transition hover:bg-white/[0.09]"
+                    >
+                      <ArrowRight size={17} />
+                    </Link>
+                  </div>
+
+                  <div className="mt-5">
+                    <MiniChart />
+                  </div>
+
+                  <div className="mt-2 flex items-center justify-between border-t border-white/[0.07] pt-3">
+                    <span className="text-[10px] text-white/35">
+                      Illustrative performance trend
+                    </span>
+
+                    <Link
+                      href="/creator-dashboard/analytics"
+                      className="text-[11px] font-bold text-white/70 transition hover:text-white"
+                    >
+                      View earnings →
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* SECONDARY METRICS */}
+            <section className="mb-8 grid grid-cols-2 gap-3">
+              <div className="rounded-2xl border border-white/[0.07] bg-[#121215] p-4 sm:p-5">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/[0.05]">
+                    <Users size={16} className="text-white/65" />
+                  </div>
+
+                  <span className="text-[9px] font-semibold uppercase tracking-wider text-white/35">
+                    Audience
+                  </span>
+                </div>
+
+                <p className="mt-4 text-[26px] font-extrabold tracking-[-0.04em] sm:text-3xl">
+                  {MOCK_SUBSCRIBERS.toLocaleString()}
+                </p>
+
+                <p className="mt-1 text-[11px] text-white/45">
+                  Subscribers
+                </p>
+
+                <div className="mt-3 flex items-center gap-1 text-[10px] font-semibold text-emerald-400">
+                  <TrendingUp size={12} />
+                  <span>Premium members</span>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-white/[0.07] bg-[#121215] p-4 sm:p-5">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/[0.05]">
+                    <Eye size={16} className="text-white/65" />
+                  </div>
+
+                  <span className="text-[9px] font-semibold uppercase tracking-wider text-white/35">
+                    Reach
+                  </span>
+                </div>
+
+                <p className="mt-4 text-[26px] font-extrabold tracking-[-0.04em] sm:text-3xl">
+                  {(MOCK_TOTAL_VIEWS / 1000).toFixed(1)}K
+                </p>
+
+                <p className="mt-1 text-[11px] text-white/45">
+                  Total views
+                </p>
+
+                <div className="mt-3 flex items-center gap-1 text-[10px] font-semibold text-white/40">
+                  <BarChart3 size={12} />
+                  <span>All time</span>
+                </div>
+              </div>
+            </section>
+
+            {/* PERFORMANCE PANEL */}
+            <section className="mb-8">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-[15px] font-bold tracking-tight">
+                    Performance
+                  </h2>
+                  <p className="mt-1 text-[11px] text-white/40">
+                    Understand your channel's growth
+                  </p>
+                </div>
+
+                <Link
+                  href="/creator-dashboard/analytics"
+                  aria-label="Open full analytics"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.035] text-white/65 transition hover:bg-white/[0.08]"
+                >
+                  <ArrowRight size={16} />
+                </Link>
+              </div>
+
+              <div className="overflow-hidden rounded-2xl border border-white/[0.07] bg-[#121215] p-4 sm:p-6">
+                <div className="flex gap-1.5 rounded-xl bg-black/20 p-1">
+                  {(
+                    ["views", "revenue", "subscribers"] as const
+                  ).map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => setAnalyticsTab(tab)}
+                      className={`min-h-9 flex-1 rounded-lg px-1.5 text-[10px] font-semibold capitalize transition sm:text-xs ${
+                        analyticsTab === tab
+                          ? "bg-white/[0.09] text-white shadow-sm"
+                          : "text-white/40 hover:text-white/75"
+                      }`}
+                    >
+                      {tab}
+                    </button>
                   ))}
                 </div>
-              </div>
-            </div>
-          </div>
-        )}
 
+                <div className="mt-5 flex items-end justify-between gap-3">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-white/40">
+                      {analyticsTab === "views"
+                        ? "Total views"
+                        : analyticsTab === "revenue"
+                          ? "Gross revenue"
+                          : "Subscribers"}
+                    </p>
+
+                    <p className="mt-1 text-2xl font-extrabold tracking-tight">
+                      {analyticsTab === "views"
+                        ? "45,200"
+                        : analyticsTab === "revenue"
+                          ? formatMoney(MOCK_REVENUE)
+                          : "142"}
+                    </p>
+                  </div>
+
+                  <select
+                    aria-label="Select performance period"
+                    value={period}
+                    onChange={(event) =>
+                      setPeriod(
+                        event.target.value as
+                          | "7 days"
+                          | "30 days"
+                          | "90 days"
+                      )
+                    }
+                    className="max-w-[112px] rounded-lg border border-white/[0.08] bg-[#19191D] px-2 py-2 text-[10px] font-medium text-white/65 outline-none focus:border-[#E53945]/50"
+                  >
+                    <option>7 days</option>
+                    <option>30 days</option>
+                    <option>90 days</option>
+                  </select>
+                </div>
+
+                <div className="mt-5">
+                  <MiniChart />
+                </div>
+
+                <div className="mt-3 flex items-center justify-between border-t border-white/[0.06] pt-3">
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#E53945]" />
+                    <span className="text-[10px] text-white/45">
+                      Illustrative trend
+                    </span>
+                  </div>
+
+                  <span className="text-[10px] text-white/35">
+                    {period}
+                  </span>
+                </div>
+              </div>
+            </section>
+
+            {/* LATEST CONTENT */}
+            <section className="mb-8">
+              <SectionHeading
+                title="Latest uploads"
+                action="View all"
+                href="/creator-dashboard/content"
+              />
+
+              <div className="space-y-3">
+                {DEMO_UPLOADS.map((upload) => (
+                  <Link
+                    href="/creator-dashboard/content"
+                    key={upload.id}
+                    className="group flex min-w-0 items-center gap-3 rounded-2xl border border-white/[0.07] bg-[#121215] p-3 transition hover:border-white/[0.14] hover:bg-[#161619] sm:gap-4 sm:p-4"
+                  >
+                    <div className="relative h-[76px] w-[112px] shrink-0 overflow-hidden rounded-xl bg-[#202024] sm:h-[86px] sm:w-[132px]">
+                      <img
+                        src={upload.image}
+                        alt=""
+                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                      />
+
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/15">
+                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-black/45 text-white backdrop-blur-sm">
+                          <Play size={12} fill="currentColor" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <h3 className="line-clamp-2 text-[12px] font-bold leading-5 text-white sm:text-sm">
+                        {upload.title}
+                      </h3>
+
+                      <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-400">
+                          <CheckCircle2 size={11} />
+                          {upload.status}
+                        </span>
+
+                        <span className="text-[10px] text-white/35">
+                          {upload.views} views
+                        </span>
+                      </div>
+
+                      <p className="mt-1.5 text-[10px] text-white/35">
+                        {upload.date}
+                      </p>
+                    </div>
+
+                    <ChevronRight
+                      size={17}
+                      className="shrink-0 text-white/25 transition group-hover:translate-x-0.5 group-hover:text-white/65"
+                    />
+                  </Link>
+                ))}
+              </div>
+            </section>
+
+            {/* RECENT ACTIVITY */}
+            <section className="mb-8">
+              <SectionHeading
+                title="Recent activity"
+                action="Inbox"
+                href="/creator-dashboard/inbox"
+              />
+
+              <div className="overflow-hidden rounded-2xl border border-white/[0.07] bg-[#121215]">
+                {DEMO_ACTIVITY.map((activity, index) => (
+                  <div
+                    key={activity.id}
+                    className={`flex items-start gap-3 p-4 ${
+                      index !== DEMO_ACTIVITY.length - 1
+                        ? "border-b border-white/[0.06]"
+                        : ""
+                    }`}
+                  >
+                    <div
+                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
+                        activity.icon === "member"
+                          ? "bg-emerald-400/10 text-emerald-400"
+                          : "bg-white/[0.06] text-white/65"
+                      }`}
+                    >
+                      {activity.icon === "member" ? (
+                        <DollarSign size={16} />
+                      ) : (
+                        <CheckCircle2 size={16} />
+                      )}
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold leading-5 text-white/90">
+                        {activity.title}
+                      </p>
+
+                      <p className="mt-0.5 text-[11px] leading-5 text-white/45">
+                        {activity.description}
+                      </p>
+
+                      <p className="mt-1.5 flex items-center gap-1 text-[10px] text-white/30">
+                        <Clock3 size={10} />
+                        {activity.time}
+                      </p>
+                    </div>
+
+                    <MoreHorizontal
+                      size={17}
+                      className="mt-1 shrink-0 text-white/30"
+                    />
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* CREATOR HELP CARD */}
+            <section className="mb-3">
+              <div className="flex items-center gap-3 rounded-2xl border border-white/[0.07] bg-gradient-to-r from-[#171216] to-[#121215] p-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#E53945]/10 text-[#E53945]">
+                  <CircleHelp size={19} />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-xs font-bold">
+                    Need a hand getting started?
+                  </h3>
+
+                  <p className="mt-1 text-[11px] leading-5 text-white/40">
+                    Explore your creator tools and publishing workflow.
+                  </p>
+                </div>
+
+                <ChevronRight
+                  size={17}
+                  className="shrink-0 text-white/40"
+                />
+              </div>
+            </section>
+          </>
+        )}
       </div>
 
       <MobileBottomNav />
