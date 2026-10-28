@@ -232,7 +232,7 @@ export default function MobileBottomNav() {
               <div className="flex flex-col items-center justify-center leading-none pt-1">
                 <div className="flex items-center">
                   <span className="text-[20px] font-black text-white tracking-tighter">T</span>
-                  <span className="text-[20px] font-black text-[#E53945] tracking-tighter">F</span>
+                  <span className="text-[24px] font-black text-[#E53945] tracking-tighter">F</span>
                 </div>
                 <span className={`text-[8px] font-bold tracking-[0.2em] uppercase mt-1 ${isCreator ? 'text-blue-400' : 'text-[#E53945]'}`}>
                   {isCreator ? "Creator" : "Plus"}
