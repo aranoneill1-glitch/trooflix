@@ -89,7 +89,7 @@ export default function MobileBottomNav() {
     return pathname === path || pathname.startsWith(path + "/");
   };
 
-  const profileActive = pathname === "/profile" || pathname.startsWith("/profile/");
+  const profileActive = pathname === "/creator-dashboard" || pathname.startsWith("/creator-dashboard/");
 
   const handleLogout = async () => {
     const supabase = createClient();
@@ -120,7 +120,7 @@ export default function MobileBottomNav() {
       isLongPress.current = false;
       return;
     }
-    router.push(signedIn === false ? "/login" : "/profile");
+    router.push(signedIn === false ? "/login" : "/creator-dashboard");
   };
 
   return (
