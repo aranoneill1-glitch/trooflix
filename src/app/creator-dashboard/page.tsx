@@ -373,9 +373,19 @@ export default function CreatorDashboardPage() {
         </div>
 
         {/* BIO */}
-        <p className="text-sm text-white/60 mb-8 leading-relaxed">
+        <p className="text-sm text-white/60 mb-6 leading-relaxed">
           Independent filmmaker and podcast host. Uncovering the truth the mainstream won't touch. Subscribe for exclusive documentaries and unfiltered conversations.
         </p>
+
+        {/* SUBSCRIBE & MESSAGE (Pills under Bio) */}
+        <div className="flex gap-3 mb-8 w-full">
+          <button className="flex-1 flex items-center justify-center gap-2 bg-[#E53945] text-white font-bold py-3 rounded-full hover:bg-[#d12e39] transition shadow-lg shadow-[#E53945]/20">
+            <Star size={18} fill="currentColor" /> Subscribe
+          </button>
+          <button className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-full transition border border-white/10">
+            <MessageSquare size={18} /> Message
+          </button>
+        </div>
 
         {/* PROFILE VIEW */}
         {!isDashboardView && (
