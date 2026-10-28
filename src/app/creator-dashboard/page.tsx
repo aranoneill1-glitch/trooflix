@@ -5,6 +5,11 @@ import Link from "next/link";
 import { 
   Eye, Wallet, TrendingUp, Users, Settings, Video, Radio, 
   ShoppingBag, BarChart3, ExternalLink, ArrowRight, CheckCircle2, DollarSign, MessageSquare
+, UserPlus
+, Star
+, Play
+, Music
+, Grid
 } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
@@ -16,6 +21,7 @@ export default function CreatorDashboardPage() {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [viewAsUser, setViewAsUser] = useState(false);
+  const [userViewTab, setUserViewTab] = useState<"all" | "podcasts" | "videos">("all");
 
   // Mock Data
   const MOCK_REVENUE = 1250.00;
@@ -136,6 +142,8 @@ export default function CreatorDashboardPage() {
         </div>
 
         {!viewAsUser && (
+        <>
+          {!viewAsUser && (
         <>
           {/* FINANCIAL STATS GRID */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -259,6 +267,8 @@ export default function CreatorDashboardPage() {
           </div>
         </div>
 
+        </>
+      )}
         </>
       )}
       </div>
