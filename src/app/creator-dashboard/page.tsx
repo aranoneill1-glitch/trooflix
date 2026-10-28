@@ -228,32 +228,6 @@ export default function CreatorDashboardPage() {
         ========================================= */}
         {!viewAsUser && (
           <div className="animate-in fade-in duration-300">
-            {/* FINANCIAL STATS GRID */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              <div className="bg-gradient-to-br from-[#E53945]/20 to-[#1c1c1e] border border-[#E53945]/30 p-4 rounded-2xl relative overflow-hidden">
-                <Wallet className="absolute top-4 right-4 text-[#E53945]/40" size={32} />
-                <p className="text-xs text-white/60 font-semibold mb-1">Gross Revenue</p>
-                <h3 className="text-2xl md:text-3xl font-black text-white">
-                  ${MOCK_REVENUE.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                </h3>
-                <p className="text-[10px] text-[#1ed760] font-bold mt-1">↑ 12% this month</p>
-              </div>
-              <div className="bg-[#1c1c1e] border border-white/10 p-4 rounded-2xl relative overflow-hidden">
-                <Users className="absolute top-4 right-4 text-white/10" size={32} />
-                <p className="text-xs text-white/60 font-semibold mb-1">Subscribers</p>
-                <h3 className="text-2xl md:text-3xl font-black text-white">{MOCK_SUBSCRIBERS}</h3>
-                <p className="text-[10px] text-white/40 font-medium mt-1">Premium members</p>
-              </div>
-              <div className="bg-[#1c1c1e] border border-white/10 p-4 rounded-2xl relative overflow-hidden">
-                <TrendingUp className="absolute top-4 right-4 text-white/10" size={32} />
-                <p className="text-xs text-white/60 font-semibold mb-1">Total Views</p>
-                <h3 className="text-2xl md:text-3xl font-black text-white">{(MOCK_TOTAL_VIEWS / 1000).toFixed(1)}K</h3>
-                <p className="text-[10px] text-white/40 font-medium mt-1">All time</p>
-              </div>
-              
-            </div>
-
-            {/* QUICK ACTIONS GRID */}
             <h2 className="text-lg font-bold mb-4">Quick Actions</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
               <Link href="/creator-dashboard/upload" className="group bg-[#1c1c1e] border border-white/10 hover:border-[#E53945] p-5 rounded-2xl flex flex-col items-center justify-center gap-3 transition-colors">
@@ -283,6 +257,32 @@ export default function CreatorDashboardPage() {
               </Link>
             </div>
 
+            {/* FINANCIAL STATS GRID */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+              <div className="bg-gradient-to-br from-[#E53945]/20 to-[#1c1c1e] border border-[#E53945]/30 p-4 rounded-2xl relative overflow-hidden">
+                <Wallet className="absolute top-4 right-4 text-[#E53945]/40" size={32} />
+                <p className="text-xs text-white/60 font-semibold mb-1">Gross Revenue</p>
+                <h3 className="text-2xl md:text-3xl font-black text-white">
+                  ${MOCK_REVENUE.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                </h3>
+                <p className="text-[10px] text-[#1ed760] font-bold mt-1">↑ 12% this month</p>
+              </div>
+              <div className="bg-[#1c1c1e] border border-white/10 p-4 rounded-2xl relative overflow-hidden">
+                <Users className="absolute top-4 right-4 text-white/10" size={32} />
+                <p className="text-xs text-white/60 font-semibold mb-1">Subscribers</p>
+                <h3 className="text-2xl md:text-3xl font-black text-white">{MOCK_SUBSCRIBERS}</h3>
+                <p className="text-[10px] text-white/40 font-medium mt-1">Premium members</p>
+              </div>
+              <div className="bg-[#1c1c1e] border border-white/10 p-4 rounded-2xl relative overflow-hidden">
+                <TrendingUp className="absolute top-4 right-4 text-white/10" size={32} />
+                <p className="text-xs text-white/60 font-semibold mb-1">Total Views</p>
+                <h3 className="text-2xl md:text-3xl font-black text-white">{(MOCK_TOTAL_VIEWS / 1000).toFixed(1)}K</h3>
+                <p className="text-[10px] text-white/40 font-medium mt-1">All time</p>
+              </div>
+              
+            </div>
+
+            {/* QUICK ACTIONS GRID */}
             {/* RECENT ACTIVITY */}
             <div className="grid md:grid-cols-2 gap-8">
               <div>
