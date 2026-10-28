@@ -113,54 +113,67 @@ export default function CreatorDashboardPage() {
           </Link>
         </div>
 
-        <div className="flex flex-row items-center gap-4 mb-8 w-full">
+        <div className="flex flex-col mb-8 w-full">
           
-          {/* Avatar on the left */}
-          <div className="w-24 h-24 md:w-28 md:h-28 rounded-full p-[3px] bg-gradient-to-tr from-[#E53945] to-orange-500 shrink-0">
-            <div className="w-full h-full rounded-full border-4 border-[#09090B] overflow-hidden bg-[#1c1c1e]">
-              {profile?.avatar_url ? (
-                <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-3xl font-bold">{displayName.charAt(0)}</div>
-              )}
-            </div>
-          </div>
-
-          {/* Name, Handle & Stats on the right */}
-          <div className="flex-1 min-w-0 flex flex-col justify-center">
-            <h1 className="text-xl md:text-2xl font-black flex items-center gap-2 truncate">
-              {displayName} {profile?.is_verified && <VerifiedBadge size={18} variant="gold" />}
-            </h1>
-            <p className="text-sm text-white/50 mb-3 truncate">@{username}</p>
+          {/* Top Row: Avatar on left, Stats on right */}
+          <div className="flex flex-row items-center gap-4 w-full">
             
-            <div className="flex gap-5 text-sm">
-              <div>
-                <span className="font-bold text-white block text-base">1.2K</span> 
-                <span className="text-white/50 text-[10px] uppercase tracking-wider">Followers</span>
+            {/* Avatar & Name Column */}
+            <div className="flex flex-col items-center shrink-0 w-24 md:w-28">
+              <div className="w-24 h-24 md:w-28 md:h-28 rounded-full p-[3px] bg-gradient-to-tr from-[#E53945] to-orange-500">
+                <div className="w-full h-full rounded-full border-4 border-[#09090B] overflow-hidden bg-[#1c1c1e]">
+                  {profile?.avatar_url ? (
+                    <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-3xl font-bold">{displayName.charAt(0)}</div>
+                  )}
+                </div>
               </div>
-              <div>
-                <span className="font-bold text-white block text-base">{MOCK_SUBSCRIBERS}</span> 
-                <span className="text-white/50 text-[10px] uppercase tracking-wider">Subscribers</span>
-              </div>
-              <div>
-                <span className="font-bold text-white block text-base">45</span> 
-                <span className="text-white/50 text-[10px] uppercase tracking-wider">Posts</span>
-              </div>
+              <h1 className="text-lg font-black flex items-center gap-1 mt-2 text-center truncate w-full">
+                {displayName} {profile?.is_verified && <VerifiedBadge size={14} variant="gold" />}
+              </h1>
+              <p className="text-[10px] text-white/50 truncate w-full text-center">@{username}</p>
             </div>
 
-            {/* SOCIAL HANDLES */}
-            <div className="flex items-center gap-3 mt-4">
-              <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors">
-                <InstagramIcon size={16} />
-                <span className="text-xs font-semibold">@sseca_insta</span>
-              </a>
-              <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors">
-                <XIcon size={16} />
-                <span className="text-xs font-semibold">@sseca_x</span>
-              </a>
+            {/* Stats Column */}
+            <div className="flex-1 min-w-0 flex flex-col justify-center pl-2">
+              <div className="flex gap-5 text-sm mb-3">
+                <div>
+                  <span className="font-bold text-white block text-lg">1.2K</span> 
+                  <span className="text-white/50 text-[10px] uppercase tracking-wider">Followers</span>
+                </div>
+                <div>
+                  <span className="font-bold text-white block text-lg">{MOCK_SUBSCRIBERS}</span> 
+                  <span className="text-white/50 text-[10px] uppercase tracking-wider">Subscribers</span>
+                </div>
+                <div>
+                  <span className="font-bold text-white block text-lg">45</span> 
+                  <span className="text-white/50 text-[10px] uppercase tracking-wider">Posts</span>
+                </div>
+              </div>
+
+              {/* Social Handles below stats */}
+              <div className="flex items-center gap-3">
+                <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors">
+                  <InstagramIcon size={14} />
+                  <span className="text-xs font-semibold">@sseca_insta</span>
+                </a>
+                <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors">
+                  <XIcon size={14} />
+                  <span className="text-xs font-semibold">@sseca_x</span>
+                </a>
+              </div>
             </div>
           </div>
+
+          {/* Bio below everything */}
+          <p className="text-sm text-white/60 mt-4 leading-relaxed">
+            Independent filmmaker and podcast host. Uncovering the truth the mainstream won't touch. Subscribe for exclusive documentaries and unfiltered conversations.
+          </p>
+
         </div>
+
+        
 
         {!isDashboardView && (
           <div className="animate-in fade-in duration-300">
