@@ -19,17 +19,18 @@ export default function MobileBottomNav() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [signedIn, setSignedIn] = useState<boolean | null>(null);
   const [showLogoutMenu, setShowLogoutMenu] = useState(false);
-  const [isCreator, setIsCreator] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("isCreator") === "true";
-    }
-    return false;
-  }); 
+  const [isCreator, setIsCreator] = useState(false); 
   
   // Create Menu State
   const [showCreateMenu, setShowCreateMenu] = useState(false);
 
   const pressTimer = useRef<NodeJS.Timeout | null>(null);
+
+  // Safely check localStorage after hydration
+  useEffect(() => {
+    const cached = localStorage.getItem("isCreator");
+    if (cached === "true") setIsCreator(true);
+  }, []);
   const isLongPress = useRef(false);
 
   useEffect(() => {
