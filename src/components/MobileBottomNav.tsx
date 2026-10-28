@@ -230,15 +230,14 @@ export default function MobileBottomNav() {
           >
             <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }}>
               <div className="flex flex-col items-center justify-center leading-none pt-1">
-                <div className="flex items-center justify-center">
-                  <span className="text-[20px] font-bold text-white tracking-tight">T</span>
-                  <span className="text-[20px] font-bold text-[#E53945] tracking-tight">F</span>
+                <div className="flex items-center h-[24px]">
+                  <span className="text-[20px] font-bold text-white tracking-tighter">T</span>
+                  <span className="text-[20px] font-bold text-[#E53945] tracking-tighter">F</span>
                 </div>
-                <span className={`text-[8px] font-bold tracking-[0.2em] uppercase mt-1 ${isCreator ? 'text-blue-400' : 'text-[#E53945]'}`}>
+                <span className={`text-[9px] font-semibold tracking-wide mt-0.5 ${isCreator ? 'text-blue-400' : 'text-white/60'}`}>
                   {isCreator ? "Creator" : "Plus"}
                 </span>
-              </div>
-            </motion.div>
+              </div></motion.div>
           </Link>
 
           {/* TAB 4: DYNAMIC RIGHT (MARKETPLACE / CREATOR SHOP) */}
