@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
-import { Search, LogOut, Home, ShoppingBag } from "lucide-react";
+import { Search, LogOut, Home, ShoppingBag, Plus, Video, Radio, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Capacitor } from "@capacitor/core";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
@@ -21,6 +21,9 @@ export default function MobileBottomNav() {
   const [showLogoutMenu, setShowLogoutMenu] = useState(false);
   const [isCreator, setIsCreator] = useState(false); 
   
+  // Create Menu State
+  const [showCreateMenu, setShowCreateMenu] = useState(false);
+
   const pressTimer = useRef<NodeJS.Timeout | null>(null);
   const isLongPress = useRef(false);
 
@@ -46,7 +49,7 @@ export default function MobileBottomNav() {
     router.prefetch("/");
     router.prefetch("/search");
     router.prefetch(isCreator ? "/creator-dashboard" : "/plus");
-    router.prefetch("/marketplace");
+    router.prefetch(isCreator ? "/creator-shop" : "/marketplace");
     router.prefetch("/profile");
     router.prefetch("/login");
   }, [router, isTVApp, isCreator]);
@@ -117,6 +120,7 @@ export default function MobileBottomNav() {
 
   return (
     <>
+      {/* LOGOUT MENU */}
       <AnimatePresence>
         {showLogoutMenu && (
           <>
@@ -136,7 +140,6 @@ export default function MobileBottomNav() {
               <button
                 onClick={handleLogout}
                 className="w-full flex items-center justify-center gap-2 p-3 text-red-500 font-bold hover:bg-red-500/10 rounded-xl transition select-none"
-                style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none" }}
               >
                 <LogOut size={18} /> Log Out
               </button>
@@ -145,37 +148,84 @@ export default function MobileBottomNav() {
         )}
       </AnimatePresence>
 
+      {/* CREATE BOTTOM SHEET */}
+      <AnimatePresence>
+        {showCreateMenu && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowCreateMenu(false)}
+              className="fixed inset-0 z-[300] bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed bottom-0 left-0 right-0 z-[301] bg-[#1c1c1e] rounded-t-3xl border-t border-white/10 p-6 pb-12"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold">Create New</h3>
+                <button onClick={() => setShowCreateMenu(false)} className="p-2 bg-white/10 rounded-full">
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="flex flex-col gap-3">
+                <Link 
+                  href="/creator-dashboard/upload" 
+                  onClick={() => setShowCreateMenu(false)}
+                  className="flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-xl transition"
+                >
+                  <div className="w-12 h-12 rounded-full bg-[#E53945]/20 flex items-center justify-center">
+                    <Video className="text-[#E53945]" size={24} />
+                  </div>
+                  <div>
+                    <h4 className="font-bold">Upload Video / Podcast</h4>
+                    <p className="text-xs text-white/50">Publish a new piece of content</p>
+                  </div>
+                </Link>
+                <button 
+                  className="flex items-center gap-4 bg-white/5 border border-white/10 p-4 rounded-xl opacity-50 cursor-not-allowed"
+                >
+                  <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center">
+                    <Radio className="text-blue-400" size={24} />
+                  </div>
+                  <div className="text-left">
+                    <h4 className="font-bold">Go Live (Coming Soon)</h4>
+                    <p className="text-xs text-white/50">Stream a live Q&A with your fans</p>
+                  </div>
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* BOTTOM NAV BAR */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-[250] flex justify-center pb-[env(safe-area-inset-bottom)] pointer-events-none">
         <div className="pointer-events-auto flex items-center justify-around w-[92%] max-w-[360px] mb-8 px-2 py-2 bg-[#1c1c1e]/80 backdrop-blur-2xl border border-white/10 rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.8)]">
           
           {/* TAB 1: HOME */}
-          <Link
-            href="/"
-            onClick={() => Capacitor.isNativePlatform() && Haptics.impact({ style: ImpactStyle.Light })}
-            className="flex flex-col items-center justify-center w-14 h-12 rounded-full"
-          >
+          <Link href="/" className="flex flex-col items-center justify-center w-14 h-12 rounded-full">
             <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex flex-col items-center gap-1">
               <Home size={22} className={isActive("/") ? "text-white" : "text-white/60 hover:text-white/80"} />
               <span className={`text-[9px] font-semibold tracking-wide ${isActive("/") ? "text-white" : "text-white/60"}`}>Home</span>
             </motion.div>
           </Link>
 
-          {/* TAB 2: EXPLORE (SEARCH) */}
-          <Link
-            href="/search"
-            onClick={() => Capacitor.isNativePlatform() && Haptics.impact({ style: ImpactStyle.Light })}
-            className="flex flex-col items-center justify-center w-14 h-12 rounded-full"
-          >
+          {/* TAB 2: EXPLORE */}
+          <Link href="/search" className="flex flex-col items-center justify-center w-14 h-12 rounded-full">
             <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex flex-col items-center gap-1">
               <Search size={22} className={isActive("/search") ? "text-white" : "text-white/60 hover:text-white/80"} />
               <span className={`text-[9px] font-semibold tracking-wide ${isActive("/search") ? "text-white" : "text-white/60"}`}>Explore</span>
             </motion.div>
           </Link>
 
-          {/* TAB 3: DYNAMIC (PLUS vs CREATOR) */}
+          {/* TAB 3: DYNAMIC CENTER (PLUS / CREATOR STUDIO) */}
           <Link
             href={isCreator ? "/creator-dashboard" : "/plus"}
-            onClick={() => Capacitor.isNativePlatform() && Haptics.impact({ style: ImpactStyle.Light })}
             className="flex flex-col items-center justify-center w-14 h-12 rounded-full"
           >
             <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }}>
@@ -188,57 +238,68 @@ export default function MobileBottomNav() {
             </motion.div>
           </Link>
 
-          {/* TAB 4: STORE (MARKETPLACE) */}
+          {/* TAB 4: DYNAMIC RIGHT (MARKETPLACE / CREATOR SHOP) */}
           <Link
-            href="/marketplace"
-            onClick={() => Capacitor.isNativePlatform() && Haptics.impact({ style: ImpactStyle.Light })}
+            href={isCreator ? "/creator-shop" : "/marketplace"}
             className="flex flex-col items-center justify-center w-14 h-12 rounded-full"
           >
             <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex flex-col items-center gap-1">
-              <ShoppingBag size={22} className={isActive("/marketplace") ? "text-white" : "text-white/60 hover:text-white/80"} />
-              <span className={`text-[9px] font-semibold tracking-wide ${isActive("/marketplace") ? "text-white" : "text-white/60"}`}>Store</span>
+              <ShoppingBag size={22} className={isActive(isCreator ? "/creator-shop" : "/marketplace") ? "text-white" : "text-white/60 hover:text-white/80"} />
+              <span className={`text-[9px] font-semibold tracking-wide ${isActive(isCreator ? "/creator-shop" : "/marketplace") ? "text-white" : "text-white/60"}`}>
+                {isCreator ? "Shop" : "Store"}
+              </span>
             </motion.div>
           </Link>
 
-          {/* TAB 5: PROFILE AVATAR */}
-          <div
-            onClick={handleAvatarClick}
-            onMouseDown={startPress}
-            onMouseUp={cancelPress}
-            onMouseLeave={cancelPress}
-            onTouchStart={startPress}
-            onTouchEnd={cancelPress}
-            onTouchCancel={cancelPress}
-            className="flex flex-col items-center justify-center w-14 h-12 rounded-full cursor-pointer select-none"
-            style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none" }}
-          >
-            <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex flex-col items-center gap-1">
-              {avatarUrl ? (
-                <img
-                  src={avatarUrl}
-                  alt=""
-                  draggable={false}
-                  style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", pointerEvents: "none" }}
-                  className={`w-6 h-6 rounded-lg object-cover ${
-                    profileActive ? "ring-2 ring-white" : "ring-1 ring-white/30"
-                  }`}
-                />
-              ) : signedIn === false ? (
-                <div className={`w-6 h-6 rounded-lg bg-white/10 flex items-center justify-center ${profileActive ? "ring-2 ring-white" : ""}`}>
-                  <span className="w-2.5 h-2.5 rounded-full border-2 border-white/70" />
-                </div>
-              ) : (
-                <div
-                  className={`w-6 h-6 rounded-lg bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-[10px] font-bold ${
-                    profileActive ? "ring-2 ring-white" : ""
-                  }`}
-                >
-                  •
-                </div>
-              )}
-              <span className={`text-[9px] font-semibold tracking-wide ${profileActive ? "text-white" : "text-white/60"}`}>Profile</span>
-            </motion.div>
-          </div>
+          {/* TAB 5: DYNAMIC FAR RIGHT (PROFILE / CREATE BUTTON) */}
+          {isCreator ? (
+            // Creator: Big Red Create Button
+            <div
+              onClick={() => {
+                setShowCreateMenu(true);
+                if (Capacitor.isNativePlatform()) Haptics.impact({ style: ImpactStyle.Medium });
+              }}
+              className="flex flex-col items-center justify-center w-14 h-12 rounded-full cursor-pointer"
+            >
+              <motion.div 
+                whileTap={{ scale: 0.9 }} 
+                className="w-10 h-10 bg-[#E53945] rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(229,57,69,0.4)] border-2 border-[#0a0a0a]"
+              >
+                <Plus size={24} className="text-white" strokeWidth={3} />
+              </motion.div>
+            </div>
+          ) : (
+            // Viewer: Standard Profile Avatar
+            <div
+              onClick={handleAvatarClick}
+              onMouseDown={startPress}
+              onMouseUp={cancelPress}
+              onMouseLeave={cancelPress}
+              onTouchStart={startPress}
+              onTouchEnd={cancelPress}
+              onTouchCancel={cancelPress}
+              className="flex flex-col items-center justify-center w-14 h-12 rounded-full cursor-pointer select-none"
+            >
+              <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex flex-col items-center gap-1">
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt=""
+                    className={`w-6 h-6 rounded-lg object-cover ${profileActive ? "ring-2 ring-white" : "ring-1 ring-white/30"}`}
+                  />
+                ) : signedIn === false ? (
+                  <div className={`w-6 h-6 rounded-lg bg-white/10 flex items-center justify-center ${profileActive ? "ring-2 ring-white" : ""}`}>
+                    <span className="w-2.5 h-2.5 rounded-full border-2 border-white/70" />
+                  </div>
+                ) : (
+                  <div className={`w-6 h-6 rounded-lg bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-[10px] font-bold ${profileActive ? "ring-2 ring-white" : ""}`}>
+                    •
+                  </div>
+                )}
+                <span className={`text-[9px] font-semibold tracking-wide ${profileActive ? "text-white" : "text-white/60"}`}>Profile</span>
+              </motion.div>
+            </div>
+          )}
           
         </div>
       </nav>
