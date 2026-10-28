@@ -161,8 +161,11 @@ export default function SearchPage() {
                     <h3 className="text-xs font-bold text-white/40 uppercase tracking-wider mb-3">Creators & Users</h3>
                     <div className="flex flex-col space-y-3">
                       {filteredProfiles.map((profile) => {
-                        // Point everyone to the new unified profile view
-                        const profileLink = `/creator-dashboard?view=public`;
+                        // Route creators to their dashboard, and regular users to their public profile
+                        const isCreator = profile.tier === 'creator' || profile.creator_id;
+                        const profileLink = isCreator 
+                          ? `/creator-dashboard?view=public` 
+                          : `/profile/${profile.username}`;
 
                         return (
                           <Link key={profile.user_id} href={profileLink} className="flex items-center gap-4 group hover:bg-white/5 p-2 -mx-2 rounded-xl transition">
