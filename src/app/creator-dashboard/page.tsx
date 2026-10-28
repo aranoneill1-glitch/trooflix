@@ -506,7 +506,7 @@ export default function CreatorDashboardPage() {
                 <Video className="text-[#E53945]" size={24} />
                 <span className="text-xs font-bold">Upload Content</span>
               </Link>
-              <Link href="/creator-shop" className="bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
+              <Link href="/studio/shop" className="bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
                 <ShoppingBag className="text-white" size={24} />
                 <span className="text-xs font-bold">Manage Shop</span>
               </Link>
