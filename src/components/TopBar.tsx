@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, MessageCircle, Plus, RefreshCw } from "lucide-react";
+import { Menu, Plus, RefreshCw } from "lucide-react";
 import UserMenu from "@/components/UserMenu";
 import NotificationBell from "@/components/NotificationBell";
 import CreateSheet from "@/components/CreateSheet";
@@ -94,13 +94,7 @@ export default function TopBar({ onMenu }: Props) {
 
       {/* Right side */}
       <div className="ml-auto flex items-center gap-4 md:gap-5">
-        <Link
-          href="/messages"
-          className="text-white/90 hover:text-white transition flex md:hidden"
-          aria-label="Messages"
-        >
-          <MessageCircle size={20} />
-        </Link>
+        
         <button 
           onClick={handleRefresh}
           disabled={isRefreshing}
@@ -109,23 +103,11 @@ export default function TopBar({ onMenu }: Props) {
         >
           <RefreshCw size={20} className={isRefreshing ? "animate-spin" : ""} />
         </button>
-        <Link
-          href="/messages"
-          className="text-white/90 hover:text-white transition flex md:hidden"
-          aria-label="Messages"
-        >
-          <MessageCircle size={20} />
-        </Link>
+        
         <NotificationBell />
 
-        <div className="hidden md:flex items-center gap-3">
-          <Link
-            href="/messages"
-            className="text-white/90 hover:text-white transition"
-            aria-label="Messages"
-          >
-            <MessageCircle size={20} />
-          </Link>
+        <div className="flex items-center gap-3">
+          
           <UserMenu />
         </div>
       </div>
