@@ -16,7 +16,7 @@ export async function GET(req: Request) {
 
     const { data, error } = await supabaseAdmin
       .from("profiles")
-      .select("user_id, avatar_url, backdrop_url, display_name, username, bio, is_verified, tier, has_pass, pass_expires_at, stripe_subscription_id, subscription_status, updated_at")
+      .select("user_id, avatar_url, backdrop_url, display_name, username, bio, is_verified, tier, has_pass, pass_expires_at, stripe_subscription_id, subscription_status, updated_at, instagram_handle, x_handle")
       .eq("user_id", userId)
       .maybeSingle();
 
@@ -31,7 +31,7 @@ export async function GET(req: Request) {
 // POST /api/profile — { userId, avatarUrl?, displayName? }
 export async function POST(req: Request) {
   try {
-    const { userId, avatarUrl, backdropUrl, displayName, bio } = await req.json();
+    const { userId, avatarUrl, backdropUrl, displayName, bio, instagramHandle, xHandle } = await req.json();
     if (!userId) {
       return NextResponse.json({ error: "userId required" }, { status: 400 });
     }
@@ -50,6 +50,8 @@ export async function POST(req: Request) {
     if (backdropUrl !== undefined) payload.backdrop_url = backdropUrl;
     if (displayName !== undefined) payload.display_name = displayName;
     if (bio !== undefined) payload.bio = typeof bio === "string" ? bio.slice(0, 300) : null;
+    if (instagramHandle !== undefined) payload.instagram_handle = instagramHandle;
+    if (xHandle !== undefined) payload.x_handle = xHandle;
 
     if (existing) {
       const { data, error } = await supabaseAdmin

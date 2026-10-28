@@ -6,7 +6,7 @@ import {
   Wallet, TrendingUp, Users, Settings, Video, BarChart3, 
   ArrowRight, CheckCircle2, DollarSign, MessageSquare, Eye, 
   UserPlus, Star, Music, Pencil, Play, Plus, Clock3, 
-  ShoppingBag, Upload, LayoutDashboard, ChevronRight, LayoutGrid, List
+  ShoppingBag, Upload, LayoutDashboard, ChevronRight, LayoutGrid, List, X, Camera
 } from "lucide-react";
 
 import TopBar from "@/components/TopBar";
@@ -46,6 +46,9 @@ export default function CreatorDashboardPage() {
   const [creatorVideos, setCreatorVideos] = useState<any[]>([]);
   const [creatorMerch, setCreatorMerch] = useState<any[]>([]);
   const [activeContentTab, setActiveContentTab] = useState<"All" | "Podcasts" | "Videos" | "Store">("All");
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editForm, setEditForm] = useState({ name: "", bio: "", avatarUrl: "", insta: "", x: "" });
+  const [savingProfile, setSavingProfile] = useState(false);
   const [videosLoading, setVideosLoading] = useState(true);
 
   useEffect(() => {
@@ -56,6 +59,15 @@ export default function CreatorDashboardPage() {
           .then((r) => r.json())
           .then((d) => {
             setProfile(d.profile);
+            if (d.profile) {
+              setEditForm({
+                name: d.profile.display_name || "",
+                bio: d.profile.bio || "",
+                avatarUrl: d.profile.avatar_url || "",
+                insta: d.profile.instagram_handle || "",
+                x: d.profile.x_handle || ""
+              });
+            }
             setLoading(false);
           })
           .catch(() => setLoading(false));
@@ -82,6 +94,33 @@ export default function CreatorDashboardPage() {
     });
   }, []);
 
+  const handleSaveProfile = async () => {
+    setSavingProfile(true);
+    try {
+      const res = await fetch("/api/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: user.id,
+          displayName: editForm.name,
+          bio: editForm.bio,
+          avatarUrl: editForm.avatarUrl,
+          instagramHandle: editForm.insta,
+          xHandle: editForm.x
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setProfile(data.profile);
+        setIsEditModalOpen(false);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#09090B] flex items-center justify-center">
@@ -95,7 +134,94 @@ export default function CreatorDashboardPage() {
       <main className="min-h-screen bg-[#09090B] text-white flex flex-col items-center justify-center px-4">
         <h1 className="text-2xl font-bold mb-4">Log in to view your profile</h1>
         <Link href="/login" className="bg-[#E53945] text-white font-bold px-8 py-3 rounded-full">Log In</Link>
-      </main>
+  
+      {/* EDIT PROFILE MODAL */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 z-[400] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#1c1c1e] border border-white/10 rounded-2xl w-full max-w-md overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b border-white/10">
+              <h2 className="text-lg font-bold">Edit Profile</h2>
+              <button onClick={() => setIsEditModalOpen(false)} className="p-1 text-white/50 hover:text-white bg-white/5 rounded-full">
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-4 overflow-y-auto space-y-4 max-h-[60vh]">
+              <div>
+                <label className="block text-xs font-bold text-white/60 mb-1">Profile Picture URL</label>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full overflow-hidden bg-black shrink-0">
+                    {editForm.avatarUrl ? <img src={editForm.avatarUrl} className="w-full h-full object-cover" /> : <Camera className="m-auto mt-3 text-white/30" size={20} />}
+                  </div>
+                  <input 
+                    type="text" 
+                    value={editForm.avatarUrl}
+                    onChange={(e) => setEditForm({...editForm, avatarUrl: e.target.value})}
+                    className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-sm text-white focus:border-[#E53945] outline-none"
+                    placeholder="https://..."
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-white/60 mb-1">Display Name</label>
+                <input 
+                  type="text" 
+                  value={editForm.name}
+                  onChange={(e) => setEditForm({...editForm, name: e.target.value})}
+                  className="w-full bg-black/40 border border-white/10 rounded-lg p-2.5 text-sm text-white focus:border-[#E53945] outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-white/60 mb-1">Bio</label>
+                <textarea 
+                  value={editForm.bio}
+                  onChange={(e) => setEditForm({...editForm, bio: e.target.value})}
+                  className="w-full bg-black/40 border border-white/10 rounded-lg p-2.5 text-sm text-white focus:border-[#E53945] outline-none resize-none h-20"
+                  placeholder="Tell your fans about yourself..."
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-white/60 mb-1">Instagram Handle</label>
+                  <input 
+                    type="text" 
+                    value={editForm.insta}
+                    onChange={(e) => setEditForm({...editForm, insta: e.target.value})}
+                    className="w-full bg-black/40 border border-white/10 rounded-lg p-2.5 text-sm text-white focus:border-[#E53945] outline-none"
+                    placeholder="@username"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-white/60 mb-1">X Handle</label>
+                  <input 
+                    type="text" 
+                    value={editForm.x}
+                    onChange={(e) => setEditForm({...editForm, x: e.target.value})}
+                    className="w-full bg-black/40 border border-white/10 rounded-lg p-2.5 text-sm text-white focus:border-[#E53945] outline-none"
+                    placeholder="@username"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-white/10">
+              <button 
+                onClick={handleSaveProfile} 
+                disabled={savingProfile}
+                className="w-full bg-[#E53945] hover:bg-[#d12e39] text-white font-bold py-3 rounded-xl transition flex justify-center items-center"
+              >
+                {savingProfile ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : "Save Changes"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </main>
+
     );
   }
 
@@ -139,9 +265,9 @@ export default function CreatorDashboardPage() {
             </button>
           </div>
 
-          <Link href="/creator-dashboard/settings" className="p-2.5 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition">
-            <Settings size={20} />
-          </Link>
+          <button onClick={() => setIsEditModalOpen(true)} className="p-2.5 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition">
+            <Pencil size={20} />
+          </button>
         </div>
 
         {/* PROFILE HEADER */}
@@ -188,11 +314,11 @@ export default function CreatorDashboardPage() {
             <div className="flex items-center gap-4">
               <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors">
                 <InstagramIcon size={14} />
-                <span className="text-xs font-semibold">@sseca_insta</span>
+                <span className="text-xs font-semibold">{profile?.instagram_handle || "@instagram"}</span>
               </a>
               <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors">
                 <XIcon size={14} />
-                <span className="text-xs font-semibold">@sseca_x</span>
+                <span className="text-xs font-semibold">{profile?.x_handle || "@x"}</span>
               </a>
             </div>
           </div>
@@ -392,6 +518,93 @@ export default function CreatorDashboardPage() {
       </div>
 
       <MobileBottomNav />
+
+      {/* EDIT PROFILE MODAL */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 z-[400] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#1c1c1e] border border-white/10 rounded-2xl w-full max-w-md overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b border-white/10">
+              <h2 className="text-lg font-bold">Edit Profile</h2>
+              <button onClick={() => setIsEditModalOpen(false)} className="p-1 text-white/50 hover:text-white bg-white/5 rounded-full">
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-4 overflow-y-auto space-y-4 max-h-[60vh]">
+              <div>
+                <label className="block text-xs font-bold text-white/60 mb-1">Profile Picture URL</label>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full overflow-hidden bg-black shrink-0">
+                    {editForm.avatarUrl ? <img src={editForm.avatarUrl} className="w-full h-full object-cover" /> : <Camera className="m-auto mt-3 text-white/30" size={20} />}
+                  </div>
+                  <input 
+                    type="text" 
+                    value={editForm.avatarUrl}
+                    onChange={(e) => setEditForm({...editForm, avatarUrl: e.target.value})}
+                    className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-sm text-white focus:border-[#E53945] outline-none"
+                    placeholder="https://..."
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-white/60 mb-1">Display Name</label>
+                <input 
+                  type="text" 
+                  value={editForm.name}
+                  onChange={(e) => setEditForm({...editForm, name: e.target.value})}
+                  className="w-full bg-black/40 border border-white/10 rounded-lg p-2.5 text-sm text-white focus:border-[#E53945] outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-white/60 mb-1">Bio</label>
+                <textarea 
+                  value={editForm.bio}
+                  onChange={(e) => setEditForm({...editForm, bio: e.target.value})}
+                  className="w-full bg-black/40 border border-white/10 rounded-lg p-2.5 text-sm text-white focus:border-[#E53945] outline-none resize-none h-20"
+                  placeholder="Tell your fans about yourself..."
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-white/60 mb-1">Instagram Handle</label>
+                  <input 
+                    type="text" 
+                    value={editForm.insta}
+                    onChange={(e) => setEditForm({...editForm, insta: e.target.value})}
+                    className="w-full bg-black/40 border border-white/10 rounded-lg p-2.5 text-sm text-white focus:border-[#E53945] outline-none"
+                    placeholder="@username"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-white/60 mb-1">X Handle</label>
+                  <input 
+                    type="text" 
+                    value={editForm.x}
+                    onChange={(e) => setEditForm({...editForm, x: e.target.value})}
+                    className="w-full bg-black/40 border border-white/10 rounded-lg p-2.5 text-sm text-white focus:border-[#E53945] outline-none"
+                    placeholder="@username"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-white/10">
+              <button 
+                onClick={handleSaveProfile} 
+                disabled={savingProfile}
+                className="w-full bg-[#E53945] hover:bg-[#d12e39] text-white font-bold py-3 rounded-xl transition flex justify-center items-center"
+              >
+                {savingProfile ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : "Save Changes"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </main>
+
   );
 }
