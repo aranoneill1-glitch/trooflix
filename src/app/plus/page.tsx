@@ -63,6 +63,25 @@ export default function PlusPage() {
           </div>
         ) : (
           <>
+            {/* PERSONALIZED VIP GREETING */}
+            <div className="relative z-20 max-w-4xl mx-auto px-6 md:px-12 pt-28 pb-8">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+              >
+                <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-2 uppercase">
+                  Welcome to the Inner Circle
+                </p>
+                <h1 className="text-3xl md:text-5xl font-black tracking-tight text-white mb-2">
+                  Hey, {user.user_metadata?.display_name || user.email?.split('@')[0] || "Member"}.
+                </h1>
+                <p className="text-sm md:text-base text-white/50 font-medium">
+                  You're in. Enjoy unlimited, ad-free access to the rawest content on the internet.
+                </p>
+              </motion.div>
+            </div>
+
             {/* CINEMATIC HERO */}
             {heroVideo && (
               <div className="relative w-full h-[60vh] md:h-[70vh]">
