@@ -2,18 +2,28 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Video, Mic, MessageSquare, UploadCloud, CheckCircle2, Image as ImageIcon } from "lucide-react";
+import { ArrowLeft, Video, Mic, MessageSquare, UploadCloud, CheckCircle2, Image as ImageIcon, Globe, Star, Lock } from "lucide-react";
 import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { getCachedUser } from "@/lib/cache";
 import { createClient } from "@/utils/supabase/client";
 
+const CATEGORIES = [
+  "Documentaries", "Podcasts", "Independent Films", "Books", "History", 
+  "Politics & Geopolitics", "War & Conflict", "True Crime & Justice", 
+  "Conspiracy & Mystery", "Society & Culture", "Business & Finance", 
+  "Science & Technology", "Environment & Nature", "Religion & Spirituality", 
+  "Ancient Civilisation", "Comedy", "News", "Gaming"
+];
+
 export default function UploadContentPage() {
   const router = useRouter();
   const [contentType, setContentType] = useState<"video" | "podcast" | "tweet">("video");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("History");
+  const [visibility, setVisibility] = useState<"free" | "plus" | "premium">("free");
   
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
@@ -21,7 +31,6 @@ export default function UploadContentPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  // Helper to upload directly to R2
   const uploadToR2 = async (file: File) => {
     const res = await fetch("/api/r2-upload", {
       method: "POST",
@@ -32,7 +41,6 @@ export default function UploadContentPage() {
     const { uploadUrl, publicUrl, error } = await res.json();
     if (error) throw new Error(error);
 
-    // PUT the file directly to Cloudflare
     const uploadRes = await fetch(uploadUrl, {
       method: "PUT",
       body: file,
@@ -61,17 +69,9 @@ export default function UploadContentPage() {
       let uploadedMediaUrl = "";
       let uploadedThumbnailUrl = "";
 
-      // 1. Upload Media File directly to R2
-      if (mediaFile) {
-        uploadedMediaUrl = await uploadToR2(mediaFile);
-      }
+      if (mediaFile) uploadedMediaUrl = await uploadToR2(mediaFile);
+      if (thumbnailFile) uploadedThumbnailUrl = await uploadToR2(thumbnailFile);
 
-      // 2. Upload Thumbnail File directly to R2
-      if (thumbnailFile) {
-        uploadedThumbnailUrl = await uploadToR2(thumbnailFile);
-      }
-
-      // 3. Save to Vercel KV
       const res = await fetch("/api/videos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -82,16 +82,15 @@ export default function UploadContentPage() {
           creatorId: profile?.creator_id || null,
           videoUrl: contentType === "tweet" ? "" : uploadedMediaUrl, 
           posterUrl: uploadedThumbnailUrl || `https://images.unsplash.com/photo-1516280440502-861d6c619b6e?w=500&q=80`,
-          category: "Uncensored"
+          category: category,
+          visibility: visibility
         })
       });
 
       if (!res.ok) throw new Error("Failed to save video data");
 
       setSuccess(true);
-      setTimeout(() => {
-        router.push("/creator-dashboard");
-      }, 2000);
+      setTimeout(() => router.push("/creator-dashboard"), 2000);
     } catch (err: any) {
       console.error(err);
       alert("Upload failed: " + err.message);
@@ -123,12 +122,13 @@ export default function UploadContentPage() {
           </Link>
           <div>
             <h1 className="text-2xl font-bold">Upload Content</h1>
-            <p className="text-sm text-white/50">Files upload directly to Cloudflare R2.</p>
+            <p className="text-sm text-white/50">Publish to the Feed, Categories, and your Profile.</p>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           
+          {/* Type Selector */}
           <div className="grid grid-cols-3 gap-2">
             <button type="button" onClick={() => setContentType("video")} className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition ${contentType === "video" ? "bg-[#E53945]/10 border-[#E53945] text-[#E53945]" : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10"}`}>
               <Video size={24} />
@@ -152,7 +152,40 @@ export default function UploadContentPage() {
 
             <div>
               <label className="block text-xs font-bold text-white/60 mb-1">Description / Text</label>
-              <textarea required value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#E53945] resize-none h-32" placeholder="Write a description or your tweet here..." />
+              <textarea required value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#E53945] resize-none h-24" placeholder="Write a description or your tweet here..." />
+            </div>
+
+            {/* Category Selector */}
+            <div>
+              <label className="block text-xs font-bold text-white/60 mb-1">Category</label>
+              <select 
+                value={category} 
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#E53945] appearance-none"
+              >
+                {CATEGORIES.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Visibility Selector */}
+            <div>
+              <label className="block text-xs font-bold text-white/60 mb-1">Visibility</label>
+              <div className="grid grid-cols-3 gap-2">
+                <button type="button" onClick={() => setVisibility("free")} className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border transition ${visibility === "free" ? "bg-white/10 border-white text-white" : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10"}`}>
+                  <Globe size={18} />
+                  <span className="text-[10px] font-bold uppercase">Free</span>
+                </button>
+                <button type="button" onClick={() => setVisibility("plus")} className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border transition ${visibility === "plus" ? "bg-[#E53945]/10 border-[#E53945] text-[#E53945]" : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10"}`}>
+                  <Star size={18} />
+                  <span className="text-[10px] font-bold uppercase">TrooPlus</span>
+                </button>
+                <button type="button" onClick={() => setVisibility("premium")} className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border transition ${visibility === "premium" ? "bg-purple-500/10 border-purple-500 text-purple-400" : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10"}`}>
+                  <Lock size={18} />
+                  <span className="text-[10px] font-bold uppercase">Premium</span>
+                </button>
+              </div>
             </div>
 
             {contentType !== "tweet" && (
