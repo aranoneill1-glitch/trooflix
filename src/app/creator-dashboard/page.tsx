@@ -130,43 +130,41 @@ export default function CreatorDashboardPage() {
               </div>
             </div>
 
-            {/* Stats & Socials */}
-            <div className="flex-1 flex flex-col justify-center">
-              <div className="flex justify-between md:justify-start md:gap-8 mb-2 px-2">
-                <div className="text-center md:text-left">
-                  <span className="font-bold text-white block text-xl">1.2K</span> 
-                  <span className="text-white/50 text-[10px] uppercase tracking-wider">Followers</span>
-                </div>
-                <div className="text-center md:text-left">
-                  <span className="font-bold text-white block text-xl">{MOCK_SUBSCRIBERS}</span> 
-                  <span className="text-white/50 text-[10px] uppercase tracking-wider">Subscribers</span>
-                </div>
-                <div className="text-center md:text-left">
-                  <span className="font-bold text-white block text-xl">45</span> 
-                  <span className="text-white/50 text-[10px] uppercase tracking-wider">Posts</span>
-                </div>
+            {/* Stats */}
+            <div className="flex-1 flex justify-around md:justify-start md:gap-8 px-2">
+              <div className="text-center md:text-left">
+                <span className="font-bold text-white block text-base">1.2K</span> 
+                <span className="text-white/50 text-[10px] uppercase tracking-wider">Followers</span>
               </div>
-
-              {/* Social Handles */}
-              <div className="flex items-center gap-4 px-2 mt-1">
-                <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors">
-                  <InstagramIcon size={14} />
-                  <span className="text-xs font-semibold">@sseca_insta</span>
-                </a>
-                <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors">
-                  <XIcon size={14} />
-                  <span className="text-xs font-semibold">@sseca_x</span>
-                </a>
+              <div className="text-center md:text-left">
+                <span className="font-bold text-white block text-base">{MOCK_SUBSCRIBERS}</span> 
+                <span className="text-white/50 text-[10px] uppercase tracking-wider">Subscribers</span>
+              </div>
+              <div className="text-center md:text-left">
+                <span className="font-bold text-white block text-base">45</span> 
+                <span className="text-white/50 text-[10px] uppercase tracking-wider">Posts</span>
               </div>
             </div>
           </div>
 
-          {/* BOTTOM ROW: Name & Username */}
+          {/* BOTTOM ROW: Name, Username & Handles */}
           <div className="mt-4 px-1">
             <h1 className="text-2xl md:text-3xl font-black flex items-center gap-2 text-white">
               {displayName} {profile?.is_verified && <VerifiedBadge size={20} variant="gold" />}
             </h1>
-            <p className="text-sm md:text-base text-white/50">@{username}</p>
+            <p className="text-sm md:text-base text-white/50 mb-2">@{username}</p>
+            
+            {/* Social Handles */}
+            <div className="flex items-center gap-4">
+              <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors">
+                <InstagramIcon size={14} />
+                <span className="text-xs font-semibold">@sseca_insta</span>
+              </a>
+              <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors">
+                <XIcon size={14} />
+                <span className="text-xs font-semibold">@sseca_x</span>
+              </a>
+            </div>
           </div>
 
         </div>
