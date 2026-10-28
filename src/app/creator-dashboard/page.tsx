@@ -250,16 +250,7 @@ export default function CreatorDashboardPage() {
                 <h3 className="text-2xl md:text-3xl font-black text-white">{(MOCK_TOTAL_VIEWS / 1000).toFixed(1)}K</h3>
                 <p className="text-[10px] text-white/40 font-medium mt-1">All time</p>
               </div>
-              <div className="bg-[#1c1c1e] border border-white/10 p-4 rounded-2xl col-span-2 md:col-span-1 flex flex-col justify-center">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs text-white/60 font-semibold">Setup Fee</p>
-                  <span className="text-xs font-bold text-[#1ed760]">Paid</span>
-                </div>
-                <div className="w-full h-2 bg-black/50 rounded-full overflow-hidden">
-                  <div className="h-full bg-[#1ed760]" style={{ width: '100%' }} />
-                </div>
-                <p className="text-[10px] text-white/40 mt-2 font-medium">You keep 90% of all revenue</p>
-              </div>
+              
             </div>
 
             {/* QUICK ACTIONS GRID */}

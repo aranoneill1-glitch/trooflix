@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, MessageCircle, Plus } from "lucide-react";
+import { Menu, MessageCircle, Plus, RefreshCw } from "lucide-react";
 import UserMenu from "@/components/UserMenu";
 import NotificationBell from "@/components/NotificationBell";
 import CreateSheet from "@/components/CreateSheet";
@@ -22,6 +22,12 @@ export default function TopBar({ onMenu }: Props) {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    window.location.reload();
+  };
   
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -88,6 +94,21 @@ export default function TopBar({ onMenu }: Props) {
 
       {/* Right side */}
       <div className="ml-auto flex items-center gap-4 md:gap-5">
+        <Link
+          href="/messages"
+          className="text-white/90 hover:text-white transition flex md:hidden"
+          aria-label="Messages"
+        >
+          <MessageCircle size={20} />
+        </Link>
+        <button 
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          className="text-white/90 hover:text-white transition disabled:opacity-50"
+          aria-label="Refresh App"
+        >
+          <RefreshCw size={20} className={isRefreshing ? "animate-spin" : ""} />
+        </button>
         <Link
           href="/messages"
           className="text-white/90 hover:text-white transition flex md:hidden"
