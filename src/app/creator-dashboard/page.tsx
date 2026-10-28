@@ -6,7 +6,7 @@ import {
   Wallet, TrendingUp, Users, Settings, Video, BarChart3, 
   ArrowRight, CheckCircle2, DollarSign, MessageSquare, Eye, 
   UserPlus, Star, Music, Pencil, Play, Plus, Clock3, 
-  ShoppingBag, Upload, LayoutDashboard, ChevronRight
+  ShoppingBag, Upload, LayoutDashboard, ChevronRight, LayoutGrid, List
 } from "lucide-react";
 
 import TopBar from "@/components/TopBar";
@@ -42,6 +42,7 @@ export default function CreatorDashboardPage() {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isDashboardView, setIsDashboardView] = useState(false);
+  const [contentView, setContentView] = useState<"grid" | "list">("grid");
 
   useEffect(() => {
     getCachedUser().then((u) => {
@@ -192,35 +193,86 @@ export default function CreatorDashboardPage() {
               </button>
             </div>
 
-            <div className="flex items-center justify-center gap-8 border-b border-white/10 mb-6">
-              <button className="pb-3 text-sm font-bold text-white border-b-2 border-[#E53945]">All</button>
-              <button className="pb-3 text-sm font-bold text-white/50 hover:text-white">Podcasts</button>
-              <button className="pb-3 text-sm font-bold text-white/50 hover:text-white">Videos</button>
-              <button className="pb-3 text-sm font-bold text-white/50 hover:text-white">Store</button>
+            <div className="flex items-center justify-between border-b border-white/10 mb-6">
+              <div className="flex items-center gap-8">
+                <button className="pb-3 text-sm font-bold text-white border-b-2 border-[#E53945]">All</button>
+                <button className="pb-3 text-sm font-bold text-white/50 hover:text-white">Podcasts</button>
+                <button className="pb-3 text-sm font-bold text-white/50 hover:text-white">Videos</button>
+                <button className="pb-3 text-sm font-bold text-white/50 hover:text-white">Store</button>
+              </div>
+
+              {/* VIEW TOGGLE (Grid vs List) */}
+              <div className="flex items-center gap-1 bg-[#1c1c1e] p-1 rounded-lg mb-2">
+                <button
+                  onClick={() => setContentView("grid")}
+                  className={`p-1.5 rounded-md transition ${contentView === "grid" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}
+                  aria-label="Grid view"
+                >
+                  <LayoutGrid size={16} />
+                </button>
+                <button
+                  onClick={() => setContentView("list")}
+                  className={`p-1.5 rounded-md transition ${contentView === "list" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}
+                  aria-label="List view"
+                >
+                  <List size={16} />
+                </button>
+              </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              <div className="bg-[#1c1c1e] border border-white/10 rounded-2xl overflow-hidden group cursor-pointer">
-                <div className="relative aspect-square">
-                  <img src="https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=500&q=80" alt="Podcast" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  <div className="absolute top-2 left-2 bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-sm">PODCAST</div>
+            {/* GRID VIEW */}
+            {contentView === "grid" && (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="bg-[#1c1c1e] border border-white/10 rounded-2xl overflow-hidden group cursor-pointer">
+                  <div className="relative aspect-square">
+                    <img src="https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=500&q=80" alt="Podcast" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <div className="absolute top-2 left-2 bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-sm">PODCAST</div>
+                  </div>
+                  <div className="p-3">
+                    <h3 className="text-sm font-bold leading-tight line-clamp-1">The Truth About Big Tech</h3>
+                    <p className="text-xs text-white/50 mt-1">Ep. 42 • 45 min</p>
+                  </div>
                 </div>
-                <div className="p-3">
-                  <h3 className="text-sm font-bold leading-tight line-clamp-1">The Truth About Big Tech</h3>
-                  <p className="text-xs text-white/50 mt-1">Ep. 42 • 45 min</p>
+                <div className="bg-[#1c1c1e] border border-white/10 rounded-2xl overflow-hidden group cursor-pointer">
+                  <div className="relative aspect-square">
+                    <img src="https://images.unsplash.com/photo-1516280440502-861d6c619b6e?w=500&q=80" alt="Video" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <div className="absolute top-2 left-2 bg-[#E53945] text-white text-[10px] font-bold px-2 py-0.5 rounded-sm">VIDEO</div>
+                  </div>
+                  <div className="p-3">
+                    <h3 className="text-sm font-bold leading-tight line-clamp-1">The Last Days Of The Big Lie</h3>
+                    <p className="text-xs text-white/50 mt-1">1:35:01 • 12K views</p>
+                  </div>
                 </div>
               </div>
-              <div className="bg-[#1c1c1e] border border-white/10 rounded-2xl overflow-hidden group cursor-pointer">
-                <div className="relative aspect-square">
-                  <img src="https://images.unsplash.com/photo-1516280440502-861d6c619b6e?w=500&q=80" alt="Video" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  <div className="absolute top-2 left-2 bg-[#E53945] text-white text-[10px] font-bold px-2 py-0.5 rounded-sm">VIDEO</div>
+            )}
+
+            {/* LIST VIEW */}
+            {contentView === "list" && (
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-4 bg-[#1c1c1e] border border-white/10 rounded-2xl p-3 cursor-pointer hover:bg-[#242426] transition-colors">
+                  <div className="w-24 h-16 rounded-lg overflow-hidden shrink-0 relative">
+                    <img src="https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=500&q=80" alt="Podcast" className="w-full h-full object-cover" />
+                    <div className="absolute top-1 left-1 bg-blue-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-sm">PODCAST</div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-bold text-white truncate">The Truth About Big Tech</h3>
+                    <p className="text-xs text-white/50 mt-1">Ep. 42 • 45 min</p>
+                  </div>
+                  <ChevronRight size={18} className="text-white/30 shrink-0" />
                 </div>
-                <div className="p-3">
-                  <h3 className="text-sm font-bold leading-tight line-clamp-1">The Last Days Of The Big Lie</h3>
-                  <p className="text-xs text-white/50 mt-1">1:35:01 • 12K views</p>
+                <div className="flex items-center gap-4 bg-[#1c1c1e] border border-white/10 rounded-2xl p-3 cursor-pointer hover:bg-[#242426] transition-colors">
+                  <div className="w-24 h-16 rounded-lg overflow-hidden shrink-0 relative">
+                    <img src="https://images.unsplash.com/photo-1516280440502-861d6c619b6e?w=500&q=80" alt="Video" className="w-full h-full object-cover" />
+                    <div className="absolute top-1 left-1 bg-[#E53945] text-white text-[8px] font-bold px-1.5 py-0.5 rounded-sm">VIDEO</div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-bold text-white truncate">The Last Days Of The Big Lie</h3>
+                    <p className="text-xs text-white/50 mt-1">1:35:01 • 12K views</p>
+                  </div>
+                  <ChevronRight size={18} className="text-white/30 shrink-0" />
                 </div>
               </div>
-            </div>
+            )}
           </div>
         )}
 
