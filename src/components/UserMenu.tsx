@@ -81,7 +81,7 @@ export default function UserMenu() {
   // Signed in → avatar → straight to /profile
   return (
     <Link
-      href="/creator-dashboard"
+      href="/creator-dashboard?view=public"
       className="flex items-center justify-center w-7 h-7 rounded-full overflow-hidden border border-white/20 hover:border-white/50 transition"
       title="My profile"
     >

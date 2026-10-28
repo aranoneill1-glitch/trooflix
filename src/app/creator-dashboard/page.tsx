@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { 
   Wallet, TrendingUp, Users, Settings, Video, BarChart3, 
@@ -37,11 +38,19 @@ const XIcon = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
-export default function CreatorDashboardPage() {
+function CreatorDashboardContent() {
+  const searchParams = useSearchParams();
+  const isPublicView = searchParams.get('view') === 'public';
+
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isDashboardView, setIsDashboardView] = useState(false);
+
+  // Force profile view if in public mode
+  useEffect(() => {
+    if (isPublicView) setIsDashboardView(false);
+  }, [isPublicView]);
   const [contentView, setContentView] = useState<"grid" | "list">("grid");
   const [activeContentTab, setActiveContentTab] = useState<"All" | "Podcasts" | "Videos" | "Store">("All");
   const [creatorVideos, setCreatorVideos] = useState<any[]>([]);
@@ -102,6 +111,7 @@ export default function CreatorDashboardPage() {
       <div className="max-w-4xl mx-auto px-4 pt-24 pb-6">
         
         {/* TOP TOGGLE ROW */}
+        {!isPublicView && (
         <div className="flex items-center justify-between mb-6">
           <div className="w-10"></div>
           
@@ -128,6 +138,7 @@ export default function CreatorDashboardPage() {
             <Pencil size={20} />
           </button>
         </div>
+        )}
 
         {/* =========================================
             VIEW 1: THE PUBLIC PROFILE (Fan View)
@@ -365,5 +376,13 @@ export default function CreatorDashboardPage() {
 
       <MobileBottomNav />
     </main>
+  );
+}
+
+export default function CreatorDashboardPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#09090B] flex items-center justify-center"><div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" /></div>}>
+      <CreatorDashboardContent />
+    </Suspense>
   );
 }
