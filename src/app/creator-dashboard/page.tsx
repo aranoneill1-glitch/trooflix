@@ -76,13 +76,22 @@ export default function CreatorDashboardPage() {
         // Fetch only videos for now, using strict string comparison
         fetch("/api/videos")
           .then(r => r.json())
-          .then(data => {
-            // TEMPORARY FIX: Load ALL videos so you can see them in the UI. 
-            // Later, we will re-enable the strict creatorId filter once your database is clean.
-            const allVideos = Array.isArray(data) ? data : [];
-            
-            setCreatorVideos(allVideos);
-            setVideosLoading(false);
+          .then(videoData => {
+            // We need the profile's creator_id to match the videos
+            fetch(`/api/profile?user_id=${u.id}`)
+              .then(res => res.json())
+              .then(profileData => {
+                const myCreatorId = profileData.profile?.creator_id;
+                
+                // Filter videos by the real creator_id
+                const myVideos = Array.isArray(videoData) ? videoData.filter((v: any) => 
+                  String(v.creatorId) === String(myCreatorId)
+                ) : [];
+                
+                setCreatorVideos(myVideos);
+                setVideosLoading(false);
+              })
+              .catch(() => setVideosLoading(false));
           })
           .catch((err) => {
             console.error("Video fetch error:", err);
@@ -272,7 +281,7 @@ export default function CreatorDashboardPage() {
       ? creatorVideos.filter(v => v.type?.toLowerCase() === 'podcast')
       : activeContentTab === "Videos"
         ? creatorVideos.filter(v => v.type?.toLowerCase() !== 'podcast' && v.type?.toLowerCase() !== 'merch')
-        : creatorMerch;
+        : []; // Store will be built later
 
   return (
     <main className="min-h-screen bg-[#09090B] text-white pb-32 font-sans selection:bg-[#E53945]/30">
