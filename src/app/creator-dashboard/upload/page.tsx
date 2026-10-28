@@ -23,7 +23,7 @@ export default function UploadContentPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("History");
-  const [visibility, setVisibility] = useState<"free" | "plus" | "premium">("free");
+  const [visibility, setVisibility] = useState<"plus" | "premium">("plus");
   
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
@@ -56,6 +56,12 @@ export default function UploadContentPage() {
     setLoading(true);
 
     try {
+      // Mandatory file checks for Video/Podcast
+      if (contentType !== "tweet") {
+        if (!mediaFile) throw new Error("Please select a media file.");
+        if (!thumbnailFile) throw new Error("Please select a thumbnail image.");
+      }
+
       const user = await getCachedUser();
       if (!user) throw new Error("Not logged in");
 
@@ -146,19 +152,20 @@ export default function UploadContentPage() {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-white/60 mb-1">Title</label>
+              <label className="block text-xs font-bold text-white/60 mb-1">Title <span className="text-[#E53945]">*</span></label>
               <input required type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#E53945]" placeholder={contentType === 'tweet' ? "What's on your mind?" : "Name your video or podcast..."} />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-white/60 mb-1">Description / Text</label>
+              <label className="block text-xs font-bold text-white/60 mb-1">Description / Text <span className="text-[#E53945]">*</span></label>
               <textarea required value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#E53945] resize-none h-24" placeholder="Write a description or your tweet here..." />
             </div>
 
             {/* Category Selector */}
             <div>
-              <label className="block text-xs font-bold text-white/60 mb-1">Category</label>
+              <label className="block text-xs font-bold text-white/60 mb-1">Category <span className="text-[#E53945]">*</span></label>
               <select 
+                required
                 value={category} 
                 onChange={(e) => setCategory(e.target.value)}
                 className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#E53945] appearance-none"
@@ -171,12 +178,8 @@ export default function UploadContentPage() {
 
             {/* Visibility Selector */}
             <div>
-              <label className="block text-xs font-bold text-white/60 mb-1">Visibility</label>
-              <div className="grid grid-cols-3 gap-2">
-                <button type="button" onClick={() => setVisibility("free")} className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border transition ${visibility === "free" ? "bg-white/10 border-white text-white" : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10"}`}>
-                  <Globe size={18} />
-                  <span className="text-[10px] font-bold uppercase">Free</span>
-                </button>
+              <label className="block text-xs font-bold text-white/60 mb-1">Visibility <span className="text-[#E53945]">*</span></label>
+              <div className="grid grid-cols-2 gap-2">
                 <button type="button" onClick={() => setVisibility("plus")} className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border transition ${visibility === "plus" ? "bg-[#E53945]/10 border-[#E53945] text-[#E53945]" : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10"}`}>
                   <Star size={18} />
                   <span className="text-[10px] font-bold uppercase">TrooPlus</span>
@@ -191,7 +194,7 @@ export default function UploadContentPage() {
             {contentType !== "tweet" && (
               <>
                 <div>
-                  <label className="block text-xs font-bold text-white/60 mb-1">Media File (Video or Audio)</label>
+                  <label className="block text-xs font-bold text-white/60 mb-1">Media File (Video or Audio) <span className="text-[#E53945]">*</span></label>
                   <div onClick={() => document.getElementById('media-upload')?.click()} className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] hover:bg-white/5 transition">
                     <UploadCloud size={24} className="text-white/50 mb-2" />
                     <span className="text-sm font-bold text-white">{mediaFile ? mediaFile.name : "Tap to select video or audio"}</span>
@@ -201,7 +204,7 @@ export default function UploadContentPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-white/60 mb-1">Thumbnail Image</label>
+                  <label className="block text-xs font-bold text-white/60 mb-1">Thumbnail Image <span className="text-[#E53945]">*</span></label>
                   <div onClick={() => document.getElementById('thumb-upload')?.click()} className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] hover:bg-white/5 transition">
                     <ImageIcon size={24} className="text-white/50 mb-2" />
                     <span className="text-sm font-bold text-white">{thumbnailFile ? thumbnailFile.name : "Tap to select thumbnail image"}</span>

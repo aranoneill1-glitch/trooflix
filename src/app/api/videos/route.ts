@@ -23,7 +23,7 @@ export async function POST(req: Request) {
       title: body.title || "Untitled",
       description: body.description || "",
       category: body.category || "Uncensored",
-      visibility: body.visibility || "free",
+      visibility: body.visibility || "plus",
       type: body.type || "Documentary",
       featured: !!body.featured,
       creatorId: body.creatorId || null,
