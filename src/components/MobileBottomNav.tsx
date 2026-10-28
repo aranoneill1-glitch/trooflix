@@ -233,16 +233,15 @@ export default function MobileBottomNav() {
             href={isCreator ? "/creator-dashboard" : "/plus"}
             className="flex flex-col items-center justify-center w-14 h-12 rounded-full"
           >
-            <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }}>
-              <div className="flex flex-col items-center justify-center leading-none pt-1">
-                <span className="text-[14px] md:text-[16px] font-black tracking-tighter">
-                  <span className="text-white">TROO</span>
-                  <span className="text-[#E53945]">FLIX</span>
-                </span>
-                <span className={`text-[8px] font-bold tracking-[0.2em] uppercase mt-1 ${isCreator ? 'text-blue-400' : 'text-[#E53945]'}`}>
-                  {isCreator ? "Creator" : "Plus"}
-                </span>
-              </div></motion.div>
+            <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex flex-col items-center justify-center h-full w-full">
+              <div className="flex items-center justify-center h-[22px]">
+                <span className="text-[18px] font-extrabold tracking-tighter text-white">T</span>
+                <span className="text-[18px] font-extrabold tracking-tighter text-[#E53945]">F</span>
+              </div>
+              <span className={`text-[9px] font-semibold tracking-wide mt-1 ${isCreator ? 'text-blue-400' : 'text-[#E53945]'}`}>
+                {isCreator ? "Creator" : "Plus"}
+              </span>
+            </motion.div>
           </Link>
 
           {/* TAB 4: MESSAGES */}
