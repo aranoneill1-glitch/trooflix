@@ -23,6 +23,21 @@ const DEMO_UPLOADS = [
   { id: 2, title: "The Truth About Big Tech", image: "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=500&q=80", status: "Published", views: "840", date: "4 days ago" },
 ];
 
+
+const InstagramIcon = ({ size = 16 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+  </svg>
+);
+
+const XIcon = ({ size = 16 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+  </svg>
+);
+
 export default function CreatorDashboardPage() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
@@ -131,6 +146,18 @@ export default function CreatorDashboardPage() {
                 <span className="font-bold text-white block text-base">45</span> 
                 <span className="text-white/50 text-[10px] uppercase tracking-wider">Posts</span>
               </div>
+            </div>
+
+            {/* SOCIAL HANDLES */}
+            <div className="flex items-center gap-3 mt-4">
+              <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors">
+                <InstagramIcon size={16} />
+                <span className="text-xs font-semibold">@sseca_insta</span>
+              </a>
+              <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors">
+                <XIcon size={16} />
+                <span className="text-xs font-semibold">@sseca_x</span>
+              </a>
             </div>
           </div>
         </div>
