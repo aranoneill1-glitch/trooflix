@@ -7,7 +7,7 @@ import {
   Wallet, TrendingUp, Users, Settings, Video, BarChart3, 
   ArrowRight, CheckCircle2, DollarSign, MessageSquare, Eye, 
   UserPlus, Star, Music, Pencil, Play, Plus, Clock3, 
-  ShoppingBag, Upload, LayoutDashboard, ChevronRight, LayoutGrid, List
+  ShoppingBag, Upload, LayoutDashboard, ChevronRight, LayoutGrid, List, Package
 } from "lucide-react";
 
 import TopBar from "@/components/TopBar";
@@ -315,13 +315,13 @@ function CreatorDashboardContent() {
                 <ShoppingBag className="text-white" size={24} />
                 <span className="text-xs font-bold">Manage Shop</span>
               </Link>
-              <Link href="/creator-dashboard/inbox" className="bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
-                <MessageSquare className="text-white" size={24} />
-                <span className="text-xs font-bold">Inbox</span>
+              <Link href="/creator-dashboard/settings" className="bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
+                <Pencil className="text-white" size={24} />
+                <span className="text-xs font-bold">Manage Profile</span>
               </Link>
-              <Link href="/creator-dashboard/analytics" className="bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
-                <BarChart3 className="text-white" size={24} />
-                <span className="text-xs font-bold">Analytics</span>
+              <Link href="/creator-dashboard/orders" className="bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
+                <Package className="text-white" size={24} />
+                <span className="text-xs font-bold">Manage Orders</span>
               </Link>
             </div>
           </div>
