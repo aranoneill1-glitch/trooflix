@@ -64,12 +64,12 @@ export default function SearchPage() {
               <div className="flex items-center gap-3">
                 <div className="relative flex-1">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Search className="h-5 w-5 text-white/50" />
+                    <Search className="h-5 w-5 text-white" />
                   </div>
                   <input
                     type="text"
                     autoFocus
-                    className="w-full bg-white/10 backdrop-blur-xl text-white placeholder:text-white/50 rounded-full py-3 pl-11 pr-10 border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/30 shadow-lg"
+                    className="w-full bg-white/10 backdrop-blur-xl text-white placeholder:text-white/50 rounded-full py-3 pl-11 pr-12 border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/30 shadow-lg"
                     placeholder="Search creators, shows, documentaries..."
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
@@ -92,11 +92,11 @@ export default function SearchPage() {
             ) : (
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Search className="h-5 w-5 text-white/50" />
+                  <Search className="h-5 w-5 text-white" />
                 </div>
                 <input
                   type="text"
-                  className="w-full bg-white/10 backdrop-blur-xl text-white font-medium placeholder:text-white/50 rounded-full py-3.5 pl-11 pr-4 border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/30 cursor-pointer shadow-[0_8px_32px_rgba(0,0,0,0.3)] transition-all"
+                  className="w-full bg-white/10 backdrop-blur-xl text-white font-medium text-[15px] placeholder:text-white/50 rounded-full py-3.5 pl-11 pr-6 border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/30 cursor-pointer shadow-[0_8px_32px_rgba(0,0,0,0.3)] transition-all"
                   placeholder="Search creators, shows, documentaries..."
                   value={query}
                   onClick={() => setIsSearching(true)}
