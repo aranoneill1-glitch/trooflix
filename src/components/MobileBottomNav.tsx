@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
-import { Search, LogOut, Home, ShoppingBag, Camera, Video, Radio, X } from "lucide-react";
+import { Search, LogOut, Home, ShoppingBag, Camera, Video, Radio, X, MessageCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Capacitor } from "@capacitor/core";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
@@ -245,16 +245,14 @@ export default function MobileBottomNav() {
               </div></motion.div>
           </Link>
 
-          {/* TAB 4: DYNAMIC RIGHT (MARKETPLACE / CREATOR SHOP) */}
+          {/* TAB 4: MESSAGES */}
           <Link
-            href={isCreator ? "/creator-shop" : "/marketplace"}
+            href="/messages"
             className="flex flex-col items-center justify-center w-14 h-12 rounded-full"
           >
             <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex flex-col items-center gap-1">
-              <ShoppingBag size={22} className={isActive(isCreator ? "/creator-shop" : "/marketplace") ? "text-white" : "text-white/60 hover:text-white/80"} />
-              <span className={`text-[9px] font-semibold tracking-wide ${isActive(isCreator ? "/creator-shop" : "/marketplace") ? "text-white" : "text-white/60"}`}>
-                {isCreator ? "Shop" : "Store"}
-              </span>
+              <MessageCircle size={22} className={isActive("/messages") ? "text-white" : "text-white/60 hover:text-white/80"} />
+              <span className={`text-[9px] font-semibold tracking-wide ${isActive("/messages") ? "text-white" : "text-white/60"}`}>Messages</span>
             </motion.div>
           </Link>
 
