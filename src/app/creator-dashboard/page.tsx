@@ -43,6 +43,8 @@ export default function CreatorDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [isDashboardView, setIsDashboardView] = useState(false);
   const [contentView, setContentView] = useState<"grid" | "list">("grid");
+  const [creatorVideos, setCreatorVideos] = useState<any[]>([]);
+  const [videosLoading, setVideosLoading] = useState(true);
 
   useEffect(() => {
     getCachedUser().then((u) => {
@@ -55,6 +57,19 @@ export default function CreatorDashboardPage() {
             setLoading(false);
           })
           .catch(() => setLoading(false));
+
+        // Fetch real videos
+        fetch("/api/videos")
+          .then(r => r.json())
+          .then(data => {
+            // Filter videos that belong to this creator
+            const myVideos = Array.isArray(data) ? data.filter((v: any) => 
+              v.creatorId === u.id || v.uploaderUserId === u.id || v.userId === u.id
+            ) : [];
+            setCreatorVideos(myVideos);
+            setVideosLoading(false);
+          })
+          .catch(() => setVideosLoading(false));
       } else {
         setLoading(false);
       }
@@ -223,30 +238,38 @@ export default function CreatorDashboardPage() {
             {/* GRID VIEW */}
             {contentView === "grid" && (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <div className="bg-[#1c1c1e] border border-white/10 rounded-2xl overflow-hidden group cursor-pointer">
-                  <div className="relative aspect-square">
-                    <img src="https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=500&q=80" alt="Podcast" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    <div className="absolute top-2 left-2 bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-sm">PODCAST</div>
+                {videosLoading ? (
+                  <div className="col-span-full flex justify-center py-10">
+                    <div className="w-6 h-6 border-2 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" />
                   </div>
-                  <div className="p-3">
-                    <h3 className="text-sm font-bold leading-tight line-clamp-1">The Truth About Big Tech</h3>
-                    <p className="text-xs text-white/50 mt-1">Ep. 42 • 45 min</p>
+                ) : creatorVideos.length === 0 ? (
+                  <div className="col-span-full text-center py-10 text-white/50">
+                    No content uploaded yet.
                   </div>
-                </div>
-                <div className="bg-[#1c1c1e] border border-white/10 rounded-2xl overflow-hidden group cursor-pointer">
-                  <div className="relative aspect-square">
-                    <img src="https://images.unsplash.com/photo-1516280440502-861d6c619b6e?w=500&q=80" alt="Video" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    <div className="absolute top-2 left-2 bg-[#E53945] text-white text-[10px] font-bold px-2 py-0.5 rounded-sm">VIDEO</div>
-                  </div>
-                  <div className="p-3">
-                    <h3 className="text-sm font-bold leading-tight line-clamp-1">The Last Days Of The Big Lie</h3>
-                    <p className="text-xs text-white/50 mt-1">1:35:01 • 12K views</p>
-                  </div>
-                </div>
+                ) : (
+                  creatorVideos.map((video) => (
+                    <div key={video.id} className="bg-[#1c1c1e] border border-white/10 rounded-2xl overflow-hidden group cursor-pointer">
+                      <div className="relative aspect-square">
+                        <img 
+                          src={video.posterUrl || video.backdropUrl || "https://images.unsplash.com/photo-1516280440502-861d6c619b6e?w=500&q=80"} 
+                          alt={video.title} 
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                        />
+                        <div className={`absolute top-2 left-2 text-white text-[10px] font-bold px-2 py-0.5 rounded-sm ${video.type?.toLowerCase() === 'podcast' ? 'bg-blue-500' : 'bg-[#E53945]'}`}>
+                          {video.type || "VIDEO"}
+                        </div>
+                      </div>
+                      <div className="p-3">
+                        <h3 className="text-sm font-bold leading-tight line-clamp-1">{video.title}</h3>
+                        <p className="text-xs text-white/50 mt-1">{video.duration || "Recently added"}</p>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             )}
 
-            {/* LIST VIEW */}
+            
             {contentView === "list" && (
               <div className="flex flex-col gap-3">
                 <div className="flex items-center gap-4 bg-[#1c1c1e] border border-white/10 rounded-2xl p-3 cursor-pointer hover:bg-[#242426] transition-colors">
