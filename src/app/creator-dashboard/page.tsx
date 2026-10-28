@@ -65,13 +65,22 @@ export default function CreatorDashboardPage() {
         fetch("/api/videos")
           .then(r => r.json())
           .then(data => {
+            console.log("Fetched videos:", data);
+            console.log("Current user ID:", u.id);
+            
+            // Try to match creatorId or user_id just in case
             const myVideos = Array.isArray(data) ? data.filter((v: any) => 
               String(v.creatorId) === String(u.id)
             ) : [];
+            
+            console.log("Filtered videos:", myVideos);
             setCreatorVideos(myVideos);
             setVideosLoading(false);
           })
-          .catch(() => setVideosLoading(false));
+          .catch((err) => {
+            console.error("Video fetch error:", err);
+            setVideosLoading(false);
+          });
       } else {
         setLoading(false);
       }
@@ -262,7 +271,7 @@ export default function CreatorDashboardPage() {
               </div>
             ) : filteredContent.length === 0 ? (
               <div className="text-center py-20 text-white/50">
-                No {activeContentTab.toLowerCase()} found yet.
+                No {activeContentTab === "All" ? "content" : activeContentTab.toLowerCase()} found yet.
               </div>
             ) : contentView === "grid" ? (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
