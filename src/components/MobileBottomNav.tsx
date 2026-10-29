@@ -203,22 +203,20 @@ export default function MobileBottomNav() {
 
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-[250] flex justify-center pb-[env(safe-area-inset-bottom)] pointer-events-none">
         
-        {/* ULTRA TRANSPARENT TAB BAR (No darkening, 2% opacity, 40px blur) */}
-        <div className="pointer-events-auto flex items-center justify-around w-[92%] max-w-[360px] mb-8 px-2 py-2 bg-white/[0.02] backdrop-blur-[40px] rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+        {/* THINNER, TEXT-FREE ULTRA TRANSPARENT TAB BAR */}
+        <div className="pointer-events-auto flex items-center justify-around w-[92%] max-w-[360px] mb-8 px-2 py-1.5 bg-white/[0.02] backdrop-blur-[40px] rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
           
           {/* TAB 1: HOME */}
-          <Link href="/" className="flex flex-col items-center justify-center w-14 h-12 rounded-full">
-            <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex flex-col items-center gap-1">
-              <Home size={22} className={isActive("/") ? "text-white" : "text-white/60 hover:text-white/80"} />
-              <span className={`text-[9px] font-semibold tracking-wide ${isActive("/") ? "text-white" : "text-white/60"}`}>Home</span>
+          <Link href="/" className="flex items-center justify-center w-14 h-10 rounded-full">
+            <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex items-center justify-center">
+              <Home size={24} className={isActive("/") ? "text-white" : "text-white/60 hover:text-white/80"} />
             </motion.div>
           </Link>
 
           {/* TAB 2: EXPLORE */}
-          <Link href="/search" className="flex flex-col items-center justify-center w-14 h-12 rounded-full">
-            <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex flex-col items-center gap-1">
-              <Search size={22} className={isActive("/search") ? "text-white" : "text-white/60 hover:text-white/80"} />
-              <span className={`text-[9px] font-semibold tracking-wide ${isActive("/search") ? "text-white" : "text-white/60"}`}>Explore</span>
+          <Link href="/search" className="flex items-center justify-center w-14 h-10 rounded-full">
+            <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex items-center justify-center">
+              <Search size={24} className={isActive("/search") ? "text-white" : "text-white/60 hover:text-white/80"} />
             </motion.div>
           </Link>
 
@@ -229,41 +227,37 @@ export default function MobileBottomNav() {
                 setShowCreateMenu(true);
                 if (Capacitor.isNativePlatform()) Haptics.impact({ style: ImpactStyle.Medium });
               }}
-              className="flex flex-col items-center justify-center w-14 h-12 rounded-full cursor-pointer"
+              className="flex items-center justify-center w-14 h-10 rounded-full cursor-pointer"
             >
               <motion.div whileTap={{ scale: 0.9 }} className="flex items-center justify-center">
-                <Video size={24} className="text-white" strokeWidth={2} />
+                <Video size={26} className="text-white" strokeWidth={2} />
               </motion.div>
-              <span className="text-[9px] font-semibold tracking-wide text-white mt-1">Create</span>
             </div>
           ) : (
             <Link
               href="/plus"
-              className="flex flex-col items-center justify-center w-14 h-12 rounded-full"
+              className="flex items-center justify-center w-14 h-10 rounded-full"
             >
-              <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex flex-col items-center justify-center h-full w-full">
-                <div className="flex items-center justify-center h-[22px]">
-                  <span className="text-[18px] font-extrabold tracking-tighter text-white">T</span>
-                  <span className="text-[18px] font-extrabold tracking-tighter text-[#E53945]">F</span>
+              <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex items-center justify-center h-full w-full">
+                <div className="flex items-center justify-center">
+                  <span className="text-[22px] font-extrabold tracking-tighter text-white">T</span>
+                  <span className="text-[22px] font-extrabold tracking-tighter text-[#E53945]">F</span>
                 </div>
-                <span className="text-[9px] font-semibold tracking-wide mt-1 text-[#E53945]">Plus</span>
               </motion.div>
             </Link>
           )}
 
           {/* TAB 4: DYNAMIC (MESSAGES FOR CREATOR / STORE FOR VIEWER) */}
           {isCreator ? (
-            <Link href="/messages" className="flex flex-col items-center justify-center w-14 h-12 rounded-full">
-              <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex flex-col items-center gap-1">
-                <MessageCircle size={22} className={isActive("/messages") ? "text-white" : "text-white/60 hover:text-white/80"} />
-                <span className={`text-[9px] font-semibold tracking-wide ${isActive("/messages") ? "text-white" : "text-white/60"}`}>Messages</span>
+            <Link href="/messages" className="flex items-center justify-center w-14 h-10 rounded-full">
+              <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex items-center justify-center">
+                <MessageCircle size={24} className={isActive("/messages") ? "text-white" : "text-white/60 hover:text-white/80"} />
               </motion.div>
             </Link>
           ) : (
-            <Link href="/marketplace" className="flex flex-col items-center justify-center w-14 h-12 rounded-full">
-              <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex flex-col items-center gap-1">
-                <ShoppingBag size={22} className={isActive("/marketplace") ? "text-white" : "text-white/60 hover:text-white/80"} />
-                <span className={`text-[9px] font-semibold tracking-wide ${isActive("/marketplace") ? "text-white" : "text-white/60"}`}>Store</span>
+            <Link href="/marketplace" className="flex items-center justify-center w-14 h-10 rounded-full">
+              <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex items-center justify-center">
+                <ShoppingBag size={24} className={isActive("/marketplace") ? "text-white" : "text-white/60 hover:text-white/80"} />
               </motion.div>
             </Link>
           )}
@@ -272,14 +266,13 @@ export default function MobileBottomNav() {
           {isCreator ? (
             <Link
               href="/creator-dashboard"
-              className="flex flex-col items-center justify-center w-14 h-12 rounded-full"
+              className="flex items-center justify-center w-14 h-10 rounded-full"
             >
-              <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex flex-col items-center justify-center h-full w-full">
-                <div className="flex items-center justify-center h-[22px]">
-                  <span className="text-[18px] font-extrabold tracking-tighter text-white">T</span>
-                  <span className="text-[18px] font-extrabold tracking-tighter text-[#E53945]">F</span>
+              <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex items-center justify-center h-full w-full">
+                <div className="flex items-center justify-center">
+                  <span className="text-[22px] font-extrabold tracking-tighter text-white">T</span>
+                  <span className="text-[22px] font-extrabold tracking-tighter text-[#E53945]">F</span>
                 </div>
-                <span className={`text-[9px] font-semibold tracking-wide mt-1 ${isActive("/creator-dashboard") ? 'text-blue-400' : 'text-white/60'}`}>Creator</span>
               </motion.div>
             </Link>
           ) : (
@@ -291,19 +284,18 @@ export default function MobileBottomNav() {
               onTouchStart={startPress}
               onTouchEnd={cancelPress}
               onTouchCancel={cancelPress}
-              className="flex flex-col items-center justify-center w-14 h-12 rounded-full cursor-pointer select-none"
+              className="flex items-center justify-center w-14 h-10 rounded-full cursor-pointer select-none"
             >
-              <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex flex-col items-center gap-1">
+              <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex items-center justify-center">
                 {avatarUrl ? (
-                  <img src={avatarUrl} alt="" className={`w-6 h-6 rounded-lg object-cover ${profileActive ? "ring-2 ring-white" : "ring-1 ring-white/30"}`} />
+                  <img src={avatarUrl} alt="" className={`w-7 h-7 rounded-lg object-cover ${profileActive ? "ring-2 ring-white" : "ring-1 ring-white/30"}`} />
                 ) : signedIn === false ? (
-                  <div className={`w-6 h-6 rounded-lg bg-white/10 flex items-center justify-center ${profileActive ? "ring-2 ring-white" : ""}`}>
-                    <span className="w-2.5 h-2.5 rounded-full border-2 border-white/70" />
+                  <div className={`w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center ${profileActive ? "ring-2 ring-white" : ""}`}>
+                    <span className="w-3 h-3 rounded-full border-2 border-white/70" />
                   </div>
                 ) : (
-                  <div className={`w-6 h-6 rounded-lg bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-[10px] font-bold ${profileActive ? "ring-2 ring-white" : ""}`}>•</div>
+                  <div className={`w-7 h-7 rounded-lg bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-[12px] font-bold ${profileActive ? "ring-2 ring-white" : ""}`}>•</div>
                 )}
-                <span className={`text-[9px] font-semibold tracking-wide ${profileActive ? "text-white" : "text-white/60"}`}>Profile</span>
               </motion.div>
             </div>
           )}
