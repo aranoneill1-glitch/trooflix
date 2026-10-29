@@ -303,7 +303,7 @@ export default function Home() {
 
             {loaded && !filtered && !showingFiltered && (
               <>
-                {/* 1. TRUTH HEADLINE (EXACTLY AS IT WAS) */}
+                {/* 1. TRUTH HEADLINE */}
                 {!showingFiltered && heroPool.length > 0 && (
                   <div className="w-full pt-2 pb-4 px-4 md:px-12 max-w-6xl mx-auto flex flex-col">
                     <div>
@@ -444,16 +444,20 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
               key={video.id}
               drag={isActive ? "x" : false}
               dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={0.15}
-              dragMomentum={false}
+              dragElastic={1} // PERFECT 1:1 THUMB TRACKING
+              dragMomentum={false} // NO FLICK OVERSHOOT
+              dragTransition={{ bounceStiffness: 600, bounceDamping: 20 }} // TIGHT SNAP BACK
+              whileTap={isActive ? { scale: 0.98 } : {}} // TACTILE GRAB FEEL
               onDragStart={() => setIsDragging(true)}
-              onDragEnd={(e, { offset: dragOffset, velocity }) => {
+              onDragEnd={(e, info) => {
                 setIsDragging(false);
-                const swipe = dragOffset.x;
-                const power = velocity.x;
-                if (swipe < -20 || power < -300) {
+                const swipe = info.offset.x;
+                const power = info.velocity.x;
+                
+                // Highly responsive thresholds
+                if (swipe < -30 || power < -300) {
                   setActiveIndex((activeIndex + 1) % videos.length);
-                } else if (swipe > 20 || power > 300) {
+                } else if (swipe > 30 || power > 300) {
                   setActiveIndex((activeIndex - 1 + videos.length) % videos.length);
                 }
               }}
