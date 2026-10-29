@@ -507,7 +507,8 @@ function CarouselCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMo
     return i - c + (d / 300);
   });
 
-  const x = useTransform(offset, (o) => `${o * 60}%`);
+  // SHIFTED LEFT BY 12vw TO ALIGN ACTIVE CARD TO THE LEFT
+  const x = useTransform(offset, (o) => `calc(${o * 60}% - 12vw)`);
   const scale = useTransform(offset, (o) => Math.max(0.75, 1 - Math.abs(o) * 0.25));
   const rotateY = useTransform(offset, (o) => o * -35);
   const z = useTransform(offset, (o) => -Math.abs(o) * 100);
