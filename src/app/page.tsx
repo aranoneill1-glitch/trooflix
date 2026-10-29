@@ -276,7 +276,7 @@ export default function Home() {
       {loaded && (
         <>
           {!showingFiltered && heroPool.length > 0 && (
-            <div className="w-full pt-24 md:pt-28 pb-2">
+            <div className="w-full pt-16 md:pt-20 pb-2">
               <CarouselHero 
                 videos={heroPool} 
                 activeIndex={heroIndex} 
@@ -317,7 +317,7 @@ export default function Home() {
                   </div>
                 )}
 
-                {/* 2. VIDEO ROW (MOVED ABOVE AVATARS) */}
+                {/* 2. VIDEO ROW */}
                 <div className="mt-4 mb-8">
                   <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide px-4 md:px-12 pb-4">
                     {videos.slice(1, 11).map((v: any) => {
