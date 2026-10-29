@@ -409,9 +409,9 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
   const [isDragging, setIsDragging] = useState(false);
 
   return (
-    <section className="relative w-full h-[65vh] md:h-[80vh] flex items-center justify-start overflow-hidden pt-12 bg-black">
-      {/* Shift the whole container left, so the active card sits on the left */}
-      <div className="relative w-full max-w-6xl h-full flex items-center justify-start perspective-[1200px] ml-[-10%] md:ml-0 pl-4 md:pl-12">
+    <section className="relative w-full h-[55vh] md:h-[70vh] flex items-center justify-center overflow-hidden pt-12 bg-black">
+      {/* Centered container again */}
+      <div className="relative w-full max-w-6xl h-full flex items-center justify-center perspective-[1200px]">
         {videos.map((video, i) => {
           const isActive = i === activeIndex;
           const offset = i - activeIndex;
@@ -452,7 +452,7 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
                 opacity: 1
               }}
               transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
-              // Aspect ratio changed to portrait (taller)
+              // Taller aspect ratio (portrait)
               className="absolute w-[65%] md:w-[45%] aspect-[3/4] md:aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl cursor-pointer border border-white/20 bg-black"
               style={{ 
                 touchAction: 'pan-y',
@@ -464,7 +464,6 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
               
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent opacity-90" />
 
-              {/* Bottom Content */}
               <div className="absolute bottom-0 inset-x-0 p-5 md:p-8 flex flex-col items-start text-left pointer-events-none bg-gradient-to-t from-black/90 to-transparent pt-16">
                 <h3 className="text-xl md:text-3xl font-bold text-white mb-1 leading-tight line-clamp-2">
                   {video.title}
