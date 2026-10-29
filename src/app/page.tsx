@@ -410,7 +410,6 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
 
   return (
     <section className="relative w-full h-[55vh] md:h-[70vh] flex items-center justify-center overflow-hidden pt-12 bg-black">
-      {/* Centered container again */}
       <div className="relative w-full max-w-6xl h-full flex items-center justify-center perspective-[1200px]">
         {videos.map((video, i) => {
           const isActive = i === activeIndex;
@@ -443,6 +442,7 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
                   setActiveIndex(i);
                 }
               }}
+              // UPGRADED TO SPRING PHYSICS FOR ULTRA SMOOTH APPLE-LIKE MOTION
               animate={{
                 x: `${offset * 60}%`,
                 scale: isActive ? 1 : 0.75,
@@ -451,13 +451,14 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
                 zIndex: 10 - Math.abs(offset),
                 opacity: 1
               }}
-              transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
-              // Taller aspect ratio (portrait)
-              className="absolute w-[65%] md:w-[45%] aspect-[3/4] md:aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl cursor-pointer border border-white/20 bg-black"
+              transition={{ type: "spring", stiffness: 260, damping: 28, mass: 1 }}
+              // REMOVED BORDER, ROUNDED CORNERS FOR FREE FLOATING LOOK
+              className="absolute w-[65%] md:w-[45%] aspect-[3/4] md:aspect-[4/5] rounded-[24px] overflow-hidden shadow-2xl cursor-pointer bg-black"
               style={{ 
                 touchAction: 'pan-y',
                 transformStyle: "preserve-3d",
-                boxShadow: isActive ? "0 20px 50px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.2)" : "0 10px 30px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.1)"
+                // REMOVED THE WHITE RING
+                boxShadow: isActive ? "0 25px 50px -12px rgba(0,0,0,0.8)" : "0 10px 20px rgba(0,0,0,0.5)"
               }}
             >
               <img src={video.backdropUrl} alt={video.title} className="w-full h-full object-cover" draggable={false} />
@@ -472,20 +473,20 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
                   {video.description || "Documentary"}
                 </p>
 
-                {/* Apple Glass Pills (Bottom Left) */}
+                {/* Apple Glass Pills (Bottom Left) - FIXED BUTTON WRAPPING */}
                 {isActive && (
                   <div className="flex items-center gap-3 pointer-events-auto">
                     <button 
                       onClick={(e) => { e.stopPropagation(); onPlay(video); }}
-                      className="flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-xl border border-white/20 text-white px-5 py-2.5 rounded-full font-semibold transition shadow-lg"
+                      className="flex items-center justify-center whitespace-nowrap bg-white/20 hover:bg-white/30 backdrop-blur-xl border border-white/10 text-white px-5 py-2.5 rounded-full font-semibold transition shadow-lg"
                     >
-                      <Play size={18} fill="currentColor" /> Play
+                      <Play size={18} fill="currentColor" className="mr-2" /> Play
                     </button>
                     <button 
                       onClick={(e) => { e.stopPropagation(); }}
-                      className="flex items-center gap-2 bg-black/30 hover:bg-black/50 backdrop-blur-xl border border-white/10 text-white px-5 py-2.5 rounded-full font-semibold transition shadow-lg"
+                      className="flex items-center justify-center whitespace-nowrap bg-black/30 hover:bg-black/50 backdrop-blur-xl border border-white/10 text-white px-5 py-2.5 rounded-full font-semibold transition shadow-lg"
                     >
-                      <Plus size={18} /> My List
+                      <Plus size={18} className="mr-2" /> My List
                     </button>
                   </div>
                 )}
