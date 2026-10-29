@@ -450,39 +450,42 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
                 opacity: 1
               }}
               transition={{ type: "spring", stiffness: 260, damping: 28, mass: 1 }}
-              className="absolute w-[75%] md:w-[45%] max-w-[420px] aspect-[3/4] rounded-[24px] overflow-hidden cursor-pointer bg-black border border-white/20"
+              // APPLYING THE GLASS FRAME
+              className="absolute w-[75%] md:w-[45%] max-w-[420px] aspect-[3/4] rounded-[26px] p-[3px] cursor-pointer bg-gradient-to-b from-white/20 to-white/[0.02] backdrop-blur-[40px] backdrop-saturate-[180%] shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.6),inset_0_-1px_1px_rgba(255,255,255,0.2)]"
               style={{ 
                 touchAction: 'pan-y',
                 transformStyle: "preserve-3d",
-                boxShadow: isActive ? "0 25px 50px -12px rgba(0,0,0,0.9)" : "0 10px 20px rgba(0,0,0,0.5)"
               }}
             >
-              <img src={video.backdropUrl} alt={video.title} className="w-full h-full object-cover" draggable={false} />
-              
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90" />
+              {/* INNER CONTAINER FOR THE IMAGE */}
+              <div className="relative w-full h-full rounded-[23px] overflow-hidden bg-black">
+                <img src={video.backdropUrl} alt={video.title} className="w-full h-full object-cover" draggable={false} />
+                
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90" />
 
-              <div className="absolute bottom-0 inset-x-0 p-5 md:p-6 flex items-end justify-between pointer-events-none">
-                <h3 className="text-lg md:text-2xl font-bold text-white tracking-[0.15em] uppercase drop-shadow-lg leading-tight w-1/2">
-                  {video.title}
-                </h3>
+                <div className="absolute bottom-0 inset-x-0 p-5 md:p-6 flex items-end justify-between pointer-events-none">
+                  <h3 className="text-lg md:text-2xl font-bold text-white tracking-[0.15em] uppercase drop-shadow-lg leading-tight w-1/2">
+                    {video.title}
+                  </h3>
 
-                {isActive && (
-                  <div className="flex items-center gap-2 pointer-events-auto">
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); onPlay(video); }}
-                      className="flex items-center justify-center gap-2 bg-white text-black px-4 py-2 rounded-full font-bold text-sm hover:bg-gray-200 transition active:scale-95 shadow-xl"
-                    >
-                      <Play size={16} fill="currentColor" /> Play
-                    </button>
-                    
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); }}
-                      className="w-10 h-10 flex items-center justify-center bg-white/20 backdrop-blur-[8px] backdrop-saturate-[180%] backdrop-brightness-[1.1] border border-white/30 text-white rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.25),inset_0_1px_1px_rgba(255,255,255,0.55)] hover:bg-white/30 transition active:scale-95"
-                    >
-                      <Plus size={20} />
-                    </button>
-                  </div>
-                )}
+                  {isActive && (
+                    <div className="flex items-center gap-2 pointer-events-auto">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); onPlay(video); }}
+                        className="flex items-center justify-center gap-2 bg-white text-black px-4 py-2 rounded-full font-bold text-sm hover:bg-gray-200 transition active:scale-95 shadow-xl"
+                      >
+                        <Play size={16} fill="currentColor" /> Play
+                      </button>
+                      
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); }}
+                        className="w-10 h-10 flex items-center justify-center bg-white/20 backdrop-blur-[8px] backdrop-saturate-[180%] backdrop-brightness-[1.1] border border-white/30 text-white rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.25),inset_0_1px_1px_rgba(255,255,255,0.55)] hover:bg-white/30 transition active:scale-95"
+                      >
+                        <Plus size={20} />
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </motion.div>
           );
@@ -574,7 +577,7 @@ function DetailModal({ item, onClose, onPlay, creators }: { item: Video; onClose
       <motion.div key={item.id} ref={modalContentRef} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.2 }} 
         className="bg-gradient-to-b from-[#1a1a1a]/95 to-[#0a0a0a]/95 backdrop-blur-[40px] backdrop-saturate-[180%] shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.2)] rounded-3xl relative w-full max-w-4xl overflow-y-auto border-none" 
         style={{ maxHeight: "90dvh" }} onClick={(e) => e.stopPropagation()}>
-        <div className="relative h-[260px] md:h-[420px] w-full overflow-hidden">
+        <div className="relative h-[260px] md:h-[420px] w-full overflow-hidden rounded-t-3xl">
           <img src={item.backdropUrl} alt={item.title} className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${previewReady ? "opacity-0" : "opacity-100"}`} />
           {videoSrc && (
             <>
@@ -784,7 +787,6 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
         </button>
       </div>
 
-      {/* GLASS CARD FOR FEED */}
       <div className="bg-gradient-to-b from-white/10 to-white/[0.02] backdrop-blur-[40px] backdrop-saturate-[180%] backdrop-brightness-[1.2] rounded-3xl overflow-hidden flex flex-col shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.3),inset_0_-1px_1px_rgba(255,255,255,0.1)] border-none">
         
         <div 
