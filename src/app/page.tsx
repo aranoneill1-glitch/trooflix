@@ -276,6 +276,18 @@ export default function Home() {
       {loaded && (
         <>
           {!showingFiltered && heroPool.length > 0 && (
+            <div className="w-full pt-24 md:pt-28 pb-4 px-4 md:px-12 max-w-6xl mx-auto flex flex-col">
+              <div>
+                <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-1 uppercase">
+                  Truth Without Censorship
+                </p>
+                <h2 className="text-3xl md:text-5xl font-black tracking-tight text-white">
+                  No ads. No filter. Just content.
+                </h2>
+              </div>
+            </div>
+          )}
+          {!showingFiltered && heroPool.length > 0 && (
             <CarouselHero 
               videos={heroPool} 
               activeIndex={heroIndex} 
@@ -303,23 +315,12 @@ export default function Home() {
               <>
                 {!showingFiltered && heroPool.length > 0 && (
                   <div className="w-full pt-8 md:pt-12 pb-4 px-4 md:px-12 max-w-6xl mx-auto flex flex-col gap-8">
-                    {/* ORIGINAL HEADLINE */}
                     <div>
                       <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-1 uppercase">
                         The Home of Independent Voices
                       </p>
                       <h2 className="text-2xl md:text-4xl font-black tracking-tight text-white">
                         Discover Creators
-                      </h2>
-                    </div>
-                    
-                    {/* NEW HEADLINE */}
-                    <div>
-                      <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-1 uppercase">
-                        Truth Without Censorship
-                      </p>
-                      <h2 className="text-2xl md:text-4xl font-black tracking-tight text-white">
-                        No ads. No filter. Just content.
                       </h2>
                     </div>
                   </div>
@@ -464,21 +465,18 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
                 opacity: 1
               }}
               transition={{ type: "spring", stiffness: 260, damping: 28, mass: 1 }}
-              // ULTRA-THIN 1PX GLASS RIM
               className="absolute w-[75%] md:w-[45%] max-w-[420px] aspect-[3/4] rounded-[26px] p-[1px] cursor-pointer bg-gradient-to-b from-white/30 to-white/[0.05] shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.4)]"
               style={{ 
                 touchAction: 'pan-y',
                 transformStyle: "preserve-3d",
               }}
             >
-              {/* INNER CONTAINER FOR THE IMAGE (Radius adjusted for 1px border) */}
               <div className="relative w-full h-full rounded-[25px] overflow-hidden bg-black">
                 <img src={video.backdropUrl} alt={video.title} className="w-full h-full object-cover" draggable={false} />
                 
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90" />
 
                 <div className="absolute bottom-0 inset-x-0 p-5 md:p-6 flex items-end justify-between pointer-events-none">
-                  {/* ORIGINAL FONT REVERTED HERE */}
                   <h3 className="text-lg md:text-2xl font-bold text-white tracking-[0.15em] uppercase drop-shadow-lg leading-tight w-1/2">
                     {video.title}
                   </h3>
