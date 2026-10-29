@@ -276,16 +276,6 @@ export default function Home() {
       {loaded && (
         <>
           {!showingFiltered && heroPool.length > 0 && (
-            <div className="w-full pt-20 md:pt-24 pb-2 px-4 md:px-12 max-w-6xl mx-auto">
-              <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-1 uppercase">
-                The Home of Independent Voices
-              </p>
-              <h2 className="text-2xl md:text-4xl font-black tracking-tight text-white">
-                Discover Creators
-              </h2>
-            </div>
-          )}
-          {!showingFiltered && heroPool.length > 0 && (
             <CarouselHero 
               videos={heroPool} 
               activeIndex={heroIndex} 
@@ -311,6 +301,30 @@ export default function Home() {
 
             {loaded && !filtered && !showingFiltered && (
               <>
+                {!showingFiltered && heroPool.length > 0 && (
+                  <div className="w-full pt-8 md:pt-12 pb-4 px-4 md:px-12 max-w-6xl mx-auto flex flex-col gap-8">
+                    {/* ORIGINAL HEADLINE */}
+                    <div>
+                      <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-1 uppercase">
+                        The Home of Independent Voices
+                      </p>
+                      <h2 className="text-2xl md:text-4xl font-black tracking-tight text-white">
+                        Discover Creators
+                      </h2>
+                    </div>
+                    
+                    {/* NEW HEADLINE */}
+                    <div>
+                      <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-1 uppercase">
+                        Truth Without Censorship
+                      </p>
+                      <h2 className="text-2xl md:text-4xl font-black tracking-tight text-white">
+                        No ads. No filter. Just content.
+                      </h2>
+                    </div>
+                  </div>
+                )}
+
                 {creators && creators.length > 0 && (
                   <div className="mt-4">
                     <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide px-4 md:px-12 pb-4">
@@ -407,15 +421,6 @@ export default function Home() {
 function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { videos: Video[], activeIndex: number, setActiveIndex: (i: number) => void, onPlay: (v: Video) => void, onMore: (v: Video) => void }) {
   const [isDragging, setIsDragging] = useState(false);
 
-  // Array of 5 distinct cinematic font styles for the slides
-  const fontStyles = [
-    "font-sans font-black tracking-[0.15em] uppercase",
-    "font-serif italic tracking-wide",
-    "font-mono font-bold tracking-tighter uppercase",
-    "font-sans font-light tracking-[0.3em] uppercase",
-    "font-serif font-black tracking-widest uppercase"
-  ];
-
   return (
     <section className="relative w-full h-[55vh] md:h-[65vh] flex items-center justify-center overflow-hidden bg-black">
       <div className="relative w-full max-w-6xl h-full flex items-center justify-center perspective-[1200px]">
@@ -424,9 +429,6 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
           const offset = i - activeIndex;
           
           if (Math.abs(offset) > 3) return null;
-
-          // Cycle through the fonts
-          const titleFont = fontStyles[i % fontStyles.length];
 
           return (
             <motion.div
@@ -476,8 +478,8 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90" />
 
                 <div className="absolute bottom-0 inset-x-0 p-5 md:p-6 flex items-end justify-between pointer-events-none">
-                  {/* DYNAMIC FONT APPLIED HERE */}
-                  <h3 className={`text-xl md:text-3xl text-white drop-shadow-lg leading-tight w-1/2 ${titleFont}`}>
+                  {/* ORIGINAL FONT REVERTED HERE */}
+                  <h3 className="text-lg md:text-2xl font-bold text-white tracking-[0.15em] uppercase drop-shadow-lg leading-tight w-1/2">
                     {video.title}
                   </h3>
 
@@ -800,7 +802,6 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
         </button>
       </div>
 
-      {/* REVERTED TO NORMAL SOLID GREY CARD */}
       <div className="bg-[#1c1c1e] rounded-2xl overflow-hidden flex flex-col shadow-lg border border-white/5">
         
         <div 
