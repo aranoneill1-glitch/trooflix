@@ -288,7 +288,7 @@ export default function Home() {
           )}
           {showingFiltered && <div className="h-20 md:h-24" />}
 
-          <div className="relative z-10 pt-0 md:pt-0 pb-32 md:pb-20 space-y-2 md:space-y-6">
+          <div className="relative z-10 pt-0 md:pt-2 pb-32 md:pb-20 space-y-2 md:space-y-6">
             {filtered && <SearchResults search={search} videos={videos} creators={creators} onVideoClick={setSelected} />}
 
             {!filtered && showingFiltered && (
@@ -303,11 +303,11 @@ export default function Home() {
 
             {loaded && !filtered && !showingFiltered && (
               <>
-                {/* 1. TRUTH HEADLINE (PULLED UP CLOSER) */}
+                {/* 1. TRUTH HEADLINE (ONLY RED TEXT IS BIGGER) */}
                 {!showingFiltered && heroPool.length > 0 && (
-                  <div className="w-full -mt-8 md:-mt-12 pb-2 px-4 md:px-12 max-w-6xl mx-auto flex flex-col">
+                  <div className="w-full pt-2 pb-4 px-4 md:px-12 max-w-6xl mx-auto flex flex-col">
                     <div>
-                      <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-1 uppercase">
+                      <p className="text-base md:text-xl tracking-[0.4em] text-[#E53945] font-semibold mb-1 uppercase">
                         Truth Without Censorship
                       </p>
                       <h2 className="text-3xl md:text-5xl font-black tracking-tight text-white">
