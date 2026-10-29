@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 interface AppleVideoPlayerProps {
   src: string;
@@ -22,42 +23,52 @@ export default function AppleVideoPlayer({
   poster
 }: AppleVideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [mounted, setMounted] = useState(false);
+
+  // Ensure we only render the portal on the client side
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
+    if (!mounted) return;
     const v = videoRef.current;
     if (!v) return;
 
-    // Auto-play in the background so it's ready when native fullscreen opens
+    // 1. Play the video immediately
     v.play().catch(() => {});
 
-    // Listen for when the user exits native fullscreen to close the player
+    // 2. IMMEDIATELY trigger native fullscreen (synchronously, no delay)
+    // We do this right on mount so iOS registers it as part of the original tap.
+    // @ts-ignore
+    if (v.webkitEnterFullscreen) {
+      // @ts-ignore
+      v.webkitEnterFullscreen();
+    } else if (v.requestFullscreen) {
+      v.requestFullscreen().catch(() => {});
+    }
+
+    // 3. Listen for when the user exits native fullscreen to close the player
     const handleEndFullscreen = () => {
       onClose();
     };
 
+    // iOS event and standard event
     v.addEventListener("webkitendfullscreen", handleEndFullscreen);
     document.addEventListener("fullscreenchange", handleEndFullscreen);
 
-    // Give it a tiny delay to ensure the DOM is painted before we try to go fullscreen
-    const timer = setTimeout(() => {
-      // @ts-ignore
-      if (v.webkitEnterFullscreen) {
-        // @ts-ignore
-        v.webkitEnterFullscreen();
-      } else if (v.requestFullscreen) {
-        v.requestFullscreen().catch(() => {});
-      }
-    }, 50);
-
     return () => {
-      clearTimeout(timer);
       v.removeEventListener("webkitendfullscreen", handleEndFullscreen);
       document.removeEventListener("fullscreenchange", handleEndFullscreen);
     };
-  }, [onClose]);
+  }, [mounted, onClose]);
 
-  return (
-    <div className="fixed inset-0 z-[200] bg-black flex items-center justify-center">
+  if (!mounted) return null;
+
+  // Use a portal to attach the video directly to the document body.
+  // This bypasses any layout issues from parent containers.
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] bg-black flex items-center justify-center">
       <video
         ref={videoRef}
         src={src}
@@ -66,6 +77,7 @@ export default function AppleVideoPlayer({
         controls
         className="w-full h-full object-contain"
       />
-    </div>
+    </div>,
+    document.body
   );
 }
