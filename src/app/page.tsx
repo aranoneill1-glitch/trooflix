@@ -367,7 +367,7 @@ export default function Home() {
                       Don't Miss A <span className="text-red-600">Thing</span>
                     </h2>
                   </div>
-                  <div className="flex flex-col gap-6 md:gap-8 px-4 md:px-12">
+                  <div className="flex flex-col gap-8 md:gap-12 px-4 md:px-12 max-w-3xl mx-auto">
                     {[...videos].sort((a: any, b: any) => {
                       const at = a.createdAt ? new Date(a.createdAt).getTime() : a.id;
                       const bt = b.createdAt ? new Date(b.createdAt).getTime() : b.id;
@@ -705,39 +705,39 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
   if (!videoSrc) return null;
 
   return (
-    <div ref={containerRef} className="w-full relative flex flex-col group/feed max-w-2xl mx-auto">
+    <div ref={containerRef} className="w-full relative flex flex-col group/feed">
       
-      {/* THE CARD */}
+      {/* HEADER (Avatar, Name, Dots) - FLOATING ABOVE CARD */}
+      <div className="flex items-center justify-between px-1 pb-3 relative z-20">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full overflow-hidden bg-[#1c1c1e] flex-shrink-0 flex items-center justify-center border border-white/10">
+            {creator?.photoUrl ? (
+              <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <span className="font-bold text-sm text-white">{creator?.name?.[0] || 'TF'}</span>
+            )}
+          </div>
+          <div>
+            <div className="flex items-center gap-1.5">
+              <h2 className="text-[15px] font-bold text-white leading-tight">
+                {creator?.name || 'Creator'}
+              </h2>
+              {creator?.isVerified && <CheckCircle2 size={16} className="text-[#1ed760]" fill="currentColor" />}
+            </div>
+            <p className="text-[13px] text-white/60">
+              {video.type || 'Documentary'} • {video.createdAt ? new Date(video.createdAt).toLocaleDateString() : 'Just now'}
+            </p>
+          </div>
+        </div>
+        <button onClick={onMore} className="p-1 text-white/60 hover:text-white transition">
+          <MoreVertical size={20} />
+        </button>
+      </div>
+
+      {/* THE CARD (Starts from top of video) */}
       <div className="bg-[#1c1c1e] rounded-2xl overflow-hidden flex flex-col shadow-lg border border-white/5">
         
-        {/* HEADER */}
-        <div className="flex items-center justify-between px-4 py-3 relative z-20">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full overflow-hidden bg-[#2c2c2e] flex-shrink-0 flex items-center justify-center">
-              {creator?.photoUrl ? (
-                <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <span className="font-bold text-sm text-white">{creator?.name?.[0] || 'TF'}</span>
-              )}
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <h2 className="text-[15px] font-bold text-white leading-tight">
-                  {creator?.name || 'Creator'}
-                </h2>
-                {creator?.isVerified && <CheckCircle2 size={16} className="text-[#1ed760]" fill="currentColor" />}
-              </div>
-              <p className="text-[13px] text-white/60">
-                {video.type || 'Documentary'} • {video.createdAt ? new Date(video.createdAt).toLocaleDateString() : 'Just now'}
-              </p>
-            </div>
-          </div>
-          <button onClick={onMore} className="p-1 text-white/60 hover:text-white transition">
-            <MoreVertical size={20} />
-          </button>
-        </div>
-
-        {/* VIDEO (Fills frame perfectly, no internal padding) */}
+        {/* VIDEO */}
         <div 
           className="relative w-full aspect-video bg-black overflow-hidden cursor-pointer" 
           onClick={() => { handleInteraction(); togglePlay(); }}
