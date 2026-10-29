@@ -276,7 +276,7 @@ export default function Home() {
       {loaded && (
         <>
           {!showingFiltered && heroPool.length > 0 && (
-            <div className="w-full pt-16 md:pt-20 pb-2">
+            <div className="w-full pt-16 md:pt-20 pb-0">
               <CarouselHero 
                 videos={heroPool} 
                 activeIndex={heroIndex} 
@@ -288,7 +288,7 @@ export default function Home() {
           )}
           {showingFiltered && <div className="h-20 md:h-24" />}
 
-          <div className="relative z-10 pt-4 md:pt-6 pb-32 md:pb-20 space-y-2 md:space-y-6">
+          <div className="relative z-10 pt-0 md:pt-0 pb-32 md:pb-20 space-y-2 md:space-y-6">
             {filtered && <SearchResults search={search} videos={videos} creators={creators} onVideoClick={setSelected} />}
 
             {!filtered && showingFiltered && (
@@ -303,9 +303,9 @@ export default function Home() {
 
             {loaded && !filtered && !showingFiltered && (
               <>
-                {/* 1. TRUTH HEADLINE */}
+                {/* 1. TRUTH HEADLINE (PULLED UP CLOSER) */}
                 {!showingFiltered && heroPool.length > 0 && (
-                  <div className="w-full pt-4 pb-2 px-4 md:px-12 max-w-6xl mx-auto flex flex-col">
+                  <div className="w-full -mt-8 md:-mt-12 pb-2 px-4 md:px-12 max-w-6xl mx-auto flex flex-col">
                     <div>
                       <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-1 uppercase">
                         Truth Without Censorship
@@ -431,7 +431,7 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
   const [isDragging, setIsDragging] = useState(false);
 
   return (
-    <section className="relative w-full h-[55vh] md:h-[65vh] flex items-center justify-center overflow-hidden bg-black">
+    <section className="relative w-full h-[50vh] md:h-[60vh] flex items-center justify-center overflow-hidden bg-black">
       <div className="relative w-full max-w-6xl h-full flex items-center justify-center perspective-[1200px]">
         {videos.map((video, i) => {
           const isActive = i === activeIndex;
