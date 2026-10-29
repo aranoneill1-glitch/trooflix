@@ -11,7 +11,7 @@ if (typeof window !== "undefined") {
 }
 
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useTransform, animate } from "framer-motion";
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -428,95 +428,67 @@ export default function Home() {
 
 /* ============ 3D APPLE COVER FLOW HERO ============ */
 function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { videos: Video[], activeIndex: number, setActiveIndex: (i: number) => void, onPlay: (v: Video) => void, onMore: (v: Video) => void }) {
-  const [isDragging, setIsDragging] = useState(false);
+  const dragX = useMotionValue(0);
+  const currentIndex = useMotionValue(activeIndex);
+  const pointerStartX = useRef(0);
+
+  useEffect(() => {
+    animate(currentIndex, activeIndex, { type: "spring", stiffness: 300, damping: 30 });
+  }, [activeIndex]);
+
+  const handlePointerDown = (e: React.PointerEvent, index: number) => {
+    if (index !== activeIndex) return;
+    if ((e.target as HTMLElement).closest('button')) return;
+    
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    pointerStartX.current = e.clientX;
+    dragX.set(0);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent, index: number) => {
+    if (index !== activeIndex) return;
+    if (!(e.currentTarget as HTMLElement).hasPointerCapture(e.pointerId)) return;
+    
+    const delta = e.clientX - pointerStartX.current;
+    dragX.set(delta);
+  };
+
+  const handlePointerUp = (e: React.PointerEvent, index: number) => {
+    if (index !== activeIndex) return;
+    if (!(e.currentTarget as HTMLElement).hasPointerCapture(e.pointerId)) return;
+    
+    (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+    
+    const swipe = dragX.get();
+    
+    if (swipe < -50) {
+      setActiveIndex((activeIndex + 1) % videos.length);
+    } else if (swipe > 50) {
+      setActiveIndex((activeIndex - 1 + videos.length) % videos.length);
+    }
+    
+    animate(dragX, 0, { type: "spring", stiffness: 300, damping: 30 });
+  };
 
   return (
-    <section className="relative w-full h-[50vh] md:h-[60vh] flex items-center justify-center overflow-hidden bg-black">
+    <section className="relative w-full h-[50vh] md:h-[60vh] flex items-center justify-center overflow-hidden bg-black touch-pan-y">
       <div className="relative w-full max-w-6xl h-full flex items-center justify-center perspective-[1200px]">
-        {videos.map((video, i) => {
-          const isActive = i === activeIndex;
-          const offset = i - activeIndex;
-          
-          if (Math.abs(offset) > 3) return null;
-
-          return (
-            <motion.div
-              key={video.id}
-              drag={isActive ? "x" : false}
-              dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={1} // PERFECT 1:1 THUMB TRACKING
-              dragMomentum={false} // NO FLICK OVERSHOOT
-              dragTransition={{ bounceStiffness: 600, bounceDamping: 20 }} // TIGHT SNAP BACK
-              whileTap={isActive ? { scale: 0.98 } : {}} // TACTILE GRAB FEEL
-              onDragStart={() => setIsDragging(true)}
-              onDragEnd={(e, info) => {
-                setIsDragging(false);
-                const swipe = info.offset.x;
-                const power = info.velocity.x;
-                
-                // Highly responsive thresholds
-                if (swipe < -30 || power < -300) {
-                  setActiveIndex((activeIndex + 1) % videos.length);
-                } else if (swipe > 30 || power > 300) {
-                  setActiveIndex((activeIndex - 1 + videos.length) % videos.length);
-                }
-              }}
-              onClick={() => {
-                if (isDragging) return;
-                if (isActive) {
-                  onMore(video);
-                } else {
-                  setActiveIndex(i);
-                }
-              }}
-              animate={{
-                x: `${offset * 60}%`,
-                scale: isActive ? 1 : 0.75,
-                rotateY: offset * -35,
-                z: isActive ? 0 : -100 - Math.abs(offset) * 50,
-                zIndex: 10 - Math.abs(offset),
-                opacity: 1
-              }}
-              transition={{ type: "spring", stiffness: 220, damping: 28, mass: 1, restDelta: 0.001 }}
-              className="absolute w-[75%] md:w-[45%] max-w-[420px] aspect-[3/4] rounded-[26px] p-[1px] cursor-pointer bg-gradient-to-b from-white/30 to-white/[0.05] shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.4)]"
-              style={{ 
-                touchAction: 'pan-y',
-                transformStyle: "preserve-3d",
-                willChange: "transform",
-              }}
-            >
-              <div className="relative w-full h-full rounded-[25px] overflow-hidden bg-black">
-                <img src={video.backdropUrl} alt={video.title} className="w-full h-full object-cover" draggable={false} />
-                
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90" />
-
-                <div className="absolute bottom-0 inset-x-0 p-5 md:p-6 flex items-end justify-between pointer-events-none">
-                  <h3 className="text-lg md:text-2xl font-bold text-white tracking-[0.15em] uppercase drop-shadow-lg leading-tight w-1/2">
-                    {video.title}
-                  </h3>
-
-                  {isActive && (
-                    <div className="flex items-center gap-2 pointer-events-auto">
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); onPlay(video); }}
-                        className="flex items-center justify-center gap-2 bg-white text-black px-4 py-2 rounded-full font-bold text-sm hover:bg-gray-200 transition active:scale-95 shadow-xl"
-                      >
-                        <Play size={16} fill="currentColor" /> Play
-                      </button>
-                      
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); }}
-                        className="w-10 h-10 flex items-center justify-center bg-white/20 backdrop-blur-[8px] backdrop-saturate-[180%] backdrop-brightness-[1.1] border border-white/30 text-white rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.25),inset_0_1px_1px_rgba(255,255,255,0.55)] hover:bg-white/30 transition active:scale-95"
-                      >
-                        <Plus size={20} />
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          );
-        })}
+        {videos.map((video, i) => (
+          <CarouselCard
+            key={video.id}
+            video={video}
+            i={i}
+            activeIndex={activeIndex}
+            currentIndex={currentIndex}
+            dragX={dragX}
+            onPlay={onPlay}
+            onMore={onMore}
+            isActive={i === activeIndex}
+            onPointerDown={(e: React.PointerEvent) => handlePointerDown(e, i)}
+            onPointerMove={(e: React.PointerEvent) => handlePointerMove(e, i)}
+            onPointerUp={(e: React.PointerEvent) => handlePointerUp(e, i)}
+          />
+        ))}
       </div>
 
       <button onClick={() => setActiveIndex((activeIndex - 1 + videos.length) % videos.length)} className="hidden md:flex absolute left-4 lg:left-8 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/80 backdrop-blur-md rounded-full items-center justify-center text-white border border-white/20 transition z-50">
@@ -526,6 +498,62 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
         <ChevronRight size={24} />
       </button>
     </section>
+  );
+}
+
+/* ============ CAROUSEL CARD ============ */
+function CarouselCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMore, isActive, onPointerDown, onPointerMove, onPointerUp }: any) {
+  const offset = useTransform([currentIndex, dragX], ([c, d]: any[]) => {
+    return i - c + (d / 300);
+  });
+
+  const x = useTransform(offset, (o) => `${o * 60}%`);
+  const scale = useTransform(offset, (o) => Math.max(0.75, 1 - Math.abs(o) * 0.25));
+  const rotateY = useTransform(offset, (o) => o * -35);
+  const z = useTransform(offset, (o) => -Math.abs(o) * 100);
+  const opacity = useTransform(offset, (o) => Math.abs(o) > 3 ? 0 : 1);
+
+  return (
+    <motion.div
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onClick={() => {
+        if (isActive) onMore(video);
+      }}
+      style={{ x, scale, rotateY, z, opacity, touchAction: 'pan-y' }}
+      className="absolute w-[75%] md:w-[45%] max-w-[420px] aspect-[3/4] rounded-[26px] p-[1px] cursor-pointer bg-gradient-to-b from-white/30 to-white/[0.05] shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.4)] select-none"
+    >
+      <div className="relative w-full h-full rounded-[25px] overflow-hidden bg-black pointer-events-none">
+        <img src={video.backdropUrl} alt={video.title} className="w-full h-full object-cover" draggable={false} />
+        
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90" />
+
+        <div className="absolute bottom-0 inset-x-0 p-5 md:p-6 flex items-end justify-between pointer-events-auto">
+          <h3 className="text-lg md:text-2xl font-bold text-white tracking-[0.15em] uppercase drop-shadow-lg leading-tight w-1/2">
+            {video.title}
+          </h3>
+
+          {isActive && (
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={(e) => { e.stopPropagation(); onPlay(video); }}
+                className="flex items-center justify-center gap-2 bg-white text-black px-4 py-2 rounded-full font-bold text-sm hover:bg-gray-200 transition active:scale-95 shadow-xl"
+              >
+                <Play size={16} fill="currentColor" /> Play
+              </button>
+              
+              <button 
+                onClick={(e) => { e.stopPropagation(); }}
+                className="w-10 h-10 flex items-center justify-center bg-white/20 backdrop-blur-[8px] backdrop-saturate-[180%] backdrop-brightness-[1.1] border border-white/30 text-white rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.25),inset_0_1px_1px_rgba(255,255,255,0.55)] hover:bg-white/30 transition active:scale-95"
+              >
+                <Plus size={20} />
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </motion.div>
   );
 }
 
