@@ -407,6 +407,15 @@ export default function Home() {
 function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { videos: Video[], activeIndex: number, setActiveIndex: (i: number) => void, onPlay: (v: Video) => void, onMore: (v: Video) => void }) {
   const [isDragging, setIsDragging] = useState(false);
 
+  // Array of 5 distinct cinematic font styles for the slides
+  const fontStyles = [
+    "font-sans font-black tracking-[0.15em] uppercase",
+    "font-serif italic tracking-wide",
+    "font-mono font-bold tracking-tighter uppercase",
+    "font-sans font-light tracking-[0.3em] uppercase",
+    "font-serif font-black tracking-widest uppercase"
+  ];
+
   return (
     <section className="relative w-full h-[55vh] md:h-[65vh] flex items-center justify-center overflow-hidden bg-black">
       <div className="relative w-full max-w-6xl h-full flex items-center justify-center perspective-[1200px]">
@@ -415,6 +424,9 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
           const offset = i - activeIndex;
           
           if (Math.abs(offset) > 3) return null;
+
+          // Cycle through the fonts
+          const titleFont = fontStyles[i % fontStyles.length];
 
           return (
             <motion.div
@@ -450,21 +462,22 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
                 opacity: 1
               }}
               transition={{ type: "spring", stiffness: 260, damping: 28, mass: 1 }}
-              // APPLYING THE GLASS FRAME
-              className="absolute w-[75%] md:w-[45%] max-w-[420px] aspect-[3/4] rounded-[26px] p-[3px] cursor-pointer bg-gradient-to-b from-white/20 to-white/[0.02] backdrop-blur-[40px] backdrop-saturate-[180%] shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.6),inset_0_-1px_1px_rgba(255,255,255,0.2)]"
+              // ULTRA-THIN 1PX GLASS RIM
+              className="absolute w-[75%] md:w-[45%] max-w-[420px] aspect-[3/4] rounded-[26px] p-[1px] cursor-pointer bg-gradient-to-b from-white/30 to-white/[0.05] shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.4)]"
               style={{ 
                 touchAction: 'pan-y',
                 transformStyle: "preserve-3d",
               }}
             >
-              {/* INNER CONTAINER FOR THE IMAGE */}
-              <div className="relative w-full h-full rounded-[23px] overflow-hidden bg-black">
+              {/* INNER CONTAINER FOR THE IMAGE (Radius adjusted for 1px border) */}
+              <div className="relative w-full h-full rounded-[25px] overflow-hidden bg-black">
                 <img src={video.backdropUrl} alt={video.title} className="w-full h-full object-cover" draggable={false} />
                 
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90" />
 
                 <div className="absolute bottom-0 inset-x-0 p-5 md:p-6 flex items-end justify-between pointer-events-none">
-                  <h3 className="text-lg md:text-2xl font-bold text-white tracking-[0.15em] uppercase drop-shadow-lg leading-tight w-1/2">
+                  {/* DYNAMIC FONT APPLIED HERE */}
+                  <h3 className={`text-xl md:text-3xl text-white drop-shadow-lg leading-tight w-1/2 ${titleFont}`}>
                     {video.title}
                   </h3>
 
@@ -575,9 +588,9 @@ function DetailModal({ item, onClose, onPlay, creators }: { item: Video; onClose
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4" onClick={onClose}>
       <motion.div key={item.id} ref={modalContentRef} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.2 }} 
-        className="bg-gradient-to-b from-[#1a1a1a]/95 to-[#0a0a0a]/95 backdrop-blur-[40px] backdrop-saturate-[180%] shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.2)] rounded-3xl relative w-full max-w-4xl overflow-y-auto border-none" 
+        className="bg-[#141414] shadow-2xl rounded-lg relative w-full max-w-4xl overflow-y-auto" 
         style={{ maxHeight: "90dvh" }} onClick={(e) => e.stopPropagation()}>
-        <div className="relative h-[260px] md:h-[420px] w-full overflow-hidden rounded-t-3xl">
+        <div className="relative h-[260px] md:h-[420px] w-full overflow-hidden">
           <img src={item.backdropUrl} alt={item.title} className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${previewReady ? "opacity-0" : "opacity-100"}`} />
           {videoSrc && (
             <>
@@ -787,7 +800,8 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
         </button>
       </div>
 
-      <div className="bg-gradient-to-b from-white/10 to-white/[0.02] backdrop-blur-[40px] backdrop-saturate-[180%] backdrop-brightness-[1.2] rounded-3xl overflow-hidden flex flex-col shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.3),inset_0_-1px_1px_rgba(255,255,255,0.1)] border-none">
+      {/* REVERTED TO NORMAL SOLID GREY CARD */}
+      <div className="bg-[#1c1c1e] rounded-2xl overflow-hidden flex flex-col shadow-lg border border-white/5">
         
         <div 
           className="relative w-full aspect-video bg-black overflow-hidden cursor-pointer" 
@@ -871,7 +885,7 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
         </div>
 
         <div className="px-4 pt-3 pb-4">
-          <div className="inline-flex items-center bg-white/10 backdrop-blur-md rounded-full px-3 py-1 mb-3 border border-white/10">
+          <div className="inline-flex items-center bg-[#2c2c2e] rounded-full px-3 py-1 mb-3">
             <span className="text-[12px] font-semibold text-white tracking-wide">{video.category ? video.category.toLowerCase() : 'category'}</span>
           </div>
           
