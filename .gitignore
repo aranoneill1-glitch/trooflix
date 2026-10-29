@@ -36,7 +36,18 @@ yarn-error.log*
 # vercel
 .vercel
 
+# wrangler (local Cloudflare dev-emulator state — do not commit)
+.wrangler
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
 ios/
+
+# local audit / recon dumps (never commit)
+recon_output.txt
+morning_output.txt
+morning_cleanup.txt
+homepage_creators.txt
+comments_source.txt
+*_output.txt
