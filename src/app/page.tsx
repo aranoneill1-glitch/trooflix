@@ -303,7 +303,7 @@ export default function Home() {
 
             {loaded && !filtered && !showingFiltered && (
               <>
-                {/* 1. TRUTH HEADLINE (REVERTED TO BALANCED SIZE) */}
+                {/* 1. TRUTH HEADLINE */}
                 {!showingFiltered && heroPool.length > 0 && (
                   <div className="w-full pt-2 pb-4 px-4 md:px-12 max-w-6xl mx-auto flex flex-col">
                     <div>
@@ -444,12 +444,14 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
               key={video.id}
               drag={isActive ? "x" : false}
               dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={0.2}
+              dragElastic={0.15} // Tightened elastic for more control
+              dragMomentum={false} // Prevents the "flick" from overshooting
               onDragStart={() => setIsDragging(true)}
               onDragEnd={(e, { offset: dragOffset, velocity }) => {
                 setIsDragging(false);
                 const swipe = dragOffset.x;
                 const power = velocity.x;
+                // Ultra-sensitive thresholds
                 if (swipe < -20 || power < -300) {
                   setActiveIndex((activeIndex + 1) % videos.length);
                 } else if (swipe > 20 || power > 300) {
@@ -472,11 +474,13 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
                 zIndex: 10 - Math.abs(offset),
                 opacity: 1
               }}
-              transition={{ type: "spring", stiffness: 260, damping: 28, mass: 1 }}
+              // Fine-tuned Apple-style spring physics
+              transition={{ type: "spring", stiffness: 220, damping: 28, mass: 1, restDelta: 0.001 }}
               className="absolute w-[75%] md:w-[45%] max-w-[420px] aspect-[3/4] rounded-[26px] p-[1px] cursor-pointer bg-gradient-to-b from-white/30 to-white/[0.05] shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.4)]"
               style={{ 
                 touchAction: 'pan-y',
                 transformStyle: "preserve-3d",
+                willChange: "transform", // Forces GPU hardware acceleration
               }}
             >
               <div className="relative w-full h-full rounded-[25px] overflow-hidden bg-black">
