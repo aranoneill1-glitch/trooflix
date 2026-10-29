@@ -275,12 +275,14 @@ export default function Home() {
 
       {loaded && (
         <>
-          {!showingFiltered && hero && (
-            <AnimatePresence mode="wait">
-              <motion.div key={hero.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.8 }} className="w-full">
-                <Hero video={hero} onPlay={() => handleInstantPlay(hero)} onMore={() => setSelected(hero)} />
-              </motion.div>
-            </AnimatePresence>
+          {!showingFiltered && heroPool.length > 0 && (
+            <CarouselHero 
+              videos={heroPool} 
+              activeIndex={heroIndex} 
+              setActiveIndex={setHeroIndex} 
+              onPlay={handleInstantPlay}
+              onMore={(v) => setSelected(v)}
+            />
           )}
           {showingFiltered && <div className="h-20 md:h-24" />}
 
@@ -299,7 +301,6 @@ export default function Home() {
 
             {loaded && !filtered && !showingFiltered && (
               <>
-                {/* Trending Creators */}
                 {creators && creators.length > 0 && (
                   <div className="mt-6">
                     <div className="flex items-end justify-between px-4 md:px-12 mb-6 mt-8">
@@ -328,7 +329,6 @@ export default function Home() {
                   </div>
                 )}
 
-                {/* Video Cards Row */}
                 <div className="mt-2 mb-8">
                   <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide px-4 md:px-12 pb-4">
                     {videos.slice(1, 11).map((v: any) => {
@@ -357,7 +357,6 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* What's going on today (Feed) */}
                 <div className="mt-8 pb-32">
                   <div className="px-4 md:px-12 mb-6 mt-4">
                     <p className="text-[10px] md:text-xs tracking-[0.4em] text-white/50 font-semibold mb-1">
@@ -392,15 +391,9 @@ export default function Home() {
         <AppleVideoPlayer
           src={playing.videoUrl ?? playing.bitchuteUrl ?? ""}
           title={playing.title}
-          creatorName={creators.find((c: any) => c.id === playing.creatorId)?.name}
-          creatorPhoto={creators.find((c: any) => c.id === playing.creatorId)?.photoUrl}
-          poster={playing.posterUrl || playing.backdropUrl}
+          poster={playing.posterUrl}
           textOverlays={playing?.textOverlays}
           chapters={playing.chapters || []}
-          feedVideos={videos.map((v: any) => ({
-            ...v,
-            creator: creators.find((c: any) => c.id === v.creatorId)
-          }))}
           onClose={() => setPlaying(null)}
         />
       )}
@@ -411,49 +404,75 @@ export default function Home() {
   );
 }
 
-/* ============ HERO ============ */
-function Hero({ video, onPlay, onMore }: { video: Video; onPlay: () => void; onMore: () => void }) {
+/* ============ 3D CAROUSEL HERO ============ */
+function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { videos: Video[], activeIndex: number, setActiveIndex: (i: number) => void, onPlay: (v: Video) => void, onMore: (v: Video) => void }) {
   return (
-    <section className="relative h-[40vh] md:h-[65vh] w-full">
-      <img src={video.backdropUrl} alt={video.title} className="absolute inset-0 w-full h-full object-cover" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/20 to-transparent" />
-      <div className="relative z-10 flex flex-col justify-center h-full px-4 md:px-12 max-w-2xl pt-20 md:pt-24 pb-0">
-        <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-xs md:text-sm tracking-[0.3em] font-extrabold mb-3"><span className="text-white">TROOFLIX</span> <span className="text-red-600">PRESENTS</span></motion.p>
-        <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-4xl md:text-6xl lg:text-7xl font-black leading-[1.05] mb-4 tracking-tight">{video.title}</motion.h1>
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="flex items-center gap-3 text-sm mb-4 flex-wrap">
-          <span className="text-white/70">{video.year}</span><span className="border border-white/40 px-1.5 py-0.5 text-xs">{video.rating}</span><span className="text-white/70">{video.type}</span>
-        </motion.div>
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="flex gap-3">
-          <button onClick={onPlay} className="flex items-center gap-2 bg-white/20 backdrop-blur-xl border border-white/30 text-white font-bold px-6 md:px-8 py-2.5 md:py-3 rounded-xl shadow-lg hover:bg-white/30 transition-all active:scale-95"><Play size={20} fill="currentColor" /> Play</button>
-          <button onClick={onMore} className="flex items-center gap-2 bg-black/40 backdrop-blur-xl border border-white/20 text-white font-semibold px-5 md:px-7 py-2.5 md:py-3 rounded-xl shadow-lg hover:bg-black/60 transition-all active:scale-95"><Info size={20} /> More Info</button>
-        </motion.div>
+    <section className="relative w-full h-[50vh] md:h-[65vh] flex items-center justify-center overflow-hidden pt-12">
+      <div className="relative w-full max-w-4xl h-full flex items-center justify-center perspective-[1000px]">
+        {videos.map((video, i) => {
+          const isActive = i === activeIndex;
+          const offset = i - activeIndex;
+          
+          // Only show cards near the active one to keep performance good
+          if (Math.abs(offset) > 2) return null;
+
+          return (
+            <motion.div
+              key={video.id}
+              onClick={() => {
+                if (isActive) {
+                  onMore(video);
+                } else {
+                  setActiveIndex(i);
+                }
+              }}
+              animate={{
+                x: `${offset * 60}%`,
+                scale: isActive ? 1 : 0.85,
+                rotateY: offset * -15,
+                zIndex: isActive ? 10 : 1 - Math.abs(offset),
+                opacity: Math.abs(offset) > 1 ? 0 : 1
+              }}
+              transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
+              className="absolute w-[80%] md:w-[60%] aspect-[4/5] md:aspect-video rounded-3xl overflow-hidden shadow-2xl cursor-pointer border border-white/10"
+            >
+              <img src={video.backdropUrl} alt={video.title} className="w-full h-full object-cover" />
+              
+              {/* Gradient Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/30" />
+
+              {/* Top Right Pill (Index) */}
+              <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-white border border-white/10">
+                {i + 1}/{videos.length}
+              </div>
+
+              {/* Bottom Content */}
+              <div className="absolute bottom-0 inset-x-0 p-6 md:p-8 flex flex-col items-center text-center">
+                {/* Progress Line */}
+                <div className="w-16 h-[3px] bg-white/30 rounded-full mb-4 overflow-hidden">
+                  <div className="h-full bg-white w-full" />
+                </div>
+                
+                <h3 className="text-xl md:text-3xl font-bold text-white mb-2 leading-tight">
+                  {video.title}
+                </h3>
+                <p className="text-sm text-white/60 line-clamp-2 max-w-lg">
+                  {video.description || "No description available."}
+                </p>
+              </div>
+            </motion.div>
+          );
+        })}
       </div>
+
+      {/* Left / Right arrows for desktop */}
+      <button onClick={() => setActiveIndex((activeIndex - 1 + videos.length) % videos.length)} className="hidden md:flex absolute left-8 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/80 backdrop-blur-md rounded-full items-center justify-center text-white border border-white/20 transition z-50">
+        <ChevronLeft size={24} />
+      </button>
+      <button onClick={() => setActiveIndex((activeIndex + 1) % videos.length)} className="hidden md:flex absolute right-8 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/80 backdrop-blur-md rounded-full items-center justify-center text-white border border-white/20 transition z-50">
+        <ChevronRight size={24} />
+      </button>
     </section>
-  );
-}
-
-/* ============ ROW ============ */
-function Row({ title, items, onSelect, onPlay, showCreator, creators }: { title: string; items: Video[]; onSelect: (v: Video) => void; onPlay: (v: Video) => void; showCreator?: boolean; creators?: any[] }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [hovered, setHovered] = useState<number | null>(null);
-  const scroll = (dir: "left" | "right") => { if (!ref.current) return; const amount = ref.current.clientWidth * 0.8; ref.current.scrollBy({ left: dir === "left" ? -amount : amount, behavior: "smooth" }); };
-
-  return (
-    <div className="relative group/row">
-      <h2 className="text-lg md:text-xl font-bold px-4 md:px-12 mb-3">{title}</h2>
-      <div className="relative">
-        <button onClick={() => scroll("left")} className="hidden md:flex absolute left-0 top-0 bottom-0 z-30 w-12 bg-black/60 hover:bg-black/80 opacity-0 group-hover/row:opacity-100 transition items-center justify-center"><ChevronLeft size={32} /></button>
-        <div ref={ref} className="flex gap-1.5 md:gap-2 overflow-x-auto scrollbar-hide px-4 md:px-12 pb-6 scroll-smooth">
-          {items.map((item) => (
-            <Card key={item.id} item={item} hovered={hovered === item.id} onHover={() => setHovered(item.id)} onLeave={() => setHovered(null)} onSelect={onSelect} onPlay={onPlay} showCreator={showCreator}
-              creator={showCreator && creators && item.creatorId ? creators.find((c: any) => c.id === item.creatorId) || null : null}
-            />
-          ))}
-        </div>
-        <button onClick={() => scroll("right")} className="hidden md:flex absolute right-0 top-0 bottom-0 z-30 w-12 bg-black/60 hover:bg-black/80 opacity-0 group-hover/row:opacity-100 transition items-center justify-center"><ChevronRight size={32} /></button>
-      </div>
-    </div>
   );
 }
 
@@ -714,7 +733,6 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
   return (
     <div ref={containerRef} className="w-full relative flex flex-col group/feed">
       
-      {/* HEADER */}
       <div className="flex items-center justify-between px-1 pb-3 relative z-20">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full overflow-hidden bg-[#1c1c1e] flex-shrink-0 flex items-center justify-center border border-white/10">
@@ -741,10 +759,8 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
         </button>
       </div>
 
-      {/* THE CARD */}
       <div className="bg-[#1c1c1e] rounded-2xl overflow-hidden flex flex-col shadow-lg border border-white/5">
         
-        {/* VIDEO */}
         <div 
           className="relative w-full aspect-video bg-black overflow-hidden cursor-pointer" 
           onClick={() => { handleInteraction(); togglePlay(); }}
