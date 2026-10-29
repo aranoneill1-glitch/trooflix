@@ -367,7 +367,7 @@ export default function Home() {
                       Don't Miss A <span className="text-red-600">Thing</span>
                     </h2>
                   </div>
-                  <div className="flex flex-col gap-6 md:gap-10">
+                  <div className="flex flex-col gap-6 md:gap-8 px-4 md:px-12">
                     {[...videos].sort((a: any, b: any) => {
                       const at = a.createdAt ? new Date(a.createdAt).getTime() : a.id;
                       const bt = b.createdAt ? new Date(b.createdAt).getTime() : b.id;
@@ -705,43 +705,45 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
   if (!videoSrc) return null;
 
   return (
-    <div ref={containerRef} className="w-full relative flex flex-col group/feed pb-4 border-b border-white/10">
+    <div ref={containerRef} className="w-full relative flex flex-col group/feed max-w-2xl mx-auto">
       
-      {/* HEADER (Avatar, Name, Dots) */}
-      <div className="flex items-center justify-between px-4 py-3 relative z-20">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full overflow-hidden bg-[#1c1c1e] flex-shrink-0 flex items-center justify-center border border-white/10">
-            {creator?.photoUrl ? (
-              <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" />
-            ) : (
-              <span className="font-bold text-sm text-white">{creator?.name?.[0] || 'TF'}</span>
-            )}
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <h2 className="text-[15px] font-bold text-white leading-tight">
-                {creator?.name || 'Creator'}
-              </h2>
-              {creator?.isVerified && <CheckCircle2 size={16} className="text-[#1ed760]" fill="currentColor" />}
+      {/* THE CARD */}
+      <div className="bg-[#1c1c1e] rounded-2xl overflow-hidden flex flex-col shadow-lg border border-white/5">
+        
+        {/* HEADER */}
+        <div className="flex items-center justify-between px-4 py-3 relative z-20">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full overflow-hidden bg-[#2c2c2e] flex-shrink-0 flex items-center justify-center">
+              {creator?.photoUrl ? (
+                <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <span className="font-bold text-sm text-white">{creator?.name?.[0] || 'TF'}</span>
+              )}
             </div>
-            <p className="text-[13px] text-white/60">
-              {video.type || 'Documentary'} • {video.createdAt ? new Date(video.createdAt).toLocaleDateString() : 'Just now'}
-            </p>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <h2 className="text-[15px] font-bold text-white leading-tight">
+                  {creator?.name || 'Creator'}
+                </h2>
+                {creator?.isVerified && <CheckCircle2 size={16} className="text-[#1ed760]" fill="currentColor" />}
+              </div>
+              <p className="text-[13px] text-white/60">
+                {video.type || 'Documentary'} • {video.createdAt ? new Date(video.createdAt).toLocaleDateString() : 'Just now'}
+              </p>
+            </div>
           </div>
+          <button onClick={onMore} className="p-1 text-white/60 hover:text-white transition">
+            <MoreVertical size={20} />
+          </button>
         </div>
-        <button onClick={onMore} className="p-1 text-white/60 hover:text-white transition">
-          <MoreVertical size={20} />
-        </button>
-      </div>
 
-      {/* VIDEO CONTAINER */}
-      <div 
-        className="relative w-full aspect-[4/5] sm:aspect-video bg-[#1c1c1e] overflow-hidden cursor-pointer mx-auto px-2 sm:px-4" 
-        onClick={() => { handleInteraction(); togglePlay(); }}
-        onMouseMove={handleInteraction}
-        onTouchStart={handleInteraction}
-      >
-        <div className="relative w-full h-full rounded-xl overflow-hidden">
+        {/* VIDEO (Fills frame perfectly, no internal padding) */}
+        <div 
+          className="relative w-full aspect-video bg-black overflow-hidden cursor-pointer" 
+          onClick={() => { handleInteraction(); togglePlay(); }}
+          onMouseMove={handleInteraction}
+          onTouchStart={handleInteraction}
+        >
           <video
             ref={videoRef}
             src={videoSrc}
@@ -768,7 +770,7 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
             {timeLeft || '0:00'}
           </div>
 
-          {/* Center Play Button (Only visible when paused) */}
+          {/* Center Play Button */}
           {!isPlaying && (
             <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
               <div className="w-16 h-16 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-xl">
@@ -777,7 +779,7 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
             </div>
           )}
           
-          {/* Right Side Controls (Maximize, Mute) */}
+          {/* Right Controls */}
           <div className={`absolute top-1/2 -translate-y-1/2 right-3 flex flex-col gap-3 z-20 transition-opacity duration-500 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
             <button 
               onClick={(e) => { e.stopPropagation(); onPlay(); }}
@@ -794,51 +796,9 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
             </button>
           </div>
 
-          {/* Bottom Overlays */}
-          <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black via-black/80 to-transparent pt-20 pb-2">
-            
-            <div className="px-3">
-              {/* Pill */}
-              <div className="inline-flex items-center bg-white/20 backdrop-blur-md rounded-full px-3 py-1 mb-2">
-                <span className="text-[11px] font-bold text-white tracking-wide">{video.category ? video.category.toLowerCase() : 'category'}</span>
-              </div>
-              
-              {/* Title */}
-              <h3 className="text-[22px] font-bold text-white leading-tight mb-1 line-clamp-2 drop-shadow-lg">
-                {video.title}
-              </h3>
-              
-              {/* Description */}
-              <p className="text-[14px] text-white/80 line-clamp-2 mb-3 drop-shadow-md">
-                {video.description || 'No description available.'}
-              </p>
-            </div>
-
-            {/* Action Bar */}
-            <div className="flex items-center justify-between px-3 mt-1 pb-2">
-              <div className="flex items-center gap-5">
-                <button className="flex items-center gap-1.5 text-white hover:text-white/80 transition">
-                  <ThumbsUp size={20} />
-                  <span className="text-[14px] font-medium">Like</span>
-                </button>
-                <button onClick={onMore} className="flex items-center gap-1.5 text-white hover:text-white/80 transition">
-                  <MessageCircle size={20} />
-                  <span className="text-[14px] font-medium">Comment</span>
-                </button>
-                <button className="flex items-center gap-1.5 text-white hover:text-white/80 transition">
-                  <Share2 size={20} />
-                  <span className="text-[14px] font-medium">Share</span>
-                </button>
-              </div>
-              <button className="text-white hover:text-white/80 transition">
-                <Bookmark size={20} />
-              </button>
-            </div>
-          </div>
-
           {/* PROGRESS BAR (Overlaid on bottom of video) */}
           <div 
-            className="absolute bottom-0 inset-x-0 h-1 bg-transparent z-30 cursor-pointer group/progress hover:bg-white/20 transition-colors"
+            className="absolute bottom-0 inset-x-0 h-1.5 bg-transparent z-30 cursor-pointer group/progress hover:bg-white/20 transition-colors"
             style={{ touchAction: 'none' }}
           >
             <div 
@@ -850,18 +810,58 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
             >
               <div className="w-full h-full bg-transparent relative overflow-hidden">
                 <div 
-                  className="h-full bg-white" 
+                  className="h-full bg-[#E53945]" 
                   style={{ width: `${progress * 100}%` }}
                 />
               </div>
               
               <div 
-                className={`absolute h-3 w-3 bg-white rounded-full shadow-md transition-opacity pointer-events-none ${isSeeking ? 'opacity-100 scale-125' : 'opacity-0 group-hover/progress:opacity-100'}`}
+                className={`absolute h-3 w-3 bg-[#E53945] rounded-full shadow-md transition-opacity pointer-events-none ${isSeeking ? 'opacity-100 scale-125' : 'opacity-0 group-hover/progress:opacity-100'}`}
                 style={{ left: `calc(${progress * 100}% - 6px)` }}
               />
             </div>
           </div>
         </div>
+
+        {/* GREY BOTTOM SECTION (Text & Actions) */}
+        <div className="px-4 pt-3 pb-4">
+          {/* Pill */}
+          <div className="inline-flex items-center bg-[#2c2c2e] rounded-full px-3 py-1 mb-3">
+            <span className="text-[12px] font-semibold text-white tracking-wide">{video.category ? video.category.toLowerCase() : 'category'}</span>
+          </div>
+          
+          {/* Title */}
+          <h3 className="text-[22px] font-bold text-white leading-tight mb-1 line-clamp-2">
+            {video.title}
+          </h3>
+          
+          {/* Description */}
+          <p className="text-[15px] text-white/60 line-clamp-3 mb-4">
+            {video.description || 'No description available.'}
+          </p>
+
+          {/* Action Bar */}
+          <div className="flex items-center justify-between mt-2">
+            <div className="flex items-center gap-5">
+              <button className="flex items-center gap-2 text-white/90 hover:text-white transition">
+                <ThumbsUp size={20} />
+                <span className="text-[14px] font-semibold">Like</span>
+              </button>
+              <button onClick={onMore} className="flex items-center gap-2 text-white/90 hover:text-white transition">
+                <MessageCircle size={20} />
+                <span className="text-[14px] font-semibold">Comment</span>
+              </button>
+              <button className="flex items-center gap-2 text-white/90 hover:text-white transition">
+                <Share2 size={20} />
+                <span className="text-[14px] font-semibold">Share</span>
+              </button>
+            </div>
+            <button className="text-white/90 hover:text-white transition">
+              <Bookmark size={22} />
+            </button>
+          </div>
+        </div>
+
       </div>
     </div>
   );
