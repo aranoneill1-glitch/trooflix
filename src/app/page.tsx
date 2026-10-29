@@ -404,22 +404,39 @@ export default function Home() {
   );
 }
 
-/* ============ 3D CAROUSEL HERO ============ */
+/* ============ 3D APPLE COVER FLOW HERO ============ */
 function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { videos: Video[], activeIndex: number, setActiveIndex: (i: number) => void, onPlay: (v: Video) => void, onMore: (v: Video) => void }) {
+  const [isDragging, setIsDragging] = useState(false);
+
   return (
-    <section className="relative w-full h-[50vh] md:h-[65vh] flex items-center justify-center overflow-hidden pt-12">
-      <div className="relative w-full max-w-4xl h-full flex items-center justify-center perspective-[1000px]">
+    <section className="relative w-full h-[50vh] md:h-[65vh] flex items-center justify-center overflow-hidden pt-12 bg-black">
+      <div className="relative w-full max-w-6xl h-full flex items-center justify-center perspective-[1200px]">
         {videos.map((video, i) => {
           const isActive = i === activeIndex;
           const offset = i - activeIndex;
           
-          // Only show cards near the active one to keep performance good
-          if (Math.abs(offset) > 2) return null;
+          // Show 3 cards on each side for the full Cover Flow effect
+          if (Math.abs(offset) > 3) return null;
 
           return (
             <motion.div
               key={video.id}
+              drag={isActive ? "x" : false}
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.2}
+              onDragStart={() => setIsDragging(true)}
+              onDragEnd={(e, { offset: dragOffset, velocity }) => {
+                setIsDragging(false);
+                const swipe = dragOffset.x;
+                const power = velocity.x;
+                if (swipe < -20 || power < -300) {
+                  setActiveIndex((activeIndex + 1) % videos.length);
+                } else if (swipe > 20 || power > 300) {
+                  setActiveIndex((activeIndex - 1 + videos.length) % videos.length);
+                }
+              }}
               onClick={() => {
+                if (isDragging) return;
                 if (isActive) {
                   onMore(video);
                 } else {
@@ -427,49 +444,60 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
                 }
               }}
               animate={{
-                x: `${offset * 60}%`,
-                scale: isActive ? 1 : 0.85,
-                rotateY: offset * -15,
-                zIndex: isActive ? 10 : 1 - Math.abs(offset),
-                opacity: Math.abs(offset) > 1 ? 0 : 1
+                // Spread the cards out further to the sides
+                x: `${offset * 55}%`,
+                scale: isActive ? 1 : 0.75,
+                // Deep rotation on the Y axis for the 3D cover flow look
+                rotateY: offset * -35,
+                // Push side cards slightly back in 3D space
+                z: isActive ? 0 : -100 - Math.abs(offset) * 50,
+                zIndex: 10 - Math.abs(offset),
+                // Keep them fully visible instead of fading out
+                opacity: 1
               }}
-              transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
-              className="absolute w-[80%] md:w-[60%] aspect-[4/5] md:aspect-video rounded-3xl overflow-hidden shadow-2xl cursor-pointer border border-white/10"
+              transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
+              className="absolute w-[70%] md:w-[50%] aspect-square rounded-xl overflow-hidden shadow-2xl cursor-pointer border border-white/20 bg-black"
+              style={{ 
+                touchAction: 'pan-y',
+                transformStyle: "preserve-3d",
+                // Add the glossy reflection effect
+                boxShadow: isActive ? "0 20px 50px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.2)" : "0 10px 30px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.1)"
+              }}
             >
-              <img src={video.backdropUrl} alt={video.title} className="w-full h-full object-cover" />
+              <img src={video.backdropUrl} alt={video.title} className="w-full h-full object-cover" draggable={false} />
               
-              {/* Gradient Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/30" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-80" />
 
-              {/* Top Right Pill (Index) */}
-              <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-white border border-white/10">
-                {i + 1}/{videos.length}
-              </div>
-
-              {/* Bottom Content */}
-              <div className="absolute bottom-0 inset-x-0 p-6 md:p-8 flex flex-col items-center text-center">
-                {/* Progress Line */}
-                <div className="w-16 h-[3px] bg-white/30 rounded-full mb-4 overflow-hidden">
-                  <div className="h-full bg-white w-full" />
-                </div>
-                
-                <h3 className="text-xl md:text-3xl font-bold text-white mb-2 leading-tight">
+              {/* Text Overlay at the bottom (like the Mary J Blige cover) */}
+              <div className="absolute bottom-0 inset-x-0 p-6 flex flex-col items-center text-center pointer-events-none bg-gradient-to-t from-black/90 to-transparent pt-12">
+                <h3 className="text-lg md:text-xl font-bold text-white mb-1 leading-tight line-clamp-2">
                   {video.title}
                 </h3>
-                <p className="text-sm text-white/60 line-clamp-2 max-w-lg">
-                  {video.description || "No description available."}
+                <p className="text-sm text-white/80 line-clamp-1">
+                  {video.category || "Documentary"}
                 </p>
               </div>
+
+              {/* The 'i' info button in the bottom right corner (Apple style) */}
+              <div className="absolute bottom-4 right-4 w-6 h-6 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center pointer-events-none">
+                <span className="text-white text-xs font-serif italic">i</span>
+              </div>
+
+              {/* Top Left Pill (Only show on active) */}
+              {isActive && (
+                <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-white border border-white/10">
+                  {i + 1}/{videos.length}
+                </div>
+              )}
             </motion.div>
           );
         })}
       </div>
 
-      {/* Left / Right arrows for desktop */}
-      <button onClick={() => setActiveIndex((activeIndex - 1 + videos.length) % videos.length)} className="hidden md:flex absolute left-8 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/80 backdrop-blur-md rounded-full items-center justify-center text-white border border-white/20 transition z-50">
+      <button onClick={() => setActiveIndex((activeIndex - 1 + videos.length) % videos.length)} className="hidden md:flex absolute left-4 lg:left-12 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/80 backdrop-blur-md rounded-full items-center justify-center text-white border border-white/20 transition z-50">
         <ChevronLeft size={24} />
       </button>
-      <button onClick={() => setActiveIndex((activeIndex + 1) % videos.length)} className="hidden md:flex absolute right-8 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/80 backdrop-blur-md rounded-full items-center justify-center text-white border border-white/20 transition z-50">
+      <button onClick={() => setActiveIndex((activeIndex + 1) % videos.length)} className="hidden md:flex absolute right-4 lg:right-12 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/80 backdrop-blur-md rounded-full items-center justify-center text-white border border-white/20 transition z-50">
         <ChevronRight size={24} />
       </button>
     </section>
