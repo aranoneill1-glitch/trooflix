@@ -409,8 +409,9 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
   const [isDragging, setIsDragging] = useState(false);
 
   return (
-    <section className="relative w-full h-[50vh] md:h-[65vh] flex items-center justify-center overflow-hidden pt-12 bg-black">
-      <div className="relative w-full max-w-6xl h-full flex items-center justify-center perspective-[1200px]">
+    <section className="relative w-full h-[65vh] md:h-[80vh] flex items-center justify-start overflow-hidden pt-12 bg-black">
+      {/* Shift the whole container left, so the active card sits on the left */}
+      <div className="relative w-full max-w-6xl h-full flex items-center justify-start perspective-[1200px] ml-[-10%] md:ml-0 pl-4 md:pl-12">
         {videos.map((video, i) => {
           const isActive = i === activeIndex;
           const offset = i - activeIndex;
@@ -443,7 +444,7 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
                 }
               }}
               animate={{
-                x: `${offset * 55}%`,
+                x: `${offset * 60}%`,
                 scale: isActive ? 1 : 0.75,
                 rotateY: offset * -35,
                 z: isActive ? 0 : -100 - Math.abs(offset) * 50,
@@ -451,7 +452,8 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
                 opacity: 1
               }}
               transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
-              className="absolute w-[70%] md:w-[50%] aspect-square rounded-xl overflow-hidden shadow-2xl cursor-pointer border border-white/20 bg-black"
+              // Aspect ratio changed to portrait (taller)
+              className="absolute w-[65%] md:w-[45%] aspect-[3/4] md:aspect-[4/5] rounded-2xl overflow-hidden shadow-2xl cursor-pointer border border-white/20 bg-black"
               style={{ 
                 touchAction: 'pan-y',
                 transformStyle: "preserve-3d",
@@ -460,30 +462,31 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
             >
               <img src={video.backdropUrl} alt={video.title} className="w-full h-full object-cover" draggable={false} />
               
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-80" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent opacity-90" />
 
-              <div className="absolute bottom-0 inset-x-0 p-6 flex flex-col items-center text-center pointer-events-none bg-gradient-to-t from-black/90 to-transparent pt-12">
-                <h3 className="text-lg md:text-xl font-bold text-white mb-1 leading-tight line-clamp-2">
+              {/* Bottom Content */}
+              <div className="absolute bottom-0 inset-x-0 p-5 md:p-8 flex flex-col items-start text-left pointer-events-none bg-gradient-to-t from-black/90 to-transparent pt-16">
+                <h3 className="text-xl md:text-3xl font-bold text-white mb-1 leading-tight line-clamp-2">
                   {video.title}
                 </h3>
-                <p className="text-sm text-white/80 line-clamp-1 mb-4">
-                  {video.category || "Documentary"}
+                <p className="text-sm md:text-base text-white/70 line-clamp-2 mb-4">
+                  {video.description || "Documentary"}
                 </p>
 
-                {/* Glass Pills (Only show on active) */}
+                {/* Apple Glass Pills (Bottom Left) */}
                 {isActive && (
-                  <div className="flex items-center gap-3 pointer-events-auto mt-2">
+                  <div className="flex items-center gap-3 pointer-events-auto">
                     <button 
                       onClick={(e) => { e.stopPropagation(); onPlay(video); }}
-                      className="flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/20 text-white px-5 py-2 rounded-full font-semibold transition"
+                      className="flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-xl border border-white/20 text-white px-5 py-2.5 rounded-full font-semibold transition shadow-lg"
                     >
-                      <Play size={16} fill="currentColor" /> Play
+                      <Play size={18} fill="currentColor" /> Play
                     </button>
                     <button 
-                      onClick={(e) => { e.stopPropagation(); /* Add to list logic */ }}
-                      className="flex items-center gap-2 bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/10 text-white px-5 py-2 rounded-full font-semibold transition"
+                      onClick={(e) => { e.stopPropagation(); }}
+                      className="flex items-center gap-2 bg-black/30 hover:bg-black/50 backdrop-blur-xl border border-white/10 text-white px-5 py-2.5 rounded-full font-semibold transition shadow-lg"
                     >
-                      <Plus size={16} /> My List
+                      <Plus size={18} /> My List
                     </button>
                   </div>
                 )}
@@ -493,10 +496,10 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
         })}
       </div>
 
-      <button onClick={() => setActiveIndex((activeIndex - 1 + videos.length) % videos.length)} className="hidden md:flex absolute left-4 lg:left-12 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/80 backdrop-blur-md rounded-full items-center justify-center text-white border border-white/20 transition z-50">
+      <button onClick={() => setActiveIndex((activeIndex - 1 + videos.length) % videos.length)} className="hidden md:flex absolute left-4 lg:left-8 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/80 backdrop-blur-md rounded-full items-center justify-center text-white border border-white/20 transition z-50">
         <ChevronLeft size={24} />
       </button>
-      <button onClick={() => setActiveIndex((activeIndex + 1) % videos.length)} className="hidden md:flex absolute right-4 lg:right-12 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/80 backdrop-blur-md rounded-full items-center justify-center text-white border border-white/20 transition z-50">
+      <button onClick={() => setActiveIndex((activeIndex + 1) % videos.length)} className="hidden md:flex absolute right-4 lg:right-8 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/80 backdrop-blur-md rounded-full items-center justify-center text-white border border-white/20 transition z-50">
         <ChevronRight size={24} />
       </button>
     </section>
