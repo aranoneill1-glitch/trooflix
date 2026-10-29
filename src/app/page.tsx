@@ -409,7 +409,7 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
   const [isDragging, setIsDragging] = useState(false);
 
   return (
-    <section className="relative w-full h-[55vh] md:h-[70vh] flex items-center justify-center overflow-hidden pt-12 bg-black">
+    <section className="relative w-full h-[75vh] md:h-[85vh] flex items-center justify-center overflow-hidden pt-8 bg-black">
       <div className="relative w-full max-w-6xl h-full flex items-center justify-center perspective-[1200px]">
         {videos.map((video, i) => {
           const isActive = i === activeIndex;
@@ -451,8 +451,8 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
                 opacity: 1
               }}
               transition={{ type: "spring", stiffness: 260, damping: 28, mass: 1 }}
-              // ADDED BORDER (LINE AROUND THE VIDEO)
-              className="absolute w-[65%] md:w-[45%] aspect-[3/4] md:aspect-[4/5] rounded-[24px] overflow-hidden cursor-pointer bg-black border border-white/20"
+              // TALLER CARDS (aspect-[9/16] on mobile, aspect-[2/3] on desktop)
+              className="absolute w-[75%] md:w-[50%] aspect-[9/16] md:aspect-[2/3] rounded-[24px] overflow-hidden cursor-pointer bg-black border border-white/20"
               style={{ 
                 touchAction: 'pan-y',
                 transformStyle: "preserve-3d",
@@ -463,7 +463,6 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
               
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent opacity-95" />
 
-              {/* CENTERED CONTENT */}
               <div className="absolute bottom-0 inset-x-0 p-6 flex flex-col items-center text-center pointer-events-none pt-20">
                 <h3 className="text-2xl md:text-3xl font-black text-white mb-2 leading-tight line-clamp-2 uppercase tracking-wide">
                   {video.title}
@@ -475,15 +474,12 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
                 {/* NETFLIX STYLE BUTTONS WITH APPLE GLASS */}
                 {isActive && (
                   <div className="flex flex-row items-center justify-center gap-3 w-full pointer-events-auto">
-                    {/* Solid White Play Button */}
                     <button 
                       onClick={(e) => { e.stopPropagation(); onPlay(video); }}
                       className="flex-1 flex items-center justify-center gap-2 bg-white text-black px-4 py-3 rounded-full font-bold text-base hover:bg-gray-200 transition active:scale-95 shadow-xl"
                     >
                       <Play size={20} fill="currentColor" /> Play Series
                     </button>
-                    
-                    {/* Apple Glass My List Button */}
                     <button 
                       onClick={(e) => { e.stopPropagation(); }}
                       className="flex-1 flex items-center justify-center gap-2 bg-white/20 backdrop-blur-[8px] backdrop-saturate-[180%] backdrop-brightness-[1.1] border border-white/30 text-white px-4 py-3 rounded-full font-bold text-base shadow-[0_8px_32px_rgba(0,0,0,0.25),inset_0_1px_1px_rgba(255,255,255,0.55)] hover:bg-white/30 transition active:scale-95"
