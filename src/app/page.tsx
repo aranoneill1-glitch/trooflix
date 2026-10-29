@@ -303,14 +303,14 @@ export default function Home() {
 
             {loaded && !filtered && !showingFiltered && (
               <>
-                {/* 1. TRUTH HEADLINE (ONLY RED TEXT IS BIGGER) */}
+                {/* 1. TRUTH HEADLINE (REVERTED TO BALANCED SIZE) */}
                 {!showingFiltered && heroPool.length > 0 && (
                   <div className="w-full pt-2 pb-4 px-4 md:px-12 max-w-6xl mx-auto flex flex-col">
                     <div>
-                      <p className="text-base md:text-xl tracking-[0.4em] text-[#E53945] font-semibold mb-1 uppercase">
+                      <p className="text-xs md:text-sm tracking-[0.4em] text-[#E53945] font-semibold mb-1 uppercase">
                         Truth Without Censorship
                       </p>
-                      <h2 className="text-3xl md:text-5xl font-black tracking-tight text-white">
+                      <h2 className="text-4xl md:text-6xl font-black tracking-tight text-white">
                         No ads. No filter. Just content.
                       </h2>
                     </div>
