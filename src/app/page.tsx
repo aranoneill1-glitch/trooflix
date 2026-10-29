@@ -415,7 +415,6 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
           const isActive = i === activeIndex;
           const offset = i - activeIndex;
           
-          // Show 3 cards on each side for the full Cover Flow effect
           if (Math.abs(offset) > 3) return null;
 
           return (
@@ -444,15 +443,11 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
                 }
               }}
               animate={{
-                // Spread the cards out further to the sides
                 x: `${offset * 55}%`,
                 scale: isActive ? 1 : 0.75,
-                // Deep rotation on the Y axis for the 3D cover flow look
                 rotateY: offset * -35,
-                // Push side cards slightly back in 3D space
                 z: isActive ? 0 : -100 - Math.abs(offset) * 50,
                 zIndex: 10 - Math.abs(offset),
-                // Keep them fully visible instead of fading out
                 opacity: 1
               }}
               transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
@@ -460,7 +455,6 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
               style={{ 
                 touchAction: 'pan-y',
                 transformStyle: "preserve-3d",
-                // Add the glossy reflection effect
                 boxShadow: isActive ? "0 20px 50px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.2)" : "0 10px 30px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.1)"
               }}
             >
@@ -468,27 +462,32 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
               
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-80" />
 
-              {/* Text Overlay at the bottom (like the Mary J Blige cover) */}
               <div className="absolute bottom-0 inset-x-0 p-6 flex flex-col items-center text-center pointer-events-none bg-gradient-to-t from-black/90 to-transparent pt-12">
                 <h3 className="text-lg md:text-xl font-bold text-white mb-1 leading-tight line-clamp-2">
                   {video.title}
                 </h3>
-                <p className="text-sm text-white/80 line-clamp-1">
+                <p className="text-sm text-white/80 line-clamp-1 mb-4">
                   {video.category || "Documentary"}
                 </p>
-              </div>
 
-              {/* The 'i' info button in the bottom right corner (Apple style) */}
-              <div className="absolute bottom-4 right-4 w-6 h-6 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center pointer-events-none">
-                <span className="text-white text-xs font-serif italic">i</span>
+                {/* Glass Pills (Only show on active) */}
+                {isActive && (
+                  <div className="flex items-center gap-3 pointer-events-auto mt-2">
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); onPlay(video); }}
+                      className="flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/20 text-white px-5 py-2 rounded-full font-semibold transition"
+                    >
+                      <Play size={16} fill="currentColor" /> Play
+                    </button>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); /* Add to list logic */ }}
+                      className="flex items-center gap-2 bg-black/40 hover:bg-black/60 backdrop-blur-md border border-white/10 text-white px-5 py-2 rounded-full font-semibold transition"
+                    >
+                      <Plus size={16} /> My List
+                    </button>
+                  </div>
+                )}
               </div>
-
-              {/* Top Left Pill (Only show on active) */}
-              {isActive && (
-                <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-white border border-white/10">
-                  {i + 1}/{videos.length}
-                </div>
-              )}
             </motion.div>
           );
         })}
