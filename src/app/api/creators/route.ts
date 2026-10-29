@@ -7,13 +7,14 @@ const supabaseAdmin = createServerClient(
   { auth: { autoRefreshToken: false, persistSession: false } }
 );
 
-// GET /api/creators — returns all users with tier='podcaster'
+// GET /api/creators — returns all users with tier='podcaster', excluding mock seed data
 export async function GET() {
   try {
     const { data, error } = await supabaseAdmin
       .from("profiles")
       .select("user_id, display_name, username, avatar_url, bio, tier, is_verified, updated_at")
       .eq("tier", "podcaster")
+      .not("username", "like", "mockcreator_%")
       .order("updated_at", { ascending: false });
 
     if (error) throw error;

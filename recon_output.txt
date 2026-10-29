@@ -1,0 +1,835 @@
+=== AGENTS.md ===
+# Trooflix AI Agent Rules
+
+## The Workflow (STRICT)
+1. **The Fix:** Provide a single bash block (usually `cat > file << 'EOF'`) to write or edit the code.
+2. **The Build:** Provide the build command *separately*: `npx tsc --noEmit 2>&1 | head -10 && npm run build 2>&1 | tail -6`. Wait for the user to paste the output.
+3. **The Push:** Only if the build is clean, provide the push command *separately*: `git add -A && git commit -m "..." && git push`.
+4. **NEVER combine the build and push.** They must be separate messages so the user can verify the build before deploying.
+5. **NEVER run `npx vercel --prod`** manually. GitHub pushes automatically trigger Vercel deployments.
+6. **NEVER use blind Python regex scripts** to edit complex JSX without asking the user to paste the exact code block first. Use `cat > file << 'EOF'` to overwrite files completely to avoid Zsh errors.
+
+## Project Overview
+- **Tech Stack:** Next.js 16, Supabase, Vercel KV, Cloudflare R2, Stripe, Capacitor (iOS), Tailwind CSS, Framer Motion.
+- **Status:** Phases 1-5 are complete. Includes: Trooflix Pass, Podcaster Tier, Creator Subs, Merch Shop, Watch-Time Pools, Admin Payouts, Creator Wallet, Open Book Transparency.
+- **UI Style:** Dark mode, Glassmorphism, premium Netflix-style shelves, floating bottom nav.
+- **iOS App:** Configured via Capacitor, points to live URL, uses Apple IAP (Stripe hidden on iOS).
+
+=== PROJECT_STATE.md ===
+# Trooflix — Project State & Blueprint
+
+## 🚀 Tech Stack
+- **Frontend:** Next.js 16 (App Router), React 19, Tailwind CSS, Framer Motion
+- **Backend:** Supabase (Auth & DB), Vercel KV (Video Data & Creators)
+- **Payments:** Stripe (Subscriptions & Merch)
+- **Storage:** Cloudflare R2 (Videos, Images, Avatars)
+- **Mobile:** Capacitor (iOS & Android APK for TV)
+
+## ✅ What We Have Built So Far
+
+### 1. The Video Player (Elite Edition)
+- Custom `AppleVideoPlayer` used everywhere (no more default browser players).
+- **Thumb-friendly UI:** Play, pause, rewind, and fast-forward are moved to the bottom of the screen.
+- **Instant Play:** Removed the 3-second `VideoIntro` loading screen. Clicking play from a modal goes straight to the video.
+- **Podcast Features:** Playback speed (1x, 1.5x, 2x), Sleep Timer (15/30/45 mins), and Chapters support.
+- **Background Audio:** Uses the Media Session API so audio keeps playing when the phone is locked.
+
+### 2. Creator Hub (Viewer Perspective)
+- **Cinematic Hero:** The page opens with a full-width hero banner of the creator's latest video, with text saying "[Creator Name] PRESENTS".
+- **Overlapping Header:** Avatar, Name, Bio, and Stats slide up to overlap the hero.
+- **4 Clean Tabs:** Home, Library, Store, Premium.
+- **Unified Store:** Merch and Books are combined into one beautiful store grid.
+- **Admin Hidden:** The `Edit Profile` and `Dashboard` buttons are hidden behind a small gear/3-dots menu for the owner only.
+
+### 3. Creator Studio (Creator Perspective)
+- **New Sidebar:** 4 clean sections (Dashboard, Content, Monetization, Settings).
+- **Dashboard:** Shows Total Views, Subscribers, Gross Revenue, and a "Creator Wallet" with a progress bar for the $15 Setup Fee recoupment.
+- **Content Management:** Upload flow supports Publish Now, Save as Draft, or Schedule for later.
+- **Delete Feature:** Restored the delete API and added a quick-delete Trash icon directly to the Studio Dashboard.
+- **RSS Feed:** Creators can copy their RSS link to submit to Apple Podcasts (auto-injects Trooflix branding into show notes).
+
+### 4. Notifications & Growth
+- **Push Notifications:** Working on Web (requires PWA install on iOS). Triggers for DMs, Likes, Comments, Follows, and Orders.
+- **Stripe:** Fully wired for subscriptions, merch, and creator payouts.
+- **Feed:** Currently open to everyone, but we decided to restrict it to Creators only.
+
+---
+
+## 🏗️ The Business Model (Agreed Upon)
+1. **Free Viewers:** Can watch content and like videos, but **cannot comment** (must buy Trooflix Pass to comment).
+2. **Trooflix Pass ($9.99/mo):** Unlocks commenting, community features, and platform-exclusive content.
+3. **Creator Premium (Set by Creator):** VIP content for superfans. Creator keeps 90%, Trooflix takes 10%.
+4. **The $15 Setup Fee:** No upfront cost for creators. Trooflix takes the first $15 a creator makes to cover hosting, then it's 90/10.
+
+---
+
+## 🚧 IMMEDIATE NEXT STEPS (The Blueprint)
+If the chat ends, start here:
+
+1. **Feed Restriction:** Only allow approved creators to post to the Feed. It becomes a "Trailer Funnel" for creators.
+2. **Card Badges:** Add visual badges to thumbnails (Green = Free, Red = TF Pass, Yellow = Premium) so viewers know what they are clicking.
+3. **Comment Lock:** Update `InlineComments.tsx` and `CommentDrawer.tsx` to lock the input box for users without a Trooflix Pass.
+
+---
+
+## 🛠️ STRICT WORKFLOW RULES FOR THE AI
+**You MUST follow this exact format for every single task. Do not deviate.**
+
+### 1. The Fix
+- Provide a single bash block (usually `cat > file << 'EOF'`) to write or edit the code.
+- If the file path has nested folders that might not exist, use `mkdir -p` first.
+
+### 2. The Build
+- Provide the build command *separately* on its own line:
+`npx tsc --noEmit 2>&1 | head -10 && npm run build 2>&1 | tail -6`
+- Wait for the user to paste the output. **Do not proceed to push until they confirm it is clean.**
+
+### 3. The Push
+- Only if the build is clean, provide the push command *separately*:
+`git add -A && git commit -m "..." && git push`
+- **NEVER combine the build and push.** They must be separate messages.
+- **NEVER run `npx vercel --prod`** manually. GitHub pushes automatically trigger Vercel deployments.
+
+### 4. The Testing List
+- Always provide a checklist (markdown checkboxes) of what the user needs to test on their device after the Vercel deployment succeeds.
+
+=== PROJECT_NOTES.md (first 100 lines) ===
+# Trooflix — Project Notes
+
+## Stack
+Next.js 16 · React 19 · Tailwind 3 · Supabase · Cloudflare R2 · Vercel KV · Vercel
+
+## Workflow
+1. bash command
+2. npm run build — must be clean
+3. git add . && git commit -m "..." && git push
+4. Wait ~2 min → Vercel deploys
+
+## Perf pass (2026-10-16)
+- src/lib/cache.ts — global caches: auth user, videos, creators, per-user profile
+- Every page uses getCachedUser() instead of supabase.auth.getUser()
+- 11 pages use getCachedVideos() / getCachedCreators() (60s TTL)
+- CacheWarmer component in root layout — preloads videos/creators on boot
+- next.config.ts: experimental.staleTimes { dynamic: 30, static: 180 }
+- MobileBottomNav: prefetchTab() on hover/touch
+- /api/upload: CacheControl public max-age=31536000 immutable
+- All 141 R2 objects already had cache headers (no backfill needed)
+
+## DM overhaul (2026-10-16)
+- Thread (/messages/[userId]): Instagram dark, red bubbles for you, grey for them
+- Composer: [📷] [Message… GIF] [Send] — safe-area bottom padding
+- Inbox (/messages): Instagram flat list, dark, 64px avatars, blue unread dot
+- All names display without @ prefix (search modal keeps @handle subline)
+
+## Feed (2026-10-16)
+- Fullscreen removed — tap toggles play/pause silently
+- Single source of truth: FeedPage's activeIndex drives isActive per card
+- No per-card IntersectionObservers (only 1 at FeedPage level)
+- Caption with "... more" expand on long descriptions
+- Neighbor preload was removed (was causing audio bleed + lag)
+- Mute button bottom-left
+
+## Public profiles
+- /u/[handle] — avatar, bio, stats, posts grid, follow, DM
+- UserFollowButton + FollowStats wired
+
+## Admin
+- Password in Vercel env: ADMIN_PASSWORD
+- Admin PWA: manifest-admin.json, admin-icon-*.png, apple-touch-icon
+- /admin/login (cookie: trooflix_admin)
+- Overview: grouped stats + action tiles
+
+## Known items
+- Search inline component (SearchResults) doesn't show verified badges — /search page does
+- Podcaster page: still works
+- Push notifications not wired
+- R2 backfill: not needed (all cached)
+- Native iOS: parked (Capacitor was orphaned, FeedFullscreenPlayer.tsx still on disk)
+
+## Backups on Desktop (do not delete until safe)
+- full-user-backup-*.json
+- auth-users-backup-*.json
+- creators-backup-*.json
+- videos-backup-*.json
+- videos-before-delete-*.json
+
+=== NEXT.md (first 100 lines) ===
+# Next session — start here
+
+## Immediate task
+None. The avatar upload bug is resolved.
+
+## What's done
+- Signup (email + @handle + password, no verification)
+- Login (email OR @handle)
+- DMs (inbox + thread, WhatsApp-style, 3s poll)
+- @handle system with live availability check
+- **Avatar upload fixed:** R2 env vars successfully synced to Vercel Production.
+- **Admin UI:** Moved "Wipe Feed" from the main dashboard to the sidebar footer.
+- **Project Map:** Created `PROJECT_MAP.md` (read this first for full repo context).
+
+## What's next
+- *[Insert next feature/bug here]*
+
+=== package.json ===
+{
+  "name": "my-platform",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1149.0",
+    "@aws-sdk/s3-request-presigner": "^3.1149.0",
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/cli": "^8.5.3",
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/ios": "^8.5.3",
+    "@capacitor/push-notifications": "^8.1.3",
+    "@capacitor/status-bar": "^8.0.4",
+    "@noriginmedia/norigin-spatial-navigation": "^3.3.0",
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.117.3",
+    "@vercel/kv": "^3.0.0",
+    "framer-motion": "^14.0.0",
+    "hls.js": "^1.7.3",
+    "lucide-react": "^1.54.0",
+    "next": "16.4.0",
+    "openai": "^7.43.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "stripe": "^23.0.0",
+    "web-push": "^3.6.7"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/web-push": "^3.6.4",
+    "autoprefixer": "^10.6.1",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.0",
+    "postcss": "^8.5.29",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5",
+    "wrangler": "^4.149.0"
+  },
+  "browserslist": [
+    "Chrome >= 70",
+    "Firefox >= 68",
+    "Safari >= 12",
+    "Edge >= 79"
+  ]
+}
+
+=== next.config.ts ===
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  transpilePackages: [
+    "framer-motion",
+    "lucide-react",
+    "hls.js",
+  ],
+  experimental: {
+    staleTimes: {
+      dynamic: 30,   // Dynamic routes (e.g. /podcaster/[slug]) — 30s client cache
+      static: 180,   // Static routes (e.g. /movies, /podcasts) — 3min client cache
+    },
+  },
+};
+
+export default nextConfig;
+
+=== tailwind.config.js ===
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    "./src/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+};
+
+=== tsconfig.json ===
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts",
+    "**/*.mts"
+  ],
+  "exclude": ["node_modules"]
+}
+
+=== vercel.json ===
+{
+  "headers": [
+    {
+      "source": "/api/stripe/webhook",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
+    }
+  ]
+}
+
+=== capacitor.config.ts ===
+import type { CapacitorConfig } from '@capacitor/cli';
+
+const config: CapacitorConfig = {
+  appId: 'com.trooflixtv.app',
+  appName: 'Trooflix',
+  webDir: 'public',
+  server: {
+    url: 'https://www.trooflixtv.com',
+    cleartext: true,
+    allowNavigation: ['www.trooflixtv.com', 'trooflixtv.com', '*.trooflixtv.com']
+  },
+  ios: {
+    contentInset: 'never',
+    backgroundColor: '#000000'
+  },
+  plugins: {
+    StatusBar: {
+      style: 'DARK',
+      backgroundColor: '#000000',
+      overlaysWebView: false
+    }
+  }
+};
+
+export default config;
+
+=== src/middleware.ts ===
+(none)
+
+=== SUPABASE CLIENT FILES ===
+=== FILE TREE (tracked dirs) ===
+.gitignore
+.wrangler/state/v3/cache/miniflare-CacheObject
+.wrangler/state/v3/r2/miniflare-R2BucketObject
+.wrangler/state/v3/r2/trooflix-videos/blobs
+AGENTS.md
+android
+android/app
+android/app/src/androidTest/java/com/getcapacitor/myapp
+android/app/src/main
+android/app/src/main/java/com/trooflixtv/app
+android/app/src/main/res/drawable
+android/app/src/main/res/drawable-land-hdpi
+android/app/src/main/res/drawable-land-mdpi
+android/app/src/main/res/drawable-land-xhdpi
+android/app/src/main/res/drawable-land-xxhdpi
+android/app/src/main/res/drawable-land-xxxhdpi
+android/app/src/main/res/drawable-port-hdpi
+android/app/src/main/res/drawable-port-mdpi
+android/app/src/main/res/drawable-port-xhdpi
+android/app/src/main/res/drawable-port-xxhdpi
+android/app/src/main/res/drawable-port-xxxhdpi
+android/app/src/main/res/drawable-v24
+android/app/src/main/res/layout
+android/app/src/main/res/mipmap-anydpi-v26
+android/app/src/main/res/mipmap-hdpi
+android/app/src/main/res/mipmap-mdpi
+android/app/src/main/res/mipmap-xhdpi
+android/app/src/main/res/mipmap-xxhdpi
+android/app/src/main/res/mipmap-xxxhdpi
+android/app/src/main/res/values
+android/app/src/main/res/xml
+android/app/src/test/java/com/getcapacitor/myapp
+android/gradle/wrapper
+assets
+capacitor.config.ts
+data
+eslint.config.mjs
+file
+next.config.ts
+NEXT.md
+package-lock.json
+package.json
+postcss.config.js
+PROJECT_NOTES.md
+PROJECT_STATE.md
+public
+public/icons
+README.md
+src
+src/app
+src/app/account
+src/app/admin
+src/app/admin/applications
+src/app/admin/bank
+src/app/admin/login
+src/app/admin/payouts
+src/app/admin/podcaster/[slug]
+src/app/admin/podcasters
+src/app/admin/reports
+src/app/admin/sales
+src/app/admin/settings
+src/app/admin/users
+src/app/admin/videos
+src/app/admin/watch-time
+src/app/api/admin-login
+src/app/api/admin-logout
+src/app/api/admin/add-faces
+src/app/api/admin/bank
+src/app/api/admin/delete-user
+src/app/api/admin/link-creators
+src/app/api/admin/payouts
+src/app/api/admin/payouts/export
+src/app/api/admin/remove-creator
+src/app/api/admin/sales
+src/app/api/admin/seed-creators
+src/app/api/admin/seed-supabase
+src/app/api/admin/set-tier
+src/app/api/admin/users
+src/app/api/admin/watch-time-pool
+src/app/api/admin/wipe-feed
+src/app/api/admin/wipe-mock-creators
+src/app/api/comment-counts
+src/app/api/comment-likes
+src/app/api/comments
+src/app/api/creator-applications
+src/app/api/creator/check-sub
+src/app/api/creator/open-book
+src/app/api/creator/orders
+src/app/api/creator/premium
+src/app/api/creator/products
+src/app/api/creator/profile
+src/app/api/creator/public-premium
+src/app/api/creator/videos
+src/app/api/creators
+src/app/api/creators/videos
+src/app/api/dislike-counts
+src/app/api/dislikes
+src/app/api/dm
+src/app/api/dm/send-reel
+src/app/api/feed
+src/app/api/follow-count
+src/app/api/follows
+src/app/api/giphy-search
+src/app/api/heroes
+src/app/api/like-counts
+src/app/api/likes
+src/app/api/me/creator
+src/app/api/messages
+src/app/api/my-list
+src/app/api/notifications
+src/app/api/podcast/rss/[slug]
+src/app/api/poster
+src/app/api/products/global
+src/app/api/profile
+src/app/api/push-token
+src/app/api/push/send
+src/app/api/push/subscribe
+src/app/api/r2-upload
+src/app/api/reports
+src/app/api/reports/action
+src/app/api/reposts
+src/app/api/reset-feed
+src/app/api/resolve-login
+src/app/api/search
+src/app/api/stripe/checkout
+src/app/api/stripe/creator
+src/app/api/stripe/merch
+src/app/api/stripe/portal
+src/app/api/stripe/webhook
+src/app/api/subscriber-count
+src/app/api/track-view
+src/app/api/track-visit
+src/app/api/user-follows
+src/app/api/user/delete
+src/app/api/user/orders
+src/app/api/user/posts
+src/app/api/username
+src/app/api/users
+src/app/api/users/block
+src/app/api/videos
+src/app/api/views
+src/app/api/watch-time
+src/app/apply
+src/app/books
+src/app/checkout/success
+src/app/collections/[slug]
+src/app/creator-dashboard
+src/app/creator-dashboard/manage-content
+src/app/creator-dashboard/upload
+src/app/creators
+src/app/documentaries
+src/app/features
+src/app/feed
+src/app/login
+src/app/merchandise
+src/app/messages
+src/app/messages/[userId]
+src/app/movies
+src/app/my-list
+src/app/orders
+src/app/plus
+src/app/podcast/[videoId]
+src/app/podcasts
+src/app/profile/[username]
+src/app/search
+src/app/search/[category]
+src/app/signup
+src/app/studio
+src/app/studio/episodes
+src/app/studio/orders
+src/app/studio/premium
+src/app/studio/settings
+src/app/studio/shop
+src/app/studio/upload
+src/app/studio/wizard
+src/app/terms
+src/app/test
+src/app/tv
+src/app/upgrade
+src/app/why-us
+src/components
+src/context
+src/hooks
+src/lib
+src/utils/supabase
+tailwind.config.js
+test.txt
+tsconfig.json
+vercel.json
+
+=== API ROUTES ===
+src/app/api/admin-login/route.ts
+src/app/api/admin-logout/route.ts
+src/app/api/admin/add-faces/route.ts
+src/app/api/admin/bank/route.ts
+src/app/api/admin/delete-user/route.ts
+src/app/api/admin/link-creators/route.ts
+src/app/api/admin/payouts/export/route.ts
+src/app/api/admin/payouts/route.ts
+src/app/api/admin/remove-creator/route.ts
+src/app/api/admin/sales/route.ts
+src/app/api/admin/seed-creators/route.ts
+src/app/api/admin/seed-supabase/route.ts
+src/app/api/admin/set-tier/route.ts
+src/app/api/admin/users/route.ts
+src/app/api/admin/watch-time-pool/route.ts
+src/app/api/admin/wipe-feed/route.ts
+src/app/api/admin/wipe-mock-creators/route.ts
+src/app/api/comment-counts/route.ts
+src/app/api/comment-likes/route.ts
+src/app/api/comments/route.ts
+src/app/api/creator-applications/route.ts
+src/app/api/creator/check-sub/route.ts
+src/app/api/creator/open-book/route.ts
+src/app/api/creator/orders/route.ts
+src/app/api/creator/premium/route.ts
+src/app/api/creator/products/route.ts
+src/app/api/creator/profile/route.ts
+src/app/api/creator/public-premium/route.ts
+src/app/api/creator/videos/route.ts
+src/app/api/creators/route.ts
+src/app/api/creators/videos/route.ts
+src/app/api/dislike-counts/route.ts
+src/app/api/dislikes/route.ts
+src/app/api/dm/route.ts
+src/app/api/dm/send-reel/route.ts
+src/app/api/feed/route.ts
+src/app/api/follow-count/route.ts
+src/app/api/follows/route.ts
+src/app/api/giphy-search/route.ts
+src/app/api/heroes/route.ts
+src/app/api/like-counts/route.ts
+src/app/api/likes/route.ts
+src/app/api/me/creator/route.ts
+src/app/api/messages/route.ts
+src/app/api/my-list/route.ts
+src/app/api/notifications/route.ts
+src/app/api/podcast/rss/[slug]/route.ts
+src/app/api/poster/route.ts
+src/app/api/products/global/route.ts
+src/app/api/profile/route.ts
+src/app/api/push-token/route.ts
+src/app/api/push/send/route.ts
+src/app/api/push/subscribe/route.ts
+src/app/api/r2-upload/route.ts
+src/app/api/reports/action/route.ts
+src/app/api/reports/route.ts
+src/app/api/reposts/route.ts
+src/app/api/reset-feed/route.ts
+src/app/api/resolve-login/route.ts
+src/app/api/search/route.ts
+src/app/api/stripe/checkout/route.ts
+src/app/api/stripe/creator/route.ts
+src/app/api/stripe/merch/route.ts
+src/app/api/stripe/portal/route.ts
+src/app/api/stripe/webhook/route.ts
+src/app/api/subscriber-count/route.ts
+src/app/api/track-view/route.ts
+src/app/api/track-visit/route.ts
+src/app/api/user-follows/route.ts
+src/app/api/user/delete/route.ts
+src/app/api/user/orders/route.ts
+src/app/api/user/posts/route.ts
+src/app/api/username/route.ts
+src/app/api/users/block/route.ts
+src/app/api/users/route.ts
+src/app/api/videos/route.ts
+src/app/api/views/route.ts
+src/app/api/watch-time/route.ts
+
+=== SUPABASE CLIENT FILES (locate them) ===
+src/app/api/admin/seed-supabase/route.ts
+src/utils/supabase/middleware.ts
+src/utils/supabase/client.ts
+src/utils/supabase/server.ts
+
+=== FOUND CLIENT CONTENTS ===
+--- src/app/api/admin/seed-supabase/route.ts ---
+import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
+export async function GET() {
+  const results = [];
+  
+  for (let i = 1; i <= 50; i++) {
+    const email = `mockcreator_${i}@trooflix.mock`;
+    
+    // 1. Create Auth User
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      email,
+      password: "MockPassword123!",
+      email_confirm: true,
+    });
+
+    if (authError) {
+      results.push({ id: i, error: authError.message });
+      continue;
+    }
+
+    // 2. Upsert Profile (in case the DB trigger already created it)
+    const { error: profileError } = await supabase.from("profiles").upsert({
+      user_id: authData.user.id,
+      username: `mockcreator_${i}`,
+      display_name: `Mock Creator ${i}`,
+      avatar_url: "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=400&h=400&fit=crop",
+      bio: "This is a mock creator for preview purposes.",
+      tier: "podcaster",
+      is_verified: true,
+    });
+
+    if (profileError) {
+      results.push({ id: i, error: profileError.message });
+    } else {
+      results.push({ id: i, success: true });
+    }
+  }
+
+  return NextResponse.json({ results });
+}
+--- src/utils/supabase/middleware.ts ---
+import { createServerClient } from "@supabase/ssr";
+import { type NextRequest, NextResponse } from "next/server";
+
+export const updateSession = async (request: NextRequest) => {
+  let supabaseResponse = NextResponse.next({ request });
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          );
+          supabaseResponse = NextResponse.next({ request });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          );
+        },
+      },
+    }
+  );
+
+  await supabase.auth.getUser();
+  return supabaseResponse;
+};
+--- src/utils/supabase/client.ts ---
+import { createBrowserClient } from "@supabase/ssr";
+
+export const createClient = () =>
+  createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+  );
+--- src/utils/supabase/server.ts ---
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
+
+export const createClient = async () => {
+  const cookieStore = await cookies();
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          } catch {}
+        },
+      },
+    },
+  );
+};
+
+=== LOCAL ENV NAMES ===
+ADMIN_PASSWORD
+GIPHY_API_KEY
+KV_REST_API_READ_ONLY_TOKEN
+KV_REST_API_TOKEN
+KV_REST_API_URL
+KV_URL
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+NEXT_PUBLIC_SUPABASE_URL
+NEXT_PUBLIC_URL
+NEXT_PUBLIC_VAPID_PUBLIC_KEY
+OPENAI_API_KEY
+R2_ACCESS_KEY_ID
+R2_ACCOUNT_ID
+R2_BUCKET_NAME
+R2_ENDPOINT
+R2_PUBLIC_URL
+R2_SECRET_ACCESS_KEY
+STRIPE_PODCASTER_PRICE_ID
+STRIPE_PRO_PRICE_ID
+STRIPE_SECRET_KEY
+STRIPE_WEBHOOK_SECRET
+SUPABASE_SERVICE_ROLE_KEY
+VAPID_PRIVATE_KEY
+VAPID_SUBJECT
+
+=== ENV VARS USED IN CODE ===
+ADMIN_PASSWORD
+GIPHY_API_KEY
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+NEXT_PUBLIC_SUPABASE_URL
+NEXT_PUBLIC_URL
+NEXT_PUBLIC_VAPID_PUBLIC_KEY
+NODE_ENV
+R2_ACCESS_KEY_ID
+R2_ACCOUNT_ID
+R2_BUCKET_NAME
+R2_ENDPOINT
+R2_PUBLIC_URL
+R2_SECRET_ACCESS_KEY
+STRIPE_PODCASTER_PRICE_ID
+STRIPE_PRO_PRICE_ID
+STRIPE_SECRET_KEY
+STRIPE_WEBHOOK_SECRET
+SUPABASE_SERVICE_ROLE_KEY
+VAPID_PRIVATE_KEY
+VAPID_SUBJECT
+
+=== STRIPE KEY PREFIXES (first 8 chars) ===
+STRIPE_SECRET_KEY: sk_live_...
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: pk_live_...
+STRIPE_WEBHOOK_SECRET: whsec_gE...
+
+=== HARDCODED SECRETS SPOT CHECK ===
+
+=== VERCEL PROD ENV NAMES ===
+zsh: command not found: vercel
+
+=== VERCEL PREVIEW ENV NAMES ===
+zsh: command not found: vercel
+
+=== VERCEL DEV ENV NAMES ===
+zsh: command not found: vercel
+
+=== R2 BUCKETS ===
+
+ ⛅️ wrangler 4.149.0
+────────────────────
+Listing buckets...
+name:           trooflix-videos
+creation_date:  2026-10-09T19:14:34.431Z
+
+=== R2 CORS ===
+
+[31m✘ [41;31m[[41;97mERROR[41;31m][0m [1mUnknown arguments: get, trooflix-videos[0m
+
+
+
+╭─────────────────────────────────────────────────────────────╮
+│ Did you mean "wrangler r2 bucket cors set trooflix-videos"? │
+╰─────────────────────────────────────────────────────────────╯
+
+wrangler r2 bucket cors
+
+Manage CORS configuration for an R2 bucket
+
+COMMANDS
+  wrangler r2 bucket cors delete <bucket>  Clear the CORS configuration for an R2 bucket
+  wrangler r2 bucket cors list <bucket>    List the CORS rules for an R2 bucket
+  wrangler r2 bucket cors set <bucket>     Set the CORS configuration for an R2 bucket from a JSON file
+
+GLOBAL FLAGS
+  -c, --config          Path to Wrangler configuration file  [string]
+      --cwd             Run as if Wrangler was started in the specified directory instead of the current working directory  [string]
+  -e, --env             Environment to use for operations, and for selecting .env and .dev.vars files  [string]
+      --env-file        Path to an .env file to load - can be specified multiple times - values from earlier files are overridden by values in later files  [array]
+  -h, --help            Show help  [boolean]
+      --install-skills  Install Cloudflare skills for detected AI coding agents before running the command  [boolean] [default: false]
+      --profile         Use a specific auth profile  [string]
+  -v, --version         Show version number  [boolean]
+🪵  Logs were written to "/Users/aran/Library/Preferences/.wrangler/logs/wrangler-2026-10-28_23-02-49_215.log"
