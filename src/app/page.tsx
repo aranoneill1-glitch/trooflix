@@ -18,7 +18,8 @@ import {
   Play, Info, ChevronLeft, ChevronRight, X,
   Search, Bell, HomeIcon, Menu,
   Compass, LogOut, LogIn, Users, ShoppingBag, Sparkles, BookOpen, Flame, List,
-  CheckCircle2, Pause, VolumeX, Volume2, MoreVertical, Plus, Maximize
+  CheckCircle2, Pause, VolumeX, Volume2, MoreVertical, Plus, Maximize,
+  Heart, MessageCircle, Share, Bookmark
 } from "lucide-react";
 import AppleVideoPlayer from "@/components/AppleVideoPlayer";
 import PullToRefresh from "@/components/PullToRefresh";
@@ -704,11 +705,40 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
   if (!videoSrc) return null;
 
   return (
-    <div ref={containerRef} className="w-full relative flex flex-col group/feed pb-10 mb-4 border-b border-white/10">
+    <div ref={containerRef} className="w-full relative flex flex-col group/feed pb-4 mb-4 border-b border-white/10">
       
-      {/* VIDEO CONTAINER - Wall to Wall */}
+      {/* HEADER (Avatar, Name, Dots) */}
+      <div className="flex items-center justify-between px-4 py-3 relative z-20">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full overflow-hidden bg-[#1c1c1e] border border-white/10 flex-shrink-0">
+            {creator?.photoUrl ? (
+              <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-[#E53945] flex items-center justify-center font-bold text-sm text-white">
+                {creator?.name?.[0] || 'TF'}
+              </div>
+            )}
+          </div>
+          <div>
+            <div className="flex items-center gap-1.5">
+              <h2 className="text-sm font-bold text-white leading-tight">
+                {creator?.name || 'Creator'}
+              </h2>
+              {creator?.isVerified && <CheckCircle2 size={14} className="text-[#1ed760]" fill="currentColor" />}
+            </div>
+            <p className="text-xs text-white/50">
+              {video.type || 'Documentary'} • {video.createdAt ? new Date(video.createdAt).toLocaleDateString() : 'Just now'}
+            </p>
+          </div>
+        </div>
+        <button onClick={onMore} className="p-1 text-white/60 hover:text-white transition">
+          <MoreVertical size={20} />
+        </button>
+      </div>
+
+      {/* VIDEO CONTAINER WITH OVERLAYS */}
       <div 
-        className="relative w-full aspect-video bg-black overflow-hidden cursor-pointer" 
+        className="relative w-full aspect-[4/5] sm:aspect-video bg-black overflow-hidden cursor-pointer" 
         onClick={() => { handleInteraction(); togglePlay(); }}
         onMouseMove={handleInteraction}
         onTouchStart={handleInteraction}
@@ -739,8 +769,17 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
         <div className={`absolute top-4 left-4 bg-black/60 px-2 py-1 rounded text-xs font-bold text-white z-10 pointer-events-none backdrop-blur-sm transition-opacity duration-500 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
           {timeLeft || '0:00'}
         </div>
+
+        {/* Center Play Button (Only visible when paused) */}
+        {!isPlaying && (
+          <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+            <div className="w-16 h-16 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-xl">
+              <Play size={32} fill="white" className="text-white ml-1" />
+            </div>
+          </div>
+        )}
         
-        {/* Right Side Controls */}
+        {/* Right Side Controls (Maximize, Mute) */}
         <div className={`absolute top-1/2 -translate-y-1/2 right-4 flex flex-col gap-4 z-20 transition-opacity duration-500 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
           <button 
             onClick={(e) => { e.stopPropagation(); onPlay(); }}
@@ -755,20 +794,52 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
           >
             {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
           </button>
-          
-          <button 
-            onClick={(e) => { e.stopPropagation(); togglePlay(); handleInteraction(); }} 
-            className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-2xl hover:scale-105 transition"
-          >
-            {isPlaying ? <Pause size={20} fill="black" /> : <Play size={20} fill="black" className="ml-1" />}
-          </button>
         </div>
-      </div>
 
-      {/* PROGRESS BAR (Draggable) */}
-      <div className="flex items-center mt-2 px-4 md:px-12">
+        {/* Bottom Overlays: Dailyhub pill, Title, Description, Action Bar */}
+        <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/95 via-black/70 to-transparent pt-12 pb-3">
+          
+          <div className="px-4">
+            {/* Pill */}
+            <div className="inline-flex items-center bg-white/20 backdrop-blur-md rounded-full px-3 py-1 mb-3">
+              <span className="text-xs font-bold text-white tracking-wide">{video.category ? video.category.toLowerCase() : 'dailyhub'}</span>
+            </div>
+            
+            {/* Title */}
+            <h3 className="text-xl md:text-2xl font-black text-white leading-tight mb-1 line-clamp-2 drop-shadow-lg">
+              {video.title}
+            </h3>
+            
+            {/* Description */}
+            <p className="text-sm text-white/80 line-clamp-2 mb-2 drop-shadow-md">
+              {video.description || 'No description available.'}
+            </p>
+          </div>
+
+          {/* Action Bar */}
+          <div className="flex items-center justify-between px-4 mt-2">
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-2 text-white/90 hover:text-white cursor-pointer transition group/action">
+                <LikeButton videoId={video.id} size={22} showCount={true} />
+              </div>
+              <button onClick={onMore} className="flex items-center gap-2 text-white/90 hover:text-white transition">
+                <MessageCircle size={22} />
+                <span className="text-sm font-semibold">Comment</span>
+              </button>
+              <button className="flex items-center gap-2 text-white/90 hover:text-white transition">
+                <Share size={22} />
+                <span className="text-sm font-semibold">Share</span>
+              </button>
+            </div>
+            <div className="flex items-center gap-2 text-white/90 hover:text-white transition cursor-pointer">
+               <SaveButton videoId={video.id} variant="icon" size={22} />
+            </div>
+          </div>
+        </div>
+
+        {/* PROGRESS BAR (Overlaid on bottom of video) */}
         <div 
-          className="relative flex-1 h-1.5 bg-[#1c1c1e] cursor-pointer group z-30"
+          className="absolute bottom-0 inset-x-0 h-1.5 bg-white/20 z-30 cursor-pointer group/progress"
           style={{ touchAction: 'none' }}
         >
           <div 
@@ -778,7 +849,7 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
             onPointerUp={handlePointerUp}
             onPointerCancel={handlePointerUp}
           >
-            <div className="w-full h-full bg-[#1c1c1e] group-hover:h-2 transition-all relative overflow-hidden rounded-full">
+            <div className="w-full h-full bg-transparent group-hover/progress:bg-white/30 transition-all relative overflow-hidden">
               <div 
                 className="h-full bg-[#E53945]" 
                 style={{ width: `${progress * 100}%` }}
@@ -786,52 +857,12 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
             </div>
             
             <div 
-              className={`absolute h-3 w-3 bg-[#E53945] rounded-full shadow-md transition-opacity pointer-events-none ${isSeeking ? 'opacity-100 scale-125' : 'opacity-0 group-hover:opacity-100'}`}
+              className={`absolute h-3 w-3 bg-[#E53945] rounded-full shadow-md transition-opacity pointer-events-none ${isSeeking ? 'opacity-100 scale-125' : 'opacity-0 group-hover/progress:opacity-100'}`}
               style={{ left: `calc(${progress * 100}% - 6px)` }}
             />
           </div>
         </div>
       </div>
-
-      {/* INFO SECTION */}
-      <div className="px-4 md:px-12 pt-4">
-        <div className="flex gap-4">
-          
-          {/* SQUARE AVATAR */}
-          <div className="w-12 h-12 rounded-lg overflow-hidden bg-[#1c1c1e] flex-shrink-0 block shadow-sm">
-            {creator?.photoUrl ? (
-              <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full bg-[#E53945] flex items-center justify-center font-bold text-sm text-white">
-                {creator?.name?.[0] || '?'}
-              </div>
-            )}
-          </div>
-
-          {/* TITLE & CREATOR */}
-          <div className="flex-1 min-w-0">
-            <h2 className="text-lg font-bold text-white leading-tight mb-1 line-clamp-2">
-              {video.title}
-            </h2>
-            <div className="flex items-center gap-1.5 text-sm text-white/60">
-              <span className="truncate hover:text-white transition font-medium">
-                {creator?.name || 'Creator'}
-              </span>
-              {creator?.isVerified && <CheckCircle2 size={14} className="text-[#1ed760]" fill="currentColor" />}
-              <span>•</span>
-              <span>{video.createdAt ? new Date(video.createdAt).toLocaleDateString() : 'Just now'}</span>
-            </div>
-          </div>
-
-          {/* THREE DOTS */}
-          <button onClick={onMore} className="p-1 text-white/50 hover:text-white h-fit">
-            <MoreVertical size={20} />
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
-
-
-
