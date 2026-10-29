@@ -1,0 +1,13 @@
+=== SEARCHING FOR INTRO COMPONENTS OR REFERENCES ===
+src/components/VideoIntro.tsx:6:export default function VideoIntro({ onDone }: { onDone: () => void }) {
+
+=== SEARCHING FOR INTRO ASSETS IN PUBLIC/ ===
+public/loading-logo.jpg
+public/trooflix-logo.jpg
+
+=== CHECKING GIT HISTORY FOR VideoIntro ===
+e4015ff Swap intro sound
+44da154 Add sound to loading and video intros
+462de30 Loading intro uses TROO white + FLIX red
+10701db Hide logo outline, red fills in from nothing
+b4a34ad Play TROOFLIX intro before every video

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import VideoIntro from "@/components/VideoIntro";
 
 interface AppleVideoPlayerProps {
   src: string;
@@ -24,8 +25,8 @@ export default function AppleVideoPlayer({
 }: AppleVideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [mounted, setMounted] = useState(false);
+  const [showIntro, setShowIntro] = useState(true);
 
-  // Ensure we only render the portal on the client side
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -35,25 +36,14 @@ export default function AppleVideoPlayer({
     const v = videoRef.current;
     if (!v) return;
 
-    // 1. Play the video immediately
+    // 1. Start buffering the video immediately in the background
     v.play().catch(() => {});
 
-    // 2. IMMEDIATELY trigger native fullscreen (synchronously, no delay)
-    // We do this right on mount so iOS registers it as part of the original tap.
-    // @ts-ignore
-    if (v.webkitEnterFullscreen) {
-      // @ts-ignore
-      v.webkitEnterFullscreen();
-    } else if (v.requestFullscreen) {
-      v.requestFullscreen().catch(() => {});
-    }
-
-    // 3. Listen for when the user exits native fullscreen to close the player
+    // 2. Listen for when the user exits native fullscreen to close the player
     const handleEndFullscreen = () => {
       onClose();
     };
 
-    // iOS event and standard event
     v.addEventListener("webkitendfullscreen", handleEndFullscreen);
     document.addEventListener("fullscreenchange", handleEndFullscreen);
 
@@ -63,10 +53,24 @@ export default function AppleVideoPlayer({
     };
   }, [mounted, onClose]);
 
+  const handleIntroDone = () => {
+    setShowIntro(false);
+    const v = videoRef.current;
+    if (!v) return;
+
+    // 3. Now that the intro is done, trigger native fullscreen.
+    // Because the video has been buffering for 1.5s, it will open instantly.
+    // @ts-ignore
+    if (v.webkitEnterFullscreen) {
+      // @ts-ignore
+      v.webkitEnterFullscreen();
+    } else if (v.requestFullscreen) {
+      v.requestFullscreen().catch(() => {});
+    }
+  };
+
   if (!mounted) return null;
 
-  // Use a portal to attach the video directly to the document body.
-  // This bypasses any layout issues from parent containers.
   return createPortal(
     <div className="fixed inset-0 z-[9999] bg-black flex items-center justify-center">
       <video
@@ -77,6 +81,13 @@ export default function AppleVideoPlayer({
         controls
         className="w-full h-full object-contain"
       />
+      
+      {/* Play the intro on top of the buffering video */}
+      {showIntro && (
+        <div className="absolute inset-0 z-[10000]">
+          <VideoIntro onDone={handleIntroDone} />
+        </div>
+      )}
     </div>,
     document.body
   );
