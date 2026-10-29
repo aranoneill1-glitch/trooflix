@@ -19,7 +19,7 @@ import {
   Search, Bell, HomeIcon, Menu,
   Compass, LogOut, LogIn, Users, ShoppingBag, Sparkles, BookOpen, Flame, List,
   CheckCircle2, Pause, VolumeX, Volume2, MoreVertical, Plus, Maximize,
-  Heart, MessageCircle, Share, Bookmark
+  ThumbsUp, MessageCircle, Share2, Bookmark
 } from "lucide-react";
 import AppleVideoPlayer from "@/components/AppleVideoPlayer";
 import PullToRefresh from "@/components/PullToRefresh";
@@ -367,7 +367,7 @@ export default function Home() {
                       Don't Miss A <span className="text-red-600">Thing</span>
                     </h2>
                   </div>
-                  <div className="flex flex-col gap-4 md:gap-8">
+                  <div className="flex flex-col gap-6 md:gap-10">
                     {[...videos].sort((a: any, b: any) => {
                       const at = a.createdAt ? new Date(a.createdAt).getTime() : a.id;
                       const bt = b.createdAt ? new Date(b.createdAt).getTime() : b.id;
@@ -705,28 +705,26 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
   if (!videoSrc) return null;
 
   return (
-    <div ref={containerRef} className="w-full relative flex flex-col group/feed pb-4 mb-4 border-b border-white/10">
+    <div ref={containerRef} className="w-full relative flex flex-col group/feed pb-4 border-b border-white/10">
       
       {/* HEADER (Avatar, Name, Dots) */}
       <div className="flex items-center justify-between px-4 py-3 relative z-20">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full overflow-hidden bg-[#1c1c1e] border border-white/10 flex-shrink-0">
+          <div className="w-10 h-10 rounded-full overflow-hidden bg-[#1c1c1e] flex-shrink-0 flex items-center justify-center border border-white/10">
             {creator?.photoUrl ? (
               <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full bg-[#E53945] flex items-center justify-center font-bold text-sm text-white">
-                {creator?.name?.[0] || 'TF'}
-              </div>
+              <span className="font-bold text-sm text-white">{creator?.name?.[0] || 'TF'}</span>
             )}
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <h2 className="text-sm font-bold text-white leading-tight">
+              <h2 className="text-[15px] font-bold text-white leading-tight">
                 {creator?.name || 'Creator'}
               </h2>
-              {creator?.isVerified && <CheckCircle2 size={14} className="text-[#1ed760]" fill="currentColor" />}
+              {creator?.isVerified && <CheckCircle2 size={16} className="text-[#1ed760]" fill="currentColor" />}
             </div>
-            <p className="text-xs text-white/50">
+            <p className="text-[13px] text-white/60">
               {video.type || 'Documentary'} • {video.createdAt ? new Date(video.createdAt).toLocaleDateString() : 'Just now'}
             </p>
           </div>
@@ -736,130 +734,132 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
         </button>
       </div>
 
-      {/* VIDEO CONTAINER WITH OVERLAYS */}
+      {/* VIDEO CONTAINER */}
       <div 
-        className="relative w-full aspect-[4/5] sm:aspect-video bg-black overflow-hidden cursor-pointer" 
+        className="relative w-full aspect-[4/5] sm:aspect-video bg-[#1c1c1e] overflow-hidden cursor-pointer mx-auto px-2 sm:px-4" 
         onClick={() => { handleInteraction(); togglePlay(); }}
         onMouseMove={handleInteraction}
         onTouchStart={handleInteraction}
       >
-        
-        <video
-          ref={videoRef}
-          src={videoSrc}
-          className="w-full h-full object-cover"
-          playsInline
-          muted={isMuted}
-          preload="metadata"
-          onTimeUpdate={handleTimeUpdate}
-          onLoadedMetadata={handleLoadedMetadata}
-          onPlay={() => setIsPlaying(true)}
-          onPause={() => setIsPlaying(false)}
-          onError={() => setError(true)}
-          loop
-        />
+        <div className="relative w-full h-full rounded-xl overflow-hidden">
+          <video
+            ref={videoRef}
+            src={videoSrc}
+            className="w-full h-full object-cover"
+            playsInline
+            muted={isMuted}
+            preload="metadata"
+            onTimeUpdate={handleTimeUpdate}
+            onLoadedMetadata={handleLoadedMetadata}
+            onPlay={() => setIsPlaying(true)}
+            onPause={() => setIsPlaying(false)}
+            onError={() => setError(true)}
+            loop
+          />
 
-        {error && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/80">
-            <p className="text-white/50 text-sm">Video unavailable</p>
-          </div>
-        )}
-
-        {/* Top Left Time Remaining */}
-        <div className={`absolute top-4 left-4 bg-black/60 px-2 py-1 rounded text-xs font-bold text-white z-10 pointer-events-none backdrop-blur-sm transition-opacity duration-500 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
-          {timeLeft || '0:00'}
-        </div>
-
-        {/* Center Play Button (Only visible when paused) */}
-        {!isPlaying && (
-          <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-            <div className="w-16 h-16 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-xl">
-              <Play size={32} fill="white" className="text-white ml-1" />
+          {error && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/80">
+              <p className="text-white/50 text-sm">Video unavailable</p>
             </div>
-          </div>
-        )}
-        
-        {/* Right Side Controls (Maximize, Mute) */}
-        <div className={`absolute top-1/2 -translate-y-1/2 right-4 flex flex-col gap-4 z-20 transition-opacity duration-500 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
-          <button 
-            onClick={(e) => { e.stopPropagation(); onPlay(); }}
-            className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 hover:bg-black/60 transition"
-          >
-            <Maximize size={20} />
-          </button>
-          
-          <button 
-            onClick={(e) => { e.stopPropagation(); setIsMuted(!isMuted); if(videoRef.current) videoRef.current.muted = !isMuted; handleInteraction(); }} 
-            className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 hover:bg-black/60 transition"
-          >
-            {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-          </button>
-        </div>
+          )}
 
-        {/* Bottom Overlays: Dailyhub pill, Title, Description, Action Bar */}
-        <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black/95 via-black/70 to-transparent pt-12 pb-3">
-          
-          <div className="px-4">
-            {/* Pill */}
-            <div className="inline-flex items-center bg-white/20 backdrop-blur-md rounded-full px-3 py-1 mb-3">
-              <span className="text-xs font-bold text-white tracking-wide">{video.category ? video.category.toLowerCase() : 'dailyhub'}</span>
-            </div>
-            
-            {/* Title */}
-            <h3 className="text-xl md:text-2xl font-black text-white leading-tight mb-1 line-clamp-2 drop-shadow-lg">
-              {video.title}
-            </h3>
-            
-            {/* Description */}
-            <p className="text-sm text-white/80 line-clamp-2 mb-2 drop-shadow-md">
-              {video.description || 'No description available.'}
-            </p>
+          {/* Top Left Time Remaining */}
+          <div className={`absolute top-3 left-3 bg-black/60 px-2 py-1 rounded text-xs font-bold text-white z-10 pointer-events-none backdrop-blur-sm transition-opacity duration-500 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
+            {timeLeft || '0:00'}
           </div>
 
-          {/* Action Bar */}
-          <div className="flex items-center justify-between px-4 mt-2">
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2 text-white/90 hover:text-white cursor-pointer transition group/action">
-                <LikeButton videoId={video.id} size={22} showCount={true} />
+          {/* Center Play Button (Only visible when paused) */}
+          {!isPlaying && (
+            <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+              <div className="w-16 h-16 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-xl">
+                <Play size={32} fill="white" className="text-white ml-1" />
               </div>
-              <button onClick={onMore} className="flex items-center gap-2 text-white/90 hover:text-white transition">
-                <MessageCircle size={22} />
-                <span className="text-sm font-semibold">Comment</span>
-              </button>
-              <button className="flex items-center gap-2 text-white/90 hover:text-white transition">
-                <Share size={22} />
-                <span className="text-sm font-semibold">Share</span>
-              </button>
             </div>
-            <div className="flex items-center gap-2 text-white/90 hover:text-white transition cursor-pointer">
-               <SaveButton videoId={video.id} variant="icon" size={22} />
+          )}
+          
+          {/* Right Side Controls (Maximize, Mute) */}
+          <div className={`absolute top-1/2 -translate-y-1/2 right-3 flex flex-col gap-3 z-20 transition-opacity duration-500 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
+            <button 
+              onClick={(e) => { e.stopPropagation(); onPlay(); }}
+              className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 hover:bg-black/60 transition"
+            >
+              <Maximize size={18} />
+            </button>
+            
+            <button 
+              onClick={(e) => { e.stopPropagation(); setIsMuted(!isMuted); if(videoRef.current) videoRef.current.muted = !isMuted; handleInteraction(); }} 
+              className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 hover:bg-black/60 transition"
+            >
+              {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+            </button>
+          </div>
+
+          {/* Bottom Overlays */}
+          <div className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-black via-black/80 to-transparent pt-20 pb-2">
+            
+            <div className="px-3">
+              {/* Pill */}
+              <div className="inline-flex items-center bg-white/20 backdrop-blur-md rounded-full px-3 py-1 mb-2">
+                <span className="text-[11px] font-bold text-white tracking-wide">{video.category ? video.category.toLowerCase() : 'category'}</span>
+              </div>
+              
+              {/* Title */}
+              <h3 className="text-[22px] font-bold text-white leading-tight mb-1 line-clamp-2 drop-shadow-lg">
+                {video.title}
+              </h3>
+              
+              {/* Description */}
+              <p className="text-[14px] text-white/80 line-clamp-2 mb-3 drop-shadow-md">
+                {video.description || 'No description available.'}
+              </p>
+            </div>
+
+            {/* Action Bar */}
+            <div className="flex items-center justify-between px-3 mt-1 pb-2">
+              <div className="flex items-center gap-5">
+                <button className="flex items-center gap-1.5 text-white hover:text-white/80 transition">
+                  <ThumbsUp size={20} />
+                  <span className="text-[14px] font-medium">Like</span>
+                </button>
+                <button onClick={onMore} className="flex items-center gap-1.5 text-white hover:text-white/80 transition">
+                  <MessageCircle size={20} />
+                  <span className="text-[14px] font-medium">Comment</span>
+                </button>
+                <button className="flex items-center gap-1.5 text-white hover:text-white/80 transition">
+                  <Share2 size={20} />
+                  <span className="text-[14px] font-medium">Share</span>
+                </button>
+              </div>
+              <button className="text-white hover:text-white/80 transition">
+                <Bookmark size={20} />
+              </button>
             </div>
           </div>
-        </div>
 
-        {/* PROGRESS BAR (Overlaid on bottom of video) */}
-        <div 
-          className="absolute bottom-0 inset-x-0 h-1.5 bg-white/20 z-30 cursor-pointer group/progress"
-          style={{ touchAction: 'none' }}
-        >
+          {/* PROGRESS BAR (Overlaid on bottom of video) */}
           <div 
-            className="absolute inset-0 w-full h-full flex items-center"
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            onPointerCancel={handlePointerUp}
+            className="absolute bottom-0 inset-x-0 h-1 bg-transparent z-30 cursor-pointer group/progress hover:bg-white/20 transition-colors"
+            style={{ touchAction: 'none' }}
           >
-            <div className="w-full h-full bg-transparent group-hover/progress:bg-white/30 transition-all relative overflow-hidden">
+            <div 
+              className="absolute inset-0 w-full h-full flex items-center"
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onPointerCancel={handlePointerUp}
+            >
+              <div className="w-full h-full bg-transparent relative overflow-hidden">
+                <div 
+                  className="h-full bg-white" 
+                  style={{ width: `${progress * 100}%` }}
+                />
+              </div>
+              
               <div 
-                className="h-full bg-[#E53945]" 
-                style={{ width: `${progress * 100}%` }}
+                className={`absolute h-3 w-3 bg-white rounded-full shadow-md transition-opacity pointer-events-none ${isSeeking ? 'opacity-100 scale-125' : 'opacity-0 group-hover/progress:opacity-100'}`}
+                style={{ left: `calc(${progress * 100}% - 6px)` }}
               />
             </div>
-            
-            <div 
-              className={`absolute h-3 w-3 bg-[#E53945] rounded-full shadow-md transition-opacity pointer-events-none ${isSeeking ? 'opacity-100 scale-125' : 'opacity-0 group-hover/progress:opacity-100'}`}
-              style={{ left: `calc(${progress * 100}% - 6px)` }}
-            />
           </div>
         </div>
       </div>
