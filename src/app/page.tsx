@@ -276,15 +276,30 @@ export default function Home() {
       {loaded && (
         <>
           {!showingFiltered && heroPool.length > 0 && (
-            <div className="w-full pt-16 md:pt-20 pb-0">
-              <CarouselHero 
-                videos={heroPool} 
-                activeIndex={heroIndex} 
-                setActiveIndex={setHeroIndex} 
-                onPlay={handleInstantPlay}
-                onMore={(v) => setSelected(v)}
-              />
-            </div>
+            <>
+              {/* 1. TRUTH HEADLINE (MOVED ABOVE HERO) */}
+              <div className="w-full pt-24 md:pt-28 pb-4 px-4 md:px-12 max-w-6xl mx-auto flex flex-col">
+                <div>
+                  <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-1 uppercase">
+                    Truth Without Censorship
+                  </p>
+                  <h2 className="text-2xl md:text-4xl font-black tracking-tight text-white">
+                    No ads. No filter. <span className="text-neutral-500">Just content.</span>
+                  </h2>
+                </div>
+              </div>
+
+              {/* 2. HERO CAROUSEL */}
+              <div className="w-full pb-0">
+                <CarouselHero 
+                  videos={heroPool} 
+                  activeIndex={heroIndex} 
+                  setActiveIndex={setHeroIndex} 
+                  onPlay={handleInstantPlay}
+                  onMore={(v) => setSelected(v)}
+                />
+              </div>
+            </>
           )}
           {showingFiltered && <div className="h-20 md:h-24" />}
 
@@ -303,52 +318,9 @@ export default function Home() {
 
             {loaded && !filtered && !showingFiltered && (
               <>
-                {/* 1. TRUTH HEADLINE */}
-                {!showingFiltered && heroPool.length > 0 && (
-                  <div className="w-full pt-8 pb-4 px-4 md:px-12 max-w-6xl mx-auto flex flex-col">
-                    <div>
-                      <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-1 uppercase">
-                        Truth Without Censorship
-                      </p>
-                      <h2 className="text-2xl md:text-4xl font-black tracking-tight text-white">
-                        No ads. No filter. Just content.
-                      </h2>
-                    </div>
-                  </div>
-                )}
-
-                {/* 2. VIDEO ROW */}
-                <div className="mt-4 mb-8">
-                  <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide px-4 md:px-12 pb-4">
-                    {videos.slice(1, 11).map((v: any) => {
-                      const creator = creators.find((c: any) => c.id === v.creatorId);
-                      return (
-                        <div key={v.id} onClick={() => handleCardSelect(v)} className="flex-shrink-0 w-[220px] md:w-[280px] cursor-pointer group">
-                          <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-[#1c1c1e] mb-2 border border-white/5 shadow-lg">
-                            <img src={v.posterUrl || v.backdropUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                            <div className="absolute inset-0 bg-black/20" />
-                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                              <div className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center border border-white/20">
-                                <Play size={16} className="ml-1 text-white" fill="white" />
-                              </div>
-                            </div>
-                            {v.duration && (
-                              <div className="absolute bottom-2 right-2 bg-black/80 px-1.5 py-0.5 rounded text-[10px] font-bold text-white backdrop-blur-sm">
-                                {v.duration}
-                              </div>
-                            )}
-                          </div>
-                          <h3 className="text-sm font-bold text-white leading-tight line-clamp-2 group-hover:text-red-500 transition-colors mb-1">{v.title}</h3>
-                          <p className="text-xs text-white/50 truncate">{creator?.name || 'Creator'}</p>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
                 {/* 3. HOME OF INDEPENDENT VOICES HEADLINE */}
                 {!showingFiltered && heroPool.length > 0 && (
-                  <div className="w-full pt-4 pb-2 px-4 md:px-12 max-w-6xl mx-auto flex flex-col">
+                  <div className="w-full pt-6 pb-2 px-4 md:px-12 max-w-6xl mx-auto flex flex-col">
                     <div>
                       <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-1 uppercase">
                         The Home of Independent Voices
@@ -378,7 +350,36 @@ export default function Home() {
                   </div>
                 )}
 
-                {/* 5. LATEST CONTENT FEED */}
+                {/* 5. VIDEO ROW (MOVED BELOW AVATARS) */}
+                <div className="mt-8 mb-8">
+                  <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide px-4 md:px-12 pb-4">
+                    {videos.slice(1, 11).map((v: any) => {
+                      const creator = creators.find((c: any) => c.id === v.creatorId);
+                      return (
+                        <div key={v.id} onClick={() => handleCardSelect(v)} className="flex-shrink-0 w-[220px] md:w-[280px] cursor-pointer group">
+                          <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-[#1c1c1e] mb-2 border border-white/5 shadow-lg">
+                            <img src={v.posterUrl || v.backdropUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                            <div className="absolute inset-0 bg-black/20" />
+                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center border border-white/20">
+                                <Play size={16} className="ml-1 text-white" fill="white" />
+                              </div>
+                            </div>
+                            {v.duration && (
+                              <div className="absolute bottom-2 right-2 bg-black/80 px-1.5 py-0.5 rounded text-[10px] font-bold text-white backdrop-blur-sm">
+                                {v.duration}
+                              </div>
+                            )}
+                          </div>
+                          <h3 className="text-sm font-bold text-white leading-tight line-clamp-2 group-hover:text-red-500 transition-colors mb-1">{v.title}</h3>
+                          <p className="text-xs text-white/50 truncate">{creator?.name || 'Creator'}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 6. LATEST CONTENT FEED */}
                 <div className="mt-8 pb-32">
                   <div className="px-4 md:px-12 mb-6 mt-4">
                     <p className="text-[10px] md:text-xs tracking-[0.4em] text-white/50 font-semibold mb-1">
@@ -531,7 +532,6 @@ function CarouselCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMo
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90" />
 
         <div className="absolute bottom-0 inset-x-0 p-5 md:p-6 flex flex-col items-start gap-3 pointer-events-auto">
-          {/* CHANGED TO MATCH "NO ADS. NO FILTER" FONT STYLE */}
           <h3 className="text-xl md:text-3xl font-black tracking-tight text-white drop-shadow-lg leading-tight line-clamp-3">
             {video.title}
           </h3>
@@ -832,7 +832,7 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
               <h2 className="text-[15px] font-bold text-white leading-tight">
                 {creator?.name || 'Creator'}
               </h2>
-              {creator?.isVerified && <CheckCircle2 size={16} className="text-[#1ed760]" fill="currentColor" />}
+              {/* REMOVED GREEN VERIFIED CIRCLE HERE */}
             </div>
             <p className="text-[13px] text-white/60">
               {video.type || 'Documentary'} • {video.createdAt ? new Date(video.createdAt).toLocaleDateString() : 'Just now'}
