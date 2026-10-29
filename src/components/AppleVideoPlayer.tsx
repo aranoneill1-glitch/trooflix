@@ -1,240 +1,325 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { X, Play, Pause, Volume2, VolumeX, RotateCcw, RotateCw, Gauge, Moon, List, Check } from "lucide-react";
-import TextOverlayRenderer from "@/components/TextOverlay";
-import { AnimatePresence, motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { 
+  Play, Pause, RotateCcw, RotateCw, 
+  Settings, ChevronLeft, ThumbsUp, ThumbsDown, 
+  Send, MessageCircle
+} from "lucide-react";
+import { motion } from "framer-motion";
 
-type Chapter = { title: string; time: number };
-
-export default function AppleVideoPlayer({
-  src,
-  poster,
-  title,
-  onClose,
-  textOverlays,
-  chapters = [],
-}: {
+interface AppleVideoPlayerProps {
   src: string;
-  poster?: string;
-  title: string;
+  title?: string;
+  creatorName?: string;
+  creatorPhoto?: string;
+  views?: string;
+  timeAgo?: string;
   onClose: () => void;
-  textOverlays?: any[];
-  chapters?: Chapter[];
-}) {
+  chapters?: { title: string; time: number }[];
+  textOverlays?: any[]; // Added to satisfy existing app props
+  poster?: string;      // Added to satisfy existing app props
+}
+
+export default function AppleVideoPlayer({ 
+  src, 
+  title = "Untitled Video", 
+  creatorName = "Creator", 
+  creatorPhoto = "", 
+  views = "0 views", 
+  timeAgo = "Just now", 
+  onClose,
+  chapters = [],
+  textOverlays,
+  poster
+}: AppleVideoPlayerProps) {
+  const router = useRouter();
+  const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [isPlaying, setIsPlaying] = useState(true);
+  
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [currentTime, setCurrentTime] = useState("0:00");
+  const [duration, setDuration] = useState("0:00");
   const [showControls, setShowControls] = useState(true);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [isMuted, setIsMuted] = useState(false);
-  const [isSeeking, setIsSeeking] = useState(false);
-  const controlsTimeout = useRef<NodeJS.Timeout | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [error, setError] = useState(false);
+  
+  const controlsTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Podcast State
-  const [playbackRate, setPlaybackRate] = useState(1);
-  const [sleepTimer, setSleepTimer] = useState<number | null>(null);
-  const [showSpeedMenu, setShowSpeedMenu] = useState(false);
-  const [showSleepMenu, setShowSleepMenu] = useState(false);
-  const [showChaptersMenu, setShowChaptersMenu] = useState(false);
+  // Format seconds to MM:SS or HH:MM:SS
+  const formatTime = (seconds: number) => {
+    if (isNaN(seconds) || seconds < 0) return "0:00";
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = Math.floor(seconds % 60);
+    return hrs > 0 
+      ? `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+      : `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
-  // Hide the bottom nav when player opens
+  const handleInteraction = () => {
+    setShowControls(true);
+    if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
+    
+    if (isPlaying) {
+      controlsTimerRef.current = setTimeout(() => {
+        setShowControls(false);
+      }, 3000);
+    }
+  };
+
   useEffect(() => {
-    document.dispatchEvent(new Event("player-open"));
+    handleInteraction();
     return () => {
-      document.dispatchEvent(new Event("player-close"));
+      if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
     };
+  }, [isPlaying]);
+
+  const togglePlay = async () => {
+    const v = videoRef.current;
+    if (!v) return;
+    
+    if (v.paused) {
+      try {
+        await v.play();
+        setIsPlaying(true);
+      } catch (err) {
+        console.error("Playback failed", err);
+      }
+    } else {
+      v.pause();
+      setIsPlaying(false);
+    }
+  };
+
+  const skip = (amount: number) => {
+    const v = videoRef.current;
+    if (v) {
+      v.currentTime = Math.max(0, Math.min(v.duration, v.currentTime + amount));
+      handleInteraction();
+    }
+  };
+
+  const toggleFullscreen = () => {
+    if (!containerRef.current) return;
+
+    if (!document.fullscreenElement) {
+      containerRef.current.requestFullscreen().catch(err => {
+        console.error(`Error attempting to enable fullscreen: ${err.message}`);
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  };
+
+  // Listen for fullscreen changes (e.g., if user presses ESC)
+  useEffect(() => {
+    const handleFsChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener("fullscreenchange", handleFsChange);
+    return () => document.removeEventListener("fullscreenchange", handleFsChange);
   }, []);
 
-  // Media Session API (Background Audio)
-  useEffect(() => {
-    if (typeof window === "undefined" || !("mediaSession" in navigator)) return;
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: title || "Trooflix Audio", artist: "Trooflix", album: "Trooflix Podcasts",
-      artwork: [{ src: poster || "/icon.png", sizes: "512x512", type: "image/png" }],
-    });
-    navigator.mediaSession.setActionHandler("play", () => { videoRef.current?.play(); setIsPlaying(true); });
-    navigator.mediaSession.setActionHandler("pause", () => { videoRef.current?.pause(); setIsPlaying(false); });
-    navigator.mediaSession.setActionHandler("seekbackward", () => skip(-15));
-    navigator.mediaSession.setActionHandler("seekforward", () => skip(15));
-    navigator.mediaSession.setActionHandler("seekto", (details) => { if (details.seekTime && videoRef.current) videoRef.current.currentTime = details.seekTime; });
-  }, [title, poster]);
-
-  // Sleep Timer Logic
-  useEffect(() => {
-    if (!sleepTimer) return;
-    const interval = setInterval(() => {
-      if (Date.now() >= sleepTimer) {
-        videoRef.current?.pause();
-        setIsPlaying(false);
-        setSleepTimer(null);
-        clearInterval(interval);
-      }
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [sleepTimer]);
-
-  // Control Visibility Logic
-  useEffect(() => {
-    if (controlsTimeout.current) clearTimeout(controlsTimeout.current);
-    
-    if (isPlaying && !showSpeedMenu && !showSleepMenu && !showChaptersMenu && !isSeeking) {
-      setShowControls(true);
-      controlsTimeout.current = setTimeout(() => setShowControls(false), 3000);
-    } else {
-      setShowControls(true);
-    }
-    return () => { if (controlsTimeout.current) clearTimeout(controlsTimeout.current); };
-  }, [isPlaying, showSpeedMenu, showSleepMenu, showChaptersMenu, isSeeking]);
-
-  const handleScreenTap = (e: React.MouseEvent) => {
-    const target = e.target as HTMLElement;
-    if (target.closest('button') || target.closest('input') || target.closest('.menu-container')) return;
-    setShowControls((prev) => {
-      const next = !prev;
-      if (controlsTimeout.current) clearTimeout(controlsTimeout.current);
-      if (next && isPlaying) controlsTimeout.current = setTimeout(() => setShowControls(false), 3000);
-      return next;
-    });
+  const handleTimeUpdate = () => {
+    const v = videoRef.current;
+    if (!v || !v.duration) return;
+    setProgress((v.currentTime / v.duration) * 100);
+    setCurrentTime(formatTime(v.currentTime));
   };
 
-  const formatTime = (time: number) => {
-    if (isNaN(time)) return "0:00";
-    const h = Math.floor(time / 3600);
-    const m = Math.floor((time % 3600) / 60);
-    const s = Math.floor(time % 60);
-    if (h > 0) return `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
-    return `${m}:${s.toString().padStart(2, "0")}`;
+  const handleLoadedMetadata = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    setDuration(formatTime(v.duration));
   };
 
-  const formatRemaining = (time: number) => {
-    if (isNaN(time)) return "-0:00";
-    return `-${formatTime(duration - time)}`;
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = videoRef.current;
+    if (!v || !v.duration) return;
+    const newTime = (Number(e.target.value) / 100) * v.duration;
+    v.currentTime = newTime;
+    setProgress(Number(e.target.value));
   };
-
-  const togglePlay = () => { if (videoRef.current) { if (isPlaying) videoRef.current.pause(); else videoRef.current.play(); } };
-  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => { const time = Number(e.target.value); setCurrentTime(time); if (videoRef.current) videoRef.current.currentTime = time; };
-  const skip = (amount: number) => { if (videoRef.current) videoRef.current.currentTime += amount; };
-  const changeSpeed = (rate: number) => { setPlaybackRate(rate); if (videoRef.current) videoRef.current.playbackRate = rate; setShowSpeedMenu(false); };
-  const setTimer = (minutes: number | null) => { if (minutes === null) setSleepTimer(null); else setSleepTimer(Date.now() + minutes * 60 * 1000); setShowSleepMenu(false); };
 
   return (
-    <div className="fixed inset-0 z-[300] bg-black flex items-center justify-center select-none" onClick={handleScreenTap}>
-      <video ref={videoRef} src={src} poster={poster} className="w-full h-full object-contain pointer-events-none" autoPlay playsInline
-        onTimeUpdate={() => setCurrentTime(videoRef.current?.currentTime || 0)}
-        onLoadedMetadata={() => setDuration(videoRef.current?.duration || 0)}
-        onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)}
-      />
-      <TextOverlayRenderer overlays={textOverlays} />
+    <motion.div 
+      ref={containerRef}
+      initial={{ opacity: 0, y: 50 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      exit={{ opacity: 0, y: 50 }} 
+      className={`fixed inset-0 z-[200] flex flex-col ${isFullscreen ? 'bg-black' : 'bg-[#0a0a0a]'} overflow-y-auto`}
+    >
+      {/* ================= VIDEO SECTION ================= */}
+      <div 
+        className="relative w-full aspect-video bg-black flex-shrink-0 group"
+        onClick={() => { handleInteraction(); togglePlay(); }}
+        onMouseMove={handleInteraction}
+        onTouchStart={handleInteraction}
+      >
+        {/* Fallback poster if passed */}
+        {poster && !isPlaying && (
+          <img src={poster} alt="" className="absolute inset-0 w-full h-full object-contain -z-10" />
+        )}
 
-      {/* TOP BAR - Minimal Style */}
-      <div className={`absolute top-0 left-0 right-0 z-50 p-6 pt-[env(safe-area-inset-top)] flex items-start justify-between transition-opacity duration-300 pointer-events-none ${showControls ? "opacity-100" : "opacity-0"}`}>
-        <button onClick={onClose} className="pointer-events-auto w-12 h-12 bg-white text-black rounded-full flex items-center justify-center hover:scale-105 transition shadow-lg">
-          <X size={24} strokeWidth={2.5} />
-        </button>
-        <div className="flex items-center gap-2 pointer-events-auto">
-          {sleepTimer && <div className="px-3 py-1.5 bg-black/50 backdrop-blur-md text-white text-xs font-bold rounded-full flex items-center gap-1"><Moon size={12} /> Timer Active</div>}
-          <button onClick={() => { if(videoRef.current) videoRef.current.muted = !isMuted; setIsMuted(!isMuted); }} className="w-12 h-12 flex items-center justify-center text-white hover:opacity-70 transition">
-            {isMuted ? <VolumeX size={28} strokeWidth={2} /> : <Volume2 size={28} strokeWidth={2} />}
+        <video
+          ref={videoRef}
+          src={src}
+          className="w-full h-full object-contain"
+          playsInline
+          poster={poster}
+          onClick={(e) => e.stopPropagation()} // Let parent handle clicks
+          onTimeUpdate={handleTimeUpdate}
+          onLoadedMetadata={handleLoadedMetadata}
+          onPlay={() => setIsPlaying(true)}
+          onPause={() => setIsPlaying(false)}
+          onError={() => setError(true)}
+        />
+
+        {error && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/80">
+            <p className="text-white/50 text-sm">Video failed to load.</p>
+          </div>
+        )}
+
+        {/* TOP BAR (Back & Settings) */}
+        <div className={`absolute top-0 inset-x-0 p-4 pt-safe bg-gradient-to-b from-black/80 to-transparent flex justify-between items-center z-20 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
+          <button 
+            onClick={(e) => { e.stopPropagation(); onClose(); }} 
+            className="p-2 -ml-2 text-white hover:text-white/80 transition"
+          >
+            <ChevronLeft size={28} />
           </button>
+          <button 
+            onClick={(e) => e.stopPropagation()} 
+            className="p-2 -mr-2 text-white hover:text-white/80 transition"
+          >
+            <Settings size={24} />
+          </button>
+        </div>
+
+        {/* CENTER CONTROLS (Play, Skip) */}
+        <div className={`absolute inset-0 flex items-center justify-center gap-10 z-20 pointer-events-none transition-opacity duration-300 ${showControls || !isPlaying ? 'opacity-100' : 'opacity-0'}`}>
+          <button 
+            onClick={(e) => { e.stopPropagation(); skip(-10); }}
+            className="pointer-events-auto text-white hover:scale-110 transition drop-shadow-lg"
+          >
+            <RotateCcw size={36} fill="white" />
+          </button>
+          
+          <button 
+            onClick={(e) => { e.stopPropagation(); togglePlay(); }}
+            className="pointer-events-auto text-white hover:scale-110 transition drop-shadow-xl"
+          >
+            {isPlaying ? <Pause size={64} fill="white" /> : <Play size={64} fill="white" className="ml-2" />}
+          </button>
+
+          <button 
+            onClick={(e) => { e.stopPropagation(); skip(10); }}
+            className="pointer-events-auto text-white hover:scale-110 transition drop-shadow-lg"
+          >
+            <RotateCw size={36} fill="white" />
+          </button>
+        </div>
+
+        {/* BOTTOM SEEK BAR */}
+        <div 
+          className={`absolute bottom-0 inset-x-0 p-4 bg-gradient-to-t from-black/80 to-transparent z-20 transition-opacity duration-300 ${showControls || !isPlaying ? 'opacity-100' : 'opacity-0'}`}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between text-white/90 text-sm font-medium mb-2 px-1">
+            <span>{currentTime}</span>
+            <span>{duration}</span>
+          </div>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            step="0.1"
+            value={progress}
+            onChange={handleSeek}
+            className="w-full h-1.5 bg-white/20 rounded-full appearance-none cursor-pointer accent-[#E53945] hover:h-2 transition-all"
+            style={{
+              background: `linear-gradient(to right, #E53945 ${progress}%, rgba(255,255,255,0.2) ${progress}%)`
+            }}
+          />
         </div>
       </div>
 
-      {/* BOTTOM CONTROLS */}
-      <div className={`absolute bottom-0 left-0 right-0 z-50 p-6 pb-[env(safe-area-inset-bottom)] mb-4 transition-opacity duration-300 pointer-events-none ${showControls ? "opacity-100" : "opacity-0"}`}>
+      {/* ================= DETAILS SECTION (Below Video) ================= */}
+      <div className="flex-1 w-full max-w-4xl mx-auto px-4 py-6">
         
-        {/* Seek Bar */}
-        <div className="pointer-events-auto w-full px-2 flex items-center gap-4 mb-8">
-          <span className="text-white text-sm font-medium tabular-nums tracking-wide w-12 text-center">{formatTime(currentTime)}</span>
-          <div className="relative flex-1 flex items-center h-8">
-            <input 
-              type="range" 
-              min={0} 
-              max={duration || 0} 
-              step={0.1} 
-              value={currentTime} 
-              onChange={handleSeek} 
-              onPointerDown={() => setIsSeeking(true)}
-              onPointerUp={() => setIsSeeking(false)}
-              onTouchStart={() => setIsSeeking(true)}
-              onTouchEnd={() => setIsSeeking(false)}
-              className="w-full absolute inset-0 h-[3px] my-auto bg-white/30 rounded-full appearance-none outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full cursor-pointer z-10 shadow-lg" 
-            />
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 h-[3px] bg-white rounded-full pointer-events-none" style={{ width: `${(currentTime / (duration || 1)) * 100}%` }} />
+        {/* Creator Header */}
+        <div className="flex items-start gap-4 mb-6">
+          <div className="w-12 h-12 rounded-full overflow-hidden bg-[#1c1c1e] flex-shrink-0 border border-white/10">
+            {creatorPhoto ? (
+              <img src={creatorPhoto} alt={creatorName} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-[#E53945] flex items-center justify-center font-bold text-white">
+                {creatorName[0]}
+              </div>
+            )}
           </div>
-          <span className="text-white/60 text-sm font-medium tabular-nums tracking-wide w-12 text-center">{formatRemaining(currentTime)}</span>
+          <div className="flex-1">
+            <h1 className="text-xl md:text-2xl font-bold text-white leading-tight mb-1">
+              {title}
+            </h1>
+            <p className="text-sm text-white/60">
+              <span className="font-semibold text-white/80">{creatorName}</span> • {views} • {timeAgo}
+            </p>
+          </div>
         </div>
 
-        {/* Playback Controls */}
-        <div className="pointer-events-auto flex items-center justify-center gap-12 mb-6">
-          <button onClick={(e) => { e.stopPropagation(); skip(-10); }} className="w-14 h-14 flex items-center justify-center text-white hover:opacity-70 transition relative">
-            <RotateCcw size={28} strokeWidth={2} /><span className="absolute text-[10px] font-bold mt-0.5">10</span>
+        {/* Action Buttons */}
+        <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide pb-2 mb-8">
+          <button className="flex items-center gap-2 bg-[#272727] hover:bg-[#3f3f3f] px-4 py-2 rounded-full text-white text-sm font-medium transition">
+            <ThumbsUp size={18} /> 16.5K
           </button>
-          
-          <button onClick={(e) => { e.stopPropagation(); togglePlay(); }} className="w-20 h-20 rounded-full border-[3px] border-white flex items-center justify-center text-white hover:scale-105 transition">
-            {isPlaying ? <Pause size={36} fill="white" /> : <Play size={36} fill="white" className="ml-1" />}
+          <button className="flex items-center gap-2 bg-[#272727] hover:bg-[#3f3f3f] px-4 py-2 rounded-full text-white text-sm font-medium transition">
+            <ThumbsDown size={18} /> 1.5K
           </button>
-          
-          <button onClick={(e) => { e.stopPropagation(); skip(10); }} className="w-14 h-14 flex items-center justify-center text-white hover:opacity-70 transition relative">
-            <RotateCw size={28} strokeWidth={2} /><span className="absolute text-[10px] font-bold mt-0.5">10</span>
+          <button className="flex items-center gap-2 bg-[#272727] hover:bg-[#3f3f3f] px-4 py-2 rounded-full text-white text-sm font-medium transition">
+            <Send size={18} /> Share
+          </button>
+          <button className="flex items-center gap-2 bg-[#E53945] hover:bg-[#d32f3a] px-4 py-2 rounded-full text-white text-sm font-medium transition">
+            <MessageCircle size={18} fill="currentColor" /> Chat
           </button>
         </div>
 
-        {/* Toolbar (Speed, Sleep Timer, Chapters) */}
-        <div className="pointer-events-auto flex items-center justify-center gap-4 relative menu-container">
-          <div className="relative z-50">
-            <button onClick={() => { setShowSpeedMenu(!showSpeedMenu); setShowSleepMenu(false); setShowChaptersMenu(false); }} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold transition ${playbackRate !== 1 ? "text-blue-400" : "text-white/70 hover:text-white"}`}>
-              <Gauge size={16} /> {playbackRate}x
-            </button>
-            <AnimatePresence>
-              {showSpeedMenu && (
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-32 bg-[#0f0f12]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden py-1 z-[100]">
-                  {[1, 1.25, 1.5, 1.75, 2].map((rate) => (
-                    <button key={rate} onClick={() => changeSpeed(rate)} className="w-full flex items-center justify-between px-4 py-2 text-sm text-white hover:bg-white/10 transition">{rate}x {playbackRate === rate && <Check size={14} className="text-blue-400" />}</button>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
+        {/* Top Video / Related Content Placeholder */}
+        <div>
+          <h2 className="text-lg font-bold text-white mb-4">Top Video</h2>
+          <div className="flex flex-col gap-4">
+            {/* Placeholder for related videos */}
+            {[1, 2].map((i) => (
+              <div key={i} className="flex gap-4 cursor-pointer group">
+                <div className="relative w-40 aspect-video rounded-xl overflow-hidden bg-[#1c1c1e] flex-shrink-0">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                </div>
+                <div className="flex-1 py-1">
+                  <h3 className="text-sm font-bold text-white line-clamp-2 leading-tight group-hover:text-white/80 transition">
+                    Placeholder Related Video Title {i}
+                  </h3>
+                  <p className="text-xs text-white/50 mt-1">Creator Name</p>
+                  <p className="text-xs text-white/50">5.3 M views • 7 months ago</p>
+                </div>
+              </div>
+            ))}
           </div>
-
-          <div className="relative z-50">
-            <button onClick={() => { setShowSleepMenu(!showSleepMenu); setShowSpeedMenu(false); setShowChaptersMenu(false); }} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold transition ${sleepTimer ? "text-blue-400" : "text-white/70 hover:text-white"}`}>
-              <Moon size={16} /> Sleep
-            </button>
-            <AnimatePresence>
-              {showSleepMenu && (
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-40 bg-[#0f0f12]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden py-1 z-[100]">
-                  <button onClick={() => setTimer(null)} className="w-full flex items-center justify-between px-4 py-2 text-sm text-white hover:bg-white/10 transition">Off {sleepTimer === null && <Check size={14} className="text-blue-400" />}</button>
-                  <button onClick={() => setTimer(15)} className="w-full flex items-center justify-between px-4 py-2 text-sm text-white hover:bg-white/10 transition">15 minutes</button>
-                  <button onClick={() => setTimer(30)} className="w-full flex items-center justify-between px-4 py-2 text-sm text-white hover:bg-white/10 transition">30 minutes</button>
-                  <button onClick={() => setTimer(45)} className="w-full flex items-center justify-between px-4 py-2 text-sm text-white hover:bg-white/10 transition">45 minutes</button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {chapters.length > 0 && (
-            <div className="relative z-50">
-              <button onClick={() => { setShowChaptersMenu(!showChaptersMenu); setShowSpeedMenu(false); setShowSleepMenu(false); }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold text-white/70 hover:text-white transition">
-                <List size={16} /> Chapters
-              </button>
-              <AnimatePresence>
-                {showChaptersMenu && (
-                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} className="absolute bottom-full right-0 mb-4 w-64 max-h-60 overflow-y-auto bg-[#0f0f12]/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl py-1 scrollbar-hide z-[100]">
-                    {chapters.map((ch, i) => (
-                      <button key={i} onClick={() => { if(videoRef.current) videoRef.current.currentTime = ch.time; setShowChaptersMenu(false); }} className="w-full flex flex-col items-start px-4 py-2 hover:bg-white/10 transition border-b border-white/5 last:border-0">
-                        <span className="text-sm font-semibold text-white">{ch.title}</span>
-                        <span className="text-xs text-white/50">{formatTime(ch.time)}</span>
-                      </button>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          )}
         </div>
 
+        {/* Fullscreen Toggle Button (Floating on bottom right if not fullscreen) */}
+        {!isFullscreen && (
+          <button 
+            onClick={toggleFullscreen}
+            className="fixed bottom-6 right-6 bg-[#E53945] text-white p-4 rounded-full shadow-2xl hover:scale-105 transition z-50 flex items-center gap-2 font-bold"
+          >
+            <RotateCw size={20} /> Fullscreen
+          </button>
+        )}
       </div>
-    </div>
+    </motion.div>
   );
 }
