@@ -276,29 +276,19 @@ export default function Home() {
       {loaded && (
         <>
           {!showingFiltered && heroPool.length > 0 && (
-            <div className="w-full pt-24 md:pt-28 pb-4 px-4 md:px-12 max-w-6xl mx-auto flex flex-col">
-              <div>
-                <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-1 uppercase">
-                  Truth Without Censorship
-                </p>
-                <h2 className="text-3xl md:text-5xl font-black tracking-tight text-white">
-                  No ads. No filter. Just content.
-                </h2>
-              </div>
+            <div className="w-full pt-24 md:pt-28 pb-2">
+              <CarouselHero 
+                videos={heroPool} 
+                activeIndex={heroIndex} 
+                setActiveIndex={setHeroIndex} 
+                onPlay={handleInstantPlay}
+                onMore={(v) => setSelected(v)}
+              />
             </div>
-          )}
-          {!showingFiltered && heroPool.length > 0 && (
-            <CarouselHero 
-              videos={heroPool} 
-              activeIndex={heroIndex} 
-              setActiveIndex={setHeroIndex} 
-              onPlay={handleInstantPlay}
-              onMore={(v) => setSelected(v)}
-            />
           )}
           {showingFiltered && <div className="h-20 md:h-24" />}
 
-          <div className="relative z-10 pt-2 md:pt-6 pb-32 md:pb-20 space-y-2 md:space-y-6">
+          <div className="relative z-10 pt-4 md:pt-6 pb-32 md:pb-20 space-y-2 md:space-y-6">
             {filtered && <SearchResults search={search} videos={videos} creators={creators} onVideoClick={setSelected} />}
 
             {!filtered && showingFiltered && (
@@ -313,37 +303,22 @@ export default function Home() {
 
             {loaded && !filtered && !showingFiltered && (
               <>
+                {/* 1. TRUTH HEADLINE */}
                 {!showingFiltered && heroPool.length > 0 && (
-                  <div className="w-full pt-8 md:pt-12 pb-4 px-4 md:px-12 max-w-6xl mx-auto flex flex-col gap-8">
+                  <div className="w-full pt-4 pb-2 px-4 md:px-12 max-w-6xl mx-auto flex flex-col">
                     <div>
                       <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-1 uppercase">
-                        The Home of Independent Voices
+                        Truth Without Censorship
                       </p>
-                      <h2 className="text-2xl md:text-4xl font-black tracking-tight text-white">
-                        Discover Creators
+                      <h2 className="text-3xl md:text-5xl font-black tracking-tight text-white">
+                        No ads. No filter. Just content.
                       </h2>
                     </div>
                   </div>
                 )}
 
-                {creators && creators.length > 0 && (
-                  <div className="mt-4">
-                    <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide px-4 md:px-12 pb-4">
-                      {[...creators].slice(0, 15).map((c: any) => (
-                        <Link key={c.id} href={`/podcaster/${c.slug}`} className="flex flex-col items-center gap-2 flex-shrink-0 group w-[96px] md:w-[112px]">
-                          <div className="w-20 h-20 md:w-24 md:h-24 rounded-full p-[2px] bg-[#E53945] group-hover:scale-105 transition-transform">
-                            <div className="w-full h-full rounded-full border-2 border-black overflow-hidden bg-[#1c1c1e]">
-                              {c.photoUrl ? <img src={c.photoUrl} alt={c.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xl font-bold text-white">{c.name?.[0]?.toUpperCase() || "?"}</div>}
-                            </div>
-                          </div>
-                          <span className="text-xs font-semibold text-white/80 group-hover:text-white transition truncate w-full text-center">{c.name || "Creator"}</span>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="mt-2 mb-8">
+                {/* 2. VIDEO ROW (MOVED ABOVE AVATARS) */}
+                <div className="mt-4 mb-8">
                   <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide px-4 md:px-12 pb-4">
                     {videos.slice(1, 11).map((v: any) => {
                       const creator = creators.find((c: any) => c.id === v.creatorId);
@@ -371,6 +346,39 @@ export default function Home() {
                   </div>
                 </div>
 
+                {/* 3. HOME OF INDEPENDENT VOICES HEADLINE */}
+                {!showingFiltered && heroPool.length > 0 && (
+                  <div className="w-full pt-4 pb-2 px-4 md:px-12 max-w-6xl mx-auto flex flex-col">
+                    <div>
+                      <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-1 uppercase">
+                        The Home of Independent Voices
+                      </p>
+                      <h2 className="text-2xl md:text-4xl font-black tracking-tight text-white">
+                        Discover Creators
+                      </h2>
+                    </div>
+                  </div>
+                )}
+
+                {/* 4. CREATOR AVATARS */}
+                {creators && creators.length > 0 && (
+                  <div className="mt-2">
+                    <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide px-4 md:px-12 pb-4">
+                      {[...creators].slice(0, 15).map((c: any) => (
+                        <Link key={c.id} href={`/podcaster/${c.slug}`} className="flex flex-col items-center gap-2 flex-shrink-0 group w-[96px] md:w-[112px]">
+                          <div className="w-20 h-20 md:w-24 md:h-24 rounded-full p-[2px] bg-[#E53945] group-hover:scale-105 transition-transform">
+                            <div className="w-full h-full rounded-full border-2 border-black overflow-hidden bg-[#1c1c1e]">
+                              {c.photoUrl ? <img src={c.photoUrl} alt={c.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xl font-bold text-white">{c.name?.[0]?.toUpperCase() || "?"}</div>}
+                            </div>
+                          </div>
+                          <span className="text-xs font-semibold text-white/80 group-hover:text-white transition truncate w-full text-center">{c.name || "Creator"}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 5. LATEST CONTENT FEED */}
                 <div className="mt-8 pb-32">
                   <div className="px-4 md:px-12 mb-6 mt-4">
                     <p className="text-[10px] md:text-xs tracking-[0.4em] text-white/50 font-semibold mb-1">
