@@ -409,7 +409,7 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
   const [isDragging, setIsDragging] = useState(false);
 
   return (
-    <section className="relative w-full h-[75vh] md:h-[85vh] flex items-center justify-center overflow-hidden pt-8 bg-black">
+    <section className="relative w-full h-[55vh] md:h-[65vh] flex items-center justify-center overflow-hidden pt-8 bg-black">
       <div className="relative w-full max-w-6xl h-full flex items-center justify-center perspective-[1200px]">
         {videos.map((video, i) => {
           const isActive = i === activeIndex;
@@ -451,8 +451,7 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
                 opacity: 1
               }}
               transition={{ type: "spring", stiffness: 260, damping: 28, mass: 1 }}
-              // TALLER CARDS (aspect-[9/16] on mobile, aspect-[2/3] on desktop)
-              className="absolute w-[75%] md:w-[50%] aspect-[9/16] md:aspect-[2/3] rounded-[24px] overflow-hidden cursor-pointer bg-black border border-white/20"
+              className="absolute w-[75%] md:w-[45%] max-w-[420px] aspect-[3/4] rounded-[24px] overflow-hidden cursor-pointer bg-black border border-white/20"
               style={{ 
                 touchAction: 'pan-y',
                 transformStyle: "preserve-3d",
@@ -461,30 +460,27 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
             >
               <img src={video.backdropUrl} alt={video.title} className="w-full h-full object-cover" draggable={false} />
               
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent opacity-95" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90" />
 
-              <div className="absolute bottom-0 inset-x-0 p-6 flex flex-col items-center text-center pointer-events-none pt-20">
-                <h3 className="text-2xl md:text-3xl font-black text-white mb-2 leading-tight line-clamp-2 uppercase tracking-wide">
+              <div className="absolute bottom-0 inset-x-0 p-5 md:p-6 flex items-end justify-between pointer-events-none">
+                <h3 className="text-lg md:text-2xl font-bold text-white tracking-[0.15em] uppercase drop-shadow-lg leading-tight w-1/2">
                   {video.title}
                 </h3>
-                <p className="text-sm md:text-base text-white/80 mb-6 line-clamp-1">
-                  {video.description || "Watch now"}
-                </p>
 
-                {/* NETFLIX STYLE BUTTONS WITH APPLE GLASS */}
                 {isActive && (
-                  <div className="flex flex-row items-center justify-center gap-3 w-full pointer-events-auto">
+                  <div className="flex items-center gap-2 pointer-events-auto">
                     <button 
                       onClick={(e) => { e.stopPropagation(); onPlay(video); }}
-                      className="flex-1 flex items-center justify-center gap-2 bg-white text-black px-4 py-3 rounded-full font-bold text-base hover:bg-gray-200 transition active:scale-95 shadow-xl"
+                      className="flex items-center justify-center gap-2 bg-white text-black px-4 py-2 rounded-full font-bold text-sm hover:bg-gray-200 transition active:scale-95 shadow-xl"
                     >
-                      <Play size={20} fill="currentColor" /> Play Series
+                      <Play size={16} fill="currentColor" /> Play
                     </button>
+                    
                     <button 
                       onClick={(e) => { e.stopPropagation(); }}
-                      className="flex-1 flex items-center justify-center gap-2 bg-white/20 backdrop-blur-[8px] backdrop-saturate-[180%] backdrop-brightness-[1.1] border border-white/30 text-white px-4 py-3 rounded-full font-bold text-base shadow-[0_8px_32px_rgba(0,0,0,0.25),inset_0_1px_1px_rgba(255,255,255,0.55)] hover:bg-white/30 transition active:scale-95"
+                      className="w-10 h-10 flex items-center justify-center bg-white/20 backdrop-blur-[8px] backdrop-saturate-[180%] backdrop-brightness-[1.1] border border-white/30 text-white rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.25),inset_0_1px_1px_rgba(255,255,255,0.55)] hover:bg-white/30 transition active:scale-95"
                     >
-                      <Plus size={20} /> My List
+                      <Plus size={20} />
                     </button>
                   </div>
                 )}
