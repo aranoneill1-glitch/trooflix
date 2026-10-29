@@ -203,8 +203,8 @@ export default function MobileBottomNav() {
 
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-[250] flex justify-center pb-[env(safe-area-inset-bottom)] pointer-events-none">
         
-        {/* THINNER, TEXT-FREE ULTRA TRANSPARENT TAB BAR */}
-        <div className="pointer-events-auto flex items-center justify-around w-[92%] max-w-[360px] mb-8 px-2 py-1.5 bg-white/[0.02] backdrop-blur-[40px] rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+        {/* THE RAINDROP / LIQUID GLASS TAB BAR */}
+        <div className="pointer-events-auto flex items-center justify-around w-[92%] max-w-[360px] mb-8 px-2 py-1.5 bg-gradient-to-b from-white/10 to-white/[0.02] backdrop-blur-[40px] backdrop-saturate-[180%] backdrop-brightness-[1.2] rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.4),inset_0_-1px_1px_rgba(255,255,255,0.1)]">
           
           {/* TAB 1: HOME */}
           <Link href="/" className="flex items-center justify-center w-14 h-10 rounded-full">
