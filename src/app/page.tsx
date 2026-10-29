@@ -451,39 +451,44 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
                 opacity: 1
               }}
               transition={{ type: "spring", stiffness: 260, damping: 28, mass: 1 }}
-              className="absolute w-[65%] md:w-[45%] aspect-[3/4] md:aspect-[4/5] rounded-[28px] overflow-hidden shadow-2xl cursor-pointer bg-black"
+              // ADDED BORDER (LINE AROUND THE VIDEO)
+              className="absolute w-[65%] md:w-[45%] aspect-[3/4] md:aspect-[4/5] rounded-[24px] overflow-hidden cursor-pointer bg-black border border-white/20"
               style={{ 
                 touchAction: 'pan-y',
                 transformStyle: "preserve-3d",
-                boxShadow: isActive ? "0 25px 50px -12px rgba(0,0,0,0.8)" : "0 10px 20px rgba(0,0,0,0.5)"
+                boxShadow: isActive ? "0 25px 50px -12px rgba(0,0,0,0.9)" : "0 10px 20px rgba(0,0,0,0.5)"
               }}
             >
               <img src={video.backdropUrl} alt={video.title} className="w-full h-full object-cover" draggable={false} />
               
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent opacity-90" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent opacity-95" />
 
-              <div className="absolute bottom-0 inset-x-0 p-5 md:p-8 flex flex-col items-start text-left pointer-events-none bg-gradient-to-t from-black/90 to-transparent pt-16">
-                <h3 className="text-xl md:text-3xl font-bold text-white mb-1 leading-tight line-clamp-2">
+              {/* CENTERED CONTENT */}
+              <div className="absolute bottom-0 inset-x-0 p-6 flex flex-col items-center text-center pointer-events-none pt-20">
+                <h3 className="text-2xl md:text-3xl font-black text-white mb-2 leading-tight line-clamp-2 uppercase tracking-wide">
                   {video.title}
                 </h3>
-                <p className="text-sm md:text-base text-white/70 line-clamp-2 mb-4">
-                  {video.description || "Documentary"}
+                <p className="text-sm md:text-base text-white/80 mb-6 line-clamp-1">
+                  {video.description || "Watch now"}
                 </p>
 
-                {/* THE EXACT APPLE LIQUID GLASS BUTTONS */}
+                {/* NETFLIX STYLE BUTTONS WITH APPLE GLASS */}
                 {isActive && (
-                  <div className="flex items-center gap-3 pointer-events-auto">
+                  <div className="flex flex-row items-center justify-center gap-3 w-full pointer-events-auto">
+                    {/* Solid White Play Button */}
                     <button 
                       onClick={(e) => { e.stopPropagation(); onPlay(video); }}
-                      className="group relative flex items-center justify-center whitespace-nowrap px-6 py-2.5 rounded-full font-semibold text-white transition-all duration-300 active:scale-95 bg-white/10 backdrop-blur-[8px] backdrop-saturate-[180%] backdrop-brightness-[1.1] border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.25),inset_0_1px_1px_rgba(255,255,255,0.55),inset_0_-1px_1px_rgba(255,255,255,0.30),inset_1px_0_1px_rgba(255,255,255,0.20),inset_-1px_0_1px_rgba(255,255,255,0.20)] hover:bg-white/15"
+                      className="flex-1 flex items-center justify-center gap-2 bg-white text-black px-4 py-3 rounded-full font-bold text-base hover:bg-gray-200 transition active:scale-95 shadow-xl"
                     >
-                      <Play size={18} fill="currentColor" className="mr-2" /> Play
+                      <Play size={20} fill="currentColor" /> Play Series
                     </button>
+                    
+                    {/* Apple Glass My List Button */}
                     <button 
                       onClick={(e) => { e.stopPropagation(); }}
-                      className="group relative flex items-center justify-center whitespace-nowrap px-6 py-2.5 rounded-full font-semibold text-white transition-all duration-300 active:scale-95 bg-white/10 backdrop-blur-[8px] backdrop-saturate-[180%] backdrop-brightness-[1.1] border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.25),inset_0_1px_1px_rgba(255,255,255,0.55),inset_0_-1px_1px_rgba(255,255,255,0.30),inset_1px_0_1px_rgba(255,255,255,0.20),inset_-1px_0_1px_rgba(255,255,255,0.20)] hover:bg-white/15"
+                      className="flex-1 flex items-center justify-center gap-2 bg-white/20 backdrop-blur-[8px] backdrop-saturate-[180%] backdrop-brightness-[1.1] border border-white/30 text-white px-4 py-3 rounded-full font-bold text-base shadow-[0_8px_32px_rgba(0,0,0,0.25),inset_0_1px_1px_rgba(255,255,255,0.55)] hover:bg-white/30 transition active:scale-95"
                     >
-                      <Plus size={18} className="mr-2" /> My List
+                      <Plus size={20} /> My List
                     </button>
                   </div>
                 )}
