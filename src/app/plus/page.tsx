@@ -253,13 +253,9 @@ export default function PlusPage() {
                 <span className="bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent">Unbought.</span>
               </h1>
               
-              <h2 className="relative z-10 text-xl md:text-2xl font-bold mb-8 text-white">
+              <h2 className="relative z-10 text-xl md:text-2xl font-bold mb-12 text-white">
                 Ad-free. No mainstream pollution. Just raw content.
               </h2>
-              
-              <p className="relative z-10 text-lg md:text-xl text-white/50 max-w-2xl mx-auto mb-12 font-medium leading-relaxed">
-                Sick of the same recycled Hollywood scripts, the endless commercials, and the corporate agenda being shoved down your throat? Get unlimited, completely ad-free access to hard-hitting documentaries, independent films, and unfiltered podcasts that actually challenge the narrative. No ulterior motive. Just the raw truth from creators who aren't afraid to speak.
-              </p>
 
               <div className="relative z-10 w-full max-w-md bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 text-left shadow-2xl">
                 <div className="flex items-center justify-between mb-6">
