@@ -303,14 +303,14 @@ export default function Home() {
 
             {loaded && !filtered && !showingFiltered && (
               <>
-                {/* 1. TRUTH HEADLINE */}
+                {/* 1. TRUTH HEADLINE (REVERTED AND LOWERED) */}
                 {!showingFiltered && heroPool.length > 0 && (
-                  <div className="w-full pt-2 pb-4 px-4 md:px-12 max-w-6xl mx-auto flex flex-col">
+                  <div className="w-full pt-8 pb-4 px-4 md:px-12 max-w-6xl mx-auto flex flex-col">
                     <div>
                       <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-1 uppercase">
                         Truth Without Censorship
                       </p>
-                      <h2 className="text-3xl md:text-5xl font-black tracking-tight text-white">
+                      <h2 className="text-2xl md:text-4xl font-black tracking-tight text-white">
                         No ads. No filter. Just content.
                       </h2>
                     </div>
@@ -512,8 +512,6 @@ function CarouselCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMo
   const rotateY = useTransform(offset, (o) => o * -35);
   const z = useTransform(offset, (o) => -Math.abs(o) * 100);
   const opacity = useTransform(offset, (o) => Math.abs(o) > 3 ? 0 : 1);
-  
-  // FIX: Explicitly apply zIndex so the active card is always on top
   const zIndex = useTransform(offset, (o) => Math.round(100 - Math.abs(o) * 10));
 
   return (
@@ -532,8 +530,9 @@ function CarouselCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMo
         
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90" />
 
-        <div className="absolute bottom-0 inset-x-0 p-5 md:p-6 flex items-end justify-between pointer-events-auto">
-          <h3 className="text-lg md:text-2xl font-bold text-white tracking-[0.15em] uppercase drop-shadow-lg leading-tight w-1/2">
+        {/* CHANGED TO STACK VERTICALLY ON THE LEFT TO AVOID OVERLAP */}
+        <div className="absolute bottom-0 inset-x-0 p-5 md:p-6 flex flex-col items-start gap-3 pointer-events-auto">
+          <h3 className="text-lg md:text-2xl font-bold text-white tracking-[0.15em] uppercase drop-shadow-lg leading-tight line-clamp-3">
             {video.title}
           </h3>
 
