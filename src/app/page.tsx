@@ -277,14 +277,13 @@ export default function Home() {
         <>
           {!showingFiltered && heroPool.length > 0 && (
             <>
-              {/* 1. TRUTH HEADLINE (MOVED ABOVE HERO) */}
+              {/* 1. HEADLINE */}
               <div className="w-full pt-24 md:pt-28 pb-4 px-4 md:px-12 max-w-6xl mx-auto flex flex-col">
                 <div>
-                  <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-1 uppercase">
-                    Truth Without Censorship
-                  </p>
-                  <h2 className="text-2xl md:text-4xl font-black tracking-tight text-white">
-                    No ads. No filter. <span className="text-neutral-500">Just content.</span>
+                  <h2 className="text-2xl md:text-4xl font-black tracking-tight">
+                    <span className="text-white">No ads.</span>{" "}
+                    <span className="text-neutral-500">No filter.</span>{" "}
+                    <span className="text-[#E53945]">Just content</span>
                   </h2>
                 </div>
               </div>
@@ -350,7 +349,7 @@ export default function Home() {
                   </div>
                 )}
 
-                {/* 5. VIDEO ROW (MOVED BELOW AVATARS) */}
+                {/* 5. VIDEO ROW */}
                 <div className="mt-8 mb-8">
                   <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide px-4 md:px-12 pb-4">
                     {videos.slice(1, 11).map((v: any) => {
@@ -524,9 +523,9 @@ function CarouselCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMo
         if (isActive) onMore(video);
       }}
       style={{ x, scale, rotateY, z, opacity, zIndex, touchAction: 'pan-y' }}
-      className="absolute w-[75%] md:w-[45%] max-w-[420px] aspect-[3/4] rounded-[26px] p-[1px] cursor-pointer bg-gradient-to-b from-white/30 to-white/[0.05] shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.4)] select-none"
+      className="absolute w-[75%] md:w-[45%] max-w-[420px] aspect-[3/4] rounded-[26px] cursor-pointer shadow-[0_20px_50px_rgba(0,0,0,0.8)] select-none bg-black"
     >
-      <div className="relative w-full h-full rounded-[25px] overflow-hidden bg-black pointer-events-none">
+      <div className="relative w-full h-full rounded-[26px] overflow-hidden pointer-events-none">
         <img src={video.backdropUrl} alt={video.title} className="w-full h-full object-cover" draggable={false} />
         
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90" />
@@ -832,7 +831,6 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
               <h2 className="text-[15px] font-bold text-white leading-tight">
                 {creator?.name || 'Creator'}
               </h2>
-              {/* REMOVED GREEN VERIFIED CIRCLE HERE */}
             </div>
             <p className="text-[13px] text-white/60">
               {video.type || 'Documentary'} • {video.createdAt ? new Date(video.createdAt).toLocaleDateString() : 'Just now'}
