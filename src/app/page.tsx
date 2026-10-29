@@ -276,6 +276,16 @@ export default function Home() {
       {loaded && (
         <>
           {!showingFiltered && heroPool.length > 0 && (
+            <div className="w-full pt-20 md:pt-24 pb-2 px-4 md:px-12 max-w-6xl mx-auto">
+              <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-1 uppercase">
+                The Home of Independent Voices
+              </p>
+              <h2 className="text-2xl md:text-4xl font-black tracking-tight text-white">
+                Discover Creators
+              </h2>
+            </div>
+          )}
+          {!showingFiltered && heroPool.length > 0 && (
             <CarouselHero 
               videos={heroPool} 
               activeIndex={heroIndex} 
@@ -302,18 +312,7 @@ export default function Home() {
             {loaded && !filtered && !showingFiltered && (
               <>
                 {creators && creators.length > 0 && (
-                  <div className="mt-6">
-                    <div className="flex items-end justify-between px-4 md:px-12 mb-6 mt-8">
-                      <div>
-                        <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-1">
-                          THE HOME OF INDEPENDENT VOICES
-                        </p>
-                        <h2 className="text-2xl md:text-4xl font-black tracking-tight text-white">
-                          Discover Creators
-                        </h2>
-                      </div>
-                      <Link href="/creators" className="text-xs font-semibold text-white/50 hover:text-white transition pb-1 md:pb-2">View all</Link>
-                    </div>
+                  <div className="mt-4">
                     <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide px-4 md:px-12 pb-4">
                       {[...creators].slice(0, 15).map((c: any) => (
                         <Link key={c.id} href={`/podcaster/${c.slug}`} className="flex flex-col items-center gap-2 flex-shrink-0 group w-[96px] md:w-[112px]">
@@ -409,7 +408,7 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
   const [isDragging, setIsDragging] = useState(false);
 
   return (
-    <section className="relative w-full h-[55vh] md:h-[65vh] flex items-center justify-center overflow-hidden pt-8 bg-black">
+    <section className="relative w-full h-[55vh] md:h-[65vh] flex items-center justify-center overflow-hidden bg-black">
       <div className="relative w-full max-w-6xl h-full flex items-center justify-center perspective-[1200px]">
         {videos.map((video, i) => {
           const isActive = i === activeIndex;
