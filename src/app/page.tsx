@@ -512,6 +512,9 @@ function CarouselCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMo
   const rotateY = useTransform(offset, (o) => o * -35);
   const z = useTransform(offset, (o) => -Math.abs(o) * 100);
   const opacity = useTransform(offset, (o) => Math.abs(o) > 3 ? 0 : 1);
+  
+  // FIX: Explicitly apply zIndex so the active card is always on top
+  const zIndex = useTransform(offset, (o) => Math.round(100 - Math.abs(o) * 10));
 
   return (
     <motion.div
@@ -521,7 +524,7 @@ function CarouselCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMo
       onClick={() => {
         if (isActive) onMore(video);
       }}
-      style={{ x, scale, rotateY, z, opacity, touchAction: 'pan-y' }}
+      style={{ x, scale, rotateY, z, opacity, zIndex, touchAction: 'pan-y' }}
       className="absolute w-[75%] md:w-[45%] max-w-[420px] aspect-[3/4] rounded-[26px] p-[1px] cursor-pointer bg-gradient-to-b from-white/30 to-white/[0.05] shadow-[0_20px_50px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.4)] select-none"
     >
       <div className="relative w-full h-full rounded-[25px] overflow-hidden bg-black pointer-events-none">
