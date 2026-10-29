@@ -303,7 +303,7 @@ export default function Home() {
 
             {loaded && !filtered && !showingFiltered && (
               <>
-                {/* 1. TRUTH HEADLINE (REVERTED AND LOWERED) */}
+                {/* 1. TRUTH HEADLINE */}
                 {!showingFiltered && heroPool.length > 0 && (
                   <div className="w-full pt-8 pb-4 px-4 md:px-12 max-w-6xl mx-auto flex flex-col">
                     <div>
@@ -530,9 +530,9 @@ function CarouselCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMo
         
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90" />
 
-        {/* CHANGED TO STACK VERTICALLY ON THE LEFT TO AVOID OVERLAP */}
         <div className="absolute bottom-0 inset-x-0 p-5 md:p-6 flex flex-col items-start gap-3 pointer-events-auto">
-          <h3 className="text-lg md:text-2xl font-bold text-white tracking-[0.15em] uppercase drop-shadow-lg leading-tight line-clamp-3">
+          {/* CHANGED TO MATCH "NO ADS. NO FILTER" FONT STYLE */}
+          <h3 className="text-xl md:text-3xl font-black tracking-tight text-white drop-shadow-lg leading-tight line-clamp-3">
             {video.title}
           </h3>
 
