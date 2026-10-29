@@ -18,8 +18,9 @@ interface AppleVideoPlayerProps {
   timeAgo?: string;
   onClose: () => void;
   chapters?: { title: string; time: number }[];
-  textOverlays?: any[]; // Added to satisfy existing app props
-  poster?: string;      // Added to satisfy existing app props
+  textOverlays?: any[];
+  poster?: string;
+  feedVideos?: any[]; // NEW: Accepts the feed list
 }
 
 export default function AppleVideoPlayer({ 
@@ -32,7 +33,8 @@ export default function AppleVideoPlayer({
   onClose,
   chapters = [],
   textOverlays,
-  poster
+  poster,
+  feedVideos = []
 }: AppleVideoPlayerProps) {
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -45,10 +47,19 @@ export default function AppleVideoPlayer({
   const [showControls, setShowControls] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [error, setError] = useState(false);
+
+  // State for the currently playing video (starts with props, changes when clicking feed)
+  const [currentVideo, setCurrentVideo] = useState({
+    id: "", title, creatorName, creatorPhoto, src, poster
+  });
   
   const controlsTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Format seconds to MM:SS or HH:MM:SS
+  // If the parent changes the main video prop, update state
+  useEffect(() => {
+    setCurrentVideo({ id: "", title, creatorName, creatorPhoto, src, poster });
+  }, [src, title, creatorName, creatorPhoto, poster]);
+
   const formatTime = (seconds: number) => {
     if (isNaN(seconds) || seconds < 0) return "0:00";
     const hrs = Math.floor(seconds / 3600);
@@ -62,32 +73,21 @@ export default function AppleVideoPlayer({
   const handleInteraction = () => {
     setShowControls(true);
     if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
-    
     if (isPlaying) {
-      controlsTimerRef.current = setTimeout(() => {
-        setShowControls(false);
-      }, 3000);
+      controlsTimerRef.current = setTimeout(() => setShowControls(false), 3000);
     }
   };
 
   useEffect(() => {
     handleInteraction();
-    return () => {
-      if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
-    };
+    return () => { if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current); };
   }, [isPlaying]);
 
   const togglePlay = async () => {
     const v = videoRef.current;
     if (!v) return;
-    
     if (v.paused) {
-      try {
-        await v.play();
-        setIsPlaying(true);
-      } catch (err) {
-        console.error("Playback failed", err);
-      }
+      try { await v.play(); setIsPlaying(true); } catch (err) { console.error(err); }
     } else {
       v.pause();
       setIsPlaying(false);
@@ -104,21 +104,15 @@ export default function AppleVideoPlayer({
 
   const toggleFullscreen = () => {
     if (!containerRef.current) return;
-
     if (!document.fullscreenElement) {
-      containerRef.current.requestFullscreen().catch(err => {
-        console.error(`Error attempting to enable fullscreen: ${err.message}`);
-      });
+      containerRef.current.requestFullscreen().catch(err => console.error(err));
     } else {
       document.exitFullscreen();
     }
   };
 
-  // Listen for fullscreen changes (e.g., if user presses ESC)
   useEffect(() => {
-    const handleFsChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-    };
+    const handleFsChange = () => setIsFullscreen(!!document.fullscreenElement);
     document.addEventListener("fullscreenchange", handleFsChange);
     return () => document.removeEventListener("fullscreenchange", handleFsChange);
   }, []);
@@ -144,6 +138,26 @@ export default function AppleVideoPlayer({
     setProgress(Number(e.target.value));
   };
 
+  // Click a feed video to swap the player
+  const handleVideoSelect = (video: any) => {
+    setCurrentVideo({
+      id: video.id,
+      title: video.title,
+      creatorName: video.creator?.name || "Creator",
+      creatorPhoto: video.creator?.photoUrl || "",
+      src: video.videoUrl || video.bitchuteUrl || "",
+      poster: video.posterUrl || video.backdropUrl || ""
+    });
+    // Auto-play the new video
+    setTimeout(() => {
+      if (videoRef.current) {
+        videoRef.current.load();
+        videoRef.current.play().catch(() => {});
+        setIsPlaying(true);
+      }
+    }, 100);
+  };
+
   return (
     <motion.div 
       ref={containerRef}
@@ -159,18 +173,13 @@ export default function AppleVideoPlayer({
         onMouseMove={handleInteraction}
         onTouchStart={handleInteraction}
       >
-        {/* Fallback poster if passed */}
-        {poster && !isPlaying && (
-          <img src={poster} alt="" className="absolute inset-0 w-full h-full object-contain -z-10" />
-        )}
-
         <video
           ref={videoRef}
-          src={src}
+          src={currentVideo.src}
           className="w-full h-full object-contain"
           playsInline
-          poster={poster}
-          onClick={(e) => e.stopPropagation()} // Let parent handle clicks
+          poster={currentVideo.poster}
+          onClick={(e) => e.stopPropagation()}
           onTimeUpdate={handleTimeUpdate}
           onLoadedMetadata={handleLoadedMetadata}
           onPlay={() => setIsPlaying(true)}
@@ -184,51 +193,31 @@ export default function AppleVideoPlayer({
           </div>
         )}
 
-        {/* TOP BAR (Back & Settings) */}
+        {/* TOP BAR */}
         <div className={`absolute top-0 inset-x-0 p-4 pt-safe bg-gradient-to-b from-black/80 to-transparent flex justify-between items-center z-20 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
-          <button 
-            onClick={(e) => { e.stopPropagation(); onClose(); }} 
-            className="p-2 -ml-2 text-white hover:text-white/80 transition"
-          >
+          <button onClick={(e) => { e.stopPropagation(); onClose(); }} className="p-2 -ml-2 text-white hover:text-white/80 transition">
             <ChevronLeft size={28} />
           </button>
-          <button 
-            onClick={(e) => e.stopPropagation()} 
-            className="p-2 -mr-2 text-white hover:text-white/80 transition"
-          >
+          <button onClick={(e) => e.stopPropagation()} className="p-2 -mr-2 text-white hover:text-white/80 transition">
             <Settings size={24} />
           </button>
         </div>
 
-        {/* CENTER CONTROLS (Play, Skip) */}
+        {/* CENTER CONTROLS */}
         <div className={`absolute inset-0 flex items-center justify-center gap-10 z-20 pointer-events-none transition-opacity duration-300 ${showControls || !isPlaying ? 'opacity-100' : 'opacity-0'}`}>
-          <button 
-            onClick={(e) => { e.stopPropagation(); skip(-10); }}
-            className="pointer-events-auto text-white hover:scale-110 transition drop-shadow-lg"
-          >
+          <button onClick={(e) => { e.stopPropagation(); skip(-10); }} className="pointer-events-auto text-white hover:scale-110 transition drop-shadow-lg">
             <RotateCcw size={36} fill="white" />
           </button>
-          
-          <button 
-            onClick={(e) => { e.stopPropagation(); togglePlay(); }}
-            className="pointer-events-auto text-white hover:scale-110 transition drop-shadow-xl"
-          >
+          <button onClick={(e) => { e.stopPropagation(); togglePlay(); }} className="pointer-events-auto text-white hover:scale-110 transition drop-shadow-xl">
             {isPlaying ? <Pause size={64} fill="white" /> : <Play size={64} fill="white" className="ml-2" />}
           </button>
-
-          <button 
-            onClick={(e) => { e.stopPropagation(); skip(10); }}
-            className="pointer-events-auto text-white hover:scale-110 transition drop-shadow-lg"
-          >
+          <button onClick={(e) => { e.stopPropagation(); skip(10); }} className="pointer-events-auto text-white hover:scale-110 transition drop-shadow-lg">
             <RotateCw size={36} fill="white" />
           </button>
         </div>
 
         {/* BOTTOM SEEK BAR */}
-        <div 
-          className={`absolute bottom-0 inset-x-0 p-4 bg-gradient-to-t from-black/80 to-transparent z-20 transition-opacity duration-300 ${showControls || !isPlaying ? 'opacity-100' : 'opacity-0'}`}
-          onClick={(e) => e.stopPropagation()}
-        >
+        <div className={`absolute bottom-0 inset-x-0 p-4 bg-gradient-to-t from-black/80 to-transparent z-20 transition-opacity duration-300 ${showControls || !isPlaying ? 'opacity-100' : 'opacity-0'}`} onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center justify-between text-white/90 text-sm font-medium mb-2 px-1">
             <span>{currentTime}</span>
             <span>{duration}</span>
@@ -241,33 +230,31 @@ export default function AppleVideoPlayer({
             value={progress}
             onChange={handleSeek}
             className="w-full h-1.5 bg-white/20 rounded-full appearance-none cursor-pointer accent-[#E53945] hover:h-2 transition-all"
-            style={{
-              background: `linear-gradient(to right, #E53945 ${progress}%, rgba(255,255,255,0.2) ${progress}%)`
-            }}
+            style={{ background: `linear-gradient(to right, #E53945 ${progress}%, rgba(255,255,255,0.2) ${progress}%)` }}
           />
         </div>
       </div>
 
-      {/* ================= DETAILS SECTION (Below Video) ================= */}
+      {/* ================= DETAILS SECTION ================= */}
       <div className="flex-1 w-full max-w-4xl mx-auto px-4 py-6">
         
         {/* Creator Header */}
         <div className="flex items-start gap-4 mb-6">
           <div className="w-12 h-12 rounded-full overflow-hidden bg-[#1c1c1e] flex-shrink-0 border border-white/10">
-            {creatorPhoto ? (
-              <img src={creatorPhoto} alt={creatorName} className="w-full h-full object-cover" />
+            {currentVideo.creatorPhoto ? (
+              <img src={currentVideo.creatorPhoto} alt={currentVideo.creatorName} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full bg-[#E53945] flex items-center justify-center font-bold text-white">
-                {creatorName[0]}
+                {currentVideo.creatorName[0]}
               </div>
             )}
           </div>
           <div className="flex-1">
             <h1 className="text-xl md:text-2xl font-bold text-white leading-tight mb-1">
-              {title}
+              {currentVideo.title}
             </h1>
             <p className="text-sm text-white/60">
-              <span className="font-semibold text-white/80">{creatorName}</span> • {views} • {timeAgo}
+              <span className="font-semibold text-white/80">{currentVideo.creatorName}</span> • {views} • {timeAgo}
             </p>
           </div>
         </div>
@@ -288,29 +275,47 @@ export default function AppleVideoPlayer({
           </button>
         </div>
 
-        {/* Top Video / Related Content Placeholder */}
+        {/* UP NEXT / TOP VIDEO PLAYLIST */}
         <div>
-          <h2 className="text-lg font-bold text-white mb-4">Top Video</h2>
-          <div className="flex flex-col gap-4">
-            {/* Placeholder for related videos */}
-            {[1, 2].map((i) => (
-              <div key={i} className="flex gap-4 cursor-pointer group">
-                <div className="relative w-40 aspect-video rounded-xl overflow-hidden bg-[#1c1c1e] flex-shrink-0">
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                </div>
-                <div className="flex-1 py-1">
-                  <h3 className="text-sm font-bold text-white line-clamp-2 leading-tight group-hover:text-white/80 transition">
-                    Placeholder Related Video Title {i}
-                  </h3>
-                  <p className="text-xs text-white/50 mt-1">Creator Name</p>
-                  <p className="text-xs text-white/50">5.3 M views • 7 months ago</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          <h2 className="text-lg font-bold text-white mb-4">Up Next</h2>
+          
+          {feedVideos.length > 0 ? (
+            <div className="flex flex-col gap-4">
+              {feedVideos.map((v) => {
+                if (!v.videoUrl && !v.bitchuteUrl) return null; // Skip if no video
+                const vCreator = v.creator?.name || "Creator";
+                const vPhoto = v.creator?.photoUrl || "";
+                const isCurrent = v.id === currentVideo.id || v.title === currentVideo.title;
+
+                return (
+                  <div 
+                    key={v.id} 
+                    onClick={() => handleVideoSelect(v)}
+                    className={`flex gap-4 cursor-pointer group p-2 rounded-xl transition ${isCurrent ? 'bg-white/10' : 'hover:bg-white/5'}`}
+                  >
+                    <div className="relative w-40 aspect-video rounded-xl overflow-hidden bg-[#1c1c1e] flex-shrink-0">
+                      <img src={v.posterUrl || v.backdropUrl} className="w-full h-full object-cover" alt="" />
+                      <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition" />
+                    </div>
+                    <div className="flex-1 py-1">
+                      <h3 className={`text-sm font-bold line-clamp-2 leading-tight transition ${isCurrent ? 'text-[#E53945]' : 'text-white group-hover:text-white/80'}`}>
+                        {v.title}
+                      </h3>
+                      <p className="text-xs text-white/50 mt-1 flex items-center gap-1">
+                        {vPhoto && <img src={vPhoto} className="w-4 h-4 rounded-full" alt="" />}
+                        {vCreator}
+                      </p>
+                      <p className="text-xs text-white/50">{v.views || '0 views'} • {v.createdAt ? new Date(v.createdAt).toLocaleDateString() : 'Just now'}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-white/40 text-sm">No more videos in feed.</p>
+          )}
         </div>
 
-        {/* Fullscreen Toggle Button (Floating on bottom right if not fullscreen) */}
         {!isFullscreen && (
           <button 
             onClick={toggleFullscreen}

@@ -392,8 +392,15 @@ export default function Home() {
         <AppleVideoPlayer
           src={playing.videoUrl ?? playing.bitchuteUrl ?? ""}
           title={playing.title}
+          creatorName={creators.find((c: any) => c.id === playing.creatorId)?.name}
+          creatorPhoto={creators.find((c: any) => c.id === playing.creatorId)?.photoUrl}
+          poster={playing.posterUrl || playing.backdropUrl}
           textOverlays={playing?.textOverlays}
           chapters={playing.chapters || []}
+          feedVideos={videos.map((v: any) => ({
+            ...v,
+            creator: creators.find((c: any) => c.id === v.creatorId)
+          }))}
           onClose={() => setPlaying(null)}
         />
       )}
@@ -707,7 +714,7 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
   return (
     <div ref={containerRef} className="w-full relative flex flex-col group/feed">
       
-      {/* HEADER (Avatar, Name, Dots) - FLOATING ABOVE CARD */}
+      {/* HEADER */}
       <div className="flex items-center justify-between px-1 pb-3 relative z-20">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full overflow-hidden bg-[#1c1c1e] flex-shrink-0 flex items-center justify-center border border-white/10">
@@ -734,7 +741,7 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
         </button>
       </div>
 
-      {/* THE CARD (Starts from top of video) */}
+      {/* THE CARD */}
       <div className="bg-[#1c1c1e] rounded-2xl overflow-hidden flex flex-col shadow-lg border border-white/5">
         
         {/* VIDEO */}
@@ -765,12 +772,10 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
             </div>
           )}
 
-          {/* Top Left Time Remaining */}
           <div className={`absolute top-3 left-3 bg-black/60 px-2 py-1 rounded text-xs font-bold text-white z-10 pointer-events-none backdrop-blur-sm transition-opacity duration-500 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
             {timeLeft || '0:00'}
           </div>
 
-          {/* Center Play Button */}
           {!isPlaying && (
             <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
               <div className="w-16 h-16 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-xl">
@@ -779,7 +784,6 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
             </div>
           )}
           
-          {/* Right Controls */}
           <div className={`absolute top-1/2 -translate-y-1/2 right-3 flex flex-col gap-3 z-20 transition-opacity duration-500 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
             <button 
               onClick={(e) => { e.stopPropagation(); onPlay(); }}
@@ -796,7 +800,6 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
             </button>
           </div>
 
-          {/* PROGRESS BAR (Overlaid on bottom of video) */}
           <div 
             className="absolute bottom-0 inset-x-0 h-1.5 bg-transparent z-30 cursor-pointer group/progress hover:bg-white/20 transition-colors"
             style={{ touchAction: 'none' }}
@@ -823,24 +826,19 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
           </div>
         </div>
 
-        {/* GREY BOTTOM SECTION (Text & Actions) */}
         <div className="px-4 pt-3 pb-4">
-          {/* Pill */}
           <div className="inline-flex items-center bg-[#2c2c2e] rounded-full px-3 py-1 mb-3">
             <span className="text-[12px] font-semibold text-white tracking-wide">{video.category ? video.category.toLowerCase() : 'category'}</span>
           </div>
           
-          {/* Title */}
           <h3 className="text-[22px] font-bold text-white leading-tight mb-1 line-clamp-2">
             {video.title}
           </h3>
           
-          {/* Description */}
           <p className="text-[15px] text-white/60 line-clamp-3 mb-4">
             {video.description || 'No description available.'}
           </p>
 
-          {/* Action Bar */}
           <div className="flex items-center justify-between mt-2">
             <div className="flex items-center gap-5">
               <button className="flex items-center gap-2 text-white/90 hover:text-white transition">
