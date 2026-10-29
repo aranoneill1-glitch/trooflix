@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { X } from "lucide-react";
-import { motion } from "framer-motion";
 
 interface AppleVideoPlayerProps {
   src: string;
@@ -26,39 +24,55 @@ export default function AppleVideoPlayer({
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    // Auto-play when the player opens
-    if (videoRef.current) {
-      videoRef.current.play().catch(() => {});
+    const v = videoRef.current;
+    if (!v) return;
+
+    // 1. Force native iOS fullscreen immediately
+    // @ts-ignore - webkitEnterFullscreen is a valid iOS Safari method
+    if (v.webkitEnterFullscreen) {
+      // @ts-ignore
+      v.webkitEnterFullscreen();
+    } else if (v.requestFullscreen) {
+      v.requestFullscreen().catch(() => {});
     }
-  }, []);
+
+    // 2. Auto-play
+    v.play().catch(() => {});
+
+    // 3. Listen for when the user exits native fullscreen
+    const handleFullscreenChange = () => {
+      // If we are no longer in fullscreen, close the player and return to feed
+      if (!document.fullscreenElement) {
+        onClose();
+      }
+    };
+
+    // iOS specific native exit event
+    const handleEndFullscreen = () => {
+      onClose();
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    v.addEventListener("webkitendfullscreen", handleEndFullscreen);
+
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      v.removeEventListener("webkitendfullscreen", handleEndFullscreen);
+    };
+  }, [onClose]);
 
   return (
-    <motion.div 
-      initial={{ opacity: 0 }} 
-      animate={{ opacity: 1 }} 
-      exit={{ opacity: 0 }} 
-      className="fixed inset-0 z-[200] bg-black flex items-center justify-center"
-    >
-      {/* Floating Close Button - z-50 to sit above the video */}
-      <button 
-        onClick={onClose}
-        className="absolute top-12 right-6 z-50 p-2.5 bg-black/50 hover:bg-black/80 backdrop-blur-md rounded-full text-white transition shadow-lg"
-      >
-        <X size={24} />
-      </button>
-
-      {/* NATIVE APPLE VIDEO PLAYER */}
-      {/* By NOT using playsInline, iOS Safari will automatically hand off 
-          the video to the native Apple player when fullscreen is triggered. */}
+    // We render an absolute full-screen black background just in case the native 
+    // player takes a split second to load.
+    <div className="fixed inset-0 z-[200] bg-black flex items-center justify-center">
       <video
         ref={videoRef}
         src={src}
         poster={poster}
+        playsInline // Required for the browser to render it, but iOS will override when we call webkitEnterFullscreen
         controls
-        autoPlay
-        controlsList="nodownload"
         className="w-full h-full object-contain"
       />
-    </motion.div>
+    </div>
   );
 }
