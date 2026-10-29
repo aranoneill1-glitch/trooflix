@@ -442,7 +442,6 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
                   setActiveIndex(i);
                 }
               }}
-              // UPGRADED TO SPRING PHYSICS FOR ULTRA SMOOTH APPLE-LIKE MOTION
               animate={{
                 x: `${offset * 60}%`,
                 scale: isActive ? 1 : 0.75,
@@ -452,12 +451,10 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
                 opacity: 1
               }}
               transition={{ type: "spring", stiffness: 260, damping: 28, mass: 1 }}
-              // REMOVED BORDER, ROUNDED CORNERS FOR FREE FLOATING LOOK
-              className="absolute w-[65%] md:w-[45%] aspect-[3/4] md:aspect-[4/5] rounded-[24px] overflow-hidden shadow-2xl cursor-pointer bg-black"
+              className="absolute w-[65%] md:w-[45%] aspect-[3/4] md:aspect-[4/5] rounded-[28px] overflow-hidden shadow-2xl cursor-pointer bg-black"
               style={{ 
                 touchAction: 'pan-y',
                 transformStyle: "preserve-3d",
-                // REMOVED THE WHITE RING
                 boxShadow: isActive ? "0 25px 50px -12px rgba(0,0,0,0.8)" : "0 10px 20px rgba(0,0,0,0.5)"
               }}
             >
@@ -473,18 +470,18 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
                   {video.description || "Documentary"}
                 </p>
 
-                {/* Apple Glass Pills (Bottom Left) - FIXED BUTTON WRAPPING */}
+                {/* THE EXACT APPLE LIQUID GLASS BUTTONS */}
                 {isActive && (
                   <div className="flex items-center gap-3 pointer-events-auto">
                     <button 
                       onClick={(e) => { e.stopPropagation(); onPlay(video); }}
-                      className="flex items-center justify-center whitespace-nowrap bg-white/20 hover:bg-white/30 backdrop-blur-xl border border-white/10 text-white px-5 py-2.5 rounded-full font-semibold transition shadow-lg"
+                      className="group relative flex items-center justify-center whitespace-nowrap px-6 py-2.5 rounded-full font-semibold text-white transition-all duration-300 active:scale-95 bg-white/10 backdrop-blur-[8px] backdrop-saturate-[180%] backdrop-brightness-[1.1] border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.25),inset_0_1px_1px_rgba(255,255,255,0.55),inset_0_-1px_1px_rgba(255,255,255,0.30),inset_1px_0_1px_rgba(255,255,255,0.20),inset_-1px_0_1px_rgba(255,255,255,0.20)] hover:bg-white/15"
                     >
                       <Play size={18} fill="currentColor" className="mr-2" /> Play
                     </button>
                     <button 
                       onClick={(e) => { e.stopPropagation(); }}
-                      className="flex items-center justify-center whitespace-nowrap bg-black/30 hover:bg-black/50 backdrop-blur-xl border border-white/10 text-white px-5 py-2.5 rounded-full font-semibold transition shadow-lg"
+                      className="group relative flex items-center justify-center whitespace-nowrap px-6 py-2.5 rounded-full font-semibold text-white transition-all duration-300 active:scale-95 bg-white/10 backdrop-blur-[8px] backdrop-saturate-[180%] backdrop-brightness-[1.1] border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.25),inset_0_1px_1px_rgba(255,255,255,0.55),inset_0_-1px_1px_rgba(255,255,255,0.30),inset_1px_0_1px_rgba(255,255,255,0.20),inset_-1px_0_1px_rgba(255,255,255,0.20)] hover:bg-white/15"
                     >
                       <Plus size={18} className="mr-2" /> My List
                     </button>
