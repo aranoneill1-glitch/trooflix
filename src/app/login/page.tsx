@@ -216,7 +216,7 @@ export default function LoginPage() {
 
           <p className="text-sm text-white/50 mt-6">
             New to Trooflix?{" "}
-            <Link href="/signup" className="text-white hover:underline font-semibold">
+            <Link href="/plus" className="text-white hover:underline font-semibold">
               Sign up now
             </Link>
             .
