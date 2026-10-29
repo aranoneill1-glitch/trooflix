@@ -20,7 +20,7 @@ interface AppleVideoPlayerProps {
   chapters?: { title: string; time: number }[];
   textOverlays?: any[];
   poster?: string;
-  feedVideos?: any[]; // NEW: Accepts the feed list
+  feedVideos?: any[];
 }
 
 export default function AppleVideoPlayer({ 
@@ -48,14 +48,12 @@ export default function AppleVideoPlayer({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [error, setError] = useState(false);
 
-  // State for the currently playing video (starts with props, changes when clicking feed)
   const [currentVideo, setCurrentVideo] = useState({
     id: "", title, creatorName, creatorPhoto, src, poster
   });
   
   const controlsTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // If the parent changes the main video prop, update state
   useEffect(() => {
     setCurrentVideo({ id: "", title, creatorName, creatorPhoto, src, poster });
   }, [src, title, creatorName, creatorPhoto, poster]);
@@ -138,7 +136,6 @@ export default function AppleVideoPlayer({
     setProgress(Number(e.target.value));
   };
 
-  // Click a feed video to swap the player
   const handleVideoSelect = (video: any) => {
     setCurrentVideo({
       id: video.id,
@@ -148,7 +145,6 @@ export default function AppleVideoPlayer({
       src: video.videoUrl || video.bitchuteUrl || "",
       poster: video.posterUrl || video.backdropUrl || ""
     });
-    // Auto-play the new video
     setTimeout(() => {
       if (videoRef.current) {
         videoRef.current.load();
@@ -167,71 +163,74 @@ export default function AppleVideoPlayer({
       className={`fixed inset-0 z-[200] flex flex-col ${isFullscreen ? 'bg-black' : 'bg-[#0a0a0a]'} overflow-y-auto`}
     >
       {/* ================= VIDEO SECTION ================= */}
-      <div 
-        className="relative w-full aspect-video bg-black flex-shrink-0 group"
-        onClick={() => { handleInteraction(); togglePlay(); }}
-        onMouseMove={handleInteraction}
-        onTouchStart={handleInteraction}
-      >
-        <video
-          ref={videoRef}
-          src={currentVideo.src}
-          className="w-full h-full object-contain"
-          playsInline
-          poster={currentVideo.poster}
-          onClick={(e) => e.stopPropagation()}
-          onTimeUpdate={handleTimeUpdate}
-          onLoadedMetadata={handleLoadedMetadata}
-          onPlay={() => setIsPlaying(true)}
-          onPause={() => setIsPlaying(false)}
-          onError={() => setError(true)}
-        />
-
-        {error && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/80">
-            <p className="text-white/50 text-sm">Video failed to load.</p>
-          </div>
-        )}
-
-        {/* TOP BAR */}
-        <div className={`absolute top-0 inset-x-0 p-4 pt-safe bg-gradient-to-b from-black/80 to-transparent flex justify-between items-center z-20 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
-          <button onClick={(e) => { e.stopPropagation(); onClose(); }} className="p-2 -ml-2 text-white hover:text-white/80 transition">
-            <ChevronLeft size={28} />
-          </button>
-          <button onClick={(e) => e.stopPropagation()} className="p-2 -mr-2 text-white hover:text-white/80 transition">
-            <Settings size={24} />
-          </button>
-        </div>
-
-        {/* CENTER CONTROLS */}
-        <div className={`absolute inset-0 flex items-center justify-center gap-10 z-20 pointer-events-none transition-opacity duration-300 ${showControls || !isPlaying ? 'opacity-100' : 'opacity-0'}`}>
-          <button onClick={(e) => { e.stopPropagation(); skip(-10); }} className="pointer-events-auto text-white hover:scale-110 transition drop-shadow-lg">
-            <RotateCcw size={36} fill="white" />
-          </button>
-          <button onClick={(e) => { e.stopPropagation(); togglePlay(); }} className="pointer-events-auto text-white hover:scale-110 transition drop-shadow-xl">
-            {isPlaying ? <Pause size={64} fill="white" /> : <Play size={64} fill="white" className="ml-2" />}
-          </button>
-          <button onClick={(e) => { e.stopPropagation(); skip(10); }} className="pointer-events-auto text-white hover:scale-110 transition drop-shadow-lg">
-            <RotateCw size={36} fill="white" />
-          </button>
-        </div>
-
-        {/* BOTTOM SEEK BAR */}
-        <div className={`absolute bottom-0 inset-x-0 p-4 bg-gradient-to-t from-black/80 to-transparent z-20 transition-opacity duration-300 ${showControls || !isPlaying ? 'opacity-100' : 'opacity-0'}`} onClick={(e) => e.stopPropagation()}>
-          <div className="flex items-center justify-between text-white/90 text-sm font-medium mb-2 px-1">
-            <span>{currentTime}</span>
-            <span>{duration}</span>
-          </div>
-          <input
-            type="range"
-            min="0"
-            max="100"
-            step="0.1"
-            value={progress}
-            onChange={handleSeek}
-            className="w-full h-1.5 bg-white/20 rounded-full appearance-none cursor-pointer accent-[#E53945] hover:h-2 transition-all"
-            style={{ background: `linear-gradient(to right, #E53945 ${progress}%, rgba(255,255,255,0.2) ${progress}%)` }}
+      {/* Added pt-safe and mt-4 for notch clearance, and px-2 to float the video slightly */}
+      <div className="relative w-full flex-shrink-0 pt-safe mt-4 px-2 md:px-0">
+        <div 
+          className="relative w-full aspect-video bg-black overflow-hidden rounded-xl md:rounded-none group shadow-2xl"
+          onClick={() => { handleInteraction(); togglePlay(); }}
+          onMouseMove={handleInteraction}
+          onTouchStart={handleInteraction}
+        >
+          <video
+            ref={videoRef}
+            src={currentVideo.src}
+            className="w-full h-full object-contain"
+            playsInline
+            poster={currentVideo.poster}
+            onClick={(e) => e.stopPropagation()}
+            onTimeUpdate={handleTimeUpdate}
+            onLoadedMetadata={handleLoadedMetadata}
+            onPlay={() => setIsPlaying(true)}
+            onPause={() => setIsPlaying(false)}
+            onError={() => setError(true)}
           />
+
+          {error && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/80">
+              <p className="text-white/50 text-sm">Video failed to load.</p>
+            </div>
+          )}
+
+          {/* TOP BAR */}
+          <div className={`absolute top-0 inset-x-0 p-4 bg-gradient-to-b from-black/90 via-black/40 to-transparent flex justify-between items-center z-20 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
+            <button onClick={(e) => { e.stopPropagation(); onClose(); }} className="p-2 -ml-2 text-white hover:text-white/80 transition">
+              <ChevronLeft size={28} />
+            </button>
+            <button onClick={(e) => e.stopPropagation()} className="p-2 -mr-2 text-white hover:text-white/80 transition">
+              <Settings size={24} />
+            </button>
+          </div>
+
+          {/* CENTER CONTROLS */}
+          <div className={`absolute inset-0 flex items-center justify-center gap-10 z-20 pointer-events-none transition-opacity duration-300 ${showControls || !isPlaying ? 'opacity-100' : 'opacity-0'}`}>
+            <button onClick={(e) => { e.stopPropagation(); skip(-10); }} className="pointer-events-auto text-white hover:scale-110 transition drop-shadow-lg">
+              <RotateCcw size={36} fill="white" />
+            </button>
+            <button onClick={(e) => { e.stopPropagation(); togglePlay(); }} className="pointer-events-auto text-white hover:scale-110 transition drop-shadow-xl">
+              {isPlaying ? <Pause size={64} fill="white" /> : <Play size={64} fill="white" className="ml-2" />}
+            </button>
+            <button onClick={(e) => { e.stopPropagation(); skip(10); }} className="pointer-events-auto text-white hover:scale-110 transition drop-shadow-lg">
+              <RotateCw size={36} fill="white" />
+            </button>
+          </div>
+
+          {/* BOTTOM SEEK BAR */}
+          <div className={`absolute bottom-0 inset-x-0 p-4 bg-gradient-to-t from-black/90 to-transparent z-20 transition-opacity duration-300 ${showControls || !isPlaying ? 'opacity-100' : 'opacity-0'}`} onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between text-white/90 text-[13px] font-medium mb-2 px-1">
+              <span>{currentTime}</span>
+              <span>{duration}</span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              step="0.1"
+              value={progress}
+              onChange={handleSeek}
+              className="w-full h-1 bg-white/20 rounded-full appearance-none cursor-pointer accent-[#E53945] hover:h-1.5 transition-all"
+              style={{ background: `linear-gradient(to right, #E53945 ${progress}%, rgba(255,255,255,0.2) ${progress}%)` }}
+            />
+          </div>
         </div>
       </div>
 
@@ -282,7 +281,7 @@ export default function AppleVideoPlayer({
           {feedVideos.length > 0 ? (
             <div className="flex flex-col gap-4">
               {feedVideos.map((v) => {
-                if (!v.videoUrl && !v.bitchuteUrl) return null; // Skip if no video
+                if (!v.videoUrl && !v.bitchuteUrl) return null;
                 const vCreator = v.creator?.name || "Creator";
                 const vPhoto = v.creator?.photoUrl || "";
                 const isCurrent = v.id === currentVideo.id || v.title === currentVideo.title;
@@ -291,9 +290,9 @@ export default function AppleVideoPlayer({
                   <div 
                     key={v.id} 
                     onClick={() => handleVideoSelect(v)}
-                    className={`flex gap-4 cursor-pointer group p-2 rounded-xl transition ${isCurrent ? 'bg-white/10' : 'hover:bg-white/5'}`}
+                    className={`flex gap-4 cursor-pointer group p-2 -mx-2 rounded-xl transition ${isCurrent ? 'bg-white/10' : 'hover:bg-white/5'}`}
                   >
-                    <div className="relative w-40 aspect-video rounded-xl overflow-hidden bg-[#1c1c1e] flex-shrink-0">
+                    <div className="relative w-40 aspect-video rounded-xl overflow-hidden bg-[#1c1c1e] flex-shrink-0 border border-white/5">
                       <img src={v.posterUrl || v.backdropUrl} className="w-full h-full object-cover" alt="" />
                       <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition" />
                     </div>
