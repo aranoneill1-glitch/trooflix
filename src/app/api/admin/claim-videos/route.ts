@@ -11,11 +11,10 @@ const KEY = "trooflix:videos";
 
 export async function GET() {
   try {
-    const videos = (await kv.get<any[]>(KEY)) || [];
+    let videos = (await kv.get<any[]>(KEY)) || [];
     let claimedCount = 0;
 
-    // The user is 'ssecommodityacademy'. 
-    // We'll look up their Supabase user_id and assign all orphaned videos to them.
+    // 1. Get your exact user UUID and numeric creator ID
     const { data: profile } = await supabaseAdmin
       .from("profiles")
       .select("user_id")
@@ -27,22 +26,28 @@ export async function GET() {
     }
 
     const targetUserId = profile.user_id;
+    
+    // Calculate the numeric creator ID (using the same logic as your app)
+    const uuidHex = String(targetUserId).replace(/-/g, "").slice(0, 12);
+    const targetCreatorId = parseInt(uuidHex, 16) || 0;
 
-    const updatedVideos = videos.map((v: any) => {
-      // If the video is missing the uploaderUserId or creatorId, claim it
-      if (!v.uploaderUserId && (!v.creatorId || v.creatorId === 'null')) {
-        claimedCount++;
-        return { ...v, uploaderUserId: targetUserId };
-      }
-      return v;
+    // 2. Force every video to belong to this user
+    videos = videos.map((v: any) => {
+      claimedCount++;
+      return { 
+        ...v, 
+        uploaderUserId: targetUserId,
+        creatorId: targetCreatorId
+      };
     });
 
-    await kv.set(KEY, updatedVideos);
+    await kv.set(KEY, videos);
 
     return NextResponse.json({ 
       success: true, 
-      message: `Successfully claimed ${claimedCount} orphaned videos for ssecommodityacademy.`,
-      userId: targetUserId
+      message: `Successfully forced ${claimedCount} videos to belong to ssecommodityacademy.`,
+      userId: targetUserId,
+      creatorId: targetCreatorId
     });
   } catch (e: any) {
     return NextResponse.json({ error: String(e) }, { status: 500 });
