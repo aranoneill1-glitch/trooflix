@@ -1,15 +1,20 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Play } from "lucide-react";
+import { Play, Loader2 } from "lucide-react";
 
 export default function LivePlayer({ whepUrl }: { whepUrl: string }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [started, setStarted] = useState(false);
+  const [connecting, setConnecting] = useState(false);
+  const [error, setError] = useState(false);
   const [peerConnection, setPeerConnection] = useState<RTCPeerConnection | null>(null);
 
   const connectStream = async () => {
     if (!whepUrl) return;
+    setConnecting(true);
+    setError(false);
+
     try {
       const pc = new RTCPeerConnection({
         iceServers: [{ urls: "stun:stun.cloudflare.com:3478" }],
@@ -27,7 +32,10 @@ export default function LivePlayer({ whepUrl }: { whepUrl: string }) {
         body: offer.sdp,
       });
 
-      if (!res.ok) throw new Error("Failed to connect to stream");
+      if (!res.ok) {
+        throw new Error("Failed to connect to stream");
+      }
+
       const answerSdp = await res.text();
       await pc.setRemoteDescription({ type: "answer", sdp: answerSdp });
 
@@ -37,12 +45,20 @@ export default function LivePlayer({ whepUrl }: { whepUrl: string }) {
           videoRef.current.play().catch(e => console.log("Autoplay blocked:", e));
         }
       };
-      
+
+      // Wait briefly for the video to actually start playing before hiding the spinner
+      pc.oniceconnectionstatechange = () => {
+        if (pc.iceConnectionState === "connected" || pc.iceConnectionState === "completed") {
+          setConnecting(false);
+          setStarted(true);
+        }
+      };
+
       setPeerConnection(pc);
-      setStarted(true);
     } catch (err) {
       console.error("Live playback error:", err);
-      alert("Failed to load live stream. It may have ended.");
+      setConnecting(false);
+      setError(true);
     }
   };
 
@@ -72,10 +88,30 @@ export default function LivePlayer({ whepUrl }: { whepUrl: string }) {
           onClick={connectStream}
           className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/60 cursor-pointer backdrop-blur-sm"
         >
-          <div className="w-16 h-16 bg-[#E53945] rounded-full flex items-center justify-center mb-4 shadow-[0_0_30px_rgba(229,57,69,0.5)]">
-            <Play size={32} className="text-white ml-1" fill="currentColor" />
-          </div>
-          <p className="text-white font-bold text-lg">Tap to watch live</p>
+          {connecting ? (
+            <>
+              <Loader2 size={48} className="text-[#E53945] animate-spin mb-4" />
+              <p className="text-white font-bold text-lg">Connecting...</p>
+            </>
+          ) : error ? (
+            <>
+              <p className="text-white font-bold text-lg mb-2">Stream not found</p>
+              <p className="text-white/60 text-sm mb-4">The stream may have ended or hasn't fully started yet.</p>
+              <button 
+                onClick={(e) => { e.stopPropagation(); connectStream(); }}
+                className="px-6 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full text-white font-bold transition"
+              >
+                Try Again
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="w-16 h-16 bg-[#E53945] rounded-full flex items-center justify-center mb-4 shadow-[0_0_30px_rgba(229,57,69,0.5)]">
+                <Play size={32} className="text-white ml-1" fill="currentColor" />
+              </div>
+              <p className="text-white font-bold text-lg">Tap to watch live</p>
+            </>
+          )}
         </div>
       )}
     </div>
