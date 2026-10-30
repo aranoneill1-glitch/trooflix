@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { ArrowLeft, UserPlus, MessageSquare, CheckCircle2, LayoutGrid, List } from "lucide-react";
+import { ArrowLeft, UserPlus, MessageSquare, CheckCircle2, LayoutGrid, List, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
@@ -14,6 +14,7 @@ export default function PublicProfilePage() {
   
   const [profile, setProfile] = useState<any>(null);
   const [videos, setVideos] = useState<any[]>([]);
+  const [merch, setMerch] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
   const [activeContentTab, setActiveContentTab] = useState<"All" | "Podcasts" | "Videos" | "Store">("All");
@@ -45,6 +46,18 @@ export default function PublicProfilePage() {
         }
       } catch (err) {}
 
+      // FIXED: Filter merch by creatorSlug instead of creator_id
+      try {
+        const merchRes = await fetch("/api/products/global");
+        const merchData = await merchRes.json();
+        if (merchData.products) {
+          const creatorMerch = merchData.products.filter((p: any) => 
+            p.creatorSlug === username
+          );
+          setMerch(creatorMerch);
+        }
+      } catch (err) {}
+
       setLoading(false);
     }
     if (username) loadProfileAndVideos();
@@ -69,8 +82,6 @@ export default function PublicProfilePage() {
 
   return (
     <main className="min-h-screen text-white pb-32 font-sans relative overflow-hidden">
-      
-      {/* THEME BACKGROUND */}
       <div className="fixed inset-0 z-0" style={bgStyle}>
         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
       </div>
@@ -120,6 +131,38 @@ export default function PublicProfilePage() {
             </div>
 
             <div className="w-full">
+              {activeContentTab === "Store" && (
+                <div className="w-full">
+                  {merch.length === 0 ? (
+                    <div className="text-center py-12 bg-[#1c1c1e] border border-white/5 rounded-2xl"><ShoppingBag size={32} className="mx-auto text-white/20 mb-3" /><p className="text-white/50 text-sm">No products available yet.</p></div>
+                  ) : contentView === "grid" ? (
+                    <div className="grid grid-cols-2 gap-3">
+                      {merch.map((item) => (
+                        <div key={item.id} className="bg-[#1c1c1e] border border-white/10 rounded-xl overflow-hidden group cursor-pointer flex flex-col">
+                          <div className="relative aspect-square">
+                            <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+                          </div>
+                          <div className="p-3 flex-1 flex flex-col justify-between text-left">
+                            <h3 className="text-sm font-bold leading-tight line-clamp-2 text-white">{item.name}</h3>
+                            <p className="text-emerald-400 font-bold text-xs mt-2">${(item.price_cents / 100).toFixed(2)}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-3">
+                      {merch.map((item) => (
+                        <div key={item.id} className="flex items-center gap-4 bg-[#1c1c1e] border border-white/10 rounded-2xl p-3">
+                          <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0 relative"><img src={item.image_url} alt={item.name} className="w-full h-full object-cover" /></div>
+                          <div className="flex-1 min-w-0 text-left"><h3 className="text-sm font-bold text-white truncate">{item.name}</h3><p className="text-xs text-white/50 mt-1">Merch</p></div>
+                          <p className="text-emerald-400 font-bold text-sm shrink-0">${(item.price_cents / 100).toFixed(2)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {activeContentTab !== "Store" && (
                 filteredVideos.length === 0 ? (
                   <div className="text-center py-12 bg-[#1c1c1e] border border-white/5 rounded-2xl"><p className="text-white/50 text-sm">No content found yet.</p></div>
