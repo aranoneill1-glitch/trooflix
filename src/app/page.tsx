@@ -225,7 +225,7 @@ export default function Home() {
     <PullToRefresh onRefresh={async () => { window.location.reload(); }}>
     <main className="min-h-screen bg-black text-white overflow-x-hidden pb-20 lg:pb-0">
       <TopBar onMenu={() => setDrawerOpen(true)} />
-
+      
       <AnimatePresence>
         {drawerOpen && (
           <>
@@ -306,7 +306,6 @@ export default function Home() {
                   <DesktopHero 
                     videos={heroPool}
                     activeIndex={heroIndex}
-                    setActiveIndex={setHeroIndex}
                     onPlay={handleInstantPlay}
                     onMore={(v) => setSelected(v)}
                   />
@@ -441,7 +440,7 @@ export default function Home() {
 }
 
 /* ============ DESKTOP NETFLIX HERO ============ */
-function DesktopHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { videos: Video[], activeIndex: number, setActiveIndex: (i: number) => void, onPlay: (v: Video) => void, onMore: (v: Video) => void }) {
+function DesktopHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[], activeIndex: number, onPlay: (v: Video) => void, onMore: (v: Video) => void }) {
   if (!videos || videos.length === 0) return null;
   const activeVideo = videos[activeIndex];
 
@@ -457,7 +456,7 @@ function DesktopHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { 
           transition={{ duration: 0.8 }}
           className="absolute inset-0 z-0"
         >
-          <img src={activeVideo.backdropUrl} alt={activeVideo.title} className="w-full h-full object-cover object-top" />
+          <img src={activeVideo.backdropUrl} alt={activeVideo.title} className="w-full h-full object-cover object-center" />
           {/* Netflix-style Gradients */}
           <div className="absolute inset-0 bg-gradient-to-r from-[#09090B] via-[#09090B]/60 to-transparent w-full" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#09090B] via-transparent to-transparent w-full" />
@@ -472,10 +471,7 @@ function DesktopHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { 
            animate={{ opacity: 1, y: 0 }}
            transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <div className="flex items-center gap-3 mb-4">
-            <span className="text-[#E53945] font-black text-xl tracking-tighter">N</span>
-            <span className="text-white/70 font-bold tracking-[0.2em] text-sm uppercase">{activeVideo.type || "Series"}</span>
-          </div>
+          {/* N DOCUMENTARY REMOVED HERE */}
           
           <h1 className="text-4xl lg:text-6xl font-black text-white leading-[1.1] mb-6 drop-shadow-2xl">
             {activeVideo.title}
@@ -509,19 +505,7 @@ function DesktopHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { 
         </motion.div>
       </div>
 
-      {/* Side Navigation Buttons */}
-      <button 
-        onClick={() => setActiveIndex((activeIndex - 1 + videos.length) % videos.length)} 
-        className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/30 hover:bg-black/70 backdrop-blur-md rounded-full flex items-center justify-center text-white/50 hover:text-white border border-white/10 transition z-20"
-      >
-        <ChevronLeft size={32} />
-      </button>
-      <button 
-        onClick={() => setActiveIndex((activeIndex + 1) % videos.length)} 
-        className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/30 hover:bg-black/70 backdrop-blur-md rounded-full flex items-center justify-center text-white/50 hover:text-white border border-white/10 transition z-20"
-      >
-        <ChevronRight size={32} />
-      </button>
+      {/* SIDE NAVIGATION ARROWS REMOVED HERE */}
     </section>
   );
 }
