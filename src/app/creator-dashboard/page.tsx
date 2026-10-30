@@ -19,8 +19,6 @@ const MOCK_REVENUE = 1250.00;
 const MOCK_SUBSCRIBERS = 142;
 const MOCK_TOTAL_VIEWS = 45200;
 
-
-
 const InstagramIcon = ({ size = 16 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
@@ -306,22 +304,28 @@ function CreatorDashboardContent() {
         {isDashboardView && (
           <div className="animate-in fade-in duration-300 space-y-8">
             {/* QUICK ACTIONS */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
               <Link href="/creator-dashboard/manage-content" className="bg-[#1c1c1e] border border-white/10 hover:border-[#E53945] p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
                 <Video className="text-[#E53945]" size={24} />
-                <span className="text-xs font-bold">Manage Content</span>
+                <span className="text-xs font-bold text-center">Manage Content</span>
               </Link>
               <Link href="/creator-shop" className="bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
                 <ShoppingBag className="text-white" size={24} />
-                <span className="text-xs font-bold">Manage Shop</span>
+                <span className="text-xs font-bold text-center">Manage Shop</span>
               </Link>
               <Link href="/creator-dashboard/settings" className="bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
                 <Pencil className="text-white" size={24} />
-                <span className="text-xs font-bold">Manage Profile</span>
+                <span className="text-xs font-bold text-center">Manage Profile</span>
               </Link>
               <Link href="/creator-dashboard/orders" className="bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
                 <Package className="text-white" size={24} />
-                <span className="text-xs font-bold">Manage Orders</span>
+                <span className="text-xs font-bold text-center">Manage Orders</span>
+              </Link>
+              
+              {/* NEW MANAGE SUBSCRIPTION BOX */}
+              <Link href="/studio/premium" className="bg-[#1c1c1e] border border-white/10 hover:border-[#E53945] p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
+                <Star className="text-[#E53945]" size={24} />
+                <span className="text-xs font-bold text-center">Manage Subscription</span>
               </Link>
             </div>
           </div>
