@@ -85,14 +85,12 @@ export default function SearchPage() {
     if (query.length === 0) return [];
     
     const results = allVideos.map(v => {
-      // Find the creator name to include in search
       const creator = allProfiles.find(p => 
         String(p.creator_id) === String(v.creatorId) || 
         String(p.user_id) === String(v.uploaderUserId)
       );
       const creatorName = creator ? (creator.display_name || creator.username || "") : "";
 
-      // Build a massive searchable string from all metadata
       const searchableText = `
         ${v.title || ""} 
         ${v.description || ""} 
@@ -105,10 +103,8 @@ export default function SearchPage() {
         ${v.studio || ""}
       `.toLowerCase();
 
-      // Check if every word in the query exists in the text
       const matches = searchTerms.every(term => searchableText.includes(term));
       
-      // Calculate a basic relevance score (Title matches rank highest)
       let score = 0;
       if (matches) {
         score = 1;
@@ -132,7 +128,6 @@ export default function SearchPage() {
   // Discovery Data (When not searching)
   const trendingDocs = allVideos.filter(v => v.type === 'Documentary').slice(0, 6);
   const popularPodcasts = allVideos.filter(v => v.type === 'Podcast').slice(0, 5);
-  const recentlyAdded = [...allVideos].sort((a, b) => b.id - a.id).slice(0, 6);
   const popularCreators = allProfiles.filter(p => p.tier === 'creator' || p.creator_id).slice(0, 8);
 
   return (
@@ -356,11 +351,11 @@ export default function SearchPage() {
           ) : (
             <div className="space-y-16">
               
-              {/* 3. CATEGORY GRID (3 Columns) */}
+              {/* 3. CATEGORY GRID (All Categories, 3 Columns) */}
               <section>
                 <h2 className="text-2xl font-bold mb-8">Browse Categories</h2>
                 <div className="grid grid-cols-3 gap-6">
-                  {MAIN_CATEGORIES.slice(0, 9).map((cat) => (
+                  {MAIN_CATEGORIES.map((cat) => (
                     <Link key={cat.name} href={`/search/${encodeURIComponent(cat.name.toLowerCase().replace(/ & /g, "-").replace(/ /g, "-"))}`} className={`group relative h-40 rounded-2xl overflow-hidden border border-white/10 block`}>
                       <img src={cat.image} alt={cat.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                       <div className={`absolute inset-0 ${cat.color} mix-blend-multiply opacity-80 group-hover:opacity-60 transition-opacity`} />
@@ -444,30 +439,6 @@ export default function SearchPage() {
                         </div>
                         <h3 className="text-sm font-bold text-white group-hover:text-[#E53945] transition-colors truncate w-full">{c.display_name || c.username}</h3>
                         <p className="text-xs text-white/50 mt-1">Creator</p>
-                      </Link>
-                    ))}
-                  </div>
-                </section>
-              )}
-
-              <div className="w-full h-px bg-white/5" />
-
-              {/* 7. RECENTLY ADDED */}
-              {recentlyAdded.length > 0 && (
-                <section>
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold">Recently Added</h2>
-                    <button className="text-sm font-bold text-white/50 hover:text-white transition">View All</button>
-                  </div>
-                  <div className="grid grid-cols-6 gap-6">
-                    {recentlyAdded.map((v) => (
-                      <Link key={v.id} href={`/watch/${v.id}`} className="group flex flex-col">
-                        <div className="relative aspect-video rounded-xl overflow-hidden bg-[#1c1c1e] mb-3 border border-white/5 shadow-lg">
-                          <img src={v.posterUrl || v.backdropUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-                          <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition" />
-                        </div>
-                        <h3 className="text-sm font-bold text-white leading-tight line-clamp-2 group-hover:text-[#E53945] transition-colors">{v.title}</h3>
-                        <p className="text-xs text-white/50 mt-1">{v.type || "Video"}</p>
                       </Link>
                     ))}
                   </div>
