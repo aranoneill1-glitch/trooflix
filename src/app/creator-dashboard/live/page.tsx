@@ -90,7 +90,6 @@ export default function GoLivePage() {
       const answerSdp = await whipRes.text();
       await peerConnection.setRemoteDescription({ type: "answer", sdp: answerSdp });
 
-      // UPDATE VIA API ROUTE TO BYPASS RLS
       const statusRes = await fetch("/api/live/status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

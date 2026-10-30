@@ -109,9 +109,9 @@ export default function PublicProfilePage() {
             {profile.bio && <p className="text-sm text-white/70 max-w-md mb-8 leading-relaxed">{profile.bio}</p>}
 
             {/* LIVE PLAYER */}
-            {profile.is_live && profile.live_playback_url && (
+            {profile.is_live && profile.live_input_id && (
               <div className="w-full mb-8">
-                <LivePlayer whepUrl={profile.live_playback_url} />
+                <LivePlayer streamId={profile.live_input_id} />
               </div>
             )}
 
