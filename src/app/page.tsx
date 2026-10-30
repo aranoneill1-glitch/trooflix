@@ -277,8 +277,8 @@ export default function Home() {
         <>
           {!showingFiltered && heroPool.length > 0 && (
             <>
-              {/* 1. HEADLINE */}
-              <div className="w-full pt-24 md:pt-28 pb-4 px-4 md:px-12 max-w-6xl mx-auto flex flex-col">
+              {/* 1. HEADLINE (Mobile Only) */}
+              <div className="w-full pt-24 md:pt-28 pb-4 px-4 md:px-12 max-w-6xl mx-auto flex flex-col lg:hidden">
                 <div>
                   <h2 className="text-2xl md:text-4xl font-black tracking-tight">
                     <span className="text-white">No ads.</span>{" "}
@@ -288,15 +288,29 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* 2. HERO CAROUSEL */}
+              {/* 2. HERO (Mobile: 3D Carousel, Desktop: Netflix Style) */}
               <div className="w-full pb-0">
-                <CarouselHero 
-                  videos={heroPool} 
-                  activeIndex={heroIndex} 
-                  setActiveIndex={setHeroIndex} 
-                  onPlay={handleInstantPlay}
-                  onMore={(v) => setSelected(v)}
-                />
+                {/* Mobile Hero */}
+                <div className="lg:hidden">
+                  <CarouselHero 
+                    videos={heroPool} 
+                    activeIndex={heroIndex} 
+                    setActiveIndex={setHeroIndex} 
+                    onPlay={handleInstantPlay}
+                    onMore={(v) => setSelected(v)}
+                  />
+                </div>
+
+                {/* Desktop Hero */}
+                <div className="hidden lg:block">
+                  <DesktopHero 
+                    videos={heroPool}
+                    activeIndex={heroIndex}
+                    setActiveIndex={setHeroIndex}
+                    onPlay={handleInstantPlay}
+                    onMore={(v) => setSelected(v)}
+                  />
+                </div>
               </div>
             </>
           )}
@@ -334,7 +348,6 @@ export default function Home() {
                 {/* 4. CREATOR AVATARS */}
                 {creators && creators.length > 0 && (
                   <div className="mt-2">
-                    {/* Mobile: horizontal scroll, Desktop: Grid */}
                     <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide px-4 md:px-12 pb-4 lg:grid lg:grid-cols-6 xl:grid-cols-8 lg:overflow-visible lg:pb-0 lg:gap-4">
                       {[...creators].slice(0, 15).map((c: any) => (
                         <Link key={c.id} href={`/podcaster/${c.slug}`} className="flex flex-col items-center gap-2 flex-shrink-0 group w-[96px] md:w-[112px] lg:w-full lg:flex-shrink">
@@ -389,7 +402,6 @@ export default function Home() {
                       Don't Miss A <span className="text-red-600">Thing</span>
                     </h2>
                   </div>
-                  {/* Mobile: Single Column, Desktop: 3-Column Grid */}
                   <div className="flex flex-col gap-8 md:gap-12 px-4 md:px-12 max-w-3xl mx-auto lg:grid lg:grid-cols-3 lg:gap-6 lg:max-w-7xl">
                     {[...videos].sort((a: any, b: any) => {
                       const at = a.createdAt ? new Date(a.createdAt).getTime() : a.id;
@@ -428,7 +440,93 @@ export default function Home() {
   );
 }
 
-/* ============ 3D APPLE COVER FLOW HERO ============ */
+/* ============ DESKTOP NETFLIX HERO ============ */
+function DesktopHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { videos: Video[], activeIndex: number, setActiveIndex: (i: number) => void, onPlay: (v: Video) => void, onMore: (v: Video) => void }) {
+  if (!videos || videos.length === 0) return null;
+  const activeVideo = videos[activeIndex];
+
+  return (
+    <section className="relative w-full h-[85vh] flex items-center justify-start overflow-hidden bg-black">
+      {/* Background Image with Crossfade */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeVideo.id}
+          initial={{ opacity: 0, scale: 1.05 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.8 }}
+          className="absolute inset-0 z-0"
+        >
+          <img src={activeVideo.backdropUrl} alt={activeVideo.title} className="w-full h-full object-cover object-top" />
+          {/* Netflix-style Gradients */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#09090B] via-[#09090B]/60 to-transparent w-full" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#09090B] via-transparent to-transparent w-full" />
+        </motion.div>
+      </AnimatePresence>
+
+      {/* Content */}
+      <div className="relative z-10 px-12 md:px-16 lg:px-24 max-w-3xl flex flex-col items-start pt-20">
+        <motion.div
+           key={`text-${activeVideo.id}`}
+           initial={{ opacity: 0, y: 20 }}
+           animate={{ opacity: 1, y: 0 }}
+           transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-[#E53945] font-black text-xl tracking-tighter">N</span>
+            <span className="text-white/70 font-bold tracking-[0.2em] text-sm uppercase">{activeVideo.type || "Series"}</span>
+          </div>
+          
+          <h1 className="text-5xl md:text-7xl font-black text-white leading-[1.1] mb-6 drop-shadow-2xl">
+            {activeVideo.title}
+          </h1>
+          
+          <div className="flex items-center gap-4 text-sm font-semibold mb-6">
+            <span className="text-white/80">{activeVideo.year}</span>
+            <span className="border border-white/30 px-2 py-0.5 rounded text-xs">{activeVideo.rating || "TV-MA"}</span>
+            <span className="text-white/80">{activeVideo.duration}</span>
+            <span className="text-[#1ed760] font-bold">{activeVideo.match}% Match</span>
+          </div>
+
+          <p className="text-lg text-white/80 leading-relaxed mb-10 line-clamp-3 drop-shadow-md max-w-2xl">
+            {activeVideo.description || "No description available."}
+          </p>
+          
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => onPlay(activeVideo)}
+              className="flex items-center gap-2 bg-[#E53945] hover:bg-[#d12e39] text-white px-8 py-3.5 rounded-full font-bold text-lg transition-transform hover:scale-105 shadow-xl"
+            >
+              <Play size={24} fill="currentColor" /> Play
+            </button>
+            <button 
+              onClick={() => onMore(activeVideo)}
+              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white px-8 py-3.5 rounded-full font-bold text-lg transition-transform hover:scale-105 border border-white/10"
+            >
+              <Info size={24} /> More Info
+            </button>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Side Navigation Buttons */}
+      <button 
+        onClick={() => setActiveIndex((activeIndex - 1 + videos.length) % videos.length)} 
+        className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/30 hover:bg-black/70 backdrop-blur-md rounded-full flex items-center justify-center text-white/50 hover:text-white border border-white/10 transition z-20"
+      >
+        <ChevronLeft size={32} />
+      </button>
+      <button 
+        onClick={() => setActiveIndex((activeIndex + 1) % videos.length)} 
+        className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/30 hover:bg-black/70 backdrop-blur-md rounded-full flex items-center justify-center text-white/50 hover:text-white border border-white/10 transition z-20"
+      >
+        <ChevronRight size={32} />
+      </button>
+    </section>
+  );
+}
+
+/* ============ MOBILE 3D CAROUSEL ============ */
 function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { videos: Video[], activeIndex: number, setActiveIndex: (i: number) => void, onPlay: (v: Video) => void, onMore: (v: Video) => void }) {
   const dragX = useMotionValue(0);
   const currentIndex = useMotionValue(activeIndex);
@@ -473,7 +571,7 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
   };
 
   return (
-    <section className="relative w-full h-[50vh] md:h-[70vh] lg:h-[75vh] flex items-center justify-center overflow-hidden bg-black touch-pan-y [--carousel-offset:-4vw] lg:[--carousel-offset:-22vw]">
+    <section className="relative w-full h-[50vh] flex items-center justify-center overflow-hidden bg-black touch-pan-y">
       <div className="relative w-full max-w-6xl h-full flex items-center justify-center perspective-[1200px]">
         {videos.map((video, i) => (
           <CarouselCard
@@ -493,24 +591,22 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
         ))}
       </div>
 
-      <button onClick={() => setActiveIndex((activeIndex - 1 + videos.length) % videos.length)} className="hidden md:flex absolute left-4 lg:left-8 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/80 backdrop-blur-md rounded-full items-center justify-center text-white border border-white/20 transition z-50">
-        <ChevronLeft size={24} />
+      <button onClick={() => setActiveIndex((activeIndex - 1 + videos.length) % videos.length)} className="flex absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 hover:bg-black/80 backdrop-blur-md rounded-full items-center justify-center text-white border border-white/20 transition z-50">
+        <ChevronLeft size={20} />
       </button>
-      <button onClick={() => setActiveIndex((activeIndex + 1) % videos.length)} className="hidden md:flex absolute right-4 lg:right-8 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/80 backdrop-blur-md rounded-full items-center justify-center text-white border border-white/20 transition z-50">
-        <ChevronRight size={24} />
+      <button onClick={() => setActiveIndex((activeIndex + 1) % videos.length)} className="flex absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 hover:bg-black/80 backdrop-blur-md rounded-full items-center justify-center text-white border border-white/20 transition z-50">
+        <ChevronRight size={20} />
       </button>
     </section>
   );
 }
 
-/* ============ CAROUSEL CARD ============ */
 function CarouselCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMore, isActive, onPointerDown, onPointerMove, onPointerUp }: any) {
   const offset = useTransform([currentIndex, dragX], ([c, d]: any[]) => {
     return i - c + (d / 300);
   });
 
-  // SHIFTED SLIGHTLY LEFT (-4vw) TO MATCH SCREENSHOT EXACTLY
-  const x = useTransform(offset, (o) => `calc(${o * 60}% + var(--carousel-offset))`);
+  const x = useTransform(offset, (o) => `calc(${o * 60}% - 4vw)`);
   const scale = useTransform(offset, (o) => Math.max(0.75, 1 - Math.abs(o) * 0.25));
   const rotateY = useTransform(offset, (o) => o * -35);
   const z = useTransform(offset, (o) => -Math.abs(o) * 100);
@@ -526,15 +622,15 @@ function CarouselCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMo
         if (isActive) onMore(video);
       }}
       style={{ x, scale, rotateY, z, opacity, zIndex, touchAction: 'pan-y' }}
-      className="absolute w-[75%] md:w-[35%] lg:w-[28%] max-w-[360px] aspect-[3/4] rounded-[26px] cursor-pointer shadow-[0_20px_50px_rgba(0,0,0,0.8)] select-none bg-black"
+      className="absolute w-[75%] aspect-[3/4] rounded-[26px] cursor-pointer shadow-[0_20px_50px_rgba(0,0,0,0.8)] select-none bg-black"
     >
       <div className="relative w-full h-full rounded-[26px] overflow-hidden pointer-events-none">
         <img src={video.backdropUrl} alt={video.title} className="w-full h-full object-cover" draggable={false} />
         
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90" />
 
-        <div className="absolute bottom-0 inset-x-0 p-5 md:p-6 flex flex-col items-start gap-3 pointer-events-auto">
-          <h3 className="text-xl md:text-3xl font-black tracking-tight text-white drop-shadow-lg leading-tight line-clamp-3">
+        <div className="absolute bottom-0 inset-x-0 p-5 flex flex-col items-start gap-3 pointer-events-auto">
+          <h3 className="text-xl font-black tracking-tight text-white drop-shadow-lg leading-tight line-clamp-3">
             {video.title}
           </h3>
 
