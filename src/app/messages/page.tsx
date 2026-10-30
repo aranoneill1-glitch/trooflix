@@ -171,8 +171,8 @@ export default function MessagesInbox() {
         </div>
       </div>
 
-      {/* Scrollable list */}
-      <div className="flex-1 overflow-y-auto pb-24 lg:pb-4">
+      {/* Scrollable list - GREY BACKGROUND APPLIED HERE */}
+      <div className="flex-1 overflow-y-auto pb-24 lg:pb-4 bg-[#1c1c1e]">
         <div className="max-w-3xl mx-auto">
         {loading && (
           <p className="text-white/50 py-12 text-center px-6">Loading…</p>
@@ -203,7 +203,7 @@ export default function MessagesInbox() {
                 <Link
                   key={c.other_user_id}
                   href={`/messages/${c.other_user_id}`}
-                  className="flex items-center gap-4 px-4 md:px-6 py-3.5 hover:bg-white/[0.04] active:bg-white/[0.06] transition"
+                  className="flex items-center gap-4 px-4 md:px-6 py-3.5 hover:bg-white/[0.06] active:bg-white/[0.08] transition border-b border-white/5"
                 >
                   {/* Bigger avatar — 64px */}
                   <div className="w-16 h-16 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center overflow-hidden flex-shrink-0">
@@ -261,11 +261,11 @@ export default function MessagesInbox() {
           }}
         >
           <div
-            className="border border-white/10 rounded-2xl w-full max-w-lg mt-16 md:mt-0 overflow-hidden"
-            style={{ background: "#000000" }}
+            className="border border-white/10 rounded-2xl w-full max-w-lg mt-16 md:mt-0 overflow-hidden shadow-2xl"
+            style={{ background: "#1c1c1e" }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center gap-2 border-b border-black/30 px-4 py-3">
+            <div className="flex items-center gap-2 border-b border-white/10 px-4 py-3">
               <Search size={18} className="text-white/50" />
               <input
                 autoFocus
@@ -289,7 +289,7 @@ export default function MessagesInbox() {
                   <Link
                     key={u.user_id}
                     href={`/messages/${u.user_id}`}
-                    className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition"
+                    className="flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition border-b border-white/5"
                   >
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center overflow-hidden flex-shrink-0">
                       {u.avatar_url ? (
