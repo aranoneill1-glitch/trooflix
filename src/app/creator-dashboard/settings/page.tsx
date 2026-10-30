@@ -185,19 +185,28 @@ export default function ProfileSettingsPage() {
     try {
       let finalAvatarUrl = avatarUrl;
 
+      // UPLOAD TO CLOUDFLARE R2
       if (avatarFile) {
-        const fileExt = avatarFile.name.split('.').pop();
-        const fileName = `${userId}-${Date.now()}.${fileExt}`;
-        const { error: uploadError } = await supabase.storage.from("avatars").upload(fileName, avatarFile, { upsert: true });
-        if (uploadError) throw new Error("Failed to upload image: " + uploadError.message);
-        const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(fileName);
-        finalAvatarUrl = publicUrl;
+        const r2Res = await fetch('/api/r2-upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ filename: avatarFile.name, contentType: avatarFile.type }),
+        });
+        const r2Data = await r2Res.json();
+        if (!r2Res.ok) throw new Error("Failed to get R2 upload URL");
+
+        const uploadRes = await fetch(r2Data.uploadUrl, {
+          method: 'PUT',
+          body: avatarFile,
+          headers: { 'Content-Type': avatarFile.type },
+        });
+        if (!uploadRes.ok) throw new Error("Failed to upload image to R2");
+
+        finalAvatarUrl = r2Data.publicUrl;
       }
 
       // STRICT SANITIZATION FOR USERNAME
       const cleanUsername = username.replace(/^@/, "").trim().toLowerCase().replace(/[^a-z0-9_]/g, "");
-
-      // Sanitize socials (only strip @, preserve case and other chars)
       const cleanIg = instagram.replace(/^@/, "").trim();
       const cleanX = xHandle.replace(/^@/, "").trim();
 
@@ -224,7 +233,6 @@ export default function ProfileSettingsPage() {
     }
   };
 
-  // Filter themes based on search
   const filteredThemes = useMemo(() => {
     if (!themeSearch) return THEMES;
     return THEMES.filter(t => t.name.toLowerCase().includes(themeSearch.toLowerCase()));
