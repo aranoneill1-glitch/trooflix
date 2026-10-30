@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { ChevronLeft, Plus, Trash2, Edit, ShoppingBag, Package, X, Image as ImageIcon } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { getCachedUser } from "@/lib/cache";
+import { createClient } from "@/utils/supabase/client";
 
 type Product = {
   id: number;
@@ -18,6 +19,9 @@ type Product = {
 };
 
 export default function ManageShopPage() {
+  const supabase = createClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
   const [creatorId, setCreatorId] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,6 +34,7 @@ export default function ManageShopPage() {
   const [price, setPrice] = useState("");
   const [inventory, setInventory] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -59,6 +64,7 @@ export default function ManageShopPage() {
   };
 
   const openModal = (product?: Product) => {
+    setImageFile(null);
     if (product) {
       setEditingId(product.id);
       setName(product.name);
@@ -77,22 +83,46 @@ export default function ManageShopPage() {
     setIsModalOpen(true);
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setImageFile(file);
+      setImageUrl(URL.createObjectURL(file)); // Preview
+    }
+  };
+
   const saveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!creatorId || !name || !price) return;
     setSaving(true);
 
-    const priceCents = Math.round(Number(price) * 100);
-    const payload = {
-      creatorId,
-      name,
-      description,
-      price_cents: priceCents,
-      inventory_count: Number(inventory) || 0,
-      image_url: imageUrl,
-    };
-
     try {
+      let finalImageUrl = imageUrl;
+
+      // Upload image if a new file was selected
+      if (imageFile) {
+        const fileExt = imageFile.name.split('.').pop();
+        const fileName = `product-${Date.now()}.${fileExt}`;
+        const { error: uploadError } = await supabase.storage
+          .from("products")
+          .upload(fileName, imageFile, { upsert: true });
+
+        if (uploadError) throw new Error("Failed to upload image: " + uploadError.message);
+
+        const { data: { publicUrl } } = supabase.storage.from("products").getPublicUrl(fileName);
+        finalImageUrl = publicUrl;
+      }
+
+      const priceCents = Math.round(Number(price) * 100);
+      const payload = {
+        creatorId,
+        name,
+        description,
+        price_cents: priceCents,
+        inventory_count: Number(inventory) || 0,
+        image_url: finalImageUrl,
+      };
+
       const url = editingId ? `/api/creator/products?id=${editingId}` : "/api/creator/products";
       const method = editingId ? "PUT" : "POST";
 
@@ -108,8 +138,8 @@ export default function ManageShopPage() {
       } else {
         alert("Failed to save product");
       }
-    } catch (e) {
-      alert("Network error");
+    } catch (e: any) {
+      alert(e.message || "Network error");
     } finally {
       setSaving(false);
     }
@@ -219,7 +249,34 @@ export default function ManageShopPage() {
               </button>
             </div>
 
-            <form onSubmit={saveProduct} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+            <form onSubmit={saveProduct} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+              
+              {/* IMAGE PICKER */}
+              <div>
+                <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 block">Product Image</label>
+                <div 
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`w-full h-48 rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all relative overflow-hidden border-2 border-dashed ${imageUrl ? 'border-transparent' : 'border-white/10 hover:border-[#E53945] bg-black/40'}`}
+                >
+                  {imageUrl ? (
+                    <>
+                      <img src={imageUrl} alt="Preview" className="w-full h-full object-cover absolute inset-0" />
+                      <div className="absolute inset-0 bg-black/60 opacity-0 hover:opacity-100 flex flex-col items-center justify-center transition-opacity backdrop-blur-sm">
+                        <ImageIcon size={24} className="text-white mb-2" />
+                        <span className="text-sm font-bold text-white">Change Image</span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <ImageIcon size={32} className="text-white/20 mb-2" />
+                      <span className="text-sm font-bold text-white/50">Click to upload image</span>
+                      <span className="text-[10px] text-white/30 mt-1">JPG, PNG or WEBP</span>
+                    </>
+                  )}
+                </div>
+                <input type="file" ref={fileInputRef} onChange={handleImageChange} accept="image/*" className="hidden" />
+              </div>
+
               <div>
                 <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 block">Product Name</label>
                 <input required type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Vintage Logo Tee" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#E53945] transition" />
@@ -242,11 +299,6 @@ export default function ManageShopPage() {
                   <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 block">Inventory</label>
                   <input required type="number" min="0" value={inventory} onChange={(e) => setInventory(e.target.value)} placeholder="100" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#E53945] transition" />
                 </div>
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 block">Image URL</label>
-                <input type="url" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..." className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#E53945] transition" />
               </div>
 
               <button type="submit" disabled={saving} className="w-full mt-4 bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold py-3.5 rounded-xl transition shadow-lg shadow-[#E53945]/20">
