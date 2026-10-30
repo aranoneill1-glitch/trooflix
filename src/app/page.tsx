@@ -334,9 +334,10 @@ export default function Home() {
                 {/* 4. CREATOR AVATARS */}
                 {creators && creators.length > 0 && (
                   <div className="mt-2">
-                    <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide px-4 md:px-12 pb-4">
+                    {/* Mobile: horizontal scroll, Desktop: Grid */}
+                    <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide px-4 md:px-12 pb-4 lg:grid lg:grid-cols-6 xl:grid-cols-8 lg:overflow-visible lg:pb-0 lg:gap-4">
                       {[...creators].slice(0, 15).map((c: any) => (
-                        <Link key={c.id} href={`/podcaster/${c.slug}`} className="flex flex-col items-center gap-2 flex-shrink-0 group w-[96px] md:w-[112px]">
+                        <Link key={c.id} href={`/podcaster/${c.slug}`} className="flex flex-col items-center gap-2 flex-shrink-0 group w-[96px] md:w-[112px] lg:w-full lg:flex-shrink">
                           <div className="w-20 h-20 md:w-24 md:h-24 rounded-full p-[2px] bg-[#E53945] group-hover:scale-105 transition-transform">
                             <div className="w-full h-full rounded-full border-2 border-black overflow-hidden bg-[#1c1c1e]">
                               {c.photoUrl ? <img src={c.photoUrl} alt={c.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xl font-bold text-white">{c.name?.[0]?.toUpperCase() || "?"}</div>}
@@ -350,12 +351,12 @@ export default function Home() {
                 )}
 
                 {/* 5. VIDEO ROW */}
-                <div className="mt-8 mb-8">
-                  <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide px-4 md:px-12 pb-4">
+                <div className="mt-8 mb-8 px-4 md:px-12">
+                  <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide pb-4 lg:grid lg:grid-cols-4 xl:grid-cols-5 lg:overflow-visible lg:pb-0 lg:gap-6">
                     {videos.slice(1, 11).map((v: any) => {
                       const creator = creators.find((c: any) => c.id === v.creatorId);
                       return (
-                        <div key={v.id} onClick={() => handleCardSelect(v)} className="flex-shrink-0 w-[220px] md:w-[280px] cursor-pointer group">
+                        <div key={v.id} onClick={() => handleCardSelect(v)} className="flex-shrink-0 w-[220px] md:w-[280px] lg:w-full lg:flex-shrink cursor-pointer group">
                           <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-[#1c1c1e] mb-2 border border-white/5 shadow-lg">
                             <img src={v.posterUrl || v.backdropUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                             <div className="absolute inset-0 bg-black/20" />
@@ -388,12 +389,13 @@ export default function Home() {
                       Don't Miss A <span className="text-red-600">Thing</span>
                     </h2>
                   </div>
-                  <div className="flex flex-col gap-8 md:gap-12 px-4 md:px-12 max-w-3xl mx-auto">
+                  {/* Mobile: Single Column, Desktop: 3-Column Grid */}
+                  <div className="flex flex-col gap-8 md:gap-12 px-4 md:px-12 max-w-3xl mx-auto lg:grid lg:grid-cols-3 lg:gap-6 lg:max-w-7xl">
                     {[...videos].sort((a: any, b: any) => {
                       const at = a.createdAt ? new Date(a.createdAt).getTime() : a.id;
                       const bt = b.createdAt ? new Date(b.createdAt).getTime() : b.id;
                       return bt - at;
-                    }).slice(0, 20).map((v: any) => {
+                    }).slice(0, 12).map((v: any) => {
                       const creator = creators.find((c: any) => c.id === v.creatorId);
                       return <HomeFeedCard key={v.id} video={v} creator={creator} onMore={() => handleCardSelect(v)} onPlay={() => handleInstantPlay(v)} isActive={activeVideoId === v.id} onSetActive={() => setActiveVideoId(v.id)} />;
                     })}
@@ -471,7 +473,7 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
   };
 
   return (
-    <section className="relative w-full h-[50vh] md:h-[60vh] flex items-center justify-center overflow-hidden bg-black touch-pan-y">
+    <section className="relative w-full h-[50vh] md:h-[70vh] lg:h-[75vh] flex items-center justify-center overflow-hidden bg-black touch-pan-y">
       <div className="relative w-full max-w-6xl h-full flex items-center justify-center perspective-[1200px]">
         {videos.map((video, i) => (
           <CarouselCard
@@ -524,7 +526,7 @@ function CarouselCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMo
         if (isActive) onMore(video);
       }}
       style={{ x, scale, rotateY, z, opacity, zIndex, touchAction: 'pan-y' }}
-      className="absolute w-[75%] md:w-[45%] max-w-[420px] aspect-[3/4] rounded-[26px] cursor-pointer shadow-[0_20px_50px_rgba(0,0,0,0.8)] select-none bg-black"
+      className="absolute w-[75%] md:w-[35%] lg:w-[28%] max-w-[360px] aspect-[3/4] rounded-[26px] cursor-pointer shadow-[0_20px_50px_rgba(0,0,0,0.8)] select-none bg-black"
     >
       <div className="relative w-full h-full rounded-[26px] overflow-hidden pointer-events-none">
         <img src={video.backdropUrl} alt={video.title} className="w-full h-full object-cover" draggable={false} />
