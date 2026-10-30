@@ -7,7 +7,7 @@ import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import LivePlayer from "@/components/LivePlayer";
-import LiveChat from "@/components/LiveChat"; // <-- Import Live Chat
+import LiveChat from "@/components/LiveChat";
 import { createClient } from "@/utils/supabase/client";
 
 export default function PublicProfilePage() {
@@ -110,10 +110,11 @@ export default function PublicProfilePage() {
             {profile.bio && <p className="text-sm text-white/70 max-w-md mb-8 leading-relaxed">{profile.bio}</p>}
 
             {/* LIVE PLAYER & CHAT LAYOUT */}
-            {profile.is_live && profile.live_input_id ? (
+            {profile.is_live && profile.live_playback_url ? (
               <div className="w-full grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
                 <div className="lg:col-span-2">
-                  <LivePlayer streamId={profile.live_input_id} />
+                  {/* Pass whepUrl instead of streamId */}
+                  <LivePlayer whepUrl={profile.live_playback_url} />
                 </div>
                 <div className="lg:col-span-1">
                   <LiveChat liveInputId={profile.live_input_id} />
