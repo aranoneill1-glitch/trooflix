@@ -2,13 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/utils/supabase/client";
 import { getCachedUser } from "@/lib/cache";
 import { Mic, MicOff, Video, VideoOff, Radio, StopCircle } from "lucide-react";
 
 export default function GoLivePage() {
   const router = useRouter();
-  const supabase = createClient();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [isLive, setIsLive] = useState(false);
@@ -92,11 +90,19 @@ export default function GoLivePage() {
       const answerSdp = await whipRes.text();
       await peerConnection.setRemoteDescription({ type: "answer", sdp: answerSdp });
 
-      await supabase.from("profiles").update({
-        is_live: true,
-        live_playback_url: whepUrl,
-        live_input_id: liveInputId,
-      }).eq("user_id", userId);
+      // UPDATE VIA API ROUTE TO BYPASS RLS
+      const statusRes = await fetch("/api/live/status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          is_live: true,
+          live_playback_url: whepUrl,
+          live_input_id: liveInputId,
+        }),
+      });
+
+      if (!statusRes.ok) throw new Error("Failed to update database");
 
       setIsLive(true);
     } catch (err: any) {
@@ -111,11 +117,17 @@ export default function GoLivePage() {
     setLoading(true);
 
     try {
-      await supabase.from("profiles").update({
-        is_live: false,
-        live_playback_url: null,
-        live_input_id: null,
-      }).eq("user_id", userId);
+      // UPDATE VIA API ROUTE TO BYPASS RLS
+      await fetch("/api/live/status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          is_live: false,
+          live_playback_url: null,
+          live_input_id: null,
+        }),
+      });
 
       if (stream) stream.getTracks().forEach((track) => track.stop());
       setIsLive(false);
