@@ -6,6 +6,7 @@ import { ArrowLeft, UserPlus, MessageSquare, CheckCircle2, LayoutGrid, List, Sho
 import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import LivePlayer from "@/components/LivePlayer";
 import { createClient } from "@/utils/supabase/client";
 
 export default function PublicProfilePage() {
@@ -94,7 +95,7 @@ export default function PublicProfilePage() {
           </Link>
 
           <div className="flex flex-col items-center text-center">
-            <div className="w-32 h-32 md:w-40 md:h-40 rounded-full p-[3px] bg-gradient-to-tr from-[#E53945] to-orange-500 mb-4 shrink-0">
+            <div className={`w-32 h-32 md:w-40 md:h-40 rounded-full p-[3px] mb-4 shrink-0 ${profile.is_live ? 'bg-red-600 animate-pulse' : 'bg-gradient-to-tr from-[#E53945] to-orange-500'}`}>
               <div className="w-full h-full rounded-full border-4 border-[#09090B] overflow-hidden bg-[#1c1c1e]">
                 {profile.avatar_url ? <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-5xl font-bold">{displayName.charAt(0)}</div>}
               </div>
@@ -102,9 +103,17 @@ export default function PublicProfilePage() {
 
             <h1 className="text-2xl md:text-3xl font-black flex items-center justify-center gap-2 text-white mb-1">
               {displayName} {profile.is_verified && <CheckCircle2 size={20} className="text-[#1ed760]" fill="currentColor" />}
+              {profile.is_live && <span className="bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-sm ml-2 animate-pulse">LIVE</span>}
             </h1>
             <p className="text-white/50 mb-6">@{profile.username}</p>
             {profile.bio && <p className="text-sm text-white/70 max-w-md mb-8 leading-relaxed">{profile.bio}</p>}
+
+            {/* LIVE PLAYER */}
+            {profile.is_live && profile.live_playback_url && (
+              <div className="w-full mb-8">
+                <LivePlayer whepUrl={profile.live_playback_url} />
+              </div>
+            )}
 
             <div className="flex items-center justify-center gap-12 mb-8 w-full">
               <div className="text-center"><span className="font-bold text-white block text-xl">0</span><span className="text-white/50 text-[11px] uppercase tracking-wider">Following</span></div>
