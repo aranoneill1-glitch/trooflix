@@ -26,7 +26,6 @@ import PullToRefresh from "@/components/PullToRefresh";
 import UserMenu from "@/components/UserMenu";
 import { useSearch } from "@/context/SearchContext";
 import TopBar from "@/components/TopBar";
-import DesktopSidebar from "@/components/DesktopSidebar"; // <-- IMPORT ADDED
 import { createClient } from "@/utils/supabase/client";
 import { clearUserCache } from "@/lib/cache";
 import MerchRow from "@/components/MerchRow";
@@ -226,9 +225,6 @@ export default function Home() {
     <PullToRefresh onRefresh={async () => { window.location.reload(); }}>
     <main className="min-h-screen bg-black text-white overflow-x-hidden pb-20 lg:pb-0">
       <TopBar onMenu={() => setDrawerOpen(true)} />
-      
-      {/* DESKTOP SIDEBAR ADDED HERE */}
-      <DesktopSidebar user={user} onOpenCategories={() => setDrawerOpen(true)} />
 
       <AnimatePresence>
         {drawerOpen && (
@@ -277,154 +273,151 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* WRAPPED MAIN CONTENT IN lg:pl-[72px] TO ACCOUNT FOR SIDEBAR */}
-      <div className="lg:pl-[72px]">
-        {loaded && (
-          <>
-            {!showingFiltered && heroPool.length > 0 && (
+      {loaded && (
+        <>
+          {!showingFiltered && heroPool.length > 0 && (
+            <>
+              {/* 1. HEADLINE (Mobile Only) */}
+              <div className="w-full pt-24 md:pt-28 pb-4 px-4 md:px-12 max-w-6xl mx-auto flex flex-col lg:hidden">
+                <div>
+                  <h2 className="text-2xl md:text-4xl font-black tracking-tight">
+                    <span className="text-white">No ads.</span>{" "}
+                    <span className="text-neutral-500">No filter.</span>{" "}
+                    <span className="text-[#E53945]">Just content</span>
+                  </h2>
+                </div>
+              </div>
+
+              {/* 2. HERO (Mobile: 3D Carousel, Desktop: Netflix Style) */}
+              <div className="w-full pb-0">
+                {/* Mobile Hero */}
+                <div className="lg:hidden">
+                  <CarouselHero 
+                    videos={heroPool} 
+                    activeIndex={heroIndex} 
+                    setActiveIndex={setHeroIndex} 
+                    onPlay={handleInstantPlay}
+                    onMore={(v) => setSelected(v)}
+                  />
+                </div>
+
+                {/* Desktop Hero */}
+                <div className="hidden lg:block">
+                  <DesktopHero 
+                    videos={heroPool}
+                    activeIndex={heroIndex}
+                    setActiveIndex={setHeroIndex}
+                    onPlay={handleInstantPlay}
+                    onMore={(v) => setSelected(v)}
+                  />
+                </div>
+              </div>
+            </>
+          )}
+          {showingFiltered && <div className="h-20 md:h-24" />}
+
+          <div className="relative z-10 pt-0 md:pt-2 pb-32 md:pb-20 space-y-2 md:space-y-6">
+            {filtered && <SearchResults search={search} videos={videos} creators={creators} onVideoClick={setSelected} />}
+
+            {!filtered && showingFiltered && (
+              <div className="px-4 md:px-12">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl md:text-3xl font-bold">{activeCategory || activeTab}</h2>
+                  {activeCategory && <button onClick={() => setActiveCategory(null)} className="text-sm text-white/50 hover:text-white transition">Clear filter</button>}
+                </div>
+                {displayVideos.length === 0 ? <p className="text-white/40">No videos yet.</p> : <Grid items={displayVideos} onSelect={setSelected} onPlay={handleInstantPlay} />}
+              </div>
+            )}
+
+            {loaded && !filtered && !showingFiltered && (
               <>
-                {/* 1. HEADLINE (Mobile Only) */}
-                <div className="w-full pt-24 md:pt-28 pb-4 px-4 md:px-12 max-w-6xl mx-auto flex flex-col lg:hidden">
-                  <div>
-                    <h2 className="text-2xl md:text-4xl font-black tracking-tight">
-                      <span className="text-white">No ads.</span>{" "}
-                      <span className="text-neutral-500">No filter.</span>{" "}
-                      <span className="text-[#E53945]">Just content</span>
-                    </h2>
+                {/* 3. HOME OF INDEPENDENT VOICES HEADLINE */}
+                {!showingFiltered && heroPool.length > 0 && (
+                  <div className="w-full pt-10 pb-4 px-4 md:px-12 lg:px-16 flex flex-col text-left items-start">
+                    <div>
+                      <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-1 uppercase">
+                        The Home of Independent Voices
+                      </p>
+                      <h2 className="text-2xl md:text-4xl font-black tracking-tight text-white">
+                        Discover Creators
+                      </h2>
+                    </div>
+                  </div>
+                )}
+
+                {/* 4. CREATOR AVATARS */}
+                {creators && creators.length > 0 && (
+                  <div className="mt-2">
+                    <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide px-4 md:px-12 pb-4 lg:grid lg:grid-cols-6 xl:grid-cols-8 lg:overflow-visible lg:pb-0 lg:gap-4">
+                      {[...creators].slice(0, 15).map((c: any) => (
+                        <Link key={c.id} href={`/podcaster/${c.slug}`} className="flex flex-col items-center gap-2 flex-shrink-0 group w-[96px] md:w-[112px] lg:w-full lg:flex-shrink">
+                          <div className="w-20 h-20 md:w-24 md:h-24 rounded-full p-[2px] bg-[#E53945] group-hover:scale-105 transition-transform">
+                            <div className="w-full h-full rounded-full border-2 border-black overflow-hidden bg-[#1c1c1e]">
+                              {c.photoUrl ? <img src={c.photoUrl} alt={c.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xl font-bold text-white">{c.name?.[0]?.toUpperCase() || "?"}</div>}
+                            </div>
+                          </div>
+                          <span className="text-xs font-semibold text-white/80 group-hover:text-white transition truncate w-full text-center">{c.name || "Creator"}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 5. VIDEO ROW */}
+                <div className="mt-8 mb-8 px-4 md:px-12">
+                  <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide pb-4 lg:grid lg:grid-cols-4 xl:grid-cols-5 lg:overflow-visible lg:pb-0 lg:gap-6">
+                    {videos.slice(1, 11).map((v: any) => {
+                      const creator = creators.find((c: any) => c.id === v.creatorId);
+                      return (
+                        <div key={v.id} onClick={() => handleCardSelect(v)} className="flex-shrink-0 w-[220px] md:w-[280px] lg:w-full lg:flex-shrink cursor-pointer group">
+                          <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-[#1c1c1e] mb-2 border border-white/5 shadow-lg">
+                            <img src={v.posterUrl || v.backdropUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                            <div className="absolute inset-0 bg-black/20" />
+                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center border border-white/20">
+                                <Play size={16} className="ml-1 text-white" fill="white" />
+                              </div>
+                            </div>
+                            {v.duration && (
+                              <div className="absolute bottom-2 right-2 bg-black/80 px-1.5 py-0.5 rounded text-[10px] font-bold text-white backdrop-blur-sm">
+                                {v.duration}
+                              </div>
+                            )}
+                          </div>
+                          <h3 className="text-sm font-bold text-white leading-tight line-clamp-2 group-hover:text-red-500 transition-colors mb-1">{v.title}</h3>
+                          <p className="text-xs text-white/50 truncate">{creator?.name || 'Creator'}</p>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
-                {/* 2. HERO (Mobile: 3D Carousel, Desktop: Netflix Style) */}
-                <div className="w-full pb-0">
-                  {/* Mobile Hero */}
-                  <div className="lg:hidden">
-                    <CarouselHero 
-                      videos={heroPool} 
-                      activeIndex={heroIndex} 
-                      setActiveIndex={setHeroIndex} 
-                      onPlay={handleInstantPlay}
-                      onMore={(v) => setSelected(v)}
-                    />
+                {/* 6. LATEST CONTENT FEED */}
+                <div className="mt-8 pb-32">
+                  <div className="px-4 md:px-12 mb-6 mt-4">
+                    <p className="text-[10px] md:text-xs tracking-[0.4em] text-white/50 font-semibold mb-1">
+                      LATEST CONTENT
+                    </p>
+                    <h2 className="text-2xl md:text-4xl font-black tracking-tight">
+                      Don't Miss A <span className="text-red-600">Thing</span>
+                    </h2>
                   </div>
-
-                  {/* Desktop Hero */}
-                  <div className="hidden lg:block">
-                    <DesktopHero 
-                      videos={heroPool}
-                      activeIndex={heroIndex}
-                      setActiveIndex={setHeroIndex}
-                      onPlay={handleInstantPlay}
-                      onMore={(v) => setSelected(v)}
-                    />
+                  <div className="flex flex-col gap-8 md:gap-12 px-4 md:px-12 max-w-3xl mx-auto lg:grid lg:grid-cols-3 lg:gap-6 lg:max-w-7xl">
+                    {[...videos].sort((a: any, b: any) => {
+                      const at = a.createdAt ? new Date(a.createdAt).getTime() : a.id;
+                      const bt = b.createdAt ? new Date(b.createdAt).getTime() : b.id;
+                      return bt - at;
+                    }).slice(0, 12).map((v: any) => {
+                      const creator = creators.find((c: any) => c.id === v.creatorId);
+                      return <HomeFeedCard key={v.id} video={v} creator={creator} onMore={() => handleCardSelect(v)} onPlay={() => handleInstantPlay(v)} isActive={activeVideoId === v.id} onSetActive={() => setActiveVideoId(v.id)} />;
+                    })}
                   </div>
                 </div>
               </>
             )}
-            {showingFiltered && <div className="h-20 md:h-24" />}
-
-            <div className="relative z-10 pt-0 md:pt-2 pb-32 md:pb-20 space-y-2 md:space-y-6">
-              {filtered && <SearchResults search={search} videos={videos} creators={creators} onVideoClick={setSelected} />}
-
-              {!filtered && showingFiltered && (
-                <div className="px-4 md:px-12">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl md:text-3xl font-bold">{activeCategory || activeTab}</h2>
-                    {activeCategory && <button onClick={() => setActiveCategory(null)} className="text-sm text-white/50 hover:text-white transition">Clear filter</button>}
-                  </div>
-                  {displayVideos.length === 0 ? <p className="text-white/40">No videos yet.</p> : <Grid items={displayVideos} onSelect={setSelected} onPlay={handleInstantPlay} />}
-                </div>
-              )}
-
-              {loaded && !filtered && !showingFiltered && (
-                <>
-                  {/* 3. HOME OF INDEPENDENT VOICES HEADLINE */}
-                  {!showingFiltered && heroPool.length > 0 && (
-                    <div className="w-full pt-10 pb-4 px-4 md:px-12 lg:px-16 flex flex-col text-left items-start">
-                      <div>
-                        <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-1 uppercase">
-                          The Home of Independent Voices
-                        </p>
-                        <h2 className="text-2xl md:text-4xl font-black tracking-tight text-white">
-                          Discover Creators
-                        </h2>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* 4. CREATOR AVATARS */}
-                  {creators && creators.length > 0 && (
-                    <div className="mt-2">
-                      <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide px-4 md:px-12 pb-4 lg:grid lg:grid-cols-6 xl:grid-cols-8 lg:overflow-visible lg:pb-0 lg:gap-4">
-                        {[...creators].slice(0, 15).map((c: any) => (
-                          <Link key={c.id} href={`/podcaster/${c.slug}`} className="flex flex-col items-center gap-2 flex-shrink-0 group w-[96px] md:w-[112px] lg:w-full lg:flex-shrink">
-                            <div className="w-20 h-20 md:w-24 md:h-24 rounded-full p-[2px] bg-[#E53945] group-hover:scale-105 transition-transform">
-                              <div className="w-full h-full rounded-full border-2 border-black overflow-hidden bg-[#1c1c1e]">
-                                {c.photoUrl ? <img src={c.photoUrl} alt={c.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xl font-bold text-white">{c.name?.[0]?.toUpperCase() || "?"}</div>}
-                              </div>
-                            </div>
-                            <span className="text-xs font-semibold text-white/80 group-hover:text-white transition truncate w-full text-center">{c.name || "Creator"}</span>
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* 5. VIDEO ROW */}
-                  <div className="mt-8 mb-8 px-4 md:px-12">
-                    <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide pb-4 lg:grid lg:grid-cols-4 xl:grid-cols-5 lg:overflow-visible lg:pb-0 lg:gap-6">
-                      {videos.slice(1, 11).map((v: any) => {
-                        const creator = creators.find((c: any) => c.id === v.creatorId);
-                        return (
-                          <div key={v.id} onClick={() => handleCardSelect(v)} className="flex-shrink-0 w-[220px] md:w-[280px] lg:w-full lg:flex-shrink cursor-pointer group">
-                            <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-[#1c1c1e] mb-2 border border-white/5 shadow-lg">
-                              <img src={v.posterUrl || v.backdropUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                              <div className="absolute inset-0 bg-black/20" />
-                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                <div className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center border border-white/20">
-                                  <Play size={16} className="ml-1 text-white" fill="white" />
-                                </div>
-                              </div>
-                              {v.duration && (
-                                <div className="absolute bottom-2 right-2 bg-black/80 px-1.5 py-0.5 rounded text-[10px] font-bold text-white backdrop-blur-sm">
-                                  {v.duration}
-                                </div>
-                              )}
-                            </div>
-                            <h3 className="text-sm font-bold text-white leading-tight line-clamp-2 group-hover:text-red-500 transition-colors mb-1">{v.title}</h3>
-                            <p className="text-xs text-white/50 truncate">{creator?.name || 'Creator'}</p>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* 6. LATEST CONTENT FEED */}
-                  <div className="mt-8 pb-32">
-                    <div className="px-4 md:px-12 mb-6 mt-4">
-                      <p className="text-[10px] md:text-xs tracking-[0.4em] text-white/50 font-semibold mb-1">
-                        LATEST CONTENT
-                      </p>
-                      <h2 className="text-2xl md:text-4xl font-black tracking-tight">
-                        Don't Miss A <span className="text-red-600">Thing</span>
-                      </h2>
-                    </div>
-                    <div className="flex flex-col gap-8 md:gap-12 px-4 md:px-12 max-w-3xl mx-auto lg:grid lg:grid-cols-3 lg:gap-6 lg:max-w-7xl">
-                      {[...videos].sort((a: any, b: any) => {
-                        const at = a.createdAt ? new Date(a.createdAt).getTime() : a.id;
-                        const bt = b.createdAt ? new Date(b.createdAt).getTime() : b.id;
-                        return bt - at;
-                      }).slice(0, 12).map((v: any) => {
-                        const creator = creators.find((c: any) => c.id === v.creatorId);
-                        return <HomeFeedCard key={v.id} video={v} creator={creator} onMore={() => handleCardSelect(v)} onPlay={() => handleInstantPlay(v)} isActive={activeVideoId === v.id} onSetActive={() => setActiveVideoId(v.id)} />;
-                      })}
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          </>
-        )}
-      </div>
+          </div>
+        </>
+      )}
 
       <AnimatePresence>
         {selected && <DetailModal item={selected} onClose={() => setSelected(null)} onPlay={handleInstantPlay} creators={creators} />}

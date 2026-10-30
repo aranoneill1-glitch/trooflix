@@ -8,12 +8,6 @@ import UserMenu from "@/components/UserMenu";
 import NotificationBell from "@/components/NotificationBell";
 import CreateSheet from "@/components/CreateSheet";
 
-const NAV_TABS = [
-  { label: "Home", path: "/" },
-  { label: "Creators", path: "/creators" },
-  { label: "Feed", path: "/feed" },
-];
-
 type Props = {
   onMenu?: () => void;
 };
@@ -35,25 +29,19 @@ export default function TopBar({ onMenu }: Props) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const isActive = (path: string) => {
-    const basePath = path.split("?")[0];
-    if (basePath === "/") return pathname === "/";
-    return pathname === basePath || pathname.startsWith(basePath + "/");
-  };
-
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-[200] flex items-center gap-6 px-6 md:px-8 py-4 transition-colors duration-300 ${
+      className={`fixed top-0 left-0 lg:left-[72px] right-0 z-[200] flex items-center gap-6 px-6 md:px-8 py-4 transition-colors duration-300 ${
         scrolled
           ? "bg-black"
           : "bg-gradient-to-b from-black/90 via-black/60 to-transparent"
       }`}
     >
-      {/* Hamburger */}
+      {/* Hamburger (Mobile Only) */}
       {onMenu && (
         <button
           onClick={onMenu}
-          className="text-white/90 hover:text-white transition"
+          className="lg:hidden text-white/90 hover:text-white transition"
           aria-label="Open menu"
         >
           <Menu size={22} />
@@ -75,23 +63,6 @@ export default function TopBar({ onMenu }: Props) {
         </Link>
       )}
 
-      {/* Desktop tabs */}
-      <div className="hidden lg:flex gap-6 text-sm ml-6">
-        {NAV_TABS.map((tab) => (
-          <Link
-            key={tab.path}
-            href={tab.path}
-            className={`transition tracking-wide ${
-              isActive(tab.path)
-                ? "text-white font-semibold"
-                : "text-white/70 hover:text-white"
-            }`}
-          >
-            {tab.label}
-          </Link>
-        ))}
-      </div>
-
       {/* Right side */}
       <div className="ml-auto flex items-center gap-4 md:gap-5">
         
@@ -107,7 +78,6 @@ export default function TopBar({ onMenu }: Props) {
         <NotificationBell />
 
         <div className="flex items-center gap-3">
-          
           <UserMenu />
         </div>
       </div>

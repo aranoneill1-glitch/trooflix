@@ -2,10 +2,24 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Search, Home, Star, Compass, Play, ShoppingBag, Plus, List, User } from "lucide-react";
+import { getCachedUser } from "@/lib/cache";
 
-export default function DesktopSidebar({ user, onOpenCategories }: { user: any, onOpenCategories: () => void }) {
+export default function DesktopSidebar() {
   const pathname = usePathname();
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    getCachedUser().then((u) => {
+      if (u) {
+        fetch(`/api/profile?user_id=${u.id}`)
+          .then((r) => r.json())
+          .then((d) => setUser(d.profile))
+          .catch(() => {});
+      }
+    });
+  }, []);
 
   const isCreator = user?.tier === 'creator' || user?.tier === 'podcaster' || user?.tier === 'pro';
 
@@ -13,7 +27,7 @@ export default function DesktopSidebar({ user, onOpenCategories }: { user: any, 
     { name: "Search", icon: Search, href: "/search" },
     { name: "Home", icon: Home, href: "/" },
     { name: "Trooflix Plus", icon: Star, href: "/plus" },
-    { name: "Categories", icon: Compass, onClick: onOpenCategories },
+    { name: "Categories", icon: Compass, href: "/search" }, // Search acts as categories grid
     { name: "Shorts / Feed", icon: Play, href: "/feed" },
     { name: "Marketplace", icon: ShoppingBag, href: "/merchandise" },
   ];
@@ -21,29 +35,14 @@ export default function DesktopSidebar({ user, onOpenCategories }: { user: any, 
   return (
     <aside className="hidden lg:flex flex-col items-center fixed left-0 top-0 h-screen w-[72px] bg-gradient-to-b from-black/80 via-black/40 to-black/80 backdrop-blur-md border-r border-white/5 z-[100] py-8">
       
-      <div className="flex flex-col gap-6 flex-1 w-full items-center">
+      <div className="flex flex-col gap-6 flex-1 w-full items-center pt-16">
         {navItems.map((item) => {
-          const isActive = item.href ? pathname === item.href : false;
+          const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
           
-          if (item.onClick) {
-            return (
-              <button
-                key={item.name}
-                onClick={item.onClick}
-                className="group relative flex items-center justify-center w-12 h-12 rounded-xl hover:bg-white/10 transition-all text-white/60 hover:text-white"
-              >
-                <item.icon size={24} />
-                <span className="absolute left-16 px-3 py-1.5 bg-[#1c1c1e] border border-white/10 rounded-lg text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-                  {item.name}
-                </span>
-              </button>
-            );
-          }
-
           return (
             <Link
               key={item.name}
-              href={item.href!}
+              href={item.href}
               className={`group relative flex items-center justify-center w-12 h-12 rounded-xl hover:bg-white/10 transition-all ${isActive ? "text-[#E53945]" : "text-white/60 hover:text-white"}`}
             >
               <item.icon size={24} />

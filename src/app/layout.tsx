@@ -5,6 +5,7 @@ import "./globals.css";
 import TVNavigation from "@/components/TVNavigation";
 import { SearchProvider } from "@/context/SearchContext";
 import CacheWarmer from "@/components/CacheWarmer";
+import DesktopSidebar from "@/components/DesktopSidebar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -85,7 +86,6 @@ export default function RootLayout({
                       console.warn('SW registration failed: ', err);
                     });
                   });
-                });
                 }
               })();
             `,
@@ -94,7 +94,10 @@ export default function RootLayout({
         <SearchProvider>
           <CacheWarmer />
           <TVNavigation />
-          {children}
+          <DesktopSidebar />
+          <div className="lg:pl-[72px] w-full min-h-screen">
+            {children}
+          </div>
         </SearchProvider>
       </body>
     </html>
