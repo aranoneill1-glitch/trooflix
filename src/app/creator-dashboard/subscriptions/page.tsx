@@ -20,7 +20,7 @@ export default function PremiumSettings() {
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [enabled, setEnabled] = useState(false);
-  const [priceInput, setPriceInput] = useState(""); // dollars as string
+  const [priceInput, setPriceInput] = useState("");
   const [stats, setStats] = useState<Stats>({
     active_subscribers: 0,
     monthly_gross_cents: 0,
@@ -29,13 +29,11 @@ export default function PremiumSettings() {
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState("");
 
-  // Preview states
   const [creatorName, setCreatorName] = useState("Your Channel");
   const [creatorPhoto, setCreatorPhoto] = useState("");
 
   const load = async (uid: string) => {
     try {
-      // 1. Fetch Premium Stats
       const res = await fetch(`/api/creator/premium?user_id=${uid}`);
       const d = await res.json();
       if (!res.ok) {
@@ -48,7 +46,6 @@ export default function PremiumSettings() {
       );
       setStats(d.stats);
 
-      // 2. Fetch Creator Info for the Live Preview
       const crRes = await fetch(`/api/me/creator?user_id=${uid}`).then((r) => r.json());
       if (crRes.creator) {
         setCreatorName(crRes.creator.name);
@@ -75,7 +72,6 @@ export default function PremiumSettings() {
     setSaving(true);
     setStatus("");
 
-    // Parse $ input → cents
     let priceCents: number | null = null;
     if (priceInput.trim() !== "") {
       const n = Number(priceInput.replace(/[^0-9.]/g, ""));
@@ -119,13 +115,12 @@ export default function PremiumSettings() {
     );
   }
 
-  // Determine display price for the preview
   const displayPrice = priceInput ? Number(priceInput).toFixed(2) : "4.99";
 
   return (
-    <div className="p-4 md:p-8 max-w-6xl mx-auto">
+    <div className="p-4 md:p-8 max-w-6xl mx-auto text-white pb-32">
       <Link
-        href="/studio"
+        href="/creator-dashboard"
         className="inline-flex items-center gap-1.5 text-sm text-white/50 hover:text-white mb-6 transition"
       >
         <ChevronLeft size={16} /> Back to dashboard
@@ -257,8 +252,8 @@ export default function PremiumSettings() {
 
           <p className="text-[12px] text-white/40 pt-4 border-t border-white/5">
             Next step: mark individual episodes as premium in{" "}
-            <Link href="/studio/episodes" className="text-white underline hover:text-red-400 transition">
-              Studio → Episodes
+            <Link href="/creator-dashboard/manage-content" className="text-white underline hover:text-red-400 transition">
+              Manage Content
             </Link>
             .
           </p>
@@ -274,13 +269,11 @@ export default function PremiumSettings() {
             
             {/* Preview Card */}
             <div className={`relative rounded-3xl border border-white/10 p-6 overflow-hidden transition-all duration-300 ${enabled ? 'bg-gradient-to-br from-[#1a1a1f] to-[#0a0a0c] shadow-[0_20px_50px_-12px_rgba(220,38,38,0.2)]' : 'bg-[#0f0f12] opacity-60 grayscale-[50%]'}`}>
-              {/* Subtle glow */}
               {enabled && (
                 <div className="absolute top-0 right-0 w-48 h-48 bg-red-600/10 rounded-full blur-[60px] -mr-10 -mt-10 pointer-events-none" />
               )}
               
               <div className="relative z-10 flex flex-col items-center text-center">
-                {/* Avatar */}
                 <div className="w-20 h-20 rounded-full bg-gradient-to-br from-yellow-600 to-yellow-900 flex items-center justify-center text-2xl font-black mb-4 ring-2 ring-white/10 overflow-hidden">
                   {creatorPhoto ? (
                     <img src={creatorPhoto} alt="" className="w-full h-full object-cover" />

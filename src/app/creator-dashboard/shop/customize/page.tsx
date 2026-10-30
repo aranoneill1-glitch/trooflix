@@ -72,7 +72,7 @@ export default function CustomizeShopPage() {
 
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto text-white pb-32">
-      <Link href="/studio/shop" className="inline-flex items-center gap-2 text-sm text-white/50 hover:text-white mb-8 transition">
+      <Link href="/creator-dashboard/shop" className="inline-flex items-center gap-2 text-sm text-white/50 hover:text-white mb-8 transition">
         <ChevronLeft size={16} /> Back to Products
       </Link>
 
