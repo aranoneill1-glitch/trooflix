@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
-import { Search, LogOut, Home, Video, MessageCircle, Radio, X, ShoppingBag } from "lucide-react";
+import { Search, LogOut, Home, Video, MessageCircle, Radio, X, ShoppingBag, Play } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Capacitor } from "@capacitor/core";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
@@ -47,6 +47,7 @@ export default function MobileBottomNav() {
   useEffect(() => {
     if (isTVApp) return;
     router.prefetch("/");
+    router.prefetch("/feed");
     router.prefetch("/search");
     router.prefetch(isCreator ? "/creator-dashboard" : "/plus");
     router.prefetch("/messages");
@@ -84,7 +85,7 @@ export default function MobileBottomNav() {
     return pathname === path || pathname.startsWith(path + "/");
   };
 
-  const profileActive = pathname === "/creator-dashboard";
+  const profileActive = pathname === "/creator-dashboard" || pathname.startsWith("/creator-dashboard");
 
   const handleLogout = async () => {
     const supabase = createClient();
@@ -185,7 +186,6 @@ export default function MobileBottomNav() {
                   </div>
                 </Link>
                 
-                {/* ACTIVE GO LIVE BUTTON */}
                 <Link 
                   href="/creator-dashboard/live"
                   onClick={() => setShowCreateMenu(false)}
@@ -207,75 +207,82 @@ export default function MobileBottomNav() {
 
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-[250] flex justify-center pb-[env(safe-area-inset-bottom)] pointer-events-none">
         
-        {/* THE RAINDROP / LIQUID GLASS TAB BAR */}
-        <div className="pointer-events-auto flex items-center justify-around w-[92%] max-w-[360px] mb-8 px-2 py-1.5 bg-gradient-to-b from-white/10 to-white/[0.02] backdrop-blur-[40px] backdrop-saturate-[180%] backdrop-brightness-[1.2] rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.4),inset_0_-1px_1px_rgba(255,255,255,0.1)]">
+        {/* THE RAINDROP / LIQUID GLASS TAB BAR (Increased max-width to fit 6 tabs) */}
+        <div className="pointer-events-auto flex items-center justify-around w-[94%] max-w-[420px] mb-8 px-2 py-1.5 bg-gradient-to-b from-white/10 to-white/[0.02] backdrop-blur-[40px] backdrop-saturate-[180%] backdrop-brightness-[1.2] rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.4),inset_0_-1px_1px_rgba(255,255,255,0.1)]">
           
           {/* TAB 1: HOME */}
-          <Link href="/" className="flex items-center justify-center w-14 h-10 rounded-full">
+          <Link href="/" className="flex items-center justify-center w-12 h-10 rounded-full">
             <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex items-center justify-center">
-              <Home size={24} className={isActive("/") ? "text-white" : "text-white/60 hover:text-white/80"} />
+              <Home size={22} className={isActive("/") ? "text-white" : "text-white/60 hover:text-white/80"} />
             </motion.div>
           </Link>
 
-          {/* TAB 2: EXPLORE */}
-          <Link href="/search" className="flex items-center justify-center w-14 h-10 rounded-full">
+          {/* TAB 2: SHORTS (NEW) */}
+          <Link href="/feed" className="flex items-center justify-center w-12 h-10 rounded-full">
             <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex items-center justify-center">
-              <Search size={24} className={isActive("/search") ? "text-white" : "text-white/60 hover:text-white/80"} />
+              <Play size={22} className={isActive("/feed") ? "text-white" : "text-white/60 hover:text-white/80"} fill={isActive("/feed") ? "currentColor" : "none"} />
             </motion.div>
           </Link>
 
-          {/* TAB 3: DYNAMIC CENTER (CREATE / PLUS) */}
+          {/* TAB 3: EXPLORE */}
+          <Link href="/search" className="flex items-center justify-center w-12 h-10 rounded-full">
+            <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex items-center justify-center">
+              <Search size={22} className={isActive("/search") ? "text-white" : "text-white/60 hover:text-white/80"} />
+            </motion.div>
+          </Link>
+
+          {/* TAB 4: DYNAMIC CENTER (CREATE / PLUS) */}
           {isCreator ? (
             <div
               onClick={() => {
                 setShowCreateMenu(true);
                 if (Capacitor.isNativePlatform()) Haptics.impact({ style: ImpactStyle.Medium });
               }}
-              className="flex items-center justify-center w-14 h-10 rounded-full cursor-pointer"
+              className="flex items-center justify-center w-12 h-10 rounded-full cursor-pointer"
             >
               <motion.div whileTap={{ scale: 0.9 }} className="flex items-center justify-center">
-                <Video size={26} className="text-white" strokeWidth={2} />
+                <Video size={24} className="text-white" strokeWidth={2} />
               </motion.div>
             </div>
           ) : (
             <Link
               href="/plus"
-              className="flex items-center justify-center w-14 h-10 rounded-full"
+              className="flex items-center justify-center w-12 h-10 rounded-full"
             >
               <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex items-center justify-center h-full w-full">
                 <div className="flex items-center justify-center">
-                  <span className="text-[22px] font-extrabold tracking-tighter text-white">T</span>
-                  <span className="text-[22px] font-extrabold tracking-tighter text-[#E53945]">F</span>
+                  <span className="text-[20px] font-extrabold tracking-tighter text-white">T</span>
+                  <span className="text-[20px] font-extrabold tracking-tighter text-[#E53945]">F</span>
                 </div>
               </motion.div>
             </Link>
           )}
 
-          {/* TAB 4: DYNAMIC (MESSAGES FOR CREATOR / STORE FOR VIEWER) */}
+          {/* TAB 5: DYNAMIC (MESSAGES FOR CREATOR / STORE FOR VIEWER) */}
           {isCreator ? (
-            <Link href="/messages" className="flex items-center justify-center w-14 h-10 rounded-full">
+            <Link href="/messages" className="flex items-center justify-center w-12 h-10 rounded-full">
               <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex items-center justify-center">
-                <MessageCircle size={24} className={isActive("/messages") ? "text-white" : "text-white/60 hover:text-white/80"} />
+                <MessageCircle size={22} className={isActive("/messages") ? "text-white" : "text-white/60 hover:text-white/80"} />
               </motion.div>
             </Link>
           ) : (
-            <Link href="/marketplace" className="flex items-center justify-center w-14 h-10 rounded-full">
+            <Link href="/merchandise" className="flex items-center justify-center w-12 h-10 rounded-full">
               <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex items-center justify-center">
-                <ShoppingBag size={24} className={isActive("/marketplace") ? "text-white" : "text-white/60 hover:text-white/80"} />
+                <ShoppingBag size={22} className={isActive("/merchandise") ? "text-white" : "text-white/60 hover:text-white/80"} />
               </motion.div>
             </Link>
           )}
 
-          {/* TAB 5: DYNAMIC FAR RIGHT (CREATOR DASHBOARD / PROFILE AVATAR) */}
+          {/* TAB 6: DYNAMIC FAR RIGHT (CREATOR DASHBOARD / PROFILE AVATAR) */}
           {isCreator ? (
             <Link
               href="/creator-dashboard"
-              className="flex items-center justify-center w-14 h-10 rounded-full"
+              className="flex items-center justify-center w-12 h-10 rounded-full"
             >
               <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex items-center justify-center h-full w-full">
                 <div className="flex items-center justify-center">
-                  <span className="text-[22px] font-extrabold tracking-tighter text-white">T</span>
-                  <span className="text-[22px] font-extrabold tracking-tighter text-[#E53945]">F</span>
+                  <span className="text-[20px] font-extrabold tracking-tighter text-white">T</span>
+                  <span className="text-[20px] font-extrabold tracking-tighter text-[#E53945]">F</span>
                 </div>
               </motion.div>
             </Link>
@@ -288,7 +295,7 @@ export default function MobileBottomNav() {
               onTouchStart={startPress}
               onTouchEnd={cancelPress}
               onTouchCancel={cancelPress}
-              className="flex items-center justify-center w-14 h-10 rounded-full cursor-pointer select-none"
+              className="flex items-center justify-center w-12 h-10 rounded-full cursor-pointer select-none"
             >
               <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex items-center justify-center">
                 {avatarUrl ? (
