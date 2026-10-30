@@ -80,12 +80,12 @@ export default function PublicProfilePage() {
     : { background: "#09090B" };
 
   return (
-    <main className="min-h-screen text-white pb-32 font-sans relative overflow-hidden">
-      <div className="fixed inset-0 z-0" style={bgStyle}>
+    <main className="fixed inset-0 overflow-y-auto overscroll-none text-white pb-32 font-sans">
+      <div className="absolute inset-0 z-0" style={bgStyle}>
         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
       </div>
 
-      <div className="relative z-10">
+      <div className="relative z-10 min-h-full">
         <TopBar />
         
         <div className="max-w-2xl mx-auto px-4 pt-24">

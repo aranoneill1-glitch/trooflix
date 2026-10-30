@@ -88,7 +88,6 @@ function CreatorDashboardContent() {
     setUploadingAvatar(true);
 
     try {
-      // 1. Upload to Cloudflare R2
       const r2Res = await fetch('/api/r2-upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -104,14 +103,12 @@ function CreatorDashboardContent() {
       });
       if (!uploadRes.ok) throw new Error("Failed to upload image to R2");
 
-      // 2. Update Supabase
       const { error } = await supabase.from("profiles").update({
         avatar_url: r2Data.publicUrl
       }).eq("user_id", user.id);
 
       if (error) throw error;
 
-      // 3. Update local state
       setProfile({ ...profile, avatar_url: r2Data.publicUrl });
       setShowAvatarMenu(false);
       clearUserCache();
@@ -162,16 +159,15 @@ function CreatorDashboardContent() {
     : { background: "#09090B" };
 
   return (
-    <main className={`min-h-screen text-white pb-32 font-sans selection:bg-[#E53945]/30 relative overflow-hidden ${!isDashboardView && profile?.backdrop_url ? "bg-transparent" : "bg-[#09090B]"}`}>
+    <main className={`fixed inset-0 overflow-y-auto overscroll-none text-white pb-32 font-sans selection:bg-[#E53945]/30 ${!isDashboardView && profile?.backdrop_url ? "bg-transparent" : "bg-[#09090B]"}`}>
       
-      {/* THEME BACKGROUND */}
       {!isDashboardView && (
-        <div className="fixed inset-0 z-0" style={bgStyle}>
+        <div className="absolute inset-0 z-0" style={bgStyle}>
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
         </div>
       )}
 
-      <div className="relative z-10">
+      <div className="relative z-10 min-h-full">
         <TopBar />
 
         <div className="max-w-5xl mx-auto px-4 pt-24 pb-6">
@@ -190,7 +186,6 @@ function CreatorDashboardContent() {
               <div className="flex flex-col mb-6 w-full">
                 <div className="flex items-center gap-4 w-full mb-4">
                   
-                  {/* CLICKABLE AVATAR */}
                   <div 
                     onClick={() => setShowAvatarMenu(true)}
                     className="w-24 h-24 md:w-28 md:h-28 rounded-full p-[3px] bg-gradient-to-tr from-[#E53945] to-orange-500 shrink-0 cursor-pointer group relative"
@@ -202,7 +197,6 @@ function CreatorDashboardContent() {
                         <div className="w-full h-full flex items-center justify-center text-3xl font-bold">{displayName.charAt(0)}</div>
                       )}
                       
-                      {/* HOVER OVERLAY */}
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                         <Camera size={24} className="text-white" />
                       </div>
@@ -311,7 +305,6 @@ function CreatorDashboardContent() {
           {isDashboardView && (
             <div className="animate-in fade-in duration-300 space-y-8 max-w-4xl mx-auto">
               
-              {/* CONTENT SECTION */}
               <section>
                 <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">
                   Content
@@ -324,7 +317,6 @@ function CreatorDashboardContent() {
                 </div>
               </section>
 
-              {/* PROFILE SECTION */}
               <section>
                 <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">
                   Profile
@@ -334,7 +326,6 @@ function CreatorDashboardContent() {
                     <Pencil className="text-white" size={24} />
                     <span className="text-xs font-bold text-center">Manage Profile</span>
                   </Link>
-                  {/* NEW PROFILE THEME BOX */}
                   <Link href="/creator-dashboard/theme" className="bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
                     <Palette className="text-white" size={24} />
                     <span className="text-xs font-bold text-center">Profile Theme</span>
@@ -342,7 +333,6 @@ function CreatorDashboardContent() {
                 </div>
               </section>
 
-              {/* MARKETPLACE SECTION */}
               <section>
                 <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">
                   Marketplace
@@ -363,7 +353,6 @@ function CreatorDashboardContent() {
                 </div>
               </section>
 
-              {/* SUBSCRIPTIONS SECTION */}
               <section>
                 <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">
                   Subscriptions
@@ -381,7 +370,6 @@ function CreatorDashboardContent() {
 
         </div>
 
-        {/* AVATAR ACTION MENU */}
         <AnimatePresence>
           {showAvatarMenu && (
             <>
