@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Search, X, Play, CheckCircle2, User, TrendingUp, ChevronRight } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { Search, X, Play, CheckCircle2, User, TrendingUp, ChevronRight, Filter } from "lucide-react";
 import Link from "next/link";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { createClient } from "@/utils/supabase/client";
@@ -29,6 +29,7 @@ const TRENDING_TAGS = ["History", "Politics", "Ancient Civilisations", "Technolo
 export default function SearchPage() {
   const [query, setQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<"all" | "videos" | "creators">("all");
   
   const [allVideos, setAllVideos] = useState<any[]>([]);
   const [allProfiles, setAllProfiles] = useState<any[]>([]);
@@ -44,7 +45,7 @@ export default function SearchPage() {
 
       const profilesPromise = supabase
         .from("profiles")
-        .select("user_id, creator_id, display_name, username, avatar_url, is_verified, tier")
+        .select("user_id, creator_id, display_name, username, avatar_url, is_verified, tier, bio")
         .then(res => res.data || []);
 
       const [videosData, profilesData] = await Promise.all([videosPromise, profilesPromise]);
@@ -59,6 +60,7 @@ export default function SearchPage() {
   const handleCancel = () => {
     setQuery("");
     setIsSearching(false);
+    setActiveFilter("all");
   };
 
   const handleTagClick = (tag: string) => {
@@ -66,22 +68,68 @@ export default function SearchPage() {
     setIsSearching(true);
   };
 
-  // Filtering Logic
-  const filteredProfiles = query.length > 0 ? allProfiles.filter(p => 
-    p.display_name?.toLowerCase().includes(query.toLowerCase()) || 
-    p.username?.toLowerCase().includes(query.toLowerCase())
-  ) : [];
+  // ==========================================
+  // ADVANCED SEARCH LOGIC
+  // ==========================================
+  const searchTerms = query.toLowerCase().split(" ").filter(Boolean);
 
-  const filteredVideos = query.length > 0 ? allVideos.filter(v => 
-    v.title?.toLowerCase().includes(query.toLowerCase()) || 
-    v.description?.toLowerCase().includes(query.toLowerCase()) ||
-    v.type?.toLowerCase().includes(query.toLowerCase()) ||
-    v.category?.toLowerCase().includes(query.toLowerCase())
-  ) : [];
+  const filteredProfiles = useMemo(() => {
+    if (query.length === 0) return [];
+    return allProfiles.filter(p => {
+      const text = `${p.display_name || ""} ${p.username || ""} ${p.bio || ""} ${p.tier || ""}`.toLowerCase();
+      return searchTerms.every(term => text.includes(term));
+    });
+  }, [query, allProfiles, searchTerms]);
+
+  const filteredVideos = useMemo(() => {
+    if (query.length === 0) return [];
+    
+    const results = allVideos.map(v => {
+      // Find the creator name to include in search
+      const creator = allProfiles.find(p => 
+        String(p.creator_id) === String(v.creatorId) || 
+        String(p.user_id) === String(v.uploaderUserId)
+      );
+      const creatorName = creator ? (creator.display_name || creator.username || "") : "";
+
+      // Build a massive searchable string from all metadata
+      const searchableText = `
+        ${v.title || ""} 
+        ${v.description || ""} 
+        ${v.category || ""} 
+        ${v.type || ""} 
+        ${creatorName}
+        ${v.tags ? (Array.isArray(v.tags) ? v.tags.join(" ") : v.tags) : ""}
+        ${v.keywords || ""}
+        ${v.cast || ""}
+        ${v.studio || ""}
+      `.toLowerCase();
+
+      // Check if every word in the query exists in the text
+      const matches = searchTerms.every(term => searchableText.includes(term));
+      
+      // Calculate a basic relevance score (Title matches rank highest)
+      let score = 0;
+      if (matches) {
+        score = 1;
+        if (v.title.toLowerCase().includes(query.toLowerCase())) score += 10;
+        if (v.title.toLowerCase().startsWith(query.toLowerCase())) score += 5;
+        if (v.category?.toLowerCase().includes(query.toLowerCase())) score += 2;
+      }
+
+      return { ...v, searchScore: score };
+    })
+    .filter(v => v.searchScore > 0)
+    .sort((a, b) => b.searchScore - a.searchScore);
+
+    return results;
+  }, [query, allVideos, allProfiles, searchTerms]);
 
   const hasResults = filteredVideos.length > 0 || filteredProfiles.length > 0;
+  const showVideos = activeFilter === "all" || activeFilter === "videos";
+  const showCreators = activeFilter === "all" || activeFilter === "creators";
 
-  // Discovery Data
+  // Discovery Data (When not searching)
   const trendingDocs = allVideos.filter(v => v.type === 'Documentary').slice(0, 6);
   const popularPodcasts = allVideos.filter(v => v.type === 'Podcast').slice(0, 5);
   const recentlyAdded = [...allVideos].sort((a, b) => b.id - a.id).slice(0, 6);
@@ -213,12 +261,12 @@ export default function SearchPage() {
               <input
                 type="text"
                 className="w-full bg-[#1c1c1e]/80 backdrop-blur-xl text-white font-medium text-lg placeholder:text-white/40 rounded-full py-5 pl-16 pr-8 border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#E53945]/50 focus:border-[#E53945]/50 shadow-2xl transition-all"
-                placeholder="Search everything on Trooflix..."
+                placeholder="Search titles, subjects, creators, keywords..."
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={(e) => { setQuery(e.target.value); setIsSearching(true); }}
               />
               {query && (
-                <button onClick={() => setQuery("")} className="absolute inset-y-0 right-0 pr-6 flex items-center">
+                <button onClick={handleCancel} className="absolute inset-y-0 right-0 pr-6 flex items-center">
                   <div className="bg-white/10 hover:bg-white/20 rounded-full p-1.5 transition"><X className="h-5 w-5 text-white" /></div>
                 </button>
               )}
@@ -239,17 +287,30 @@ export default function SearchPage() {
           {/* 2. RESULTS VS DISCOVERY */}
           {query.length > 0 ? (
             <div className="w-full">
-              <h2 className="text-2xl font-bold mb-8 flex items-center gap-3">
-                Search Results for <span className="text-[#E53945]">"{query}"</span>
-              </h2>
+              
+              {/* SEARCH FILTER TABS */}
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-2xl font-bold flex items-center gap-3">
+                  Search Results for <span className="text-[#E53945]">"{query}"</span>
+                </h2>
+                
+                <div className="flex items-center gap-2 bg-[#1c1c1e] p-1 rounded-xl border border-white/5">
+                  <button onClick={() => setActiveFilter("all")} className={`px-4 py-2 rounded-lg text-sm font-bold transition ${activeFilter === "all" ? "bg-white/10 text-white" : "text-white/50 hover:text-white"}`}>All ({filteredVideos.length + filteredProfiles.length})</button>
+                  <button onClick={() => setActiveFilter("videos")} className={`px-4 py-2 rounded-lg text-sm font-bold transition ${activeFilter === "videos" ? "bg-white/10 text-white" : "text-white/50 hover:text-white"}`}>Videos ({filteredVideos.length})</button>
+                  <button onClick={() => setActiveFilter("creators")} className={`px-4 py-2 rounded-lg text-sm font-bold transition ${activeFilter === "creators" ? "bg-white/10 text-white" : "text-white/50 hover:text-white"}`}>Creators ({filteredProfiles.length})</button>
+                </div>
+              </div>
+
               {!hasResults ? (
-                <div className="text-center py-20 bg-[#1c1c1e] rounded-3xl border border-white/5">
+                <div className="text-center py-20 bg-[#1c1c1e] rounded-3xl border border-white/5 flex flex-col items-center justify-center">
+                  <Filter size={48} className="text-white/10 mb-4" />
                   <p className="text-white/50 text-lg">No results found for "{query}".</p>
+                  <p className="text-white/30 text-sm mt-2">Try searching for a different keyword or creator name.</p>
                 </div>
               ) : (
                 <div className="space-y-12">
                   {/* Desktop Profiles Results */}
-                  {filteredProfiles.length > 0 && (
+                  {showCreators && filteredProfiles.length > 0 && (
                     <div>
                       <h3 className="text-sm font-bold text-white/40 uppercase tracking-wider mb-4">Creators & Users</h3>
                       <div className="grid grid-cols-4 gap-6">
@@ -272,13 +333,13 @@ export default function SearchPage() {
                   )}
 
                   {/* Desktop Videos Results */}
-                  {filteredVideos.length > 0 && (
+                  {showVideos && filteredVideos.length > 0 && (
                     <div>
                       <h3 className="text-sm font-bold text-white/40 uppercase tracking-wider mb-4">Videos, Podcasts & More</h3>
-                      <div className="grid grid-cols-6 gap-4">
+                      <div className="grid grid-cols-6 gap-6">
                         {filteredVideos.map((video) => (
                           <Link key={video.id} href={`/watch/${video.id}`} className="flex flex-col group">
-                            <div className="relative aspect-video rounded-xl overflow-hidden bg-[#1c1c1e] mb-3 border border-white/5">
+                            <div className="relative aspect-video rounded-xl overflow-hidden bg-[#1c1c1e] mb-3 border border-white/5 shadow-lg">
                               <img src={video.posterUrl || video.backdropUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
                               <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition" />
                             </div>
