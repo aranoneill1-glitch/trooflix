@@ -334,6 +334,11 @@ function CreatorDashboardContent() {
                     <Pencil className="text-white" size={24} />
                     <span className="text-xs font-bold text-center">Manage Profile</span>
                   </Link>
+                  {/* NEW PROFILE THEME BOX */}
+                  <Link href="/creator-dashboard/theme" className="bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
+                    <Palette className="text-white" size={24} />
+                    <span className="text-xs font-bold text-center">Profile Theme</span>
+                  </Link>
                 </div>
               </section>
 
