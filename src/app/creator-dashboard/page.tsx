@@ -42,19 +42,22 @@ function CreatorDashboardContent() {
   const [loading, setLoading] = useState(true);
   const [isDashboardView, setIsDashboardView] = useState(false);
 
-  // Force profile view if in public mode
   useEffect(() => {
     if (isPublicView) setIsDashboardView(false);
   }, [isPublicView]);
+  
   const [contentView, setContentView] = useState<"grid" | "list">("grid");
   const [activeContentTab, setActiveContentTab] = useState<"All" | "Podcasts" | "Videos" | "Store">("All");
   const [creatorVideos, setCreatorVideos] = useState<any[]>([]);
+  const [merch, setMerch] = useState<any[]>([]);
   const [videosLoading, setVideosLoading] = useState(true);
 
   useEffect(() => {
-    getCachedUser().then((u) => {
+    getCachedUser().then(async (u) => {
       if (u) {
         setUser(u);
+        
+        // Fetch Profile
         fetch(`/api/profile?user_id=${u.id}`)
           .then((r) => r.json())
           .then((d) => {
@@ -63,6 +66,7 @@ function CreatorDashboardContent() {
           })
           .catch(() => setLoading(false));
 
+        // Fetch Videos
         fetch("/api/videos")
           .then(r => r.json())
           .then(data => {
@@ -73,6 +77,16 @@ function CreatorDashboardContent() {
             setVideosLoading(false);
           })
           .catch(() => setVideosLoading(false));
+
+        // Fetch Merch
+        try {
+          const cr = await fetch(`/api/me/creator?user_id=${u.id}`).then(r => r.json());
+          const cid = cr.creator?.id;
+          const mRes = await fetch("/api/products/global").then(r => r.json());
+          if (mRes.products) {
+            setMerch(mRes.products.filter((p: any) => String(p.creator_id) === String(cid) || String(p.creator_id) === String(u.id)));
+          }
+        } catch (e) {}
       } else {
         setLoading(false);
       }
@@ -98,6 +112,13 @@ function CreatorDashboardContent() {
 
   const displayName = profile?.display_name || "Creator Name";
   const username = profile?.username || "creator";
+
+  // FILTER LOGIC
+  const filteredVideos = creatorVideos.filter(v => {
+    if (activeContentTab === "Podcasts") return v.type?.toLowerCase().includes("podcast");
+    if (activeContentTab === "Videos") return !v.type?.toLowerCase().includes("podcast");
+    return true; // All
+  });
 
   return (
     <main className="min-h-screen bg-[#09090B] text-white pb-32 font-sans selection:bg-[#E53945]/30">
@@ -137,10 +158,7 @@ function CreatorDashboardContent() {
             
             {/* PROFILE HEADER */}
             <div className="flex flex-col mb-6 w-full">
-              
-              {/* TOP ROW: Avatar & Stats */}
               <div className="flex items-center gap-4 w-full mb-4">
-                {/* Avatar */}
                 <div className="w-24 h-24 md:w-28 md:h-28 rounded-full p-[3px] bg-gradient-to-tr from-[#E53945] to-orange-500 shrink-0">
                   <div className="w-full h-full rounded-full border-4 border-[#09090B] overflow-hidden bg-[#1c1c1e]">
                     {profile?.avatar_url ? (
@@ -151,7 +169,6 @@ function CreatorDashboardContent() {
                   </div>
                 </div>
 
-                {/* Stats */}
                 <div className="flex-1 flex justify-around md:justify-start md:gap-8 px-2">
                   <div className="text-center md:text-left">
                     <span className="font-bold text-white block text-xl">1.2K</span> 
@@ -168,20 +185,17 @@ function CreatorDashboardContent() {
                 </div>
               </div>
 
-              {/* BOTTOM ROW: Name, Follow Button, Username, Handles */}
               <div className="px-1">
                 <div className="flex items-center justify-between mb-1">
                   <h1 className="text-2xl md:text-3xl font-black flex items-center gap-2 text-white">
                     {displayName} {profile?.is_verified && <VerifiedBadge size={20} variant="gold" />}
                   </h1>
-                  {/* FOLLOW BUTTON */}
                   <button className="shrink-0 bg-white text-black font-bold px-5 py-1.5 rounded-full hover:bg-gray-200 transition shadow-lg text-sm">
                     Follow
                   </button>
                 </div>
                 <p className="text-sm md:text-base text-white/50 mb-3">@{username}</p>
                 
-                {/* Social Handles */}
                 <div className="flex items-center gap-4 mb-4">
                   <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors">
                     <InstagramIcon size={14} />
@@ -193,14 +207,12 @@ function CreatorDashboardContent() {
                   </a>
                 </div>
 
-                {/* Bio */}
                 <p className="text-sm text-white/60 leading-relaxed">
                   {profile?.bio || "Independent filmmaker and podcast host. Uncovering the truth the mainstream won't touch. Subscribe for exclusive documentaries and unfiltered conversations."}
                 </p>
               </div>
             </div>
 
-            {/* SUBSCRIBE & MESSAGE (Pills) */}
             <div className="flex gap-3 mb-8 w-full">
               <button className="flex-1 flex items-center justify-center gap-2 bg-[#E53945] text-white font-bold py-3 rounded-full hover:bg-[#d12e39] transition shadow-lg shadow-[#E53945]/20">
                 <Star size={18} fill="currentColor" /> Subscribe
@@ -228,65 +240,96 @@ function CreatorDashboardContent() {
                 ))}
               </div>
 
-              <div className="flex items-center gap-1 bg-[#1c1c1e] p-1 rounded-lg mb-2">
-                <button
-                  onClick={() => setContentView("grid")}
-                  className={`p-1.5 rounded-md transition ${contentView === "grid" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}
-                >
-                  <LayoutGrid size={16} />
-                </button>
-                <button
-                  onClick={() => setContentView("list")}
-                  className={`p-1.5 rounded-md transition ${contentView === "list" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}
-                >
-                  <List size={16} />
-                </button>
-              </div>
+              {activeContentTab !== "Store" && (
+                <div className="flex items-center gap-1 bg-[#1c1c1e] p-1 rounded-lg mb-2">
+                  <button
+                    onClick={() => setContentView("grid")}
+                    className={`p-1.5 rounded-md transition ${contentView === "grid" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}
+                  >
+                    <LayoutGrid size={16} />
+                  </button>
+                  <button
+                    onClick={() => setContentView("list")}
+                    className={`p-1.5 rounded-md transition ${contentView === "list" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}
+                  >
+                    <List size={16} />
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* CONTENT AREA */}
-            {videosLoading ? (
-              <div className="flex justify-center py-20">
-                <div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" />
-              </div>
-            ) : creatorVideos.length === 0 ? (
-              <div className="text-center py-20 text-white/50">
-                No content found yet.
-              </div>
-            ) : contentView === "grid" ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {creatorVideos.map((video) => (
-                  <div key={video.id} className="bg-[#1c1c1e] border border-white/10 rounded-2xl overflow-hidden group cursor-pointer">
-                    <div className="relative aspect-square">
-                      <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                      <div className={`absolute top-2 left-2 text-white text-[10px] font-bold px-2 py-0.5 rounded-sm ${video.type?.toLowerCase() === 'podcast' ? 'bg-blue-500' : 'bg-[#E53945]'}`}>
-                        {video.type || "VIDEO"}
-                      </div>
-                    </div>
-                    <div className="p-3">
-                      <h3 className="text-sm font-bold leading-tight line-clamp-1">{video.title}</h3>
-                      <p className="text-xs text-white/50 mt-1">{video.duration || "Recently added"}</p>
-                    </div>
+            {activeContentTab === "Store" && (
+              <div className="w-full">
+                {merch.length === 0 ? (
+                  <div className="text-center py-12 bg-[#1c1c1e] border border-white/5 rounded-2xl">
+                    <ShoppingBag size={32} className="mx-auto text-white/20 mb-3" />
+                    <p className="text-white/50 text-sm">No products available yet.</p>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col gap-3">
-                {creatorVideos.map((video) => (
-                  <div key={video.id} className="flex items-center gap-4 bg-[#1c1c1e] border border-white/10 rounded-2xl p-3 cursor-pointer hover:bg-[#242426] transition-colors">
-                    <div className="w-24 h-16 rounded-lg overflow-hidden shrink-0 relative">
-                      <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover" />
-                      <div className={`absolute top-1 left-1 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-sm ${video.type?.toLowerCase() === 'podcast' ? 'bg-blue-500' : 'bg-[#E53945]'}`}>
-                        {video.type || "VIDEO"}
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {merch.map((item) => (
+                      <div key={item.id} className="bg-[#1c1c1e] border border-white/10 rounded-xl overflow-hidden flex flex-col">
+                        <div className="relative aspect-square">
+                          <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="p-3 flex-1 flex flex-col justify-between text-left">
+                          <h3 className="text-sm font-bold leading-tight line-clamp-2 text-white">{item.name}</h3>
+                          <p className="text-emerald-400 font-bold text-xs mt-2">${(item.price_cents / 100).toFixed(2)}</p>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-sm font-bold text-white truncate">{video.title}</h3>
-                      <p className="text-xs text-white/50 mt-1">{video.duration || "Recently added"}</p>
-                    </div>
-                    <ChevronRight size={18} className="text-white/30 shrink-0" />
+                    ))}
                   </div>
-                ))}
+                )}
+              </div>
+            )}
+
+            {activeContentTab !== "Store" && (
+              <div className="w-full">
+                {videosLoading ? (
+                  <div className="flex justify-center py-20">
+                    <div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" />
+                  </div>
+                ) : filteredVideos.length === 0 ? (
+                  <div className="text-center py-20 text-white/50">
+                    No {activeContentTab.toLowerCase()} found yet.
+                  </div>
+                ) : contentView === "grid" ? (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {filteredVideos.map((video) => (
+                      <div key={video.id} className="bg-[#1c1c1e] border border-white/10 rounded-2xl overflow-hidden group cursor-pointer">
+                        <div className="relative aspect-square">
+                          <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          <div className={`absolute top-2 left-2 text-white text-[10px] font-bold px-2 py-0.5 rounded-sm ${video.type?.toLowerCase() === 'podcast' ? 'bg-blue-500' : 'bg-[#E53945]'}`}>
+                            {video.type || "VIDEO"}
+                          </div>
+                        </div>
+                        <div className="p-3">
+                          <h3 className="text-sm font-bold leading-tight line-clamp-1">{video.title}</h3>
+                          <p className="text-xs text-white/50 mt-1">{video.duration || "Recently added"}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-3">
+                    {filteredVideos.map((video) => (
+                      <div key={video.id} className="flex items-center gap-4 bg-[#1c1c1e] border border-white/10 rounded-2xl p-3 cursor-pointer hover:bg-[#242426] transition-colors">
+                        <div className="w-24 h-16 rounded-lg overflow-hidden shrink-0 relative">
+                          <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover" />
+                          <div className={`absolute top-1 left-1 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-sm ${video.type?.toLowerCase() === 'podcast' ? 'bg-blue-500' : 'bg-[#E53945]'}`}>
+                            {video.type || "VIDEO"}
+                          </div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-sm font-bold text-white truncate">{video.title}</h3>
+                          <p className="text-xs text-white/50 mt-1">{video.duration || "Recently added"}</p>
+                        </div>
+                        <ChevronRight size={18} className="text-white/30 shrink-0" />
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -297,17 +340,16 @@ function CreatorDashboardContent() {
         ========================================= */}
         {isDashboardView && (
           <div className="animate-in fade-in duration-300 space-y-8">
-            {/* QUICK ACTIONS */}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
               <Link href="/creator-dashboard/manage-content" className="bg-[#1c1c1e] border border-white/10 hover:border-[#E53945] p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
                 <Video className="text-[#E53945]" size={24} />
                 <span className="text-xs font-bold text-center">Manage Content</span>
               </Link>
-              <Link href="/studio/shop" className="bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
+              <Link href="/creator-dashboard/shop" className="bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
                 <ShoppingBag className="text-white" size={24} />
                 <span className="text-xs font-bold text-center">Manage Shop</span>
               </Link>
-              <Link href="/studio/shop/customize" className="bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
+              <Link href="/creator-dashboard/shop/customize" className="bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
                 <Palette className="text-white" size={24} />
                 <span className="text-xs font-bold text-center">Customize Store</span>
               </Link>
@@ -319,9 +361,7 @@ function CreatorDashboardContent() {
                 <Package className="text-white" size={24} />
                 <span className="text-xs font-bold text-center">Manage Orders</span>
               </Link>
-              
-              {/* MANAGE SUBSCRIPTION BOX */}
-              <Link href="/studio/premium" className="bg-[#1c1c1e] border border-white/10 hover:border-[#E53945] p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
+              <Link href="/creator-dashboard/subscriptions" className="bg-[#1c1c1e] border border-white/10 hover:border-[#E53945] p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
                 <Star className="text-[#E53945]" size={24} />
                 <span className="text-xs font-bold text-center">Manage Subscription</span>
               </Link>
