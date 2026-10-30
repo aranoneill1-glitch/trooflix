@@ -1,12 +1,15 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { ArrowLeft, UserPlus, MessageSquare, CheckCircle2, Play, LayoutGrid, List, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { createClient } from "@/utils/supabase/client";
+
+// Force Next.js to never cache this page so the latest data always shows
+export const dynamic = 'force-dynamic';
 
 export default function PublicProfilePage() {
   const params = useParams();
@@ -79,21 +82,6 @@ export default function PublicProfilePage() {
     if (username) loadProfileAndVideos();
   }, [username]);
 
-  // FILTER LOGIC
-  const displayedVideos = useMemo(() => {
-    if (activeContentTab === "Podcasts") {
-      return videos.filter(v => v.type?.toLowerCase().includes("podcast"));
-    }
-    if (activeContentTab === "Videos") {
-      // Assume anything that isn't a podcast is a video (Movie, Documentary, etc.)
-      return videos.filter(v => !v.type?.toLowerCase().includes("podcast"));
-    }
-    if (activeContentTab === "Store") {
-      return []; // Handled separately in the render loop
-    }
-    return videos; // "All"
-  }, [videos, activeContentTab]);
-
   if (loading) {
     return (
       <div className="min-h-screen bg-[#09090B] flex items-center justify-center">
@@ -112,6 +100,14 @@ export default function PublicProfilePage() {
   }
 
   const displayName = profile.display_name || "User";
+
+  // STRICT FILTERING LOGIC
+  let filteredVideos = videos;
+  if (activeContentTab === "Podcasts") {
+    filteredVideos = videos.filter(v => v.type?.toLowerCase().includes("podcast"));
+  } else if (activeContentTab === "Videos") {
+    filteredVideos = videos.filter(v => !v.type?.toLowerCase().includes("podcast"));
+  }
 
   return (
     <main className="min-h-screen bg-[#09090B] text-white pb-32 font-sans selection:bg-[#E53945]/30">
@@ -215,7 +211,7 @@ export default function PublicProfilePage() {
           {/* CONTENT AREA */}
           <div className="w-full">
             
-            {/* STORE TAB */}
+            {/* ================= STORE TAB ================= */}
             {activeContentTab === "Store" && (
                merch.length === 0 ? (
                 <div className="text-center py-12 bg-[#1c1c1e] border border-white/5 rounded-2xl">
@@ -229,9 +225,9 @@ export default function PublicProfilePage() {
                       <div className="relative aspect-square">
                         <img src={item.image_url} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                       </div>
-                      <div className="p-3 flex-1 flex flex-col justify-between">
+                      <div className="p-3 flex-1 flex flex-col justify-between text-left">
                         <h3 className="text-sm font-bold leading-tight line-clamp-2 text-white">{item.name}</h3>
-                        <p className="text-emerald-400 font-bold text-xs mt-1">${(item.price_cents / 100).toFixed(2)}</p>
+                        <p className="text-emerald-400 font-bold text-xs mt-2">${(item.price_cents / 100).toFixed(2)}</p>
                       </div>
                     </div>
                   ))}
@@ -239,9 +235,9 @@ export default function PublicProfilePage() {
                )
             )}
 
-            {/* VIDEO/PODCAST TABS */}
+            {/* ================= ALL / PODCASTS / VIDEOS TABS ================= */}
             {activeContentTab !== "Store" && (
-              displayedVideos.length === 0 ? (
+              filteredVideos.length === 0 ? (
                 <div className="text-center py-12 bg-[#1c1c1e] border border-white/5 rounded-2xl">
                   <p className="text-white/50 text-sm">
                     No {activeContentTab === "All" ? "content" : activeContentTab.toLowerCase()} found yet.
@@ -249,7 +245,7 @@ export default function PublicProfilePage() {
                 </div>
               ) : contentView === "grid" ? (
                 <div className="grid grid-cols-2 gap-3">
-                  {displayedVideos.map((video) => (
+                  {filteredVideos.map((video) => (
                     <div key={video.id} className="bg-[#1c1c1e] border border-white/10 rounded-xl overflow-hidden group cursor-pointer">
                       <div className="relative aspect-video">
                         <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -257,7 +253,7 @@ export default function PublicProfilePage() {
                           {video.type || "VIDEO"}
                         </div>
                       </div>
-                      <div className="p-3">
+                      <div className="p-3 text-left">
                         <h3 className="text-xs font-bold leading-tight line-clamp-2 text-white">{video.title}</h3>
                         <p className="text-[10px] text-white/50 mt-1">{video.duration || "Recently added"}</p>
                       </div>
@@ -266,12 +262,12 @@ export default function PublicProfilePage() {
                 </div>
               ) : (
                 <div className="flex flex-col gap-3">
-                  {displayedVideos.map((video) => (
+                  {filteredVideos.map((video) => (
                     <div key={video.id} className="flex items-center gap-3 bg-[#1c1c1e] border border-white/10 rounded-xl p-2.5 cursor-pointer hover:bg-[#242426] transition-colors">
                       <div className="w-24 aspect-video rounded-lg overflow-hidden shrink-0 relative">
                         <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover" />
                       </div>
-                      <div className="flex-1 min-w-0">
+                      <div className="flex-1 min-w-0 text-left">
                         <h3 className="text-sm font-bold text-white truncate">{video.title}</h3>
                         <p className="text-[11px] text-white/50 mt-1">{video.duration || "Recently added"}</p>
                       </div>
