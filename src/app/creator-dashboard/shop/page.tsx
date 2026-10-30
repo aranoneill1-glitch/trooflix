@@ -53,7 +53,6 @@ export default function ManageShopPage() {
     try {
       const res = await fetch(`/api/creator/products?creatorId=${cid}`);
       const data = await res.json();
-      // FIXED: API returns { products: [...] }
       setProducts(Array.isArray(data.products) ? data.products : []);
     } catch (e) {
       console.error(e);
@@ -98,20 +97,28 @@ export default function ManageShopPage() {
     try {
       let finalImageUrl = imageUrl;
 
-      // UPLOAD TO SERVER ROUTE
+      // UPLOAD TO R2 VIA PRESIGNED URL
       if (imageFile) {
-        const formData = new FormData();
-        formData.append("file", imageFile);
-        
-        const uploadRes = await fetch("/api/upload-image", {
+        const presign = await fetch("/api/upload", {
           method: "POST",
-          body: formData,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            filename: imageFile.name,
+            contentType: imageFile.type || "image/jpeg",
+            folder: "products",
+          }),
         });
-        
-        const uploadData = await uploadRes.json();
-        if (!uploadRes.ok) throw new Error(uploadData.error || "Upload failed");
+        if (!presign.ok) throw new Error("Could not prepare upload");
+        const { signedUrl, publicUrl } = await presign.json();
 
-        finalImageUrl = uploadData.publicUrl;
+        const put = await fetch(signedUrl, {
+          method: "PUT",
+          headers: { "Content-Type": imageFile.type || "image/jpeg" },
+          body: imageFile,
+        });
+        if (!put.ok) throw new Error("Upload failed (" + put.status + ")");
+
+        finalImageUrl = publicUrl;
       }
 
       const priceCents = Math.round(Number(price) * 100);
