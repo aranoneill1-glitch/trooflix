@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, Camera, Save, User, AtSign, AlignLeft, Image as ImageIcon, Check } from "lucide-react";
+import { ChevronLeft, Camera, Save, User, AtSign, AlignLeft, Image as ImageIcon, Check, Search } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { getCachedUser, clearUserCache } from "@/lib/cache";
 import TopBar from "@/components/TopBar";
@@ -17,14 +17,115 @@ const XIcon = ({ size = 16 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
 );
 
+// MASSIVE THEME DATABASE
 const THEMES = [
   { name: "Trooflix Black", value: "" },
+  { name: "Midnight", value: "linear-gradient(to bottom, #0f172a, #09090b)" },
   { name: "Crimson", value: "linear-gradient(to bottom, #450a0a, #09090b)" },
-  { name: "Deep Ocean", value: "linear-gradient(to bottom, #0f172a, #09090b)" },
   { name: "Emerald", value: "linear-gradient(to bottom, #022c22, #09090b)" },
-  { name: "Royal", value: "linear-gradient(to bottom, #2e1065, #09090b)" },
+  { name: "Royal Purple", value: "linear-gradient(to bottom, #2e1065, #09090b)" },
   { name: "Sunset", value: "linear-gradient(to bottom, #431407, #09090b)" },
   { name: "Cyberpunk", value: "linear-gradient(to bottom, #4a044e, #09090b)" },
+  { name: "Deep Space", value: "linear-gradient(to bottom, #1e1b4b, #09090b)" },
+  { name: "Rose Gold", value: "linear-gradient(to bottom, #4c0519, #09090b)" },
+  { name: "Oceanic", value: "linear-gradient(to bottom, #083344, #09090b)" },
+  { name: "Midas", value: "linear-gradient(to bottom, #422006, #09090b)" },
+  { name: "Slate", value: "linear-gradient(to bottom, #1e293b, #09090b)" },
+  { name: "Blood Moon", value: "linear-gradient(to bottom, #7f1d1d, #09090b)" },
+  { name: "Forest Night", value: "linear-gradient(to bottom, #064e3b, #09090b)" },
+  { name: "Abyss", value: "linear-gradient(to bottom, #020617, #09090b)" },
+  { name: "Neon Pink", value: "linear-gradient(to bottom, #831843, #09090b)" },
+  { name: "Desert", value: "linear-gradient(to bottom, #78350f, #09090b)" },
+  { name: "Twilight", value: "linear-gradient(to bottom, #312e81, #09090b)" },
+  { name: "Wine", value: "linear-gradient(to bottom, #4c0519, #09090b)" },
+  { name: "Toxic", value: "linear-gradient(to bottom, #3f6212, #09090b)" },
+  { name: "Monochrome", value: "linear-gradient(to bottom, #262626, #09090b)" },
+  { name: "Golden Hour", value: "linear-gradient(to bottom, #713f12, #09090b)" },
+  { name: "Arctic", value: "linear-gradient(to bottom, #164e63, #09090b)" },
+  { name: "Plum", value: "linear-gradient(to bottom, #581c87, #09090b)" },
+  { name: "Blood Red", value: "linear-gradient(to bottom, #991b1b, #09090b)" },
+  { name: "Neon Green", value: "linear-gradient(to bottom, #166534, #09090b)" },
+  { name: "Midnight Blue", value: "linear-gradient(to bottom, #1e3a8a, #09090b)" },
+  { name: "Volcano", value: "linear-gradient(to bottom, #9a3412, #09090b)" },
+  { name: "Mint", value: "linear-gradient(to bottom, #065f46, #09090b)" },
+  { name: "Grape", value: "linear-gradient(to bottom, #4a044e, #09090b)" },
+  { name: "Charcoal", value: "linear-gradient(to bottom, #171717, #09090b)" },
+  { name: "Amber", value: "linear-gradient(to bottom, #b45309, #09090b)" },
+  { name: "Cyan", value: "linear-gradient(to bottom, #0e7490, #09090b)" },
+  { name: "Violet", value: "linear-gradient(to bottom, #6d28d9, #09090b)" },
+  { name: "Coral", value: "linear-gradient(to bottom, #be123c, #09090b)" },
+  { name: "Forest", value: "linear-gradient(to bottom, #15803d, #09090b)" },
+  { name: "Navy", value: "linear-gradient(to bottom, #172554, #09090b)" },
+  { name: "Rust", value: "linear-gradient(to bottom, #7c2d12, #09090b)" },
+  { name: "Teal", value: "linear-gradient(to bottom, #115e59, #09090b)" },
+  { name: "Fuchsia", value: "linear-gradient(to bottom, #86198f, #09090b)" },
+  { name: "Cobalt", value: "linear-gradient(to bottom, #1d4ed8, #09090b)" },
+  { name: "Copper", value: "linear-gradient(to bottom, #9a3412, #09090b)" },
+  { name: "Ice", value: "linear-gradient(to bottom, #0ea5e9, #09090b)" },
+  { name: "Magenta", value: "linear-gradient(to bottom, #a21caf, #09090b)" },
+  { name: "Lava", value: "linear-gradient(to bottom, #dc2626, #09090b)" },
+  { name: "Jungle", value: "linear-gradient(to bottom, #166534, #09090b)" },
+  { name: "Storm", value: "linear-gradient(to bottom, #334155, #09090b)" },
+  { name: "Sand", value: "linear-gradient(to bottom, #a16207, #09090b)" },
+  { name: "Azure", value: "linear-gradient(to bottom, #0284c7, #09090b)" },
+  { name: "Lilac", value: "linear-gradient(to bottom, #7e22ce, #09090b)" },
+  { name: "Cherry", value: "linear-gradient(to bottom, #e11d48, #09090b)" },
+  { name: "Olive", value: "linear-gradient(to bottom, #4d7c0f, #09090b)" },
+  { name: "Steel", value: "linear-gradient(to bottom, #475569, #09090b)" },
+  { name: "Apricot", value: "linear-gradient(to bottom, #ea580c, #09090b)" },
+  { name: "Sky", value: "linear-gradient(to bottom, #0369a1, #09090b)" },
+  { name: "Lavender", value: "linear-gradient(to bottom, #8b5cf6, #09090b)" },
+  { name: "Ruby", value: "linear-gradient(to bottom, #b91c1c, #09090b)" },
+  { name: "Moss", value: "linear-gradient(to bottom, #3f6212, #09090b)" },
+  { name: "Graphite", value: "linear-gradient(to bottom, #374151, #09090b)" },
+  { name: "Tangerine", value: "linear-gradient(to bottom, #c2410c, #09090b)" },
+  { name: "Denim", value: "linear-gradient(to bottom, #1e40af, #09090b)" },
+  { name: "Orchid", value: "linear-gradient(to bottom, #9333ea, #09090b)" },
+  { name: "Raspberry", value: "linear-gradient(to bottom, #be185d, #09090b)" },
+  { name: "Basil", value: "linear-gradient(to bottom, #15803d, #09090b)" },
+  { name: "Silver", value: "linear-gradient(to bottom, #52525b, #09090b)" },
+  { name: "Peach", value: "linear-gradient(to bottom, #f97316, #09090b)" },
+  { name: "Marine", value: "linear-gradient(to bottom, #1e3a8a, #09090b)" },
+  { name: "Amethyst", value: "linear-gradient(to bottom, #6b21a8, #09090b)" },
+  { name: "Burgundy", value: "linear-gradient(to bottom, #7f1d1d, #09090b)" },
+  { name: "Sage", value: "linear-gradient(to bottom, #166534, #09090b)" },
+  { name: "Ash", value: "linear-gradient(to bottom, #404040, #09090b)" },
+  { name: "Marigold", value: "linear-gradient(to bottom, #d97706, #09090b)" },
+  { name: "Indigo", value: "linear-gradient(to bottom, #3730a3, #09090b)" },
+  { name: "Mulberry", value: "linear-gradient(to bottom, #701a75, #09090b)" },
+  { name: "Carnelian", value: "linear-gradient(to bottom, #991b1b, #09090b)" },
+  { name: "Fern", value: "linear-gradient(to bottom, #14532d, #09090b)" },
+  { name: "Pewter", value: "linear-gradient(to bottom, #4b5563, #09090b)" },
+  { name: "Cider", value: "linear-gradient(to bottom, #b45309, #09090b)" },
+  { name: "Sapphire", value: "linear-gradient(to bottom, #1e40af, #09090b)" },
+  { name: "Byzantium", value: "linear-gradient(to bottom, #581c87, #09090b)" },
+  { name: "Carmine", value: "linear-gradient(to bottom, #b91c1c, #09090b)" },
+  { name: "Clipper", value: "linear-gradient(to bottom, #064e3b, #09090b)" },
+  { name: "Gunmetal", value: "linear-gradient(to bottom, #27272a, #09090b)" },
+  { name: "Rustic", value: "linear-gradient(to bottom, #9a3412, #09090b)" },
+  { name: "Dodger", value: "linear-gradient(to bottom, #1d4ed8, #09090b)" },
+  { name: "Imperial", value: "linear-gradient(to bottom, #4a044e, #09090b)" },
+  { name: "Alizarin", value: "linear-gradient(to bottom, #dc2626, #09090b)" },
+  { name: "Shamrock", value: "linear-gradient(to bottom, #15803d, #09090b)" },
+  { name: "Onyx", value: "linear-gradient(to bottom, #18181b, #09090b)" },
+  { name: "Bronze", value: "linear-gradient(to bottom, #78350f, #09090b)" },
+  { name: "Cerulean", value: "linear-gradient(to bottom, #0284c7, #09090b)" },
+  { name: "Mauve", value: "linear-gradient(to bottom, #6d28d9, #09090b)" },
+  { name: "Venetian", value: "linear-gradient(to bottom, #b91c1c, #09090b)" },
+  { name: "Laurel", value: "linear-gradient(to bottom, #3f6212, #09090b)" },
+  { name: "Smoke", value: "linear-gradient(to bottom, #3f3f46, #09090b)" },
+  { name: "Tuscan", value: "linear-gradient(to bottom, #b45309, #09090b)" },
+  { name: "Azul", value: "linear-gradient(to bottom, #172554, #09090b)" },
+  { name: "Seance", value: "linear-gradient(to bottom, #4c0519, #09090b)" },
+  { name: "Cinnabar", value: "linear-gradient(to bottom, #991b1b, #09090b)" },
+  { name: "Avocado", value: "linear-gradient(to bottom, #166534, #09090b)" },
+  { name: "Zinc", value: "linear-gradient(to bottom, #27272a, #09090b)" },
+  { name: "Flax", value: "linear-gradient(to bottom, #a16207, #09090b)" },
+  { name: "Ultramarine", value: "linear-gradient(to bottom, #1e3a8a, #09090b)" },
+  { name: "Tyrian", value: "linear-gradient(to bottom, #86198f, #09090b)" },
+  { name: "Crimson Lake", value: "linear-gradient(to bottom, #7f1d1d, #09090b)" },
+  { name: "Hunter", value: "linear-gradient(to bottom, #064e3b, #09090b)" },
+  { name: "Graphite", value: "linear-gradient(to bottom, #374151, #09090b)" },
 ];
 
 export default function ProfileSettingsPage() {
@@ -45,13 +146,15 @@ export default function ProfileSettingsPage() {
   const [avatarUrl, setAvatarUrl] = useState("");
   const [backdropUrl, setBackdropUrl] = useState(""); 
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  
+  // Theme search state
+  const [themeSearch, setThemeSearch] = useState("");
 
   useEffect(() => {
     getCachedUser().then(async (user) => {
       if (!user) { router.push("/login"); return; }
       setUserId(user.id);
       
-      // FETCH DIRECTLY FROM SUPABASE TO AVOID NEXT.JS API CACHING
       const { data } = await supabase.from("profiles").select("*").eq("user_id", user.id).single();
       if (data) {
         setDisplayName(data.display_name || "");
@@ -119,6 +222,12 @@ export default function ProfileSettingsPage() {
     }
   };
 
+  // Filter themes based on search
+  const filteredThemes = useMemo(() => {
+    if (!themeSearch) return THEMES;
+    return THEMES.filter(t => t.name.toLowerCase().includes(themeSearch.toLowerCase()));
+  }, [themeSearch]);
+
   if (loading) return <div className="min-h-screen bg-[#09090B] flex items-center justify-center"><div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" /></div>;
 
   return (
@@ -153,12 +262,16 @@ export default function ProfileSettingsPage() {
           <div className="bg-[#1c1c1e] border border-white/5 rounded-3xl p-6 md:p-8 space-y-6">
             
             <div>
-              <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 flex items-center gap-2"><User size={14} /> Display Name</label>
+              <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 flex items-center gap-2">
+                <User size={14} /> Display Name
+              </label>
               <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="e.g. John Doe" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white outline-none focus:border-[#E53945] transition" required />
             </div>
 
             <div>
-              <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 flex items-center gap-2"><AtSign size={14} /> Username Handle</label>
+              <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 flex items-center gap-2">
+                <AtSign size={14} /> Username Handle
+              </label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 font-bold">@</span>
                 <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="johndoe" className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-3.5 text-white outline-none focus:border-[#E53945] transition" required />
@@ -167,28 +280,51 @@ export default function ProfileSettingsPage() {
 
             <div className="h-px bg-white/5 my-2" />
 
-            {/* THEME PICKER */}
+            {/* THEME PICKER DATABASE */}
             <div>
-              <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-4 flex items-center gap-2"><ImageIcon size={14} /> Profile Theme</label>
-              <div className="grid grid-cols-4 gap-3">
-                {THEMES.map((theme) => (
+              <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-3 flex items-center gap-2">
+                <ImageIcon size={14} /> Profile Theme
+              </label>
+              
+              {/* SEARCH BAR */}
+              <div className="relative mb-4">
+                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" />
+                <input 
+                  type="text" 
+                  placeholder="Search themes (e.g., 'Crimson', 'Ocean')..." 
+                  value={themeSearch}
+                  onChange={(e) => setThemeSearch(e.target.value)}
+                  className="w-full bg-black/40 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-white outline-none focus:border-[#E53945] transition"
+                />
+              </div>
+
+              {/* SCROLLABLE THEME GRID */}
+              <div className="grid grid-cols-4 gap-3 max-h-64 overflow-y-auto pr-2 scrollbar-hide">
+                {filteredThemes.map((theme) => (
                   <button
                     key={theme.name}
                     type="button"
                     onClick={() => setBackdropUrl(theme.value)}
-                    className={`relative h-20 rounded-xl overflow-hidden border-2 transition-all flex items-end justify-center pb-2 ${
-                      backdropUrl === theme.value ? "border-white scale-105 shadow-lg" : "border-transparent hover:scale-105"
+                    className={`relative h-16 rounded-xl overflow-hidden border-2 transition-all flex items-end justify-center pb-1 ${
+                      backdropUrl === theme.value ? "border-white scale-105 shadow-lg z-10" : "border-transparent hover:scale-105"
                     }`}
                     style={{ background: theme.value || "#09090B" }}
                   >
                     {backdropUrl === theme.value && (
                       <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                        <Check size={24} className="text-white drop-shadow-md" />
+                        <Check size={16} className="text-white drop-shadow-md" />
                       </div>
                     )}
-                    <span className="relative z-10 text-[10px] font-bold text-white drop-shadow-md truncate w-full text-center px-1">{theme.name}</span>
+                    <span className="relative z-10 text-[9px] font-bold text-white drop-shadow-md truncate w-full text-center px-1">
+                      {theme.name}
+                    </span>
                   </button>
                 ))}
+                {filteredThemes.length === 0 && (
+                  <div className="col-span-4 text-center py-6 text-white/40 text-sm">
+                    No themes found matching "{themeSearch}"
+                  </div>
+                )}
               </div>
             </div>
 
