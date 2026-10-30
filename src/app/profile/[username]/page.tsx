@@ -8,7 +8,6 @@ import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { createClient } from "@/utils/supabase/client";
 
-// Force Next.js to never cache this page so the latest data always shows
 export const dynamic = 'force-dynamic';
 
 export default function PublicProfilePage() {
@@ -101,12 +100,91 @@ export default function PublicProfilePage() {
 
   const displayName = profile.display_name || "User";
 
-  // STRICT FILTERING LOGIC
-  let filteredVideos = videos;
-  if (activeContentTab === "Podcasts") {
-    filteredVideos = videos.filter(v => v.type?.toLowerCase().includes("podcast"));
-  } else if (activeContentTab === "Videos") {
-    filteredVideos = videos.filter(v => !v.type?.toLowerCase().includes("podcast"));
+  // ==========================================
+  // BULLETPROOF RENDER LOGIC
+  // ==========================================
+  let renderTabContent = null;
+
+  if (activeContentTab === "Store") {
+    // ONLY RENDER MERCH
+    if (merch.length === 0) {
+      renderTabContent = (
+        <div className="text-center py-12 bg-[#1c1c1e] border border-white/5 rounded-2xl">
+          <ShoppingBag size={32} className="mx-auto text-white/20 mb-3" />
+          <p className="text-white/50 text-sm">No products available yet.</p>
+        </div>
+      );
+    } else {
+      renderTabContent = (
+        <div className="grid grid-cols-2 gap-3">
+          {merch.map((item) => (
+            <div key={item.id} className="bg-[#1c1c1e] border border-white/10 rounded-xl overflow-hidden group cursor-pointer flex flex-col">
+              <div className="relative aspect-square">
+                <img src={item.image_url} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+              </div>
+              <div className="p-3 flex-1 flex flex-col justify-between text-left">
+                <h3 className="text-sm font-bold leading-tight line-clamp-2 text-white">{item.name}</h3>
+                <p className="text-emerald-400 font-bold text-xs mt-2">${(item.price_cents / 100).toFixed(2)}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+  } else {
+    // RENDER VIDEOS (All, Podcasts, Videos)
+    let filteredVids = videos;
+    
+    if (activeContentTab === "Podcasts") {
+      filteredVids = videos.filter(v => v.type?.toLowerCase().includes("podcast"));
+    } else if (activeContentTab === "Videos") {
+      filteredVids = videos.filter(v => !v.type?.toLowerCase().includes("podcast"));
+    }
+
+    if (filteredVids.length === 0) {
+      renderTabContent = (
+        <div className="text-center py-12 bg-[#1c1c1e] border border-white/5 rounded-2xl">
+          <p className="text-white/50 text-sm">
+            No {activeContentTab === "All" ? "content" : activeContentTab.toLowerCase()} found yet.
+          </p>
+        </div>
+      );
+    } else if (contentView === "grid") {
+      renderTabContent = (
+        <div className="grid grid-cols-2 gap-3">
+          {filteredVids.map((video) => (
+            <div key={video.id} className="bg-[#1c1c1e] border border-white/10 rounded-xl overflow-hidden group cursor-pointer">
+              <div className="relative aspect-video">
+                <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                <div className={`absolute top-2 left-2 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-sm ${video.type?.toLowerCase().includes('podcast') ? 'bg-blue-500' : 'bg-[#E53945]'}`}>
+                  {video.type || "VIDEO"}
+                </div>
+              </div>
+              <div className="p-3 text-left">
+                <h3 className="text-xs font-bold leading-tight line-clamp-2 text-white">{video.title}</h3>
+                <p className="text-[10px] text-white/50 mt-1">{video.duration || "Recently added"}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    } else {
+      renderTabContent = (
+        <div className="flex flex-col gap-3">
+          {filteredVids.map((video) => (
+            <div key={video.id} className="flex items-center gap-3 bg-[#1c1c1e] border border-white/10 rounded-xl p-2.5 cursor-pointer hover:bg-[#242426] transition-colors">
+              <div className="w-24 aspect-video rounded-lg overflow-hidden shrink-0 relative">
+                <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover" />
+              </div>
+              <div className="flex-1 min-w-0 text-left">
+                <h3 className="text-sm font-bold text-white truncate">{video.title}</h3>
+                <p className="text-[11px] text-white/50 mt-1">{video.duration || "Recently added"}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
   }
 
   return (
@@ -208,75 +286,9 @@ export default function PublicProfilePage() {
             </div>
           </div>
 
-          {/* CONTENT AREA */}
+          {/* RENDER THE PRE-CALCULATED CONTENT */}
           <div className="w-full">
-            
-            {/* ================= STORE TAB ================= */}
-            {activeContentTab === "Store" && (
-               merch.length === 0 ? (
-                <div className="text-center py-12 bg-[#1c1c1e] border border-white/5 rounded-2xl">
-                  <ShoppingBag size={32} className="mx-auto text-white/20 mb-3" />
-                  <p className="text-white/50 text-sm">No products available yet.</p>
-                </div>
-               ) : (
-                <div className="grid grid-cols-2 gap-3">
-                  {merch.map((item) => (
-                    <div key={item.id} className="bg-[#1c1c1e] border border-white/10 rounded-xl overflow-hidden group cursor-pointer flex flex-col">
-                      <div className="relative aspect-square">
-                        <img src={item.image_url} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                      </div>
-                      <div className="p-3 flex-1 flex flex-col justify-between text-left">
-                        <h3 className="text-sm font-bold leading-tight line-clamp-2 text-white">{item.name}</h3>
-                        <p className="text-emerald-400 font-bold text-xs mt-2">${(item.price_cents / 100).toFixed(2)}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-               )
-            )}
-
-            {/* ================= ALL / PODCASTS / VIDEOS TABS ================= */}
-            {activeContentTab !== "Store" && (
-              filteredVideos.length === 0 ? (
-                <div className="text-center py-12 bg-[#1c1c1e] border border-white/5 rounded-2xl">
-                  <p className="text-white/50 text-sm">
-                    No {activeContentTab === "All" ? "content" : activeContentTab.toLowerCase()} found yet.
-                  </p>
-                </div>
-              ) : contentView === "grid" ? (
-                <div className="grid grid-cols-2 gap-3">
-                  {filteredVideos.map((video) => (
-                    <div key={video.id} className="bg-[#1c1c1e] border border-white/10 rounded-xl overflow-hidden group cursor-pointer">
-                      <div className="relative aspect-video">
-                        <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                        <div className={`absolute top-2 left-2 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-sm ${video.type?.toLowerCase().includes('podcast') ? 'bg-blue-500' : 'bg-[#E53945]'}`}>
-                          {video.type || "VIDEO"}
-                        </div>
-                      </div>
-                      <div className="p-3 text-left">
-                        <h3 className="text-xs font-bold leading-tight line-clamp-2 text-white">{video.title}</h3>
-                        <p className="text-[10px] text-white/50 mt-1">{video.duration || "Recently added"}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="flex flex-col gap-3">
-                  {filteredVideos.map((video) => (
-                    <div key={video.id} className="flex items-center gap-3 bg-[#1c1c1e] border border-white/10 rounded-xl p-2.5 cursor-pointer hover:bg-[#242426] transition-colors">
-                      <div className="w-24 aspect-video rounded-lg overflow-hidden shrink-0 relative">
-                        <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="flex-1 min-w-0 text-left">
-                        <h3 className="text-sm font-bold text-white truncate">{video.title}</h3>
-                        <p className="text-[11px] text-white/50 mt-1">{video.duration || "Recently added"}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )
-            )}
-
+            {renderTabContent}
           </div>
 
         </div>
