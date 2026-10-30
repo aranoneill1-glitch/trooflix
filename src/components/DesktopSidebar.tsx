@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Search, Home, Star, Compass, Play, ShoppingBag, Plus, List, User } from "lucide-react";
+import { Search, Home, Star, Mic, Play, ShoppingBag, Plus, List, User } from "lucide-react";
 import { getCachedUser } from "@/lib/cache";
 
 export default function DesktopSidebar() {
@@ -27,7 +27,7 @@ export default function DesktopSidebar() {
     { name: "Search", icon: Search, href: "/search" },
     { name: "Home", icon: Home, href: "/" },
     { name: "Trooflix Plus", icon: Star, href: "/plus" },
-    { name: "Categories", icon: Compass, href: "/search" }, // Search acts as categories grid
+    { name: "Podcasters", icon: Mic, href: "/podcasts" }, // Replaced Categories with Podcasters
     { name: "Shorts / Feed", icon: Play, href: "/feed" },
     { name: "Marketplace", icon: ShoppingBag, href: "/merchandise" },
   ];
