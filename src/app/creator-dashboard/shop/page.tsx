@@ -6,7 +6,6 @@ import { ChevronLeft, Plus, Trash2, Edit, ShoppingBag, Package, X, Image as Imag
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { getCachedUser } from "@/lib/cache";
-import { createClient } from "@/utils/supabase/client";
 
 type Product = {
   id: number;
@@ -19,7 +18,6 @@ type Product = {
 };
 
 export default function ManageShopPage() {
-  const supabase = createClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [creatorId, setCreatorId] = useState<string | null>(null);
@@ -99,18 +97,29 @@ export default function ManageShopPage() {
     try {
       let finalImageUrl = imageUrl;
 
-      // Upload image if a new file was selected
+      // UPLOAD TO CLOUDFLARE R2
       if (imageFile) {
-        const fileExt = imageFile.name.split('.').pop();
-        const fileName = `product-${Date.now()}.${fileExt}`;
-        const { error: uploadError } = await supabase.storage
-          .from("products")
-          .upload(fileName, imageFile, { upsert: true });
+        // 1. Get presigned URL from R2 route
+        const r2Res = await fetch('/api/r2-upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ filename: imageFile.name, contentType: imageFile.type }),
+        });
+        const r2Data = await r2Res.json();
+        
+        if (!r2Res.ok) {
+          throw new Error("R2 Error: " + (r2Data.error || "Could not get upload URL"));
+        }
 
-        if (uploadError) throw new Error("Failed to upload image: " + uploadError.message);
+        // 2. Upload file directly to R2
+        const uploadRes = await fetch(r2Data.uploadUrl, {
+          method: 'PUT',
+          body: imageFile,
+          headers: { 'Content-Type': imageFile.type },
+        });
+        if (!uploadRes.ok) throw new Error("Failed to upload image to R2");
 
-        const { data: { publicUrl } } = supabase.storage.from("products").getPublicUrl(fileName);
-        finalImageUrl = publicUrl;
+        finalImageUrl = r2Data.publicUrl;
       }
 
       const priceCents = Math.round(Number(price) * 100);
@@ -175,7 +184,6 @@ export default function ManageShopPage() {
           <ChevronLeft size={16} /> Back to Dashboard
         </Link>
 
-        {/* HEADER */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
             <h1 className="text-3xl font-black tracking-tight mb-2 flex items-center gap-2">
@@ -191,7 +199,6 @@ export default function ManageShopPage() {
           </button>
         </div>
 
-        {/* PRODUCT GRID */}
         {products.length === 0 ? (
           <div className="text-center py-24 bg-[#1c1c1e] border border-white/5 rounded-3xl">
             <Package size={48} className="mx-auto text-white/10 mb-4" />
@@ -237,7 +244,6 @@ export default function ManageShopPage() {
 
       </div>
 
-      {/* ADD/EDIT MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-[#1c1c1e] border border-white/10 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
@@ -251,7 +257,6 @@ export default function ManageShopPage() {
 
             <form onSubmit={saveProduct} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
               
-              {/* IMAGE PICKER */}
               <div>
                 <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 block">Product Image</label>
                 <div 
