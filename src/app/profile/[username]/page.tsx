@@ -27,7 +27,6 @@ export default function PublicProfilePage() {
     async function loadProfileAndVideos() {
       const supabase = createClient();
       
-      // 1. Fetch Profile by Username
       const { data: profileData, error } = await supabase
         .from("profiles")
         .select("*")
@@ -40,7 +39,6 @@ export default function PublicProfilePage() {
       }
       setProfile(profileData);
 
-      // 2. Fetch Creator ID
       let creatorId = null;
       try {
         const creatorRes = await fetch(`/api/me/creator?user_id=${profileData.user_id}`);
@@ -50,7 +48,6 @@ export default function PublicProfilePage() {
         }
       } catch (err) {}
 
-      // 3. Fetch Videos
       try {
         const videosRes = await fetch("/api/videos", { cache: "no-store" });
         const allVideos = await videosRes.json();
@@ -63,7 +60,6 @@ export default function PublicProfilePage() {
         }
       } catch (err) {}
 
-      // 4. Fetch Merchandise
       try {
         const merchRes = await fetch("/api/products/global");
         const merchData = await merchRes.json();
@@ -99,93 +95,6 @@ export default function PublicProfilePage() {
   }
 
   const displayName = profile.display_name || "User";
-
-  // ==========================================
-  // BULLETPROOF RENDER LOGIC
-  // ==========================================
-  let renderTabContent = null;
-
-  if (activeContentTab === "Store") {
-    // ONLY RENDER MERCH
-    if (merch.length === 0) {
-      renderTabContent = (
-        <div className="text-center py-12 bg-[#1c1c1e] border border-white/5 rounded-2xl">
-          <ShoppingBag size={32} className="mx-auto text-white/20 mb-3" />
-          <p className="text-white/50 text-sm">No products available yet.</p>
-        </div>
-      );
-    } else {
-      renderTabContent = (
-        <div className="grid grid-cols-2 gap-3">
-          {merch.map((item) => (
-            <div key={item.id} className="bg-[#1c1c1e] border border-white/10 rounded-xl overflow-hidden group cursor-pointer flex flex-col">
-              <div className="relative aspect-square">
-                <img src={item.image_url} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-              </div>
-              <div className="p-3 flex-1 flex flex-col justify-between text-left">
-                <h3 className="text-sm font-bold leading-tight line-clamp-2 text-white">{item.name}</h3>
-                <p className="text-emerald-400 font-bold text-xs mt-2">${(item.price_cents / 100).toFixed(2)}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      );
-    }
-  } else {
-    // RENDER VIDEOS (All, Podcasts, Videos)
-    let filteredVids = videos;
-    
-    if (activeContentTab === "Podcasts") {
-      filteredVids = videos.filter(v => v.type?.toLowerCase().includes("podcast"));
-    } else if (activeContentTab === "Videos") {
-      filteredVids = videos.filter(v => !v.type?.toLowerCase().includes("podcast"));
-    }
-
-    if (filteredVids.length === 0) {
-      renderTabContent = (
-        <div className="text-center py-12 bg-[#1c1c1e] border border-white/5 rounded-2xl">
-          <p className="text-white/50 text-sm">
-            No {activeContentTab === "All" ? "content" : activeContentTab.toLowerCase()} found yet.
-          </p>
-        </div>
-      );
-    } else if (contentView === "grid") {
-      renderTabContent = (
-        <div className="grid grid-cols-2 gap-3">
-          {filteredVids.map((video) => (
-            <div key={video.id} className="bg-[#1c1c1e] border border-white/10 rounded-xl overflow-hidden group cursor-pointer">
-              <div className="relative aspect-video">
-                <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                <div className={`absolute top-2 left-2 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-sm ${video.type?.toLowerCase().includes('podcast') ? 'bg-blue-500' : 'bg-[#E53945]'}`}>
-                  {video.type || "VIDEO"}
-                </div>
-              </div>
-              <div className="p-3 text-left">
-                <h3 className="text-xs font-bold leading-tight line-clamp-2 text-white">{video.title}</h3>
-                <p className="text-[10px] text-white/50 mt-1">{video.duration || "Recently added"}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      );
-    } else {
-      renderTabContent = (
-        <div className="flex flex-col gap-3">
-          {filteredVids.map((video) => (
-            <div key={video.id} className="flex items-center gap-3 bg-[#1c1c1e] border border-white/10 rounded-xl p-2.5 cursor-pointer hover:bg-[#242426] transition-colors">
-              <div className="w-24 aspect-video rounded-lg overflow-hidden shrink-0 relative">
-                <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover" />
-              </div>
-              <div className="flex-1 min-w-0 text-left">
-                <h3 className="text-sm font-bold text-white truncate">{video.title}</h3>
-                <p className="text-[11px] text-white/50 mt-1">{video.duration || "Recently added"}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      );
-    }
-  }
 
   return (
     <main className="min-h-screen bg-[#09090B] text-white pb-32 font-sans selection:bg-[#E53945]/30">
@@ -270,25 +179,110 @@ export default function PublicProfilePage() {
               ))}
             </div>
 
-            <div className="flex items-center gap-1 bg-[#1c1c1e] p-1 rounded-lg mb-2">
-              <button
-                onClick={() => setContentView("grid")}
-                className={`p-1.5 rounded-md transition ${contentView === "grid" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}
-              >
-                <LayoutGrid size={16} />
-              </button>
-              <button
-                onClick={() => setContentView("list")}
-                className={`p-1.5 rounded-md transition ${contentView === "list" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}
-              >
-                <List size={16} />
-              </button>
-            </div>
+            {activeContentTab !== "Store" && (
+              <div className="flex items-center gap-1 bg-[#1c1c1e] p-1 rounded-lg mb-2">
+                <button
+                  onClick={() => setContentView("grid")}
+                  className={`p-1.5 rounded-md transition ${contentView === "grid" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}
+                >
+                  <LayoutGrid size={16} />
+                </button>
+                <button
+                  onClick={() => setContentView("list")}
+                  className={`p-1.5 rounded-md transition ${contentView === "list" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}
+                >
+                  <List size={16} />
+                </button>
+              </div>
+            )}
           </div>
 
-          {/* RENDER THE PRE-CALCULATED CONTENT */}
-          <div className="w-full">
-            {renderTabContent}
+          {/* CONTENT AREA - FORCED TO RE-RENDER ON TAB CHANGE */}
+          <div key={activeContentTab} className="w-full">
+            
+            {/* 1. STORE TAB */}
+            {activeContentTab === "Store" && (
+              <div className="w-full">
+                {merch.length === 0 ? (
+                  <div className="text-center py-12 bg-[#1c1c1e] border border-white/5 rounded-2xl">
+                    <ShoppingBag size={32} className="mx-auto text-white/20 mb-3" />
+                    <p className="text-white/50 text-sm">No products available yet.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3">
+                    {merch.map((item) => (
+                      <div key={item.id} className="bg-[#1c1c1e] border border-white/10 rounded-xl overflow-hidden group cursor-pointer flex flex-col">
+                        <div className="relative aspect-square">
+                          <img src={item.image_url} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        </div>
+                        <div className="p-3 flex-1 flex flex-col justify-between text-left">
+                          <h3 className="text-sm font-bold leading-tight line-clamp-2 text-white">{item.name}</h3>
+                          <p className="text-emerald-400 font-bold text-xs mt-2">${(item.price_cents / 100).toFixed(2)}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 2. VIDEO TABS (All, Podcasts, Videos) */}
+            {activeContentTab !== "Store" && (
+              <div className="w-full">
+                {/* Calculate filtered videos here so it's strictly scoped */}
+                {(() => {
+                  let filtered = videos;
+                  if (activeContentTab === "Podcasts") filtered = videos.filter(v => v.type?.toLowerCase().includes("podcast"));
+                  if (activeContentTab === "Videos") filtered = videos.filter(v => !v.type?.toLowerCase().includes("podcast"));
+
+                  if (filtered.length === 0) {
+                    return (
+                      <div className="text-center py-12 bg-[#1c1c1e] border border-white/5 rounded-2xl">
+                        <p className="text-white/50 text-sm">No {activeContentTab.toLowerCase()} found yet.</p>
+                      </div>
+                    );
+                  }
+
+                  if (contentView === "grid") {
+                    return (
+                      <div className="grid grid-cols-2 gap-3">
+                        {filtered.map((video) => (
+                          <div key={video.id} className="bg-[#1c1c1e] border border-white/10 rounded-xl overflow-hidden group cursor-pointer">
+                            <div className="relative aspect-video">
+                              <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                              <div className={`absolute top-2 left-2 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-sm ${video.type?.toLowerCase().includes('podcast') ? 'bg-blue-500' : 'bg-[#E53945]'}`}>
+                                {video.type || "VIDEO"}
+                              </div>
+                            </div>
+                            <div className="p-3 text-left">
+                              <h3 className="text-xs font-bold leading-tight line-clamp-2 text-white">{video.title}</h3>
+                              <p className="text-[10px] text-white/50 mt-1">{video.duration || "Recently added"}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="flex flex-col gap-3">
+                      {filtered.map((video) => (
+                        <div key={video.id} className="flex items-center gap-3 bg-[#1c1c1e] border border-white/10 rounded-xl p-2.5 cursor-pointer hover:bg-[#242426] transition-colors">
+                          <div className="w-24 aspect-video rounded-lg overflow-hidden shrink-0 relative">
+                            <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover" />
+                          </div>
+                          <div className="flex-1 min-w-0 text-left">
+                            <h3 className="text-sm font-bold text-white truncate">{video.title}</h3>
+                            <p className="text-[11px] text-white/50 mt-1">{video.duration || "Recently added"}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+
           </div>
 
         </div>
