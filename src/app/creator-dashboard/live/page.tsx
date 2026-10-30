@@ -19,7 +19,7 @@ export default function GoLivePage() {
     async function setupCamera() {
       try {
         const mediaStream = await navigator.mediaDevices.getUserMedia({
-          video: true,
+          video: { facingMode: "user" },
           audio: true,
         });
         setStream(mediaStream);
@@ -66,7 +66,7 @@ export default function GoLivePage() {
     try {
       const res = await fetch("/api/live/create", { method: "POST" });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) throw new Error(data.error || "Failed to create live input");
 
       const { whipUrl, whepUrl, liveInputId } = data;
 
@@ -102,7 +102,10 @@ export default function GoLivePage() {
         }),
       });
 
-      if (!statusRes.ok) throw new Error("Failed to update database");
+      if (!statusRes.ok) {
+        const errData = await statusRes.json().catch(() => ({}));
+        throw new Error(errData.error || "Failed to update database");
+      }
 
       setIsLive(true);
     } catch (err: any) {
@@ -117,7 +120,6 @@ export default function GoLivePage() {
     setLoading(true);
 
     try {
-      // UPDATE VIA API ROUTE TO BYPASS RLS
       await fetch("/api/live/status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
