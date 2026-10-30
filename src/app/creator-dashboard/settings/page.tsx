@@ -3,13 +3,12 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, Camera, Save, User, AtSign, AlignLeft } from "lucide-react";
+import { ChevronLeft, Camera, Save, User, AtSign, AlignLeft, Image as ImageIcon, Check } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { getCachedUser, clearUserCache } from "@/lib/cache";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 
-// Custom SVGs because this version of lucide-react lacks brand icons
 const InstagramIcon = ({ size = 16 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
@@ -24,6 +23,16 @@ const XIcon = ({ size = 16 }: { size?: number }) => (
   </svg>
 );
 
+const THEMES = [
+  { name: "Trooflix Black", value: "" },
+  { name: "Crimson", value: "linear-gradient(to bottom, #450a0a, #09090b)" },
+  { name: "Deep Ocean", value: "linear-gradient(to bottom, #0f172a, #09090b)" },
+  { name: "Emerald", value: "linear-gradient(to bottom, #022c22, #09090b)" },
+  { name: "Royal", value: "linear-gradient(to bottom, #2e1065, #09090b)" },
+  { name: "Sunset", value: "linear-gradient(to bottom, #431407, #09090b)" },
+  { name: "Cyberpunk", value: "linear-gradient(to bottom, #4a044e, #09090b)" },
+];
+
 export default function ProfileSettingsPage() {
   const router = useRouter();
   const supabase = createClient();
@@ -33,7 +42,6 @@ export default function ProfileSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState({ type: "", message: "" });
 
-  // Form State
   const [userId, setUserId] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState("");
   const [username, setUsername] = useState("");
@@ -41,14 +49,12 @@ export default function ProfileSettingsPage() {
   const [xHandle, setXHandle] = useState("");
   const [bio, setBio] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [backdropUrl, setBackdropUrl] = useState(""); 
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
 
   useEffect(() => {
     getCachedUser().then((user) => {
-      if (!user) {
-        router.push("/login");
-        return;
-      }
+      if (!user) { router.push("/login"); return; }
       setUserId(user.id);
       
       fetch(`/api/profile?user_id=${user.id}`)
@@ -61,6 +67,7 @@ export default function ProfileSettingsPage() {
             setXHandle(d.profile.x_handle || "");
             setBio(d.profile.bio || "");
             setAvatarUrl(d.profile.avatar_url || "");
+            setBackdropUrl(d.profile.backdrop_url || "");
           }
           setLoading(false);
         })
@@ -72,7 +79,7 @@ export default function ProfileSettingsPage() {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setAvatarFile(file);
-      setAvatarUrl(URL.createObjectURL(file)); // Preview
+      setAvatarUrl(URL.createObjectURL(file));
     }
   };
 
@@ -85,21 +92,15 @@ export default function ProfileSettingsPage() {
     try {
       let finalAvatarUrl = avatarUrl;
 
-      // 1. Upload image if a new file was selected
       if (avatarFile) {
         const fileExt = avatarFile.name.split('.').pop();
         const fileName = `${userId}-${Date.now()}.${fileExt}`;
-        const { error: uploadError } = await supabase.storage
-          .from("avatars")
-          .upload(fileName, avatarFile, { upsert: true });
-
+        const { error: uploadError } = await supabase.storage.from("avatars").upload(fileName, avatarFile, { upsert: true });
         if (uploadError) throw new Error("Failed to upload image: " + uploadError.message);
-
         const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(fileName);
         finalAvatarUrl = publicUrl;
       }
 
-      // 2. Update Profile
       const cleanUsername = username.replace(/^@/, "").trim();
       const cleanIg = instagram.replace(/^@/, "").trim();
       const cleanX = xHandle.replace(/^@/, "").trim();
@@ -111,16 +112,14 @@ export default function ProfileSettingsPage() {
         x_handle: cleanX,
         bio: bio,
         avatar_url: finalAvatarUrl,
+        backdrop_url: backdropUrl,
       }).eq("user_id", userId);
 
       if (error) throw error;
 
       setStatus({ type: "success", message: "Profile updated successfully!" });
-      clearUserCache(); // Refresh cache so UI updates immediately
-      
-      setTimeout(() => {
-        router.push("/creator-dashboard");
-      }, 1500);
+      clearUserCache();
+      setTimeout(() => { router.push("/creator-dashboard"); }, 1500);
 
     } catch (err: any) {
       setStatus({ type: "error", message: err.message || "Failed to save profile." });
@@ -129,18 +128,11 @@ export default function ProfileSettingsPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#09090B] flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" />
-      </div>
-    );
-  }
+  if (loading) return <div className="min-h-screen bg-[#09090B] flex items-center justify-center"><div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" /></div>;
 
   return (
     <main className="min-h-screen bg-[#09090B] text-white pb-32 font-sans selection:bg-[#E53945]/30">
       <TopBar />
-
       <div className="max-w-2xl mx-auto px-4 pt-24 pb-6">
         
         <Link href="/creator-dashboard" className="inline-flex items-center gap-2 text-sm text-white/50 hover:text-white mb-8 transition">
@@ -154,149 +146,107 @@ export default function ProfileSettingsPage() {
 
         <form onSubmit={saveProfile} className="space-y-6">
           
-          {/* Avatar Section */}
           <div className="bg-[#1c1c1e] border border-white/5 rounded-3xl p-6 flex flex-col items-center justify-center">
-            <div 
-              className="relative group cursor-pointer" 
-              onClick={() => fileInputRef.current?.click()}
-            >
+            <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
               <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-[#09090B] ring-2 ring-white/10 bg-black flex-shrink-0 relative z-10">
-                {avatarUrl ? (
-                  <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-3xl font-black text-white/20">
-                    {displayName.charAt(0) || "?"}
-                  </div>
-                )}
+                {avatarUrl ? <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-3xl font-black text-white/20">{displayName.charAt(0) || "?"}</div>}
               </div>
-              
-              {/* Hover overlay */}
               <div className="absolute inset-0 z-20 rounded-full bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <Camera size={28} className="text-white" />
               </div>
             </div>
             <p className="text-sm font-semibold text-white mt-4">Change Profile Photo</p>
-            <p className="text-xs text-white/40 mt-1">JPG, PNG or GIF. Max 5MB.</p>
-            
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              onChange={handleImageChange} 
-              accept="image/*" 
-              className="hidden" 
-            />
+            <input type="file" ref={fileInputRef} onChange={handleImageChange} accept="image/*" className="hidden" />
           </div>
 
-          {/* Form Fields */}
           <div className="bg-[#1c1c1e] border border-white/5 rounded-3xl p-6 md:p-8 space-y-6">
             
-            {/* Display Name */}
             <div>
               <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 flex items-center gap-2">
                 <User size={14} /> Display Name
               </label>
-              <input
-                type="text"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="e.g. John Doe"
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white outline-none focus:border-[#E53945] transition"
-                required
-              />
+              <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="e.g. John Doe" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white outline-none focus:border-[#E53945] transition" required />
             </div>
 
-            {/* Username */}
             <div>
               <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 flex items-center gap-2">
                 <AtSign size={14} /> Username Handle
               </label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 font-bold">@</span>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="johndoe"
-                  className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-3.5 text-white outline-none focus:border-[#E53945] transition"
-                  required
-                />
+                <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="johndoe" className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-3.5 text-white outline-none focus:border-[#E53945] transition" required />
               </div>
             </div>
 
             <div className="h-px bg-white/5 my-2" />
 
-            {/* Social Handles */}
+            {/* THEME PICKER */}
+            <div>
+              <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-4 flex items-center gap-2">
+                <ImageIcon size={14} /> Profile Theme
+              </label>
+              <div className="grid grid-cols-4 gap-3">
+                {THEMES.map((theme) => (
+                  <button
+                    key={theme.name}
+                    type="button"
+                    onClick={() => setBackdropUrl(theme.value)}
+                    className={`relative h-20 rounded-xl overflow-hidden border-2 transition-all flex items-end justify-center pb-2 ${
+                      backdropUrl === theme.value ? "border-white scale-105 shadow-lg" : "border-transparent hover:scale-105"
+                    }`}
+                    style={{ background: theme.value || "#09090B" }}
+                  >
+                    {backdropUrl === theme.value && (
+                      <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                        <Check size={24} className="text-white drop-shadow-md" />
+                      </div>
+                    )}
+                    <span className="relative z-10 text-[10px] font-bold text-white drop-shadow-md truncate w-full text-center px-1">
+                      {theme.name}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="h-px bg-white/5 my-2" />
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 flex items-center gap-2">
-                  <InstagramIcon size={14} /> Instagram
-                </label>
+                <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 flex items-center gap-2"><InstagramIcon size={14} /> Instagram</label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 font-bold">@</span>
-                  <input
-                    type="text"
-                    value={instagram}
-                    onChange={(e) => setInstagram(e.target.value)}
-                    placeholder="username"
-                    className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-3.5 text-white outline-none focus:border-[#E53945] transition"
-                  />
+                  <input type="text" value={instagram} onChange={(e) => setInstagram(e.target.value)} placeholder="username" className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-3.5 text-white outline-none focus:border-[#E53945] transition" />
                 </div>
               </div>
-
               <div>
-                <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 flex items-center gap-2">
-                  <XIcon size={14} /> X (Twitter)
-                </label>
+                <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 flex items-center gap-2"><XIcon size={14} /> X (Twitter)</label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 font-bold">@</span>
-                  <input
-                    type="text"
-                    value={xHandle}
-                    onChange={(e) => setXHandle(e.target.value)}
-                    placeholder="username"
-                    className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-3.5 text-white outline-none focus:border-[#E53945] transition"
-                  />
+                  <input type="text" value={xHandle} onChange={(e) => setXHandle(e.target.value)} placeholder="username" className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-3.5 text-white outline-none focus:border-[#E53945] transition" />
                 </div>
               </div>
             </div>
 
-            {/* Bio */}
             <div>
-              <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 flex items-center gap-2">
-                <AlignLeft size={14} /> Bio
-              </label>
-              <textarea
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                placeholder="Tell your viewers about yourself..."
-                rows={4}
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white outline-none focus:border-[#E53945] transition resize-none"
-              />
+              <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 flex items-center gap-2"><AlignLeft size={14} /> Bio</label>
+              <textarea value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Tell your viewers about yourself..." rows={4} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white outline-none focus:border-[#E53945] transition resize-none" />
             </div>
 
           </div>
 
-          {/* Status Message */}
           {status.message && (
-            <div className={`rounded-xl px-4 py-3 text-sm font-medium ${
-              status.type === "success" ? "bg-emerald-950/30 border border-emerald-600/40 text-emerald-300" : "bg-red-950/30 border border-red-600/40 text-red-300"
-            }`}>
+            <div className={`rounded-xl px-4 py-3 text-sm font-medium ${status.type === "success" ? "bg-emerald-950/30 border border-emerald-600/40 text-emerald-300" : "bg-red-950/30 border border-red-600/40 text-red-300"}`}>
               {status.message}
             </div>
           )}
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={saving}
-            className="w-full flex items-center justify-center gap-2 bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold py-4 rounded-xl transition-all hover:scale-[1.02] shadow-[0_0_20px_rgba(229,57,69,0.3)]"
-          >
+          <button type="submit" disabled={saving} className="w-full flex items-center justify-center gap-2 bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold py-4 rounded-xl transition-all hover:scale-[1.02] shadow-[0_0_20px_rgba(229,57,69,0.3)]">
             <Save size={18} /> {saving ? "Saving Changes…" : "Save Profile"}
           </button>
 
         </form>
       </div>
-
       <MobileBottomNav />
     </main>
   );
