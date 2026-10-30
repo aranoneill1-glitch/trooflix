@@ -35,6 +35,15 @@ export default function ManageShopPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
 
+  // FORCE CACHE BUST ONCE
+  useEffect(() => {
+    const v = localStorage.getItem("trooflix_shop_upload_v3");
+    if (v !== "v3") {
+      localStorage.setItem("trooflix_shop_upload_v3", "v3");
+      if (typeof window !== "undefined") window.location.reload();
+    }
+  }, []);
+
   useEffect(() => {
     getCachedUser().then(async (user) => {
       if (!user) return;
@@ -97,29 +106,20 @@ export default function ManageShopPage() {
     try {
       let finalImageUrl = imageUrl;
 
-      // UPLOAD TO CLOUDFLARE R2
+      // UPLOAD TO NEW SERVER-SIDE ROUTE
       if (imageFile) {
-        // 1. Get presigned URL from R2 route
-        const r2Res = await fetch('/api/r2-upload', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ filename: imageFile.name, contentType: imageFile.type }),
-        });
-        const r2Data = await r2Res.json();
+        const formData = new FormData();
+        formData.append("file", imageFile);
         
-        if (!r2Res.ok) {
-          throw new Error("R2 Error: " + (r2Data.error || "Could not get upload URL"));
-        }
-
-        // 2. Upload file directly to R2
-        const uploadRes = await fetch(r2Data.uploadUrl, {
-          method: 'PUT',
-          body: imageFile,
-          headers: { 'Content-Type': imageFile.type },
+        const uploadRes = await fetch("/api/upload-image", {
+          method: "POST",
+          body: formData,
         });
-        if (!uploadRes.ok) throw new Error("Failed to upload image to R2");
+        
+        const uploadData = await uploadRes.json();
+        if (!uploadRes.ok) throw new Error(uploadData.error || "Upload failed");
 
-        finalImageUrl = r2Data.publicUrl;
+        finalImageUrl = uploadData.publicUrl;
       }
 
       const priceCents = Math.round(Number(price) * 100);
