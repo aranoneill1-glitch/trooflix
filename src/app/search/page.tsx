@@ -42,12 +42,10 @@ export default function SearchPage() {
     async function loadData() {
       const supabase = createClient();
       
-      // Fetch ALL videos from Vercel KV
       const videosPromise = fetch("/api/videos", { cache: "no-store" })
         .then(r => r.json())
         .catch(() => []);
 
-      // Fetch ALL profiles from Supabase (Creators and Users)
       const profilesPromise = supabase
         .from("profiles")
         .select("user_id, creator_id, display_name, username, avatar_url, is_verified, tier")
@@ -67,13 +65,11 @@ export default function SearchPage() {
     setIsSearching(false);
   };
 
-  // 1. Filter Profiles (Users & Creators)
   const filteredProfiles = query.length > 0 ? allProfiles.filter(p => 
     p.display_name?.toLowerCase().includes(query.toLowerCase()) || 
     p.username?.toLowerCase().includes(query.toLowerCase())
   ) : [];
 
-  // 2. Filter Videos (All Types)
   const filteredVideos = query.length > 0 ? allVideos.filter(v => 
     v.title?.toLowerCase().includes(query.toLowerCase()) || 
     v.description?.toLowerCase().includes(query.toLowerCase()) ||
@@ -90,7 +86,6 @@ export default function SearchPage() {
       <div className="relative z-10">
         <div className="max-w-2xl mx-auto">
           
-          {/* STICKY HEADER (Search Bar) */}
           <div className="sticky top-0 z-50 bg-[#0a0a0a]/90 backdrop-blur-xl pt-4 pb-4 px-4 border-b border-white/5">
             {isSearching ? (
               <div className="flex items-center gap-3">
@@ -139,7 +134,6 @@ export default function SearchPage() {
             )}
           </div>
 
-          {/* SCROLLING CONTENT */}
           <div className="px-4 pt-4">
             {loading ? (
               <div className="flex justify-center py-20">
@@ -147,7 +141,6 @@ export default function SearchPage() {
               </div>
             ) : isSearching || query.length > 0 ? (
               
-              // SEARCH RESULTS VIEW
               <div className="flex flex-col space-y-8 pb-10">
                 {!hasResults && query.length > 0 && (
                   <div className="text-center py-10 text-white/50">
@@ -155,17 +148,13 @@ export default function SearchPage() {
                   </div>
                 )}
 
-                {/* Profiles Section (Creators & Users) */}
                 {filteredProfiles.length > 0 && (
                   <div>
                     <h3 className="text-xs font-bold text-white/40 uppercase tracking-wider mb-3">Creators & Users</h3>
                     <div className="flex flex-col space-y-3">
                       {filteredProfiles.map((profile) => {
-                        // Route creators to their dashboard, and regular users to their public profile
-                        const isCreator = profile.tier === 'creator' || profile.creator_id;
-                        const profileLink = isCreator 
-                          ? `/creator-dashboard?view=public` 
-                          : `/profile/${profile.username}`;
+                        // FIXED: Always go to the public profile page
+                        const profileLink = `/profile/${profile.username}`;
 
                         return (
                           <Link key={profile.user_id} href={profileLink} className="flex items-center gap-4 group hover:bg-white/5 p-2 -mx-2 rounded-xl transition">
@@ -195,7 +184,6 @@ export default function SearchPage() {
                   </div>
                 )}
 
-                {/* Videos Section (All Types) */}
                 {filteredVideos.length > 0 && (
                   <div>
                     <h3 className="text-xs font-bold text-white/40 uppercase tracking-wider mb-3">Videos, Podcasts & More</h3>
@@ -226,7 +214,6 @@ export default function SearchPage() {
 
             ) : (
               
-              // CATEGORY GRID VIEW (When not searching)
               <>
                 <div className="grid grid-cols-2 gap-4 mb-8">
                   {MAIN_CATEGORIES.map((cat) => (
