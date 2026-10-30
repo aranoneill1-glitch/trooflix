@@ -36,6 +36,7 @@ export async function GET() {
         name: p.name,
         price_cents: p.price_cents,
         image_url: p.image_url,
+        creator_id: p.creator_id, // <--- FIX: Added missing creator_id
         creatorName: creator.name || "Unknown Creator",
         creatorSlug: creator.slug || "",
         creatorPhoto: creator.photoUrl || "",
