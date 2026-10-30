@@ -51,7 +51,7 @@ export default function LivePlayer({ whepUrl }: { whepUrl: string }) {
             setConnecting(false); setReconnecting(false); setStarted(true);
             retryCount.current = 0;
             
-            // FIX: Save local reference to satisfy TypeScript
+            // Save local reference to satisfy TypeScript
             const video = videoRef.current;
             lastFrameTime.current = performance.now();
             
