@@ -2,9 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Volume2, VolumeX, Plus, Send, Play, Pause, ChevronLeft } from "lucide-react";
+import { Volume2, VolumeX, Plus, Send, Play, Pause } from "lucide-react";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import TopBar from "@/components/TopBar";
 
 type Video = {
   id: number;
@@ -30,7 +29,6 @@ export default function ShortsFeedPage() {
       .then((r) => r.json())
       .then((data) => {
         const all = Array.isArray(data) ? data : [];
-        // You can filter here if you only want specific "Shorts" (e.g., v.type === 'Reel')
         setVideos(all);
         setLoading(false);
       })
@@ -166,11 +164,11 @@ function VideoShort({ video, isMuted, onToggleMute }: { video: Video, isMuted: b
       )}
 
       {/* GRADIENTS for Text Readability */}
-      <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black via-black/60 to-transparent pointer-events-none" />
+      <div className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-t from-black via-black/60 to-transparent pointer-events-none" />
       <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/60 to-transparent pointer-events-none" />
 
       {/* RIGHT SIDE ACTION BUTTONS */}
-      <div className="absolute right-4 bottom-28 flex flex-col items-center gap-5 z-30">
+      <div className="absolute right-4 bottom-[100px] flex flex-col items-center gap-5 z-30">
         
         {/* Mute/Unmute */}
         <button onClick={onToggleMute} className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-black/60 transition">
@@ -195,24 +193,30 @@ function VideoShort({ video, isMuted, onToggleMute }: { video: Video, isMuted: b
       </div>
 
       {/* BOTTOM TEXT INFO */}
-      <div className="absolute left-4 right-20 bottom-24 z-30 flex flex-col items-start pointer-events-none">
+      <div className="absolute left-4 right-24 bottom-[120px] z-30 flex flex-col items-start pointer-events-none">
         <h2 className="text-white text-2xl font-bold leading-tight mb-2 drop-shadow-lg line-clamp-2">
           {video.title}
         </h2>
-        <p className="text-white/80 text-sm font-semibold mb-1 drop-shadow-md">
+        <p className="text-white/90 text-sm font-semibold mb-1 drop-shadow-md">
           {video.type || "Clip"} • {video.category || "Trending"}
         </p>
-        <p className="text-white/70 text-sm drop-shadow-md line-clamp-2">
+        <p className="text-white/80 text-sm drop-shadow-md line-clamp-2">
           {video.description || "Watch this exclusive clip on Trooflix."}
         </p>
       </div>
 
-      {/* PROGRESS BAR */}
-      <div className="absolute left-4 right-4 bottom-16 z-30 flex items-center gap-3">
-        <div className="flex-1 h-1 bg-white/30 rounded-full overflow-hidden">
-          <div className="h-full bg-[#E53945] transition-all duration-100 ease-linear" style={{ width: `${progress}%` }} />
+      {/* PROGRESS BAR (Moved up, above tab bar, between text and buttons) */}
+      <div className="absolute left-4 right-[88px] bottom-[84px] z-30 flex items-center gap-3 pointer-events-none">
+        <div className="relative flex-1 h-1 bg-white/30 rounded-full">
+          <div className="absolute top-0 left-0 h-full bg-white rounded-full transition-all duration-100 ease-linear" style={{ width: `${progress}%` }} />
+          
+          {/* Scrub Dot */}
+          <div 
+            className="absolute top-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full shadow-md transition-all duration-100 ease-linear" 
+            style={{ left: `calc(${progress}% - 4px)` }} 
+          />
         </div>
-        <span className="text-white/80 text-xs font-bold tabular-nums">
+        <span className="text-white text-xs font-semibold tabular-nums tracking-wide">
           {videoRef.current ? formatTime(videoRef.current.currentTime) : "0:00"}
         </span>
       </div>
