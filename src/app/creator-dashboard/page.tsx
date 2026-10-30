@@ -63,11 +63,12 @@ function CreatorDashboardContent() {
           })
           .catch(() => setLoading(false));
 
+        // FIXED: Filter by uploaderUserId since creatorId is numeric
         fetch("/api/videos")
           .then(r => r.json())
           .then(data => {
             const myVideos = Array.isArray(data) ? data.filter((v: any) => 
-              String(v.creatorId) === String(u.id) || !v.creatorId || v.creatorId === 'null'
+              String(v.uploaderUserId) === String(u.id)
             ) : [];
             setCreatorVideos(myVideos);
             setVideosLoading(false);
@@ -162,7 +163,7 @@ function CreatorDashboardContent() {
                     <span className="text-white/50 text-[11px] uppercase tracking-wider">Subscribers</span>
                   </div>
                   <div className="text-center md:text-left">
-                    <span className="font-bold text-white block text-xl">45</span> 
+                    <span className="font-bold text-white block text-xl">{creatorVideos.length}</span> 
                     <span className="text-white/50 text-[11px] uppercase tracking-wider">Posts</span>
                   </div>
                 </div>
