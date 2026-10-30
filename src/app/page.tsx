@@ -473,7 +473,7 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
   };
 
   return (
-    <section className="relative w-full h-[50vh] md:h-[70vh] lg:h-[75vh] flex items-center justify-center overflow-hidden bg-black touch-pan-y">
+    <section className="relative w-full h-[50vh] md:h-[70vh] lg:h-[75vh] flex items-center justify-center overflow-hidden bg-black touch-pan-y [--carousel-offset:-4vw] lg:[--carousel-offset:-22vw]">
       <div className="relative w-full max-w-6xl h-full flex items-center justify-center perspective-[1200px]">
         {videos.map((video, i) => (
           <CarouselCard
@@ -510,7 +510,7 @@ function CarouselCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMo
   });
 
   // SHIFTED SLIGHTLY LEFT (-4vw) TO MATCH SCREENSHOT EXACTLY
-  const x = useTransform(offset, (o) => `calc(${o * 60}% - 4vw)`);
+  const x = useTransform(offset, (o) => `calc(${o * 60}% + var(--carousel-offset))`);
   const scale = useTransform(offset, (o) => Math.max(0.75, 1 - Math.abs(o) * 0.25));
   const rotateY = useTransform(offset, (o) => o * -35);
   const z = useTransform(offset, (o) => -Math.abs(o) * 100);
