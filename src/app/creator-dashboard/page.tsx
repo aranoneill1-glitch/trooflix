@@ -107,9 +107,7 @@ function CreatorDashboardContent() {
         
         {/* TOP TOGGLE ROW */}
         {!isPublicView && (
-        <div className="flex items-center justify-between mb-6">
-          <div className="w-10"></div>
-          
+        <div className="flex items-center justify-center mb-6">
           <div className="flex bg-[#1c1c1e] p-1 rounded-full border border-white/10 shadow-lg">
             <button
               onClick={() => setIsDashboardView(true)}
@@ -128,10 +126,6 @@ function CreatorDashboardContent() {
               <Eye size={16} /> Profile
             </button>
           </div>
-
-          <button onClick={() => setIsDashboardView(false)} className="p-2.5 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition">
-            <Pencil size={20} />
-          </button>
         </div>
         )}
 
