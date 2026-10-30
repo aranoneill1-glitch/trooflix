@@ -184,17 +184,21 @@ export default function MobileBottomNav() {
                     <p className="text-xs text-white/50">Publish a new piece of content</p>
                   </div>
                 </Link>
-                <button 
-                  className="flex items-center gap-4 bg-white/5 border border-white/10 p-4 rounded-xl opacity-50 cursor-not-allowed"
+                
+                {/* ACTIVE GO LIVE BUTTON */}
+                <Link 
+                  href="/creator-dashboard/live"
+                  onClick={() => setShowCreateMenu(false)}
+                  className="flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-xl transition"
                 >
-                  <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center">
-                    <Radio className="text-blue-400" size={24} />
+                  <div className="w-12 h-12 rounded-full bg-[#E53945]/20 flex items-center justify-center">
+                    <Radio className="text-[#E53945]" size={24} />
                   </div>
-                  <div className="text-left">
-                    <h4 className="font-bold">Go Live (Coming Soon)</h4>
+                  <div>
+                    <h4 className="font-bold">Go Live</h4>
                     <p className="text-xs text-white/50">Stream a live Q&A with your fans</p>
                   </div>
-                </button>
+                </Link>
               </div>
             </motion.div>
           </>
