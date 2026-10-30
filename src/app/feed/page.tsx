@@ -193,7 +193,7 @@ function VideoShort({ video, isMuted, onToggleMute }: { video: Video, isMuted: b
       </div>
 
       {/* BOTTOM TEXT INFO */}
-      <div className="absolute left-4 right-24 bottom-[120px] z-30 flex flex-col items-start pointer-events-none">
+      <div className="absolute left-4 right-24 bottom-[140px] z-30 flex flex-col items-start pointer-events-none">
         <h2 className="text-white text-2xl font-bold leading-tight mb-2 drop-shadow-lg line-clamp-2">
           {video.title}
         </h2>
@@ -205,8 +205,8 @@ function VideoShort({ video, isMuted, onToggleMute }: { video: Video, isMuted: b
         </p>
       </div>
 
-      {/* PROGRESS BAR (Moved up, above tab bar, between text and buttons) */}
-      <div className="absolute left-4 right-[88px] bottom-[84px] z-30 flex items-center gap-3 pointer-events-none">
+      {/* PROGRESS BAR (Now perfectly aligned with the center of the avatar) */}
+      <div className="absolute left-4 right-[88px] bottom-[122px] z-30 flex items-center gap-3 pointer-events-none">
         <div className="relative flex-1 h-1 bg-white/30 rounded-full">
           <div className="absolute top-0 left-0 h-full bg-white rounded-full transition-all duration-100 ease-linear" style={{ width: `${progress}%` }} />
           
