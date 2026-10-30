@@ -7,6 +7,7 @@ import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import LivePlayer from "@/components/LivePlayer";
+import LiveChat from "@/components/LiveChat"; // <-- Import Live Chat
 import { createClient } from "@/utils/supabase/client";
 
 export default function PublicProfilePage() {
@@ -89,7 +90,7 @@ export default function PublicProfilePage() {
       <div className="relative z-10 min-h-full">
         <TopBar />
         
-        <div className="max-w-2xl mx-auto px-4 pt-24">
+        <div className="max-w-6xl mx-auto px-4 pt-24">
           <Link href="/search" className="inline-flex items-center gap-2 text-white/50 hover:text-white transition mb-8 text-sm font-semibold">
             <ArrowLeft size={16} /> Back
           </Link>
@@ -108,10 +109,22 @@ export default function PublicProfilePage() {
             <p className="text-white/50 mb-6">@{profile.username}</p>
             {profile.bio && <p className="text-sm text-white/70 max-w-md mb-8 leading-relaxed">{profile.bio}</p>}
 
-            {/* LIVE PLAYER */}
-            {profile.is_live && profile.live_input_id && (
-              <div className="w-full mb-8">
-                <LivePlayer streamId={profile.live_input_id} />
+            {/* LIVE PLAYER & CHAT LAYOUT */}
+            {profile.is_live && profile.live_input_id ? (
+              <div className="w-full grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+                <div className="lg:col-span-2">
+                  <LivePlayer streamId={profile.live_input_id} />
+                </div>
+                <div className="lg:col-span-1">
+                  <LiveChat liveInputId={profile.live_input_id} />
+                </div>
+              </div>
+            ) : (
+              <div className="w-full max-w-sm mx-auto mb-10">
+                <div className="flex gap-3 w-full">
+                  <button className="flex-1 flex items-center justify-center gap-2 bg-white text-black font-bold py-3 rounded-full hover:bg-gray-200 transition shadow-lg text-sm"><UserPlus size={18} /> Follow</button>
+                  <button className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-full transition border border-white/10 text-sm"><MessageSquare size={18} /> Message</button>
+                </div>
               </div>
             )}
 
@@ -119,11 +132,6 @@ export default function PublicProfilePage() {
               <div className="text-center"><span className="font-bold text-white block text-xl">0</span><span className="text-white/50 text-[11px] uppercase tracking-wider">Following</span></div>
               <div className="text-center"><span className="font-bold text-white block text-xl">0</span><span className="text-white/50 tracking-wider uppercase text-[11px]">Followers</span></div>
               <div className="text-center"><span className="font-bold text-white block text-xl">{videos.length}</span><span className="text-white/50 text-[11px] uppercase tracking-wider">Posts</span></div>
-            </div>
-
-            <div className="flex gap-3 w-full max-w-sm mx-auto mb-10">
-              <button className="flex-1 flex items-center justify-center gap-2 bg-white text-black font-bold py-3 rounded-full hover:bg-gray-200 transition shadow-lg text-sm"><UserPlus size={18} /> Follow</button>
-              <button className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-full transition border border-white/10 text-sm"><MessageSquare size={18} /> Message</button>
             </div>
 
             <div className="flex items-center justify-between border-b border-white/10 mb-6 w-full text-left">
