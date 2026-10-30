@@ -10,17 +10,11 @@ import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 
 const InstagramIcon = ({ size = 16 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-  </svg>
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
 );
 
 const XIcon = ({ size = 16 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
-    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-  </svg>
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
 );
 
 const THEMES = [
@@ -53,27 +47,24 @@ export default function ProfileSettingsPage() {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
 
   useEffect(() => {
-    getCachedUser().then((user) => {
+    getCachedUser().then(async (user) => {
       if (!user) { router.push("/login"); return; }
       setUserId(user.id);
       
-      fetch(`/api/profile?user_id=${user.id}`)
-        .then((r) => r.json())
-        .then((d) => {
-          if (d.profile) {
-            setDisplayName(d.profile.display_name || "");
-            setUsername(d.profile.username || "");
-            setInstagram(d.profile.instagram_handle || "");
-            setXHandle(d.profile.x_handle || "");
-            setBio(d.profile.bio || "");
-            setAvatarUrl(d.profile.avatar_url || "");
-            setBackdropUrl(d.profile.backdrop_url || "");
-          }
-          setLoading(false);
-        })
-        .catch(() => setLoading(false));
+      // FETCH DIRECTLY FROM SUPABASE TO AVOID NEXT.JS API CACHING
+      const { data } = await supabase.from("profiles").select("*").eq("user_id", user.id).single();
+      if (data) {
+        setDisplayName(data.display_name || "");
+        setUsername(data.username || "");
+        setInstagram(data.instagram_handle || "");
+        setXHandle(data.x_handle || "");
+        setBio(data.bio || "");
+        setAvatarUrl(data.avatar_url || "");
+        setBackdropUrl(data.backdrop_url || "");
+      }
+      setLoading(false);
     });
-  }, [router]);
+  }, [router, supabase]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -162,16 +153,12 @@ export default function ProfileSettingsPage() {
           <div className="bg-[#1c1c1e] border border-white/5 rounded-3xl p-6 md:p-8 space-y-6">
             
             <div>
-              <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 flex items-center gap-2">
-                <User size={14} /> Display Name
-              </label>
+              <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 flex items-center gap-2"><User size={14} /> Display Name</label>
               <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="e.g. John Doe" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white outline-none focus:border-[#E53945] transition" required />
             </div>
 
             <div>
-              <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 flex items-center gap-2">
-                <AtSign size={14} /> Username Handle
-              </label>
+              <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 flex items-center gap-2"><AtSign size={14} /> Username Handle</label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 font-bold">@</span>
                 <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="johndoe" className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-3.5 text-white outline-none focus:border-[#E53945] transition" required />
@@ -182,9 +169,7 @@ export default function ProfileSettingsPage() {
 
             {/* THEME PICKER */}
             <div>
-              <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-4 flex items-center gap-2">
-                <ImageIcon size={14} /> Profile Theme
-              </label>
+              <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-4 flex items-center gap-2"><ImageIcon size={14} /> Profile Theme</label>
               <div className="grid grid-cols-4 gap-3">
                 {THEMES.map((theme) => (
                   <button
@@ -201,9 +186,7 @@ export default function ProfileSettingsPage() {
                         <Check size={24} className="text-white drop-shadow-md" />
                       </div>
                     )}
-                    <span className="relative z-10 text-[10px] font-bold text-white drop-shadow-md truncate w-full text-center px-1">
-                      {theme.name}
-                    </span>
+                    <span className="relative z-10 text-[10px] font-bold text-white drop-shadow-md truncate w-full text-center px-1">{theme.name}</span>
                   </button>
                 ))}
               </div>

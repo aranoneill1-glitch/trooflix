@@ -4,36 +4,30 @@ import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { 
-  Wallet, TrendingUp, Users, Settings, Video, BarChart3, 
-  ArrowRight, CheckCircle2, DollarSign, MessageSquare, Eye, 
-  UserPlus, Star, Music, Pencil, Play, Plus, Clock3, 
-  ShoppingBag, Upload, LayoutDashboard, ChevronRight, LayoutGrid, List, Package, Palette
+  Video, CheckCircle2, MessageSquare, Eye, Star, Pencil, 
+  ShoppingBag, LayoutDashboard, LayoutGrid, List, Package, Palette
 } from "lucide-react";
 
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import { getCachedUser } from "@/lib/cache";
+import { createClient } from "@/utils/supabase/client";
 
 const MOCK_SUBSCRIBERS = 142;
 
 const InstagramIcon = ({ size = 16 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-  </svg>
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
 );
 
 const XIcon = ({ size = 16 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
-    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-  </svg>
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
 );
 
 function CreatorDashboardContent() {
   const searchParams = useSearchParams();
   const isPublicView = searchParams.get('view') === 'public';
+  const supabase = createClient();
 
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
@@ -55,13 +49,10 @@ function CreatorDashboardContent() {
       if (u) {
         setUser(u);
         
-        fetch(`/api/profile?user_id=${u.id}`)
-          .then((r) => r.json())
-          .then((d) => {
-            setProfile(d.profile);
-            setLoading(false);
-          })
-          .catch(() => setLoading(false));
+        // FETCH DIRECTLY FROM SUPABASE
+        const { data: prof } = await supabase.from("profiles").select("*").eq("user_id", u.id).single();
+        if (prof) setProfile(prof);
+        setLoading(false);
 
         fetch("/api/videos")
           .then(r => r.json())
@@ -86,24 +77,10 @@ function CreatorDashboardContent() {
         setLoading(false);
       }
     });
-  }, []);
+  }, [supabase]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#09090B] flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <main className="min-h-screen bg-[#09090B] text-white flex flex-col items-center justify-center px-4">
-        <h1 className="text-2xl font-bold mb-4">Log in to view your profile</h1>
-        <Link href="/login" className="bg-[#E53945] text-white font-bold px-8 py-3 rounded-full">Log In</Link>
-      </main>
-    );
-  }
+  if (loading) return <div className="min-h-screen bg-[#09090B] flex items-center justify-center"><div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" /></div>;
+  if (!user) return <main className="min-h-screen bg-[#09090B] text-white flex flex-col items-center justify-center px-4"><h1 className="text-2xl font-bold mb-4">Log in to view your profile</h1><Link href="/login" className="bg-[#E53945] text-white font-bold px-8 py-3 rounded-full">Log In</Link></main>;
 
   const displayName = profile?.display_name || "Creator Name";
   const username = profile?.username || "creator";
@@ -121,12 +98,12 @@ function CreatorDashboardContent() {
     : { background: "#09090B" };
 
   return (
-    <main className="min-h-screen bg-[#09090B] text-white pb-32 font-sans selection:bg-[#E53945]/30 relative overflow-hidden">
+    <main className={`min-h-screen text-white pb-32 font-sans selection:bg-[#E53945]/30 relative overflow-hidden ${!isDashboardView && profile?.backdrop_url ? "bg-transparent" : "bg-[#09090B]"}`}>
       
-      {/* THEME BACKGROUND (Only visible on profile view) */}
+      {/* THEME BACKGROUND */}
       {!isDashboardView && (
         <div className="fixed inset-0 z-0" style={bgStyle}>
-          <div className="absolute inset-0 bg-[#09090B]/80 backdrop-blur-md" />
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
         </div>
       )}
 
@@ -138,12 +115,8 @@ function CreatorDashboardContent() {
           {!isPublicView && (
           <div className="flex items-center justify-center mb-6">
             <div className="flex bg-[#1c1c1e] p-1 rounded-full border border-white/10 shadow-lg">
-              <button onClick={() => setIsDashboardView(true)} className={`flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold transition-all ${isDashboardView ? "bg-white text-black shadow-md" : "text-white/50 hover:text-white"}`}>
-                <LayoutDashboard size={16} /> Dashboard
-              </button>
-              <button onClick={() => setIsDashboardView(false)} className={`flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold transition-all ${!isDashboardView ? "bg-white text-black shadow-md" : "text-white/50 hover:text-white"}`}>
-                <Eye size={16} /> Profile
-              </button>
+              <button onClick={() => setIsDashboardView(true)} className={`flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold transition-all ${isDashboardView ? "bg-white text-black shadow-md" : "text-white/50 hover:text-white"}`}><LayoutDashboard size={16} /> Dashboard</button>
+              <button onClick={() => setIsDashboardView(false)} className={`flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold transition-all ${!isDashboardView ? "bg-white text-black shadow-md" : "text-white/50 hover:text-white"}`}><Eye size={16} /> Profile</button>
             </div>
           </div>
           )}
@@ -157,21 +130,18 @@ function CreatorDashboardContent() {
                       {profile?.avatar_url ? <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-3xl font-bold">{displayName.charAt(0)}</div>}
                     </div>
                   </div>
-
                   <div className="flex-1 flex justify-around md:justify-start md:gap-8 px-2">
                     <div className="text-center md:text-left"><span className="font-bold text-white block text-xl">1.2K</span> <span className="text-white/50 text-[11px] uppercase tracking-wider">Followers</span></div>
                     <div className="text-center md:text-left"><span className="font-bold text-white block text-xl">{MOCK_SUBSCRIBERS}</span> <span className="text-white/50 text-[11px] uppercase tracking-wider">Subscribers</span></div>
                     <div className="text-center md:text-left"><span className="font-bold text-white block text-xl">{creatorVideos.length}</span> <span className="text-white/50 text-[11px] uppercase tracking-wider">Posts</span></div>
                   </div>
                 </div>
-
                 <div className="px-1">
                   <div className="flex items-center justify-between mb-1">
                     <h1 className="text-2xl md:text-3xl font-black flex items-center gap-2 text-white">{displayName} {profile?.is_verified && <VerifiedBadge size={20} variant="gold" />}</h1>
                     <button className="shrink-0 bg-white text-black font-bold px-5 py-1.5 rounded-full hover:bg-gray-200 transition shadow-lg text-sm">Follow</button>
                   </div>
                   <p className="text-sm md:text-base text-white/50 mb-3">@{username}</p>
-                  
                   <div className="flex items-center gap-4 mb-4">
                     <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors"><InstagramIcon size={14} /><span className="text-xs font-semibold">{profile?.instagram_handle || "@instagram"}</span></a>
                     <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors"><XIcon size={14} /><span className="text-xs font-semibold">{profile?.x_handle || "@x"}</span></a>
