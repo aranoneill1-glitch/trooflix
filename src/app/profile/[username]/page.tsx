@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams } from "next/navigation";
 import { ArrowLeft, UserPlus, MessageSquare, CheckCircle2, Play, LayoutGrid, List } from "lucide-react";
 import Link from "next/link";
@@ -15,13 +15,16 @@ export default function PublicProfilePage() {
   const [profile, setProfile] = useState<any>(null);
   const [videos, setVideos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Tabs & View state
+  const [activeContentTab, setActiveContentTab] = useState<"All" | "Podcasts" | "Videos" | "Store">("All");
   const [contentView, setContentView] = useState<"grid" | "list">("grid");
 
   useEffect(() => {
     async function loadProfileAndVideos() {
       const supabase = createClient();
       
-      // 1. Fetch Profile
+      // 1. Fetch Profile by Username
       const { data: profileData, error } = await supabase
         .from("profiles")
         .select("*")
@@ -34,27 +37,32 @@ export default function PublicProfilePage() {
       }
       setProfile(profileData);
 
-      // 2. Fetch Creator ID using the profile's user_id
+      // 2. Fetch Creator ID (Optional, but helps find older videos)
+      let creatorId = null;
       try {
         const creatorRes = await fetch(`/api/me/creator?user_id=${profileData.user_id}`);
         const creatorData = await creatorRes.json();
-        
-        if (creatorData.creator && creatorData.creator.id) {
-          const creatorId = creatorData.creator.id;
-
-          // 3. Fetch all videos and filter by creatorId
-          const videosRes = await fetch("/api/videos", { cache: "no-store" });
-          const allVideos = await videosRes.json();
-          
-          if (Array.isArray(allVideos)) {
-            const creatorVideos = allVideos.filter(
-              (v: any) => String(v.creatorId) === String(creatorId)
-            );
-            setVideos(creatorVideos);
-          }
+        if (creatorData.creator) {
+          creatorId = creatorData.creator.id;
         }
       } catch (err) {
-        console.error("Failed to load creator videos", err);
+        console.error("Could not fetch creator profile", err);
+      }
+
+      // 3. Fetch ALL videos and filter by uploaderUserId OR creatorId
+      try {
+        const videosRes = await fetch("/api/videos", { cache: "no-store" });
+        const allVideos = await videosRes.json();
+        
+        if (Array.isArray(allVideos)) {
+          const creatorVideos = allVideos.filter((v: any) => 
+            String(v.uploaderUserId) === String(profileData.user_id) || 
+            String(v.creatorId) === String(creatorId)
+          );
+          setVideos(creatorVideos);
+        }
+      } catch (err) {
+        console.error("Failed to load videos", err);
       }
 
       setLoading(false);
@@ -62,6 +70,14 @@ export default function PublicProfilePage() {
     
     if (username) loadProfileAndVideos();
   }, [username]);
+
+  // Filter videos based on the active tab
+  const displayedVideos = useMemo(() => {
+    if (activeContentTab === "Podcasts") return videos.filter(v => v.type?.toLowerCase() === "podcast");
+    if (activeContentTab === "Videos") return videos.filter(v => v.type?.toLowerCase() !== "podcast");
+    if (activeContentTab === "Store") return []; // You can add merch logic here later
+    return videos; // "All"
+  }, [videos, activeContentTab]);
 
   if (loading) {
     return (
@@ -147,36 +163,49 @@ export default function PublicProfilePage() {
             </button>
           </div>
 
-          {/* Divider */}
-          <div className="w-full h-px bg-white/10 mb-6" />
-
-          {/* CONTENT SECTION */}
-          <div className="w-full text-left">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold">Content</h2>
-              <div className="flex items-center gap-1 bg-[#1c1c1e] p-1 rounded-lg">
-                <button
-                  onClick={() => setContentView("grid")}
-                  className={`p-1.5 rounded-md transition ${contentView === "grid" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}
+          {/* TABS & VIEW TOGGLE */}
+          <div className="flex items-center justify-between border-b border-white/10 mb-6 w-full text-left">
+            <div className="flex items-center gap-8">
+              {(["All", "Podcasts", "Videos", "Store"] as const).map((tab) => (
+                <button 
+                  key={tab}
+                  onClick={() => setActiveContentTab(tab)}
+                  className={`pb-3 text-sm font-bold transition-colors ${
+                    activeContentTab === tab 
+                      ? "text-white border-b-2 border-[#E53945]" 
+                      : "text-white/50 hover:text-white"
+                  }`}
                 >
-                  <LayoutGrid size={16} />
+                  {tab}
                 </button>
-                <button
-                  onClick={() => setContentView("list")}
-                  className={`p-1.5 rounded-md transition ${contentView === "list" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}
-                >
-                  <List size={16} />
-                </button>
-              </div>
+              ))}
             </div>
 
-            {videos.length === 0 ? (
+            <div className="flex items-center gap-1 bg-[#1c1c1e] p-1 rounded-lg mb-2">
+              <button
+                onClick={() => setContentView("grid")}
+                className={`p-1.5 rounded-md transition ${contentView === "grid" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}
+              >
+                <LayoutGrid size={16} />
+              </button>
+              <button
+                onClick={() => setContentView("list")}
+                className={`p-1.5 rounded-md transition ${contentView === "list" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}
+              >
+                <List size={16} />
+              </button>
+            </div>
+          </div>
+
+          {/* CONTENT AREA */}
+          <div className="w-full">
+            {displayedVideos.length === 0 ? (
               <div className="text-center py-12 bg-[#1c1c1e] border border-white/5 rounded-2xl">
-                <p className="text-white/50 text-sm">No content published yet.</p>
+                <p className="text-white/50 text-sm">No content published here yet.</p>
               </div>
             ) : contentView === "grid" ? (
               <div className="grid grid-cols-2 gap-3">
-                {videos.map((video) => (
+                {displayedVideos.map((video) => (
                   <div key={video.id} className="bg-[#1c1c1e] border border-white/10 rounded-xl overflow-hidden group cursor-pointer">
                     <div className="relative aspect-video">
                       <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -191,13 +220,14 @@ export default function PublicProfilePage() {
                     </div>
                     <div className="p-3">
                       <h3 className="text-xs font-bold leading-tight line-clamp-2 text-white">{video.title}</h3>
+                      <p className="text-[10px] text-white/50 mt-1">{video.duration || "Recently added"}</p>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
               <div className="flex flex-col gap-3">
-                {videos.map((video) => (
+                {displayedVideos.map((video) => (
                   <div key={video.id} className="flex items-center gap-3 bg-[#1c1c1e] border border-white/10 rounded-xl p-2.5 cursor-pointer hover:bg-[#242426] transition-colors">
                     <div className="w-24 aspect-video rounded-lg overflow-hidden shrink-0 relative">
                       <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover" />
