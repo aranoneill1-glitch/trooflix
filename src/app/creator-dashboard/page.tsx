@@ -7,7 +7,7 @@ import {
   Wallet, TrendingUp, Users, Settings, Video, BarChart3, 
   ArrowRight, CheckCircle2, DollarSign, MessageSquare, Eye, 
   UserPlus, Star, Music, Pencil, Play, Plus, Clock3, 
-  ShoppingBag, Upload, LayoutDashboard, ChevronRight, LayoutGrid, List, Package
+  ShoppingBag, Upload, LayoutDashboard, ChevronRight, LayoutGrid, List, Package, Palette
 } from "lucide-react";
 
 import TopBar from "@/components/TopBar";
@@ -63,7 +63,6 @@ function CreatorDashboardContent() {
           })
           .catch(() => setLoading(false));
 
-        // FIXED: Filter by uploaderUserId since creatorId is numeric
         fetch("/api/videos")
           .then(r => r.json())
           .then(data => {
@@ -104,7 +103,7 @@ function CreatorDashboardContent() {
     <main className="min-h-screen bg-[#09090B] text-white pb-32 font-sans selection:bg-[#E53945]/30">
       <TopBar />
 
-      <div className="max-w-4xl mx-auto px-4 pt-24 pb-6">
+      <div className="max-w-5xl mx-auto px-4 pt-24 pb-6">
         
         {/* TOP TOGGLE ROW */}
         {!isPublicView && (
@@ -299,14 +298,18 @@ function CreatorDashboardContent() {
         {isDashboardView && (
           <div className="animate-in fade-in duration-300 space-y-8">
             {/* QUICK ACTIONS */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
               <Link href="/creator-dashboard/manage-content" className="bg-[#1c1c1e] border border-white/10 hover:border-[#E53945] p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
                 <Video className="text-[#E53945]" size={24} />
                 <span className="text-xs font-bold text-center">Manage Content</span>
               </Link>
-              <Link href="/creator-shop" className="bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
+              <Link href="/studio/shop" className="bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
                 <ShoppingBag className="text-white" size={24} />
                 <span className="text-xs font-bold text-center">Manage Shop</span>
+              </Link>
+              <Link href="/studio/shop/customize" className="bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
+                <Palette className="text-white" size={24} />
+                <span className="text-xs font-bold text-center">Customize Store</span>
               </Link>
               <Link href="/creator-dashboard/settings" className="bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
                 <Pencil className="text-white" size={24} />
@@ -317,7 +320,7 @@ function CreatorDashboardContent() {
                 <span className="text-xs font-bold text-center">Manage Orders</span>
               </Link>
               
-              {/* NEW MANAGE SUBSCRIPTION BOX */}
+              {/* MANAGE SUBSCRIPTION BOX */}
               <Link href="/studio/premium" className="bg-[#1c1c1e] border border-white/10 hover:border-[#E53945] p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
                 <Star className="text-[#E53945]" size={24} />
                 <span className="text-xs font-bold text-center">Manage Subscription</span>
