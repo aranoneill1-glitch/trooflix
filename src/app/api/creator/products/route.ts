@@ -13,12 +13,13 @@ export async function GET(req: Request) {
   if (!creatorId) return NextResponse.json({ products: [] });
 
   try {
-    const { data } = await supabaseAdmin
+    const { data, error } = await supabaseAdmin
       .from("products")
       .select("*")
       .eq("creator_id", Number(creatorId))
       .order("created_at", { ascending: false });
 
+    if (error) throw error;
     return NextResponse.json({ products: data || [] });
   } catch (e) {
     return NextResponse.json({ products: [] });
@@ -53,9 +54,13 @@ export async function POST(req: Request) {
   }
 }
 
-export async function PATCH(req: Request) {
+// CHANGED FROM PATCH TO PUT TO MATCH FRONTEND
+export async function PUT(req: Request) {
   try {
-    const { id, name, description, price_cents, image_url, inventory_count } = await req.json();
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+    const { name, description, price_cents, image_url, inventory_count } = await req.json();
+    
     if (!id || !name || !price_cents) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
@@ -80,9 +85,11 @@ export async function PATCH(req: Request) {
   }
 }
 
+// CHANGED TO READ FROM SEARCH PARAMS
 export async function DELETE(req: Request) {
   try {
-    const { id } = await req.json();
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
     if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
 
     const { error } = await supabaseAdmin

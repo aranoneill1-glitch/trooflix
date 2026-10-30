@@ -35,15 +35,6 @@ export default function ManageShopPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
 
-  // FORCE CACHE BUST ONCE
-  useEffect(() => {
-    const v = localStorage.getItem("trooflix_shop_upload_v3");
-    if (v !== "v3") {
-      localStorage.setItem("trooflix_shop_upload_v3", "v3");
-      if (typeof window !== "undefined") window.location.reload();
-    }
-  }, []);
-
   useEffect(() => {
     getCachedUser().then(async (user) => {
       if (!user) return;
@@ -62,7 +53,8 @@ export default function ManageShopPage() {
     try {
       const res = await fetch(`/api/creator/products?creatorId=${cid}`);
       const data = await res.json();
-      setProducts(Array.isArray(data) ? data : []);
+      // FIXED: API returns { products: [...] }
+      setProducts(Array.isArray(data.products) ? data.products : []);
     } catch (e) {
       console.error(e);
     } finally {
@@ -106,7 +98,7 @@ export default function ManageShopPage() {
     try {
       let finalImageUrl = imageUrl;
 
-      // UPLOAD TO NEW SERVER-SIDE ROUTE
+      // UPLOAD TO SERVER ROUTE
       if (imageFile) {
         const formData = new FormData();
         formData.append("file", imageFile);

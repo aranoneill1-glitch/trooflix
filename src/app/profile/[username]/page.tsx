@@ -46,13 +46,13 @@ export default function PublicProfilePage() {
         }
       } catch (err) {}
 
-      // FIXED: Filter merch by creatorSlug instead of creator_id
+      // FIXED: Match by creatorSlug OR creator_id
       try {
         const merchRes = await fetch("/api/products/global");
         const merchData = await merchRes.json();
         if (merchData.products) {
           const creatorMerch = merchData.products.filter((p: any) => 
-            p.creatorSlug === username
+            String(p.creatorSlug) === String(username) || String(p.creator_id) === String(creatorId)
           );
           setMerch(creatorMerch);
         }
