@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getCachedUser } from "@/lib/cache";
 import { Mic, MicOff, Video, VideoOff, Radio, StopCircle } from "lucide-react";
-import LiveChat from "@/components/LiveChat"; // Import the chat
+import LiveChat from "@/components/LiveChat";
 
 export default function GoLivePage() {
   const router = useRouter();
@@ -15,8 +15,6 @@ export default function GoLivePage() {
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
-  
-  // We need to track the liveInputId to pass to the chat
   const [liveInputId, setLiveInputId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -110,7 +108,7 @@ export default function GoLivePage() {
         throw new Error(errData.error || "Failed to update database");
       }
 
-      setLiveInputId(liveInputId); // Save the ID so chat can load
+      setLiveInputId(liveInputId);
       setIsLive(true);
     } catch (err: any) {
       alert("Failed to start stream: " + err.message);
@@ -137,7 +135,7 @@ export default function GoLivePage() {
 
       if (stream) stream.getTracks().forEach((track) => track.stop());
       setIsLive(false);
-      setLiveInputId(null); // Clear chat ID
+      setLiveInputId(null);
       router.push("/creator-dashboard");
     } catch (err: any) {
       alert("Failed to stop stream.");
@@ -147,20 +145,20 @@ export default function GoLivePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#09090B] text-white p-4 flex flex-col items-center justify-center">
+    <div className="min-h-screen bg-[#09090B] text-white p-4 pb-24 flex flex-col items-center justify-start pt-10">
       <div className="w-full max-w-5xl">
         
-        <h1 className="text-3xl font-black mb-6 text-center flex items-center justify-center gap-3">
+        <h1 className="text-2xl md:text-3xl font-black mb-6 text-center flex items-center justify-center gap-3">
           <Radio className={isLive ? "text-red-500 animate-pulse" : "text-white/50"} />
           {isLive ? "You are LIVE" : "Setup Broadcast"}
         </h1>
 
-        {/* DYNAMIC LAYOUT: If live, show side-by-side with chat. If not, show setup view. */}
+        {/* LAYOUT: Stacked on mobile, side-by-side on desktop */}
         <div className={`grid gap-6 ${isLive ? "grid-cols-1 lg:grid-cols-3" : "grid-cols-1 max-w-3xl mx-auto"}`}>
           
           {/* VIDEO COLUMN */}
           <div className={isLive ? "lg:col-span-2" : ""}>
-            <div className="bg-black rounded-2xl overflow-hidden aspect-video relative mb-6 border border-white/10 shadow-2xl">
+            <div className="bg-black rounded-2xl overflow-hidden aspect-video relative mb-4 border border-white/10 shadow-2xl">
               <video
                 ref={videoRef}
                 autoPlay
@@ -176,7 +174,7 @@ export default function GoLivePage() {
               )}
             </div>
 
-            <div className="flex justify-center gap-4 mb-8">
+            <div className="flex justify-center gap-4 mb-6">
               <button onClick={toggleMute} className={`p-4 rounded-full ${isMuted ? "bg-red-500/20 text-red-500" : "bg-white/10 hover:bg-white/20"}`}>
                 {isMuted ? <MicOff size={24} /> : <Mic size={24} />}
               </button>
@@ -206,7 +204,7 @@ export default function GoLivePage() {
 
           {/* CHAT COLUMN (Only visible when live) */}
           {isLive && liveInputId && (
-            <div className="lg:col-span-1 animate-in fade-in slide-in-from-right-4 duration-500">
+            <div className="lg:col-span-1 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <LiveChat liveInputId={liveInputId} />
             </div>
           )}
