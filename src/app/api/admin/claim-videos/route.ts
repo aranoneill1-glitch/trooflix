@@ -14,7 +14,6 @@ export async function GET() {
     let videos = (await kv.get<any[]>(KEY)) || [];
     let claimedCount = 0;
 
-    // 1. Get your exact user UUID and numeric creator ID
     const { data: profile } = await supabaseAdmin
       .from("profiles")
       .select("user_id")
@@ -26,12 +25,11 @@ export async function GET() {
     }
 
     const targetUserId = profile.user_id;
-    
-    // Calculate the numeric creator ID (using the same logic as your app)
+    // Calculate the numeric creator ID exactly how the app does it
     const uuidHex = String(targetUserId).replace(/-/g, "").slice(0, 12);
     const targetCreatorId = parseInt(uuidHex, 16) || 0;
 
-    // 2. Force every video to belong to this user
+    // FORCE EVERY SINGLE VIDEO TO BELONG TO YOU
     videos = videos.map((v: any) => {
       claimedCount++;
       return { 

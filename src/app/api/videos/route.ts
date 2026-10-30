@@ -3,6 +3,10 @@ import { kv } from "@vercel/kv";
 
 const KEY = "trooflix:videos";
 
+// FORCE NEXT.JS TO NEVER CACHE THIS API ROUTE
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET() {
   try {
     const videos = (await kv.get<any[]>(KEY)) || [];
@@ -22,11 +26,12 @@ export async function POST(req: Request) {
       id: Date.now(),
       title: body.title || "Untitled",
       description: body.description || "",
-      category: body.category || "Uncensored",
+      category: body.category || "Uncategorized",
       visibility: body.visibility || "plus",
       type: body.type || "Documentary",
       featured: !!body.featured,
       creatorId: body.creatorId || null,
+      uploaderUserId: body.uploaderUserId || null,
       videoUrl: body.videoUrl ?? body.bitchuteUrl ?? "",
       posterUrl:
         body.posterUrl ||
@@ -70,6 +75,7 @@ export async function PUT(req: Request) {
       type: body.type ?? videos[index].type,
       featured: body.featured ?? videos[index].featured,
       creatorId: body.creatorId !== undefined ? body.creatorId : (videos[index].creatorId ?? null),
+      uploaderUserId: body.uploaderUserId !== undefined ? body.uploaderUserId : (videos[index].uploaderUserId ?? null),
       videoUrl: body.videoUrl ?? body.bitchuteUrl ?? videos[index].videoUrl ?? videos[index].bitchuteUrl ?? "",
       posterUrl: body.posterUrl ?? videos[index].posterUrl,
       backdropUrl: body.backdropUrl ?? videos[index].backdropUrl,
