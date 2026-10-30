@@ -309,15 +309,68 @@ function CreatorDashboardContent() {
           )}
 
           {isDashboardView && (
-            <div className="animate-in fade-in duration-300 space-y-8">
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-                <Link href="/creator-dashboard/manage-content" className="bg-[#1c1c1e] border border-white/10 hover:border-[#E53945] p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors"><Video className="text-[#E53945]" size={24} /><span className="text-xs font-bold text-center">Manage Content</span></Link>
-                <Link href="/creator-dashboard/shop" className="bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors"><ShoppingBag className="text-white" size={24} /><span className="text-xs font-bold text-center">Manage Shop</span></Link>
-                <Link href="/creator-dashboard/shop/customize" className="bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors"><Palette className="text-white" size={24} /><span className="text-xs font-bold text-center">Customize Store</span></Link>
-                <Link href="/creator-dashboard/settings" className="bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors"><Pencil className="text-white" size={24} /><span className="text-xs font-bold text-center">Manage Profile</span></Link>
-                <Link href="/creator-dashboard/orders" className="bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors"><Package className="text-white" size={24} /><span className="text-xs font-bold text-center">Manage Orders</span></Link>
-                <Link href="/creator-dashboard/subscriptions" className="bg-[#1c1c1e] border border-white/10 hover:border-[#E53945] p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors"><Star className="text-[#E53945]" size={24} /><span className="text-xs font-bold text-center">Manage Subscription</span></Link>
-              </div>
+            <div className="animate-in fade-in duration-300 space-y-8 max-w-4xl mx-auto">
+              
+              {/* CONTENT SECTION */}
+              <section>
+                <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">
+                  Content
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  <Link href="/creator-dashboard/manage-content" className="bg-[#1c1c1e] border border-white/10 hover:border-[#E53945] p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
+                    <Video className="text-[#E53945]" size={24} />
+                    <span className="text-xs font-bold text-center">Manage Content</span>
+                  </Link>
+                </div>
+              </section>
+
+              {/* PROFILE SECTION */}
+              <section>
+                <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">
+                  Profile
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  <Link href="/creator-dashboard/settings" className="bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
+                    <Pencil className="text-white" size={24} />
+                    <span className="text-xs font-bold text-center">Manage Profile</span>
+                  </Link>
+                </div>
+              </section>
+
+              {/* MARKETPLACE SECTION */}
+              <section>
+                <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">
+                  Marketplace
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  <Link href="/creator-dashboard/shop" className="bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
+                    <ShoppingBag className="text-white" size={24} />
+                    <span className="text-xs font-bold text-center">Manage Shop</span>
+                  </Link>
+                  <Link href="/creator-dashboard/shop/customize" className="bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
+                    <Palette className="text-white" size={24} />
+                    <span className="text-xs font-bold text-center">Customize Store</span>
+                  </Link>
+                  <Link href="/creator-dashboard/orders" className="bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
+                    <Package className="text-white" size={24} />
+                    <span className="text-xs font-bold text-center">Manage Orders</span>
+                  </Link>
+                </div>
+              </section>
+
+              {/* SUBSCRIPTIONS SECTION */}
+              <section>
+                <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">
+                  Subscriptions
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  <Link href="/creator-dashboard/subscriptions" className="bg-[#1c1c1e] border border-white/10 hover:border-[#E53945] p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
+                    <Star className="text-[#E53945]" size={24} />
+                    <span className="text-xs font-bold text-center">Manage Subscription</span>
+                  </Link>
+                </div>
+              </section>
+
             </div>
           )}
 
