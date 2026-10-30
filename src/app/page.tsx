@@ -331,9 +331,9 @@ export default function Home() {
 
             {loaded && !filtered && !showingFiltered && (
               <>
-                {/* 3. HOME OF INDEPENDENT VOICES HEADLINE */}
+                {/* 3. HOME OF INDEPENDENT VOICES HEADLINE (Left Aligned) */}
                 {!showingFiltered && heroPool.length > 0 && (
-                  <div className="w-full pt-6 pb-2 px-4 md:px-12 max-w-6xl mx-auto flex flex-col">
+                  <div className="w-full pt-10 pb-4 px-4 md:px-12 lg:px-16 flex flex-col text-left items-start">
                     <div>
                       <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-1 uppercase">
                         The Home of Independent Voices
@@ -446,7 +446,7 @@ function DesktopHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { 
   const activeVideo = videos[activeIndex];
 
   return (
-    <section className="relative w-full h-[85vh] flex items-center justify-start overflow-hidden bg-black">
+    <section className="relative w-full lg:h-[65vh] min-h-[500px] flex items-center justify-start overflow-hidden bg-black">
       {/* Background Image with Crossfade */}
       <AnimatePresence mode="wait">
         <motion.div
@@ -465,7 +465,7 @@ function DesktopHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { 
       </AnimatePresence>
 
       {/* Content */}
-      <div className="relative z-10 px-12 md:px-16 lg:px-24 max-w-3xl flex flex-col items-start pt-20">
+      <div className="relative z-10 px-12 md:px-16 lg:px-24 max-w-3xl flex flex-col items-start pt-10">
         <motion.div
            key={`text-${activeVideo.id}`}
            initial={{ opacity: 0, y: 20 }}
@@ -477,7 +477,7 @@ function DesktopHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { 
             <span className="text-white/70 font-bold tracking-[0.2em] text-sm uppercase">{activeVideo.type || "Series"}</span>
           </div>
           
-          <h1 className="text-5xl md:text-7xl font-black text-white leading-[1.1] mb-6 drop-shadow-2xl">
+          <h1 className="text-4xl lg:text-6xl font-black text-white leading-[1.1] mb-6 drop-shadow-2xl">
             {activeVideo.title}
           </h1>
           
@@ -488,7 +488,7 @@ function DesktopHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { 
             <span className="text-[#1ed760] font-bold">{activeVideo.match}% Match</span>
           </div>
 
-          <p className="text-lg text-white/80 leading-relaxed mb-10 line-clamp-3 drop-shadow-md max-w-2xl">
+          <p className="text-base text-white/80 leading-relaxed mb-8 line-clamp-3 drop-shadow-md max-w-2xl">
             {activeVideo.description || "No description available."}
           </p>
           
