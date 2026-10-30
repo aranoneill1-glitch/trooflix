@@ -240,9 +240,12 @@ export default function SearchPage() {
         {/* ========================================= */}
         <div className="hidden lg:block max-w-[1600px] mx-auto px-10 pt-24 pb-20">
           
-          {/* 1. HERO SEARCH SECTION */}
+          {/* 1. HERO SEARCH SECTION (Updated Style) */}
           <div className="flex flex-col items-center justify-center text-center mb-16 pt-10">
-            <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-4 text-white">
+            <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-2 uppercase">
+              The Home of Independent Voices
+            </p>
+            <h1 className="text-4xl md:text-6xl font-black tracking-tight mb-4 text-white">
               DISCOVER <span className="text-[#E53945]">TROOFLIX</span>
             </h1>
             <p className="text-lg text-white/60 mb-10 max-w-2xl">
