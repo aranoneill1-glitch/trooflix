@@ -207,8 +207,8 @@ export default function MobileBottomNav() {
 
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-[250] flex justify-center pb-[env(safe-area-inset-bottom)] pointer-events-none">
         
-        {/* THE RAINDROP / LIQUID GLASS TAB BAR (Increased max-width to fit 6 tabs) */}
-        <div className="pointer-events-auto flex items-center justify-around w-[94%] max-w-[420px] mb-8 px-2 py-1.5 bg-gradient-to-b from-white/10 to-white/[0.02] backdrop-blur-[40px] backdrop-saturate-[180%] backdrop-brightness-[1.2] rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.4),inset_0_-1px_1px_rgba(255,255,255,0.1)]">
+        {/* THE RAINDROP / LIQUID GLASS TAB BAR (Slightly narrower) */}
+        <div className="pointer-events-auto flex items-center justify-around w-[88%] max-w-[340px] mb-8 px-1 py-1.5 bg-gradient-to-b from-white/10 to-white/[0.02] backdrop-blur-[40px] backdrop-saturate-[180%] backdrop-brightness-[1.2] rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.4),inset_0_-1px_1px_rgba(255,255,255,0.1)]">
           
           {/* TAB 1: HOME */}
           <Link href="/" className="flex items-center justify-center w-12 h-10 rounded-full">
@@ -217,7 +217,7 @@ export default function MobileBottomNav() {
             </motion.div>
           </Link>
 
-          {/* TAB 2: SHORTS (NEW) */}
+          {/* TAB 2: SHORTS */}
           <Link href="/feed" className="flex items-center justify-center w-12 h-10 rounded-full">
             <motion.div whileTap={{ scale: 0.82 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="flex items-center justify-center">
               <Play size={22} className={isActive("/feed") ? "text-white" : "text-white/60 hover:text-white/80"} fill={isActive("/feed") ? "currentColor" : "none"} />
