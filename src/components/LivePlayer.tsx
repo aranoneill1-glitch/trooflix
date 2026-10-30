@@ -8,54 +8,26 @@ export default function LivePlayer({ whepUrl }: { whepUrl: string }) {
   const [started, setStarted] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [error, setError] = useState(false);
-  const [peerConnection, setPeerConnection] = useState<RTCPeerConnection | null>(null);
 
   const connectStream = async () => {
-    if (!whepUrl) return;
+    if (!whepUrl || !videoRef.current) return;
     setConnecting(true);
     setError(false);
 
     try {
-      const pc = new RTCPeerConnection({
-        iceServers: [{ urls: "stun:stun.cloudflare.com:3478" }],
+      // Use Eyevinn player for flawless WHEP support
+      const { WebRTCPlayer } = await import("@eyevinn/webrtc-player");
+      
+      const player = new WebRTCPlayer({
+        video: videoRef.current,
+        type: "whep",
+        statsTypeFilter: "^candidate",
       });
 
-      pc.addTransceiver("video", { direction: "recvonly" });
-      pc.addTransceiver("audio", { direction: "recvonly" });
-
-      const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
-
-      const res = await fetch(whepUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/sdp" },
-        body: offer.sdp,
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to connect to stream");
-      }
-
-      const answerSdp = await res.text();
-      await pc.setRemoteDescription({ type: "answer", sdp: answerSdp });
-
-      // When the track arrives, attach it and force play
-      pc.ontrack = (event) => {
-        if (videoRef.current) {
-          videoRef.current.srcObject = event.streams[0];
-          videoRef.current.play().then(() => {
-            setConnecting(false);
-            setStarted(true);
-          }).catch(e => {
-            console.error("Autoplay blocked:", e);
-            // If autoplay is blocked, we still need to mark it started so they can use native controls
-            setConnecting(false);
-            setStarted(true);
-          });
-        }
-      };
-
-      setPeerConnection(pc);
+      await player.load(new URL(whepUrl));
+      
+      setConnecting(false);
+      setStarted(true);
     } catch (err) {
       console.error("Live playback error:", err);
       setConnecting(false);
@@ -63,17 +35,9 @@ export default function LivePlayer({ whepUrl }: { whepUrl: string }) {
     }
   };
 
-  useEffect(() => {
-    return () => {
-      if (peerConnection) peerConnection.close();
-    };
-  }, [peerConnection]);
-
   return (
     <div className="relative w-full aspect-video bg-black rounded-2xl overflow-hidden border border-white/10">
-      {/* Added key to force React to treat it as a new video element if it re-renders */}
       <video 
-        key={started ? "playing" : "waiting"}
         ref={videoRef} 
         autoPlay 
         playsInline 
@@ -85,7 +49,6 @@ export default function LivePlayer({ whepUrl }: { whepUrl: string }) {
         <div className="w-2 h-2 bg-white rounded-full" /> LIVE
       </div>
 
-      {/* OVERLAY: Forces user interaction so iPhone Safari allows playback */}
       {!started && (
         <div 
           onClick={connectStream}
