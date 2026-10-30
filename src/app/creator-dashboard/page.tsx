@@ -15,9 +15,7 @@ import MobileBottomNav from "@/components/MobileBottomNav";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import { getCachedUser } from "@/lib/cache";
 
-const MOCK_REVENUE = 1250.00;
 const MOCK_SUBSCRIBERS = 142;
-const MOCK_TOTAL_VIEWS = 45200;
 
 const InstagramIcon = ({ size = 16 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -113,11 +111,11 @@ function CreatorDashboardContent() {
   const displayName = profile?.display_name || "Creator Name";
   const username = profile?.username || "creator";
 
-  // FILTER LOGIC
+  // FILTER VIDEOS
   const filteredVideos = creatorVideos.filter(v => {
     if (activeContentTab === "Podcasts") return v.type?.toLowerCase().includes("podcast");
     if (activeContentTab === "Videos") return !v.type?.toLowerCase().includes("podcast");
-    return true; // All
+    return true;
   });
 
   return (
@@ -240,22 +238,21 @@ function CreatorDashboardContent() {
                 ))}
               </div>
 
-              {activeContentTab !== "Store" && (
-                <div className="flex items-center gap-1 bg-[#1c1c1e] p-1 rounded-lg mb-2">
-                  <button
-                    onClick={() => setContentView("grid")}
-                    className={`p-1.5 rounded-md transition ${contentView === "grid" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}
-                  >
-                    <LayoutGrid size={16} />
-                  </button>
-                  <button
-                    onClick={() => setContentView("list")}
-                    className={`p-1.5 rounded-md transition ${contentView === "list" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}
-                  >
-                    <List size={16} />
-                  </button>
-                </div>
-              )}
+              {/* GRID/LIST TOGGLE IS NOW ALWAYS VISIBLE */}
+              <div className="flex items-center gap-1 bg-[#1c1c1e] p-1 rounded-lg mb-2">
+                <button
+                  onClick={() => setContentView("grid")}
+                  className={`p-1.5 rounded-md transition ${contentView === "grid" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}
+                >
+                  <LayoutGrid size={16} />
+                </button>
+                <button
+                  onClick={() => setContentView("list")}
+                  className={`p-1.5 rounded-md transition ${contentView === "list" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}
+                >
+                  <List size={16} />
+                </button>
+              </div>
             </div>
 
             {/* CONTENT AREA */}
@@ -266,7 +263,7 @@ function CreatorDashboardContent() {
                     <ShoppingBag size={32} className="mx-auto text-white/20 mb-3" />
                     <p className="text-white/50 text-sm">No products available yet.</p>
                   </div>
-                ) : (
+                ) : contentView === "grid" ? (
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {merch.map((item) => (
                       <div key={item.id} className="bg-[#1c1c1e] border border-white/10 rounded-xl overflow-hidden flex flex-col">
@@ -277,6 +274,21 @@ function CreatorDashboardContent() {
                           <h3 className="text-sm font-bold leading-tight line-clamp-2 text-white">{item.name}</h3>
                           <p className="text-emerald-400 font-bold text-xs mt-2">${(item.price_cents / 100).toFixed(2)}</p>
                         </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-3">
+                    {merch.map((item) => (
+                      <div key={item.id} className="flex items-center gap-4 bg-[#1c1c1e] border border-white/10 rounded-2xl p-3">
+                        <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0 relative">
+                          <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="flex-1 min-w-0 text-left">
+                          <h3 className="text-sm font-bold text-white truncate">{item.name}</h3>
+                          <p className="text-xs text-white/50 mt-1">Merch</p>
+                        </div>
+                        <p className="text-emerald-400 font-bold text-sm shrink-0">${(item.price_cents / 100).toFixed(2)}</p>
                       </div>
                     ))}
                   </div>
