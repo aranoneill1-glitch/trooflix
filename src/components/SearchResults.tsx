@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { Play } from "lucide-react";
 
 type Video = {
@@ -43,6 +42,11 @@ export default function SearchResults({
   );
 
   const hasResults = matchingVideos.length > 0 || matchingCreators.length > 0;
+
+  // FORCE HARD NAVIGATION TO FIX NEXT.JS CACHING
+  const handleCreatorClick = (slug: string) => {
+    window.location.href = `/profile/${slug}`;
+  };
 
   return (
     <div className="px-4 md:px-12 py-8 space-y-10">
@@ -105,10 +109,10 @@ export default function SearchResults({
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {matchingCreators.map((c) => (
-              <Link
+              <div
                 key={c.id}
-                href={`/podcaster/${c.slug}`}
-                className="flex flex-col items-center text-center group"
+                onClick={() => handleCreatorClick(c.slug)}
+                className="flex flex-col items-center text-center group cursor-pointer"
               >
                 <div className="w-28 h-28 md:w-36 md:h-36 rounded-full overflow-hidden border-2 border-white/10 group-hover:border-red-600 transition">
                   {c.photoUrl ? (
@@ -129,7 +133,7 @@ export default function SearchResults({
                 {c.description && (
                   <p className="text-xs text-white/50 mt-1 line-clamp-2">{c.description}</p>
                 )}
-              </Link>
+              </div>
             ))}
           </div>
         </section>

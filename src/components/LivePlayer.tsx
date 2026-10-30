@@ -14,23 +14,6 @@ export default function LivePlayer({ whepUrl }: { whepUrl: string }) {
   const retryCount = useRef(0);
   const lastFrameTime = useRef(performance.now());
 
-  // THE FRAME FREEZE DETECTOR
-  useEffect(() => {
-    if (!started || !videoRef.current) return;
-
-    const checkFreeze = setInterval(() => {
-      if (videoRef.current && !videoRef.current.paused) {
-        // If no frame has been rendered in 2.5 seconds, it's frozen
-        if (performance.now() - lastFrameTime.current > 2500) {
-          console.warn("Stream frozen. Forcing reconnect...");
-          connectStream(true); // Force a silent reconnect
-        }
-      }
-    }, 1000);
-
-    return () => clearInterval(checkFreeze);
-  }, [started]);
-
   const connectStream = async (isRetry = false) => {
     if (!whepUrl || !videoRef.current) return;
     
@@ -67,17 +50,21 @@ export default function LivePlayer({ whepUrl }: { whepUrl: string }) {
           videoRef.current.play().then(() => {
             setConnecting(false); setReconnecting(false); setStarted(true);
             retryCount.current = 0;
-            // Reset frame timer
+            
+            // FIX: Save local reference to satisfy TypeScript
+            const video = videoRef.current;
             lastFrameTime.current = performance.now();
             
-            // Bind the frame callback to track liveness
             const tick = () => {
               lastFrameTime.current = performance.now();
-              if (videoRef.current && videoRef.current.requestVideoFrameCallback) {
-                videoRef.current.requestVideoFrameCallback(tick);
+              if (video && "requestVideoFrameCallback" in video) {
+                video.requestVideoFrameCallback(tick);
               }
             };
-            if (videoRef.current.requestVideoFrameCallback) videoRef.current.requestVideoFrameCallback(tick);
+            
+            if (video && "requestVideoFrameCallback" in video) {
+              video.requestVideoFrameCallback(tick);
+            }
           }).catch(() => { setConnecting(false); setStarted(true); });
         }
       };
@@ -94,6 +81,23 @@ export default function LivePlayer({ whepUrl }: { whepUrl: string }) {
       else setError(true);
     }
   };
+
+  // THE FRAME FREEZE DETECTOR
+  useEffect(() => {
+    if (!started) return;
+
+    const checkFreeze = setInterval(() => {
+      const video = videoRef.current;
+      if (video && !video.paused) {
+        if (performance.now() - lastFrameTime.current > 2500) {
+          console.warn("Stream frozen. Forcing reconnect...");
+          connectStream(true);
+        }
+      }
+    }, 1000);
+
+    return () => clearInterval(checkFreeze);
+  }, [started]);
 
   useEffect(() => { return () => { if (pcRef.current) pcRef.current.close(); }; }, []);
 
