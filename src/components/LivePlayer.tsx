@@ -39,18 +39,19 @@ export default function LivePlayer({ whepUrl }: { whepUrl: string }) {
       const answerSdp = await res.text();
       await pc.setRemoteDescription({ type: "answer", sdp: answerSdp });
 
+      // When the track arrives, attach it and force play
       pc.ontrack = (event) => {
         if (videoRef.current) {
           videoRef.current.srcObject = event.streams[0];
-          videoRef.current.play().catch(e => console.log("Autoplay blocked:", e));
-        }
-      };
-
-      // Wait briefly for the video to actually start playing before hiding the spinner
-      pc.oniceconnectionstatechange = () => {
-        if (pc.iceConnectionState === "connected" || pc.iceConnectionState === "completed") {
-          setConnecting(false);
-          setStarted(true);
+          videoRef.current.play().then(() => {
+            setConnecting(false);
+            setStarted(true);
+          }).catch(e => {
+            console.error("Autoplay blocked:", e);
+            // If autoplay is blocked, we still need to mark it started so they can use native controls
+            setConnecting(false);
+            setStarted(true);
+          });
         }
       };
 
@@ -70,7 +71,9 @@ export default function LivePlayer({ whepUrl }: { whepUrl: string }) {
 
   return (
     <div className="relative w-full aspect-video bg-black rounded-2xl overflow-hidden border border-white/10">
+      {/* Added key to force React to treat it as a new video element if it re-renders */}
       <video 
+        key={started ? "playing" : "waiting"}
         ref={videoRef} 
         autoPlay 
         playsInline 
