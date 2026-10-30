@@ -48,20 +48,9 @@ export default function ShortsFeedPage() {
   }
 
   return (
-    <main className="h-[100dvh] w-full bg-black overflow-y-scroll snap-y snap-mandatory scrollbar-hide pb-16">
+    <main className="h-[100dvh] w-full bg-black overflow-y-scroll snap-y snap-mandatory scrollbar-hide">
       
-      {/* HEADER (Fixed top, transparent) */}
-      <header className="fixed top-0 left-0 right-0 z-50 p-4 flex items-center justify-between pointer-events-none">
-        <div className="pointer-events-auto">
-          <Link href="/" className="text-2xl font-black tracking-tight drop-shadow-md">
-            <span className="text-white">TROO</span><span className="text-red-600">FLIX</span>
-          </Link>
-        </div>
-        <div className="text-white font-bold text-sm drop-shadow-md tracking-widest uppercase">
-          Clips
-        </div>
-        <div className="w-8" /> {/* Spacer */}
-      </header>
+      {/* HEADER REMOVED ENTIRELY */}
 
       {videos.map((video) => (
         <VideoShort 
@@ -103,6 +92,7 @@ function VideoShort({ video, isMuted, onToggleMute }: { video: Video, isMuted: b
         } else {
           videoRef.current?.pause();
           setIsPlaying(false);
+          setIsExpanded(false); // Reset expansion when scrolling away
         }
       },
       { threshold: 0.6 }
@@ -136,8 +126,13 @@ function VideoShort({ video, isMuted, onToggleMute }: { video: Video, isMuted: b
     }
   };
 
+  const toggleExpand = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent video from pausing
+    setIsExpanded(!isExpanded);
+  };
+
   return (
-    <div className="relative w-full h-[100dvh] snap-start snap-always bg-black flex items-center justify-center overflow-hidden">
+    <div className="relative w-full h-[100dvh] snap-start snap-always bg-black flex items-center justify-center overflow-hidden pb-16">
       
       {/* object-contain ensures landscape videos get black bars above/below */}
       <video
@@ -198,17 +193,19 @@ function VideoShort({ video, isMuted, onToggleMute }: { video: Video, isMuted: b
         <p className="text-white/90 text-[13px] font-semibold mb-1 drop-shadow-md">
           {video.type || "Clip"} • {video.category || "Trending"}
         </p>
-        <div className="text-white/80 text-[14px] drop-shadow-md leading-snug">
+        
+        {/* CLICKABLE TEXT CONTAINER */}
+        <div 
+          className="text-white/80 text-[14px] drop-shadow-md leading-snug cursor-pointer pointer-events-auto"
+          onClick={toggleExpand}
+        >
           <span className={isExpanded ? "" : "line-clamp-2"}>
             {video.description || "Watch this exclusive clip on Trooflix."}
           </span>
           {!isExpanded && hasLongDescription && (
-            <button 
-              onClick={(e) => { e.stopPropagation(); setIsExpanded(true); }} 
-              className="text-white/60 font-bold ml-1.5 hover:text-white pointer-events-auto"
-            >
+            <span className="text-white/60 font-bold ml-1.5 hover:text-white">
               ... more
-            </button>
+            </span>
           )}
         </div>
       </div>
