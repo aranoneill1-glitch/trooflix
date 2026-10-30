@@ -253,7 +253,7 @@ function CreatorDashboardContent() {
                   {merch.length === 0 ? (
                     <div className="text-center py-12 bg-[#1c1c1e] border border-white/5 rounded-2xl"><ShoppingBag size={32} className="mx-auto text-white/20 mb-3" /><p className="text-white/50 text-sm">No products available yet.</p></div>
                   ) : contentView === "grid" ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-3 gap-4">
                       {merch.map((item) => (
                         <div key={item.id} className="bg-[#1c1c1e] border border-white/10 rounded-xl overflow-hidden flex flex-col">
                           <div className="relative aspect-square"><img src={item.image_url} alt={item.name} className="w-full h-full object-cover" /></div>
@@ -282,7 +282,7 @@ function CreatorDashboardContent() {
                   ) : filteredVideos.length === 0 ? (
                     <div className="text-center py-20 text-white/50">No {activeContentTab.toLowerCase()} found yet.</div>
                   ) : contentView === "grid" ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-3 gap-4">
                       {filteredVideos.map((video) => (
                         <div key={video.id} className="bg-[#1c1c1e] border border-white/10 rounded-2xl overflow-hidden group cursor-pointer">
                           <div className="relative aspect-square">
