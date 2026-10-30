@@ -1,18 +1,19 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { 
   Video, CheckCircle2, MessageSquare, Eye, Star, Pencil, 
-  ShoppingBag, LayoutDashboard, LayoutGrid, List, Package, Palette
+  ShoppingBag, LayoutDashboard, LayoutGrid, List, Package, Palette, Camera, Trash2, X
 } from "lucide-react";
 
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import VerifiedBadge from "@/components/VerifiedBadge";
-import { getCachedUser } from "@/lib/cache";
+import { getCachedUser, clearUserCache } from "@/lib/cache";
 import { createClient } from "@/utils/supabase/client";
+import { motion, AnimatePresence } from "framer-motion";
 
 const MOCK_SUBSCRIBERS = 142;
 
@@ -28,11 +29,14 @@ function CreatorDashboardContent() {
   const searchParams = useSearchParams();
   const isPublicView = searchParams.get('view') === 'public';
   const supabase = createClient();
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isDashboardView, setIsDashboardView] = useState(false);
+  const [showAvatarMenu, setShowAvatarMenu] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useEffect(() => {
     if (isPublicView) setIsDashboardView(false);
@@ -49,7 +53,6 @@ function CreatorDashboardContent() {
       if (u) {
         setUser(u);
         
-        // FETCH DIRECTLY FROM SUPABASE
         const { data: prof } = await supabase.from("profiles").select("*").eq("user_id", u.id).single();
         if (prof) setProfile(prof);
         setLoading(false);
@@ -78,6 +81,67 @@ function CreatorDashboardContent() {
       }
     });
   }, [supabase]);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    setUploadingAvatar(true);
+
+    try {
+      // 1. Upload to Cloudflare R2
+      const r2Res = await fetch('/api/r2-upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename: file.name, contentType: file.type }),
+      });
+      const r2Data = await r2Res.json();
+      if (!r2Res.ok) throw new Error("Failed to get R2 upload URL");
+
+      const uploadRes = await fetch(r2Data.uploadUrl, {
+        method: 'PUT',
+        body: file,
+        headers: { 'Content-Type': file.type },
+      });
+      if (!uploadRes.ok) throw new Error("Failed to upload image to R2");
+
+      // 2. Update Supabase
+      const { error } = await supabase.from("profiles").update({
+        avatar_url: r2Data.publicUrl
+      }).eq("user_id", user.id);
+
+      if (error) throw error;
+
+      // 3. Update local state
+      setProfile({ ...profile, avatar_url: r2Data.publicUrl });
+      setShowAvatarMenu(false);
+      clearUserCache();
+
+    } catch (err) {
+      alert("Failed to upload avatar.");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    if (!user) return;
+    setUploadingAvatar(true);
+    try {
+      const { error } = await supabase.from("profiles").update({
+        avatar_url: null
+      }).eq("user_id", user.id);
+
+      if (error) throw error;
+      
+      setProfile({ ...profile, avatar_url: null });
+      setShowAvatarMenu(false);
+      clearUserCache();
+    } catch (err) {
+      alert("Failed to remove avatar.");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
 
   if (loading) return <div className="min-h-screen bg-[#09090B] flex items-center justify-center"><div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" /></div>;
   if (!user) return <main className="min-h-screen bg-[#09090B] text-white flex flex-col items-center justify-center px-4"><h1 className="text-2xl font-bold mb-4">Log in to view your profile</h1><Link href="/login" className="bg-[#E53945] text-white font-bold px-8 py-3 rounded-full">Log In</Link></main>;
@@ -125,23 +189,40 @@ function CreatorDashboardContent() {
             <div className="animate-in fade-in duration-300">
               <div className="flex flex-col mb-6 w-full">
                 <div className="flex items-center gap-4 w-full mb-4">
-                  <div className="w-24 h-24 md:w-28 md:h-28 rounded-full p-[3px] bg-gradient-to-tr from-[#E53945] to-orange-500 shrink-0">
-                    <div className="w-full h-full rounded-full border-4 border-[#09090B] overflow-hidden bg-[#1c1c1e]">
-                      {profile?.avatar_url ? <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-3xl font-bold">{displayName.charAt(0)}</div>}
+                  
+                  {/* CLICKABLE AVATAR */}
+                  <div 
+                    onClick={() => setShowAvatarMenu(true)}
+                    className="w-24 h-24 md:w-28 md:h-28 rounded-full p-[3px] bg-gradient-to-tr from-[#E53945] to-orange-500 shrink-0 cursor-pointer group relative"
+                  >
+                    <div className="w-full h-full rounded-full border-4 border-[#09090B] overflow-hidden bg-[#1c1c1e] relative">
+                      {profile?.avatar_url ? (
+                        <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-3xl font-bold">{displayName.charAt(0)}</div>
+                      )}
+                      
+                      {/* HOVER OVERLAY */}
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                        <Camera size={24} className="text-white" />
+                      </div>
                     </div>
                   </div>
+
                   <div className="flex-1 flex justify-around md:justify-start md:gap-8 px-2">
                     <div className="text-center md:text-left"><span className="font-bold text-white block text-xl">1.2K</span> <span className="text-white/50 text-[11px] uppercase tracking-wider">Followers</span></div>
                     <div className="text-center md:text-left"><span className="font-bold text-white block text-xl">{MOCK_SUBSCRIBERS}</span> <span className="text-white/50 text-[11px] uppercase tracking-wider">Subscribers</span></div>
                     <div className="text-center md:text-left"><span className="font-bold text-white block text-xl">{creatorVideos.length}</span> <span className="text-white/50 text-[11px] uppercase tracking-wider">Posts</span></div>
                   </div>
                 </div>
+
                 <div className="px-1">
                   <div className="flex items-center justify-between mb-1">
                     <h1 className="text-2xl md:text-3xl font-black flex items-center gap-2 text-white">{displayName} {profile?.is_verified && <VerifiedBadge size={20} variant="gold" />}</h1>
                     <button className="shrink-0 bg-white text-black font-bold px-5 py-1.5 rounded-full hover:bg-gray-200 transition shadow-lg text-sm">Follow</button>
                   </div>
                   <p className="text-sm md:text-base text-white/50 mb-3">@{username}</p>
+                  
                   <div className="flex items-center gap-4 mb-4">
                     <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors"><InstagramIcon size={14} /><span className="text-xs font-semibold">{profile?.instagram_handle || "@instagram"}</span></a>
                     <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors"><XIcon size={14} /><span className="text-xs font-semibold">{profile?.x_handle || "@x"}</span></a>
@@ -241,6 +322,74 @@ function CreatorDashboardContent() {
           )}
 
         </div>
+
+        {/* AVATAR ACTION MENU */}
+        <AnimatePresence>
+          {showAvatarMenu && (
+            <>
+              <motion.div 
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} 
+                onClick={() => setShowAvatarMenu(false)}
+                className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm"
+              />
+              <motion.div 
+                initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                className="fixed bottom-0 left-0 right-0 z-[201] bg-[#1c1c1e] rounded-t-3xl border-t border-white/10 p-6 pb-12 shadow-2xl"
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-bold">Profile Photo</h3>
+                  <button onClick={() => setShowAvatarMenu(false)} className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition">
+                    <X size={18} />
+                  </button>
+                </div>
+                
+                <div className="flex flex-col gap-3">
+                  <button 
+                    onClick={() => avatarInputRef.current?.click()}
+                    disabled={uploadingAvatar}
+                    className="flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-xl transition text-left"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                      <Camera size={20} className="text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold">Change Image</h4>
+                      <p className="text-xs text-white/50">Upload a new profile photo</p>
+                    </div>
+                  </button>
+
+                  {profile?.avatar_url && (
+                    <button 
+                      onClick={handleRemoveAvatar}
+                      disabled={uploadingAvatar}
+                      className="flex items-center gap-4 bg-red-950/20 hover:bg-red-950/40 border border-red-900/30 p-4 rounded-xl transition text-left"
+                    >
+                      <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center">
+                        <Trash2 size={20} className="text-red-500" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-red-500">Remove Photo</h4>
+                        <p className="text-xs text-red-500/50">Revert to default avatar</p>
+                      </div>
+                    </button>
+                  )}
+                </div>
+                
+                {uploadingAvatar && (
+                  <p className="text-center text-sm text-[#E53945] font-bold mt-4 animate-pulse">Uploading...</p>
+                )}
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
+        <input 
+          type="file" 
+          ref={avatarInputRef} 
+          onChange={handleAvatarUpload} 
+          accept="image/*" 
+          className="hidden" 
+        />
 
         <MobileBottomNav />
       </div>
