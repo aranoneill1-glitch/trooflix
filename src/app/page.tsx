@@ -520,7 +520,7 @@ function DesktopHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[],
   );
 }
 
-/* ============ MOBILE 3D CAROUSEL ============ */
+/* ============ MOBILE 3D CAROUSEL (Staircase Effect) ============ */
 function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { videos: Video[], activeIndex: number, setActiveIndex: (i: number) => void, onPlay: (v: Video) => void, onMore: (v: Video) => void }) {
   const dragX = useMotionValue(0);
   const currentIndex = useMotionValue(activeIndex);
@@ -595,14 +595,13 @@ function CarouselCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMo
     return i - c + (d / 300);
   });
 
-  // PUSHED FURTHER LEFT (-15vw INSTEAD OF -4vw)
-  const x = useTransform(offset, (o) => `calc(${o * 60}% - 15vw)`);
-  const scale = useTransform(offset, (o) => Math.max(0.75, 1 - Math.abs(o) * 0.25));
-  const rotateY = useTransform(offset, (o) => o * -35);
+  // THE STAIRCASE MATH
+  const x = useTransform(offset, (o) => `calc(${o * 65}% - 10vw)`); // Spreads them out nicely
+  const scale = useTransform(offset, (o) => Math.max(0.5, 1 - Math.abs(o) * 0.22)); // 1.0 -> 0.78 -> 0.56
+  const rotateY = useTransform(offset, (o) => o * -20); // Subtle 3D tilt
   const z = useTransform(offset, (o) => -Math.abs(o) * 100);
-  const opacity = useTransform(offset, (o) => Math.abs(o) > 3 ? 0 : 1);
-  // Z-INDEX ADJUSTED TO FORCE STACKING UNDERNEATH ACTIVE CARD
-  const zIndex = useTransform(offset, (o) => Math.round(50 - Math.abs(o) * 10));
+  const opacity = useTransform(offset, (o) => Math.abs(o) > 2 ? 0 : 1); // Only show 2 cards on each side to keep it clean
+  const zIndex = useTransform(offset, (o) => Math.round(100 - Math.abs(o) * 10)); // Center is 100, next is 90, etc.
 
   return (
     <motion.div
