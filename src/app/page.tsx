@@ -313,10 +313,9 @@ export default function Home() {
 
                 {/* Carousel */}
                 {heroPool.length > 0 && (
-                  <CarouselHero 
-                    videos={heroPool} 
-                    activeIndex={heroIndex} 
-                    setActiveIndex={setHeroIndex} 
+                  <MobileNetflixHero
+                    videos={heroPool}
+                    activeIndex={heroIndex}
                     onPlay={handleInstantPlay}
                     onMore={(v) => setSelected(v)}
                   />
@@ -499,127 +498,128 @@ function DesktopHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[],
   );
 }
 
-/* ============ MOBILE 3D CAROUSEL ============ */
-function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { videos: Video[], activeIndex: number, setActiveIndex: (i: number) => void, onPlay: (v: Video) => void, onMore: (v: Video) => void }) {
-  const dragX = useMotionValue(0);
-  const currentIndex = useMotionValue(activeIndex);
-  const pointerStartX = useRef(0);
+/* ============ MOBILE NETFLIX HERO ============ */
+function MobileNetflixHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[], activeIndex: number, onPlay: (v: Video) => void, onMore: (v: Video) => void }) {
+  if (!videos || videos.length === 0) return null;
+  const activeVideo = videos[activeIndex];
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    animate(currentIndex, activeIndex, { type: "spring", stiffness: 300, damping: 30 });
-  }, [activeIndex]);
+    const v = videoRef.current;
+    if (!v) return;
+    v.currentTime = 0;
+    v.muted = true;
+    const tryPlay = () => { v.play().catch(() => {}); };
+    if (v.readyState >= 2) tryPlay();
+    else v.addEventListener("loadeddata", tryPlay, { once: true });
+    return () => { v.removeEventListener("loadeddata", tryPlay); };
+  }, [activeVideo?.id]);
 
-  const handlePointerDown = (e: React.PointerEvent, index: number) => {
-    if (index !== activeIndex) return;
-    if ((e.target as HTMLElement).closest('button')) return;
-    
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    pointerStartX.current = e.clientX;
-    dragX.set(0);
-  };
+  const metaParts: string[] = [];
+  if (activeVideo.year) metaParts.push(String(activeVideo.year));
+  if (activeVideo.rating) metaParts.push(activeVideo.rating);
+  if (activeVideo.duration) metaParts.push(activeVideo.duration);
+  if (activeVideo.match) metaParts.push(`${activeVideo.match}% Match`);
 
-  const handlePointerMove = (e: React.PointerEvent, index: number) => {
-    if (index !== activeIndex) return;
-    if (!(e.currentTarget as HTMLElement).hasPointerCapture(e.pointerId)) return;
-    
-    const delta = e.clientX - pointerStartX.current;
-    dragX.set(delta);
-  };
-
-  const handlePointerUp = (e: React.PointerEvent, index: number) => {
-    if (index !== activeIndex) return;
-    if (!(e.currentTarget as HTMLElement).hasPointerCapture(e.pointerId)) return;
-    
-    (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
-    
-    const swipe = dragX.get();
-    
-    if (swipe < -50) {
-      setActiveIndex((activeIndex + 1) % videos.length);
-    } else if (swipe > 50) {
-      setActiveIndex((activeIndex - 1 + videos.length) % videos.length);
-    }
-    
-    animate(dragX, 0, { type: "spring", stiffness: 300, damping: 30 });
-  };
+  const src = activeVideo.videoUrl || activeVideo.bitchuteUrl || "";
 
   return (
-    <section className="relative w-full h-[40vh] flex items-center justify-center overflow-hidden bg-black touch-pan-y">
-      <div className="relative w-full max-w-6xl h-full flex items-center justify-center perspective-[1200px]">
-        {videos.map((video, i) => (
-          <CarouselCard
-            key={video.id}
-            video={video}
-            i={i}
-            activeIndex={activeIndex}
-            currentIndex={currentIndex}
-            dragX={dragX}
-            onPlay={onPlay}
-            onMore={onMore}
-            isActive={i === activeIndex}
-            onPointerDown={(e: React.PointerEvent) => handlePointerDown(e, i)}
-            onPointerMove={(e: React.PointerEvent) => handlePointerMove(e, i)}
-            onPointerUp={(e: React.PointerEvent) => handlePointerUp(e, i)}
+    <section className="relative w-full h-[65vh] min-h-[420px] overflow-hidden bg-black">
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeVideo.id}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.9, ease: "easeInOut" }}
+          className="absolute inset-0 z-0"
+        >
+          {/* Ken Burns backdrop fallback */}
+          <motion.img
+            src={activeVideo.backdropUrl}
+            alt={activeVideo.title}
+            className="absolute inset-0 w-full h-full object-cover object-center"
+            initial={{ scale: 1.05 }}
+            animate={{ scale: 1.15 }}
+            transition={{ duration: 8, ease: "linear" }}
           />
-        ))}
-      </div>
-    </section>
-  );
-}
+          {/* Video preview layered on top; fades in when it can play */}
+          {src && (
+            <video
+              ref={videoRef}
+              src={src}
+              poster={activeVideo.backdropUrl}
+              className="absolute inset-0 w-full h-full object-cover object-center"
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+            />
+          )}
+          {/* Gradients for legibility */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/20" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-transparent to-transparent" />
+        </motion.div>
+      </AnimatePresence>
 
-function CarouselCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMore, isActive, onPointerDown, onPointerMove, onPointerUp }: any) {
-  const offset = useTransform([currentIndex, dragX], ([c, d]: any[]) => {
-    return i - c + (d / 300);
-  });
+      {/* Content */}
+      <div className="relative z-10 h-full flex flex-col justify-end px-5 pb-16">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={`content-${activeVideo.id}`}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.5, delay: 0.15 }}
+          >
+            <h1 className="text-3xl font-black text-white leading-[1.1] mb-3 drop-shadow-2xl line-clamp-3">
+              {activeVideo.title}
+            </h1>
 
-  const x = useTransform(offset, (o) => `calc(${o * 65}% - 10vw)`); 
-  const scale = useTransform(offset, (o) => Math.max(0.5, 1 - Math.abs(o) * 0.22)); 
-  const rotateY = useTransform(offset, (o) => o * -20); 
-  const z = useTransform(offset, (o) => -Math.abs(o) * 100);
-  const opacity = useTransform(offset, (o) => Math.abs(o) > 2 ? 0 : 1); 
-  const zIndex = useTransform(offset, (o) => Math.round(100 - Math.abs(o) * 10)); 
+            {metaParts.length > 0 && (
+              <div className="flex items-center gap-2.5 text-xs font-semibold mb-3 flex-wrap">
+                {activeVideo.year && <span className="text-white/80">{activeVideo.year}</span>}
+                {activeVideo.rating && <span className="border border-white/30 px-1.5 py-0.5 rounded text-[10px]">{activeVideo.rating}</span>}
+                {activeVideo.duration && <span className="text-white/80">{activeVideo.duration}</span>}
+                {activeVideo.match && <span className="text-[#1ed760] font-bold">{activeVideo.match}% Match</span>}
+              </div>
+            )}
 
-  return (
-    <motion.div
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
-      onClick={() => {
-        if (isActive) onMore(video);
-      }}
-      style={{ x, scale, rotateY, z, opacity, zIndex, touchAction: 'pan-y' }}
-      className="absolute w-[56%] aspect-[3/4] rounded-[18px] cursor-pointer shadow-[0_20px_50px_rgba(0,0,0,0.8)] select-none bg-black"
-    >
-      <div className="relative w-full h-full rounded-[18px] overflow-hidden pointer-events-none">
-        <img src={video.backdropUrl} alt={video.title} className="w-full h-full object-cover" draggable={false} />
-        
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90" />
+            <p className="text-sm text-white/80 leading-snug mb-5 line-clamp-2 drop-shadow-md">
+              {activeVideo.description || "No description available."}
+            </p>
 
-        <div className="absolute bottom-0 inset-x-0 p-4 flex flex-col items-start gap-2 pointer-events-auto">
-          <h3 className="text-base font-black tracking-tight text-white drop-shadow-lg leading-tight line-clamp-3">
-            {video.title}
-          </h3>
-
-          {isActive && (
-            <div className="flex items-center gap-2">
-              <button 
-                onClick={(e) => { e.stopPropagation(); onPlay(video); }}
-                className="flex items-center justify-center gap-1.5 bg-white text-black px-3 py-1.5 rounded-full font-bold text-xs hover:bg-gray-200 transition active:scale-95 shadow-xl"
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => onPlay(activeVideo)}
+                className="flex items-center gap-2 bg-white text-black px-6 py-2.5 rounded-full font-bold text-sm hover:bg-white/90 transition active:scale-95 shadow-xl"
               >
-                <Play size={14} fill="currentColor" /> Play
+                <Play size={18} fill="currentColor" /> Play
               </button>
-              
-              <button 
-                onClick={(e) => { e.stopPropagation(); }}
-                className="w-8 h-8 flex items-center justify-center bg-white/20 backdrop-blur-[8px] backdrop-saturate-[180%] backdrop-brightness-[1.1] border border-white/30 text-white rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.25),inset_0_1px_1px_rgba(255,255,255,0.55)] hover:bg-white/30 transition active:scale-95"
+              <button
+                onClick={() => onMore(activeVideo)}
+                className="flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white px-6 py-2.5 rounded-full font-bold text-sm border border-white/20 transition active:scale-95"
               >
-                <Plus size={16} />
+                <Info size={18} /> More Info
               </button>
             </div>
-          )}
-        </div>
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Dots indicator */}
+        {videos.length > 1 && (
+          <div className="flex items-center justify-center gap-1.5 mt-6">
+            {videos.map((_, i) => (
+              <div
+                key={i}
+                className={`h-1.5 rounded-full transition-all duration-300 ${i === activeIndex ? "w-6 bg-white" : "w-1.5 bg-white/40"}`}
+              />
+            ))}
+          </div>
+        )}
       </div>
-    </motion.div>
+    </section>
   );
 }
 
