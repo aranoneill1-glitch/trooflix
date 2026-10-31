@@ -426,8 +426,7 @@ export default function Home() {
                       Don't Miss A <span className="text-red-600">Thing</span>
                     </h2>
                   </div>
-                  {/* Container changed to remove padding on mobile, added lg:px-12 for desktop */}
-                  <div className="flex flex-col gap-8 md:gap-12 lg:px-12 max-w-3xl mx-auto lg:grid lg:grid-cols-3 lg:gap-6 lg:max-w-7xl">
+                  <div className="flex flex-col gap-8 md:gap-12 px-4 md:px-12 max-w-3xl mx-auto lg:grid lg:grid-cols-3 lg:gap-6 lg:max-w-7xl">
                     {[...videos].sort((a: any, b: any) => {
                       const at = a.createdAt ? new Date(a.createdAt).getTime() : a.id;
                       const bt = b.createdAt ? new Date(b.createdAt).getTime() : b.id;
@@ -764,7 +763,7 @@ function DetailModal({ item, onClose, onPlay, creators }: { item: Video; onClose
   );
 }
 
-/* ============ HOME FEED CARD (WALL TO WALL MOBILE UPDATE) ============ */
+/* ============ HOME FEED CARD ============ */
 function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }: { video: any, creator: any, onMore: () => void, onPlay: () => void, isActive: boolean, onSetActive: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -912,7 +911,6 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
   return (
     <div ref={containerRef} className="w-full relative flex flex-col group/feed bg-[#09090B] lg:bg-transparent mb-6 lg:mb-0">
       
-      {/* Creator Header */}
       <div className="flex items-center justify-between px-4 lg:px-1 pb-3 relative z-20">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full overflow-hidden bg-[#1c1c1e] flex-shrink-0 flex items-center justify-center border border-white/10">
@@ -938,7 +936,6 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
         </button>
       </div>
 
-      {/* WALL TO WALL VIDEO CONTAINER (Mobile) / CARD (Desktop) */}
       <div className="w-full relative overflow-hidden flex flex-col lg:bg-[#1c1c1e] lg:rounded-2xl lg:border lg:border-white/5 lg:shadow-lg">
         
         <div 
@@ -1022,7 +1019,6 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
           </div>
         </div>
 
-        {/* Video Info */}
         <div className="px-4 lg:px-4 pt-4 lg:pt-3 pb-4">
           <div className="inline-flex items-center bg-[#2c2c2e] rounded-full px-3 py-1 mb-3">
             <span className="text-[12px] font-semibold text-white tracking-wide">{video.category ? video.category.toLowerCase() : 'category'}</span>
@@ -1036,7 +1032,6 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
             {video.description || 'No description available.'}
           </p>
 
-          {/* Action Buttons Row */}
           <div className="flex items-center justify-between mt-2 pt-4 border-t border-white/10">
             <div className="flex items-center gap-6">
               <button className="flex items-center gap-2 text-white/90 hover:text-white transition">
