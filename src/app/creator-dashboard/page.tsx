@@ -4,7 +4,7 @@ import { useEffect, useState, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { 
-  Video, CheckCircle2, Eye, Star, Pencil, 
+  Video, CheckCircle2, MessageSquare, Eye, Star, Pencil, 
   ShoppingBag, LayoutDashboard, LayoutGrid, List, Package, Palette, Camera, Trash2, X, Radio, Inbox
 } from "lucide-react";
 
@@ -174,9 +174,10 @@ function CreatorDashboardContent() {
           
           {!isPublicView && (
           <div className="flex items-center justify-center mb-6">
+            {/* SWAPPED ORDER: PROFILE FIRST, DASHBOARD SECOND */}
             <div className="flex bg-[#1c1c1e] p-1 rounded-full border border-white/10 shadow-lg">
-              <button onClick={() => setIsDashboardView(true)} className={`flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold transition-all ${isDashboardView ? "bg-white text-black shadow-md" : "text-white/50 hover:text-white"}`}><LayoutDashboard size={16} /> Dashboard</button>
               <button onClick={() => setIsDashboardView(false)} className={`flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold transition-all ${!isDashboardView ? "bg-white text-black shadow-md" : "text-white/50 hover:text-white"}`}><Eye size={16} /> Profile</button>
+              <button onClick={() => setIsDashboardView(true)} className={`flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold transition-all ${isDashboardView ? "bg-white text-black shadow-md" : "text-white/50 hover:text-white"}`}><LayoutDashboard size={16} /> Dashboard</button>
             </div>
           </div>
           )}
