@@ -997,36 +997,33 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
           </div>
         </div>
 
-        <div className="px-4 lg:px-4 pt-4 lg:pt-3 pb-4">
-          <div className="inline-flex items-center bg-[#2c2c2e] rounded-full px-3 py-1 mb-3">
-            <span className="text-[12px] font-semibold text-white tracking-wide">{video.category ? video.category.toLowerCase() : 'category'}</span>
-          </div>
-          
-          <h3 className="text-[22px] font-bold text-white leading-tight mb-2 line-clamp-2">
+        {/* TEXT INFO (Instagram Style) */}
+        <div className="px-4 lg:px-4 pt-3 lg:pt-3 pb-3">
+          <h3 className="text-[15px] font-semibold text-white leading-snug mb-1 line-clamp-2">
             {video.title}
           </h3>
           
-          <p className="text-[15px] text-white/60 line-clamp-3 mb-6">
+          <p className="text-[14px] text-white/90 leading-snug line-clamp-3 mb-3">
             {video.description || 'No description available.'}
           </p>
 
-          <div className="flex items-center justify-between mt-2 pt-4 border-t border-white/10">
-            <div className="flex items-center gap-6">
-              <button className="flex items-center gap-2 text-white/90 hover:text-white transition">
-                <ThumbsUp size={20} />
-                <span className="text-[14px] font-semibold">Like</span>
+          <div className="flex items-center justify-between mt-2 pt-3 border-t border-white/10">
+            <div className="flex items-center gap-5">
+              <button className="flex items-center gap-1.5 text-white/90 hover:text-white transition">
+                <ThumbsUp size={18} />
+                <span className="text-[13px] font-medium">Like</span>
               </button>
-              <button onClick={onMore} className="flex items-center gap-2 text-white/90 hover:text-white transition">
-                <MessageCircle size={20} />
-                <span className="text-[14px] font-semibold">Comment</span>
+              <button onClick={onMore} className="flex items-center gap-1.5 text-white/90 hover:text-white transition">
+                <MessageCircle size={18} />
+                <span className="text-[13px] font-medium">Comment</span>
               </button>
-              <button className="flex items-center gap-2 text-white/90 hover:text-white transition">
-                <Share2 size={20} />
-                <span className="text-[14px] font-semibold">Share</span>
+              <button className="flex items-center gap-1.5 text-white/90 hover:text-white transition">
+                <Share2 size={18} />
+                <span className="text-[13px] font-medium">Share</span>
               </button>
             </div>
             <button className="text-white/90 hover:text-white transition">
-              <Bookmark size={22} />
+              <Bookmark size={20} />
             </button>
           </div>
         </div>
