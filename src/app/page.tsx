@@ -275,12 +275,38 @@ export default function Home() {
 
       {loaded && (
         <>
+          {/* NEW MOBILE HERO (Header + Avatars at the very top) */}
+          {!showingFiltered && (
+            <div className="lg:hidden w-full pt-20 pb-4">
+              <div className="px-4 text-left mb-4">
+                <p className="text-[10px] tracking-[0.4em] text-[#E53945] font-semibold mb-1 uppercase">
+                  The Home of Independent Voices
+                </p>
+                <h2 className="text-2xl font-black tracking-tight text-white">
+                  Discover Creators
+                </h2>
+              </div>
+              {creators && creators.length > 0 && (
+                <div className="flex gap-4 overflow-x-auto scrollbar-hide px-4 pb-2">
+                  {[...creators].slice(0, 15).map((c: any) => (
+                    <Link key={c.id} href={`/podcaster/${c.slug}`} className="flex flex-col items-center gap-2 flex-shrink-0 group w-[96px]">
+                      <div className="w-20 h-20 rounded-full p-[2px] bg-[#E53945] group-hover:scale-105 transition-transform">
+                        <div className="w-full h-full rounded-full border-2 border-black overflow-hidden bg-[#1c1c1e]">
+                          {c.photoUrl ? <img src={c.photoUrl} alt={c.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xl font-bold text-white">{c.name?.[0]?.toUpperCase() || "?"}</div>}
+                        </div>
+                      </div>
+                      <span className="text-xs font-semibold text-white/80 group-hover:text-white transition truncate w-full text-center">{c.name || "Creator"}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* HERO CAROUSEL (Now sits below the avatars on mobile) */}
           {!showingFiltered && heroPool.length > 0 && (
             <>
-              {/* 1. HEADLINE REMOVED FOR MOBILE */}
-
-              {/* 2. HERO (Mobile: 3D Carousel, Desktop: Netflix Style) */}
-              <div className="w-full pb-0 pt-20 lg:pt-0">
+              <div className="w-full pb-0 lg:pt-0">
                 {/* Mobile Hero */}
                 <div className="lg:hidden">
                   <CarouselHero 
@@ -321,9 +347,9 @@ export default function Home() {
 
             {loaded && !filtered && !showingFiltered && (
               <>
-                {/* 3. HOME OF INDEPENDENT VOICES HEADLINE */}
+                {/* 3. HOME OF INDEPENDENT VOICES HEADLINE (Desktop Only now) */}
                 {!showingFiltered && heroPool.length > 0 && (
-                  <div className="w-full pt-10 pb-4 px-4 md:px-12 lg:px-16 flex flex-col text-left items-start">
+                  <div className="hidden lg:flex w-full pt-10 pb-4 px-12 lg:px-16 flex-col text-left items-start">
                     <div>
                       <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-1 uppercase">
                         The Home of Independent Voices
@@ -335,10 +361,10 @@ export default function Home() {
                   </div>
                 )}
 
-                {/* 4. CREATOR AVATARS */}
+                {/* 4. CREATOR AVATARS (Desktop Only now) */}
                 {creators && creators.length > 0 && (
-                  <div className="mt-2">
-                    <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide px-4 md:px-12 pb-4 lg:grid lg:grid-cols-6 xl:grid-cols-8 lg:overflow-visible lg:pb-0 lg:gap-4">
+                  <div className="hidden lg:block mt-2">
+                    <div className="flex gap-6 px-12 pb-4 lg:grid lg:grid-cols-6 xl:grid-cols-8 lg:overflow-visible lg:pb-0 lg:gap-4">
                       {[...creators].slice(0, 15).map((c: any) => (
                         <Link key={c.id} href={`/podcaster/${c.slug}`} className="flex flex-col items-center gap-2 flex-shrink-0 group w-[96px] md:w-[112px] lg:w-full lg:flex-shrink">
                           <div className="w-20 h-20 md:w-24 md:h-24 rounded-full p-[2px] bg-[#E53945] group-hover:scale-105 transition-transform">
@@ -354,7 +380,7 @@ export default function Home() {
                 )}
 
                 {/* 5. VIDEO ROW */}
-                <div className="mt-8 mb-8 px-4 md:px-12">
+                <div className="mt-4 md:mt-8 mb-8 px-4 md:px-12">
                   <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide pb-4 lg:grid lg:grid-cols-4 xl:grid-cols-5 lg:overflow-visible lg:pb-0 lg:gap-6">
                     {videos.slice(1, 11).map((v: any) => {
                       const creator = creators.find((c: any) => c.id === v.creatorId);
@@ -437,7 +463,6 @@ function DesktopHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[],
 
   return (
     <section className="relative w-full lg:h-[65vh] min-h-[500px] flex items-center justify-start overflow-hidden bg-black">
-      {/* Background Image with Crossfade */}
       <AnimatePresence mode="wait">
         <motion.div
           key={activeVideo.id}
@@ -448,13 +473,11 @@ function DesktopHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[],
           className="absolute inset-0 z-0"
         >
           <img src={activeVideo.backdropUrl} alt={activeVideo.title} className="w-full h-full object-cover object-center" />
-          {/* Netflix-style Gradients */}
           <div className="absolute inset-0 bg-gradient-to-r from-[#09090B] via-[#09090B]/60 to-transparent w-full" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#09090B] via-transparent to-transparent w-full" />
         </motion.div>
       </AnimatePresence>
 
-      {/* Content */}
       <div className="relative z-10 px-12 md:px-16 lg:px-24 max-w-3xl flex flex-col items-start pt-10">
         <motion.div
            key={`text-${activeVideo.id}`}
@@ -497,7 +520,7 @@ function DesktopHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[],
   );
 }
 
-/* ============ MOBILE 3D CAROUSEL (25% Smaller) ============ */
+/* ============ MOBILE 3D CAROUSEL ============ */
 function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { videos: Video[], activeIndex: number, setActiveIndex: (i: number) => void, onPlay: (v: Video) => void, onMore: (v: Video) => void }) {
   const dragX = useMotionValue(0);
   const currentIndex = useMotionValue(activeIndex);
