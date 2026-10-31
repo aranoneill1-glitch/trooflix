@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Search, Home, Play, Star, ShoppingBag } from "lucide-react";
+import { Search, Home, Play, ShoppingBag } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function MobileBottomNav() {
@@ -36,7 +36,7 @@ export default function MobileBottomNav() {
   const tabs = [
     { name: "Home", icon: Home, href: "/" },
     { name: "Shorts", icon: Play, href: "/feed" },
-    { name: "Plus", icon: Star, href: "/plus" },
+    { name: "Trooflix", href: "/plus" }, // Replaced Star icon with text logo
     { name: "Shop", icon: ShoppingBag, href: "/merchandise" },
     { name: "Search", icon: Search, href: "/search" },
   ];
@@ -52,6 +52,7 @@ export default function MobileBottomNav() {
       <div className="flex items-center justify-around w-full px-2 max-w-md mx-auto">
         {tabs.map((tab) => {
           const active = isActive(tab.href);
+          
           return (
             <Link 
               key={tab.name}
@@ -61,16 +62,28 @@ export default function MobileBottomNav() {
               <motion.div 
                 whileTap={{ scale: 0.82 }} 
                 transition={{ type: "spring", stiffness: 400, damping: 15 }} 
-                className="flex items-center justify-center flex-col gap-1"
+                className="flex items-center justify-center flex-col gap-1 w-full"
               >
-                <tab.icon 
-                  size={22} 
-                  className={active ? "text-white" : "text-white/50 group-hover:text-white/80 transition-colors"} 
-                  fill={active && tab.name === "Shorts" ? "currentColor" : "none"} 
-                />
-                <span className={`text-[9px] font-bold ${active ? "text-white" : "text-transparent"}`}>
-                  {tab.name}
-                </span>
+                {/* Check if it's the middle Trooflix tab */}
+                {tab.name === "Trooflix" ? (
+                  <div className={`flex items-center justify-center gap-0.5 pointer-events-none transition-opacity ${active ? "opacity-100" : "opacity-60 group-hover:opacity-100"}`}>
+                    <span className="text-[12px] font-black tracking-tighter text-white">TROO</span>
+                    <span className="text-[12px] font-black tracking-tighter text-[#E53945]">FLIX</span>
+                  </div>
+                ) : (
+                  <>
+                    {tab.icon && (
+                      <tab.icon 
+                        size={22} 
+                        className={active ? "text-white" : "text-white/50 group-hover:text-white/80 transition-colors"} 
+                        fill={active && tab.name === "Shorts" ? "currentColor" : "none"} 
+                      />
+                    )}
+                    <span className={`text-[9px] font-bold ${active ? "text-white" : "text-transparent"}`}>
+                      {tab.name}
+                    </span>
+                  </>
+                )}
               </motion.div>
             </Link>
           );
