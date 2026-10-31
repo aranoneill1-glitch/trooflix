@@ -4,10 +4,9 @@
   "description": "Documentaries, films, and podcasts. Uncensored.",
   "start_url": "/",
   "display": "standalone",
+  "background_color": "#09090B",
+  "theme_color": "#E53945",
   "orientation": "portrait",
-  "background_color": "#000000",
-  "theme_color": "#dc2626",
-  "scope": "/",
   "icons": [
     {
       "src": "/icon-192.png",
@@ -20,13 +19,6 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
-    },
-    {
-      "src": "/apple-touch-icon.png",
-      "sizes": "180x180",
-      "type": "image/png"
     }
-  ],
-  "categories": ["entertainment", "video"],
-  "lang": "en"
+  ]
 }
