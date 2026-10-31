@@ -275,49 +275,23 @@ export default function Home() {
 
       {loaded && (
         <>
-          {/* HERO CAROUSEL */}
-          {!showingFiltered && heroPool.length > 0 && (
-            <div className="w-full pb-0 pt-20 lg:pt-0">
-              {/* Mobile Hero */}
-              <div className="lg:hidden">
-                <CarouselHero 
-                  videos={heroPool} 
-                  activeIndex={heroIndex} 
-                  setActiveIndex={setHeroIndex} 
-                  onPlay={handleInstantPlay}
-                  onMore={(v) => setSelected(v)}
-                />
-              </div>
-
-              {/* Desktop Hero */}
-              <div className="hidden lg:block">
-                <DesktopHero 
-                  videos={heroPool}
-                  activeIndex={heroIndex}
-                  onPlay={handleInstantPlay}
-                  onMore={(v) => setSelected(v)}
-                />
-              </div>
-            </div>
-          )}
-          {showingFiltered && <div className="h-20 md:h-24" />}
-
-          {/* HEADER & AVATARS (BELOW THE CAROUSEL ON BOTH MOBILE & DESKTOP) */}
           {!showingFiltered && (
-            <div className="w-full max-w-[1600px] mx-auto px-4 md:px-12 pt-6 lg:pt-10 pb-4 lg:pb-6">
-              <div className="mb-4 lg:mb-6">
-                <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-1 uppercase">
-                  The Home of Independent Voices
-                </p>
-                <h2 className="text-2xl md:text-4xl font-black tracking-tight text-white">
-                  Discover Creators
-                </h2>
-              </div>
-              
-              {creators && creators.length > 0 && (
-                <>
-                  {/* Mobile Avatars with Follow */}
-                  <div className="lg:hidden flex gap-4 overflow-x-auto scrollbar-hide pb-2">
+            <>
+              {/* MOBILE SECTION: Avatars + Carousel */}
+              <div className="lg:hidden w-full flex flex-col">
+                {/* Header */}
+                <div className="px-4 pt-20 pb-4">
+                  <p className="text-[10px] tracking-[0.4em] text-[#E53945] font-semibold mb-1 uppercase">
+                    The Home of Independent Voices
+                  </p>
+                  <h2 className="text-2xl font-black tracking-tight text-white">
+                    Discover Creators
+                  </h2>
+                </div>
+                
+                {/* Avatars with Follow */}
+                {creators && creators.length > 0 && (
+                  <div className="flex gap-4 overflow-x-auto scrollbar-hide px-4 pb-6">
                     {[...creators].slice(0, 15).map((c: any) => (
                       <Link key={c.id} href={`/podcaster/${c.slug}`} className="flex flex-col items-center text-center flex-shrink-0 group w-[96px]">
                         <div className="w-20 h-20 rounded-full p-[2px] bg-[#E53945] group-hover:scale-105 transition-transform mb-2">
@@ -335,9 +309,45 @@ export default function Home() {
                       </Link>
                     ))}
                   </div>
+                )}
 
-                  {/* Desktop Avatars with Follow */}
-                  <div className="hidden lg:grid grid-cols-6 xl:grid-cols-8 gap-4">
+                {/* Carousel */}
+                {heroPool.length > 0 && (
+                  <CarouselHero 
+                    videos={heroPool} 
+                    activeIndex={heroIndex} 
+                    setActiveIndex={setHeroIndex} 
+                    onPlay={handleInstantPlay}
+                    onMore={(v) => setSelected(v)}
+                  />
+                )}
+              </div>
+
+              {/* DESKTOP SECTION: Hero + Avatars */}
+              <div className="hidden lg:block w-full">
+                {/* Hero */}
+                {heroPool.length > 0 && (
+                  <DesktopHero 
+                    videos={heroPool}
+                    activeIndex={heroIndex}
+                    onPlay={handleInstantPlay}
+                    onMore={(v) => setSelected(v)}
+                  />
+                )}
+                
+                {/* Header */}
+                <div className="max-w-[1600px] mx-auto px-12 pt-10 pb-4">
+                  <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-1 uppercase">
+                    The Home of Independent Voices
+                  </p>
+                  <h2 className="text-2xl md:text-4xl font-black tracking-tight text-white">
+                    Discover Creators
+                  </h2>
+                </div>
+                
+                {/* Avatars with Follow */}
+                {creators && creators.length > 0 && (
+                  <div className="max-w-[1600px] mx-auto px-12 pb-6 grid grid-cols-6 xl:grid-cols-8 gap-4">
                     {[...creators].slice(0, 8).map((c: any) => (
                       <Link key={c.id} href={`/podcaster/${c.slug}`} className="flex flex-col items-center text-center group cursor-pointer">
                         <div className="w-24 h-24 rounded-full p-[2px] bg-[#E53945] group-hover:scale-105 transition-transform mb-3">
@@ -355,10 +365,12 @@ export default function Home() {
                       </Link>
                     ))}
                   </div>
-                </>
-              )}
-            </div>
+                )}
+              </div>
+            </>
           )}
+
+          {showingFiltered && <div className="h-20 md:h-24" />}
 
           <div className="relative z-10 pt-0 md:pt-2 pb-32 md:pb-20 space-y-2 md:space-y-6">
             {filtered && <SearchResults search={search} videos={videos} creators={creators} onVideoClick={setSelected} />}
