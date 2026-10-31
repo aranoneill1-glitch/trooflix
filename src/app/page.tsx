@@ -520,7 +520,7 @@ function DesktopHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[],
   );
 }
 
-/* ============ MOBILE 3D CAROUSEL (Staircase Effect) ============ */
+/* ============ MOBILE 3D CAROUSEL ============ */
 function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { videos: Video[], activeIndex: number, setActiveIndex: (i: number) => void, onPlay: (v: Video) => void, onMore: (v: Video) => void }) {
   const dragX = useMotionValue(0);
   const currentIndex = useMotionValue(activeIndex);
@@ -596,12 +596,12 @@ function CarouselCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMo
   });
 
   // THE STAIRCASE MATH
-  const x = useTransform(offset, (o) => `calc(${o * 65}% - 10vw)`); // Spreads them out nicely
-  const scale = useTransform(offset, (o) => Math.max(0.5, 1 - Math.abs(o) * 0.22)); // 1.0 -> 0.78 -> 0.56
-  const rotateY = useTransform(offset, (o) => o * -20); // Subtle 3D tilt
+  const x = useTransform(offset, (o) => `calc(${o * 65}% - 6vw)`); // Moved right to compensate for wider card
+  const scale = useTransform(offset, (o) => Math.max(0.5, 1 - Math.abs(o) * 0.22));
+  const rotateY = useTransform(offset, (o) => o * -20);
   const z = useTransform(offset, (o) => -Math.abs(o) * 100);
-  const opacity = useTransform(offset, (o) => Math.abs(o) > 2 ? 0 : 1); // Only show 2 cards on each side to keep it clean
-  const zIndex = useTransform(offset, (o) => Math.round(100 - Math.abs(o) * 10)); // Center is 100, next is 90, etc.
+  const opacity = useTransform(offset, (o) => Math.abs(o) > 2 ? 0 : 1);
+  const zIndex = useTransform(offset, (o) => Math.round(100 - Math.abs(o) * 10));
 
   return (
     <motion.div
@@ -612,7 +612,7 @@ function CarouselCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMo
         if (isActive) onMore(video);
       }}
       style={{ x, scale, rotateY, z, opacity, zIndex, touchAction: 'pan-y' }}
-      className="absolute w-[56%] aspect-[3/4] rounded-[18px] cursor-pointer shadow-[0_20px_50px_rgba(0,0,0,0.8)] select-none bg-black"
+      className="absolute w-[64%] aspect-[3/4] rounded-[18px] cursor-pointer shadow-[0_20px_50px_rgba(0,0,0,0.8)] select-none bg-black"
     >
       <div className="relative w-full h-full rounded-[18px] overflow-hidden pointer-events-none">
         <img src={video.backdropUrl} alt={video.title} className="w-full h-full object-cover" draggable={false} />
