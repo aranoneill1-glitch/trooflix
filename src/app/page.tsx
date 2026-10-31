@@ -281,11 +281,11 @@ export default function Home() {
               <div className="lg:hidden w-full flex flex-col">
                 {/* Header */}
                 <div className="px-4 pt-20 pb-4">
-                  <p className="text-[10px] tracking-[0.4em] text-[#E53945] font-semibold mb-1 uppercase">
+                  <p className="text-[10px] tracking-[0.4em] text-white/50 font-semibold mb-1 uppercase">
                     The Home of Independent Voices
                   </p>
                   <h2 className="text-2xl font-black tracking-tight text-white">
-                    Discover Creators
+                    Discover <span className="text-[#E53945]">Creators</span>
                   </h2>
                 </div>
                 
@@ -337,11 +337,11 @@ export default function Home() {
                 
                 {/* Header */}
                 <div className="max-w-[1600px] mx-auto px-12 pt-10 pb-4">
-                  <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-1 uppercase">
+                  <p className="text-[10px] md:text-xs tracking-[0.4em] text-white/50 font-semibold mb-1 uppercase">
                     The Home of Independent Voices
                   </p>
                   <h2 className="text-2xl md:text-4xl font-black tracking-tight text-white">
-                    Discover Creators
+                    Discover <span className="text-[#E53945]">Creators</span>
                   </h2>
                 </div>
                 
