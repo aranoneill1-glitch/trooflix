@@ -23,7 +23,6 @@ export default function MobileBottomNav() {
   }, []);
 
   useEffect(() => {
-    // Check if running in native TV app environment
     if (typeof window !== "undefined") {
       const ua = navigator.userAgent || "";
       if (/AFT|Silk|Android TV|BRAVIA|HbbTV|SmartTV|Tizen|Web0S|FireTV/i.test(ua)) {
@@ -48,35 +47,36 @@ export default function MobileBottomNav() {
   };
 
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-[250] flex justify-center pb-[env(safe-area-inset-bottom)] pointer-events-none">
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-[250] bg-black/90 backdrop-blur-xl border-t border-white/5 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-3">
       
-      {/* THE RAINDROP / LIQUID GLASS TAB BAR */}
-      <div className="pointer-events-auto flex items-center justify-around w-[92%] max-w-[360px] mb-8 px-2 py-1.5 bg-gradient-to-b from-white/10 to-white/[0.02] backdrop-blur-[40px] backdrop-saturate-[180%] backdrop-brightness-[1.2] rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.4),inset_0_-1px_1px_rgba(255,255,255,0.1)]">
-        
+      <div className="flex items-center justify-around w-full px-2 max-w-md mx-auto">
         {tabs.map((tab) => {
           const active = isActive(tab.href);
           return (
             <Link 
               key={tab.name}
               href={tab.href} 
-              className="flex items-center justify-center w-14 h-10 rounded-full"
+              className="flex flex-col items-center justify-center w-16 h-10 rounded-xl group"
             >
               <motion.div 
                 whileTap={{ scale: 0.82 }} 
                 transition={{ type: "spring", stiffness: 400, damping: 15 }} 
-                className="flex items-center justify-center flex-col gap-0.5"
+                className="flex items-center justify-center flex-col gap-1"
               >
                 <tab.icon 
                   size={22} 
-                  className={active ? "text-white" : "text-white/60 hover:text-white/80"} 
+                  className={active ? "text-white" : "text-white/50 group-hover:text-white/80 transition-colors"} 
                   fill={active && tab.name === "Shorts" ? "currentColor" : "none"} 
                 />
+                <span className={`text-[9px] font-bold ${active ? "text-white" : "text-transparent"}`}>
+                  {tab.name}
+                </span>
               </motion.div>
             </Link>
           );
         })}
-        
       </div>
+      
     </nav>
   );
 }
