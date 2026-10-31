@@ -4,8 +4,8 @@ import { useEffect, useState, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { 
-  Video, CheckCircle2, MessageSquare, Eye, Star, Pencil, 
-  ShoppingBag, LayoutDashboard, LayoutGrid, List, Package, Palette, Camera, Trash2, X, Radio
+  Video, CheckCircle2, Eye, Star, Pencil, 
+  ShoppingBag, LayoutDashboard, LayoutGrid, List, Package, Palette, Camera, Trash2, X, Radio, Inbox
 } from "lucide-react";
 
 import TopBar from "@/components/TopBar";
@@ -215,7 +215,6 @@ function CreatorDashboardContent() {
                   <div className="flex items-center justify-between mb-1">
                     <h1 className="text-2xl md:text-3xl font-black flex items-center gap-2 text-white">{displayName} {profile?.is_verified && <VerifiedBadge size={20} variant="gold" />}</h1>
                     
-                    {/* CHANGED FROM FOLLOW TO GO LIVE */}
                     <Link href="/creator-dashboard/live" className="shrink-0 flex items-center gap-1.5 bg-[#E53945] text-white font-bold px-5 py-1.5 rounded-full hover:bg-[#d12e39] transition shadow-lg shadow-[#E53945]/20 text-sm">
                       <Radio size={16} /> Go Live
                     </Link>
@@ -232,7 +231,9 @@ function CreatorDashboardContent() {
 
               <div className="flex gap-3 mb-8 w-full">
                 <button className="flex-1 flex items-center justify-center gap-2 bg-[#E53945] text-white font-bold py-3 rounded-full hover:bg-[#d12e39] transition shadow-lg shadow-[#E53945]/20"><Star size={18} fill="currentColor" /> Subscribe</button>
-                <button className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-full transition border border-white/10"><MessageSquare size={18} /> Message</button>
+                <Link href="/messages" className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-full transition border border-white/10">
+                  <Inbox size={18} /> Inbox
+                </Link>
               </div>
 
               <div className="flex items-center justify-between border-b border-white/10 mb-6">
