@@ -30,8 +30,11 @@ export async function POST(req: Request) {
 
     const signedUrl = await getSignedUrl(S3, command, { expiresIn: 3600 });
 
-    const publicUrlBase = process.env.R2_PUBLIC_URL || `${process.env.R2_ENDPOINT}`;
-    const publicUrl = `${publicUrlBase}/${uniqueFileName}`;
+    // Ensure the base URL doesn't have a trailing slash to prevent // in the URL
+    const rawBaseUrl = process.env.R2_PUBLIC_URL || `${process.env.R2_ENDPOINT}`;
+    const cleanBaseUrl = rawBaseUrl.endsWith("/") ? rawBaseUrl.slice(0, -1) : rawBaseUrl;
+    
+    const publicUrl = `${cleanBaseUrl}/${uniqueFileName}`;
 
     return NextResponse.json({ signedUrl, publicUrl });
   } catch (error: any) {
