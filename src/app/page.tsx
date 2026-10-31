@@ -502,29 +502,9 @@ function DesktopHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[],
 function MobileNetflixHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[], activeIndex: number, onPlay: (v: Video) => void, onMore: (v: Video) => void }) {
   if (!videos || videos.length === 0) return null;
   const activeVideo = videos[activeIndex];
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    v.currentTime = 0;
-    v.muted = true;
-    const tryPlay = () => { v.play().catch(() => {}); };
-    if (v.readyState >= 2) tryPlay();
-    else v.addEventListener("loadeddata", tryPlay, { once: true });
-    return () => { v.removeEventListener("loadeddata", tryPlay); };
-  }, [activeVideo?.id]);
-
-  const metaParts: string[] = [];
-  if (activeVideo.year) metaParts.push(String(activeVideo.year));
-  if (activeVideo.rating) metaParts.push(activeVideo.rating);
-  if (activeVideo.duration) metaParts.push(activeVideo.duration);
-  if (activeVideo.match) metaParts.push(`${activeVideo.match}% Match`);
-
-  const src = activeVideo.videoUrl || activeVideo.bitchuteUrl || "";
 
   return (
-    <section className="relative w-full h-[65vh] min-h-[420px] overflow-hidden bg-black">
+    <section className="relative w-full h-[48vh] min-h-[360px] max-h-[440px] overflow-hidden bg-black">
       <AnimatePresence mode="wait">
         <motion.div
           key={activeVideo.id}
@@ -534,7 +514,6 @@ function MobileNetflixHero({ videos, activeIndex, onPlay, onMore }: { videos: Vi
           transition={{ duration: 0.9, ease: "easeInOut" }}
           className="absolute inset-0 z-0"
         >
-          {/* Ken Burns backdrop fallback */}
           <motion.img
             src={activeVideo.backdropUrl}
             alt={activeVideo.title}
@@ -543,28 +522,12 @@ function MobileNetflixHero({ videos, activeIndex, onPlay, onMore }: { videos: Vi
             animate={{ scale: 1.15 }}
             transition={{ duration: 8, ease: "linear" }}
           />
-          {/* Video preview layered on top; fades in when it can play */}
-          {src && (
-            <video
-              ref={videoRef}
-              src={src}
-              poster={activeVideo.backdropUrl}
-              className="absolute inset-0 w-full h-full object-cover object-center"
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="metadata"
-            />
-          )}
-          {/* Gradients for legibility */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-black/15" />
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-transparent to-transparent" />
         </motion.div>
       </AnimatePresence>
 
-      {/* Content */}
-      <div className="relative z-10 h-full flex flex-col justify-end px-5 pb-16">
+      <div className="relative z-10 h-full flex flex-col justify-end px-5 pb-12">
         <AnimatePresence mode="wait">
           <motion.div
             key={`content-${activeVideo.id}`}
@@ -573,47 +536,44 @@ function MobileNetflixHero({ videos, activeIndex, onPlay, onMore }: { videos: Vi
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.5, delay: 0.15 }}
           >
-            <h1 className="text-3xl font-black text-white leading-[1.1] mb-3 drop-shadow-2xl line-clamp-3">
+            <h1 className="text-2xl font-black text-white leading-[1.15] mb-2 drop-shadow-2xl line-clamp-2">
               {activeVideo.title}
             </h1>
 
-            {metaParts.length > 0 && (
-              <div className="flex items-center gap-2.5 text-xs font-semibold mb-3 flex-wrap">
-                {activeVideo.year && <span className="text-white/80">{activeVideo.year}</span>}
-                {activeVideo.rating && <span className="border border-white/30 px-1.5 py-0.5 rounded text-[10px]">{activeVideo.rating}</span>}
-                {activeVideo.duration && <span className="text-white/80">{activeVideo.duration}</span>}
-                {activeVideo.match && <span className="text-[#1ed760] font-bold">{activeVideo.match}% Match</span>}
-              </div>
-            )}
+            <div className="flex items-center gap-2.5 text-xs font-semibold mb-2.5 flex-wrap">
+              {activeVideo.year && <span className="text-white/80">{activeVideo.year}</span>}
+              {activeVideo.rating && <span className="border border-white/30 px-1.5 py-0.5 rounded text-[10px]">{activeVideo.rating}</span>}
+              {activeVideo.duration && <span className="text-white/80">{activeVideo.duration}</span>}
+              {activeVideo.match && <span className="text-[#1ed760] font-bold">{activeVideo.match}% Match</span>}
+            </div>
 
-            <p className="text-sm text-white/80 leading-snug mb-5 line-clamp-2 drop-shadow-md">
+            <p className="text-[13px] text-white/80 leading-snug mb-4 line-clamp-2 drop-shadow-md">
               {activeVideo.description || "No description available."}
             </p>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5">
               <button
                 onClick={() => onPlay(activeVideo)}
-                className="flex items-center gap-2 bg-white text-black px-6 py-2.5 rounded-full font-bold text-sm hover:bg-white/90 transition active:scale-95 shadow-xl"
+                className="flex items-center gap-1.5 bg-white text-black px-5 py-2 rounded-full font-bold text-sm hover:bg-white/90 transition active:scale-95 shadow-xl"
               >
-                <Play size={18} fill="currentColor" /> Play
+                <Play size={16} fill="currentColor" /> Play
               </button>
               <button
                 onClick={() => onMore(activeVideo)}
-                className="flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white px-6 py-2.5 rounded-full font-bold text-sm border border-white/20 transition active:scale-95"
+                className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white px-5 py-2 rounded-full font-bold text-sm border border-white/20 transition active:scale-95"
               >
-                <Info size={18} /> More Info
+                <Info size={16} /> More Info
               </button>
             </div>
           </motion.div>
         </AnimatePresence>
 
-        {/* Dots indicator */}
         {videos.length > 1 && (
-          <div className="flex items-center justify-center gap-1.5 mt-6">
+          <div className="flex items-center justify-center gap-1.5 mt-4">
             {videos.map((_, i) => (
               <div
                 key={i}
-                className={`h-1.5 rounded-full transition-all duration-300 ${i === activeIndex ? "w-6 bg-white" : "w-1.5 bg-white/40"}`}
+                className={`h-1 rounded-full transition-all duration-300 ${i === activeIndex ? "w-5 bg-white" : "w-1 bg-white/40"}`}
               />
             ))}
           </div>
