@@ -174,56 +174,58 @@ export default function ProfileThemePage() {
   if (loading) return <div className="min-h-screen bg-[#09090B] flex items-center justify-center"><div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" /></div>;
 
   return (
-    <main className="min-h-screen bg-[#09090B] text-white pb-32 font-sans selection:bg-[#E53945]/30">
+    // LOCK THE SCREEN SO IT NEVER SCROLLS
+    <main className="fixed inset-0 h-[100dvh] w-full overflow-hidden bg-[#09090B] text-white font-sans selection:bg-[#E53945]/30 flex flex-col">
       <TopBar />
-      <div className="max-w-2xl mx-auto px-4 pt-24 pb-6">
+      
+      {/* Main container - flex-1 fills remaining height below topbar */}
+      <div className="flex-1 flex flex-col max-w-2xl w-full mx-auto px-4 pt-20 pb-4 min-h-0">
         
-        <Link href="/creator-dashboard" className="inline-flex items-center gap-2 text-sm text-white/50 hover:text-white mb-8 transition">
-          <ChevronLeft size={16} /> Back to Dashboard
-        </Link>
-
-        <div className="mb-8">
-          <h1 className="text-3xl font-black tracking-tight mb-2">Profile Theme</h1>
-          <p className="text-sm text-white/50">Choose a background theme for your public profile.</p>
+        {/* Header */}
+        <div className="flex items-center justify-between mb-3 shrink-0">
+          <div>
+            <h1 className="text-2xl font-black tracking-tight">Profile Theme</h1>
+            <p className="text-xs text-white/50">Choose a background theme for your profile.</p>
+          </div>
+          <Link href="/creator-dashboard" className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition">
+            <ChevronLeft size={20} />
+          </Link>
         </div>
 
-        <div className="bg-[#1c1c1e] border border-white/5 rounded-3xl p-6 md:p-8 space-y-6">
+        {/* Content Box */}
+        <div className="flex-1 flex flex-col bg-[#1c1c1e] border border-white/5 rounded-3xl p-4 min-h-0">
           
-          <div>
-            <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-3 flex items-center gap-2">
-              <ImageIcon size={14} /> Select Theme
-            </label>
-            
-            {/* SEARCH BAR */}
-            <div className="relative mb-4">
-              <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" />
-              <input 
-                type="text" 
-                placeholder="Search themes (e.g., 'Crimson', 'Ocean')..." 
-                value={themeSearch}
-                onChange={(e) => setThemeSearch(e.target.value)}
-                className="w-full bg-black/40 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-white outline-none focus:border-[#E53945] transition"
-              />
-            </div>
+          {/* Search Bar */}
+          <div className="relative mb-3 shrink-0">
+            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" />
+            <input 
+              type="text" 
+              placeholder="Search themes (e.g., 'Crimson', 'Ocean')..." 
+              value={themeSearch}
+              onChange={(e) => setThemeSearch(e.target.value)}
+              className="w-full bg-black/40 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white outline-none focus:border-[#E53945] transition"
+            />
+          </div>
 
-            {/* SCROLLABLE THEME GRID */}
-            <div className="grid grid-cols-4 gap-3 max-h-[28rem] overflow-y-auto pr-2 scrollbar-hide">
+          {/* Scrollable Grid (flex-1 forces it to take remaining space) */}
+          <div className="flex-1 min-h-0 overflow-y-auto pr-1 scrollbar-hide">
+            <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
               {filteredThemes.map((theme) => (
                 <button
                   key={theme.name}
                   type="button"
                   onClick={() => setBackdropUrl(theme.value)}
-                  className={`relative h-16 rounded-xl overflow-hidden border-2 transition-all flex items-end justify-center pb-1 ${
+                  className={`relative h-14 rounded-lg overflow-hidden border-2 transition-all flex items-end justify-center pb-1 ${
                     backdropUrl === theme.value ? "border-white scale-105 shadow-lg z-10" : "border-transparent hover:scale-105"
                   }`}
                   style={{ background: theme.value || "#09090B" }}
                 >
                   {backdropUrl === theme.value && (
                     <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                      <Check size={16} className="text-white drop-shadow-md" />
+                      <Check size={14} className="text-white drop-shadow-md" />
                     </div>
                   )}
-                  <span className="relative z-10 text-[9px] font-bold text-white drop-shadow-md truncate w-full text-center px-1">
+                  <span className="relative z-10 text-[8px] font-bold text-white drop-shadow-md truncate w-full text-center px-1">
                     {theme.name}
                   </span>
                 </button>
@@ -236,19 +238,25 @@ export default function ProfileThemePage() {
             </div>
           </div>
 
-        </div>
-
-        {status.message && (
-          <div className={`mt-6 rounded-xl px-4 py-3 text-sm font-medium ${status.type === "success" ? "bg-emerald-950/30 border border-emerald-600/40 text-emerald-300" : "bg-red-950/30 border border-red-600/40 text-red-300"}`}>
-            {status.message}
+          {/* Save Button (Pinned to bottom of the box) */}
+          <div className="pt-3 mt-2 border-t border-white/10 shrink-0">
+            {status.message && (
+              <div className={`mb-2 rounded-lg px-3 py-2 text-xs font-medium ${status.type === "success" ? "bg-emerald-950/30 border border-emerald-600/40 text-emerald-300" : "bg-red-950/30 border border-red-600/40 text-red-300"}`}>
+                {status.message}
+              </div>
+            )}
+            <button 
+              onClick={saveTheme} 
+              disabled={saving} 
+              className="w-full flex items-center justify-center gap-2 bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold py-3 rounded-xl transition shadow-[0_0_20px_rgba(229,57,69,0.3)]"
+            >
+              <Save size={18} /> {saving ? "Saving Theme…" : "Save Theme"}
+            </button>
           </div>
-        )}
 
-        <button onClick={saveTheme} disabled={saving} className="w-full mt-6 flex items-center justify-center gap-2 bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold py-4 rounded-xl transition-all hover:scale-[1.02] shadow-[0_0_20px_rgba(229,57,69,0.3)]">
-          <Save size={18} /> {saving ? "Saving Theme…" : "Save Theme"}
-        </button>
-
+        </div>
       </div>
+      
       <MobileBottomNav />
     </main>
   );
