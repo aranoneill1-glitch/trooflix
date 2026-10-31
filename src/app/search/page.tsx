@@ -6,11 +6,14 @@ import Link from "next/link";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { createClient } from "@/utils/supabase/client";
 
-const MAIN_CATEGORIES = [
+const PRIMARY_CATEGORIES = [
   { name: "Documentaries", color: "bg-[#E13377]/60", image: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=600&auto=format&fit=crop" },
   { name: "Podcasts", color: "bg-[#1DB954]/60", image: "https://unsplash.com/photos/Qruwi3Ur3Ak/download?force=true&w=600" },
   { name: "Independent Films", color: "bg-[#2E77D0]/60", image: "https://unsplash.com/photos/mVv8igQaWoI/download?force=true&w=600" },
   { name: "Books", color: "bg-[#8400e7]/60", image: "https://unsplash.com/photos/_nm_mZ4Cs2I/download?force=true&w=600" },
+];
+
+const GENRE_CATEGORIES = [
   { name: "History", color: "bg-[#8b5cf6]/60", image: "https://unsplash.com/photos/JioCsloIYro/download?force=true&w=600" },
   { name: "Politics & Geopolitics", color: "bg-[#006450]/60", image: "https://unsplash.com/photos/2J5-T03yGQU/download?force=true&w=600" },
   { name: "War & Conflict", color: "bg-[#E53945]/60", image: "https://images.unsplash.com/photo-1579912205439-4cef16dc975e?q=80&w=600&auto=format&fit=crop" },
@@ -253,11 +256,11 @@ export default function SearchPage() {
           ) : (
             <div className="space-y-12 md:space-y-16">
               
-              {/* 3. CATEGORY GRID (Responsive Columns) */}
+              {/* 3. PRIMARY CATEGORIES (What would you like to watch?) */}
               <section>
-                <h2 className="text-xl md:text-2xl font-bold mb-6 md:mb-8">Browse Categories</h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
-                  {MAIN_CATEGORIES.map((cat) => (
+                <h2 className="text-xl md:text-2xl font-bold mb-6 md:mb-8">What would you like to watch?</h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
+                  {PRIMARY_CATEGORIES.map((cat) => (
                     <Link key={cat.name} href={`/search/${encodeURIComponent(cat.name.toLowerCase().replace(/ & /g, "-").replace(/ /g, "-"))}`} className={`group relative h-28 md:h-40 rounded-2xl overflow-hidden border border-white/10 block`}>
                       <img src={cat.image} alt={cat.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                       <div className={`absolute inset-0 ${cat.color} mix-blend-multiply opacity-80 group-hover:opacity-60 transition-opacity`} />
@@ -275,7 +278,29 @@ export default function SearchPage() {
 
               <div className="w-full h-px bg-white/5" />
 
-              {/* 4. TRENDING DOCUMENTARIES (Responsive Columns) */}
+              {/* 4. GENRE CATEGORIES (Browse by category) */}
+              <section>
+                <h2 className="text-xl md:text-2xl font-bold mb-6 md:mb-8">Browse by category</h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
+                  {GENRE_CATEGORIES.map((cat) => (
+                    <Link key={cat.name} href={`/search/${encodeURIComponent(cat.name.toLowerCase().replace(/ & /g, "-").replace(/ /g, "-"))}`} className={`group relative h-28 md:h-40 rounded-2xl overflow-hidden border border-white/10 block`}>
+                      <img src={cat.image} alt={cat.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                      <div className={`absolute inset-0 ${cat.color} mix-blend-multiply opacity-80 group-hover:opacity-60 transition-opacity`} />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                      <div className="absolute bottom-0 left-0 p-3 md:p-6 flex items-center justify-between w-full">
+                        <h3 className="text-lg md:text-2xl font-black text-white drop-shadow-lg">{cat.name}</h3>
+                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-4 group-hover:translate-x-0">
+                          <ChevronRight size={16} className="text-white" />
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+
+              <div className="w-full h-px bg-white/5" />
+
+              {/* 5. TRENDING DOCUMENTARIES */}
               {trendingDocs.length > 0 && (
                 <section>
                   <div className="flex items-center justify-between mb-4 md:mb-6">
@@ -299,7 +324,7 @@ export default function SearchPage() {
 
               <div className="w-full h-px bg-white/5" />
 
-              {/* 5. POPULAR PODCASTS (Responsive Columns) */}
+              {/* 6. POPULAR PODCASTS */}
               {popularPodcasts.length > 0 && (
                 <section>
                   <div className="flex items-center justify-between mb-4 md:mb-6">
@@ -324,7 +349,7 @@ export default function SearchPage() {
 
               <div className="w-full h-px bg-white/5" />
 
-              {/* 6. POPULAR CREATORS (Responsive Columns) */}
+              {/* 7. POPULAR CREATORS */}
               {popularCreators.length > 0 && (
                 <section>
                   <div className="flex items-center justify-between mb-4 md:mb-6">
