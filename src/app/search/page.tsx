@@ -138,10 +138,11 @@ export default function SearchPage() {
       
       <div className="relative z-10">
         
-        <div className="w-full max-w-[1600px] mx-auto px-4 lg:px-10 pt-24 lg:pt-32 pb-20">
+        {/* REDUCED TOP PADDING TO PULL TITLE UP */}
+        <div className="w-full max-w-[1600px] mx-auto px-4 lg:px-10 pt-20 lg:pt-32 pb-20">
           
           {/* HEADER */}
-          <div className="flex flex-col items-center justify-center text-center mb-8 lg:mb-16 pt-4 lg:pt-10">
+          <div className="flex flex-col items-center justify-center text-center mb-8 lg:mb-16 pt-0 lg:pt-10">
             <p className="text-[10px] md:text-xs tracking-[0.4em] text-white/50 font-semibold mb-2 uppercase">
               The Home of Independent Voices
             </p>
