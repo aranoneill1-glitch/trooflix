@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Search, X, Play, CheckCircle2, User, TrendingUp, ChevronRight, Filter } from "lucide-react";
 import Link from "next/link";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import TopBar from "@/components/TopBar"; // <-- ADDED
+import TopBar from "@/components/TopBar";
 import { createClient } from "@/utils/supabase/client";
 
 const PRIMARY_CATEGORIES = [
@@ -72,9 +72,6 @@ export default function SearchPage() {
     setIsSearching(true);
   };
 
-  // ==========================================
-  // ADVANCED SEARCH LOGIC
-  // ==========================================
   const searchTerms = query.toLowerCase().split(" ").filter(Boolean);
 
   const filteredProfiles = useMemo(() => {
@@ -129,30 +126,30 @@ export default function SearchPage() {
   const showVideos = activeFilter === "all" || activeFilter === "videos";
   const showCreators = activeFilter === "all" || activeFilter === "creators";
 
-  // Discovery Data (When not searching)
   const trendingDocs = allVideos.filter(v => v.type === 'Documentary').slice(0, 6);
   const popularPodcasts = allVideos.filter(v => v.type === 'Podcast').slice(0, 5);
   const popularCreators = allProfiles.filter(p => p.tier === 'creator' || p.creator_id).slice(0, 8);
 
   return (
     <main className="min-h-screen bg-[#09090B] text-white pb-24 font-sans relative">
-      <TopBar /> {/* <-- ADDED BACK */}
+      <TopBar />
       
       <div className="fixed top-0 left-0 w-full h-[500px] bg-gradient-to-b from-[#1c1c1e]/50 to-transparent pointer-events-none z-0" />
       
       <div className="relative z-10">
         
-        {/* FORCED DESKTOP LAYOUT ON ALL SCREENS */}
         <div className="w-full max-w-[1600px] mx-auto px-4 lg:px-10 pt-24 lg:pt-32 pb-20">
           
-          {/* 1. HERO SEARCH SECTION */}
+          {/* HEADER */}
           <div className="flex flex-col items-center justify-center text-center mb-8 lg:mb-16 pt-4 lg:pt-10">
-            <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-2 uppercase">
+            <p className="text-[10px] md:text-xs tracking-[0.4em] text-white/50 font-semibold mb-2 uppercase">
               The Home of Independent Voices
             </p>
-            <h1 className="text-3xl md:text-6xl font-black tracking-tight mb-3 lg:mb-4 text-white">
-              DISCOVER <span className="text-[#E53945]">TROOFLIX</span>
+            
+            <h1 className="text-3xl md:text-6xl font-black tracking-tight mb-3 lg:mb-4">
+              <span className="text-white">Discover TROO</span><span className="text-[#E53945]">FLIX</span>
             </h1>
+            
             <p className="text-sm md:text-lg text-white/60 mb-6 lg:mb-10 max-w-2xl">
               Explore documentaries, independent films, podcasts and publications.
             </p>
@@ -191,7 +188,6 @@ export default function SearchPage() {
           {query.length > 0 ? (
             <div className="w-full">
               
-              {/* SEARCH FILTER TABS */}
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
                 <h2 className="text-xl md:text-2xl font-bold flex items-center gap-3">
                   Search Results for <span className="text-[#E53945]">"{query}"</span>
@@ -212,7 +208,6 @@ export default function SearchPage() {
                 </div>
               ) : (
                 <div className="space-y-12">
-                  {/* Profiles Results */}
                   {showCreators && filteredProfiles.length > 0 && (
                     <div>
                       <h3 className="text-sm font-bold text-white/40 uppercase tracking-wider mb-4">Creators & Users</h3>
@@ -235,7 +230,6 @@ export default function SearchPage() {
                     </div>
                   )}
 
-                  {/* Videos Results */}
                   {showVideos && filteredVideos.length > 0 && (
                     <div>
                       <h3 className="text-sm font-bold text-white/40 uppercase tracking-wider mb-4">Videos, Podcasts & More</h3>
@@ -259,7 +253,6 @@ export default function SearchPage() {
           ) : (
             <div className="space-y-8 lg:space-y-16">
               
-              {/* 3. PRIMARY CATEGORIES (What would you like to watch?) */}
               <section>
                 <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-8">What would you like to watch?</h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
@@ -281,7 +274,6 @@ export default function SearchPage() {
 
               <div className="w-full h-px bg-white/5" />
 
-              {/* 4. GENRE CATEGORIES (Browse by category) */}
               <section>
                 <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-8">Browse by category</h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
@@ -303,7 +295,6 @@ export default function SearchPage() {
 
               <div className="w-full h-px bg-white/5" />
 
-              {/* 5. TRENDING DOCUMENTARIES */}
               {trendingDocs.length > 0 && (
                 <section>
                   <div className="flex items-center justify-between mb-4 md:mb-6">
@@ -327,7 +318,6 @@ export default function SearchPage() {
 
               <div className="w-full h-px bg-white/5" />
 
-              {/* 6. POPULAR PODCASTS */}
               {popularPodcasts.length > 0 && (
                 <section>
                   <div className="flex items-center justify-between mb-4 md:mb-6">
@@ -352,7 +342,6 @@ export default function SearchPage() {
 
               <div className="w-full h-px bg-white/5" />
 
-              {/* 7. POPULAR CREATORS */}
               {popularCreators.length > 0 && (
                 <section>
                   <div className="flex items-center justify-between mb-4 md:mb-6">

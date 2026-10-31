@@ -7,6 +7,7 @@ import { Menu, Plus, RefreshCw, Video, Radio, X, Play, MessageSquare } from "luc
 import { motion, AnimatePresence } from "framer-motion";
 import UserMenu from "@/components/UserMenu";
 import NotificationBell from "@/components/NotificationBell";
+import PWAInstallButton from "@/components/PWAInstallButton";
 import { getCachedUser } from "@/lib/cache";
 
 type Props = {
@@ -19,6 +20,9 @@ export default function TopBar({ onMenu }: Props) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isCreator, setIsCreator] = useState(false);
   const [showCreateMenu, setShowCreateMenu] = useState(false);
+
+  // Check if we are on the search page
+  const isSearchPage = pathname === "/search";
 
   const handleRefresh = () => {
     setIsRefreshing(true);
@@ -56,7 +60,6 @@ export default function TopBar({ onMenu }: Props) {
             : "bg-gradient-to-b from-black/90 via-black/60 to-transparent"
         }`}
       >
-        {/* Hamburger (Mobile Only) */}
         {onMenu && (
           <button
             onClick={onMenu}
@@ -67,16 +70,16 @@ export default function TopBar({ onMenu }: Props) {
           </button>
         )}
 
-        {/* Logo */}
-        <Link href="/" className="text-xl md:text-2xl font-black tracking-tight shrink-0">
-          <span className="text-white">TROO</span>
-          <span className="text-red-600">FLIX</span>
-        </Link>
+        {/* LOGO: Hidden on search page, visible everywhere else */}
+        {!isSearchPage && (
+          <Link href="/" className="text-xl md:text-2xl font-black tracking-tight shrink-0">
+            <span className="text-white">TROO</span>
+            <span className="text-red-600">FLIX</span>
+          </Link>
+        )}
 
-        {/* Right side */}
         <div className="ml-auto flex items-center gap-4 md:gap-5">
           
-          {/* Creator Add Button */}
           {isCreator && (
             <button
               onClick={() => setShowCreateMenu(true)}
@@ -86,6 +89,8 @@ export default function TopBar({ onMenu }: Props) {
               <Plus size={20} />
             </button>
           )}
+
+          <PWAInstallButton />
 
           <button 
             onClick={handleRefresh}
