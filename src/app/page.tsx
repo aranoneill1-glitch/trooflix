@@ -585,12 +585,7 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
         ))}
       </div>
 
-      <button onClick={() => setActiveIndex((activeIndex - 1 + videos.length) % videos.length)} className="flex absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 hover:bg-black/80 backdrop-blur-md rounded-full items-center justify-center text-white border border-white/20 transition z-50">
-        <ChevronLeft size={20} />
-      </button>
-      <button onClick={() => setActiveIndex((activeIndex + 1) % videos.length)} className="flex absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 hover:bg-black/80 backdrop-blur-md rounded-full items-center justify-center text-white border border-white/20 transition z-50">
-        <ChevronRight size={20} />
-      </button>
+      {/* ARROWS REMOVED */}
     </section>
   );
 }
@@ -606,7 +601,8 @@ function CarouselCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMo
   const rotateY = useTransform(offset, (o) => o * -35);
   const z = useTransform(offset, (o) => -Math.abs(o) * 100);
   const opacity = useTransform(offset, (o) => Math.abs(o) > 3 ? 0 : 1);
-  const zIndex = useTransform(offset, (o) => Math.round(100 - Math.abs(o) * 10));
+  // Z-INDEX ADJUSTED TO FORCE STACKING UNDERNEATH ACTIVE CARD
+  const zIndex = useTransform(offset, (o) => Math.round(50 - Math.abs(o) * 10));
 
   return (
     <motion.div
