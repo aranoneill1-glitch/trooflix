@@ -14,7 +14,7 @@ type ChatMessage = {
   created_at: string;
 };
 
-export default function LiveChat({ liveInputId }: { liveInputId: string }) {
+export default function LiveChat({ liveInputId, className = "h-[400px] md:h-[500px]" }: { liveInputId: string, className?: string }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [user, setUser] = useState<any>(null);
@@ -24,7 +24,6 @@ export default function LiveChat({ liveInputId }: { liveInputId: string }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
 
-  // 1. Initial Fetch & Realtime Subscription
   useEffect(() => {
     getCachedUser().then(async (u) => {
       if (!u) return;
@@ -33,7 +32,6 @@ export default function LiveChat({ liveInputId }: { liveInputId: string }) {
       if (data) setProfile(data);
     });
 
-    // Fetch past messages
     supabase
       .from("live_chat_messages")
       .select("*")
@@ -45,7 +43,6 @@ export default function LiveChat({ liveInputId }: { liveInputId: string }) {
         setTimeout(scrollToBottom, 100);
       });
 
-    // Subscribe to new incoming messages
     const channel = supabase
       .channel(`live_chat_${liveInputId}`)
       .on(
@@ -80,7 +77,7 @@ export default function LiveChat({ liveInputId }: { liveInputId: string }) {
     setSending(true);
 
     const text = newMessage.trim();
-    setNewMessage(""); // optimistic clear
+    setNewMessage(""); 
 
     await supabase.from("live_chat_messages").insert({
       live_input_id: liveInputId,
@@ -95,9 +92,8 @@ export default function LiveChat({ liveInputId }: { liveInputId: string }) {
   };
 
   return (
-    <div className="flex flex-col h-[400px] md:h-[500px] w-full bg-[#0f0f12]/80 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
-      {/* Header */}
-      <div className="bg-white/5 px-4 py-3 border-b border-white/10 flex items-center gap-2">
+    <div className={`flex flex-col w-full bg-[#0f0f12]/80 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl ${className}`}>
+      <div className="bg-white/5 px-4 py-3 border-b border-white/10 flex items-center gap-2 shrink-0">
         <MessageCircle size={18} className="text-[#E53945]" />
         <h3 className="font-bold text-white text-sm tracking-wide">Live Chat</h3>
         <span className="ml-auto text-[10px] font-bold bg-red-500/20 text-red-500 px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse">
@@ -105,8 +101,7 @@ export default function LiveChat({ liveInputId }: { liveInputId: string }) {
         </span>
       </div>
 
-      {/* Messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-white/10">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-white/10 min-h-0">
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-white/30">
             <MessageCircle size={32} className="mb-2 opacity-50" />
@@ -134,9 +129,8 @@ export default function LiveChat({ liveInputId }: { liveInputId: string }) {
         )}
       </div>
 
-      {/* Input */}
       {user ? (
-        <form onSubmit={sendMessage} className="p-3 bg-black/40 border-t border-white/10 flex gap-2">
+        <form onSubmit={sendMessage} className="p-3 bg-black/40 border-t border-white/10 flex gap-2 shrink-0">
           <input
             type="text"
             value={newMessage}
@@ -153,7 +147,7 @@ export default function LiveChat({ liveInputId }: { liveInputId: string }) {
           </button>
         </form>
       ) : (
-        <div className="p-4 bg-black/40 border-t border-white/10 text-center text-sm text-white/50">
+        <div className="p-4 bg-black/40 border-t border-white/10 text-center text-sm text-white/50 shrink-0">
           Please log in to join the chat.
         </div>
       )}
