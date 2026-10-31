@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Search, X, Play, CheckCircle2, User, TrendingUp, ChevronRight, Filter } from "lucide-react";
 import Link from "next/link";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import TopBar from "@/components/TopBar"; // <-- ADDED
 import { createClient } from "@/utils/supabase/client";
 
 const PRIMARY_CATEGORIES = [
@@ -135,15 +136,17 @@ export default function SearchPage() {
 
   return (
     <main className="min-h-screen bg-[#09090B] text-white pb-24 font-sans relative">
+      <TopBar /> {/* <-- ADDED BACK */}
+      
       <div className="fixed top-0 left-0 w-full h-[500px] bg-gradient-to-b from-[#1c1c1e]/50 to-transparent pointer-events-none z-0" />
       
       <div className="relative z-10">
         
-        {/* FORCED DESKTOP LAYOUT ON ALL SCREENS (Spacing reduced for mobile) */}
-        <div className="w-full max-w-[1600px] mx-auto px-4 lg:px-10 pt-16 lg:pt-24 pb-20">
+        {/* FORCED DESKTOP LAYOUT ON ALL SCREENS */}
+        <div className="w-full max-w-[1600px] mx-auto px-4 lg:px-10 pt-24 lg:pt-32 pb-20">
           
           {/* 1. HERO SEARCH SECTION */}
-          <div className="flex flex-col items-center justify-center text-center mb-8 lg:mb-16 pt-0 lg:pt-10">
+          <div className="flex flex-col items-center justify-center text-center mb-8 lg:mb-16 pt-4 lg:pt-10">
             <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-2 uppercase">
               The Home of Independent Voices
             </p>
