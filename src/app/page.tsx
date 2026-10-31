@@ -426,7 +426,8 @@ export default function Home() {
                       Don't Miss A <span className="text-red-600">Thing</span>
                     </h2>
                   </div>
-                  <div className="flex flex-col gap-8 md:gap-12 px-4 md:px-12 max-w-3xl mx-auto lg:grid lg:grid-cols-3 lg:gap-6 lg:max-w-7xl">
+                  {/* Container changed to remove padding on mobile, added lg:px-12 for desktop */}
+                  <div className="flex flex-col gap-8 md:gap-12 lg:px-12 max-w-3xl mx-auto lg:grid lg:grid-cols-3 lg:gap-6 lg:max-w-7xl">
                     {[...videos].sort((a: any, b: any) => {
                       const at = a.createdAt ? new Date(a.createdAt).getTime() : a.id;
                       const bt = b.createdAt ? new Date(b.createdAt).getTime() : b.id;
@@ -763,7 +764,7 @@ function DetailModal({ item, onClose, onPlay, creators }: { item: Video; onClose
   );
 }
 
-/* ============ HOME FEED CARD ============ */
+/* ============ HOME FEED CARD (WALL TO WALL MOBILE UPDATE) ============ */
 function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }: { video: any, creator: any, onMore: () => void, onPlay: () => void, isActive: boolean, onSetActive: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -909,9 +910,10 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
   if (!videoSrc) return null;
 
   return (
-    <div ref={containerRef} className="w-full relative flex flex-col group/feed">
+    <div ref={containerRef} className="w-full relative flex flex-col group/feed bg-[#09090B] lg:bg-transparent mb-6 lg:mb-0">
       
-      <div className="flex items-center justify-between px-1 pb-3 relative z-20">
+      {/* Creator Header */}
+      <div className="flex items-center justify-between px-4 lg:px-1 pb-3 relative z-20">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full overflow-hidden bg-[#1c1c1e] flex-shrink-0 flex items-center justify-center border border-white/10">
             {creator?.photoUrl ? (
@@ -936,7 +938,8 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
         </button>
       </div>
 
-      <div className="bg-[#1c1c1e] rounded-2xl overflow-hidden flex flex-col shadow-lg border border-white/5">
+      {/* WALL TO WALL VIDEO CONTAINER (Mobile) / CARD (Desktop) */}
+      <div className="w-full relative overflow-hidden flex flex-col lg:bg-[#1c1c1e] lg:rounded-2xl lg:border lg:border-white/5 lg:shadow-lg">
         
         <div 
           className="relative w-full aspect-video bg-black overflow-hidden cursor-pointer" 
@@ -1019,21 +1022,23 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
           </div>
         </div>
 
-        <div className="px-4 pt-3 pb-4">
+        {/* Video Info */}
+        <div className="px-4 lg:px-4 pt-4 lg:pt-3 pb-4">
           <div className="inline-flex items-center bg-[#2c2c2e] rounded-full px-3 py-1 mb-3">
             <span className="text-[12px] font-semibold text-white tracking-wide">{video.category ? video.category.toLowerCase() : 'category'}</span>
           </div>
           
-          <h3 className="text-[22px] font-bold text-white leading-tight mb-1 line-clamp-2">
+          <h3 className="text-[22px] font-bold text-white leading-tight mb-2 line-clamp-2">
             {video.title}
           </h3>
           
-          <p className="text-[15px] text-white/60 line-clamp-3 mb-4">
+          <p className="text-[15px] text-white/60 line-clamp-3 mb-6">
             {video.description || 'No description available.'}
           </p>
 
-          <div className="flex items-center justify-between mt-2">
-            <div className="flex items-center gap-5">
+          {/* Action Buttons Row */}
+          <div className="flex items-center justify-between mt-2 pt-4 border-t border-white/10">
+            <div className="flex items-center gap-6">
               <button className="flex items-center gap-2 text-white/90 hover:text-white transition">
                 <ThumbsUp size={20} />
                 <span className="text-[14px] font-semibold">Like</span>
