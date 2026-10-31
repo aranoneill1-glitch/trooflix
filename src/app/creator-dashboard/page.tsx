@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { 
   Video, CheckCircle2, MessageSquare, Eye, Star, Pencil, 
-  ShoppingBag, LayoutDashboard, LayoutGrid, List, Package, Palette, Camera, Trash2, X
+  ShoppingBag, LayoutDashboard, LayoutGrid, List, Package, Palette, Camera, Trash2, X, Radio
 } from "lucide-react";
 
 import TopBar from "@/components/TopBar";
@@ -159,15 +159,15 @@ function CreatorDashboardContent() {
     : { background: "#09090B" };
 
   return (
-    <main className={`fixed inset-0 overflow-y-auto overscroll-none text-white pb-32 font-sans selection:bg-[#E53945]/30 ${!isDashboardView && profile?.backdrop_url ? "bg-transparent" : "bg-[#09090B]"}`}>
+    <main className={`min-h-screen text-white pb-32 font-sans selection:bg-[#E53945]/30 relative overflow-hidden ${!isDashboardView && profile?.backdrop_url ? "bg-transparent" : "bg-[#09090B]"}`}>
       
       {!isDashboardView && (
-        <div className="absolute inset-0 z-0" style={bgStyle}>
+        <div className="fixed inset-0 z-0" style={bgStyle}>
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
         </div>
       )}
 
-      <div className="relative z-10 min-h-full">
+      <div className="relative z-10">
         <TopBar />
 
         <div className="max-w-5xl mx-auto px-4 pt-24 pb-6">
@@ -186,6 +186,7 @@ function CreatorDashboardContent() {
               <div className="flex flex-col mb-6 w-full">
                 <div className="flex items-center gap-4 w-full mb-4">
                   
+                  {/* CLICKABLE AVATAR */}
                   <div 
                     onClick={() => setShowAvatarMenu(true)}
                     className="w-24 h-24 md:w-28 md:h-28 rounded-full p-[3px] bg-gradient-to-tr from-[#E53945] to-orange-500 shrink-0 cursor-pointer group relative"
@@ -213,7 +214,11 @@ function CreatorDashboardContent() {
                 <div className="px-1">
                   <div className="flex items-center justify-between mb-1">
                     <h1 className="text-2xl md:text-3xl font-black flex items-center gap-2 text-white">{displayName} {profile?.is_verified && <VerifiedBadge size={20} variant="gold" />}</h1>
-                    <button className="shrink-0 bg-white text-black font-bold px-5 py-1.5 rounded-full hover:bg-gray-200 transition shadow-lg text-sm">Follow</button>
+                    
+                    {/* CHANGED FROM FOLLOW TO GO LIVE */}
+                    <Link href="/creator-dashboard/live" className="shrink-0 flex items-center gap-1.5 bg-[#E53945] text-white font-bold px-5 py-1.5 rounded-full hover:bg-[#d12e39] transition shadow-lg shadow-[#E53945]/20 text-sm">
+                      <Radio size={16} /> Go Live
+                    </Link>
                   </div>
                   <p className="text-sm md:text-base text-white/50 mb-3">@{username}</p>
                   
