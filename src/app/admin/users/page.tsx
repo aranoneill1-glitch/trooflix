@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { Trash2 } from "lucide-react";
+import { Trash2, Camera, Loader2 } from "lucide-react";
 import VerifiedBadge from "@/components/VerifiedBadge";
 
 type Profile = {
@@ -19,7 +19,11 @@ export default function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [updating, setUpdating] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState<string | null>(null);
   const [toast, setToast] = useState("");
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -50,7 +54,6 @@ export default function AdminUsersPage() {
         const d = await res.json();
         throw new Error(d.error || "Could not update");
       }
-      // Optimistic update
       setUsers((prev) =>
         prev.map((u) =>
           u.user_id === userId
@@ -68,7 +71,6 @@ export default function AdminUsersPage() {
     }
   };
 
-
   const deleteUser = async (userId: string, displayName: string) => {
     if (!confirm(`Are you sure you want to PERMANENTLY DELETE ${displayName}? This will remove their account, videos, and all data. This cannot be undone.`)) return;
     
@@ -83,7 +85,6 @@ export default function AdminUsersPage() {
         const d = await res.json();
         throw new Error(d.error || "Could not delete");
       }
-      // Remove from local state
       setUsers(prev => prev.filter(u => u.user_id !== userId));
       setToast(`✅ Deleted ${displayName}`);
       setTimeout(() => setToast(""), 2000);
@@ -92,6 +93,65 @@ export default function AdminUsersPage() {
       setTimeout(() => setToast(""), 3000);
     } finally {
       setUpdating(null);
+    }
+  };
+
+  const triggerAvatarUpload = (userId: string) => {
+    setEditingUserId(userId);
+    fileInputRef.current?.click();
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !editingUserId) return;
+
+    setUploadingAvatar(editingUserId);
+    const userId = editingUserId;
+
+    try {
+      // 1. Upload to R2
+      const presign = await fetch("/api/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          filename: file.name,
+          contentType: file.type || "image/jpeg",
+          folder: "avatars",
+        }),
+      });
+      
+      if (!presign.ok) throw new Error("Failed to get upload URL");
+      const { signedUrl, publicUrl } = await presign.json();
+
+      const putRes = await fetch(signedUrl, {
+        method: "PUT",
+        headers: { "Content-Type": file.type || "image/jpeg" },
+        body: file,
+      });
+      
+      if (!putRes.ok) throw new Error("Failed to upload to R2");
+
+      // 2. Save to Database via Admin API
+      const dbRes = await fetch("/api/admin/update-user-avatar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, avatarUrl: publicUrl }),
+      });
+
+      if (!dbRes.ok) throw new Error("Failed to update database");
+
+      // 3. Update UI
+      setUsers(prev => prev.map(u => u.user_id === userId ? { ...u, avatar_url: publicUrl } : u));
+      setToast("✅ Avatar updated");
+      setTimeout(() => setToast(""), 2000);
+
+    } catch (err: any) {
+      setToast(`❌ ${err.message}`);
+      setTimeout(() => setToast(""), 3000);
+    } finally {
+      setUploadingAvatar(null);
+      setEditingUserId(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
@@ -111,7 +171,7 @@ export default function AdminUsersPage() {
         <div>
           <h1 className="text-2xl font-bold">Users</h1>
           <p className="text-sm text-white/50 mt-1">
-            Manage account tiers and badges
+            Manage account tiers, badges, and avatars
           </p>
         </div>
         <div className="text-sm text-white/60">{users.length} total</div>
@@ -122,6 +182,14 @@ export default function AdminUsersPage() {
           {toast}
         </div>
       )}
+
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleAvatarUpload}
+        accept="image/*"
+        className="hidden"
+      />
 
       <input
         type="text"
@@ -142,17 +210,34 @@ export default function AdminUsersPage() {
               key={u.user_id}
               className="flex items-center gap-3 bg-[#141418] rounded-lg p-3"
             >
-              {u.avatar_url ? (
-                <img
-                  src={u.avatar_url}
-                  alt=""
-                  className="w-10 h-10 rounded-full object-cover flex-shrink-0"
-                />
-              ) : (
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-sm font-bold flex-shrink-0">
-                  {(u.display_name || u.username || "?")[0]?.toUpperCase()}
+              {/* CLICKABLE AVATAR FOR UPLOAD */}
+              <div 
+                onClick={() => triggerAvatarUpload(u.user_id)}
+                className="relative w-10 h-10 rounded-full overflow-hidden flex-shrink-0 group cursor-pointer border border-white/10"
+                title="Upload new avatar"
+              >
+                {u.avatar_url ? (
+                  <img
+                    src={u.avatar_url}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-sm font-bold">
+                    {(u.display_name || u.username || "?")[0]?.toUpperCase()}
+                  </div>
+                )}
+                
+                {/* Hover overlay */}
+                <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  {uploadingAvatar === u.user_id ? (
+                    <Loader2 size={14} className="text-white animate-spin" />
+                  ) : (
+                    <Camera size={14} className="text-white" />
+                  )}
                 </div>
-              )}
+              </div>
+
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold inline-flex items-center gap-1.5 truncate">
                   {u.username ? (
