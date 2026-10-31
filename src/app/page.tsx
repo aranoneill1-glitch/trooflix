@@ -277,19 +277,10 @@ export default function Home() {
         <>
           {!showingFiltered && heroPool.length > 0 && (
             <>
-              {/* 1. HEADLINE (Mobile Only) */}
-              <div className="w-full pt-24 md:pt-28 pb-4 px-4 md:px-12 max-w-6xl mx-auto flex flex-col lg:hidden">
-                <div>
-                  <h2 className="text-2xl md:text-4xl font-black tracking-tight">
-                    <span className="text-white">No ads.</span>{" "}
-                    <span className="text-neutral-500">No filter.</span>{" "}
-                    <span className="text-[#E53945]">Just content</span>
-                  </h2>
-                </div>
-              </div>
+              {/* 1. HEADLINE REMOVED FOR MOBILE */}
 
               {/* 2. HERO (Mobile: 3D Carousel, Desktop: Netflix Style) */}
-              <div className="w-full pb-0">
+              <div className="w-full pb-0 pt-20 lg:pt-0">
                 {/* Mobile Hero */}
                 <div className="lg:hidden">
                   <CarouselHero 
@@ -471,8 +462,6 @@ function DesktopHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[],
            animate={{ opacity: 1, y: 0 }}
            transition={{ duration: 0.5, delay: 0.2 }}
         >
-          {/* N DOCUMENTARY REMOVED HERE */}
-          
           <h1 className="text-4xl lg:text-6xl font-black text-white leading-[1.1] mb-6 drop-shadow-2xl">
             {activeVideo.title}
           </h1>
@@ -504,13 +493,11 @@ function DesktopHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[],
           </div>
         </motion.div>
       </div>
-
-      {/* SIDE NAVIGATION ARROWS REMOVED HERE */}
     </section>
   );
 }
 
-/* ============ MOBILE 3D CAROUSEL ============ */
+/* ============ MOBILE 3D CAROUSEL (25% Smaller) ============ */
 function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { videos: Video[], activeIndex: number, setActiveIndex: (i: number) => void, onPlay: (v: Video) => void, onMore: (v: Video) => void }) {
   const dragX = useMotionValue(0);
   const currentIndex = useMotionValue(activeIndex);
@@ -555,7 +542,7 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
   };
 
   return (
-    <section className="relative w-full h-[50vh] flex items-center justify-center overflow-hidden bg-black touch-pan-y">
+    <section className="relative w-full h-[40vh] flex items-center justify-center overflow-hidden bg-black touch-pan-y">
       <div className="relative w-full max-w-6xl h-full flex items-center justify-center perspective-[1200px]">
         {videos.map((video, i) => (
           <CarouselCard
@@ -606,15 +593,15 @@ function CarouselCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMo
         if (isActive) onMore(video);
       }}
       style={{ x, scale, rotateY, z, opacity, zIndex, touchAction: 'pan-y' }}
-      className="absolute w-[75%] aspect-[3/4] rounded-[26px] cursor-pointer shadow-[0_20px_50px_rgba(0,0,0,0.8)] select-none bg-black"
+      className="absolute w-[56%] aspect-[3/4] rounded-[18px] cursor-pointer shadow-[0_20px_50px_rgba(0,0,0,0.8)] select-none bg-black"
     >
-      <div className="relative w-full h-full rounded-[26px] overflow-hidden pointer-events-none">
+      <div className="relative w-full h-full rounded-[18px] overflow-hidden pointer-events-none">
         <img src={video.backdropUrl} alt={video.title} className="w-full h-full object-cover" draggable={false} />
         
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90" />
 
-        <div className="absolute bottom-0 inset-x-0 p-5 flex flex-col items-start gap-3 pointer-events-auto">
-          <h3 className="text-xl font-black tracking-tight text-white drop-shadow-lg leading-tight line-clamp-3">
+        <div className="absolute bottom-0 inset-x-0 p-4 flex flex-col items-start gap-2 pointer-events-auto">
+          <h3 className="text-base font-black tracking-tight text-white drop-shadow-lg leading-tight line-clamp-3">
             {video.title}
           </h3>
 
@@ -622,16 +609,16 @@ function CarouselCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMo
             <div className="flex items-center gap-2">
               <button 
                 onClick={(e) => { e.stopPropagation(); onPlay(video); }}
-                className="flex items-center justify-center gap-2 bg-white text-black px-4 py-2 rounded-full font-bold text-sm hover:bg-gray-200 transition active:scale-95 shadow-xl"
+                className="flex items-center justify-center gap-1.5 bg-white text-black px-3 py-1.5 rounded-full font-bold text-xs hover:bg-gray-200 transition active:scale-95 shadow-xl"
               >
-                <Play size={16} fill="currentColor" /> Play
+                <Play size={14} fill="currentColor" /> Play
               </button>
               
               <button 
                 onClick={(e) => { e.stopPropagation(); }}
-                className="w-10 h-10 flex items-center justify-center bg-white/20 backdrop-blur-[8px] backdrop-saturate-[180%] backdrop-brightness-[1.1] border border-white/30 text-white rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.25),inset_0_1px_1px_rgba(255,255,255,0.55)] hover:bg-white/30 transition active:scale-95"
+                className="w-8 h-8 flex items-center justify-center bg-white/20 backdrop-blur-[8px] backdrop-saturate-[180%] backdrop-brightness-[1.1] border border-white/30 text-white rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.25),inset_0_1px_1px_rgba(255,255,255,0.55)] hover:bg-white/30 transition active:scale-95"
               >
-                <Plus size={20} />
+                <Plus size={16} />
               </button>
             </div>
           )}
