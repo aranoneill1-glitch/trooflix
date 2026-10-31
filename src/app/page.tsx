@@ -600,7 +600,8 @@ function CarouselCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMo
     return i - c + (d / 300);
   });
 
-  const x = useTransform(offset, (o) => `calc(${o * 60}% - 4vw)`);
+  // PUSHED FURTHER LEFT (-15vw INSTEAD OF -4vw)
+  const x = useTransform(offset, (o) => `calc(${o * 60}% - 15vw)`);
   const scale = useTransform(offset, (o) => Math.max(0.75, 1 - Math.abs(o) * 0.25));
   const rotateY = useTransform(offset, (o) => o * -35);
   const z = useTransform(offset, (o) => -Math.abs(o) * 100);
