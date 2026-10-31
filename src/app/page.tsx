@@ -275,62 +275,90 @@ export default function Home() {
 
       {loaded && (
         <>
-          {/* NEW MOBILE HERO (Header + Avatars at the very top) */}
+          {/* HERO CAROUSEL */}
+          {!showingFiltered && heroPool.length > 0 && (
+            <div className="w-full pb-0 pt-20 lg:pt-0">
+              {/* Mobile Hero */}
+              <div className="lg:hidden">
+                <CarouselHero 
+                  videos={heroPool} 
+                  activeIndex={heroIndex} 
+                  setActiveIndex={setHeroIndex} 
+                  onPlay={handleInstantPlay}
+                  onMore={(v) => setSelected(v)}
+                />
+              </div>
+
+              {/* Desktop Hero */}
+              <div className="hidden lg:block">
+                <DesktopHero 
+                  videos={heroPool}
+                  activeIndex={heroIndex}
+                  onPlay={handleInstantPlay}
+                  onMore={(v) => setSelected(v)}
+                />
+              </div>
+            </div>
+          )}
+          {showingFiltered && <div className="h-20 md:h-24" />}
+
+          {/* HEADER & AVATARS (BELOW THE CAROUSEL ON BOTH MOBILE & DESKTOP) */}
           {!showingFiltered && (
-            <div className="lg:hidden w-full pt-20 pb-4">
-              <div className="px-4 text-left mb-4">
-                <p className="text-[10px] tracking-[0.4em] text-[#E53945] font-semibold mb-1 uppercase">
+            <div className="w-full max-w-[1600px] mx-auto px-4 md:px-12 pt-6 lg:pt-10 pb-4 lg:pb-6">
+              <div className="mb-4 lg:mb-6">
+                <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-1 uppercase">
                   The Home of Independent Voices
                 </p>
-                <h2 className="text-2xl font-black tracking-tight text-white">
+                <h2 className="text-2xl md:text-4xl font-black tracking-tight text-white">
                   Discover Creators
                 </h2>
               </div>
+              
               {creators && creators.length > 0 && (
-                <div className="flex gap-4 overflow-x-auto scrollbar-hide px-4 pb-2">
-                  {[...creators].slice(0, 15).map((c: any) => (
-                    <Link key={c.id} href={`/podcaster/${c.slug}`} className="flex flex-col items-center gap-2 flex-shrink-0 group w-[96px]">
-                      <div className="w-20 h-20 rounded-full p-[2px] bg-[#E53945] group-hover:scale-105 transition-transform">
-                        <div className="w-full h-full rounded-full border-2 border-black overflow-hidden bg-[#1c1c1e]">
-                          {c.photoUrl ? <img src={c.photoUrl} alt={c.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xl font-bold text-white">{c.name?.[0]?.toUpperCase() || "?"}</div>}
+                <>
+                  {/* Mobile Avatars with Follow */}
+                  <div className="lg:hidden flex gap-4 overflow-x-auto scrollbar-hide pb-2">
+                    {[...creators].slice(0, 15).map((c: any) => (
+                      <Link key={c.id} href={`/podcaster/${c.slug}`} className="flex flex-col items-center text-center flex-shrink-0 group w-[96px]">
+                        <div className="w-20 h-20 rounded-full p-[2px] bg-[#E53945] group-hover:scale-105 transition-transform mb-2">
+                          <div className="w-full h-full rounded-full border-2 border-black overflow-hidden bg-[#1c1c1e]">
+                            {c.photoUrl ? <img src={c.photoUrl} alt={c.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xl font-bold text-white">{c.name?.[0]?.toUpperCase() || "?"}</div>}
+                          </div>
                         </div>
-                      </div>
-                      <span className="text-xs font-semibold text-white/80 group-hover:text-white transition truncate w-full text-center">{c.name || "Creator"}</span>
-                    </Link>
-                  ))}
-                </div>
+                        <span className="text-xs font-semibold text-white/80 group-hover:text-white transition truncate w-full mb-2">{c.name || "Creator"}</span>
+                        <button 
+                          onClick={(e) => e.preventDefault()}
+                          className="px-4 py-1 rounded-full border border-white/20 text-[10px] font-bold hover:bg-white hover:text-black transition"
+                        >
+                          Follow
+                        </button>
+                      </Link>
+                    ))}
+                  </div>
+
+                  {/* Desktop Avatars with Follow */}
+                  <div className="hidden lg:grid grid-cols-6 xl:grid-cols-8 gap-4">
+                    {[...creators].slice(0, 8).map((c: any) => (
+                      <Link key={c.id} href={`/podcaster/${c.slug}`} className="flex flex-col items-center text-center group cursor-pointer">
+                        <div className="w-24 h-24 rounded-full p-[2px] bg-[#E53945] group-hover:scale-105 transition-transform mb-3">
+                          <div className="w-full h-full rounded-full border-2 border-black overflow-hidden bg-[#1c1c1e]">
+                            {c.photoUrl ? <img src={c.photoUrl} alt={c.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xl font-bold text-white">{c.name?.[0]?.toUpperCase() || "?"}</div>}
+                          </div>
+                        </div>
+                        <span className="text-sm font-bold text-white group-hover:text-[#E53945] transition truncate w-full mb-2">{c.name || "Creator"}</span>
+                        <button 
+                          onClick={(e) => e.preventDefault()}
+                          className="px-4 py-1.5 rounded-full border border-white/20 text-xs font-bold hover:bg-white hover:text-black transition"
+                        >
+                          Follow
+                        </button>
+                      </Link>
+                    ))}
+                  </div>
+                </>
               )}
             </div>
           )}
-
-          {/* HERO CAROUSEL (Now sits below the avatars on mobile) */}
-          {!showingFiltered && heroPool.length > 0 && (
-            <>
-              <div className="w-full pb-0 lg:pt-0">
-                {/* Mobile Hero */}
-                <div className="lg:hidden">
-                  <CarouselHero 
-                    videos={heroPool} 
-                    activeIndex={heroIndex} 
-                    setActiveIndex={setHeroIndex} 
-                    onPlay={handleInstantPlay}
-                    onMore={(v) => setSelected(v)}
-                  />
-                </div>
-
-                {/* Desktop Hero */}
-                <div className="hidden lg:block">
-                  <DesktopHero 
-                    videos={heroPool}
-                    activeIndex={heroIndex}
-                    onPlay={handleInstantPlay}
-                    onMore={(v) => setSelected(v)}
-                  />
-                </div>
-              </div>
-            </>
-          )}
-          {showingFiltered && <div className="h-20 md:h-24" />}
 
           <div className="relative z-10 pt-0 md:pt-2 pb-32 md:pb-20 space-y-2 md:space-y-6">
             {filtered && <SearchResults search={search} videos={videos} creators={creators} onVideoClick={setSelected} />}
@@ -347,38 +375,6 @@ export default function Home() {
 
             {loaded && !filtered && !showingFiltered && (
               <>
-                {/* 3. HOME OF INDEPENDENT VOICES HEADLINE (Desktop Only now) */}
-                {!showingFiltered && heroPool.length > 0 && (
-                  <div className="hidden lg:flex w-full pt-10 pb-4 px-12 lg:px-16 flex-col text-left items-start">
-                    <div>
-                      <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-1 uppercase">
-                        The Home of Independent Voices
-                      </p>
-                      <h2 className="text-2xl md:text-4xl font-black tracking-tight text-white">
-                        Discover Creators
-                      </h2>
-                    </div>
-                  </div>
-                )}
-
-                {/* 4. CREATOR AVATARS (Desktop Only now) */}
-                {creators && creators.length > 0 && (
-                  <div className="hidden lg:block mt-2">
-                    <div className="flex gap-6 px-12 pb-4 lg:grid lg:grid-cols-6 xl:grid-cols-8 lg:overflow-visible lg:pb-0 lg:gap-4">
-                      {[...creators].slice(0, 15).map((c: any) => (
-                        <Link key={c.id} href={`/podcaster/${c.slug}`} className="flex flex-col items-center gap-2 flex-shrink-0 group w-[96px] md:w-[112px] lg:w-full lg:flex-shrink">
-                          <div className="w-20 h-20 md:w-24 md:h-24 rounded-full p-[2px] bg-[#E53945] group-hover:scale-105 transition-transform">
-                            <div className="w-full h-full rounded-full border-2 border-black overflow-hidden bg-[#1c1c1e]">
-                              {c.photoUrl ? <img src={c.photoUrl} alt={c.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xl font-bold text-white">{c.name?.[0]?.toUpperCase() || "?"}</div>}
-                            </div>
-                          </div>
-                          <span className="text-xs font-semibold text-white/80 group-hover:text-white transition truncate w-full text-center">{c.name || "Creator"}</span>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
                 {/* 5. VIDEO ROW */}
                 <div className="mt-4 md:mt-8 mb-8 px-4 md:px-12">
                   <div className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide pb-4 lg:grid lg:grid-cols-4 xl:grid-cols-5 lg:overflow-visible lg:pb-0 lg:gap-6">
@@ -584,8 +580,6 @@ function CarouselHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: {
           />
         ))}
       </div>
-
-      {/* ARROWS REMOVED */}
     </section>
   );
 }
@@ -595,7 +589,6 @@ function CarouselCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMo
     return i - c + (d / 300);
   });
 
-  // REVERTED TO ORIGINAL STAIRCASE MATH
   const x = useTransform(offset, (o) => `calc(${o * 65}% - 10vw)`); 
   const scale = useTransform(offset, (o) => Math.max(0.5, 1 - Math.abs(o) * 0.22)); 
   const rotateY = useTransform(offset, (o) => o * -20); 
