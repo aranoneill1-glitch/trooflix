@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { 
   Video, CheckCircle2, MessageSquare, Eye, Star, Pencil, 
-  ShoppingBag, LayoutDashboard, LayoutGrid, List, Package, Palette, Camera, Trash2, X, Radio, Inbox
+  ShoppingBag, LayoutDashboard, LayoutGrid, List, Package, Palette, Camera, Trash2, X, Radio, Inbox, Plus, Play
 } from "lucide-react";
 
 import TopBar from "@/components/TopBar";
@@ -34,8 +34,9 @@ function CreatorDashboardContent() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [isDashboardView, setIsDashboardView] = useState(false);
+  const [isDashboardView, setIsDashboardView] = useState(true); // Default to dashboard view
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
+  const [showAddContentMenu, setShowAddContentMenu] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useEffect(() => {
@@ -174,7 +175,6 @@ function CreatorDashboardContent() {
           
           {!isPublicView && (
           <div className="flex items-center justify-center mb-6">
-            {/* SWAPPED ORDER: PROFILE FIRST, DASHBOARD SECOND */}
             <div className="flex bg-[#1c1c1e] p-1 rounded-full border border-white/10 shadow-lg">
               <button onClick={() => setIsDashboardView(false)} className={`flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold transition-all ${!isDashboardView ? "bg-white text-black shadow-md" : "text-white/50 hover:text-white"}`}><Eye size={16} /> Profile</button>
               <button onClick={() => setIsDashboardView(true)} className={`flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold transition-all ${isDashboardView ? "bg-white text-black shadow-md" : "text-white/50 hover:text-white"}`}><LayoutDashboard size={16} /> Dashboard</button>
@@ -321,6 +321,11 @@ function CreatorDashboardContent() {
                     <Video className="text-[#E53945]" size={24} />
                     <span className="text-xs font-bold text-center">Manage Content</span>
                   </Link>
+                  {/* NEW ADD CONTENT BOX */}
+                  <button onClick={() => setShowAddContentMenu(true)} className="bg-[#1c1c1e] border border-white/10 hover:border-[#E53945] p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
+                    <Plus className="text-[#E53945]" size={24} />
+                    <span className="text-xs font-bold text-center">Add Content</span>
+                  </button>
                 </div>
               </section>
 
@@ -376,6 +381,93 @@ function CreatorDashboardContent() {
           )}
 
         </div>
+
+        {/* ADD CONTENT BOTTOM SHEET (Duplicated from TopBar logic) */}
+        <AnimatePresence>
+          {showAddContentMenu && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowAddContentMenu(false)}
+                className="fixed inset-0 z-[300] bg-black/60 backdrop-blur-sm"
+              />
+              <motion.div
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                className="fixed bottom-0 left-0 right-0 z-[301] bg-[#1c1c1e] rounded-t-3xl border-t border-white/10 p-6 pb-12 lg:max-w-md lg:mx-auto lg:rounded-2xl lg:bottom-10 max-h-[85vh] overflow-y-auto"
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-bold text-white">Create New</h3>
+                  <button onClick={() => setShowAddContentMenu(false)} className="p-2 bg-white/10 rounded-full hover:bg-white/20 transition text-white">
+                    <X size={18} />
+                  </button>
+                </div>
+                
+                <div className="flex flex-col gap-3">
+                  <Link 
+                    href="/creator-dashboard/upload" 
+                    onClick={() => setShowAddContentMenu(false)}
+                    className="flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-xl transition"
+                  >
+                    <div className="w-12 h-12 rounded-full bg-[#E53945]/20 flex items-center justify-center flex-shrink-0">
+                      <Video className="text-[#E53945]" size={24} />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-white">Upload Video / Podcast</h4>
+                      <p className="text-xs text-white/50">Publish a new piece of long-form content</p>
+                    </div>
+                  </Link>
+
+                  <Link 
+                    href="/creator-dashboard/upload?type=short" 
+                    onClick={() => setShowAddContentMenu(false)}
+                    className="flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-xl transition"
+                  >
+                    <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                      <Play className="text-blue-400" size={24} />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-white">Upload Short</h4>
+                      <p className="text-xs text-white/50">Visible on shorts page and your profile</p>
+                    </div>
+                  </Link>
+                  
+                  <Link 
+                    href="/creator-dashboard/upload?type=tweet" 
+                    onClick={() => setShowAddContentMenu(false)}
+                    className="flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-xl transition"
+                  >
+                    <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                      <MessageSquare className="text-green-400" size={24} />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-white">Add a Tweet</h4>
+                      <p className="text-xs text-white/50">Visible on home feed</p>
+                    </div>
+                  </Link>
+
+                  <Link 
+                    href="/creator-dashboard/live"
+                    onClick={() => setShowAddContentMenu(false)}
+                    className="flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-xl transition"
+                  >
+                    <div className="w-12 h-12 rounded-full bg-[#E53945]/20 flex items-center justify-center flex-shrink-0">
+                      <Radio className="text-[#E53945]" size={24} />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-white">Go Live</h4>
+                      <p className="text-xs text-white/50">Stream a live Q&A with your fans</p>
+                    </div>
+                  </Link>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
 
         <AnimatePresence>
           {showAvatarMenu && (
