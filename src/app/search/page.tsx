@@ -139,22 +139,22 @@ export default function SearchPage() {
       
       <div className="relative z-10">
         
-        {/* FORCED DESKTOP LAYOUT ON ALL SCREENS */}
-        <div className="w-full max-w-[1600px] mx-auto px-4 lg:px-10 pt-24 pb-20">
+        {/* FORCED DESKTOP LAYOUT ON ALL SCREENS (Spacing reduced for mobile) */}
+        <div className="w-full max-w-[1600px] mx-auto px-4 lg:px-10 pt-20 lg:pt-24 pb-20">
           
           {/* 1. HERO SEARCH SECTION */}
-          <div className="flex flex-col items-center justify-center text-center mb-16 pt-10">
+          <div className="flex flex-col items-center justify-center text-center mb-8 lg:mb-16 pt-4 lg:pt-10">
             <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-2 uppercase">
               The Home of Independent Voices
             </p>
-            <h1 className="text-3xl md:text-6xl font-black tracking-tight mb-4 text-white">
+            <h1 className="text-3xl md:text-6xl font-black tracking-tight mb-3 lg:mb-4 text-white">
               DISCOVER <span className="text-[#E53945]">TROOFLIX</span>
             </h1>
-            <p className="text-sm md:text-lg text-white/60 mb-10 max-w-2xl">
+            <p className="text-sm md:text-lg text-white/60 mb-6 lg:mb-10 max-w-2xl">
               Explore documentaries, independent films, podcasts and publications.
             </p>
             
-            <div className="relative w-full max-w-4xl mx-auto mb-8">
+            <div className="relative w-full max-w-4xl mx-auto mb-4 lg:mb-8">
               <div className="absolute inset-y-0 left-0 pl-4 md:pl-6 flex items-center pointer-events-none">
                 <Search className="h-5 w-5 md:h-6 md:w-6 text-white/50" />
               </div>
@@ -182,7 +182,7 @@ export default function SearchPage() {
             </div>
           </div>
 
-          <div className="w-full h-px bg-white/10 mb-12" />
+          <div className="w-full h-px bg-white/10 mb-6 lg:mb-12" />
 
           {/* 2. RESULTS VS DISCOVERY */}
           {query.length > 0 ? (
@@ -254,11 +254,11 @@ export default function SearchPage() {
               )}
             </div>
           ) : (
-            <div className="space-y-12 md:space-y-16">
+            <div className="space-y-8 lg:space-y-16">
               
               {/* 3. PRIMARY CATEGORIES (What would you like to watch?) */}
               <section>
-                <h2 className="text-xl md:text-2xl font-bold mb-6 md:mb-8">What would you like to watch?</h2>
+                <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-8">What would you like to watch?</h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
                   {PRIMARY_CATEGORIES.map((cat) => (
                     <Link key={cat.name} href={`/search/${encodeURIComponent(cat.name.toLowerCase().replace(/ & /g, "-").replace(/ /g, "-"))}`} className={`group relative h-28 md:h-40 rounded-2xl overflow-hidden border border-white/10 block`}>
@@ -280,7 +280,7 @@ export default function SearchPage() {
 
               {/* 4. GENRE CATEGORIES (Browse by category) */}
               <section>
-                <h2 className="text-xl md:text-2xl font-bold mb-6 md:mb-8">Browse by category</h2>
+                <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-8">Browse by category</h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
                   {GENRE_CATEGORIES.map((cat) => (
                     <Link key={cat.name} href={`/search/${encodeURIComponent(cat.name.toLowerCase().replace(/ & /g, "-").replace(/ /g, "-"))}`} className={`group relative h-28 md:h-40 rounded-2xl overflow-hidden border border-white/10 block`}>
