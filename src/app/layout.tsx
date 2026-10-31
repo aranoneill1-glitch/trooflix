@@ -6,6 +6,7 @@ import TVNavigation from "@/components/TVNavigation";
 import { SearchProvider } from "@/context/SearchContext";
 import CacheWarmer from "@/components/CacheWarmer";
 import DesktopSidebar from "@/components/DesktopSidebar";
+import PWAInstallPopup from "@/components/PWAInstallPopup"; // <-- Import
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -41,7 +42,6 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.png" />
         <link rel="apple-touch-icon" href="/favicon.png" />
         
-        {/* TV Viewport Override */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -98,6 +98,7 @@ export default function RootLayout({
           <div className="lg:pl-[72px] w-full min-h-screen">
             {children}
           </div>
+          <PWAInstallPopup /> {/* <-- ADDED HERE */}
         </SearchProvider>
       </body>
     </html>
