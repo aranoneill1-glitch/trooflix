@@ -882,31 +882,6 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
   return (
     <div ref={containerRef} className="w-full relative flex flex-col group/feed bg-[#09090B] lg:bg-transparent mb-6 lg:mb-0">
       
-      <div className="flex items-center justify-between px-4 lg:px-1 pb-3 relative z-20">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full overflow-hidden bg-[#1c1c1e] flex-shrink-0 flex items-center justify-center border border-white/10">
-            {creator?.photoUrl ? (
-              <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" />
-            ) : (
-              <span className="font-bold text-sm text-white">{creator?.name?.[0] || 'TF'}</span>
-            )}
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <h2 className="text-[15px] font-bold text-white leading-tight">
-                {creator?.name || 'Creator'}
-              </h2>
-            </div>
-            <p className="text-[13px] text-white/60">
-              {video.type || 'Documentary'} • {video.createdAt ? new Date(video.createdAt).toLocaleDateString() : 'Just now'}
-            </p>
-          </div>
-        </div>
-        <button onClick={onMore} className="p-1 text-white/60 hover:text-white transition">
-          <MoreVertical size={20} />
-        </button>
-      </div>
-
       <div className="w-full relative overflow-hidden flex flex-col lg:bg-[#1c1c1e] lg:rounded-2xl lg:border lg:border-white/5 lg:shadow-lg">
         
         <div 
@@ -936,10 +911,34 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
             </div>
           )}
 
-          <div className={`absolute top-3 left-3 bg-black/60 px-2 py-1 rounded text-xs font-bold text-white z-10 pointer-events-none backdrop-blur-sm transition-opacity duration-500 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
-            {timeLeft || '0:00'}
+          {/* Top Gradient for readability */}
+          <div className="absolute top-0 inset-x-0 h-24 bg-gradient-to-b from-black/80 to-transparent pointer-events-none z-10" />
+
+          {/* TOP LEFT: Creator Avatar & Name */}
+          <div className="absolute top-3 left-3 z-20 flex items-center gap-2 pointer-events-none">
+            <div className="w-8 h-8 rounded-full overflow-hidden bg-[#1c1c1e] flex-shrink-0 border border-white/20">
+              {creator?.photoUrl ? (
+                <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <span className="font-bold text-xs text-white">{creator?.name?.[0] || 'TF'}</span>
+              )}
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-white drop-shadow-md">
+                {creator?.name || 'Creator'}
+              </h2>
+            </div>
           </div>
 
+          {/* TOP RIGHT: More Menu */}
+          <button 
+            onClick={(e) => { e.stopPropagation(); onMore(); }} 
+            className="absolute top-3 right-3 z-20 p-1 text-white/80 hover:text-white drop-shadow-md transition"
+          >
+            <MoreVertical size={20} />
+          </button>
+
+          {/* CENTER: Play/Pause icon if paused */}
           {!isPlaying && (
             <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
               <div className="w-16 h-16 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-xl">
@@ -948,24 +947,32 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
             </div>
           )}
           
-          <div className={`absolute top-1/2 -translate-y-1/2 right-3 flex flex-col gap-3 z-20 transition-opacity duration-500 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
-            <button 
-              onClick={(e) => { e.stopPropagation(); onPlay(); }}
-              className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 hover:bg-black/60 transition"
-            >
-              <Maximize size={18} />
-            </button>
-            
+          {/* BOTTOM LEFT: Timer */}
+          <div className={`absolute bottom-3 left-3 z-20 pointer-events-none transition-opacity duration-500 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
+            <span className="text-[11px] font-bold text-white bg-black/60 px-1.5 py-0.5 rounded backdrop-blur-sm">
+              {timeLeft || '0:00'}
+            </span>
+          </div>
+
+          {/* BOTTOM RIGHT: Controls (Volume & Fullscreen) */}
+          <div className={`absolute bottom-3 right-3 flex items-center gap-2 z-20 transition-opacity duration-500 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
             <button 
               onClick={(e) => { e.stopPropagation(); setIsMuted(!isMuted); if(videoRef.current) videoRef.current.muted = !isMuted; handleInteraction(); }} 
-              className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 hover:bg-black/60 transition"
+              className="w-7 h-7 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 hover:bg-black/60 transition"
             >
-              {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+              {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+            </button>
+            <button 
+              onClick={(e) => { e.stopPropagation(); onPlay(); }}
+              className="w-7 h-7 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 hover:bg-black/60 transition"
+            >
+              <Maximize size={14} />
             </button>
           </div>
 
+          {/* PROGRESS BAR */}
           <div 
-            className="absolute bottom-0 inset-x-0 h-1.5 bg-transparent z-30 cursor-pointer group/progress hover:bg-white/20 transition-colors"
+            className="absolute bottom-0 inset-x-0 h-1 bg-transparent z-30 cursor-pointer group/progress hover:bg-white/20 transition-colors"
             style={{ touchAction: 'none' }}
           >
             <div 
