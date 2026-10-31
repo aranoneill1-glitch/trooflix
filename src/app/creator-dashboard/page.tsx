@@ -34,7 +34,7 @@ function CreatorDashboardContent() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [isDashboardView, setIsDashboardView] = useState(true); // Default to dashboard view
+  const [isDashboardView, setIsDashboardView] = useState(true);
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
   const [showAddContentMenu, setShowAddContentMenu] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -321,7 +321,6 @@ function CreatorDashboardContent() {
                     <Video className="text-[#E53945]" size={24} />
                     <span className="text-xs font-bold text-center">Manage Content</span>
                   </Link>
-                  {/* NEW ADD CONTENT BOX */}
                   <button onClick={() => setShowAddContentMenu(true)} className="bg-[#1c1c1e] border border-white/10 hover:border-[#E53945] p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
                     <Plus className="text-[#E53945]" size={24} />
                     <span className="text-xs font-bold text-center">Add Content</span>
@@ -354,10 +353,6 @@ function CreatorDashboardContent() {
                     <ShoppingBag className="text-white" size={24} />
                     <span className="text-xs font-bold text-center">Manage Shop</span>
                   </Link>
-                  <Link href="/creator-dashboard/shop/customize" className="bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
-                    <Palette className="text-white" size={24} />
-                    <span className="text-xs font-bold text-center">Customize Store</span>
-                  </Link>
                   <Link href="/creator-dashboard/orders" className="bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
                     <Package className="text-white" size={24} />
                     <span className="text-xs font-bold text-center">Manage Orders</span>
@@ -382,7 +377,7 @@ function CreatorDashboardContent() {
 
         </div>
 
-        {/* ADD CONTENT BOTTOM SHEET (Duplicated from TopBar logic) */}
+        {/* ADD CONTENT BOTTOM SHEET */}
         <AnimatePresence>
           {showAddContentMenu && (
             <>
