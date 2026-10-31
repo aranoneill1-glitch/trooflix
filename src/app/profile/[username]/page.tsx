@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, UserPlus, MessageSquare, CheckCircle2, LayoutGrid, List, ShoppingBag, Star } from "lucide-react";
+import { ArrowLeft, UserPlus, MessageSquare, CheckCircle2, LayoutGrid, List, ShoppingBag, Star, Camera } from "lucide-react";
 import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
@@ -15,6 +15,8 @@ const InstagramIcon = ({ size = 16 }: { size?: number }) => (
 const XIcon = ({ size = 16 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
 );
+
+const MOCK_SUBSCRIBERS = 142;
 
 export default function PublicProfilePage() {
   const params = useParams();
@@ -90,162 +92,174 @@ export default function PublicProfilePage() {
     : { background: "#09090B" };
 
   return (
-    <main className="fixed inset-0 overflow-y-auto overscroll-none text-white pb-32 font-sans">
-      <div className="absolute inset-0 z-0" style={bgStyle}>
+    <main className={`min-h-screen text-white pb-32 font-sans selection:bg-[#E53945]/30 relative overflow-hidden bg-transparent`}>
+      
+      {/* Background */}
+      <div className="fixed inset-0 z-0" style={bgStyle}>
         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
       </div>
 
-      <div className="relative z-10 min-h-full">
+      <div className="relative z-10">
         <TopBar />
         
-        <div className="max-w-3xl mx-auto px-4 pt-24 pb-10">
-          <Link href="/search" className="inline-flex items-center gap-2 text-white/50 hover:text-white transition mb-8 text-sm font-semibold">
+        <div className="max-w-5xl mx-auto px-4 pt-24 pb-6">
+          
+          <Link href="/search" className="inline-flex items-center gap-2 text-white/50 hover:text-white mb-6 transition text-sm font-semibold">
             <ArrowLeft size={16} /> Back
           </Link>
 
-          {/* HEADER: AVATAR LEFT, INFO RIGHT */}
-          <div className="flex flex-row items-start gap-4 md:gap-6 mb-6">
-            
-            {/* CLICKABLE AVATAR FOR LIVE */}
-            <div 
-              onClick={() => profile.is_live && router.push(`/live/${profile.username}`)}
-              className={`relative shrink-0 rounded-full p-[3px] ${profile.is_live ? 'cursor-pointer bg-red-600 animate-pulse' : 'bg-gradient-to-tr from-[#E53945] to-orange-500'}`}
-            >
-              <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-[#09090B] overflow-hidden bg-[#1c1c1e]">
-                {profile.avatar_url ? <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-4xl font-bold">{displayName.charAt(0)}</div>}
+          {/* CREATOR-STYLE PROFILE LAYOUT */}
+          <div className="animate-in fade-in duration-300">
+            <div className="flex flex-col mb-6 w-full">
+              
+              <div className="flex items-center gap-4 w-full mb-4">
+                {/* AVATAR (Clickable if live) */}
+                <div 
+                  onClick={() => profile.is_live && router.push(`/live/${profile.username}`)}
+                  className={`w-24 h-24 md:w-28 md:h-28 rounded-full p-[3px] shrink-0 relative ${profile.is_live ? 'cursor-pointer bg-red-600 animate-pulse' : 'bg-gradient-to-tr from-[#E53945] to-orange-500'}`}
+                >
+                  <div className="w-full h-full rounded-full border-4 border-[#09090B] overflow-hidden bg-[#1c1c1e] relative">
+                    {profile.avatar_url ? (
+                      <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-3xl font-bold">{displayName.charAt(0)}</div>
+                    )}
+                    
+                    {profile.is_live && (
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                        <span className="text-white text-xs font-bold bg-red-600 px-2 py-1 rounded-sm shadow-lg whitespace-nowrap">WATCH LIVE</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* STATS */}
+                <div className="flex-1 flex justify-around md:justify-start md:gap-8 px-2">
+                  <div className="text-center md:text-left"><span className="font-bold text-white block text-xl">1.2K</span> <span className="text-white/50 text-[11px] uppercase tracking-wider">Followers</span></div>
+                  <div className="text-center md:text-left"><span className="font-bold text-white block text-xl">{MOCK_SUBSCRIBERS}</span> <span className="text-white/50 text-[11px] uppercase tracking-wider">Subscribers</span></div>
+                  <div className="text-center md:text-left"><span className="font-bold text-white block text-xl">{videos.length}</span> <span className="text-white/50 text-[11px] uppercase tracking-wider">Posts</span></div>
+                </div>
               </div>
-              {profile.is_live && (
-                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-red-600 text-white text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-sm shadow-lg whitespace-nowrap">
-                  Watch Live
+
+              {/* NAME, HANDLE, SOCIALS, BIO */}
+              <div className="px-1">
+                <div className="flex items-center justify-between mb-1">
+                  <h1 className="text-2xl md:text-3xl font-black flex items-center gap-2 text-white">
+                    {displayName} {profile.is_verified && <CheckCircle2 size={20} className="text-[#1ed760]" fill="currentColor" />}
+                  </h1>
+                  
+                  {/* FOLLOW BUTTON (Top Right) */}
+                  <button className="shrink-0 flex items-center justify-center gap-1.5 bg-white text-black font-bold px-5 py-1.5 rounded-full hover:bg-gray-200 transition shadow-lg text-sm">
+                    <UserPlus size={16} /> Follow
+                  </button>
+                </div>
+                
+                <p className="text-sm md:text-base text-white/50 mb-3">@{username}</p>
+                
+                <div className="flex items-center gap-4 mb-4">
+                  {profile.instagram_handle && (
+                    <a href={`https://instagram.com/${profile.instagram_handle}`} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors">
+                      <InstagramIcon size={14} />
+                      <span className="text-xs font-semibold">{profile.instagram_handle}</span>
+                    </a>
+                  )}
+                  {profile.x_handle && (
+                    <a href={`https://x.com/${profile.x_handle}`} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors">
+                      <XIcon size={14} />
+                      <span className="text-xs font-semibold">{profile.x_handle}</span>
+                    </a>
+                  )}
+                </div>
+                <p className="text-sm text-white/60 leading-relaxed">{profile.bio || "No bio yet."}</p>
+              </div>
+            </div>
+
+            {/* SUBSCRIBE & MESSAGE BUTTONS */}
+            <div className="flex gap-3 mb-8 w-full">
+              <button className="flex-1 flex items-center justify-center gap-2 bg-[#E53945] text-white font-bold py-3 rounded-full hover:bg-[#d12e39] transition shadow-lg shadow-[#E53945]/20">
+                <Star size={18} fill="currentColor" /> Subscribe - ${subscriptionPrice}
+              </button>
+              <Link href={`/messages/${profile.user_id}`} className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-full transition border border-white/10">
+                <MessageSquare size={18} /> Message
+              </Link>
+            </div>
+
+            {/* TABS & CONTENT */}
+            <div className="flex items-center justify-between border-b border-white/10 mb-6">
+              <div className="flex items-center gap-8">
+                {(["All", "Podcasts", "Videos", "Store"] as const).map((tab) => (
+                  <button key={tab} onClick={() => setActiveContentTab(tab)} className={`pb-3 text-sm font-bold transition-colors ${activeContentTab === tab ? "text-white border-b-2 border-[#E53945]" : "text-white/50 hover:text-white"}`}>{tab}</button>
+                ))}
+              </div>
+              <div className="flex items-center gap-1 bg-[#1c1c1e] p-1 rounded-lg mb-2">
+                <button onClick={() => setContentView("grid")} className={`p-1.5 rounded-md transition ${contentView === "grid" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}><LayoutGrid size={16} /></button>
+                <button onClick={() => setContentView("list")} className={`p-1.5 rounded-md transition ${contentView === "list" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}><List size={16} /></button>
+              </div>
+            </div>
+
+            <div className="w-full">
+              {activeContentTab === "Store" && (
+                <div className="w-full">
+                  {merch.length === 0 ? (
+                    <div className="text-center py-12 bg-[#1c1c1e] border border-white/5 rounded-2xl"><ShoppingBag size={32} className="mx-auto text-white/20 mb-3" /><p className="text-white/50 text-sm">No products available yet.</p></div>
+                  ) : contentView === "grid" ? (
+                    <div className="grid grid-cols-3 gap-4">
+                      {merch.map((item) => (
+                        <div key={item.id} className="bg-[#1c1c1e] border border-white/10 rounded-xl overflow-hidden group cursor-pointer flex flex-col">
+                          <div className="relative aspect-square">
+                            <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+                          </div>
+                          <div className="p-3 flex-1 flex flex-col justify-between text-left">
+                            <h3 className="text-sm font-bold leading-tight line-clamp-2 text-white">{item.name}</h3>
+                            <p className="text-emerald-400 font-bold text-xs mt-2">${(item.price_cents / 100).toFixed(2)}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-3">
+                      {merch.map((item) => (
+                        <div key={item.id} className="flex items-center gap-4 bg-[#1c1c1e] border border-white/10 rounded-2xl p-3">
+                          <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0 relative"><img src={item.image_url} alt={item.name} className="w-full h-full object-cover" /></div>
+                          <div className="flex-1 min-w-0 text-left"><h3 className="text-sm font-bold text-white truncate">{item.name}</h3><p className="text-xs text-white/50 mt-1">Merch</p></div>
+                          <p className="text-emerald-400 font-bold text-sm shrink-0">${(item.price_cents / 100).toFixed(2)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeContentTab !== "Store" && (
+                <div className="w-full">
+                  {filteredVideos.length === 0 ? (
+                    <div className="text-center py-20 text-white/50">No {activeContentTab.toLowerCase()} found yet.</div>
+                  ) : contentView === "grid" ? (
+                    <div className="grid grid-cols-3 gap-4">
+                      {filteredVideos.map((video) => (
+                        <div key={video.id} className="bg-[#1c1c1e] border border-white/10 rounded-2xl overflow-hidden group cursor-pointer">
+                          <div className="relative aspect-square">
+                            <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                            <div className={`absolute top-2 left-2 text-white text-[10px] font-bold px-2 py-0.5 rounded-sm ${video.type?.toLowerCase() === 'podcast' ? 'bg-blue-500' : 'bg-[#E53945]'}`}>{video.type || "VIDEO"}</div>
+                          </div>
+                          <div className="p-3 text-left"><h3 className="text-sm font-bold leading-tight line-clamp-1">{video.title}</h3></div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-3">
+                      {filteredVideos.map((video) => (
+                        <div key={video.id} className="flex items-center gap-4 bg-[#1c1c1e] border border-white/10 rounded-2xl p-3 cursor-pointer hover:bg-[#242426] transition-colors">
+                          <div className="w-24 h-16 rounded-lg overflow-hidden shrink-0 relative"><img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover" /></div>
+                          <div className="flex-1 min-w-0 text-left"><h3 className="text-sm font-bold text-white truncate">{video.title}</h3></div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
-
-            {/* INFO SECTION */}
-            <div className="flex-1 flex flex-col items-start pt-1 md:pt-2">
-              <div className="w-full flex items-center justify-between gap-2 mb-1">
-                <h1 className="text-2xl md:text-3xl font-black flex items-center gap-2 text-white truncate">
-                  {displayName} {profile.is_verified && <CheckCircle2 size={20} className="text-[#1ed760] shrink-0" fill="currentColor" />}
-                </h1>
-                
-                <button className="shrink-0 flex items-center justify-center gap-1.5 bg-white text-black font-bold px-4 py-1.5 rounded-full hover:bg-gray-200 transition shadow-lg text-xs md:text-sm">
-                  <UserPlus size={14} /> Follow
-                </button>
-              </div>
-              
-              <p className="text-sm text-white/50 mb-3">@{profile.username}</p>
-
-              {/* SOCIAL HANDLES */}
-              <div className="flex items-center gap-4 mb-3">
-                {profile.instagram_handle && (
-                  <a href={`https://instagram.com/${profile.instagram_handle}`} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors">
-                    <InstagramIcon size={14} />
-                    <span className="text-xs font-semibold">{profile.instagram_handle}</span>
-                  </a>
-                )}
-                {profile.x_handle && (
-                  <a href={`https://x.com/${profile.x_handle}`} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors">
-                    <XIcon size={14} />
-                    <span className="text-xs font-semibold">{profile.x_handle}</span>
-                  </a>
-                )}
-              </div>
-
-              {profile.bio && <p className="text-sm text-white/70 leading-relaxed max-w-md mb-4">{profile.bio}</p>}
-              
-              <div className="flex items-center gap-6 mt-1">
-                <div className="text-left"><span className="font-bold text-white block text-lg">0</span><span className="text-white/50 text-[10px] uppercase tracking-wider">Following</span></div>
-                <div className="text-left"><span className="font-bold text-white block text-lg">0</span><span className="text-white/50 tracking-wider uppercase text-[10px]">Followers</span></div>
-                <div className="text-left"><span className="font-bold text-white block text-lg">{videos.length}</span><span className="text-white/50 text-[10px] uppercase tracking-wider">Posts</span></div>
-              </div>
-            </div>
           </div>
-
-          {/* BUTTONS */}
-          <div className="flex gap-3 w-full mb-10">
-            <button className="flex-1 flex items-center justify-center gap-2 bg-[#E53945] text-white font-bold py-3 rounded-xl hover:bg-[#d12e39] transition shadow-lg shadow-[#E53945]/20 text-sm">
-              <Star size={18} fill="currentColor" /> Subscribe - ${subscriptionPrice}
-            </button>
-            <Link href={`/messages/${profile.user_id}`} className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-xl transition border border-white/10 text-sm">
-              <MessageSquare size={18} /> Message
-            </Link>
-          </div>
-
-          {/* TABS */}
-          <div className="flex items-center justify-between border-b border-white/10 mb-6">
-            <div className="flex items-center gap-6 md:gap-8">
-              {(["All", "Podcasts", "Videos", "Store"] as const).map((tab) => (
-                <button key={tab} onClick={() => setActiveContentTab(tab)} className={`pb-3 text-sm font-bold transition-colors ${activeContentTab === tab ? "text-white border-b-2 border-[#E53945]" : "text-white/50 hover:text-white"}`}>{tab}</button>
-              ))}
-            </div>
-            <div className="flex items-center gap-1 bg-[#1c1c1e] p-1 rounded-lg mb-2">
-              <button onClick={() => setContentView("grid")} className={`p-1.5 rounded-md transition ${contentView === "grid" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}><LayoutGrid size={16} /></button>
-              <button onClick={() => setContentView("list")} className={`p-1.5 rounded-md transition ${contentView === "list" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}><List size={16} /></button>
-            </div>
-          </div>
-
-          {/* CONTENT GRID */}
-          <div className="w-full">
-            {activeContentTab === "Store" && (
-              <div className="w-full">
-                {merch.length === 0 ? (
-                  <div className="text-center py-12 bg-[#1c1c1e] border border-white/5 rounded-2xl"><ShoppingBag size={32} className="mx-auto text-white/20 mb-3" /><p className="text-white/50 text-sm">No products available yet.</p></div>
-                ) : contentView === "grid" ? (
-                  <div className="grid grid-cols-3 gap-3">
-                    {merch.map((item) => (
-                      <div key={item.id} className="bg-[#1c1c1e] border border-white/10 rounded-xl overflow-hidden group cursor-pointer flex flex-col">
-                        <div className="relative aspect-square">
-                          <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
-                        </div>
-                        <div className="p-3 flex-1 flex flex-col justify-between text-left">
-                          <h3 className="text-sm font-bold leading-tight line-clamp-2 text-white">{item.name}</h3>
-                          <p className="text-emerald-400 font-bold text-xs mt-2">${(item.price_cents / 100).toFixed(2)}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-3">
-                    {merch.map((item) => (
-                      <div key={item.id} className="flex items-center gap-4 bg-[#1c1c1e] border border-white/10 rounded-2xl p-3">
-                        <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0 relative"><img src={item.image_url} alt={item.name} className="w-full h-full object-cover" /></div>
-                        <div className="flex-1 min-w-0 text-left"><h3 className="text-sm font-bold text-white truncate">{item.name}</h3><p className="text-xs text-white/50 mt-1">Merch</p></div>
-                        <p className="text-emerald-400 font-bold text-sm shrink-0">${(item.price_cents / 100).toFixed(2)}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {activeContentTab !== "Store" && (
-              filteredVideos.length === 0 ? (
-                <div className="text-center py-12 bg-[#1c1c1e] border border-white/5 rounded-2xl"><p className="text-white/50 text-sm">No content found yet.</p></div>
-              ) : contentView === "grid" ? (
-                <div className="grid grid-cols-3 gap-3">
-                  {filteredVideos.map((video) => (
-                    <div key={video.id} className="bg-[#1c1c1e] border border-white/10 rounded-xl overflow-hidden group cursor-pointer">
-                      <div className="relative aspect-video">
-                        <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                        <div className={`absolute top-2 left-2 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-sm ${video.type?.toLowerCase().includes('podcast') ? 'bg-blue-500' : 'bg-[#E53945]'}`}>{video.type || "VIDEO"}</div>
-                      </div>
-                      <div className="p-3 text-left"><h3 className="text-xs font-bold leading-tight line-clamp-2 text-white">{video.title}</h3></div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="flex flex-col gap-3">
-                  {filteredVideos.map((video) => (
-                    <div key={video.id} className="flex items-center gap-3 bg-[#1c1c1e] border border-white/10 rounded-xl p-2.5 cursor-pointer hover:bg-[#242426] transition-colors">
-                      <div className="w-24 aspect-video rounded-lg overflow-hidden shrink-0 relative"><img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover" /></div>
-                      <div className="flex-1 min-w-0 text-left"><h3 className="text-sm font-bold text-white truncate">{video.title}</h3></div>
-                    </div>
-                  ))}
-                </div>
-              )
-            )}
-          </div>
-
         </div>
 
         <MobileBottomNav />
