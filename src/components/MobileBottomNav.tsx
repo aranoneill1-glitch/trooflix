@@ -36,7 +36,7 @@ export default function MobileBottomNav() {
   const tabs = [
     { name: "Home", icon: Home, href: "/" },
     { name: "Shorts", icon: Play, href: "/feed" },
-    { name: "Trooflix", href: "/plus" }, // Replaced Star icon with text logo
+    { name: "Trooflix", href: "/plus" }, 
     { name: "Shop", icon: ShoppingBag, href: "/merchandise" },
     { name: "Search", icon: Search, href: "/search" },
   ];
@@ -64,12 +64,17 @@ export default function MobileBottomNav() {
                 transition={{ type: "spring", stiffness: 400, damping: 15 }} 
                 className="flex items-center justify-center flex-col gap-1 w-full"
               >
-                {/* Check if it's the middle Trooflix tab */}
                 {tab.name === "Trooflix" ? (
-                  <div className={`flex items-center justify-center gap-0.5 pointer-events-none transition-opacity ${active ? "opacity-100" : "opacity-60 group-hover:opacity-100"}`}>
-                    <span className="text-[12px] font-black tracking-tighter text-white">TROO</span>
-                    <span className="text-[12px] font-black tracking-tighter text-[#E53945]">FLIX</span>
-                  </div>
+                  <>
+                    {/* Fixed height to match the 22px icon size */}
+                    <div className={`h-[22px] flex items-center justify-center pointer-events-none transition-opacity ${active ? "opacity-100" : "opacity-60 group-hover:opacity-100"}`}>
+                      <span className="text-[15px] font-black tracking-tighter">
+                        <span className="text-white">TROO</span><span className="text-[#E53945]">FLIX</span>
+                      </span>
+                    </div>
+                    {/* Invisible label to match the height of other tabs */}
+                    <span className="text-[9px] font-bold text-transparent">.</span>
+                  </>
                 ) : (
                   <>
                     {tab.icon && (
