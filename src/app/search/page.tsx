@@ -136,141 +136,40 @@ export default function SearchPage() {
       
       <div className="relative z-10">
         
-        {/* ========================================= */}
-        {/* MOBILE LAYOUT (Untouched) */}
-        {/* ========================================= */}
-        <div className="lg:hidden max-w-2xl mx-auto">
-          <div className="sticky top-0 z-50 bg-[#0a0a0a]/90 backdrop-blur-xl pt-4 pb-4 px-4 border-b border-white/5">
-            {isSearching ? (
-              <div className="flex items-center gap-3">
-                <div className="relative flex-1">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Search className="h-5 w-5 text-white" />
-                  </div>
-                  <input
-                    type="text" autoFocus
-                    className="w-full bg-white/10 backdrop-blur-xl text-white placeholder:text-white/50 rounded-full py-3 pl-11 pr-10 border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/30 shadow-lg text-[15px]"
-                    placeholder="Search creators, users, videos..."
-                    value={query} onChange={(e) => setQuery(e.target.value)}
-                  />
-                  {query && (
-                    <button onClick={() => setQuery("")} className="absolute inset-y-0 right-0 pr-4 flex items-center">
-                      <div className="bg-white/30 rounded-full p-0.5"><X className="h-4 w-4 text-black" /></div>
-                    </button>
-                  )}
-                </div>
-                <button onClick={handleCancel} className="text-white font-medium text-base">Cancel</button>
-              </div>
-            ) : (
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Search className="h-5 w-5 text-white" />
-                </div>
-                <input
-                  type="text"
-                  className="w-full bg-white/10 backdrop-blur-xl text-white font-medium text-[15px] placeholder:text-white/50 rounded-full py-3.5 pl-11 pr-6 border border-white/20 cursor-pointer shadow-lg"
-                  placeholder="Search creators, users, videos..."
-                  value={query} onClick={() => setIsSearching(true)} onChange={(e) => setQuery(e.target.value)} readOnly={!isSearching}
-                />
-              </div>
-            )}
-          </div>
-
-          <div className="px-4 pt-4">
-            {loading ? (
-              <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" /></div>
-            ) : isSearching || query.length > 0 ? (
-              <div className="flex flex-col space-y-8 pb-10">
-                {!hasResults && query.length > 0 && <div className="text-center py-10 text-white/50">No results found for "{query}".</div>}
-                {filteredProfiles.length > 0 && (
-                  <div>
-                    <h3 className="text-xs font-bold text-white/40 uppercase tracking-wider mb-3">Creators & Users</h3>
-                    <div className="flex flex-col space-y-3">
-                      {filteredProfiles.map((profile) => (
-                        <Link key={profile.user_id} href={`/profile/${profile.username}`} className="flex items-center gap-4 group hover:bg-white/5 p-2 -mx-2 rounded-xl transition">
-                          <div className="w-12 h-12 rounded-full overflow-hidden bg-[#1c1c1e] shrink-0 border border-white/10">
-                            {profile.avatar_url ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center font-bold text-lg text-white/50">{profile.display_name?.[0] || <User size={18} />}</div>}
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-white font-bold text-base group-hover:text-[#E53945] transition-colors">{profile.display_name || "User"}</span>
-                              {profile.is_verified && <CheckCircle2 size={14} className="text-[#1ed760]" fill="currentColor" />}
-                            </div>
-                            <span className="text-sm text-white/50">@{profile.username || "user"}</span>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {filteredVideos.length > 0 && (
-                  <div>
-                    <h3 className="text-xs font-bold text-white/40 uppercase tracking-wider mb-3">Videos & Podcasts</h3>
-                    <div className="flex flex-col space-y-3">
-                      {filteredVideos.map((video) => (
-                        <Link key={video.id} href={`/watch/${video.id}`} className="flex items-center gap-4 group hover:bg-white/5 p-2 -mx-2 rounded-xl transition">
-                          <div className="relative w-28 h-16 rounded-lg overflow-hidden bg-[#1c1c1e] shrink-0 border border-white/10">
-                            <img src={video.posterUrl || video.backdropUrl} alt="" className="w-full h-full object-cover" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <span className="text-white font-bold text-sm block truncate group-hover:text-[#E53945] transition-colors">{video.title}</span>
-                            <span className="text-xs text-white/50">{video.type || "Video"} {video.category ? `• ${video.category}` : ''}</span>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-4 pb-10">
-                {MAIN_CATEGORIES.map((cat) => (
-                  <Link key={cat.name} href={`/search/${encodeURIComponent(cat.name.toLowerCase().replace(/ & /g, "-").replace(/ /g, "-"))}`} className={`${cat.color} backdrop-blur-xl border border-white/20 rounded-xl p-4 h-24 relative overflow-hidden group shadow-lg block`}>
-                    <h2 className="text-lg font-bold relative z-10 text-white drop-shadow-md leading-tight">{cat.name}</h2>
-                    <img src={cat.image} alt={cat.name} className="absolute -right-2 -bottom-2 w-20 h-20 object-cover rotate-[25deg] shadow-2xl rounded-sm group-hover:scale-105 transition-transform duration-500 border border-white/10" />
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* ========================================= */}
-        {/* DESKTOP LAYOUT (New Premium UI) */}
-        {/* ========================================= */}
-        <div className="hidden lg:block max-w-[1600px] mx-auto px-10 pt-24 pb-20">
+        {/* FORCED DESKTOP LAYOUT ON ALL SCREENS */}
+        <div className="w-full max-w-[1600px] mx-auto px-4 lg:px-10 pt-24 pb-20">
           
-          {/* 1. HERO SEARCH SECTION (Updated Style) */}
+          {/* 1. HERO SEARCH SECTION */}
           <div className="flex flex-col items-center justify-center text-center mb-16 pt-10">
             <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-2 uppercase">
               The Home of Independent Voices
             </p>
-            <h1 className="text-4xl md:text-6xl font-black tracking-tight mb-4 text-white">
+            <h1 className="text-3xl md:text-6xl font-black tracking-tight mb-4 text-white">
               DISCOVER <span className="text-[#E53945]">TROOFLIX</span>
             </h1>
-            <p className="text-lg text-white/60 mb-10 max-w-2xl">
+            <p className="text-sm md:text-lg text-white/60 mb-10 max-w-2xl">
               Explore documentaries, independent films, podcasts and publications.
             </p>
             
             <div className="relative w-full max-w-4xl mx-auto mb-8">
-              <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
-                <Search className="h-6 w-6 text-white/50" />
+              <div className="absolute inset-y-0 left-0 pl-4 md:pl-6 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 md:h-6 md:w-6 text-white/50" />
               </div>
               <input
                 type="text"
-                className="w-full bg-[#1c1c1e]/80 backdrop-blur-xl text-white font-medium text-lg placeholder:text-white/40 rounded-full py-5 pl-16 pr-8 border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#E53945]/50 focus:border-[#E53945]/50 shadow-2xl transition-all"
+                className="w-full bg-[#1c1c1e]/80 backdrop-blur-xl text-white font-medium text-base md:text-lg placeholder:text-white/40 rounded-full py-4 md:py-5 pl-12 md:pl-16 pr-8 border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#E53945]/50 focus:border-[#E53945]/50 shadow-2xl transition-all"
                 placeholder="Search titles, subjects, creators, keywords..."
                 value={query}
                 onChange={(e) => { setQuery(e.target.value); setIsSearching(true); }}
               />
               {query && (
-                <button onClick={handleCancel} className="absolute inset-y-0 right-0 pr-6 flex items-center">
+                <button onClick={handleCancel} className="absolute inset-y-0 right-0 pr-4 md:pr-6 flex items-center">
                   <div className="bg-white/10 hover:bg-white/20 rounded-full p-1.5 transition"><X className="h-5 w-5 text-white" /></div>
                 </button>
               )}
             </div>
 
-            <div className="flex items-center gap-3 text-sm text-white/50">
+            <div className="flex flex-wrap justify-center items-center gap-2 md:gap-3 text-xs md:text-sm text-white/50">
               <span className="flex items-center gap-1.5"><TrendingUp size={16} className="text-[#E53945]" /> Trending:</span>
               {TRENDING_TAGS.map((tag) => (
                 <button key={tag} onClick={() => handleTagClick(tag)} className="hover:text-white transition">
@@ -287,15 +186,15 @@ export default function SearchPage() {
             <div className="w-full">
               
               {/* SEARCH FILTER TABS */}
-              <div className="flex items-center justify-between mb-8">
-                <h2 className="text-2xl font-bold flex items-center gap-3">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
+                <h2 className="text-xl md:text-2xl font-bold flex items-center gap-3">
                   Search Results for <span className="text-[#E53945]">"{query}"</span>
                 </h2>
                 
-                <div className="flex items-center gap-2 bg-[#1c1c1e] p-1 rounded-xl border border-white/5">
-                  <button onClick={() => setActiveFilter("all")} className={`px-4 py-2 rounded-lg text-sm font-bold transition ${activeFilter === "all" ? "bg-white/10 text-white" : "text-white/50 hover:text-white"}`}>All ({filteredVideos.length + filteredProfiles.length})</button>
-                  <button onClick={() => setActiveFilter("videos")} className={`px-4 py-2 rounded-lg text-sm font-bold transition ${activeFilter === "videos" ? "bg-white/10 text-white" : "text-white/50 hover:text-white"}`}>Videos ({filteredVideos.length})</button>
-                  <button onClick={() => setActiveFilter("creators")} className={`px-4 py-2 rounded-lg text-sm font-bold transition ${activeFilter === "creators" ? "bg-white/10 text-white" : "text-white/50 hover:text-white"}`}>Creators ({filteredProfiles.length})</button>
+                <div className="flex items-center gap-2 bg-[#1c1c1e] p-1 rounded-xl border border-white/5 w-full md:w-auto overflow-x-auto">
+                  <button onClick={() => setActiveFilter("all")} className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-xs md:text-sm font-bold transition whitespace-nowrap ${activeFilter === "all" ? "bg-white/10 text-white" : "text-white/50 hover:text-white"}`}>All ({filteredVideos.length + filteredProfiles.length})</button>
+                  <button onClick={() => setActiveFilter("videos")} className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-xs md:text-sm font-bold transition whitespace-nowrap ${activeFilter === "videos" ? "bg-white/10 text-white" : "text-white/50 hover:text-white"}`}>Videos ({filteredVideos.length})</button>
+                  <button onClick={() => setActiveFilter("creators")} className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-xs md:text-sm font-bold transition whitespace-nowrap ${activeFilter === "creators" ? "bg-white/10 text-white" : "text-white/50 hover:text-white"}`}>Creators ({filteredProfiles.length})</button>
                 </div>
               </div>
 
@@ -307,22 +206,22 @@ export default function SearchPage() {
                 </div>
               ) : (
                 <div className="space-y-12">
-                  {/* Desktop Profiles Results */}
+                  {/* Profiles Results */}
                   {showCreators && filteredProfiles.length > 0 && (
                     <div>
                       <h3 className="text-sm font-bold text-white/40 uppercase tracking-wider mb-4">Creators & Users</h3>
-                      <div className="grid grid-cols-4 gap-6">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                         {filteredProfiles.map((profile) => (
-                          <Link key={profile.user_id} href={`/profile/${profile.username}`} className="flex items-center gap-4 bg-[#1c1c1e] border border-white/5 hover:border-white/20 p-4 rounded-2xl transition group">
-                            <div className="w-16 h-16 rounded-full overflow-hidden bg-[#09090B] shrink-0 border border-white/10">
-                              {profile.avatar_url ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center font-bold text-xl text-white/50">{profile.display_name?.[0] || <User size={24} />}</div>}
+                          <Link key={profile.user_id} href={`/profile/${profile.username}`} className="flex items-center gap-3 md:gap-4 bg-[#1c1c1e] border border-white/5 hover:border-white/20 p-3 md:p-4 rounded-2xl transition group">
+                            <div className="w-12 h-12 md:w-16 md:h-16 rounded-full overflow-hidden bg-[#09090B] shrink-0 border border-white/10">
+                              {profile.avatar_url ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center font-bold text-lg md:text-xl text-white/50">{profile.display_name?.[0] || <User size={24} />}</div>}
                             </div>
                             <div className="min-w-0">
                               <div className="flex items-center gap-1.5">
-                                <span className="text-white font-bold text-lg truncate group-hover:text-[#E53945] transition-colors">{profile.display_name || "User"}</span>
-                                {profile.is_verified && <CheckCircle2 size={16} className="text-[#1ed760]" fill="currentColor" />}
+                                <span className="text-white font-bold text-sm md:text-lg truncate group-hover:text-[#E53945] transition-colors">{profile.display_name || "User"}</span>
+                                {profile.is_verified && <CheckCircle2 size={14} className="text-[#1ed760] hidden md:block" fill="currentColor" />}
                               </div>
-                              <span className="text-sm text-white/50">@{profile.username || "user"}</span>
+                              <span className="text-xs md:text-sm text-white/50 truncate block">@{profile.username || "user"}</span>
                             </div>
                           </Link>
                         ))}
@@ -330,19 +229,19 @@ export default function SearchPage() {
                     </div>
                   )}
 
-                  {/* Desktop Videos Results */}
+                  {/* Videos Results */}
                   {showVideos && filteredVideos.length > 0 && (
                     <div>
                       <h3 className="text-sm font-bold text-white/40 uppercase tracking-wider mb-4">Videos, Podcasts & More</h3>
-                      <div className="grid grid-cols-6 gap-6">
+                      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-6">
                         {filteredVideos.map((video) => (
                           <Link key={video.id} href={`/watch/${video.id}`} className="flex flex-col group">
-                            <div className="relative aspect-video rounded-xl overflow-hidden bg-[#1c1c1e] mb-3 border border-white/5 shadow-lg">
+                            <div className="relative aspect-video rounded-xl overflow-hidden bg-[#1c1c1e] mb-2 md:mb-3 border border-white/5 shadow-lg">
                               <img src={video.posterUrl || video.backdropUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
                               <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition" />
                             </div>
-                            <span className="text-sm font-bold text-white leading-tight line-clamp-2 group-hover:text-[#E53945] transition-colors">{video.title}</span>
-                            <span className="text-xs text-white/50 mt-1">{video.type || "Video"} {video.category ? `• ${video.category}` : ''}</span>
+                            <span className="text-xs md:text-sm font-bold text-white leading-tight line-clamp-2 group-hover:text-[#E53945] transition-colors">{video.title}</span>
+                            <span className="text-[10px] md:text-xs text-white/50 mt-1">{video.type || "Video"} {video.category ? `• ${video.category}` : ''}</span>
                           </Link>
                         ))}
                       </div>
@@ -352,21 +251,21 @@ export default function SearchPage() {
               )}
             </div>
           ) : (
-            <div className="space-y-16">
+            <div className="space-y-12 md:space-y-16">
               
-              {/* 3. CATEGORY GRID (All Categories, 3 Columns) */}
+              {/* 3. CATEGORY GRID (Responsive Columns) */}
               <section>
-                <h2 className="text-2xl font-bold mb-8">Browse Categories</h2>
-                <div className="grid grid-cols-3 gap-6">
+                <h2 className="text-xl md:text-2xl font-bold mb-6 md:mb-8">Browse Categories</h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
                   {MAIN_CATEGORIES.map((cat) => (
-                    <Link key={cat.name} href={`/search/${encodeURIComponent(cat.name.toLowerCase().replace(/ & /g, "-").replace(/ /g, "-"))}`} className={`group relative h-40 rounded-2xl overflow-hidden border border-white/10 block`}>
+                    <Link key={cat.name} href={`/search/${encodeURIComponent(cat.name.toLowerCase().replace(/ & /g, "-").replace(/ /g, "-"))}`} className={`group relative h-28 md:h-40 rounded-2xl overflow-hidden border border-white/10 block`}>
                       <img src={cat.image} alt={cat.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                       <div className={`absolute inset-0 ${cat.color} mix-blend-multiply opacity-80 group-hover:opacity-60 transition-opacity`} />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                      <div className="absolute bottom-0 left-0 p-6 flex items-center justify-between w-full">
-                        <h3 className="text-2xl font-black text-white drop-shadow-lg">{cat.name}</h3>
-                        <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-4 group-hover:translate-x-0">
-                          <ChevronRight size={20} className="text-white" />
+                      <div className="absolute bottom-0 left-0 p-3 md:p-6 flex items-center justify-between w-full">
+                        <h3 className="text-lg md:text-2xl font-black text-white drop-shadow-lg">{cat.name}</h3>
+                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-4 group-hover:translate-x-0">
+                          <ChevronRight size={16} className="text-white" />
                         </div>
                       </div>
                     </Link>
@@ -376,22 +275,22 @@ export default function SearchPage() {
 
               <div className="w-full h-px bg-white/5" />
 
-              {/* 4. TRENDING DOCUMENTARIES */}
+              {/* 4. TRENDING DOCUMENTARIES (Responsive Columns) */}
               {trendingDocs.length > 0 && (
                 <section>
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold">Trending Documentaries</h2>
-                    <button className="text-sm font-bold text-white/50 hover:text-white transition">View All</button>
+                  <div className="flex items-center justify-between mb-4 md:mb-6">
+                    <h2 className="text-xl md:text-2xl font-bold">Trending Documentaries</h2>
+                    <button className="text-xs md:text-sm font-bold text-white/50 hover:text-white transition">View All</button>
                   </div>
-                  <div className="grid grid-cols-6 gap-6">
+                  <div className="grid grid-cols-3 md:grid-cols-6 gap-3 md:gap-6">
                     {trendingDocs.map((v) => (
                       <Link key={v.id} href={`/watch/${v.id}`} className="group flex flex-col">
-                        <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-[#1c1c1e] mb-3 border border-white/5 shadow-lg">
+                        <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-[#1c1c1e] mb-2 md:mb-3 border border-white/5 shadow-lg">
                           <img src={v.posterUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
                           <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition" />
                         </div>
-                        <h3 className="text-sm font-bold text-white leading-tight line-clamp-2 group-hover:text-[#E53945] transition-colors">{v.title}</h3>
-                        <p className="text-xs text-white/50 mt-1">{v.year}</p>
+                        <h3 className="text-xs md:text-sm font-bold text-white leading-tight line-clamp-2 group-hover:text-[#E53945] transition-colors">{v.title}</h3>
+                        <p className="text-[10px] md:text-xs text-white/50 mt-1">{v.year}</p>
                       </Link>
                     ))}
                   </div>
@@ -400,22 +299,22 @@ export default function SearchPage() {
 
               <div className="w-full h-px bg-white/5" />
 
-              {/* 5. POPULAR PODCASTS */}
+              {/* 5. POPULAR PODCASTS (Responsive Columns) */}
               {popularPodcasts.length > 0 && (
                 <section>
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold">Popular Podcasts</h2>
-                    <button className="text-sm font-bold text-white/50 hover:text-white transition">View All</button>
+                  <div className="flex items-center justify-between mb-4 md:mb-6">
+                    <h2 className="text-xl md:text-2xl font-bold">Popular Podcasts</h2>
+                    <button className="text-xs md:text-sm font-bold text-white/50 hover:text-white transition">View All</button>
                   </div>
-                  <div className="grid grid-cols-5 gap-6">
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-6">
                     {popularPodcasts.map((v) => (
                       <Link key={v.id} href={`/watch/${v.id}`} className="group flex flex-col bg-[#1c1c1e] rounded-2xl overflow-hidden border border-white/5 hover:border-white/20 transition-all hover:-translate-y-1">
                         <div className="relative aspect-square overflow-hidden bg-[#09090B]">
                           <img src={v.posterUrl || v.backdropUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
                         </div>
-                        <div className="p-4">
-                          <h3 className="text-base font-bold text-white leading-tight line-clamp-1 group-hover:text-[#E53945] transition-colors">{v.title}</h3>
-                          <p className="text-xs text-white/50 mt-2">{v.type} • {v.category}</p>
+                        <div className="p-3 md:p-4">
+                          <h3 className="text-sm md:text-base font-bold text-white leading-tight line-clamp-1 group-hover:text-[#E53945] transition-colors">{v.title}</h3>
+                          <p className="text-[10px] md:text-xs text-white/50 mt-1 md:mt-2">{v.type} • {v.category}</p>
                         </div>
                       </Link>
                     ))}
@@ -425,23 +324,23 @@ export default function SearchPage() {
 
               <div className="w-full h-px bg-white/5" />
 
-              {/* 6. POPULAR CREATORS */}
+              {/* 6. POPULAR CREATORS (Responsive Columns) */}
               {popularCreators.length > 0 && (
                 <section>
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold">Popular Creators</h2>
-                    <button className="text-sm font-bold text-white/50 hover:text-white transition">View All</button>
+                  <div className="flex items-center justify-between mb-4 md:mb-6">
+                    <h2 className="text-xl md:text-2xl font-bold">Popular Creators</h2>
+                    <button className="text-xs md:text-sm font-bold text-white/50 hover:text-white transition">View All</button>
                   </div>
-                  <div className="grid grid-cols-8 gap-4">
+                  <div className="grid grid-cols-4 md:grid-cols-8 gap-3 md:gap-4">
                     {popularCreators.map((c) => (
                       <Link key={c.user_id} href={`/profile/${c.username}`} className="flex flex-col items-center text-center group">
-                        <div className="w-24 h-24 rounded-full p-[2px] bg-[#E53945] group-hover:scale-105 transition-transform mb-3">
+                        <div className="w-16 h-16 md:w-24 md:h-24 rounded-full p-[2px] bg-[#E53945] group-hover:scale-105 transition-transform mb-2 md:mb-3">
                           <div className="w-full h-full rounded-full border-2 border-[#09090B] overflow-hidden bg-[#1c1c1e]">
-                            {c.avatar_url ? <img src={c.avatar_url} alt={c.display_name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-white">{c.display_name?.[0]?.toUpperCase() || "?"}</div>}
+                            {c.avatar_url ? <img src={c.avatar_url} alt={c.display_name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-lg md:text-2xl font-bold text-white">{c.display_name?.[0]?.toUpperCase() || "?"}</div>}
                           </div>
                         </div>
-                        <h3 className="text-sm font-bold text-white group-hover:text-[#E53945] transition-colors truncate w-full">{c.display_name || c.username}</h3>
-                        <p className="text-xs text-white/50 mt-1">Creator</p>
+                        <h3 className="text-xs md:text-sm font-bold text-white group-hover:text-[#E53945] transition-colors truncate w-full">{c.display_name || c.username}</h3>
+                        <p className="text-[10px] md:text-xs text-white/50 mt-0.5 md:mt-1">Creator</p>
                       </Link>
                     ))}
                   </div>
