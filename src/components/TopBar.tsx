@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, Plus, RefreshCw, Video, Radio, X } from "lucide-react";
+import { Menu, Plus, RefreshCw, Video, Radio, X, Play, MessageSquare } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import UserMenu from "@/components/UserMenu";
 import NotificationBell from "@/components/NotificationBell";
@@ -120,7 +120,7 @@ export default function TopBar({ onMenu }: Props) {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed bottom-0 left-0 right-0 z-[301] bg-[#1c1c1e] rounded-t-3xl border-t border-white/10 p-6 pb-12 lg:max-w-md lg:mx-auto lg:rounded-2xl lg:bottom-10"
+              className="fixed bottom-0 left-0 right-0 z-[301] bg-[#1c1c1e] rounded-t-3xl border-t border-white/10 p-6 pb-12 lg:max-w-md lg:mx-auto lg:rounded-2xl lg:bottom-10 max-h-[85vh] overflow-y-auto"
             >
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-white">Create New</h3>
@@ -128,27 +128,56 @@ export default function TopBar({ onMenu }: Props) {
                   <X size={18} />
                 </button>
               </div>
+              
               <div className="flex flex-col gap-3">
                 <Link 
                   href="/creator-dashboard/upload" 
                   onClick={() => setShowCreateMenu(false)}
                   className="flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-xl transition"
                 >
-                  <div className="w-12 h-12 rounded-full bg-[#E53945]/20 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full bg-[#E53945]/20 flex items-center justify-center flex-shrink-0">
                     <Video className="text-[#E53945]" size={24} />
                   </div>
                   <div>
                     <h4 className="font-bold text-white">Upload Video / Podcast</h4>
-                    <p className="text-xs text-white/50">Publish a new piece of content</p>
+                    <p className="text-xs text-white/50">Publish a new piece of long-form content</p>
+                  </div>
+                </Link>
+
+                <Link 
+                  href="/creator-dashboard/upload?type=short" 
+                  onClick={() => setShowCreateMenu(false)}
+                  className="flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-xl transition"
+                >
+                  <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                    <Play className="text-blue-400" size={24} />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-white">Upload Short</h4>
+                    <p className="text-xs text-white/50">Visible on shorts page and your profile</p>
                   </div>
                 </Link>
                 
+                <Link 
+                  href="/creator-dashboard/upload?type=tweet" 
+                  onClick={() => setShowCreateMenu(false)}
+                  className="flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-xl transition"
+                >
+                  <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                    <MessageSquare className="text-green-400" size={24} />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-white">Add a Tweet</h4>
+                    <p className="text-xs text-white/50">Visible on home feed</p>
+                  </div>
+                </Link>
+
                 <Link 
                   href="/creator-dashboard/live"
                   onClick={() => setShowCreateMenu(false)}
                   className="flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-xl transition"
                 >
-                  <div className="w-12 h-12 rounded-full bg-[#E53945]/20 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full bg-[#E53945]/20 flex items-center justify-center flex-shrink-0">
                     <Radio className="text-[#E53945]" size={24} />
                   </div>
                   <div>
