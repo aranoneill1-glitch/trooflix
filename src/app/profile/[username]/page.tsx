@@ -7,7 +7,6 @@ import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import LivePlayer from "@/components/LivePlayer";
-import LiveChat from "@/components/LiveChat";
 import { createClient } from "@/utils/supabase/client";
 
 export default function PublicProfilePage() {
@@ -68,7 +67,6 @@ export default function PublicProfilePage() {
   if (!profile) return <main className="min-h-screen bg-[#09090B] text-white flex flex-col items-center justify-center px-4"><h1 className="text-2xl font-bold mb-4">User not found</h1><Link href="/" className="bg-[#E53945] text-white font-bold px-8 py-3 rounded-full">Go Home</Link></main>;
 
   const displayName = profile.display_name || "User";
-  // Fallback to $3.99 if the creator hasn't set a custom subscription price
   const subscriptionPrice = profile.subscription_price_cents ? (profile.subscription_price_cents / 100).toFixed(2) : "3.99";
 
   const filteredVideos = videos.filter(v => {
@@ -111,7 +109,6 @@ export default function PublicProfilePage() {
                 {profile.is_live && <span className="bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-sm ml-2 animate-pulse">LIVE</span>}
               </h1>
               
-              {/* FOLLOW BUTTON MOVED HERE */}
               <button className="shrink-0 flex items-center justify-center gap-2 bg-white text-black font-bold px-5 py-1.5 rounded-full hover:bg-gray-200 transition shadow-lg text-sm">
                 <UserPlus size={16} /> Follow
               </button>
