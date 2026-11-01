@@ -37,8 +37,10 @@ function UploadContent() {
   const [showSharePrompt, setShowSharePrompt] = useState(false);
 
   const uploadToR2 = async (file: File) => {
+    console.log("Starting upload for:", file.name, "Size:", file.size, "Type:", file.type);
+    
     if (file.size === 0) {
-      throw new Error("This file shows as 0 bytes. Please try a different file or export from iPhone Files app.");
+      throw new Error("The browser is reading this file as 0 bytes. On iPhone, please export the video to the Files app first, then upload from there.");
     }
 
     // 1. Get the presigned URL
@@ -47,24 +49,39 @@ function UploadContent() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ filename: file.name, contentType: file.type || "video/mp4" }),
     });
+    
+    if (!res.ok) throw new Error("Failed to generate upload URL");
     const { uploadUrl, publicUrl, error } = await res.json();
     if (error) throw new Error(error);
 
-    // 2. Upload using XMLHttpRequest (Solves iOS Safari fetch body-drop bug)
+    // 2. Upload using XMLHttpRequest to handle large files on mobile
     await new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       xhr.open("PUT", uploadUrl, true);
       xhr.setRequestHeader("Content-Type", file.type || "video/mp4");
 
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          resolve(true);
-        } else {
-          reject(new Error(`Upload failed with status ${xhr.status}`));
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percent = Math.round((event.loaded / event.total) * 100);
+          console.log(`Upload progress: ${percent}%`);
         }
       };
 
-      xhr.onerror = () => reject(new Error("Network error during upload. Check R2 CORS settings."));
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          console.log("Upload complete. Response:", xhr.responseText);
+          resolve(true);
+        } else {
+          console.error("Upload failed. Status:", xhr.status, "Response:", xhr.responseText);
+          reject(new Error(`Upload failed with status ${xhr.status}. Check R2 CORS settings.`));
+        }
+      };
+
+      xhr.onerror = () => {
+        console.error("Network error during upload.");
+        reject(new Error("Network error during upload. The file might be too large or CORS is blocking it."));
+      };
+
       xhr.send(file);
     });
 
