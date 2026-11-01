@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { 
   Video, CheckCircle2, MessageSquare, Eye, Star, Pencil, 
-  ShoppingBag, LayoutDashboard, LayoutGrid, List, Package, Palette, Camera, Trash2, X, Radio, Inbox, Plus, Play
+  ShoppingBag, LayoutDashboard, LayoutGrid, List, Package, Palette, Camera, Trash2, X, Radio, Inbox, Plus, Play, Lock
 } from "lucide-react";
 
 import TopBar from "@/components/TopBar";
@@ -14,6 +14,7 @@ import VerifiedBadge from "@/components/VerifiedBadge";
 import { getCachedUser, clearUserCache } from "@/lib/cache";
 import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
+import HomeFeedCard from "@/components/HomeFeedCard";
 
 const MOCK_SUBSCRIBERS = 142;
 
@@ -44,7 +45,7 @@ function CreatorDashboardContent() {
   }, [isPublicView]);
   
   const [contentView, setContentView] = useState<"grid" | "list">("grid");
-  const [activeContentTab, setActiveContentTab] = useState<"All" | "Podcasts" | "Videos" | "Store">("All");
+  const [activeContentTab, setActiveContentTab] = useState<"All" | "Videos" | "Premium" | "Shop">("All");
   const [creatorVideos, setCreatorVideos] = useState<any[]>([]);
   const [merch, setMerch] = useState<any[]>([]);
   const [videosLoading, setVideosLoading] = useState(true);
@@ -148,7 +149,6 @@ function CreatorDashboardContent() {
   const username = profile?.username || "creator";
 
   const filteredVideos = creatorVideos.filter(v => {
-    if (activeContentTab === "Podcasts") return v.type?.toLowerCase().includes("podcast");
     if (activeContentTab === "Videos") return !v.type?.toLowerCase().includes("podcast");
     return true;
   });
@@ -239,7 +239,7 @@ function CreatorDashboardContent() {
 
               <div className="flex items-center justify-between border-b border-white/10 mb-6">
                 <div className="flex items-center gap-8">
-                  {(["All", "Podcasts", "Videos", "Store"] as const).map((tab) => (
+                  {(["All", "Videos", "Premium", "Shop"] as const).map((tab) => (
                     <button key={tab} onClick={() => setActiveContentTab(tab)} className={`pb-3 text-sm font-bold transition-colors ${activeContentTab === tab ? "text-white border-b-2 border-[#E53945]" : "text-white/50 hover:text-white"}`}>{tab}</button>
                   ))}
                 </div>
@@ -249,7 +249,62 @@ function CreatorDashboardContent() {
                 </div>
               </div>
 
-              {activeContentTab === "Store" && (
+              {activeContentTab === "All" && (
+                <div className="w-full">
+                  {videosLoading ? (
+                    <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" /></div>
+                  ) : creatorVideos.length === 0 ? (
+                    <div className="text-center py-20 text-white/50">No posts yet.</div>
+                  ) : (
+                    <div className="flex flex-col gap-6 pb-20">
+                      {creatorVideos.map((v) => (
+                        <HomeFeedCard 
+                          key={v.id} 
+                          video={v} 
+                          creator={profile} 
+                          onMore={() => {}} 
+                          onPlay={() => {}} 
+                          isActive={false} 
+                          onSetActive={() => {}} 
+                          onOpenComments={() => {}} 
+                          isLiked={false} 
+                          onToggleLike={() => {}} 
+                          hideCreatorInfo={true}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeContentTab === "Premium" && (
+                <div className="w-full">
+                  {creatorVideos.length === 0 ? (
+                    <div className="text-center py-20 text-white/50">No premium content yet.</div>
+                  ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {creatorVideos.map((video) => (
+                        <div key={video.id} className="bg-[#1c1c1e] border border-white/5 rounded-2xl overflow-hidden group cursor-pointer relative shadow-lg">
+                          <div className="relative aspect-[3/4] md:aspect-square">
+                            <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-60" />
+                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/30 backdrop-blur-md border border-white/10 m-2 rounded-xl">
+                              <div className="w-10 h-10 rounded-full bg-[#E53945]/20 flex items-center justify-center mb-2 shadow-[0_0_15px_rgba(229,57,69,0.4)]">
+                                <Lock size={18} className="text-[#E53945]" />
+                              </div>
+                              <span className="text-[10px] font-black text-white uppercase tracking-widest drop-shadow-md">Premium</span>
+                            </div>
+                          </div>
+                          <div className="p-3 text-left">
+                            <h3 className="text-sm font-bold leading-tight line-clamp-1 text-white/70">{video.title}</h3>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeContentTab === "Shop" && (
                 <div className="w-full">
                   {merch.length === 0 ? (
                     <div className="text-center py-12 bg-[#1c1c1e] border border-white/5 rounded-2xl"><ShoppingBag size={32} className="mx-auto text-white/20 mb-3" /><p className="text-white/50 text-sm">No products available yet.</p></div>
@@ -276,7 +331,7 @@ function CreatorDashboardContent() {
                 </div>
               )}
 
-              {activeContentTab !== "Store" && (
+              {activeContentTab === "Videos" && (
                 <div className="w-full">
                   {videosLoading ? (
                     <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" /></div>
