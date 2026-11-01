@@ -233,7 +233,7 @@ export default function Home() {
       {/* Subtle ambient background gradient */}
       <div className="absolute top-0 left-0 w-full h-[60vh] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/[0.05] via-transparent to-transparent pointer-events-none z-0" />
       
-      <div className="relative z-[100]"><TopBar onMenu={() => setDrawerOpen(true)} /></div>
+      <div className="relative z-[100]"><TopBar /></div>
       
       <AnimatePresence>
         {drawerOpen && (
@@ -319,7 +319,7 @@ export default function Home() {
                 {creators && creators.length > 0 && (
                   <div className="flex gap-4 overflow-x-auto scrollbar-hide px-4 pb-4 pt-2 relative z-20 mx-4 mb-4 rounded-2xl bg-white/[0.02] border border-white/[0.05] backdrop-blur-md">
                     {[...creators].slice(0, 15).map((c: any) => (
-                      <Link key={c.id} href={`/podcaster/${c.slug}`} className="flex flex-col items-center text-center flex-shrink-0 group w-[96px]">
+                      <Link key={c.id} href={`/profile/${c.slug}`} className="flex flex-col items-center text-center flex-shrink-0 group w-[96px]">
                         <div className="w-20 h-20 rounded-full p-[2px] bg-[#E53945] group-hover:scale-105 transition-transform mb-2">
                           <div className="w-full h-full rounded-full border-2 border-black overflow-hidden bg-[#1c1c1e]">
                             {c.photoUrl ? <img src={c.photoUrl} alt={c.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xl font-bold text-white">{c.name?.[0]?.toUpperCase() || "?"}</div>}
@@ -376,7 +376,7 @@ export default function Home() {
                 {creators && creators.length > 0 && (
                   <div className="max-w-[1600px] mx-auto px-12 pb-6 grid grid-cols-6 xl:grid-cols-8 gap-4">
                     {[...creators].slice(0, 8).map((c: any) => (
-                      <Link key={c.id} href={`/podcaster/${c.slug}`} className="flex flex-col items-center text-center group cursor-pointer">
+                      <Link key={c.id} href={`/profile/${c.slug}`} className="flex flex-col items-center text-center group cursor-pointer">
                         <div className="w-24 h-24 rounded-full p-[2px] bg-[#E53945] group-hover:scale-105 transition-transform mb-3">
                           <div className="w-full h-full rounded-full border-2 border-black overflow-hidden bg-[#1c1c1e]">
                             {c.photoUrl ? <img src={c.photoUrl} alt={c.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xl font-bold text-white">{c.name?.[0]?.toUpperCase() || "?"}</div>}
