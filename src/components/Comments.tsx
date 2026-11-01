@@ -292,7 +292,7 @@ export default function Comments({ videoId, onMetaChange }: { videoId: number, o
       {user ? (
         <form
           onSubmit={(e) => submit(e)}
-          className="sticky bottom-0 bg-[#0f0f12] border-t border-white/10 pt-2.5 pb-3 md:pt-3 md:pb-4 -mx-2 px-2 mt-auto"
+          className="sticky bottom-0 bg-black/40 backdrop-blur-xl border-t border-white/10 pt-2.5 pb-3 md:pt-3 md:pb-4 -mx-2 px-2 mt-auto"
         >
           <div className="flex items-end gap-2.5">
             <div
@@ -305,7 +305,7 @@ export default function Comments({ videoId, onMetaChange }: { videoId: number, o
                 initial(user.email)
               )}
             </div>
-            <div className="flex-1 flex items-center gap-2 bg-white/5 border border-white/10 rounded-full pl-3 md:pl-4 pr-2 py-1.5 md:py-2 focus-within:border-white/25 transition">
+            <div className="flex-1 flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full pl-3 md:pl-4 pr-2 py-1.5 md:py-2 focus-within:border-white/40 transition shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
               <textarea
                 value={text}
                 onChange={(e) => setText(e.target.value)}
