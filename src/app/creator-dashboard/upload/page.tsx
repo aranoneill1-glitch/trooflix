@@ -38,12 +38,10 @@ function UploadContent() {
 
   const uploadToR2 = async (file: File) => {
     if (file.size === 0) {
-      throw new Error(
-        "This file shows as 0 bytes. On iPhone, videos selected from the Photos app sometimes fail to load. " +
-        "Please try: 1) Export the video to the Files app first, or 2) Go to Settings > Photos > Download and Keep Originals."
-      );
+      throw new Error("This file shows as 0 bytes. Please try a different file or export from iPhone Files app.");
     }
 
+    // 1. Get the presigned URL
     const res = await fetch("/api/r2-upload", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -52,12 +50,23 @@ function UploadContent() {
     const { uploadUrl, publicUrl, error } = await res.json();
     if (error) throw new Error(error);
 
-    const uploadRes = await fetch(uploadUrl, {
-      method: "PUT",
-      body: file,
-      headers: { "Content-Type": file.type || "video/mp4" },
+    // 2. Upload using XMLHttpRequest (Solves iOS Safari fetch body-drop bug)
+    await new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("PUT", uploadUrl, true);
+      xhr.setRequestHeader("Content-Type", file.type || "video/mp4");
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve(true);
+        } else {
+          reject(new Error(`Upload failed with status ${xhr.status}`));
+        }
+      };
+
+      xhr.onerror = () => reject(new Error("Network error during upload. Check R2 CORS settings."));
+      xhr.send(file);
     });
-    if (!uploadRes.ok) throw new Error("Failed to upload to R2");
 
     return publicUrl;
   };
