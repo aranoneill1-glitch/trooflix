@@ -223,7 +223,7 @@ export default function Home() {
   return (
     <>
     <PullToRefresh onRefresh={async () => { window.location.reload(); }}>
-    <main className="min-h-screen bg-black text-white overflow-x-hidden pb-20 lg:pb-0">
+    <main className="min-h-screen bg-[#09090B] text-white overflow-x-hidden pb-20 lg:pb-0 relative">
       <div className="relative z-[100]"><div className="relative z-[100]"><div className="relative z-[100]"><TopBar onMenu={() => setDrawerOpen(true)} /></div></div></div>
       
       <AnimatePresence>
