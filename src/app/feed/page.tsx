@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import { Volume2, VolumeX, Heart, MessageCircle, Play, Pause } from "lucide-react";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import CommentSheet from "@/components/CommentSheet";
 
 type Video = {
   id: number;
@@ -31,6 +32,7 @@ export default function ShortsFeedPage() {
   const [creators, setCreators] = useState<Creator[]>([]);
   const [loading, setLoading] = useState(true);
   const [mutedVideos, setMutedVideos] = useState<Record<number, boolean>>({});
+  const [commentSheetVideoId, setCommentSheetVideoId] = useState<number | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -66,6 +68,7 @@ export default function ShortsFeedPage() {
             creator={creator}
             isMuted={mutedVideos[video.id] ?? true}
             onToggleMute={() => toggleMute(video.id, mutedVideos[video.id] ?? true)}
+            onOpenComments={() => setCommentSheetVideoId(video.id)}
           />
         );
       })}
@@ -77,12 +80,18 @@ export default function ShortsFeedPage() {
         </div>
       )}
 
+      <CommentSheet
+        videoId={commentSheetVideoId}
+        open={commentSheetVideoId !== null}
+        onClose={() => setCommentSheetVideoId(null)}
+      />
+
       <MobileBottomNav />
     </main>
   );
 }
 
-function VideoShort({ video, creator, isMuted, onToggleMute }: { video: Video, creator: Creator | null, isMuted: boolean, onToggleMute: () => void }) {
+function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: { video: Video, creator: Creator | null, isMuted: boolean, onToggleMute: () => void, onOpenComments: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -216,7 +225,7 @@ function VideoShort({ video, creator, isMuted, onToggleMute }: { video: Video, c
         </button>
 
         {/* Comment */}
-        <button className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/60 transition">
+        <button onClick={onOpenComments} className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/60 transition">
           <MessageCircle size={24} />
         </button>
 
