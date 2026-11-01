@@ -1,45 +1,164 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { ArrowRight, Play, Sparkles, Video, Check, Crown, Lock } from "lucide-react";
+import { Play, Sparkles, Video, Check, Crown, Clock, Users, List, Heart, History, Mic, FolderHeart, Download, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getCachedUser } from "@/lib/cache";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import AppleVideoPlayer from "@/components/AppleVideoPlayer";
+import { getAllProgress } from "@/lib/progress";
+import { createClient } from "@/utils/supabase/client";
+
+type Video = {
+  id: number;
+  title: string;
+  description: string;
+  category: string;
+  type: string;
+  videoUrl?: string;
+  bitchuteUrl?: string;
+  posterUrl: string;
+  backdropUrl: string;
+  year: number;
+  rating: string;
+  duration: string;
+  creatorId?: number | null;
+  progressSeconds?: number;
+  progressDuration?: number;
+  chapters?: any[];
+  textOverlays?: any[];
+};
 
 export default function PlusPage() {
   const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"viewer" | "creator">("viewer");
   
   // Dashboard State
-  const [videos, setVideos] = useState<any[]>([]);
+  const [videos, setVideos] = useState<Video[]>([]);
   const [creators, setCreators] = useState<any[]>([]);
+  const [followedCreatorIds, setFollowedCreatorIds] = useState<number[]>([]);
+  const [progressList, setProgressList] = useState<any[]>([]);
+  const [watchlistCount, setWatchlistCount] = useState(0);
   const [dashboardLoading, setDashboardLoading] = useState(true);
+  const [playing, setPlaying] = useState<Video | null>(null);
 
   useEffect(() => {
-    getCachedUser().then((u) => {
+    getCachedUser().then(async (u) => {
       setUser(u);
       setLoading(false);
       
       if (u) {
+        // Fetch profile for tier/avatar
+        const supabase = createClient();
+        const { data: prof } = await supabase.from("profiles").select("*").eq("user_id", u.id).single();
+        if (prof) setProfile(prof);
+
         // Fetch content for the logged-in dashboard
         Promise.all([
           fetch("/api/videos", { cache: "no-store" }).then(r => r.json()),
-          fetch("/api/creators", { cache: "no-store" }).then(r => r.json()).catch(() => [])
-        ]).then(([vData, cData]) => {
+          fetch("/api/creators", { cache: "no-store" }).then(r => r.json()).catch(() => []),
+          fetch(`/api/follows?user_id=${u.id}`, { cache: "no-store" }).then(r => r.json()).catch(() => ({ ids: [] })),
+        ]).then(([vData, cData, fData]) => {
           setVideos(Array.isArray(vData) ? vData : []);
           setCreators(Array.isArray(cData) ? cData : []);
+          setFollowedCreatorIds(Array.isArray(fData.ids) ? fData.ids : []);
+          setProgressList(getAllProgress());
+          
+          // Count watchlist
+          try {
+            const ml = localStorage.getItem("trooflix:mylist");
+            if (ml) {
+              const arr = JSON.parse(ml);
+              setWatchlistCount(Array.isArray(arr) ? arr.length : 0);
+            }
+          } catch (e) {}
+          
           setDashboardLoading(false);
         }).catch(() => setDashboardLoading(false));
       }
     });
   }, []);
 
+  // Derived Data
+  type VideoWithProgress = Video & { progressSeconds: number; progressDuration: number };
+
+  const continueWatching = useMemo<VideoWithProgress[]>(() => {
+    const items: VideoWithProgress[] = [];
+    for (const p of progressList) {
+      const video = videos.find((v) => v.id === p.id);
+      if (!video) continue;
+      const seconds = Number(p.seconds) || 0;
+      const duration = Number(p.duration) || 0;
+      if (seconds > 0 && duration > 0 && seconds / duration < 0.95) {
+        items.push({ ...video, progressSeconds: seconds, progressDuration: duration });
+      }
+    }
+    items.sort((a, b) => b.progressSeconds - a.progressSeconds);
+    return items.slice(0, 10);
+  }, [progressList, videos]);
+
+  const followedCreators = useMemo(() => {
+    return creators.filter(c => followedCreatorIds.includes(c.id));
+  }, [creators, followedCreatorIds]);
+
+  const topCategory = useMemo(() => {
+    if (progressList.length === 0) return "History";
+    const catCounts: Record<string, number> = {};
+    progressList.forEach(p => {
+      const v = videos.find(x => x.id === p.id);
+      if (v && v.category) catCounts[v.category] = (catCounts[v.category] || 0) + 1;
+    });
+    const sorted = Object.entries(catCounts).sort((a, b) => b[1] - a[1]);
+    return sorted.length > 0 ? sorted[0][0] : "History";
+  }, [progressList, videos]);
+
+  const becauseYouWatched = useMemo(() => {
+    return videos.filter(v => v.category === topCategory && !continueWatching.some(cw => cw.id === v.id)).slice(0, 10);
+  }, [videos, topCategory, continueWatching]);
+
+  const fromCreatorsYouFollow = useMemo(() => {
+    return videos.filter(v => v.creatorId && followedCreatorIds.includes(v.creatorId)).slice(0, 10);
+  }, [videos, followedCreatorIds]);
+
+  const weeklyPicks = useMemo(() => {
+    return [...videos].sort((a, b) => b.id - a.id).slice(0, 10);
+  }, [videos]);
+
+  const totalHours = useMemo(() => {
+    const secs = progressList.reduce((acc, p) => acc + (p.seconds || 0), 0);
+    return (secs / 3600).toFixed(1);
+  }, [progressList]);
+
+  const videosCompleted = useMemo(() => {
+    return progressList.filter(p => p.seconds && p.duration && p.seconds / p.duration > 0.95).length;
+  }, [progressList]);
+
+  const categoriesExplored = useMemo(() => {
+    const cats = new Set<string>();
+    progressList.forEach(p => {
+      const v = videos.find(x => x.id === p.id);
+      if (v && v.category) cats.add(v.category);
+    });
+    return cats.size;
+  }, [progressList, videos]);
+
+  const getGreeting = () => {
+    const hr = new Date().getHours();
+    if (hr < 12) return "Good morning";
+    if (hr < 18) return "Good afternoon";
+    return "Good evening";
+  };
+
+  const isPremium = profile?.has_pass || profile?.tier === 'pro' || profile?.tier === 'creator';
+  const displayName = profile?.display_name || user?.user_metadata?.display_name || user?.email?.split('@')[0] || "Member";
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+      <div className="min-h-screen bg-[#0a0303] flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" />
       </div>
     );
@@ -49,143 +168,268 @@ export default function PlusPage() {
   // LOGGED IN: VIP PREMIUM DASHBOARD
   // ==========================================
   if (user) {
-    const heroVideo = videos[0];
-    const exclusiveVideos = videos.slice(0, 10);
-    const continueWatching = videos.slice(2, 8);
-
     return (
-      <main className="min-h-screen bg-[#0a0a0a] text-white pb-32 font-sans selection:bg-[#E53945]/30">
-        <TopBar />
+      <main className="min-h-screen bg-[#0a0303] text-white pb-32 font-sans selection:bg-[#E53945]/30">
+        <div className="relative z-[100]"><TopBar onMenu={() => {}} /></div>
 
         {dashboardLoading ? (
           <div className="flex justify-center py-40">
             <div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" />
           </div>
         ) : (
-          <>
-            {/* PERSONALIZED VIP GREETING */}
-            <div className="relative z-20 max-w-4xl mx-auto px-6 md:px-12 pt-28 pb-8">
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8 }}
-              >
-                <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-2 uppercase">
-                  Welcome to the Inner Circle
-                </p>
-                <h1 className="text-3xl md:text-5xl font-black tracking-tight text-white mb-2">
-                  Hey, {user.user_metadata?.display_name || user.email?.split('@')[0] || "Member"}.
-                </h1>
-                <p className="text-sm md:text-base text-white/50 font-medium">
-                  You're in. Enjoy unlimited, ad-free access to the rawest content on the internet.
-                </p>
-              </motion.div>
-            </div>
-
-            {/* CINEMATIC HERO */}
-            {heroVideo && (
-              <div className="relative w-full h-[60vh] md:h-[70vh]">
-                <img 
-                  src={heroVideo.backdropUrl || heroVideo.posterUrl} 
-                  alt={heroVideo.title} 
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/40 to-black/60" />
-                <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a]/90 via-transparent to-transparent" />
-                
-                <div className="absolute bottom-0 left-0 right-0 p-6 md:p-12 max-w-4xl">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Crown size={16} className="text-[#E53945]" />
-                    <span className="text-[10px] md:text-xs tracking-[0.3em] text-[#E53945] font-bold uppercase">Exclusive Plus Premiere</span>
+          <div className="max-w-7xl mx-auto px-5 md:px-12 pt-24 md:pt-28 space-y-10">
+            
+            {/* A. PERSONAL WELCOME */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              className="relative overflow-hidden rounded-3xl bg-white/[0.03] backdrop-blur-xl border border-white/10 p-6 md:p-8 shadow-2xl"
+            >
+              <div className="absolute top-0 right-0 w-64 h-64 bg-[#E53945]/10 rounded-full blur-[80px] pointer-events-none" />
+              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 md:w-20 md:h-20 rounded-full border-2 border-[#D4AF37] p-[2px] bg-[#1c1c1e] shrink-0">
+                    {profile?.avatar_url ? (
+                      <img src={profile.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full rounded-full flex items-center justify-center text-2xl font-black text-[#D4AF37]">
+                        {displayName.charAt(0).toUpperCase()}
+                      </div>
+                    )}
                   </div>
-                  <h1 className="text-4xl md:text-6xl font-black tracking-tight mb-4 leading-[1.05]">
-                    {heroVideo.title}
-                  </h1>
-                  <p className="text-sm md:text-base text-white/60 max-w-xl line-clamp-2 mb-6">
-                    {heroVideo.description || "Welcome to the inner circle. Watch this exclusive premiere before anyone else."}
-                  </p>
-                  <Link href={`/watch/${heroVideo.id}`} className="inline-flex items-center gap-2 bg-white text-black font-bold px-8 py-3.5 rounded-xl hover:scale-105 transition shadow-[0_0_30px_rgba(255,255,255,0.2)]">
-                    <Play size={20} fill="black" /> Play Now
-                  </Link>
+                  <div>
+                    <p className="text-[10px] tracking-[0.3em] text-white/50 font-bold uppercase mb-1">
+                      {isPremium ? "Premium Member" : "Free Member"}
+                    </p>
+                    <h1 className="text-2xl md:text-3xl font-black tracking-tight text-white mb-1">
+                      {getGreeting()}, {displayName}.
+                    </h1>
+                    <p className="text-sm text-white/60">
+                      Your Trooflix. Your World.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2 md:gap-3">
+                  {isPremium ? (
+                    <div className="flex items-center gap-2 bg-[#D4AF37]/15 border border-[#D4AF37]/40 rounded-full px-4 py-2">
+                      <Crown size={14} className="text-[#D4AF37]" />
+                      <span className="text-xs font-bold text-[#D4AF37] tracking-wide">PREMIUM</span>
+                    </div>
+                  ) : (
+                    <Link href="/upgrade" className="flex items-center gap-2 bg-[#E53945] hover:bg-[#d12e39] rounded-full px-4 py-2 transition">
+                      <Sparkles size={14} className="text-white" />
+                      <span className="text-xs font-bold text-white tracking-wide">UPGRADE TO TROOPASS</span>
+                    </Link>
+                  )}
                 </div>
               </div>
-            )}
 
-            {/* CONTENT ROWS */}
-            <div className="relative z-10 mt-8 space-y-10">
-              
-              {/* Row 1: Plus Exclusives */}
-              <section>
-                <div className="flex items-center justify-between px-6 md:px-12 mb-4">
-                  <h2 className="text-xl md:text-2xl font-bold flex items-center gap-2">
-                    <Sparkles className="text-[#E53945]" size={20} /> Plus Exclusives
-                  </h2>
+              {/* Stat Pills */}
+              <div className="relative z-10 flex flex-wrap gap-2 md:gap-3 mt-6">
+                <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-2">
+                  <Clock size={14} className="text-[#E53945]" />
+                  <span className="text-xs font-semibold text-white/90">{totalHours}h watched</span>
                 </div>
-                <div className="flex gap-4 overflow-x-auto scrollbar-hide px-6 md:px-12 pb-4">
-                  {exclusiveVideos.map((v) => (
-                    <Link key={v.id} href={`/watch/${v.id}`} className="flex-shrink-0 w-[240px] md:w-[320px] group">
-                      <div className="relative aspect-video rounded-xl overflow-hidden border border-[#E53945]/30 shadow-[0_0_20px_rgba(229,57,69,0.15)] group-hover:border-[#E53945] transition-colors mb-2">
-                        <img src={v.posterUrl || v.backdropUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                        <div className="absolute top-2 left-2 bg-[#E53945] text-white text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-sm flex items-center gap-1">
-                          <Crown size={10} /> Plus
-                        </div>
-                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30">
-                            <Play size={20} fill="white" />
+                <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-2">
+                  <Users size={14} className="text-[#E53945]" />
+                  <span className="text-xs font-semibold text-white/90">{followedCreatorIds.length} creators</span>
+                </div>
+                <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-2">
+                  <List size={14} className="text-[#E53945]" />
+                  <span className="text-xs font-semibold text-white/90">{watchlistCount} in list</span>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* B. CONTINUE WATCHING */}
+            {continueWatching.length > 0 && (
+              <section>
+                <div className="flex items-center gap-2 mb-4">
+                  <h2 className="text-xl md:text-2xl font-black tracking-tight">Continue Watching</h2>
+                  <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent ml-2" />
+                </div>
+                <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
+                  {continueWatching.map((v) => {
+                    const progress = v.progressDuration ? Math.min((v.progressSeconds! / v.progressDuration) * 100, 100) : 0;
+                    const remaining = Math.max(0, (v.progressDuration || 0) - (v.progressSeconds || 0));
+                    const mins = Math.floor(remaining / 60);
+                    return (
+                      <div 
+                        key={v.id}
+                        onClick={() => setPlaying(v)}
+                        className="flex-shrink-0 w-[220px] md:w-[280px] group cursor-pointer"
+                      >
+                        <div className="relative aspect-video rounded-xl overflow-hidden bg-[#1c1c1e] mb-2 border border-white/5 shadow-lg">
+                          <img src={v.posterUrl || v.backdropUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center shadow-xl">
+                              <Play size={18} fill="black" className="text-black ml-0.5" />
+                            </div>
+                          </div>
+                          <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
+                            <div className="h-full bg-[#E53945]" style={{ width: `${progress}%` }} />
                           </div>
                         </div>
+                        <h3 className="text-sm font-bold text-white leading-tight line-clamp-1 group-hover:text-[#E53945] transition">{v.title}</h3>
+                        <p className="text-[11px] text-white/40 mt-0.5">{mins} min left</p>
                       </div>
-                      <h3 className="text-sm font-bold text-white leading-tight line-clamp-1 group-hover:text-[#E53945] transition">{v.title}</h3>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
+            {/* C. MADE FOR YOU */}
+            <section className="space-y-8">
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl md:text-2xl font-black tracking-tight">Made For You</h2>
+                <Sparkles size={18} className="text-[#D4AF37]" />
+                <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent ml-2" />
+              </div>
+
+              {becauseYouWatched.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-bold text-white/60 mb-3 uppercase tracking-wider">Because you watched {topCategory}</h3>
+                  <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
+                    {becauseYouWatched.map((v) => (
+                      <div key={v.id} onClick={() => setPlaying(v)} className="flex-shrink-0 w-[140px] md:w-[180px] group cursor-pointer">
+                        <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-[#1c1c1e] mb-2">
+                          <img src={v.posterUrl || v.backdropUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        </div>
+                        <h4 className="text-xs font-bold text-white leading-tight line-clamp-2 group-hover:text-[#E53945] transition">{v.title}</h4>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {fromCreatorsYouFollow.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-bold text-white/60 mb-3 uppercase tracking-wider">From creators you follow</h3>
+                  <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
+                    {fromCreatorsYouFollow.map((v) => (
+                      <div key={v.id} onClick={() => setPlaying(v)} className="flex-shrink-0 w-[140px] md:w-[180px] group cursor-pointer">
+                        <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-[#1c1c1e] mb-2">
+                          <img src={v.posterUrl || v.backdropUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        </div>
+                        <h4 className="text-xs font-bold text-white leading-tight line-clamp-2 group-hover:text-[#E53945] transition">{v.title}</h4>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <h3 className="text-sm font-bold text-white/60 mb-3 uppercase tracking-wider">Weekly picks</h3>
+                <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
+                  {weeklyPicks.map((v) => (
+                    <div key={v.id} onClick={() => setPlaying(v)} className="flex-shrink-0 w-[140px] md:w-[180px] group cursor-pointer">
+                      <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-[#1c1c1e] mb-2">
+                        <img src={v.posterUrl || v.backdropUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      </div>
+                      <h4 className="text-xs font-bold text-white leading-tight line-clamp-2 group-hover:text-[#E53945] transition">{v.title}</h4>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            {/* E. YOUR CREATORS */}
+            {followedCreators.length > 0 && (
+              <section>
+                <div className="flex items-center gap-2 mb-4">
+                  <h2 className="text-xl md:text-2xl font-black tracking-tight">Your Creators</h2>
+                  <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent ml-2" />
+                </div>
+                <div className="flex gap-6 overflow-x-auto scrollbar-hide pb-2">
+                  {followedCreators.map((c: any) => (
+                    <Link key={c.id} href={`/podcaster/${c.slug}`} className="flex flex-col items-center gap-2 flex-shrink-0 group w-[80px] md:w-[96px]">
+                      <div className="w-16 h-16 md:w-20 md:h-20 rounded-full p-[2px] bg-gradient-to-br from-[#E53945] to-[#D4AF37] group-hover:scale-105 transition-transform">
+                        <div className="w-full h-full rounded-full border-2 border-[#0a0303] overflow-hidden bg-[#1c1c1e]">
+                          {c.photoUrl ? <img src={c.photoUrl} alt={c.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xl font-bold text-white">{c.name?.[0]}</div>}
+                        </div>
+                      </div>
+                      <span className="text-xs font-semibold text-white/80 group-hover:text-white transition truncate w-full text-center">{c.name}</span>
                     </Link>
                   ))}
                 </div>
               </section>
+            )}
 
-              {/* Row 2: Continue Watching */}
-              {continueWatching.length > 0 && (
-                <section>
-                  <div className="flex items-center justify-between px-6 md:px-12 mb-4">
-                    <h2 className="text-xl md:text-2xl font-bold">Continue Watching</h2>
-                  </div>
-                  <div className="flex gap-4 overflow-x-auto scrollbar-hide px-6 md:px-12 pb-4">
-                    {continueWatching.map((v) => (
-                      <Link key={v.id} href={`/watch/${v.id}`} className="flex-shrink-0 w-[200px] md:w-[260px] group">
-                        <div className="relative aspect-video rounded-xl overflow-hidden bg-[#1c1c1e] mb-2">
-                          <img src={v.posterUrl || v.backdropUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                          <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
-                            <div className="h-full bg-[#E53945]" style={{ width: '45%' }} />
-                          </div>
-                        </div>
-                        <h3 className="text-sm font-bold text-white leading-tight line-clamp-1 group-hover:text-white/70 transition">{v.title}</h3>
-                      </Link>
-                    ))}
-                  </div>
-                </section>
-              )}
+            {/* D. YOUR LIBRARY */}
+            <section>
+              <div className="flex items-center gap-2 mb-4">
+                <h2 className="text-xl md:text-2xl font-black tracking-tight">Your Library</h2>
+                <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent ml-2" />
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {[
+                  { name: "Watchlist", icon: List, href: "/my-list", count: watchlistCount },
+                  { name: "Favourites", icon: Heart, href: "/my-list?tab=favourites", count: null },
+                  { name: "History", icon: History, href: "/my-list?tab=history", count: progressList.length },
+                  { name: "Saved Podcasts", icon: Mic, href: "/podcasts", count: null },
+                  { name: "Collections", icon: FolderHeart, href: "/collections", count: null },
+                  { name: "Downloads", icon: Download, href: "#", count: null, badge: "App only" },
+                ].map((tile) => (
+                  <Link
+                    key={tile.name}
+                    href={tile.href}
+                    className="relative flex flex-col justify-between p-4 md:p-5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] backdrop-blur-xl border border-white/10 transition group overflow-hidden"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <tile.icon size={22} className="text-[#E53945]" />
+                      {tile.count !== null && tile.count !== undefined && tile.count > 0 && (
+                        <span className="text-[10px] font-bold bg-white/10 px-2 py-0.5 rounded-full text-white/70">{tile.count}</span>
+                      )}
+                      {tile.badge && (
+                        <span className="text-[9px] font-bold bg-[#D4AF37]/20 text-[#D4AF37] px-2 py-0.5 rounded-full uppercase tracking-wide">{tile.badge}</span>
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="text-sm md:text-base font-bold text-white group-hover:text-[#E53945] transition">{tile.name}</h3>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </section>
 
-              {/* Row 3: Creators You Support */}
-              {creators.length > 0 && (
-                <section className="pb-10">
-                  <div className="flex items-center justify-between px-6 md:px-12 mb-4">
-                    <h2 className="text-xl md:text-2xl font-bold">Creators You Support</h2>
-                  </div>
-                  <div className="flex gap-6 overflow-x-auto scrollbar-hide px-6 md:px-12 pb-4">
-                    {creators.slice(0, 10).map((c: any) => (
-                      <Link key={c.id} href={`/podcaster/${c.slug}`} className="flex flex-col items-center gap-2 flex-shrink-0 group w-[80px] md:w-[96px]">
-                        <div className="w-16 h-16 md:w-20 md:h-20 rounded-full p-[2px] bg-[#E53945] group-hover:scale-105 transition-transform">
-                          <div className="w-full h-full rounded-full border-2 border-[#0a0a0a] overflow-hidden bg-[#1c1c1e]">
-                            {c.photoUrl ? <img src={c.photoUrl} alt={c.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xl font-bold text-white">{c.name?.[0]}</div>}
-                          </div>
-                        </div>
-                        <span className="text-xs font-semibold text-white/80 group-hover:text-white transition truncate w-full text-center">{c.name}</span>
-                      </Link>
-                    ))}
-                  </div>
-                </section>
-              )}
+            {/* H. YOUR ACTIVITY */}
+            <section className="pb-10">
+              <div className="flex items-center gap-2 mb-4">
+                <h2 className="text-xl md:text-2xl font-black tracking-tight">Your Activity</h2>
+                <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent ml-2" />
+              </div>
+              <div className="grid grid-cols-3 gap-3 md:gap-4">
+                <div className="flex flex-col items-center justify-center p-5 md:p-6 rounded-2xl bg-white/[0.03] backdrop-blur-xl border border-white/10 text-center">
+                  <span className="text-2xl md:text-3xl font-black text-white">{totalHours}</span>
+                  <span className="text-[10px] md:text-xs text-white/50 font-semibold uppercase tracking-wider mt-1">Hours Watched</span>
+                </div>
+                <div className="flex flex-col items-center justify-center p-5 md:p-6 rounded-2xl bg-white/[0.03] backdrop-blur-xl border border-white/10 text-center">
+                  <span className="text-2xl md:text-3xl font-black text-white">{videosCompleted}</span>
+                  <span className="text-[10px] md:text-xs text-white/50 font-semibold uppercase tracking-wider mt-1">Completed</span>
+                </div>
+                <div className="flex flex-col items-center justify-center p-5 md:p-6 rounded-2xl bg-white/[0.03] backdrop-blur-xl border border-white/10 text-center">
+                  <span className="text-2xl md:text-3xl font-black text-white">{categoriesExplored}</span>
+                  <span className="text-[10px] md:text-xs text-white/50 font-semibold uppercase tracking-wider mt-1">Categories</span>
+                </div>
+              </div>
+            </section>
 
-            </div>
-          </>
+          </div>
+        )}
+
+        {/* Inline Video Player */}
+        {playing && (
+          <AppleVideoPlayer
+            src={playing.videoUrl ?? playing.bitchuteUrl ?? ""}
+            title={playing.title}
+            poster={playing.posterUrl}
+            textOverlays={playing.textOverlays}
+            chapters={playing.chapters || []}
+            onClose={() => setPlaying(null)}
+          />
         )}
 
         <MobileBottomNav />
