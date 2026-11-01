@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Search, Home, Play, ShoppingBag } from "lucide-react";
+import { Search, Home, Play, ShoppingBag, Crown } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function MobileBottomNav() {
@@ -36,9 +36,9 @@ export default function MobileBottomNav() {
   const tabs = [
     { name: "Home", icon: Home, href: "/" },
     { name: "Shorts", icon: Play, href: "/feed" },
-    { name: "Trooflix", href: "/plus" }, 
-    { name: "Shop", icon: ShoppingBag, href: "/merchandise" },
     { name: "Search", icon: Search, href: "/search" },
+    { name: "Shop", icon: ShoppingBag, href: "/merchandise" },
+    { name: "Trooflix", href: "/plus" },
   ];
 
   const isActive = (path: string) => {
@@ -67,7 +67,6 @@ export default function MobileBottomNav() {
                 {tab.name === "Trooflix" ? (
                   <>
                     <div className={`h-[22px] flex flex-col items-center justify-center pointer-events-none transition-opacity ${active ? "opacity-100" : "opacity-60 group-hover:opacity-100"}`}>
-                      <span className="text-[7px] font-black tracking-[0.15em] text-white leading-none mb-0.5">MY</span>
                       <span className="text-[15px] font-black tracking-tighter leading-none">
                         <span className="text-white">TROO</span><span className="text-[#E53945]">FLIX</span>
                       </span>
