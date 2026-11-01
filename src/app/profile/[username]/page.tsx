@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, UserPlus, MessageSquare, CheckCircle2, LayoutGrid, List, ShoppingBag, Star, Camera } from "lucide-react";
+import { ArrowLeft, UserPlus, MessageSquare, CheckCircle2, LayoutGrid, List, ShoppingBag, Star, Lock, Play } from "lucide-react";
+import HomeFeedCard from "@/components/HomeFeedCard";
 import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
@@ -28,7 +29,7 @@ export default function PublicProfilePage() {
   const [merch, setMerch] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
-  const [activeContentTab, setActiveContentTab] = useState<"All" | "Podcasts" | "Videos" | "Store">("All");
+  const [activeContentTab, setActiveContentTab] = useState<"All" | "Videos" | "Premium" | "Shop">("All");
   const [contentView, setContentView] = useState<"grid" | "list">("grid");
 
   useEffect(() => {
@@ -80,7 +81,6 @@ export default function PublicProfilePage() {
   const subscriptionPrice = profile.subscription_price_cents ? (profile.subscription_price_cents / 100).toFixed(2) : "3.99";
 
   const filteredVideos = videos.filter(v => {
-    if (activeContentTab === "Podcasts") return v.type?.toLowerCase().includes("podcast");
     if (activeContentTab === "Videos") return !v.type?.toLowerCase().includes("podcast");
     return true;
   });
@@ -187,7 +187,7 @@ export default function PublicProfilePage() {
             {/* TABS & CONTENT */}
             <div className="flex items-center justify-between border-b border-white/10 mb-6">
               <div className="flex items-center gap-8">
-                {(["All", "Podcasts", "Videos", "Store"] as const).map((tab) => (
+                {(["All", "Videos", "Premium", "Shop"] as const).map((tab) => (
                   <button key={tab} onClick={() => setActiveContentTab(tab)} className={`pb-3 text-sm font-bold transition-colors ${activeContentTab === tab ? "text-white border-b-2 border-[#E53945]" : "text-white/50 hover:text-white"}`}>{tab}</button>
                 ))}
               </div>
@@ -198,7 +198,55 @@ export default function PublicProfilePage() {
             </div>
 
             <div className="w-full">
-              {activeContentTab === "Store" && (
+              {activeContentTab === "All" && (
+                <div className="w-full">
+                  {videos.length === 0 ? (
+                    <div className="text-center py-20 text-white/50">No posts yet.</div>
+                  ) : (
+                    <div className="flex flex-col gap-4 pb-20">
+                      {videos.map((v) => (
+                        <HomeFeedCard 
+                          key={v.id} 
+                          video={v} 
+                          creator={profile} 
+                          onMore={() => {}} 
+                          onPlay={() => {}} 
+                          isActive={true} 
+                          onSetActive={() => {}} 
+                          onOpenComments={() => {}} 
+                          isLiked={false} 
+                          onToggleLike={() => {}} 
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeContentTab === "Premium" && (
+                <div className="w-full">
+                  {videos.length === 0 ? (
+                    <div className="text-center py-20 text-white/50">No premium content yet.</div>
+                  ) : (
+                    <div className="grid grid-cols-3 gap-4">
+                      {videos.map((video) => (
+                        <div key={video.id} className="bg-[#1c1c1e] border border-white/10 rounded-2xl overflow-hidden group cursor-pointer relative">
+                          <div className="relative aspect-square">
+                            <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-40" />
+                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-[2px]">
+                              <Lock size={24} className="text-[#E53945] mb-2" />
+                              <span className="text-[10px] font-bold text-white uppercase tracking-wider">Premium</span>
+                            </div>
+                          </div>
+                          <div className="p-3 text-left opacity-50"><h3 className="text-sm font-bold leading-tight line-clamp-1">{video.title}</h3></div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeContentTab === "Shop" && (
                 <div className="w-full">
                   {merch.length === 0 ? (
                     <div className="text-center py-12 bg-[#1c1c1e] border border-white/5 rounded-2xl"><ShoppingBag size={32} className="mx-auto text-white/20 mb-3" /><p className="text-white/50 text-sm">No products available yet.</p></div>
@@ -230,7 +278,7 @@ export default function PublicProfilePage() {
                 </div>
               )}
 
-              {activeContentTab !== "Store" && (
+              {activeContentTab === "Videos" && (
                 <div className="w-full">
                   {filteredVideos.length === 0 ? (
                     <div className="text-center py-20 text-white/50">No {activeContentTab.toLowerCase()} found yet.</div>
