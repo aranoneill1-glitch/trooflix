@@ -10,7 +10,8 @@ export const revalidate = 0;
 export async function GET() {
   try {
     const videos = (await kv.get<any[]>(KEY)) || [];
-    return NextResponse.json(videos);
+    const sorted = [...videos].sort((a, b) => b.id - a.id);
+    return NextResponse.json(sorted);
   } catch (e) {
     console.error("GET error:", e);
     return NextResponse.json([]);
