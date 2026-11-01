@@ -409,13 +409,12 @@ export default function Comments({ videoId, onMetaChange }: { videoId: number, o
               {/* Top-level comment */}
               <div className="flex gap-3">
                 <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 overflow-hidden"
-                  style={{ background: avatarColor(c.user_email || "unknown") }}
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 overflow-hidden bg-white/10"
                 >
                   {c.avatar_url ? (
                     <img src={c.avatar_url} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    initial(c.user_email)
+                    <User size={20} className="text-white/50" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
