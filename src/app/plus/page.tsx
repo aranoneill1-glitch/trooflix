@@ -184,7 +184,7 @@ export default function PlusPage() {
           <div className="w-full">
             
             {/* A. CINEMATIC WELCOME HERO (No Boxes) */}
-            <div className="relative w-full h-[50vh] min-h-[400px] flex items-end pb-12">
+            <div className="relative w-full h-[40vh] min-h-[320px] flex items-center pt-16 pb-8">
               {/* Background Image */}
               <div className="absolute inset-0 z-0">
                 {heroBackdrop && (
@@ -236,7 +236,7 @@ export default function PlusPage() {
             </div>
 
             {/* STATS TICKER (Text only, no boxes) */}
-            <div className="relative z-20 w-full max-w-7xl mx-auto px-5 md:px-12 -mt-6 md:-mt-8 mb-12 flex flex-wrap items-center gap-4 md:gap-8 text-xs md:text-sm font-semibold text-white/50 tracking-wider">
+            <div className="relative z-20 w-full max-w-7xl mx-auto px-5 md:px-12 mt-2 mb-8 flex flex-wrap items-center gap-4 md:gap-8 text-xs md:text-sm font-semibold text-white/50 tracking-wider">
               <div className="flex items-center gap-2">
                 <Clock size={14} className="text-[#E53945]" /> {totalHours} HRS WATCHED
               </div>
@@ -250,7 +250,7 @@ export default function PlusPage() {
               </div>
             </div>
 
-            <div className="max-w-7xl mx-auto space-y-12">
+            <div className="max-w-7xl mx-auto space-y-10">
               
               {/* B. CONTINUE WATCHING (Edge-to-edge, no boxes) */}
               {continueWatching.length > 0 && (
