@@ -103,7 +103,7 @@ function UploadContent() {
           posterUrl: uploadedThumbnailUrl,
           category: isShort ? "Shorts" : category,
           visibility: isShort ? "public" : visibility,
-          feed_visible: isShort ? true : shareToFeed,
+          feed_visible: isShort ? false : shareToFeed,
         }),
       });
 
