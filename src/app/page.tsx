@@ -429,7 +429,7 @@ export default function Home() {
                     </h2>
                   </div>
                   <div className="flex flex-col gap-8 md:gap-12 px-4 md:px-12 max-w-3xl mx-auto lg:grid lg:grid-cols-3 lg:gap-6 lg:max-w-7xl">
-                    {[...videos].sort((a: any, b: any) => {
+                    {[...videos].filter((v: any) => v.feed_visible !== false).sort((a: any, b: any) => {
                       const at = a.createdAt ? new Date(a.createdAt).getTime() : a.id;
                       const bt = b.createdAt ? new Date(b.createdAt).getTime() : b.id;
                       return bt - at;
