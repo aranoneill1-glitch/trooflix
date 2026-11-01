@@ -19,7 +19,7 @@ export async function POST(req: Request) {
       user_id: userId,
       username: username,
       display_name: displayName,
-      tier: tier || "free",
+      tier: tier || "user", // Default to 'user' to match your database
     });
 
     if (error) throw error;

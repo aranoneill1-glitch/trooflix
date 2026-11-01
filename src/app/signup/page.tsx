@@ -89,15 +89,22 @@ export default function SignupPage() {
       if (authError) throw authError;
       if (!authData.user) throw new Error("Signup failed.");
 
-      // 3. Create Profile (If your DB trigger doesn't handle this)
-      const { error: profileError } = await supabase.from("profiles").upsert({
-        user_id: authData.user.id,
-        username: cleanHandle,
-        display_name: cleanHandle,
-        tier: "free",
+      // 3. Create Profile via Secure Admin API (Bypasses RLS)
+      const profileRes = await fetch("/api/signup-profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: authData.user.id,
+          username: cleanHandle,
+          displayName: cleanHandle,
+          tier: "user",
+        }),
       });
 
-      if (profileError) throw profileError;
+      if (!profileRes.ok) {
+        const errorData = await profileRes.json();
+        throw new Error(errorData.error || "Failed to create profile");
+      }
 
       clearUserCache();
       router.push("/");
