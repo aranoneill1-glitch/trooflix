@@ -2,11 +2,17 @@
 
 if (typeof window !== "undefined") {
   window.onerror = function(msg, url, line, col, err) {
-    document.body.innerHTML = '<div style="background:#000;color:#f00;padding:20px;font-family:monospace;font-size:14px;white-space:pre-wrap;">ERROR: ' + msg + '\n\nLine: ' + line + ':' + col + '\n\nURL: ' + url + '</div>';
+    console.error("Global Error:", msg, url, line, col, err);
     return false;
   };
   window.addEventListener("unhandledrejection", function(e) {
-    document.body.innerHTML = '<div style="background:#000;color:#f00;padding:20px;font-family:monospace;font-size:14px;white-space:pre-wrap;">PROMISE ERROR: ' + (e.reason && e.reason.message ? e.reason.message : String(e.reason)) + '</div>';
+    const reason = e.reason;
+    // Ignore standard AbortErrors from video players and React lifecycle
+    if (reason && (reason.name === "AbortError" || String(reason).includes("AbortError") || String(reason).includes("aborted"))) {
+      e.preventDefault();
+      return;
+    }
+    console.error("Unhandled Promise Rejection:", reason);
   });
 }
 
