@@ -226,10 +226,10 @@ export default function ManageContentPage() {
         ) : viewMode === "grid" ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredVideos.map((video) => (
-              <div key={video.id} className="bg-[#1c1c1e] border border-white/10 rounded-2xl overflow-hidden group hover:border-[#E53945]/50 transition-colors relative">
+              <div key={video.id} className="bg-[#1c1c1e] border border-white/10 rounded-2xl group hover:border-[#E53945]/50 transition-colors relative">
                 
                 {/* Thumbnail */}
-                <div className="relative aspect-video bg-black">
+                <div className="relative aspect-video bg-black rounded-t-2xl overflow-hidden">
                   <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
                   
@@ -272,7 +272,7 @@ export default function ManageContentPage() {
                       </button>
                       
                       {activeMenuId === video.id && (
-                        <div className="absolute right-0 top-8 z-20 w-36 bg-[#2c2c2e] border border-white/10 rounded-xl shadow-2xl overflow-hidden py-1">
+                        <div className="absolute right-0 bottom-full mb-2 z-20 w-36 bg-[#2c2c2e] border border-white/10 rounded-xl shadow-2xl overflow-hidden py-1">
                           <button className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-white hover:bg-white/10 transition text-left">
                             <Pencil size={14} /> Edit
                           </button>
@@ -331,7 +331,7 @@ export default function ManageContentPage() {
                       <MoreVertical size={18} />
                     </button>
                     {activeMenuId === video.id && (
-                      <div className="absolute right-0 top-10 z-20 w-36 bg-[#2c2c2e] border border-white/10 rounded-xl shadow-2xl overflow-hidden py-1">
+                      <div className="absolute right-0 bottom-full mb-2 z-20 w-36 bg-[#2c2c2e] border border-white/10 rounded-xl shadow-2xl overflow-hidden py-1">
                         <button className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-white hover:bg-white/10 transition text-left">
                           <Pencil size={14} /> Edit
                         </button>
