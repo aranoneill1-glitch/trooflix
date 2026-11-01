@@ -90,15 +90,22 @@ function CreatorDashboardContent() {
     setUploadingAvatar(true);
 
     try {
+      if (file.size === 0) {
+        throw new Error("File size is 0 bytes. Please ensure the photo is downloaded from iCloud.");
+      }
+
       const r2Res = await fetch('/api/r2-upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ filename: file.name, contentType: file.type }),
+        body: JSON.stringify({ filename: file.name, contentType: file.type || "image/jpeg" }),
       });
       const r2Data = await r2Res.json();
       if (!r2Res.ok) throw new Error("Failed to get R2 upload URL");
 
-      // Use XMLHttpRequest instead of fetch to fix iOS Safari 0-byte bug
+      // Read file as ArrayBuffer to force iOS to download it from iCloud
+      const arrayBuffer = await file.arrayBuffer();
+      const blob = new Blob([arrayBuffer], { type: file.type || "image/jpeg" });
+
       await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.open("PUT", r2Data.uploadUrl, true);
@@ -110,7 +117,7 @@ function CreatorDashboardContent() {
         };
         
         xhr.onerror = () => reject(new Error("Network error during image upload."));
-        xhr.send(file);
+        xhr.send(blob);
       });
 
       const { error } = await supabase.from("profiles").update({
@@ -123,8 +130,8 @@ function CreatorDashboardContent() {
       setShowAvatarMenu(false);
       clearUserCache();
 
-    } catch (err) {
-      alert("Failed to upload avatar.");
+    } catch (err: any) {
+      alert(err.message || "Failed to upload avatar.");
     } finally {
       setUploadingAvatar(false);
     }
