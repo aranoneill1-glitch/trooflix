@@ -82,7 +82,7 @@ export default function MobileBottomNav() {
                         fill={active && tab.name === "Shorts" ? "currentColor" : "none"} 
                       />
                     )}
-                    <span className={`text-[9px] font-bold ${active ? "text-white" : "text-transparent"}`}>
+                    <span className={`text-[9px] font-bold ${active ? "text-white" : "text-white/50 group-hover:text-white/80 transition-colors"}`}>
                       {tab.name}
                     </span>
                   </>
