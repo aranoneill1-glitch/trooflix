@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Comments from "@/components/Comments";
 
 type Props = {
@@ -12,6 +12,9 @@ type Props = {
 };
 
 export default function CommentSheet({ videoId, open, onClose }: Props) {
+  const [count, setCount] = useState(0);
+  const [sortState, setSortState] = useState<{sort: string, setter: ((s: any) => void) | null}>({ sort: "newest", setter: null });
+
   // Lock body scroll when open
   useEffect(() => {
     if (open) {
@@ -57,19 +60,42 @@ export default function CommentSheet({ videoId, open, onClose }: Props) {
 
             {/* Header */}
             <div className="flex items-center justify-between px-5 pb-3 shrink-0 border-b border-white/5">
-              <h2 className="text-base font-bold text-white">Comments</h2>
-              <button
-                onClick={onClose}
-                className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition text-white/70 hover:text-white"
-                aria-label="Close"
-              >
-                <X size={18} />
-              </button>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-bold text-white">Comments</h2>
+                <span className="text-white/40 font-bold">·</span>
+                <span className="text-white/60 text-sm font-bold">{count}</span>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <select
+                  value={sortState.sort}
+                  onChange={(e) => sortState.setter && sortState.setter(e.target.value)}
+                  className="bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-xs outline-none focus:border-[#E53945]"
+                >
+                  <option value="newest">For you first</option>
+                  <option value="oldest">Oldest first</option>
+                  <option value="top">Top comments</option>
+                </select>
+                
+                <button
+                  onClick={onClose}
+                  className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition text-white/70 hover:text-white"
+                  aria-label="Close"
+                >
+                  <X size={18} />
+                </button>
+              </div>
             </div>
 
             {/* Scrollable body — reuse existing Comments component */}
-            <div className="flex-1 overflow-y-auto overscroll-contain px-5 pb-6">
-              <Comments videoId={videoId} />
+            <div className="flex-1 overflow-y-auto overscroll-contain px-5 pb-6 mt-4">
+              <Comments 
+                videoId={videoId} 
+                onMetaChange={(c, s, setter) => {
+                  setCount(c);
+                  setSortState({ sort: s, setter: setter });
+                }} 
+              />
             </div>
           </motion.div>
         </>

@@ -66,7 +66,7 @@ function isMediaUrl(text: string): boolean {
   return MEDIA_EXT.test(t);
 }
 
-export default function Comments({ videoId }: { videoId: number }) {
+export default function Comments({ videoId, onMetaChange }: { videoId: number, onMetaChange?: (count: number, sort: string, setSort: (s: any) => void) => void }) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [likedCommentIds, setLikedCommentIds] = useState<number[]>([]);
   const [text, setText] = useState("");
@@ -96,6 +96,10 @@ export default function Comments({ videoId }: { videoId: number }) {
       }
     });
   }, [videoId]);
+
+  useEffect(() => {
+    if (onMetaChange) onMetaChange(comments.filter((c) => !c.parent_id).length, sort, setSort);
+  }, [comments, sort]);
 
   // Fetch comments whenever sort changes
   useEffect(() => {
@@ -283,25 +287,6 @@ export default function Comments({ videoId }: { videoId: number }) {
 
   return (
     <div className="mt-12 mb-8">
-      {/* Header with count + sort */}
-      <div className="flex items-center justify-between mb-3 md:mb-6 flex-wrap gap-2 md:gap-3">
-        <h2 className="text-lg md:text-xl font-bold">
-          Comments <span className="text-white/40">·</span>{" "}
-          <span className="text-white/60 text-sm md:text-base">
-            {comments.filter((c) => !c.parent_id).length}
-          </span>
-        </h2>
-
-        <select
-          value={sort}
-          onChange={(e) => setSort(e.target.value as SortMode)}
-          className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-red-600"
-        >
-          <option value="newest">For you first</option>
-          <option value="oldest">Oldest first</option>
-          <option value="top">Top comments</option>
-        </select>
-      </div>
 
       {/* New comment form */}
       {user ? (
