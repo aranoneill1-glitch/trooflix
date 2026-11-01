@@ -224,7 +224,7 @@ export default function Home() {
     <>
     <PullToRefresh onRefresh={async () => { window.location.reload(); }}>
     <main className="min-h-screen bg-black text-white overflow-x-hidden pb-20 lg:pb-0">
-      <div className="relative z-[100]"><div className="relative z-[100]"><TopBar onMenu={() => setDrawerOpen(true)} /></div></div>
+      <div className="relative z-[100]"><div className="relative z-[100]"><div className="relative z-[100]"><TopBar onMenu={() => setDrawerOpen(true)} /></div></div></div>
       
       <AnimatePresence>
         {drawerOpen && (
@@ -277,20 +277,11 @@ export default function Home() {
         <>
           {!showingFiltered && (
             <>
-              {/* MOBILE SECTION: Pills + Avatars + App Reel Hero */}
+              {/* MOBILE SECTION: Pills + Header + Avatars + Hero */}
               <div className="lg:hidden w-full flex flex-col relative z-10">
-                {/* Header */}
-                <div className="px-4 pt-24 pb-4 relative z-20">
-                  <p className="text-[10px] tracking-[0.4em] text-white/50 font-semibold mb-1 uppercase">
-                    The Home of Independent Voices
-                  </p>
-                  <h2 className="text-2xl font-black tracking-tight text-white">
-                    Discover <span className="text-[#E53945]">Creators</span>
-                  </h2>
-                </div>
                 
-                {/* Category Pills */}
-                <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 pb-6 relative z-20">
+                {/* Category Pills (Moved to top) */}
+                <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 pt-20 pb-4 relative z-20">
                   {CATEGORIES.map((cat) => (
                     <button
                       key={cat}
@@ -302,18 +293,17 @@ export default function Home() {
                   ))}
                 </div>
 
-                {/* App Reel Hero */}
-                {heroPool.length > 0 && (
-                  <AppReelHero 
-                    videos={heroPool} 
-                    activeIndex={heroIndex} 
-                    setActiveIndex={setHeroIndex} 
-                    onPlay={handleInstantPlay}
-                    onMore={(v) => setSelected(v)}
-                  />
-                )}
-
-                {/* Avatars with Follow */}
+                {/* Header */}
+                <div className="px-4 pb-4 relative z-20">
+                  <p className="text-[10px] tracking-[0.4em] text-white/50 font-semibold mb-1 uppercase">
+                    The Home of Independent Voices
+                  </p>
+                  <h2 className="text-2xl font-black tracking-tight text-white">
+                    Discover <span className="text-[#E53945]">Creators</span>
+                  </h2>
+                </div>
+                
+                {/* Avatars with Follow (Moved up) */}
                 {creators && creators.length > 0 && (
                   <div className="flex gap-4 overflow-x-auto scrollbar-hide px-4 pb-6 relative z-20">
                     {[...creators].slice(0, 15).map((c: any) => (
@@ -333,6 +323,17 @@ export default function Home() {
                       </Link>
                     ))}
                   </div>
+                )}
+
+                {/* App Reel Hero (Moved below Avatars) */}
+                {heroPool.length > 0 && (
+                  <AppReelHero 
+                    videos={heroPool} 
+                    activeIndex={heroIndex} 
+                    setActiveIndex={setHeroIndex} 
+                    onPlay={handleInstantPlay}
+                    onMore={(v) => setSelected(v)}
+                  />
                 )}
 
               </div>
@@ -550,7 +551,7 @@ function AppReelHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { 
   const activeVideo = videos[activeIndex];
 
   return (
-    <div className="relative w-full h-[420px] flex items-center justify-center my-4 overflow-hidden">
+    <div className="relative w-full h-[440px] flex items-center justify-center mb-6 mt-2 overflow-hidden">
       {/* Ambient Background Glow */}
       <AnimatePresence mode="wait">
         <motion.div
@@ -593,7 +594,7 @@ function AppReelCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMor
     return i - c + (d / 250);
   });
 
-  // Move by 70% of screen width per swipe
+  // Swipe movement: 70% width per swipe
   const x = useTransform(offset, (o) => `${o * 70}%`); 
   const scale = useTransform(offset, (o) => Math.max(0.85, 1 - Math.abs(o) * 0.15)); 
   const opacity = useTransform(offset, (o) => Math.abs(o) > 1.5 ? 0 : 1); 
