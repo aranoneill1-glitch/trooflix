@@ -90,34 +90,58 @@ function CreatorDashboardContent() {
     setUploadingAvatar(true);
 
     try {
-      if (file.size === 0) {
-        throw new Error("File size is 0 bytes. Please ensure the photo is downloaded from iCloud.");
+      // BULLETPROOF iOS FIX: Decode image into a canvas, then re-export as JPEG blob.
+      // This forces iOS to actually load the image from iCloud/disk instead of
+      // handing us an empty 0-byte placeholder.
+      let processedBlob: Blob;
+
+      try {
+        const bitmap = await createImageBitmap(file);
+        const canvas = document.createElement("canvas");
+        const MAX = 512;
+        let w = bitmap.width;
+        let h = bitmap.height;
+        if (w > MAX || h > MAX) {
+          if (w > h) { h = (h / w) * MAX; w = MAX; }
+          else { w = (w / h) * MAX; h = MAX; }
+        }
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) throw new Error("Canvas not supported");
+        ctx.drawImage(bitmap, 0, 0, w, h);
+        
+        processedBlob = await new Promise<Blob>((resolve, reject) => {
+          canvas.toBlob((b) => b ? resolve(b) : reject(new Error("Failed to export canvas")), "image/jpeg", 0.85);
+        });
+      } catch (decodeErr) {
+        // Fallback: use the raw file if canvas fails
+        console.warn("Canvas decode failed, using raw file", decodeErr);
+        processedBlob = file;
+      }
+
+      if (processedBlob.size === 0) {
+        throw new Error("Image is 0 bytes after processing. The photo may not be downloaded from iCloud. Open Photos, tap the image, then wait for the download icon to finish.");
       }
 
       const r2Res = await fetch('/api/r2-upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ filename: file.name, contentType: file.type || "image/jpeg" }),
+        body: JSON.stringify({ filename: "avatar.jpg", contentType: "image/jpeg" }),
       });
       const r2Data = await r2Res.json();
       if (!r2Res.ok) throw new Error("Failed to get R2 upload URL");
 
-      // Read file as ArrayBuffer to force iOS to download it from iCloud
-      const arrayBuffer = await file.arrayBuffer();
-      const blob = new Blob([arrayBuffer], { type: file.type || "image/jpeg" });
-
       await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.open("PUT", r2Data.uploadUrl, true);
-        xhr.setRequestHeader("Content-Type", file.type || "image/jpeg");
-        
+        xhr.setRequestHeader("Content-Type", "image/jpeg");
         xhr.onload = () => {
           if (xhr.status >= 200 && xhr.status < 300) resolve(true);
-          else reject(new Error(`Failed to upload image. Status: ${xhr.status}`));
+          else reject(new Error(`Upload failed: ${xhr.status}`));
         };
-        
-        xhr.onerror = () => reject(new Error("Network error during image upload."));
-        xhr.send(blob);
+        xhr.onerror = () => reject(new Error("Network error"));
+        xhr.send(processedBlob);
       });
 
       const { error } = await supabase.from("profiles").update({
