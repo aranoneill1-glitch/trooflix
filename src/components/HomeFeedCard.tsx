@@ -163,6 +163,46 @@ export default function HomeFeedCard({ video, creator, onMore, onPlay, isActive,
     setTimeLeft(formatTime(v.duration - v.currentTime));
   };
 
+  if (video.type?.toLowerCase() === "tweet") {
+    return (
+      <div className="w-full relative flex flex-col bg-[#1c1c1e] mb-8 mx-auto rounded-[24px] border border-white/10 shadow-2xl p-5">
+        {!hideCreatorInfo && (
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-full overflow-hidden bg-[#1c1c1e] border border-white/20 shrink-0">
+              {creator?.photoUrl ? <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-sm font-bold text-white">{creator?.name?.[0] || 'C'}</div>}
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-white leading-tight">{creator?.name || 'Creator'}</h2>
+              <p className="text-[11px] text-white/50">@{creator?.slug || 'user'}</p>
+            </div>
+          </div>
+        )}
+        
+        <p className="text-white/90 text-[15px] leading-relaxed whitespace-pre-wrap mb-4">{video.description}</p>
+        
+        <div className="flex items-center justify-between mt-2 pt-3 border-t border-white/10">
+          <div className="flex items-center gap-6">
+            <button onClick={toggleLike} className="flex items-center gap-1.5 text-white/90 hover:text-white transition">
+              <ThumbsUp size={20} fill={liked ? "#E53945" : "none"} className={liked ? "text-[#E53945]" : "text-white"} />
+              <span className="text-[13px] font-bold">{likeCount}</span>
+            </button>
+            <button onClick={onOpenComments} className="flex items-center gap-1.5 text-white/90 hover:text-white transition">
+              <MessageCircle size={20} />
+              <span className="text-[13px] font-bold">{commentCount}</span>
+            </button>
+            <div className="flex items-center gap-1.5 text-white/60">
+              <Eye size={20} />
+              <span className="text-[13px] font-bold">{viewCount}</span>
+            </div>
+          </div>
+          <button className="text-white/90 hover:text-white transition">
+            <Bookmark size={20} />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (!videoSrc) return null;
 
   return (

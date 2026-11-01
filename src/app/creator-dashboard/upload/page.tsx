@@ -2,7 +2,7 @@
 
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, UploadCloud, CheckCircle2, Image as ImageIcon, Globe, Lock, Home, User } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Image as ImageIcon, Globe, Lock, Home, User, UploadCloud, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
@@ -22,6 +22,7 @@ function UploadContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isShort = searchParams.get("type") === "short";
+  const isTweet = searchParams.get("type") === "tweet";
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -36,9 +37,6 @@ function UploadContent() {
   const [showSharePrompt, setShowSharePrompt] = useState(false);
 
   const uploadToR2 = async (file: File) => {
-    if (file.name.toLowerCase().endsWith(".mov")) {
-      throw new Error("Apple .mov files do not play on Android or Chrome. Please export your video as .mp4 and try again.");
-    }
     if (file.size === 0) throw new Error("The selected file is empty (0 bytes).");
 
     const res = await fetch("/api/r2-upload", {
@@ -61,9 +59,15 @@ function UploadContent() {
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (isTweet) {
+      if (!description.trim()) return alert("Please write some text for your tweet.");
+      publishContent(true);
+      return;
+    }
+
     if (!mediaFile) return alert("Please select a video file.");
     
-    // Shorts bypass the share prompt and publish immediately
     if (isShort) {
       publishContent(true);
     } else {
@@ -87,23 +91,23 @@ function UploadContent() {
         .eq("user_id", user.id)
         .single();
 
-      const uploadedMediaUrl = mediaFile ? await uploadToR2(mediaFile) : "";
-      const uploadedThumbnailUrl = (!isShort && thumbnailFile) ? await uploadToR2(thumbnailFile) : "";
+      const uploadedMediaUrl = (!isTweet && mediaFile) ? await uploadToR2(mediaFile) : "";
+      const uploadedThumbnailUrl = (!isTweet && !isShort && thumbnailFile) ? await uploadToR2(thumbnailFile) : "";
 
       const res = await fetch("/api/save-video", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title,
+          title: isTweet ? "Tweet" : title,
           description,
-          type: isShort ? "Short" : "Documentary",
+          type: isTweet ? "Tweet" : (isShort ? "Short" : "Documentary"),
           creatorId: profile?.creator_id || null,
           uploaderUserId: user.id,
           videoUrl: uploadedMediaUrl,
           posterUrl: uploadedThumbnailUrl,
-          category: isShort ? "Shorts" : category,
-          visibility: isShort ? "public" : visibility,
-          feed_visible: isShort ? false : shareToFeed,
+          category: isTweet ? "Tweets" : (isShort ? "Shorts" : category),
+          visibility: isTweet ? "public" : (isShort ? "public" : visibility),
+          feed_visible: isTweet ? true : (isShort ? false : shareToFeed),
         }),
       });
 
@@ -113,7 +117,7 @@ function UploadContent() {
       }
 
       setSuccess(true);
-      setTimeout(() => router.push(isShort ? "/feed" : "/creator-dashboard"), 2200);
+      setTimeout(() => router.push(isTweet ? "/" : (isShort ? "/feed" : "/creator-dashboard")), 2200);
     } catch (err: any) {
       console.error(err);
       alert("Upload failed: " + err.message);
@@ -127,7 +131,9 @@ function UploadContent() {
         <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-20 h-20 bg-[#1ed760]/20 rounded-full flex items-center justify-center mb-6">
           <CheckCircle2 size={40} className="text-[#1ed760]" />
         </motion.div>
-        <h1 className="text-2xl font-bold mb-2">{isShort ? "Short Published" : "Video Published"}</h1>
+        <h1 className="text-2xl font-bold mb-2">
+          {isTweet ? "Tweet Published" : (isShort ? "Short Published" : "Video Published")}
+        </h1>
         <p className="text-white/50 text-sm">Redirecting you now...</p>
       </main>
     );
@@ -143,26 +149,32 @@ function UploadContent() {
             <ArrowLeft size={20} />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold">{isShort ? "Upload Short" : "Upload Video"}</h1>
+            <h1 className="text-2xl font-bold">
+              {isTweet ? "Add a Tweet" : (isShort ? "Upload Short" : "Upload Video")}
+            </h1>
             <p className="text-sm text-white/50">
-              {isShort ? "Publish directly to the Shorts feed." : "Publish to your profile and (optionally) the home feed."}
+              {isTweet ? "Share your thoughts with your followers." : (isShort ? "Publish directly to the Shorts feed." : "Publish to your profile and (optionally) the home feed.")}
             </p>
           </div>
         </div>
 
         <form onSubmit={handleFormSubmit} className="space-y-6">
           <div className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold text-white/60 mb-1">Title <span className="text-[#E53945]">*</span></label>
-              <input required type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#E53945]" placeholder="Name your short..." />
-            </div>
+            {!isTweet && (
+              <div>
+                <label className="block text-xs font-bold text-white/60 mb-1">Title <span className="text-[#E53945]">*</span></label>
+                <input required type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#E53945]" placeholder="Name your video..." />
+              </div>
+            )}
 
             <div>
-              <label className="block text-xs font-bold text-white/60 mb-1">Description <span className="text-[#E53945]">*</span></label>
-              <textarea required value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#E53945] resize-none h-24" placeholder="Write a description..." />
+              <label className="block text-xs font-bold text-white/60 mb-1">
+                {isTweet ? "What's on your mind?" : "Description"} <span className="text-[#E53945]">*</span>
+              </label>
+              <textarea required value={description} onChange={e => setDescription(e.target.value)} className={`w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#E53945] resize-none ${isTweet ? 'h-40' : 'h-24'}`} placeholder={isTweet ? "Write your tweet here..." : "Write a description..."} />
             </div>
 
-            {!isShort && (
+            {!isShort && !isTweet && (
               <>
                 <div>
                   <label className="block text-xs font-bold text-white/60 mb-1">Category <span className="text-[#E53945]">*</span></label>
@@ -187,17 +199,19 @@ function UploadContent() {
               </>
             )}
 
-            <div>
-              <label className="block text-xs font-bold text-white/60 mb-1">Video File <span className="text-[#E53945]">*</span></label>
-              <div onClick={() => document.getElementById('media-upload')?.click()} className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] hover:bg-white/5 transition">
-                <UploadCloud size={24} className="text-white/50 mb-2" />
-                <span className="text-sm font-bold text-white">{mediaFile ? mediaFile.name : "Tap to select video"}</span>
-                <span className="text-xs text-white/40 mt-1">MP4, MOV</span>
+            {!isTweet && (
+              <div>
+                <label className="block text-xs font-bold text-white/60 mb-1">Video File <span className="text-[#E53945]">*</span></label>
+                <div onClick={() => document.getElementById('media-upload')?.click()} className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] hover:bg-white/5 transition">
+                  <UploadCloud size={24} className="text-white/50 mb-2" />
+                  <span className="text-sm font-bold text-white">{mediaFile ? mediaFile.name : "Tap to select video"}</span>
+                  <span className="text-xs text-white/40 mt-1">MP4, MOV</span>
+                </div>
+                <input id="media-upload" type="file" accept="video/*" onChange={(e) => setMediaFile(e.target.files?.[0] || null)} className="hidden" />
               </div>
-              <input id="media-upload" type="file" accept="video/*" onChange={(e) => setMediaFile(e.target.files?.[0] || null)} className="hidden" />
-            </div>
+            )}
 
-            {!isShort && (
+            {!isShort && !isTweet && (
               <div>
                 <label className="block text-xs font-bold text-white/60 mb-1">Thumbnail Image <span className="text-[#E53945]">*</span></label>
                 <div onClick={() => document.getElementById('thumb-upload')?.click()} className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] hover:bg-white/5 transition">
@@ -211,13 +225,18 @@ function UploadContent() {
           </div>
 
           <button disabled={loading} type="submit" className="w-full bg-[#E53945] hover:bg-[#d12e39] text-white font-bold py-4 rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-[#E53945]/20">
-            {loading ? "Uploading..." : <><UploadCloud size={20} /> Publish {isShort ? "Short" : "Video"}</>}
+            {loading ? "Uploading..." : (
+              <>
+                {isTweet ? <MessageSquare size={20} /> : <UploadCloud size={20} />} 
+                Publish {isTweet ? "Tweet" : (isShort ? "Short" : "Video")}
+              </>
+            )}
           </button>
         </form>
       </div>
 
       <AnimatePresence>
-        {showSharePrompt && !isShort && (
+        {showSharePrompt && !isShort && !isTweet && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[400]" onClick={() => setShowSharePrompt(false)} />
             <motion.div
