@@ -79,7 +79,7 @@ export default function UploadVideoPage() {
       const uploadedThumbnailUrl = thumbnailFile ? await uploadToR2(thumbnailFile) : "";
 
       // Use absolute URL for the API
-      const res = await fetch("/api/videos", {
+      const res = await fetch("/api/save-video", {
       mode: "cors",
         method: "POST",
         headers: { "Content-Type": "application/json" },
