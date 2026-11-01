@@ -32,19 +32,27 @@ export default function UploadVideoPage() {
   const [success, setSuccess] = useState(false);
   const [showSharePrompt, setShowSharePrompt] = useState(false);
 
-    const uploadToR2 = async (file: File) => {
+      const uploadToR2 = async (file: File) => {
+    if (file.size === 0) throw new Error("The selected file is empty (0 bytes). Please re-select the video.");
+    
+    // iOS sometimes drops the file type, so we force a fallback
+    const fileType = file.type || "video/mp4";
+
     const res = await fetch("/api/r2-upload", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ filename: file.name, contentType: file.type }),
+      body: JSON.stringify({ filename: file.name, contentType: fileType }),
     });
     const { uploadUrl, publicUrl, error } = await res.json();
     if (error) throw new Error(error);
 
+    // Convert file to ArrayBuffer to prevent iOS Safari from dropping the body
+    const fileBuffer = await file.arrayBuffer();
+
     const uploadRes = await fetch(uploadUrl, {
       method: "PUT",
-      body: file,
-      headers: { "Content-Type": file.type },
+      body: fileBuffer,
+      headers: { "Content-Type": fileType },
     });
     
     if (!uploadRes.ok) throw new Error("Failed to upload to R2");

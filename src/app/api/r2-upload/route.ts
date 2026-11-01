@@ -19,13 +19,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing filename or contentType" }, { status: 400 });
     }
 
+    const finalContentType = contentType || "video/mp4";
     const fileExt = filename.split('.').pop();
     const uniqueFileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
     const command = new PutObjectCommand({
       Bucket: process.env.R2_BUCKET_NAME,
       Key: uniqueFileName,
-      ContentType: contentType,
+      ContentType: finalContentType,
     });
 
     // Generate a presigned URL valid for 1 hour
