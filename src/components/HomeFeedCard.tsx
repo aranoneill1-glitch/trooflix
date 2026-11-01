@@ -5,7 +5,7 @@ import type { JSX } from "react";
 import { useEffect, useRef, useState } from "react";
 import { Play, VolumeX, Volume2, MoreVertical, Maximize, ThumbsUp, MessageCircle, Share2, Bookmark } from "lucide-react";
 
-export default function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive, onOpenComments, isLiked, onToggleLike }: { video: any, creator: any, onMore: () => void, onPlay: () => void, isActive: boolean, onSetActive: () => void, onOpenComments: () => void, isLiked: boolean, onToggleLike: () => void }): JSX.Element | null {
+export default function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive, onOpenComments, isLiked, onToggleLike, hideCreatorInfo }: { video: any, creator: any, onMore: () => void, onPlay: () => void, isActive: boolean, onSetActive: () => void, onOpenComments: () => void, isLiked: boolean, onToggleLike: () => void, hideCreatorInfo?: boolean }): JSX.Element | null {
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -151,7 +151,7 @@ export default function HomeFeedCard({ video, creator, onMore, onPlay, isActive,
   if (!videoSrc) return null;
 
   return (
-    <div ref={containerRef} className="w-full relative flex flex-col group/feed bg-[#09090B] lg:bg-transparent mb-6 lg:mb-0">
+    <div ref={containerRef} className="w-full relative flex flex-col group/feed bg-[#09090B] lg:bg-transparent mb-8 mx-auto rounded-[24px] overflow-hidden border border-white/10 shadow-2xl">
       
       <div className="w-full relative overflow-hidden flex flex-col lg:bg-[#1c1c1e] lg:rounded-2xl lg:border lg:border-white/5 lg:shadow-lg">
         
@@ -186,6 +186,7 @@ export default function HomeFeedCard({ video, creator, onMore, onPlay, isActive,
           <div className="absolute top-0 inset-x-0 h-24 bg-gradient-to-b from-black/80 to-transparent pointer-events-none z-10" />
 
           {/* TOP LEFT: Creator Avatar & Name */}
+          {!hideCreatorInfo && (
           <div className="absolute top-3 left-3 z-20 flex items-center gap-2 pointer-events-none">
             <div className="w-8 h-8 rounded-full overflow-hidden bg-[#1c1c1e] flex-shrink-0 border border-white/20">
               {creator?.photoUrl ? (
@@ -200,6 +201,7 @@ export default function HomeFeedCard({ video, creator, onMore, onPlay, isActive,
               </h2>
             </div>
           </div>
+          )}
 
           {/* TOP RIGHT: More Menu */}
           <button 

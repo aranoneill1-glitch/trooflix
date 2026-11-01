@@ -31,6 +31,7 @@ export default function PublicProfilePage() {
   
   const [activeContentTab, setActiveContentTab] = useState<"All" | "Videos" | "Premium" | "Shop">("All");
   const [contentView, setContentView] = useState<"grid" | "list">("grid");
+  const [activeVideoId, setActiveVideoId] = useState<number | null>(null);
 
   useEffect(() => {
     async function loadProfileAndVideos() {
@@ -203,7 +204,7 @@ export default function PublicProfilePage() {
                   {videos.length === 0 ? (
                     <div className="text-center py-20 text-white/50">No posts yet.</div>
                   ) : (
-                    <div className="flex flex-col gap-4 pb-20">
+                    <div className="flex flex-col gap-6 pb-20 px-4">
                       {videos.map((v) => (
                         <HomeFeedCard 
                           key={v.id} 
@@ -211,11 +212,12 @@ export default function PublicProfilePage() {
                           creator={profile} 
                           onMore={() => {}} 
                           onPlay={() => {}} 
-                          isActive={true} 
-                          onSetActive={() => {}} 
+                          isActive={activeVideoId === v.id} 
+                          onSetActive={() => setActiveVideoId(v.id)} 
                           onOpenComments={() => {}} 
                           isLiked={false} 
                           onToggleLike={() => {}} 
+                          hideCreatorInfo={true}
                         />
                       ))}
                     </div>
