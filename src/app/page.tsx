@@ -40,6 +40,7 @@ import LikeButton from "@/components/LikeButton";
 import SearchResults from "@/components/SearchResults";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import TextOverlayRenderer from "@/components/TextOverlay";
+import CommentSheet from "@/components/CommentSheet";
 import { getAllProgress } from "@/lib/progress";
 import { getCachedCreators, getCachedUser } from "@/lib/cache";
 
@@ -103,6 +104,8 @@ export default function Home() {
   };
 
   const [searchOpen, setSearchOpen] = useState(false);
+  const [commentSheetVideoId, setCommentSheetVideoId] = useState<number | null>(null);
+  const [likedVideos, setLikedVideos] = useState<Record<number, boolean>>({});
   const [scrolled, setScrolled] = useState(false);
   const [isTV, setIsTV] = useState(false);
 
@@ -431,7 +434,7 @@ export default function Home() {
                       return bt - at;
                     }).slice(0, 12).map((v: any) => {
                       const creator = creators.find((c: any) => c.id === v.creatorId);
-                      return <HomeFeedCard key={v.id} video={v} creator={creator} onMore={() => handleCardSelect(v)} onPlay={() => handleInstantPlay(v)} isActive={activeVideoId === v.id} onSetActive={() => setActiveVideoId(v.id)} />;
+                      return <HomeFeedCard key={v.id} video={v} creator={creator} onMore={() => handleCardSelect(v)} onPlay={() => handleInstantPlay(v)} isActive={activeVideoId === v.id} onSetActive={() => setActiveVideoId(v.id)} onOpenComments={() => setCommentSheetVideoId(v.id)} isLiked={!!likedVideos[v.id]} onToggleLike={() => setLikedVideos(prev => ({ ...prev, [v.id]: !prev[v.id] }))} />;
                     })}
                   </div>
                 </div>
@@ -440,6 +443,12 @@ export default function Home() {
           </div>
         </>
       )}
+
+      <CommentSheet
+        videoId={commentSheetVideoId}
+        open={commentSheetVideoId !== null}
+        onClose={() => setCommentSheetVideoId(null)}
+      />
 
       <AnimatePresence>
         {selected && <DetailModal item={selected} onClose={() => setSelected(null)} onPlay={handleInstantPlay} creators={creators} />}
@@ -754,7 +763,7 @@ function DetailModal({ item, onClose, onPlay, creators }: { item: Video; onClose
 }
 
 /* ============ HOME FEED CARD ============ */
-function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }: { video: any, creator: any, onMore: () => void, onPlay: () => void, isActive: boolean, onSetActive: () => void }) {
+function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive, onOpenComments, isLiked, onToggleLike }: { video: any, creator: any, onMore: () => void, onPlay: () => void, isActive: boolean, onSetActive: () => void, onOpenComments: () => void, isLiked: boolean, onToggleLike: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   
@@ -1028,11 +1037,11 @@ function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive }:
 
           <div className="flex items-center justify-between mt-2 pt-3 border-t border-white/10">
             <div className="flex items-center gap-5">
-              <button className="flex items-center gap-1.5 text-white/90 hover:text-white transition">
-                <ThumbsUp size={18} />
+              <button onClick={onToggleLike} className="flex items-center gap-1.5 text-white/90 hover:text-white transition">
+                <ThumbsUp size={18} fill={isLiked ? "#E53945" : "none"} className={isLiked ? "text-[#E53945]" : "text-white"} />
                 <span className="text-[13px] font-medium">Like</span>
               </button>
-              <button onClick={onMore} className="flex items-center gap-1.5 text-white/90 hover:text-white transition">
+              <button onClick={onOpenComments} className="flex items-center gap-1.5 text-white/90 hover:text-white transition">
                 <MessageCircle size={18} />
                 <span className="text-[13px] font-medium">Comment</span>
               </button>
