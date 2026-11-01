@@ -281,8 +281,9 @@ export default function Home() {
           {!showingFiltered && (
             <>
               {/* MOBILE SECTION: Pills + Header + Avatars + Hero */}
-              <div className="lg:hidden w-full flex flex-col relative z-10">
+              <div className="lg:hidden w-full flex flex-col relative z-10 bg-[#0a0303] min-h-screen">
                 
+                <div className="absolute top-0 left-0 w-full h-[300px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#E53945]/15 via-[#0a0303]/0 to-transparent pointer-events-none z-0" />
                 {/* Category Pills (Moved to top) */}
                 <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 pt-24 pb-3 relative z-20">
                   {CATEGORIES.map((cat) => (
