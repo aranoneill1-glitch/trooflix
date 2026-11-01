@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { Play, Sparkles, Video, Check, Crown, Clock, Users, List, Heart, History, Mic, FolderHeart, Download, ArrowRight } from "lucide-react";
+import { Play, Sparkles, Video, Check, Crown, Clock, Users, List, Heart, History, Mic, FolderHeart, Download, ArrowRight, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getCachedUser } from "@/lib/cache";
 import TopBar from "@/components/TopBar";
@@ -52,12 +52,10 @@ export default function PlusPage() {
       setLoading(false);
       
       if (u) {
-        // Fetch profile for tier/avatar
         const supabase = createClient();
         const { data: prof } = await supabase.from("profiles").select("*").eq("user_id", u.id).single();
         if (prof) setProfile(prof);
 
-        // Fetch content for the logged-in dashboard
         Promise.all([
           fetch("/api/videos", { cache: "no-store" }).then(r => r.json()),
           fetch("/api/creators", { cache: "no-store" }).then(r => r.json()).catch(() => []),
@@ -68,7 +66,6 @@ export default function PlusPage() {
           setFollowedCreatorIds(Array.isArray(fData.ids) ? fData.ids : []);
           setProgressList(getAllProgress());
           
-          // Count watchlist
           try {
             const ml = localStorage.getItem("trooflix:mylist");
             if (ml) {
@@ -83,7 +80,6 @@ export default function PlusPage() {
     });
   }, []);
 
-  // Derived Data
   type VideoWithProgress = Video & { progressSeconds: number; progressDuration: number };
 
   const continueWatching = useMemo<VideoWithProgress[]>(() => {
@@ -98,6 +94,11 @@ export default function PlusPage() {
       }
     }
     items.sort((a, b) => b.progressSeconds - a.progressSeconds);
+    
+    // FALLBACK: If no local progress, show recent videos so it's never empty
+    if (items.length === 0 && videos.length > 0) {
+      return videos.slice(0, 8).map(v => ({ ...v, progressSeconds: 30, progressDuration: 600 })); // Fake 5% progress for visual
+    }
     return items.slice(0, 10);
   }, [progressList, videos]);
 
@@ -155,6 +156,9 @@ export default function PlusPage() {
 
   const isPremium = profile?.has_pass || profile?.tier === 'pro' || profile?.tier === 'creator';
   const displayName = profile?.display_name || user?.user_metadata?.display_name || user?.email?.split('@')[0] || "Member";
+  
+  // Cinematic Hero Poster (Most recent watch, or newest video)
+  const heroBackdrop = continueWatching[0]?.backdropUrl || videos[0]?.backdropUrl || "";
 
   if (loading) {
     return (
@@ -165,7 +169,7 @@ export default function PlusPage() {
   }
 
   // ==========================================
-  // LOGGED IN: VIP PREMIUM DASHBOARD
+  // LOGGED IN: CINEMATIC VIP DASHBOARD
   // ==========================================
   if (user) {
     return (
@@ -177,246 +181,250 @@ export default function PlusPage() {
             <div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" />
           </div>
         ) : (
-          <div className="max-w-7xl mx-auto px-5 md:px-12 pt-24 md:pt-28 space-y-10">
+          <div className="w-full">
             
-            {/* A. PERSONAL WELCOME */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="relative overflow-hidden rounded-3xl bg-white/[0.03] backdrop-blur-xl border border-white/10 p-6 md:p-8 shadow-2xl"
-            >
-              <div className="absolute top-0 right-0 w-64 h-64 bg-[#E53945]/10 rounded-full blur-[80px] pointer-events-none" />
-              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 md:w-20 md:h-20 rounded-full border-2 border-[#D4AF37] p-[2px] bg-[#1c1c1e] shrink-0">
+            {/* A. CINEMATIC WELCOME HERO (No Boxes) */}
+            <div className="relative w-full h-[50vh] min-h-[400px] flex items-end pb-12">
+              {/* Background Image */}
+              <div className="absolute inset-0 z-0">
+                {heroBackdrop && (
+                  <img src={heroBackdrop} alt="Welcome" className="w-full h-full object-cover opacity-40" />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0303] via-[#0a0303]/80 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#0a0303] via-transparent to-transparent" />
+              </div>
+
+              {/* Content */}
+              <div className="relative z-10 w-full max-w-7xl mx-auto px-5 md:px-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div className="flex items-center gap-4 md:gap-6">
+                  <div className="w-16 h-16 md:w-24 md:h-24 rounded-full border border-white/20 p-1 bg-black/50 backdrop-blur-md shrink-0">
                     {profile?.avatar_url ? (
                       <img src={profile.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
                     ) : (
-                      <div className="w-full h-full rounded-full flex items-center justify-center text-2xl font-black text-[#D4AF37]">
+                      <div className="w-full h-full rounded-full flex items-center justify-center text-2xl md:text-4xl font-black text-white">
                         {displayName.charAt(0).toUpperCase()}
                       </div>
                     )}
                   </div>
                   <div>
-                    <p className="text-[10px] tracking-[0.3em] text-white/50 font-bold uppercase mb-1">
+                    <p className="text-[10px] md:text-xs tracking-[0.3em] text-[#E53945] font-bold uppercase mb-1 md:mb-2 drop-shadow-md">
                       {isPremium ? "Premium Member" : "Free Member"}
                     </p>
-                    <h1 className="text-2xl md:text-3xl font-black tracking-tight text-white mb-1">
+                    <h1 className="text-3xl md:text-5xl font-black tracking-tight text-white mb-1 md:mb-2 drop-shadow-lg">
                       {getGreeting()}, {displayName}.
                     </h1>
-                    <p className="text-sm text-white/60">
+                    <p className="text-sm md:text-lg text-white/70 font-medium drop-shadow-md">
                       Your Trooflix. Your World.
                     </p>
                   </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2 md:gap-3">
+                <div className="flex items-center gap-3">
                   {isPremium ? (
-                    <div className="flex items-center gap-2 bg-[#D4AF37]/15 border border-[#D4AF37]/40 rounded-full px-4 py-2">
+                    <div className="flex items-center gap-2 bg-[#D4AF37]/20 backdrop-blur-md border border-[#D4AF37]/50 rounded-full px-4 py-2 shadow-lg">
                       <Crown size={14} className="text-[#D4AF37]" />
-                      <span className="text-xs font-bold text-[#D4AF37] tracking-wide">PREMIUM</span>
+                      <span className="text-xs font-bold text-[#D4AF37] tracking-wide drop-shadow-sm">VIP ACCESS</span>
                     </div>
                   ) : (
-                    <Link href="/upgrade" className="flex items-center gap-2 bg-[#E53945] hover:bg-[#d12e39] rounded-full px-4 py-2 transition">
+                    <Link href="/upgrade" className="flex items-center gap-2 bg-[#E53945] hover:bg-[#d12e39] rounded-full px-5 py-2.5 transition shadow-xl">
                       <Sparkles size={14} className="text-white" />
-                      <span className="text-xs font-bold text-white tracking-wide">UPGRADE TO TROOPASS</span>
+                      <span className="text-xs font-bold text-white tracking-wide">UPGRADE</span>
                     </Link>
                   )}
                 </div>
               </div>
+            </div>
 
-              {/* Stat Pills */}
-              <div className="relative z-10 flex flex-wrap gap-2 md:gap-3 mt-6">
-                <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-2">
-                  <Clock size={14} className="text-[#E53945]" />
-                  <span className="text-xs font-semibold text-white/90">{totalHours}h watched</span>
-                </div>
-                <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-2">
-                  <Users size={14} className="text-[#E53945]" />
-                  <span className="text-xs font-semibold text-white/90">{followedCreatorIds.length} creators</span>
-                </div>
-                <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-2">
-                  <List size={14} className="text-[#E53945]" />
-                  <span className="text-xs font-semibold text-white/90">{watchlistCount} in list</span>
-                </div>
+            {/* STATS TICKER (Text only, no boxes) */}
+            <div className="relative z-20 w-full max-w-7xl mx-auto px-5 md:px-12 -mt-6 md:-mt-8 mb-12 flex flex-wrap items-center gap-4 md:gap-8 text-xs md:text-sm font-semibold text-white/50 tracking-wider">
+              <div className="flex items-center gap-2">
+                <Clock size={14} className="text-[#E53945]" /> {totalHours} HRS WATCHED
               </div>
-            </motion.div>
+              <span className="hidden md:inline text-white/20">|</span>
+              <div className="flex items-center gap-2">
+                <Users size={14} className="text-[#E53945]" /> {followedCreatorIds.length} CREATORS
+              </div>
+              <span className="hidden md:inline text-white/20">|</span>
+              <div className="flex items-center gap-2">
+                <List size={14} className="text-[#E53945]" /> {watchlistCount} IN LIST
+              </div>
+            </div>
 
-            {/* B. CONTINUE WATCHING */}
-            {continueWatching.length > 0 && (
-              <section>
-                <div className="flex items-center gap-2 mb-4">
-                  <h2 className="text-xl md:text-2xl font-black tracking-tight">Continue Watching</h2>
-                  <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent ml-2" />
-                </div>
-                <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
-                  {continueWatching.map((v) => {
-                    const progress = v.progressDuration ? Math.min((v.progressSeconds! / v.progressDuration) * 100, 100) : 0;
-                    const remaining = Math.max(0, (v.progressDuration || 0) - (v.progressSeconds || 0));
-                    const mins = Math.floor(remaining / 60);
-                    return (
-                      <div 
-                        key={v.id}
-                        onClick={() => setPlaying(v)}
-                        className="flex-shrink-0 w-[220px] md:w-[280px] group cursor-pointer"
-                      >
-                        <div className="relative aspect-video rounded-xl overflow-hidden bg-[#1c1c1e] mb-2 border border-white/5 shadow-lg">
-                          <img src={v.posterUrl || v.backdropUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                          <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center shadow-xl">
-                              <Play size={18} fill="black" className="text-black ml-0.5" />
+            <div className="max-w-7xl mx-auto space-y-12">
+              
+              {/* B. CONTINUE WATCHING (Edge-to-edge, no boxes) */}
+              {continueWatching.length > 0 && (
+                <section>
+                  <div className="flex items-center justify-between px-5 md:px-12 mb-4">
+                    <h2 className="text-xl md:text-2xl font-black tracking-tight">Continue Watching</h2>
+                    <Link href="/my-list" className="text-xs font-bold text-white/50 hover:text-white transition flex items-center gap-1">See All <ChevronRight size={14} /></Link>
+                  </div>
+                  <div className="flex gap-4 overflow-x-auto scrollbar-hide px-5 md:px-12 pb-4">
+                    {continueWatching.map((v) => {
+                      const progress = v.progressDuration ? Math.min((v.progressSeconds! / v.progressDuration) * 100, 100) : 0;
+                      const remaining = Math.max(0, (v.progressDuration || 0) - (v.progressSeconds || 0));
+                      const mins = Math.floor(remaining / 60);
+                      return (
+                        <div 
+                          key={v.id}
+                          onClick={() => setPlaying(v)}
+                          className="flex-shrink-0 w-[240px] md:w-[320px] group cursor-pointer"
+                        >
+                          <div className="relative aspect-video rounded-xl overflow-hidden bg-[#1c1c1e] mb-3 shadow-2xl">
+                            <img src={v.posterUrl || v.backdropUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                            
+                            {/* Play Icon on hover */}
+                            <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-xl">
+                                <Play size={20} fill="white" className="text-white ml-1" />
+                              </div>
+                            </div>
+                            
+                            {/* Progress Bar */}
+                            <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
+                              <div className="h-full bg-[#E53945]" style={{ width: `${progress}%` }} />
                             </div>
                           </div>
-                          <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
-                            <div className="h-full bg-[#E53945]" style={{ width: `${progress}%` }} />
-                          </div>
+                          <h3 className="text-sm font-bold text-white leading-tight line-clamp-1 group-hover:text-[#E53945] transition">{v.title}</h3>
+                          <p className="text-[11px] text-white/40 mt-1 font-medium">{mins} min left</p>
                         </div>
-                        <h3 className="text-sm font-bold text-white leading-tight line-clamp-1 group-hover:text-[#E53945] transition">{v.title}</h3>
-                        <p className="text-[11px] text-white/40 mt-0.5">{mins} min left</p>
+                      );
+                    })}
+                  </div>
+                </section>
+              )}
+
+              {/* C. MADE FOR YOU (No boxes) */}
+              <section className="space-y-10">
+                <div className="px-5 md:px-12">
+                  <h2 className="text-xl md:text-2xl font-black tracking-tight flex items-center gap-2">
+                    Made For You <Sparkles size={18} className="text-[#D4AF37]" />
+                  </h2>
+                </div>
+
+                {becauseYouWatched.length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-bold text-white/50 mb-3 uppercase tracking-wider px-5 md:px-12">Because you watched {topCategory}</h3>
+                    <div className="flex gap-4 overflow-x-auto scrollbar-hide px-5 md:px-12 pb-4">
+                      {becauseYouWatched.map((v) => (
+                        <div key={v.id} onClick={() => setPlaying(v)} className="flex-shrink-0 w-[150px] md:w-[200px] group cursor-pointer">
+                          <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-[#1c1c1e] mb-3 shadow-xl">
+                            <img src={v.posterUrl || v.backdropUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          </div>
+                          <h4 className="text-sm font-bold text-white leading-tight line-clamp-2 group-hover:text-[#E53945] transition">{v.title}</h4>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {fromCreatorsYouFollow.length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-bold text-white/50 mb-3 uppercase tracking-wider px-5 md:px-12">From creators you follow</h3>
+                    <div className="flex gap-4 overflow-x-auto scrollbar-hide px-5 md:px-12 pb-4">
+                      {fromCreatorsYouFollow.map((v) => (
+                        <div key={v.id} onClick={() => setPlaying(v)} className="flex-shrink-0 w-[150px] md:w-[200px] group cursor-pointer">
+                          <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-[#1c1c1e] mb-3 shadow-xl">
+                            <img src={v.posterUrl || v.backdropUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          </div>
+                          <h4 className="text-sm font-bold text-white leading-tight line-clamp-2 group-hover:text-[#E53945] transition">{v.title}</h4>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <h3 className="text-sm font-bold text-white/50 mb-3 uppercase tracking-wider px-5 md:px-12">Weekly picks</h3>
+                  <div className="flex gap-4 overflow-x-auto scrollbar-hide px-5 md:px-12 pb-4">
+                    {weeklyPicks.map((v) => (
+                      <div key={v.id} onClick={() => setPlaying(v)} className="flex-shrink-0 w-[150px] md:w-[200px] group cursor-pointer">
+                        <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-[#1c1c1e] mb-3 shadow-xl">
+                          <img src={v.posterUrl || v.backdropUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        </div>
+                        <h4 className="text-sm font-bold text-white leading-tight line-clamp-2 group-hover:text-[#E53945] transition">{v.title}</h4>
                       </div>
-                    );
-                  })}
+                    ))}
+                  </div>
                 </div>
               </section>
-            )}
 
-            {/* C. MADE FOR YOU */}
-            <section className="space-y-8">
-              <div className="flex items-center gap-2">
-                <h2 className="text-xl md:text-2xl font-black tracking-tight">Made For You</h2>
-                <Sparkles size={18} className="text-[#D4AF37]" />
-                <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent ml-2" />
-              </div>
-
-              {becauseYouWatched.length > 0 && (
-                <div>
-                  <h3 className="text-sm font-bold text-white/60 mb-3 uppercase tracking-wider">Because you watched {topCategory}</h3>
-                  <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
-                    {becauseYouWatched.map((v) => (
-                      <div key={v.id} onClick={() => setPlaying(v)} className="flex-shrink-0 w-[140px] md:w-[180px] group cursor-pointer">
-                        <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-[#1c1c1e] mb-2">
-                          <img src={v.posterUrl || v.backdropUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+              {/* E. YOUR CREATORS */}
+              {followedCreators.length > 0 && (
+                <section>
+                  <div className="px-5 md:px-12 mb-4">
+                    <h2 className="text-xl md:text-2xl font-black tracking-tight">Your Creators</h2>
+                  </div>
+                  <div className="flex gap-6 overflow-x-auto scrollbar-hide px-5 md:px-12 pb-4">
+                    {followedCreators.map((c: any) => (
+                      <Link key={c.id} href={`/podcaster/${c.slug}`} className="flex flex-col items-center gap-3 flex-shrink-0 group w-[80px] md:w-[100px]">
+                        <div className="w-16 h-16 md:w-20 md:h-20 rounded-full p-[2px] bg-gradient-to-br from-[#E53945] to-[#D4AF37] group-hover:scale-105 transition-transform shadow-lg">
+                          <div className="w-full h-full rounded-full border-2 border-[#0a0303] overflow-hidden bg-[#1c1c1e]">
+                            {c.photoUrl ? <img src={c.photoUrl} alt={c.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xl font-bold text-white">{c.name?.[0]}</div>}
+                          </div>
                         </div>
-                        <h4 className="text-xs font-bold text-white leading-tight line-clamp-2 group-hover:text-[#E53945] transition">{v.title}</h4>
-                      </div>
+                        <span className="text-xs font-bold text-white/70 group-hover:text-white transition truncate w-full text-center">{c.name}</span>
+                      </Link>
                     ))}
                   </div>
-                </div>
+                </section>
               )}
 
-              {fromCreatorsYouFollow.length > 0 && (
-                <div>
-                  <h3 className="text-sm font-bold text-white/60 mb-3 uppercase tracking-wider">From creators you follow</h3>
-                  <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
-                    {fromCreatorsYouFollow.map((v) => (
-                      <div key={v.id} onClick={() => setPlaying(v)} className="flex-shrink-0 w-[140px] md:w-[180px] group cursor-pointer">
-                        <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-[#1c1c1e] mb-2">
-                          <img src={v.posterUrl || v.backdropUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                        </div>
-                        <h4 className="text-xs font-bold text-white leading-tight line-clamp-2 group-hover:text-[#E53945] transition">{v.title}</h4>
+              {/* D. YOUR LIBRARY (Minimal Text Menu, no boxes) */}
+              <section className="px-5 md:px-12">
+                <h2 className="text-xl md:text-2xl font-black tracking-tight mb-6">Your Library</h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-2">
+                  {[
+                    { name: "Watchlist", icon: List, href: "/my-list", count: watchlistCount },
+                    { name: "Favourites", icon: Heart, href: "/my-list?tab=favourites", count: null },
+                    { name: "History", icon: History, href: "/my-list?tab=history", count: progressList.length },
+                    { name: "Saved Podcasts", icon: Mic, href: "/podcasts", count: null },
+                    { name: "Collections", icon: FolderHeart, href: "/collections", count: null },
+                    { name: "Downloads", icon: Download, href: "#", count: null, badge: "App" },
+                  ].map((tile) => (
+                    <Link
+                      key={tile.name}
+                      href={tile.href}
+                      className="flex items-center justify-between py-4 border-b border-white/5 hover:border-white/20 transition group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <tile.icon size={18} className="text-white/40 group-hover:text-[#E53945] transition-colors" />
+                        <span className="text-sm font-bold text-white/80 group-hover:text-white transition">{tile.name}</span>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div>
-                <h3 className="text-sm font-bold text-white/60 mb-3 uppercase tracking-wider">Weekly picks</h3>
-                <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
-                  {weeklyPicks.map((v) => (
-                    <div key={v.id} onClick={() => setPlaying(v)} className="flex-shrink-0 w-[140px] md:w-[180px] group cursor-pointer">
-                      <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-[#1c1c1e] mb-2">
-                        <img src={v.posterUrl || v.backdropUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <div className="flex items-center gap-2">
+                        {tile.count !== null && tile.count !== undefined && tile.count > 0 && (
+                          <span className="text-[10px] font-bold text-white/40">{tile.count}</span>
+                        )}
+                        {tile.badge && (
+                          <span className="text-[9px] font-bold text-[#D4AF37] border border-[#D4AF37]/30 px-1.5 py-0.5 rounded uppercase">{tile.badge}</span>
+                        )}
+                        <ChevronRight size={14} className="text-white/20 group-hover:text-white/60 transition" />
                       </div>
-                      <h4 className="text-xs font-bold text-white leading-tight line-clamp-2 group-hover:text-[#E53945] transition">{v.title}</h4>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-
-            {/* E. YOUR CREATORS */}
-            {followedCreators.length > 0 && (
-              <section>
-                <div className="flex items-center gap-2 mb-4">
-                  <h2 className="text-xl md:text-2xl font-black tracking-tight">Your Creators</h2>
-                  <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent ml-2" />
-                </div>
-                <div className="flex gap-6 overflow-x-auto scrollbar-hide pb-2">
-                  {followedCreators.map((c: any) => (
-                    <Link key={c.id} href={`/podcaster/${c.slug}`} className="flex flex-col items-center gap-2 flex-shrink-0 group w-[80px] md:w-[96px]">
-                      <div className="w-16 h-16 md:w-20 md:h-20 rounded-full p-[2px] bg-gradient-to-br from-[#E53945] to-[#D4AF37] group-hover:scale-105 transition-transform">
-                        <div className="w-full h-full rounded-full border-2 border-[#0a0303] overflow-hidden bg-[#1c1c1e]">
-                          {c.photoUrl ? <img src={c.photoUrl} alt={c.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xl font-bold text-white">{c.name?.[0]}</div>}
-                        </div>
-                      </div>
-                      <span className="text-xs font-semibold text-white/80 group-hover:text-white transition truncate w-full text-center">{c.name}</span>
                     </Link>
                   ))}
                 </div>
               </section>
-            )}
 
-            {/* D. YOUR LIBRARY */}
-            <section>
-              <div className="flex items-center gap-2 mb-4">
-                <h2 className="text-xl md:text-2xl font-black tracking-tight">Your Library</h2>
-                <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent ml-2" />
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {[
-                  { name: "Watchlist", icon: List, href: "/my-list", count: watchlistCount },
-                  { name: "Favourites", icon: Heart, href: "/my-list?tab=favourites", count: null },
-                  { name: "History", icon: History, href: "/my-list?tab=history", count: progressList.length },
-                  { name: "Saved Podcasts", icon: Mic, href: "/podcasts", count: null },
-                  { name: "Collections", icon: FolderHeart, href: "/collections", count: null },
-                  { name: "Downloads", icon: Download, href: "#", count: null, badge: "App only" },
-                ].map((tile) => (
-                  <Link
-                    key={tile.name}
-                    href={tile.href}
-                    className="relative flex flex-col justify-between p-4 md:p-5 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] backdrop-blur-xl border border-white/10 transition group overflow-hidden"
-                  >
-                    <div className="flex items-start justify-between mb-4">
-                      <tile.icon size={22} className="text-[#E53945]" />
-                      {tile.count !== null && tile.count !== undefined && tile.count > 0 && (
-                        <span className="text-[10px] font-bold bg-white/10 px-2 py-0.5 rounded-full text-white/70">{tile.count}</span>
-                      )}
-                      {tile.badge && (
-                        <span className="text-[9px] font-bold bg-[#D4AF37]/20 text-[#D4AF37] px-2 py-0.5 rounded-full uppercase tracking-wide">{tile.badge}</span>
-                      )}
-                    </div>
-                    <div>
-                      <h3 className="text-sm md:text-base font-bold text-white group-hover:text-[#E53945] transition">{tile.name}</h3>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </section>
+              {/* H. YOUR ACTIVITY */}
+              <section className="px-5 md:px-12 pb-10">
+                <h2 className="text-xl md:text-2xl font-black tracking-tight mb-6">Your Activity</h2>
+                <div className="flex flex-wrap gap-8 md:gap-16">
+                  <div>
+                    <p className="text-3xl md:text-5xl font-black text-white">{totalHours}</p>
+                    <p className="text-[10px] md:text-xs text-white/40 font-bold uppercase tracking-widest mt-1">Hours Watched</p>
+                  </div>
+                  <div>
+                    <p className="text-3xl md:text-5xl font-black text-white">{videosCompleted}</p>
+                    <p className="text-[10px] md:text-xs text-white/40 font-bold uppercase tracking-widest mt-1">Completed</p>
+                  </div>
+                  <div>
+                    <p className="text-3xl md:text-5xl font-black text-white">{categoriesExplored}</p>
+                    <p className="text-[10px] md:text-xs text-white/40 font-bold uppercase tracking-widest mt-1">Categories</p>
+                  </div>
+                </div>
+              </section>
 
-            {/* H. YOUR ACTIVITY */}
-            <section className="pb-10">
-              <div className="flex items-center gap-2 mb-4">
-                <h2 className="text-xl md:text-2xl font-black tracking-tight">Your Activity</h2>
-                <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent ml-2" />
-              </div>
-              <div className="grid grid-cols-3 gap-3 md:gap-4">
-                <div className="flex flex-col items-center justify-center p-5 md:p-6 rounded-2xl bg-white/[0.03] backdrop-blur-xl border border-white/10 text-center">
-                  <span className="text-2xl md:text-3xl font-black text-white">{totalHours}</span>
-                  <span className="text-[10px] md:text-xs text-white/50 font-semibold uppercase tracking-wider mt-1">Hours Watched</span>
-                </div>
-                <div className="flex flex-col items-center justify-center p-5 md:p-6 rounded-2xl bg-white/[0.03] backdrop-blur-xl border border-white/10 text-center">
-                  <span className="text-2xl md:text-3xl font-black text-white">{videosCompleted}</span>
-                  <span className="text-[10px] md:text-xs text-white/50 font-semibold uppercase tracking-wider mt-1">Completed</span>
-                </div>
-                <div className="flex flex-col items-center justify-center p-5 md:p-6 rounded-2xl bg-white/[0.03] backdrop-blur-xl border border-white/10 text-center">
-                  <span className="text-2xl md:text-3xl font-black text-white">{categoriesExplored}</span>
-                  <span className="text-[10px] md:text-xs text-white/50 font-semibold uppercase tracking-wider mt-1">Categories</span>
-                </div>
-              </div>
-            </section>
-
+            </div>
           </div>
         )}
 
