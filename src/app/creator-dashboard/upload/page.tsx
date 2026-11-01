@@ -36,6 +36,9 @@ function UploadContent() {
   const [showSharePrompt, setShowSharePrompt] = useState(false);
 
   const uploadToR2 = async (file: File) => {
+    if (file.name.toLowerCase().endsWith(".mov")) {
+      throw new Error("Apple .mov files do not play on Android or Chrome. Please export your video as .mp4 and try again.");
+    }
     if (file.size === 0) throw new Error("The selected file is empty (0 bytes).");
 
     const res = await fetch("/api/r2-upload", {
