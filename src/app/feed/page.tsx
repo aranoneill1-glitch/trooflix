@@ -189,7 +189,7 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
 
       {/* TOP LEFT: CREATOR AVATAR + NAME */}
       <Link
-        href={creatorSlug ? `/podcaster/${creatorSlug}` : `/profile/${video.uploaderUserId || "creator"}`}
+        href={creatorSlug ? `/profile/${creatorSlug}` : `/profile/${video.uploaderUserId || "creator"}`}
         className="absolute top-12 left-4 z-30 flex items-center gap-3 group"
       >
         <div className="w-11 h-11 rounded-full overflow-hidden bg-[#1c1c1e] shrink-0">
