@@ -46,6 +46,18 @@ export default function SignupPage() {
       setError("You must agree to the Terms of Service.");
       return;
     }
+
+    // Basic email format check — requires something@something.tld
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
+    if (!emailOk) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
     
     setLoading(true);
     setError("");
