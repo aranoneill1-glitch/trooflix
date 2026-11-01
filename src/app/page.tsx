@@ -282,6 +282,8 @@ export default function Home() {
             <>
               {/* MOBILE SECTION: Pills + Header + Avatars + Hero */}
               <div className="lg:hidden w-full flex flex-col relative z-10 bg-[#0a0303] min-h-screen">
+                {/* Ambient glow for glass refraction */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] h-[300px] bg-[#E53945]/20 rounded-full blur-[100px] pointer-events-none z-0" />
                 
                 <div className="absolute top-0 left-0 w-full h-[300px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#E53945]/15 via-[#0a0303]/0 to-transparent pointer-events-none z-0" />
                 {/* Category Pills (Moved to top) */}
@@ -290,7 +292,7 @@ export default function Home() {
                     <button
                       key={cat}
                       onClick={() => { setActiveCategory(cat === activeCategory ? null : cat); }}
-                      className={`px-5 py-1.5 rounded-full text-sm font-semibold whitespace-nowrap transition-colors ${activeCategory === cat ? "bg-white text-black" : "bg-white/10 text-white/80 hover:bg-white/20"}`}
+                      className={`px-5 py-1.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all duration-300 backdrop-blur-xl border ${activeCategory === cat ? "bg-white text-black border-white shadow-[0_4px_20px_rgba(255,255,255,0.2)]" : "bg-white/[0.04] text-white/80 border-white/10 hover:bg-white/10 hover:border-white/20 shadow-sm"}`}
                     >
                       {cat.split(" ")[0]}
                     </button>
@@ -309,7 +311,7 @@ export default function Home() {
                 
                 {/* Avatars with Follow (Moved up) */}
                 {creators && creators.length > 0 && (
-                  <div className="flex gap-4 overflow-x-auto scrollbar-hide px-4 pb-3 relative z-20">
+                  <div className="flex gap-4 overflow-x-auto scrollbar-hide px-4 pb-4 pt-2 relative z-20 mx-4 mb-4 rounded-2xl bg-white/[0.02] border border-white/[0.05] backdrop-blur-md">
                     {[...creators].slice(0, 15).map((c: any) => (
                       <Link key={c.id} href={`/podcaster/${c.slug}`} className="flex flex-col items-center text-center flex-shrink-0 group w-[96px]">
                         <div className="w-20 h-20 rounded-full p-[2px] bg-[#E53945] group-hover:scale-105 transition-transform mb-2">
