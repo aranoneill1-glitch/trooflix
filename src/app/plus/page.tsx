@@ -154,7 +154,10 @@ export default function PlusPage() {
     return "Good evening";
   };
 
-  const isPremium = profile?.has_pass || profile?.tier === 'pro' || profile?.tier === 'creator';
+  const isCreator = profile?.tier === "creator" || profile?.tier === "podcaster" || profile?.tier === "pro";
+  const isTrooPass = profile?.has_pass === true;
+  const memberStatusLabel = isCreator ? "Creator" : "TrooPass Member";
+  const badgeLabel = isCreator ? "CREATOR ACCESS" : "VIP ACCESS";
   const displayName = profile?.display_name || user?.user_metadata?.display_name || user?.email?.split('@')[0] || "Member";
   
   // Cinematic Hero Poster (Most recent watch, or newest video)
@@ -208,7 +211,7 @@ export default function PlusPage() {
                   </div>
                   <div>
                     <p className="text-[10px] md:text-xs tracking-[0.3em] text-[#E53945] font-bold uppercase mb-1 md:mb-2 drop-shadow-md">
-                      {isPremium ? "Premium Member" : "Free Member"}
+                      {memberStatusLabel}
                     </p>
                     <h1 className="text-3xl md:text-5xl font-black tracking-tight text-white mb-1 md:mb-2 drop-shadow-lg">
                       {getGreeting()}, {displayName}.
@@ -220,10 +223,10 @@ export default function PlusPage() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                  {isPremium ? (
+                  {true ? (
                     <div className="flex items-center gap-2 bg-[#D4AF37]/20 backdrop-blur-md border border-[#D4AF37]/50 rounded-full px-4 py-2 shadow-lg">
                       <Crown size={14} className="text-[#D4AF37]" />
-                      <span className="text-xs font-bold text-[#D4AF37] tracking-wide drop-shadow-sm">VIP ACCESS</span>
+                      <span className="text-xs font-bold text-[#D4AF37] tracking-wide drop-shadow-sm">{badgeLabel}</span>
                     </div>
                   ) : (
                     <Link href="/upgrade" className="flex items-center gap-2 bg-[#E53945] hover:bg-[#d12e39] rounded-full px-5 py-2.5 transition shadow-xl">
