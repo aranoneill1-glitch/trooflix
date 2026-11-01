@@ -286,13 +286,13 @@ export default function Comments({ videoId, onMetaChange }: { videoId: number, o
       .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
   return (
-    <div className="mt-12 mb-8">
+    <div className="pb-8">
 
       {/* New comment form */}
       {user ? (
         <form
           onSubmit={(e) => submit(e)}
-          className="sticky bottom-0 bg-black/40 backdrop-blur-xl border-t border-white/10 pt-2.5 pb-3 md:pt-3 md:pb-4 -mx-2 px-2 mt-auto"
+          className="bg-transparent pb-4 mb-4 border-b border-white/10"
         >
           <div className="flex items-end gap-2.5">
             <div
