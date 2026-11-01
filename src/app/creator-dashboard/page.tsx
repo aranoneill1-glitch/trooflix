@@ -98,12 +98,20 @@ function CreatorDashboardContent() {
       const r2Data = await r2Res.json();
       if (!r2Res.ok) throw new Error("Failed to get R2 upload URL");
 
-      const uploadRes = await fetch(r2Data.uploadUrl, {
-        method: 'PUT',
-        body: file,
-        headers: { 'Content-Type': file.type },
+      // Use XMLHttpRequest instead of fetch to fix iOS Safari 0-byte bug
+      await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", r2Data.uploadUrl, true);
+        xhr.setRequestHeader("Content-Type", file.type || "image/jpeg");
+        
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) resolve(true);
+          else reject(new Error(`Failed to upload image. Status: ${xhr.status}`));
+        };
+        
+        xhr.onerror = () => reject(new Error("Network error during image upload."));
+        xhr.send(file);
       });
-      if (!uploadRes.ok) throw new Error("Failed to upload image to R2");
 
       const { error } = await supabase.from("profiles").update({
         avatar_url: r2Data.publicUrl
