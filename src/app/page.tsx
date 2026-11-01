@@ -548,25 +548,8 @@ function AppReelHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { 
     animate(dragX, 0, { type: "spring", stiffness: 300, damping: 30 });
   };
 
-  const activeVideo = videos[activeIndex];
-
   return (
-    <div className="relative w-full h-[440px] flex items-center justify-center mb-6 mt-2 overflow-hidden">
-      {/* Ambient Background Glow */}
-      <AnimatePresence mode="wait">
-        <motion.div
-           key={`ambient-${activeVideo.id}`}
-           initial={{ opacity: 0 }}
-           animate={{ opacity: 0.4 }}
-           exit={{ opacity: 0 }}
-           transition={{ duration: 1 }}
-           className="absolute inset-0 z-0 pointer-events-none"
-        >
-          <img src={activeVideo.backdropUrl} alt="" className="w-full h-full object-cover blur-[80px] scale-150 saturate-200" />
-          <div className="absolute inset-0 bg-black/40" />
-        </motion.div>
-      </AnimatePresence>
-
+    <div className="relative w-full h-[330px] flex items-center justify-center mb-6 mt-2 bg-black overflow-hidden">
       <div className="relative z-10 w-full h-full flex items-center justify-center">
         {videos.map((video, i) => (
           <AppReelCard
@@ -594,7 +577,6 @@ function AppReelCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMor
     return i - c + (d / 250);
   });
 
-  // Swipe movement: 70% width per swipe
   const x = useTransform(offset, (o) => `${o * 70}%`); 
   const scale = useTransform(offset, (o) => Math.max(0.85, 1 - Math.abs(o) * 0.15)); 
   const opacity = useTransform(offset, (o) => Math.abs(o) > 1.5 ? 0 : 1); 
@@ -607,38 +589,38 @@ function AppReelCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMor
       onPointerUp={onPointerUp}
       onClick={() => { if (isActive) onMore(video); }}
       style={{ x, scale, opacity, zIndex, touchAction: "pan-y" }}
-      className="absolute w-[70vw] max-w-[280px] aspect-[3/4] rounded-[28px] cursor-pointer shadow-[0_20px_50px_rgba(0,0,0,0.8)] select-none bg-[#1c1c1e] border border-white/10"
+      className="absolute w-[70vw] max-w-[210px] aspect-[3/4] rounded-[20px] cursor-pointer shadow-[0_15px_40px_rgba(0,0,0,0.9)] select-none bg-[#1c1c1e] border border-white/10"
     >
-      <div className="relative w-full h-full rounded-[28px] overflow-hidden pointer-events-none">
+      <div className="relative w-full h-full rounded-[20px] overflow-hidden pointer-events-none">
         <img src={video.backdropUrl} alt={video.title} className="w-full h-full object-cover" draggable={false} />
         
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-95" />
 
-        <div className="absolute bottom-0 inset-x-0 p-5 flex flex-col items-start gap-3 pointer-events-auto">
-          <h3 className="text-2xl font-black tracking-tight text-white drop-shadow-lg leading-tight line-clamp-3">
+        <div className="absolute bottom-0 inset-x-0 p-3 flex flex-col items-start gap-1.5 pointer-events-auto">
+          <h3 className="text-lg font-black tracking-tight text-white drop-shadow-lg leading-tight line-clamp-2">
             {video.title}
           </h3>
           
-          <div className="flex items-center gap-2 text-[11px] font-semibold text-white/80">
+          <div className="flex items-center gap-1.5 text-[9px] font-semibold text-white/80">
              <span>{video.year}</span>
-             <span className="border border-white/30 px-1.5 py-0.5 rounded">{video.rating || "TV-MA"}</span>
+             <span className="border border-white/30 px-1 py-0.5 rounded">{video.rating || "TV-MA"}</span>
              <span>{video.duration}</span>
           </div>
 
           {isActive && (
-            <div className="flex items-center gap-3 w-full mt-2">
+            <div className="flex items-center gap-2 w-full mt-1.5">
               <button 
                 onClick={(e) => { e.stopPropagation(); onPlay(video); }}
-                className="flex-1 flex items-center justify-center gap-2 bg-[#E53945] text-white px-4 py-3 rounded-full font-bold text-sm hover:bg-[#d12e39] transition active:scale-95 shadow-lg"
+                className="flex-1 flex items-center justify-center gap-1.5 bg-[#E53945] text-white px-3 py-2 rounded-full font-bold text-xs hover:bg-[#d12e39] transition active:scale-95 shadow-lg"
               >
-                <Play size={16} fill="currentColor" /> Play
+                <Play size={12} fill="currentColor" /> Play
               </button>
               
               <button 
                 onClick={(e) => { e.stopPropagation(); }}
-                className="w-11 h-11 flex items-center justify-center bg-white/20 backdrop-blur-md border border-white/30 text-white rounded-full hover:bg-white/30 transition active:scale-95 shrink-0"
+                className="w-8 h-8 flex items-center justify-center bg-white/20 backdrop-blur-md border border-white/30 text-white rounded-full hover:bg-white/30 transition active:scale-95 shrink-0"
               >
-                <Plus size={20} />
+                <Plus size={14} />
               </button>
             </div>
           )}
