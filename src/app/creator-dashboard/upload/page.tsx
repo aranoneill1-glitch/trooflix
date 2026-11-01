@@ -33,10 +33,14 @@ function UploadContent() {
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
 
   const [loading, setLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadStatus, setUploadStatus] = useState("");
   const [success, setSuccess] = useState(false);
   const [showSharePrompt, setShowSharePrompt] = useState(false);
 
-  const uploadToR2 = async (file: File) => {
+  const uploadToR2 = async (file: File, label: string) => {
+    setUploadStatus(`Uploading ${label}...`);
+    setUploadProgress(0);
     console.log("Starting upload for:", file.name, "Size:", file.size, "Type:", file.type);
     
     if (file.size === 0) {
@@ -63,7 +67,7 @@ function UploadContent() {
       xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) {
           const percent = Math.round((event.loaded / event.total) * 100);
-          console.log(`Upload progress: ${percent}%`);
+          setUploadProgress(percent);
         }
       };
 
@@ -122,8 +126,8 @@ function UploadContent() {
         .eq("user_id", user.id)
         .single();
 
-      const uploadedMediaUrl = (!isTweet && mediaFile) ? await uploadToR2(mediaFile) : "";
-      const uploadedThumbnailUrl = (!isTweet && !isShort && thumbnailFile) ? await uploadToR2(thumbnailFile) : "";
+      const uploadedMediaUrl = (!isTweet && mediaFile) ? await uploadToR2(mediaFile, "Video") : "";
+      const uploadedThumbnailUrl = (!isTweet && !isShort && thumbnailFile) ? await uploadToR2(thumbnailFile, "Thumbnail") : "";
 
       const res = await fetch("/api/save-video", {
         method: "POST",
@@ -255,14 +259,26 @@ function UploadContent() {
             )}
           </div>
 
-          <button disabled={loading} type="submit" className="w-full bg-[#E53945] hover:bg-[#d12e39] text-white font-bold py-4 rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-[#E53945]/20">
-            {loading ? "Uploading..." : (
-              <>
-                {isTweet ? <MessageSquare size={20} /> : <UploadCloud size={20} />} 
-                Publish {isTweet ? "Tweet" : (isShort ? "Short" : "Video")}
-              </>
-            )}
-          </button>
+          {loading ? (
+            <div className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-4 flex flex-col gap-3 shadow-lg">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-bold text-white">{uploadStatus}</span>
+                <span className="text-sm font-black text-[#E53945]">{uploadProgress}%</span>
+              </div>
+              <div className="w-full h-2 bg-black rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-[#E53945] transition-all duration-300 ease-out" 
+                  style={{ width: `${uploadProgress}%` }} 
+                />
+              </div>
+              <p className="text-[10px] text-white/40 text-center">Please do not close this tab.</p>
+            </div>
+          ) : (
+            <button type="submit" className="w-full bg-[#E53945] hover:bg-[#d12e39] text-white font-bold py-4 rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-[#E53945]/20">
+              {isTweet ? <MessageSquare size={20} /> : <UploadCloud size={20} />} 
+              Publish {isTweet ? "Tweet" : (isShort ? "Short" : "Video")}
+            </button>
+          )}
         </form>
       </div>
 
