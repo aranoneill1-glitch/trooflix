@@ -277,8 +277,8 @@ export default function Home() {
         <>
           {!showingFiltered && (
             <>
-              {/* MOBILE SECTION: Avatars + Carousel */}
-              <div className="lg:hidden w-full flex flex-col">
+              {/* MOBILE SECTION: Pills + Avatars + App Reel Hero */}
+              <div className="lg:hidden w-full flex flex-col relative">
                 {/* Header */}
                 <div className="px-4 pt-20 pb-4">
                   <p className="text-[10px] tracking-[0.4em] text-white/50 font-semibold mb-1 uppercase">
@@ -289,6 +289,30 @@ export default function Home() {
                   </h2>
                 </div>
                 
+                {/* Category Pills */}
+                <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 pb-6">
+                  {CATEGORIES.map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => { setActiveCategory(cat === activeCategory ? null : cat); }}
+                      className={`px-5 py-1.5 rounded-full text-sm font-semibold whitespace-nowrap transition-colors ${activeCategory === cat ? "bg-white text-black" : "bg-white/10 text-white/80 hover:bg-white/20"}`}
+                    >
+                      {cat.split(" ")[0]}
+                    </button>
+                  ))}
+                </div>
+
+                {/* App Reel Hero */}
+                {heroPool.length > 0 && (
+                  <AppReelHero 
+                    videos={heroPool} 
+                    activeIndex={heroIndex} 
+                    setActiveIndex={setHeroIndex} 
+                    onPlay={handleInstantPlay}
+                    onMore={(v) => setSelected(v)}
+                  />
+                )}
+
                 {/* Avatars with Follow */}
                 {creators && creators.length > 0 && (
                   <div className="flex gap-4 overflow-x-auto scrollbar-hide px-4 pb-6">
@@ -311,15 +335,6 @@ export default function Home() {
                   </div>
                 )}
 
-                {/* Carousel */}
-                {heroPool.length > 0 && (
-                  <MobileNetflixHero
-                    videos={heroPool}
-                    activeIndex={heroIndex}
-                    onPlay={handleInstantPlay}
-                    onMore={(v) => setSelected(v)}
-                  />
-                )}
               </div>
 
               {/* DESKTOP SECTION: Hero + Avatars */}
@@ -498,67 +513,136 @@ function DesktopHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[],
   );
 }
 
-/* ============ MOBILE NETFLIX HERO (mirrors DesktopHero) ============ */
-function MobileNetflixHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[], activeIndex: number, onPlay: (v: Video) => void, onMore: (v: Video) => void }) {
-  if (!videos || videos.length === 0) return null;
+/* ============ MOBILE APP REEL HERO ============ */
+function AppReelHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { videos: Video[], activeIndex: number, setActiveIndex: (i: number) => void, onPlay: (v: Video) => void, onMore: (v: Video) => void }) {
+  const dragX = useMotionValue(0);
+  const currentIndex = useMotionValue(activeIndex);
+  const pointerStartX = useRef(0);
+
+  useEffect(() => {
+    animate(currentIndex, activeIndex, { type: "spring", stiffness: 300, damping: 30 });
+  }, [activeIndex]);
+
+  const handlePointerDown = (e: React.PointerEvent, index: number) => {
+    if (index !== activeIndex) return;
+    if ((e.target as HTMLElement).closest("button")) return;
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    pointerStartX.current = e.clientX;
+    dragX.set(0);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent, index: number) => {
+    if (index !== activeIndex) return;
+    if (!(e.currentTarget as HTMLElement).hasPointerCapture(e.pointerId)) return;
+    dragX.set(e.clientX - pointerStartX.current);
+  };
+
+  const handlePointerUp = (e: React.PointerEvent, index: number) => {
+    if (index !== activeIndex) return;
+    if (!(e.currentTarget as HTMLElement).hasPointerCapture(e.pointerId)) return;
+    (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+    const swipe = dragX.get();
+    if (swipe < -40) setActiveIndex((activeIndex + 1) % videos.length);
+    else if (swipe > 40) setActiveIndex((activeIndex - 1 + videos.length) % videos.length);
+    animate(dragX, 0, { type: "spring", stiffness: 300, damping: 30 });
+  };
+
   const activeVideo = videos[activeIndex];
 
   return (
-    <section className="relative w-full h-[48vh] min-h-[360px] max-h-[440px] flex items-center justify-start overflow-hidden bg-black">
+    <div className="relative w-full pb-8 pt-2">
+      {/* Ambient Background Glow */}
       <AnimatePresence mode="wait">
         <motion.div
-          key={activeVideo.id}
-          initial={{ opacity: 0, scale: 1.05 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.8 }}
-          className="absolute inset-0 z-0"
+           key={`ambient-${activeVideo.id}`}
+           initial={{ opacity: 0 }}
+           animate={{ opacity: 0.4 }}
+           exit={{ opacity: 0 }}
+           transition={{ duration: 1 }}
+           className="absolute inset-0 z-0 pointer-events-none overflow-hidden"
         >
-          <img src={activeVideo.backdropUrl} alt={activeVideo.title} className="w-full h-full object-cover object-center" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#09090B] via-[#09090B]/60 to-transparent w-full" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#09090B] via-transparent to-transparent w-full" />
+          <img src={activeVideo.backdropUrl} alt="" className="w-full h-full object-cover blur-[80px] scale-150 saturate-200" />
+          <div className="absolute inset-0 bg-black/40" />
         </motion.div>
       </AnimatePresence>
 
-      <div className="relative z-10 px-5 max-w-full flex flex-col items-start pt-8">
-        <motion.div
-          key={`text-${activeVideo.id}`}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <h1 className="text-2xl font-black text-white leading-[1.1] mb-3 drop-shadow-2xl line-clamp-2">
-            {activeVideo.title}
-          </h1>
-
-          <div className="flex items-center gap-3 text-xs font-semibold mb-3 flex-wrap">
-            <span className="text-white/80">{activeVideo.year}</span>
-            <span className="border border-white/30 px-2 py-0.5 rounded text-[10px]">{activeVideo.rating || "TV-MA"}</span>
-            <span className="text-white/80">{activeVideo.duration}</span>
-            <span className="text-[#1ed760] font-bold">{activeVideo.match}% Match</span>
-          </div>
-
-          <p className="text-sm text-white/80 leading-relaxed mb-4 line-clamp-2 drop-shadow-md">
-            {activeVideo.description || "No description available."}
-          </p>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => onPlay(activeVideo)}
-              className="flex items-center gap-1.5 bg-[#E53945] hover:bg-[#d12e39] text-white px-5 py-2.5 rounded-full font-bold text-sm transition-transform hover:scale-105 shadow-xl"
-            >
-              <Play size={16} fill="currentColor" /> Play
-            </button>
-            <button
-              onClick={() => onMore(activeVideo)}
-              className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white px-5 py-2.5 rounded-full font-bold text-sm transition-transform hover:scale-105 border border-white/10"
-            >
-              <Info size={16} /> More Info
-            </button>
-          </div>
-        </motion.div>
+      <div className="relative z-10 w-full flex items-center justify-center perspective-[1200px]">
+        {videos.map((video, i) => (
+          <AppReelCard
+            key={video.id}
+            video={video}
+            i={i}
+            activeIndex={activeIndex}
+            currentIndex={currentIndex}
+            dragX={dragX}
+            onPlay={onPlay}
+            onMore={onMore}
+            isActive={i === activeIndex}
+            onPointerDown={(e: React.PointerEvent) => handlePointerDown(e, i)}
+            onPointerMove={(e: React.PointerEvent) => handlePointerMove(e, i)}
+            onPointerUp={(e: React.PointerEvent) => handlePointerUp(e, i)}
+          />
+        ))}
       </div>
-    </section>
+    </div>
+  );
+}
+
+function AppReelCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMore, isActive, onPointerDown, onPointerMove, onPointerUp }: any) {
+  const offset = useTransform([currentIndex, dragX], ([c, d]: any[]) => {
+    return i - c + (d / 250);
+  });
+
+  const x = useTransform(offset, (o) => `calc(${o * 80}%)`); 
+  const scale = useTransform(offset, (o) => Math.max(0.85, 1 - Math.abs(o) * 0.15)); 
+  const opacity = useTransform(offset, (o) => Math.abs(o) > 1.5 ? 0 : 1); 
+  const zIndex = useTransform(offset, (o) => Math.round(100 - Math.abs(o) * 10)); 
+
+  return (
+    <motion.div
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onClick={() => { if (isActive) onMore(video); }}
+      style={{ x, scale, opacity, zIndex, touchAction: "pan-y" }}
+      className="absolute w-[72%] aspect-[3/4] rounded-[28px] cursor-pointer shadow-[0_20px_50px_rgba(0,0,0,0.8)] select-none bg-[#1c1c1e] border border-white/10"
+    >
+      <div className="relative w-full h-full rounded-[28px] overflow-hidden pointer-events-none">
+        <img src={video.backdropUrl} alt={video.title} className="w-full h-full object-cover" draggable={false} />
+        
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-95" />
+
+        <div className="absolute bottom-0 inset-x-0 p-5 flex flex-col items-start gap-3 pointer-events-auto">
+          <h3 className="text-2xl font-black tracking-tight text-white drop-shadow-lg leading-tight line-clamp-3">
+            {video.title}
+          </h3>
+          
+          <div className="flex items-center gap-2 text-[11px] font-semibold text-white/80">
+             <span>{video.year}</span>
+             <span className="border border-white/30 px-1.5 py-0.5 rounded">{video.rating || "TV-MA"}</span>
+             <span>{video.duration}</span>
+          </div>
+
+          {isActive && (
+            <div className="flex items-center gap-3 w-full mt-2">
+              <button 
+                onClick={(e) => { e.stopPropagation(); onPlay(video); }}
+                className="flex-1 flex items-center justify-center gap-2 bg-[#E53945] text-white px-4 py-3 rounded-full font-bold text-sm hover:bg-[#d12e39] transition active:scale-95 shadow-lg"
+              >
+                <Play size={16} fill="currentColor" /> Play
+              </button>
+              
+              <button 
+                onClick={(e) => { e.stopPropagation(); }}
+                className="w-11 h-11 flex items-center justify-center bg-white/20 backdrop-blur-md border border-white/30 text-white rounded-full hover:bg-white/30 transition active:scale-95 shrink-0"
+              >
+                <Plus size={20} />
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </motion.div>
   );
 }
 
