@@ -97,7 +97,7 @@ export default function SignupPage() {
           userId: authData.user.id,
           username: cleanHandle,
           displayName: cleanHandle,
-          tier: "user",
+          tier: activeTab === "troopass" ? "user" : "podcaster",
         }),
       });
 
