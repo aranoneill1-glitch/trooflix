@@ -224,7 +224,10 @@ export default function Home() {
     <>
     <PullToRefresh onRefresh={async () => { window.location.reload(); }}>
     <main className="min-h-screen bg-[#09090B] text-white overflow-x-hidden pb-20 lg:pb-0 relative">
-      <div className="relative z-[100]"><div className="relative z-[100]"><div className="relative z-[100]"><TopBar onMenu={() => setDrawerOpen(true)} /></div></div></div>
+      {/* Subtle ambient background gradient */}
+      <div className="absolute top-0 left-0 w-full h-[60vh] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/[0.05] via-transparent to-transparent pointer-events-none z-0" />
+      
+      <div className="relative z-[100]"><TopBar onMenu={() => setDrawerOpen(true)} /></div>
       
       <AnimatePresence>
         {drawerOpen && (
