@@ -224,7 +224,7 @@ export default function Home() {
     <>
     <PullToRefresh onRefresh={async () => { window.location.reload(); }}>
     <main className="min-h-screen bg-black text-white overflow-x-hidden pb-20 lg:pb-0">
-      <div className="relative z-[100]"><TopBar onMenu={() => setDrawerOpen(true)} /></div>
+      <div className="relative z-[100]"><div className="relative z-[100]"><TopBar onMenu={() => setDrawerOpen(true)} /></div></div>
       
       <AnimatePresence>
         {drawerOpen && (
@@ -278,9 +278,9 @@ export default function Home() {
           {!showingFiltered && (
             <>
               {/* MOBILE SECTION: Pills + Avatars + App Reel Hero */}
-              <div className="lg:hidden w-full flex flex-col">
+              <div className="lg:hidden w-full flex flex-col relative z-10">
                 {/* Header */}
-                <div className="px-4 pt-20 pb-4">
+                <div className="px-4 pt-24 pb-4 relative z-20">
                   <p className="text-[10px] tracking-[0.4em] text-white/50 font-semibold mb-1 uppercase">
                     The Home of Independent Voices
                   </p>
@@ -290,7 +290,7 @@ export default function Home() {
                 </div>
                 
                 {/* Category Pills */}
-                <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 pb-6">
+                <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 pb-6 relative z-20">
                   {CATEGORIES.map((cat) => (
                     <button
                       key={cat}
@@ -315,7 +315,7 @@ export default function Home() {
 
                 {/* Avatars with Follow */}
                 {creators && creators.length > 0 && (
-                  <div className="flex gap-4 overflow-x-auto scrollbar-hide px-4 pb-6">
+                  <div className="flex gap-4 overflow-x-auto scrollbar-hide px-4 pb-6 relative z-20">
                     {[...creators].slice(0, 15).map((c: any) => (
                       <Link key={c.id} href={`/podcaster/${c.slug}`} className="flex flex-col items-center text-center flex-shrink-0 group w-[96px]">
                         <div className="w-20 h-20 rounded-full p-[2px] bg-[#E53945] group-hover:scale-105 transition-transform mb-2">
@@ -550,7 +550,7 @@ function AppReelHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { 
   const activeVideo = videos[activeIndex];
 
   return (
-    <div className="relative w-full h-[440px] mb-6 mt-4">
+    <div className="relative w-full h-[420px] flex items-center justify-center my-4 overflow-hidden">
       {/* Ambient Background Glow */}
       <AnimatePresence mode="wait">
         <motion.div
@@ -559,14 +559,14 @@ function AppReelHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { 
            animate={{ opacity: 0.4 }}
            exit={{ opacity: 0 }}
            transition={{ duration: 1 }}
-           className="absolute inset-0 z-0 pointer-events-none overflow-hidden"
+           className="absolute inset-0 z-0 pointer-events-none"
         >
           <img src={activeVideo.backdropUrl} alt="" className="w-full h-full object-cover blur-[80px] scale-150 saturate-200" />
           <div className="absolute inset-0 bg-black/40" />
         </motion.div>
       </AnimatePresence>
 
-      <div className="relative z-10 w-full flex items-center justify-center perspective-[1200px]">
+      <div className="relative z-10 w-full h-full flex items-center justify-center">
         {videos.map((video, i) => (
           <AppReelCard
             key={video.id}
@@ -593,7 +593,8 @@ function AppReelCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMor
     return i - c + (d / 250);
   });
 
-  const x = useTransform(offset, (o) => `calc(${o * 80}%)`); 
+  // Move by 70% of screen width per swipe
+  const x = useTransform(offset, (o) => `${o * 70}%`); 
   const scale = useTransform(offset, (o) => Math.max(0.85, 1 - Math.abs(o) * 0.15)); 
   const opacity = useTransform(offset, (o) => Math.abs(o) > 1.5 ? 0 : 1); 
   const zIndex = useTransform(offset, (o) => Math.round(100 - Math.abs(o) * 10)); 
@@ -605,7 +606,7 @@ function AppReelCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMor
       onPointerUp={onPointerUp}
       onClick={() => { if (isActive) onMore(video); }}
       style={{ x, scale, opacity, zIndex, touchAction: "pan-y" }}
-      className="absolute left-1/2 -translate-x-1/2 w-[75%] aspect-[3/4] rounded-[28px] cursor-pointer shadow-[0_20px_50px_rgba(0,0,0,0.8)] select-none bg-[#1c1c1e] border border-white/10"
+      className="absolute w-[70vw] max-w-[280px] aspect-[3/4] rounded-[28px] cursor-pointer shadow-[0_20px_50px_rgba(0,0,0,0.8)] select-none bg-[#1c1c1e] border border-white/10"
     >
       <div className="relative w-full h-full rounded-[28px] overflow-hidden pointer-events-none">
         <img src={video.backdropUrl} alt={video.title} className="w-full h-full object-cover" draggable={false} />
