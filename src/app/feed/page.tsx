@@ -182,7 +182,7 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
             videoRef.current.play().catch(() => {});
           }
         }}
-        className="w-full h-full object-cover cursor-pointer"
+        className="w-full h-full object-contain cursor-pointer"
         onClick={handleScreenClick}
       />
 
