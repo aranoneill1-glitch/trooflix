@@ -109,12 +109,18 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
   const creatorInitial = creatorName.charAt(0).toUpperCase();
 
   useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          videoRef.current?.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+          const playPromise = video.play();
+          if (playPromise !== undefined) {
+            playPromise.then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+          }
         } else {
-          videoRef.current?.pause();
+          video.pause();
           setIsPlaying(false);
           setIsExpanded(false);
         }
@@ -122,7 +128,7 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
       { threshold: 0.6 }
     );
 
-    if (videoRef.current) observer.observe(videoRef.current);
+    observer.observe(video);
     return () => observer.disconnect();
   }, []);
 
@@ -169,8 +175,14 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
         loop
         playsInline
         muted={isMuted}
+        preload="auto"
         onTimeUpdate={handleTimeUpdate}
-        className="w-full h-full object-contain cursor-pointer"
+        onLoadedData={() => {
+          if (videoRef.current) {
+            videoRef.current.play().catch(() => {});
+          }
+        }}
+        className="w-full h-full object-cover cursor-pointer"
         onClick={handleScreenClick}
       />
 
