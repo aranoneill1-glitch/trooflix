@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, UserPlus, MessageSquare, CheckCircle2, LayoutGrid, List, ShoppingBag, Star, Lock, Play } from "lucide-react";
 import HomeFeedCard from "@/components/HomeFeedCard";
+import CommentSheet from "@/components/CommentSheet";
 import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
@@ -32,6 +33,8 @@ export default function PublicProfilePage() {
   const [activeContentTab, setActiveContentTab] = useState<"All" | "Videos" | "Premium" | "Shop">("All");
   const [contentView, setContentView] = useState<"grid" | "list">("grid");
   const [activeVideoId, setActiveVideoId] = useState<number | null>(null);
+  const [commentSheetVideoId, setCommentSheetVideoId] = useState<number | null>(null);
+  const [likedVideos, setLikedVideos] = useState<Record<number, boolean>>({});
 
   useEffect(() => {
     async function loadProfileAndVideos() {
@@ -214,9 +217,9 @@ export default function PublicProfilePage() {
                           onPlay={() => {}} 
                           isActive={activeVideoId === v.id} 
                           onSetActive={() => setActiveVideoId(v.id)} 
-                          onOpenComments={() => {}} 
-                          isLiked={false} 
-                          onToggleLike={() => {}} 
+                          onOpenComments={() => setCommentSheetVideoId(v.id)} 
+                          isLiked={!!likedVideos[v.id]} 
+                          onToggleLike={() => setLikedVideos(prev => ({ ...prev, [v.id]: !prev[v.id] }))} 
                           hideCreatorInfo={true}
                         />
                       ))}
@@ -311,6 +314,12 @@ export default function PublicProfilePage() {
             </div>
           </div>
         </div>
+
+        <CommentSheet
+          videoId={commentSheetVideoId}
+          open={commentSheetVideoId !== null}
+          onClose={() => setCommentSheetVideoId(null)}
+        />
 
         <MobileBottomNav />
       </div>
