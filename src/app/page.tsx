@@ -224,7 +224,7 @@ export default function Home() {
     <>
     <PullToRefresh onRefresh={async () => { window.location.reload(); }}>
     <main className="min-h-screen bg-black text-white overflow-x-hidden pb-20 lg:pb-0">
-      <TopBar onMenu={() => setDrawerOpen(true)} />
+      <div className="relative z-[100]"><TopBar onMenu={() => setDrawerOpen(true)} /></div>
       
       <AnimatePresence>
         {drawerOpen && (
@@ -278,7 +278,7 @@ export default function Home() {
           {!showingFiltered && (
             <>
               {/* MOBILE SECTION: Pills + Avatars + App Reel Hero */}
-              <div className="lg:hidden w-full flex flex-col relative">
+              <div className="lg:hidden w-full flex flex-col">
                 {/* Header */}
                 <div className="px-4 pt-20 pb-4">
                   <p className="text-[10px] tracking-[0.4em] text-white/50 font-semibold mb-1 uppercase">
@@ -550,7 +550,7 @@ function AppReelHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { 
   const activeVideo = videos[activeIndex];
 
   return (
-    <div className="relative w-full pb-8 pt-2">
+    <div className="relative w-full h-[440px] mb-6 mt-4">
       {/* Ambient Background Glow */}
       <AnimatePresence mode="wait">
         <motion.div
@@ -605,7 +605,7 @@ function AppReelCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMor
       onPointerUp={onPointerUp}
       onClick={() => { if (isActive) onMore(video); }}
       style={{ x, scale, opacity, zIndex, touchAction: "pan-y" }}
-      className="absolute w-[72%] aspect-[3/4] rounded-[28px] cursor-pointer shadow-[0_20px_50px_rgba(0,0,0,0.8)] select-none bg-[#1c1c1e] border border-white/10"
+      className="absolute left-1/2 -translate-x-1/2 w-[75%] aspect-[3/4] rounded-[28px] cursor-pointer shadow-[0_20px_50px_rgba(0,0,0,0.8)] select-none bg-[#1c1c1e] border border-white/10"
     >
       <div className="relative w-full h-full rounded-[28px] overflow-hidden pointer-events-none">
         <img src={video.backdropUrl} alt={video.title} className="w-full h-full object-cover" draggable={false} />
