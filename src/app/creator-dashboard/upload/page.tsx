@@ -37,7 +37,12 @@ function UploadContent() {
   const [showSharePrompt, setShowSharePrompt] = useState(false);
 
   const uploadToR2 = async (file: File) => {
-    if (file.size === 0) throw new Error("The selected file is empty (0 bytes).");
+    if (file.size === 0) {
+      throw new Error(
+        "This file shows as 0 bytes. On iPhone, videos selected from the Photos app sometimes fail to load. " +
+        "Please try: 1) Export the video to the Files app first, or 2) Go to Settings > Photos > Download and Keep Originals."
+      );
+    }
 
     const res = await fetch("/api/r2-upload", {
       method: "POST",
