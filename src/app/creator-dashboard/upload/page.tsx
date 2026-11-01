@@ -35,6 +35,7 @@ export default function UploadVideoPage() {
   const uploadToR2 = async (file: File) => {
     // Use the absolute URL to bypass any redirects
     const res = await fetch("https://www.trooflixtv.com/api/r2-upload", {
+      mode: "cors",
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ filename: file.name, contentType: file.type }),
@@ -43,6 +44,7 @@ export default function UploadVideoPage() {
     if (error) throw new Error(error);
 
     const uploadRes = await fetch(uploadUrl, {
+      mode: "cors",
       method: "PUT",
       body: file,
       headers: { "Content-Type": file.type },
@@ -78,6 +80,7 @@ export default function UploadVideoPage() {
 
       // Use absolute URL for the API
       const res = await fetch("https://www.trooflixtv.com/api/videos", {
+      mode: "cors",
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
