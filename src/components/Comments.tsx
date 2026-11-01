@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ThumbsUp, MoreVertical, Trash2, Send, Image as ImageIcon } from "lucide-react";
+import { ThumbsUp, MoreVertical, Trash2, Send, Image as ImageIcon, User } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import GifPicker from "@/components/GifPicker";
 import VerifiedBadge from "@/components/VerifiedBadge";
@@ -85,9 +85,14 @@ export default function Comments({ videoId, onMetaChange }: { videoId: number, o
   // Load user + comments + liked comment IDs
   useEffect(() => {
     const supabase = createClient();
-    getCachedUser().then((user) => {
+    getCachedUser().then(async (user) => {
       if (user) {
         setUser({ id: user.id, email: user.email || "" });
+        
+        // Fetch user profile for avatar
+        const { data: prof } = await supabase.from("profiles").select("avatar_url").eq("user_id", user.id).single();
+        if (prof?.avatar_url) setUserAvatar(prof.avatar_url);
+
         // Fetch liked comment IDs
         fetch(`/api/comment-likes?user_id=${user.id}&video_id=${videoId}`)
           .then((r) => r.json())
@@ -292,17 +297,16 @@ export default function Comments({ videoId, onMetaChange }: { videoId: number, o
       {user ? (
         <form
           onSubmit={(e) => submit(e)}
-          className="bg-transparent pb-4 mb-4 border-b border-white/10"
+          className="bg-transparent pb-4"
         >
           <div className="flex items-end gap-2.5">
             <div
-              className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 overflow-hidden"
-              style={{ background: userAvatar ? "transparent" : avatarColor(user.email) }}
+              className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 overflow-hidden bg-white/10"
             >
               {userAvatar ? (
-                <img src={userAvatar} alt="" className="w-full h-full object-cover rounded-xl" />
+                <img src={userAvatar} alt="" className="w-full h-full object-cover" />
               ) : (
-                initial(user.email)
+                <User size={18} className="text-white/50" />
               )}
             </div>
             <div className="flex-1 flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full pl-3 md:pl-4 pr-2 py-1.5 md:py-2 focus-within:border-white/40 transition shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
