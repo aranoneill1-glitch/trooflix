@@ -223,7 +223,7 @@ export default function Home() {
   return (
     <>
     <PullToRefresh onRefresh={async () => { window.location.reload(); }}>
-    <main className="min-h-screen bg-[#09090B] text-white overflow-x-hidden pb-20 lg:pb-0 relative">
+    <main className="min-h-screen bg-[#0a0303] text-white overflow-x-hidden pb-20 lg:pb-0 relative">
       {/* Subtle ambient background gradient */}
       <div className="absolute top-0 left-0 w-full h-[60vh] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/[0.05] via-transparent to-transparent pointer-events-none z-0" />
       
@@ -552,7 +552,7 @@ function AppReelHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { 
   };
 
   return (
-    <div className="relative w-full h-[330px] flex items-center justify-center mb-3 mt-1 bg-black overflow-hidden">
+    <div className="relative w-full h-[330px] flex items-center justify-center mb-3 mt-1 bg-[#0a0303] overflow-hidden">
       <div className="relative z-10 w-full h-full flex items-center justify-center">
         {videos.map((video, i) => (
           <AppReelCard
