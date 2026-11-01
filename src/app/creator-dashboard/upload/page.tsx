@@ -33,7 +33,8 @@ export default function UploadVideoPage() {
   const [showSharePrompt, setShowSharePrompt] = useState(false);
 
   const uploadToR2 = async (file: File) => {
-    const res = await fetch("/api/r2-upload", {
+    // Use the absolute URL to bypass any redirects
+    const res = await fetch("https://www.trooflixtv.com/api/r2-upload", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ filename: file.name, contentType: file.type }),
@@ -75,6 +76,7 @@ export default function UploadVideoPage() {
       const uploadedMediaUrl = mediaFile ? await uploadToR2(mediaFile) : "";
       const uploadedThumbnailUrl = thumbnailFile ? await uploadToR2(thumbnailFile) : "";
 
+      // Use absolute URL for the API
       const res = await fetch("https://www.trooflixtv.com/api/videos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -92,7 +94,10 @@ export default function UploadVideoPage() {
         }),
       });
 
-      if (!res.ok) throw new Error("Failed to save video data");
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to save video data");
+      }
 
       setSuccess(true);
       setTimeout(() => router.push("/creator-dashboard"), 2200);
