@@ -75,7 +75,7 @@ export default function UploadVideoPage() {
       const uploadedMediaUrl = mediaFile ? await uploadToR2(mediaFile) : "";
       const uploadedThumbnailUrl = thumbnailFile ? await uploadToR2(thumbnailFile) : "";
 
-      const res = await fetch("/api/videos", {
+      const res = await fetch("https://www.trooflixtv.com/api/videos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
