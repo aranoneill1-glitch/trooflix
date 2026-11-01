@@ -32,10 +32,8 @@ export default function UploadVideoPage() {
   const [success, setSuccess] = useState(false);
   const [showSharePrompt, setShowSharePrompt] = useState(false);
 
-  const uploadToR2 = async (file: File) => {
-    // Use the absolute URL to bypass any redirects
+    const uploadToR2 = async (file: File) => {
     const res = await fetch("/api/r2-upload", {
-      mode: "cors",
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ filename: file.name, contentType: file.type }),
@@ -44,12 +42,18 @@ export default function UploadVideoPage() {
     if (error) throw new Error(error);
 
     const uploadRes = await fetch(uploadUrl, {
-      mode: "cors",
       method: "PUT",
       body: file,
       headers: { "Content-Type": file.type },
     });
+    
     if (!uploadRes.ok) throw new Error("Failed to upload to R2");
+    
+    // Verify file has actual data
+    const checkRes = await fetch(publicUrl, { method: "HEAD" });
+    const size = checkRes.headers.get("content-length");
+    if (size === "0") throw new Error("Upload failed: file is 0 bytes. Check R2 CORS.");
+
     return publicUrl;
   };
 
