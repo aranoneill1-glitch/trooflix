@@ -281,7 +281,7 @@ export default function Home() {
               <div className="lg:hidden w-full flex flex-col relative z-10">
                 
                 {/* Category Pills (Moved to top) */}
-                <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 pt-10 pb-3 relative z-20">
+                <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 pt-24 pb-3 relative z-20">
                   {CATEGORIES.map((cat) => (
                     <button
                       key={cat}
@@ -589,7 +589,7 @@ function AppReelCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMor
       onPointerUp={onPointerUp}
       onClick={() => { if (isActive) onMore(video); }}
       style={{ x, scale, opacity, zIndex, touchAction: "pan-y" }}
-      className="absolute w-[70vw] max-w-[210px] aspect-[3/4] rounded-[20px] cursor-pointer shadow-[0_15px_40px_rgba(0,0,0,0.9)] select-none bg-[#1c1c1e] border border-white/10"
+      className="absolute w-[70vw] max-w-[240px] aspect-[3/4] rounded-[20px] cursor-pointer shadow-[0_15px_40px_rgba(0,0,0,0.9)] select-none bg-[#1c1c1e] border border-white/10"
     >
       <div className="relative w-full h-full rounded-[20px] overflow-hidden pointer-events-none">
         <img src={video.backdropUrl} alt={video.title} className="w-full h-full object-cover" draggable={false} />
