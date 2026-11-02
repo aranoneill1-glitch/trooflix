@@ -14,6 +14,7 @@ export default function UserMenu() {
   const [profile, setProfile] = useState<any>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loggingOut, setLoggingOut] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -43,11 +44,17 @@ export default function UserMenu() {
   }, []);
 
   const handleLogout = async () => {
+    setIsOpen(false);
+    setLoggingOut(true);
     const supabase = createClient();
     await supabase.auth.signOut();
     clearUserCache();
-    router.push("/");
-    router.refresh();
+    
+    // Show confirmation for 1.2 seconds before redirecting
+    setTimeout(() => {
+      router.push("/");
+      router.refresh();
+    }, 1200);
   };
 
   if (loading) {
@@ -134,6 +141,31 @@ export default function UserMenu() {
                 Log Out
               </button>
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* LOGGING OUT OVERLAY */}
+      <AnimatePresence>
+        {loggingOut && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-md flex flex-col items-center justify-center"
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", damping: 20, stiffness: 200 }}
+              className="flex flex-col items-center"
+            >
+              <div className="w-16 h-16 bg-[#E53945]/20 rounded-full flex items-center justify-center mb-6">
+                <LogOut size={32} className="text-[#E53945]" />
+              </div>
+              <h2 className="text-2xl font-black text-white mb-2">Logged Out</h2>
+              <p className="text-sm text-white/50">See you next time.</p>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
