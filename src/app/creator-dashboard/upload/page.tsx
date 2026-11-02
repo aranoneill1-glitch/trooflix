@@ -1,14 +1,13 @@
 "use client";
 
-import { useState, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, CheckCircle2, Image as ImageIcon, Globe, Lock, Home, User, UploadCloud, MessageSquare } from "lucide-react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Video, Mic, MessageSquare, UploadCloud, CheckCircle2, Image as ImageIcon, Globe, Star, Lock } from "lucide-react";
 import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { getCachedUser } from "@/lib/cache";
 import { createClient } from "@/utils/supabase/client";
-import { motion, AnimatePresence } from "framer-motion";
 
 const CATEGORIES = [
   "Documentaries", "Podcasts", "Independent Films", "Books", "History", 
@@ -18,104 +17,52 @@ const CATEGORIES = [
   "Ancient Civilisation", "Comedy", "News", "Gaming"
 ];
 
-function UploadContent() {
+export default function UploadContentPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const isShort = searchParams.get("type") === "short";
-  const isTweet = searchParams.get("type") === "tweet";
-
+  const [contentType, setContentType] = useState<"video" | "podcast" | "tweet">("video");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("History");
-  const [visibility, setVisibility] = useState<"public" | "premium">("public");
-
+  const [visibility, setVisibility] = useState<"plus" | "premium">("plus");
+  
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
-
+  
   const [loading, setLoading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [uploadStatus, setUploadStatus] = useState("");
   const [success, setSuccess] = useState(false);
-  const [showSharePrompt, setShowSharePrompt] = useState(false);
 
-  const uploadToR2 = async (file: File, label: string) => {
-    setUploadStatus(`Uploading ${label}...`);
-    setUploadProgress(0);
-    console.log("Starting upload for:", file.name, "Size:", file.size, "Type:", file.type);
-    
-    if (file.size === 0) {
-      throw new Error("The browser is reading this file as 0 bytes. On iPhone, please export the video to the Files app first, then upload from there.");
-    }
-
-    // 1. Get the presigned URL
+  const uploadToR2 = async (file: File) => {
+    if (file.size === 0) { throw new Error("File is 0 bytes. If on iPhone, open Photos, wait for download, then retry."); }
     const res = await fetch("/api/r2-upload", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ filename: file.name, contentType: file.type || "video/mp4" }),
+      body: JSON.stringify({ filename: file.name, contentType: file.type }),
     });
     
-    if (!res.ok) throw new Error("Failed to generate upload URL");
     const { uploadUrl, publicUrl, error } = await res.json();
     if (error) throw new Error(error);
 
-    // 2. Upload using XMLHttpRequest to handle large files on mobile
-    await new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.open("PUT", uploadUrl, true);
-      xhr.setRequestHeader("Content-Type", file.type || "video/mp4");
-
-      xhr.upload.onprogress = (event) => {
-        if (event.lengthComputable) {
-          const percent = Math.round((event.loaded / event.total) * 100);
-          setUploadProgress(percent);
-        }
-      };
-
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          console.log("Upload complete. Response:", xhr.responseText);
-          resolve(true);
-        } else {
-          console.error("Upload failed. Status:", xhr.status, "Response:", xhr.responseText);
-          reject(new Error(`Upload failed with status ${xhr.status}. Check R2 CORS settings.`));
-        }
-      };
-
-      xhr.onerror = () => {
-        console.error("Network error during upload.");
-        reject(new Error("Network error during upload. The file might be too large or CORS is blocking it."));
-      };
-
-      xhr.send(file);
+    const uploadRes = await fetch(uploadUrl, {
+      method: "PUT",
+      body: file,
+      headers: { "Content-Type": file.type },
     });
 
+    if (!uploadRes.ok) throw new Error("Failed to upload to R2");
     return publicUrl;
   };
 
-  const handleFormSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (isTweet) {
-      if (!description.trim()) return alert("Please write some text for your tweet.");
-      publishContent(true);
-      return;
-    }
-
-    if (!mediaFile) return alert("Please select a video file.");
-    
-    if (isShort) {
-      publishContent(true);
-    } else {
-      if (!thumbnailFile) return alert("Please select a thumbnail image.");
-      setShowSharePrompt(true);
-    }
-  };
-
-  const publishContent = async (shareToFeed: boolean) => {
-    setShowSharePrompt(false);
     setLoading(true);
 
     try {
+      // Mandatory file checks for Video/Podcast
+      if (contentType !== "tweet") {
+        if (!mediaFile) throw new Error("Please select a media file.");
+        if (!thumbnailFile) throw new Error("Please select a thumbnail image.");
+      }
+
       const user = await getCachedUser();
       if (!user) throw new Error("Not logged in");
 
@@ -126,208 +73,157 @@ function UploadContent() {
         .eq("user_id", user.id)
         .single();
 
-      const uploadedMediaUrl = (!isTweet && mediaFile) ? await uploadToR2(mediaFile, "Video") : "";
-      const uploadedThumbnailUrl = (!isTweet && !isShort && thumbnailFile) ? await uploadToR2(thumbnailFile, "Thumbnail") : "";
+      let uploadedMediaUrl = "";
+      let uploadedThumbnailUrl = "";
 
-      const res = await fetch("/api/save-video", {
+      if (mediaFile) uploadedMediaUrl = await uploadToR2(mediaFile);
+      if (thumbnailFile) uploadedThumbnailUrl = await uploadToR2(thumbnailFile);
+
+      const res = await fetch("/api/videos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: isTweet ? "Tweet" : title,
-          description,
-          type: isTweet ? "Tweet" : (isShort ? "Short" : "Documentary"),
+          title: title,
+          description: description,
+          type: contentType === "video" ? "Documentary" : contentType === "podcast" ? "Podcast" : "Tweet",
           creatorId: profile?.creator_id || null,
-          uploaderUserId: user.id,
-          videoUrl: uploadedMediaUrl,
-          posterUrl: uploadedThumbnailUrl,
-          category: isTweet ? "Tweets" : (isShort ? "Shorts" : category),
-          visibility: isTweet ? "public" : (isShort ? "public" : visibility),
-          feed_visible: isTweet ? true : (isShort ? false : shareToFeed),
-        }),
+          videoUrl: contentType === "tweet" ? "" : uploadedMediaUrl, 
+          posterUrl: uploadedThumbnailUrl || `https://images.unsplash.com/photo-1516280440502-861d6c619b6e?w=500&q=80`,
+          category: category,
+          visibility: visibility
+        })
       });
 
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to save data");
-      }
+      if (!res.ok) throw new Error("Failed to save video data");
 
       setSuccess(true);
-      setTimeout(() => router.push(isTweet ? "/" : (isShort ? "/feed" : "/creator-dashboard")), 2200);
+      setTimeout(() => router.push("/creator-dashboard"), 2000);
     } catch (err: any) {
       console.error(err);
       alert("Upload failed: " + err.message);
+    } finally {
       setLoading(false);
     }
   };
 
   if (success) {
     return (
-      <main className="min-h-screen bg-[#0a0303] text-white flex flex-col items-center justify-center px-4">
-        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-20 h-20 bg-[#1ed760]/20 rounded-full flex items-center justify-center mb-6">
+      <main className="min-h-screen bg-[#09090B] text-white flex flex-col items-center justify-center px-4">
+        <div className="w-20 h-20 bg-[#1ed760]/20 rounded-full flex items-center justify-center mb-6">
           <CheckCircle2 size={40} className="text-[#1ed760]" />
-        </motion.div>
-        <h1 className="text-2xl font-bold mb-2">
-          {isTweet ? "Tweet Published" : (isShort ? "Short Published" : "Video Published")}
-        </h1>
-        <p className="text-white/50 text-sm">Redirecting you now...</p>
+        </div>
+        <h1 className="text-2xl font-bold mb-2">Uploaded Successfully!</h1>
+        <p className="text-white/50 text-sm">Redirecting you to your dashboard...</p>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[#0a0303] text-white pb-32 font-sans">
+    <main className="min-h-screen bg-[#09090B] text-white pb-32 font-sans">
       <TopBar />
-
+      
       <div className="max-w-2xl mx-auto px-4 pt-24">
         <div className="flex items-center gap-4 mb-8">
           <Link href="/creator-dashboard" className="p-2 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition">
             <ArrowLeft size={20} />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold">
-              {isTweet ? "Add a Tweet" : (isShort ? "Upload Short" : "Upload Video")}
-            </h1>
-            <p className="text-sm text-white/50">
-              {isTweet ? "Share your thoughts with your followers." : (isShort ? "Publish directly to the Shorts feed." : "Publish to your profile and (optionally) the home feed.")}
-            </p>
+            <h1 className="text-2xl font-bold">Upload Content</h1>
+            <p className="text-sm text-white/50">Publish to the Feed, Categories, and your Profile.</p>
           </div>
         </div>
 
-        <form onSubmit={handleFormSubmit} className="space-y-6">
-          <div className="space-y-4">
-            {!isTweet && (
-              <div>
-                <label className="block text-xs font-bold text-white/60 mb-1">Title <span className="text-[#E53945]">*</span></label>
-                <input required type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#E53945]" placeholder="Name your video..." />
-              </div>
-            )}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          
+          {/* Type Selector */}
+          <div className="grid grid-cols-3 gap-2">
+            <button type="button" onClick={() => setContentType("video")} className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition ${contentType === "video" ? "bg-[#E53945]/10 border-[#E53945] text-[#E53945]" : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10"}`}>
+              <Video size={24} />
+              <span className="text-xs font-bold">Video</span>
+            </button>
+            <button type="button" onClick={() => setContentType("podcast")} className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition ${contentType === "podcast" ? "bg-blue-500/10 border-blue-500 text-blue-400" : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10"}`}>
+              <Mic size={24} />
+              <span className="text-xs font-bold">Podcast</span>
+            </button>
+            <button type="button" onClick={() => setContentType("tweet")} className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition ${contentType === "tweet" ? "bg-white/10 border-white text-white" : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10"}`}>
+              <MessageSquare size={24} />
+              <span className="text-xs font-bold">Tweet</span>
+            </button>
+          </div>
 
+          <div className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-white/60 mb-1">
-                {isTweet ? "What's on your mind?" : "Description"} <span className="text-[#E53945]">*</span>
-              </label>
-              <textarea required value={description} onChange={e => setDescription(e.target.value)} className={`w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#E53945] resize-none ${isTweet ? 'h-40' : 'h-24'}`} placeholder={isTweet ? "Write your tweet here..." : "Write a description..."} />
+              <label className="block text-xs font-bold text-white/60 mb-1">Title <span className="text-[#E53945]">*</span></label>
+              <input required type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#E53945]" placeholder={contentType === 'tweet' ? "What's on your mind?" : "Name your video or podcast..."} />
             </div>
 
-            {!isShort && !isTweet && (
+            <div>
+              <label className="block text-xs font-bold text-white/60 mb-1">Description / Text <span className="text-[#E53945]">*</span></label>
+              <textarea required value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#E53945] resize-none h-24" placeholder="Write a description or your tweet here..." />
+            </div>
+
+            {/* Category Selector */}
+            <div>
+              <label className="block text-xs font-bold text-white/60 mb-1">Category <span className="text-[#E53945]">*</span></label>
+              <select 
+                required
+                value={category} 
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#E53945] appearance-none"
+              >
+                {CATEGORIES.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Visibility Selector */}
+            <div>
+              <label className="block text-xs font-bold text-white/60 mb-1">Visibility <span className="text-[#E53945]">*</span></label>
+              <div className="grid grid-cols-2 gap-2">
+                <button type="button" onClick={() => setVisibility("plus")} className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border transition ${visibility === "plus" ? "bg-[#E53945]/10 border-[#E53945] text-[#E53945]" : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10"}`}>
+                  <Star size={18} />
+                  <span className="text-[10px] font-bold uppercase">TrooPlus</span>
+                </button>
+                <button type="button" onClick={() => setVisibility("premium")} className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border transition ${visibility === "premium" ? "bg-purple-500/10 border-purple-500 text-purple-400" : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10"}`}>
+                  <Lock size={18} />
+                  <span className="text-[10px] font-bold uppercase">Premium</span>
+                </button>
+              </div>
+            </div>
+
+            {contentType !== "tweet" && (
               <>
                 <div>
-                  <label className="block text-xs font-bold text-white/60 mb-1">Category <span className="text-[#E53945]">*</span></label>
-                  <select required value={category} onChange={(e) => setCategory(e.target.value)} className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#E53945] appearance-none">
-                    {CATEGORIES.map(cat => (<option key={cat} value={cat}>{cat}</option>))}
-                  </select>
+                  <label className="block text-xs font-bold text-white/60 mb-1">Media File (Video or Audio) <span className="text-[#E53945]">*</span></label>
+                  <div onClick={() => document.getElementById('media-upload')?.click()} className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] hover:bg-white/5 transition">
+                    <UploadCloud size={24} className="text-white/50 mb-2" />
+                    <span className="text-sm font-bold text-white">{mediaFile ? mediaFile.name : "Tap to select video or audio"}</span>
+                    <span className="text-xs text-white/40 mt-1">MP4, MOV, MP3</span>
+                  </div>
+                  <input id="media-upload" type="file" accept="video/*,audio/*" onChange={(e) => setMediaFile(e.target.files?.[0] || null)} className="hidden" />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-white/60 mb-1">Visibility <span className="text-[#E53945]">*</span></label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button type="button" onClick={() => setVisibility("public")} className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border transition ${visibility === "public" ? "bg-[#E53945]/10 border-[#E53945] text-[#E53945]" : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10"}`}>
-                      <Globe size={18} />
-                      <span className="text-[10px] font-bold uppercase">Public</span>
-                    </button>
-                    <button type="button" onClick={() => setVisibility("premium")} className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border transition ${visibility === "premium" ? "bg-[#D4AF37]/10 border-[#D4AF37] text-[#D4AF37]" : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10"}`}>
-                      <Lock size={18} />
-                      <span className="text-[10px] font-bold uppercase">Premium</span>
-                    </button>
+                  <label className="block text-xs font-bold text-white/60 mb-1">Thumbnail Image <span className="text-[#E53945]">*</span></label>
+                  <div onClick={() => document.getElementById('thumb-upload')?.click()} className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] hover:bg-white/5 transition">
+                    <ImageIcon size={24} className="text-white/50 mb-2" />
+                    <span className="text-sm font-bold text-white">{thumbnailFile ? thumbnailFile.name : "Tap to select thumbnail image"}</span>
+                    <span className="text-xs text-white/40 mt-1">JPG, PNG, WEBP</span>
                   </div>
+                  <input id="thumb-upload" type="file" accept="image/*" onChange={(e) => setThumbnailFile(e.target.files?.[0] || null)} className="hidden" />
                 </div>
               </>
             )}
-
-            {!isTweet && (
-              <div>
-                <label className="block text-xs font-bold text-white/60 mb-1">Video File <span className="text-[#E53945]">*</span></label>
-                <div onClick={() => document.getElementById('media-upload')?.click()} className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] hover:bg-white/5 transition">
-                  <UploadCloud size={24} className="text-white/50 mb-2" />
-                  <span className="text-sm font-bold text-white">{mediaFile ? mediaFile.name : "Tap to select video"}</span>
-                  <span className="text-xs text-white/40 mt-1">MP4, MOV</span>
-                </div>
-                <input id="media-upload" type="file" accept="video/*" onChange={(e) => setMediaFile(e.target.files?.[0] || null)} className="hidden" />
-              </div>
-            )}
-
-            {!isShort && !isTweet && (
-              <div>
-                <label className="block text-xs font-bold text-white/60 mb-1">Thumbnail Image <span className="text-[#E53945]">*</span></label>
-                <div onClick={() => document.getElementById('thumb-upload')?.click()} className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] hover:bg-white/5 transition">
-                  <ImageIcon size={24} className="text-white/50 mb-2" />
-                  <span className="text-sm font-bold text-white">{thumbnailFile ? thumbnailFile.name : "Tap to select thumbnail"}</span>
-                  <span className="text-xs text-white/40 mt-1">JPG, PNG, WEBP</span>
-                </div>
-                <input id="thumb-upload" type="file" accept="image/*" onChange={(e) => setThumbnailFile(e.target.files?.[0] || null)} className="hidden" />
-              </div>
-            )}
           </div>
 
-          {loading ? (
-            <div className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-4 flex flex-col gap-3 shadow-lg">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-bold text-white">{uploadStatus}</span>
-                <span className="text-sm font-black text-[#E53945]">{uploadProgress}%</span>
-              </div>
-              <div className="w-full h-2 bg-black rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-[#E53945] transition-all duration-300 ease-out" 
-                  style={{ width: `${uploadProgress}%` }} 
-                />
-              </div>
-              <p className="text-[10px] text-white/40 text-center">Please do not close this tab.</p>
-            </div>
-          ) : (
-            <button type="submit" className="w-full bg-[#E53945] hover:bg-[#d12e39] text-white font-bold py-4 rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-[#E53945]/20">
-              {isTweet ? <MessageSquare size={20} /> : <UploadCloud size={20} />} 
-              Publish {isTweet ? "Tweet" : (isShort ? "Short" : "Video")}
-            </button>
-          )}
+          <button disabled={loading} type="submit" className="w-full bg-[#E53945] hover:bg-[#d12e39] text-white font-bold py-4 rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-[#E53945]/20">
+            {loading ? "Uploading..." : <><UploadCloud size={20} /> Publish {contentType}</>}
+          </button>
         </form>
       </div>
 
-      <AnimatePresence>
-        {showSharePrompt && !isShort && !isTweet && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[400]" onClick={() => setShowSharePrompt(false)} />
-            <motion.div
-              initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 30, stiffness: 280 }}
-              className="fixed bottom-0 left-0 right-0 bg-[#0a0303] rounded-t-3xl border-t border-white/10 z-[410] p-6 pb-10 shadow-2xl"
-              style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 24px)" }}
-            >
-              <div className="w-10 h-1 bg-white/30 rounded-full mx-auto mb-5" />
-              <h3 className="text-xl font-black text-center mb-2">Share to Home Feed?</h3>
-              <p className="text-sm text-white/50 text-center mb-6">Where should this video be visible?</p>
-
-              <div className="flex flex-col gap-3">
-                <button onClick={() => publishContent(true)} className="flex items-center gap-4 p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition text-left">
-                  <div className="w-12 h-12 rounded-full bg-[#E53945]/20 flex items-center justify-center shrink-0"><Home className="text-[#E53945]" size={22} /></div>
-                  <div>
-                    <h4 className="font-bold text-white">Yes — Share to Home Feed</h4>
-                    <p className="text-xs text-white/50">Visible on the homepage and your profile.</p>
-                  </div>
-                </button>
-
-                <button onClick={() => publishContent(false)} className="flex items-center gap-4 p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition text-left">
-                  <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center shrink-0"><User className="text-white" size={22} /></div>
-                  <div>
-                    <h4 className="font-bold text-white">No — Profile Only</h4>
-                    <p className="text-xs text-white/50">Only visible on your creator profile.</p>
-                  </div>
-                </button>
-              </div>
-              <button onClick={() => setShowSharePrompt(false)} className="w-full text-center text-white/40 text-sm font-semibold mt-4 py-2">Cancel</button>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
       <MobileBottomNav />
     </main>
-  );
-}
-
-export default function UploadPage() {
-  return (
-    <Suspense fallback={<div className="min-h-screen bg-[#0a0303] flex items-center justify-center"><div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" /></div>}>
-      <UploadContent />
-    </Suspense>
   );
 }
