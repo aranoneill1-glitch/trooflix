@@ -68,6 +68,8 @@ type Video = {
   progressSeconds?: number;
   progressDuration?: number;
   chapters?: Chapter[];
+  visibility?: string;
+  feed_visible?: boolean;
 };
 
 const CATEGORIES: string[] = [
@@ -181,7 +183,11 @@ export default function Home() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const heroPool = videos.filter((v) => v.featured);
+  const heroPool = videos.filter((v) => {
+    const t = v.type?.toLowerCase();
+    // Only include public, feed-visible long-form videos (exclude shorts, tweets, and premium)
+    return t !== "short" && t !== "tweet" && v.visibility !== "premium" && v.feed_visible !== false;
+  });
   const [heroIndex, setHeroIndex] = useState(0);
 
   const isDocOrPodcast = (v: Video) => !v.uploaderUserId && (v.type === "Documentary" || v.type === "Podcast");
@@ -488,7 +494,7 @@ function DesktopHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[],
           transition={{ duration: 0.8 }}
           className="absolute inset-0 z-0"
         >
-          <img src={activeVideo.backdropUrl} alt={activeVideo.title} className="w-full h-full object-cover object-center" />
+          <img src={activeVideo.posterUrl || activeVideo.backdropUrl} alt={activeVideo.title} className="w-full h-full object-cover object-center" />
           <div className="absolute inset-0 bg-gradient-to-r from-[#09090B] via-[#09090B]/60 to-transparent w-full" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#09090B] via-transparent to-transparent w-full" />
         </motion.div>
