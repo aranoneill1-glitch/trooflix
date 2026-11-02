@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Play, Sparkles, Video, Check, Crown, Clock, Users, List, Heart, History, Mic, FolderHeart, Download, ArrowRight, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -32,6 +33,7 @@ type Video = {
 };
 
 export default function PlusPage() {
+  const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -448,16 +450,6 @@ export default function PlusPage() {
     );
   }
 
-  // ==========================================
-  // LOGGED OUT: REDIRECT TO SIGNUP
-  // ==========================================
-  return (
-    <main className="min-h-screen bg-[#0a0303] flex items-center justify-center">
-      <div className="text-center">
-        <p className="text-white/50 mb-4">Redirecting to signup...</p>
-        <Link href="/signup" className="text-[#E53945] hover:underline">Click here if you are not redirected</Link>
-      </div>
-      <script dangerouslySetInnerHTML={{ __html: "window.location.href = \"/signup\";" }} />
-    </main>
-  );
+  // If not logged in, the useEffect above redirects instantly.
+  return null;
 }
