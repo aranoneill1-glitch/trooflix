@@ -26,37 +26,35 @@ function UploadContent() {
   const [success, setSuccess] = useState(false);
 
   const uploadFile = async (file: File, label: string): Promise<string> => {
-    if (!file || file.size === 0) throw new Error(label + " is 0 bytes. On iPhone, wait for iCloud download.");
     setStatus("Preparing " + label + "...");
     setProgress(0);
-    const presignRes = await fetch("/api/r2-upload", {
+
+    const res = await fetch("/api/r2-upload", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ filename: file.name, contentType: file.type || "application/octet-stream" }),
+      body: JSON.stringify({ filename: file.name, contentType: file.type || "application/octet-stream", folder: "videos" }),
     });
-    if (!presignRes.ok) throw new Error("Failed to prepare " + label);
-    const { uploadUrl, publicUrl, error: pErr } = await presignRes.json();
-    if (pErr) throw new Error(pErr);
-    setStatus("Uploading " + label + "...");
-    // Force Safari to materialize the file by reading it via FileReader
-    const arrayBuffer = await new Promise<ArrayBuffer>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as ArrayBuffer);
-      reader.onerror = () => reject(new Error("Could not read " + label + " from disk"));
-      reader.readAsArrayBuffer(file);
-    });
-    const blob = new Blob([arrayBuffer], { type: file.type || "application/octet-stream" });
+    if (!res.ok) throw new Error("Failed to get upload URL");
+    const { uploadUrl, publicUrl } = await res.json();
 
-    await new Promise<void>((resolve, reject) => {
+    return new Promise<string>((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       xhr.open("PUT", uploadUrl, true);
       xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
-      xhr.upload.onprogress = (e) => { if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 100)); };
-      xhr.onload = () => xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error(label + " failed: HTTP " + xhr.status));
-      xhr.onerror = () => reject(new Error("Network error on " + label));
-      xhr.send(blob);
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 100));
+      };
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          setStatus("Uploaded " + label + " ✓");
+          resolve(publicUrl);
+        } else {
+          reject(new Error("Upload failed: " + xhr.status));
+        }
+      };
+      xhr.onerror = () => reject(new Error("Upload network error"));
+      xhr.send(file);
     });
-    return publicUrl;
   };
 
   const handlePublish = async () => {
