@@ -125,7 +125,7 @@ export default function TopBar({ onMenu }: Props) {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed bottom-0 left-0 right-0 z-[301] bg-[#1c1c1e] rounded-t-3xl border-t border-white/10 p-6 pb-12 lg:max-w-md lg:mx-auto lg:rounded-2xl lg:bottom-10 max-h-[85vh] overflow-y-auto"
+              className="fixed bottom-0 left-0 right-0 z-[301] bg-[#1c1c1e] rounded-t-3xl border-t border-white/10 p-6 pb-28 lg:max-w-md lg:mx-auto lg:rounded-2xl lg:bottom-10 max-h-[85vh] overflow-y-auto"
             >
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-white">Create New</h3>
@@ -144,8 +144,8 @@ export default function TopBar({ onMenu }: Props) {
                     <Video className="text-[#E53945]" size={24} />
                   </div>
                   <div>
-                    <h4 className="font-bold text-white">Upload Video / Podcast</h4>
-                    <p className="text-xs text-white/50">Publish a new piece of long-form content</p>
+                    <h4 className="font-bold text-white">Upload Video</h4>
+                    <p className="text-xs text-white/50">Publish a long-form video or documentary</p>
                   </div>
                 </Link>
 
