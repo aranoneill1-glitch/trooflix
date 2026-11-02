@@ -10,13 +10,7 @@ import { getCachedUser } from "@/lib/cache";
 import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 
-const CATEGORIES = [
-  "Documentaries", "Podcasts", "Independent Films", "Books", "History", 
-  "Politics & Geopolitics", "War & Conflict", "True Crime & Justice", 
-  "Conspiracy & Mystery", "Society & Culture", "Business & Finance", 
-  "Science & Technology", "Environment & Nature", "Religion & Spirituality", 
-  "Ancient Civilisation", "Comedy", "News", "Gaming"
-];
+const CATEGORIES = ["Documentaries","Podcasts","Independent Films","Books","History","Politics & Geopolitics","War & Conflict","True Crime & Justice","Conspiracy & Mystery","Society & Culture","Business & Finance","Science & Technology","Environment & Nature","Religion & Spirituality","Ancient Civilisation","Comedy","News","Gaming"];
 
 function UploadContent() {
   const router = useRouter();
@@ -36,11 +30,10 @@ function UploadContent() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadStatus, setUploadStatus] = useState("");
 
-  const uploadDirectToR2 = async (file: File, label: string) => {
+  const uploadSimple = async (file: File, label: string) => {
     if (file.size === 0) throw new Error(label + " is 0 bytes.");
     setUploadStatus("Preparing " + label + "...");
     setUploadProgress(0);
-
     const res = await fetch("/api/r2-upload", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -48,27 +41,93 @@ function UploadContent() {
     });
     const { uploadUrl, publicUrl, error } = await res.json();
     if (error) throw new Error(error);
-
     setUploadStatus("Uploading " + label + "...");
-
     const buffer = await file.arrayBuffer();
     if (buffer.byteLength === 0) throw new Error(label + " is empty.");
-
     await new Promise<void>((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       xhr.open("PUT", uploadUrl, true);
       xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
-      xhr.upload.onprogress = (event) => {
-        if (event.lengthComputable) setUploadProgress(Math.round((event.loaded / event.total) * 100));
-      };
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) resolve();
-        else reject(new Error(label + " failed: " + xhr.status));
-      };
+      xhr.upload.onprogress = (e) => { if (e.lengthComputable) setUploadProgress(Math.round((e.loaded / e.total) * 100)); };
+      xhr.onload = () => (xhr.status >= 200 && xhr.status < 300) ? resolve() : reject(new Error(label + " failed: " + xhr.status));
       xhr.onerror = () => reject(new Error("Network error on " + label));
       xhr.send(buffer);
     });
+    return publicUrl;
+  };
 
+  const uploadVideo = async (file: File) => {
+    if (file.size === 0) throw new Error("Video is 0 bytes. Wait for iCloud download.");
+    // Use chunking if the file is > 50MB, otherwise simple
+    if (file.size < 50 * 1024 * 1024) {
+      return await uploadSimple(file, "Video");
+    }
+
+    setUploadStatus("Initializing chunked upload...");
+    setUploadProgress(0);
+
+    const initRes = await fetch("/api/r2-multipart", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ filename: file.name, contentType: file.type || "video/mp4" }),
+    });
+    if (!initRes.ok) throw new Error("Failed to initialize upload");
+    const { uploadId, key } = await initRes.json();
+
+    const chunkSize = 5 * 1024 * 1024;
+    const totalChunks = Math.ceil(file.size / chunkSize);
+
+    for (let i = 0; i < totalChunks; i++) {
+      const start = i * chunkSize;
+      const end = Math.min(start + chunkSize, file.size);
+      const chunk = file.slice(start, end);
+
+      setUploadStatus(`Uploading chunk ${i + 1} of ${totalChunks}...`);
+
+      const chunkRes = await fetch("/api/r2-multipart/chunk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uploadId, key, partNumber: i + 1 }),
+      });
+      if (!chunkRes.ok) throw new Error("Failed to get chunk URL");
+      const { uploadUrl } = await chunkRes.json();
+
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", uploadUrl, true);
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            const chunkProgress = (e.loaded / e.total) * (100 / totalChunks);
+            setUploadProgress(Math.round((i * (100 / totalChunks)) + chunkProgress));
+          }
+        };
+        xhr.onload = () => (xhr.status >= 200 && xhr.status < 300) ? resolve() : reject(new Error("Chunk " + (i+1) + " failed: " + xhr.status));
+        xhr.onerror = () => reject(new Error("Network error on chunk " + (i+1)));
+        xhr.send(chunk);
+      });
+    }
+
+    // Ask R2 for the canonical ETags of all uploaded parts
+    setUploadStatus("Finalizing upload...");
+    const listRes = await fetch("/api/r2-multipart/list", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ uploadId, key }),
+    });
+    if (!listRes.ok) throw new Error("Failed to list parts");
+    const { parts } = await listRes.json();
+
+    if (!parts || parts.length === 0) throw new Error("No parts uploaded");
+
+    const completeRes = await fetch("/api/r2-multipart/complete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ uploadId, key, parts }),
+    });
+    if (!completeRes.ok) throw new Error("Failed to finalize upload");
+    const { publicUrl } = await completeRes.json();
+
+    setUploadProgress(100);
     return publicUrl;
   };
 
@@ -96,8 +155,8 @@ function UploadContent() {
       const supabase = createClient();
       const { data: profile } = await supabase.from("profiles").select("creator_id").eq("user_id", user.id).single();
 
-      const thumbUrl = (!isTweet && !isShort && thumbnailFile) ? await uploadDirectToR2(thumbnailFile, "Thumbnail") : "";
-      const mediaUrl = (!isTweet && mediaFile) ? await uploadDirectToR2(mediaFile, "Video") : "";
+      const thumbUrl = (!isTweet && !isShort && thumbnailFile) ? await uploadSimple(thumbnailFile, "Thumbnail") : "";
+      const mediaUrl = (!isTweet && mediaFile) ? await uploadVideo(mediaFile) : "";
 
       setUploadStatus("Saving...");
       setUploadProgress(100);
@@ -146,9 +205,7 @@ function UploadContent() {
       <TopBar />
       <div className="max-w-2xl mx-auto px-4 pt-24">
         <div className="flex items-center gap-4 mb-8">
-          <Link href="/creator-dashboard" className="p-2 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition">
-            <ArrowLeft size={20} />
-          </Link>
+          <Link href="/creator-dashboard" className="p-2 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition"><ArrowLeft size={20} /></Link>
           <div>
             <h1 className="text-2xl font-bold">{isTweet ? "Add a Tweet" : (isShort ? "Upload Short" : "Upload Video")}</h1>
             <p className="text-sm text-white/50">{isTweet ? "Share your thoughts." : (isShort ? "Publish to Shorts feed." : "Publish to your profile and home feed.")}</p>
@@ -178,12 +235,10 @@ function UploadContent() {
                   <label className="block text-xs font-bold text-white/60 mb-1">Visibility *</label>
                   <div className="grid grid-cols-2 gap-2">
                     <button type="button" onClick={() => setVisibility("public")} className={"flex flex-col items-center gap-1.5 p-3 rounded-xl border transition " + (visibility === "public" ? "bg-[#E53945]/10 border-[#E53945] text-[#E53945]" : "bg-white/5 border-white/10 text-white/50")}>
-                      <Globe size={18} />
-                      <span className="text-[10px] font-bold uppercase">Public</span>
+                      <Globe size={18} /><span className="text-[10px] font-bold uppercase">Public</span>
                     </button>
                     <button type="button" onClick={() => setVisibility("premium")} className={"flex flex-col items-center gap-1.5 p-3 rounded-xl border transition " + (visibility === "premium" ? "bg-[#D4AF37]/10 border-[#D4AF37] text-[#D4AF37]" : "bg-white/5 border-white/10 text-white/50")}>
-                      <Lock size={18} />
-                      <span className="text-[10px] font-bold uppercase">Premium</span>
+                      <Lock size={18} /><span className="text-[10px] font-bold uppercase">Premium</span>
                     </button>
                   </div>
                 </div>
@@ -236,19 +291,13 @@ function UploadContent() {
               <h3 className="text-xl font-black text-center mb-2">Share to Home Feed?</h3>
               <p className="text-sm text-white/50 text-center mb-6">Where should this video be visible?</p>
               <div className="flex flex-col gap-3">
-                <button onClick={() => publishContent(true)} className="flex items-center gap-4 p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition text-left">
+                <button onClick={() => publishContent(true)} className="flex items-center gap-4 p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-left">
                   <div className="w-12 h-12 rounded-full bg-[#E53945]/20 flex items-center justify-center shrink-0"><Home className="text-[#E53945]" size={22} /></div>
-                  <div>
-                    <h4 className="font-bold text-white">Yes — Share to Home Feed</h4>
-                    <p className="text-xs text-white/50">Visible on homepage and profile.</p>
-                  </div>
+                  <div><h4 className="font-bold text-white">Yes — Share to Home Feed</h4><p className="text-xs text-white/50">Visible on homepage and profile.</p></div>
                 </button>
-                <button onClick={() => publishContent(false)} className="flex items-center gap-4 p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition text-left">
+                <button onClick={() => publishContent(false)} className="flex items-center gap-4 p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-left">
                   <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center shrink-0"><User className="text-white" size={22} /></div>
-                  <div>
-                    <h4 className="font-bold text-white">No — Profile Only</h4>
-                    <p className="text-xs text-white/50">Only visible on your profile.</p>
-                  </div>
+                  <div><h4 className="font-bold text-white">No — Profile Only</h4><p className="text-xs text-white/50">Only visible on your profile.</p></div>
                 </button>
               </div>
               <button onClick={() => setShowSharePrompt(false)} className="w-full text-center text-white/40 text-sm font-semibold mt-4 py-2">Cancel</button>
