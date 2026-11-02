@@ -22,6 +22,7 @@ export default function CustomVideoPlayer({ src, poster, onClose }: PlayerProps)
   const [showControls, setShowControls] = useState(true);
   const [speed, setSpeed] = useState(1);
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
+  const [isScrubbing, setIsScrubbing] = useState(false);
   
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -59,20 +60,31 @@ export default function CustomVideoPlayer({ src, poster, onClose }: PlayerProps)
     handleInteraction();
   };
 
-  const handleTimeUpdate = () => {
-    if (!videoRef.current) return;
-    const current = videoRef.current.currentTime;
-    const total = videoRef.current.duration || 1;
-    setCurrentTime(current);
-    setDuration(total);
-    setProgress((current / total) * 100);
-  };
+  useEffect(() => {
+    let active = true;
+    const update = () => {
+      if (!active) return;
+      if (videoRef.current && !isScrubbing) {
+        const current = videoRef.current.currentTime;
+        const total = videoRef.current.duration || 1;
+        setCurrentTime(current);
+        setDuration(total);
+        setProgress((current / total) * 100);
+      }
+      requestAnimationFrame(update);
+    };
+    requestAnimationFrame(update);
+    return () => { active = false; };
+  }, [isScrubbing]);
 
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!videoRef.current) return;
-    const seekTo = (Number(e.target.value) / 100) * videoRef.current.duration;
+    const val = Number(e.target.value);
+    const total = videoRef.current.duration || 1;
+    const seekTo = (val / 100) * total;
     videoRef.current.currentTime = seekTo;
-    setProgress(Number(e.target.value));
+    setProgress(val);
+    setCurrentTime(seekTo); // Smoothly update text while dragging
     handleInteraction();
   };
 
@@ -81,9 +93,10 @@ export default function CustomVideoPlayer({ src, poster, onClose }: PlayerProps)
     const h = Math.floor(time / 3600);
     const m = Math.floor((time % 3600) / 60);
     const s = Math.floor(time % 60);
-    return h > 0 
-      ? `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`
-      : `${m}:${s.toString().padStart(2, "0")}`;
+    if (h > 0 || duration >= 3600) {
+      return `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+    }
+    return `${m}:${s.toString().padStart(2, "0")}`;
   };
 
   return (
@@ -97,7 +110,6 @@ export default function CustomVideoPlayer({ src, poster, onClose }: PlayerProps)
         autoPlay
         playsInline
         onClick={togglePlay}
-        onTimeUpdate={handleTimeUpdate}
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
         className="w-full h-full object-contain"
