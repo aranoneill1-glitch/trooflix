@@ -41,15 +41,15 @@ export default function NotificationsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#0a0303] text-white pb-32">
+    <main className="min-h-screen bg-[#0a0303] text-white pb-20">
       <TopBar />
       
       <div className="max-w-2xl mx-auto px-4 pt-24">
-        <div className="flex items-center gap-4 mb-8">
-          <Link href="/" className="p-2 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition">
+        <div className="flex items-center gap-4 mb-6 sticky top-20 z-30 bg-[#0a0303]/90 backdrop-blur-md py-2">
+          <button onClick={() => window.history.back()} className="p-2 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition">
             <ArrowLeft size={20} />
-          </Link>
-          <h1 className="text-2xl font-bold">Notifications</h1>
+          </button>
+          <h1 className="text-xl font-bold">Notifications</h1>
         </div>
 
         {loading ? (

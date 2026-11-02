@@ -3,10 +3,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, Plus, RefreshCw, Video, Radio, X, Play, MessageSquare } from "lucide-react";
+import { Menu, Plus, RefreshCw, Video, Radio, X, Play, MessageSquare, Bell } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import UserMenu from "@/components/UserMenu";
-import NotificationBell from "@/components/NotificationBell";
 import PWAInstallButton from "@/components/PWAInstallButton";
 import { getCachedUser } from "@/lib/cache";
 
@@ -101,7 +100,9 @@ export default function TopBar({ onMenu }: Props) {
             <RefreshCw size={20} className={isRefreshing ? "animate-spin" : ""} />
           </button>
           
-          <NotificationBell />
+          <Link href="/notifications" className="text-white/90 hover:text-white transition" aria-label="Notifications">
+            <Bell size={20} />
+          </Link>
 
           <div className="flex items-center gap-3">
             <UserMenu />
