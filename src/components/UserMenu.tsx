@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { User, LogOut, Settings, CreditCard, LayoutDashboard, Bell } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
+import NotificationBell from "@/components/NotificationBell";
 import { getCachedUser, clearUserCache } from "@/lib/cache";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -132,14 +133,7 @@ export default function UserMenu() {
                 {isCreator ? "Creator Dashboard" : "My Profile"}
               </Link>
 
-              <Link 
-                href="/notifications"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition text-sm text-white/80 hover:text-white"
-              >
-                <Bell size={16} />
-                Notifications
-              </Link>
+              <NotificationBell asMenuItem={true} />
 
               {isCreator && (
                 <Link 
