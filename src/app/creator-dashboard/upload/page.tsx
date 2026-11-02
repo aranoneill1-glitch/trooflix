@@ -39,12 +39,38 @@ function UploadContent() {
   const [uploadStatus, setUploadStatus] = useState("");
 
   const uploadThumbnail = async (file: File) => {
-    if (file.size === 0) throw new Error("Thumbnail is 0 bytes.");
-    
+    if (file.size === 0) throw new Error("Thumbnail is 0 bytes. Please try a different image.");
+
+    // Canvas re-encode to bypass iOS 0-byte bug
+    let processedBlob: Blob;
+    try {
+      const bitmap = await createImageBitmap(file);
+      const canvas = document.createElement("canvas");
+      const MAX = 1280;
+      let w = bitmap.width;
+      let h = bitmap.height;
+      if (w > MAX || h > MAX) {
+        if (w > h) { h = (h / w) * MAX; w = MAX; }
+        else { w = (w / h) * MAX; h = MAX; }
+      }
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("Canvas not supported");
+      ctx.drawImage(bitmap, 0, 0, w, h);
+      processedBlob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((b) => b ? resolve(b) : reject(new Error("Canvas export failed")), "image/jpeg", 0.85);
+      });
+    } catch (e) {
+      processedBlob = file;
+    }
+
+    if (processedBlob.size === 0) throw new Error("Thumbnail is 0 bytes after processing. The image may not be downloaded from iCloud.");
+
     const res = await fetch("/api/r2-upload", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ filename: file.name, contentType: file.type || "image/jpeg" }),
+      body: JSON.stringify({ filename: "thumbnail.jpg", contentType: "image/jpeg" }),
     });
     const { uploadUrl, publicUrl, error } = await res.json();
     if (error) throw new Error(error);
@@ -52,11 +78,12 @@ function UploadContent() {
     await new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       xhr.open("PUT", uploadUrl, true);
-      xhr.setRequestHeader("Content-Type", file.type || "image/jpeg");
+      xhr.setRequestHeader("Content-Type", "image/jpeg");
       xhr.onload = () => (xhr.status >= 200 && xhr.status < 300) ? resolve(true) : reject(new Error("Thumbnail upload failed"));
       xhr.onerror = () => reject(new Error("Network error"));
-      xhr.send(file);
+      xhr.send(processedBlob);
     });
+
     return publicUrl;
   };
 
