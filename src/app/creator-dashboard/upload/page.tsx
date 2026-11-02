@@ -38,6 +38,15 @@ function UploadContent() {
     const { uploadUrl, publicUrl, error: pErr } = await presignRes.json();
     if (pErr) throw new Error(pErr);
     setStatus("Uploading " + label + "...");
+    // Force Safari to materialize the file by reading it via FileReader
+    const arrayBuffer = await new Promise<ArrayBuffer>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as ArrayBuffer);
+      reader.onerror = () => reject(new Error("Could not read " + label + " from disk"));
+      reader.readAsArrayBuffer(file);
+    });
+    const blob = new Blob([arrayBuffer], { type: file.type || "application/octet-stream" });
+
     await new Promise<void>((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       xhr.open("PUT", uploadUrl, true);
@@ -45,7 +54,7 @@ function UploadContent() {
       xhr.upload.onprogress = (e) => { if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 100)); };
       xhr.onload = () => xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error(label + " failed: HTTP " + xhr.status));
       xhr.onerror = () => reject(new Error("Network error on " + label));
-      xhr.send(file);
+      xhr.send(blob);
     });
     return publicUrl;
   };
