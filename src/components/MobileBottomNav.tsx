@@ -66,8 +66,8 @@ export default function MobileBottomNav() {
               >
                 {tab.name === "Trooflix" ? (
                   <>
-                    <div className={`h-[22px] flex flex-col items-center justify-end pb-[1px] pointer-events-none transition-opacity ${active ? "opacity-100" : "opacity-60 group-hover:opacity-100"}`}>
-                      <span className="text-[7px] font-black tracking-[0.15em] text-white leading-none mb-0.5 mt-1">MY</span>
+                    <div className={`flex flex-col items-center justify-center pointer-events-none transition-opacity ${active ? "opacity-100" : "opacity-60 group-hover:opacity-100"}`}>
+                      <span className="text-[7px] font-black tracking-[0.15em] text-white leading-none mb-[2px]">MY</span>
                       <span className="text-[13px] font-black tracking-tighter leading-none">
                         <span className="text-white">TROO</span><span className="text-[#E53945]">FLIX</span>
                       </span>
