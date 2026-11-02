@@ -207,7 +207,7 @@ function CreatorDashboardContent() {
 
         <div className="max-w-5xl mx-auto px-4 pt-24 pb-6">
           
-          {!isPublicView && (
+          {(true) && (
           <div className="flex items-center justify-center mb-6">
             <div className="flex bg-[#1c1c1e] p-1 rounded-full border border-white/10 shadow-lg">
               <button onClick={() => setIsDashboardView(false)} className={`flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold transition-all ${!isDashboardView ? "bg-white text-black shadow-md" : "text-white/50 hover:text-white"}`}><Eye size={16} /> Profile</button>
