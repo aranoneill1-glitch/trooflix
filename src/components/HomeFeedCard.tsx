@@ -10,6 +10,7 @@ export default function HomeFeedCard({ video, creator, onMore, onPlay, isActive,
   const containerRef = useRef<HTMLDivElement>(null);
   
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isPortrait, setIsPortrait] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [progress, setProgress] = useState(0);
   const [isSeeking, setIsSeeking] = useState(false);
@@ -210,7 +211,7 @@ export default function HomeFeedCard({ video, creator, onMore, onPlay, isActive,
       <div className="w-full relative overflow-hidden flex flex-col lg:bg-[#1c1c1e] lg:rounded-2xl lg:border lg:border-white/5 lg:shadow-lg">
         
         <div className={`relative w-full bg-black overflow-hidden cursor-pointer ${isVertical ? 'aspect-[9/16]' : 'aspect-video'}`} onClick={() => { handleInteraction(); togglePlay(); }} onMouseMove={handleInteraction} onTouchStart={handleInteraction}>
-          <video ref={videoRef} src={videoSrc} className="w-full h-full object-cover" playsInline muted={isMuted} preload="metadata" onTimeUpdate={handleTimeUpdate} onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} onError={() => setError(true)} loop />
+          <video ref={videoRef} src={videoSrc} onLoadedMetadata={(e) => { const v = e.currentTarget; if (v.videoHeight > v.videoWidth) setIsPortrait(true); }} className="w-full h-full object-cover" playsInline muted={isMuted} preload="metadata" onTimeUpdate={handleTimeUpdate} onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} onError={() => setError(true)} loop />
 
           {error && <div className="absolute inset-0 flex items-center justify-center bg-black/80"><p className="text-white/50 text-sm">Video unavailable</p></div>}
 
