@@ -32,7 +32,6 @@ export default function UploadContentPage() {
   const [success, setSuccess] = useState(false);
 
   const uploadToR2 = async (file: File) => {
-    if (file.size === 0) { throw new Error("File is 0 bytes. If on iPhone, open Photos, wait for download, then retry."); }
     const res = await fetch("/api/r2-upload", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
