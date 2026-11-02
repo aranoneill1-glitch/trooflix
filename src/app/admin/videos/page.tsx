@@ -290,7 +290,7 @@ export default function VideosPage() {
           </div>
 
           <div className="col-span-2">
-            <label className="block text-xs font-bold text-white/50 uppercase tracking-wider mb-2">Creator</label>
+            <label className="block text-xs font-bold text-white/50 uppercase tracking-wider mb-2">Podcaster</label>
             <select value={form.creatorId ?? ""} onChange={(e) => setForm({ ...form, creatorId: e.target.value ? Number(e.target.value) : null })} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-red-500 transition appearance-none">
               <option value="">— None (Admin Content) —</option>
               {creators.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}

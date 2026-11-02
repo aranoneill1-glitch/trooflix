@@ -9,36 +9,33 @@ const S3 = new S3Client({
     accessKeyId: process.env.R2_ACCESS_KEY_ID!,
     secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
   },
-  requestChecksumCalculation: "WHEN_REQUIRED",
-  responseChecksumValidation: "WHEN_REQUIRED",
 });
 
 export async function POST(req: Request) {
   try {
     const { filename, contentType, folder } = await req.json();
-    if (!filename) return NextResponse.json({ error: "Missing filename" }, { status: 400 });
+
+    if (!filename || !contentType) {
+      return NextResponse.json({ error: "Missing filename or contentType" }, { status: 400 });
+    }
 
     const fileExt = filename.split('.').pop();
-    const uniqueFileName = `${folder || "media"}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+    const uniqueFileName = `${folder || 'uploads'}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
     const command = new PutObjectCommand({
       Bucket: process.env.R2_BUCKET_NAME,
       Key: uniqueFileName,
-      ContentType: contentType || "application/octet-stream",
-      ChecksumAlgorithm: undefined,
+      ContentType: contentType,
     });
 
-    const uploadUrl = await getSignedUrl(S3, command, { expiresIn: 3600 });
+    const signedUrl = await getSignedUrl(S3, command, { expiresIn: 3600 });
+
     const publicUrlBase = process.env.R2_PUBLIC_URL || `${process.env.R2_ENDPOINT}`;
     const publicUrl = `${publicUrlBase}/${uniqueFileName}`;
 
-    return NextResponse.json({ 
-      uploadUrl, 
-      signedUrl: uploadUrl,
-      publicUrl 
-    });
+    return NextResponse.json({ signedUrl, publicUrl });
   } catch (error: any) {
-    console.error("Presign error:", error);
+    console.error("R2 Presign Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
