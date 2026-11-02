@@ -17,60 +17,72 @@ function UploadContent() {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [mediaFile, setMediaFile] = useState<File | null>(null);
-  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [videoUrl, setVideoUrl] = useState("");
+  const [posterUrl, setPosterUrl] = useState("");
+  const [uploading, setUploading] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState("");
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
 
-  const uploadFile = async (file: File, label: string): Promise<string> => {
-    setStatus("Preparing " + label + "...");
+  // EXACT LOGIC FROM ADMIN PANEL
+  const uploadFile = (file: File, folder: string, onDone: (url: string) => void) => {
+    setUploading(folder);
     setProgress(0);
+    setStatus("Preparing...");
 
-    const res = await fetch("/api/r2-upload", {
+    fetch("/api/r2-upload", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ filename: file.name, contentType: file.type || "application/octet-stream", folder: "videos" }),
-    });
-    if (!res.ok) throw new Error("Failed to get upload URL");
-    const { uploadUrl, publicUrl } = await res.json();
-
-    return new Promise<string>((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.open("PUT", uploadUrl, true);
-      xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 100));
-      };
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          setStatus("Uploaded " + label + " ✓");
-          resolve(publicUrl);
-        } else {
-          reject(new Error("Upload failed: " + xhr.status));
-        }
-      };
-      xhr.onerror = () => reject(new Error("Upload network error"));
-      xhr.send(file);
-    });
+      body: JSON.stringify({ filename: file.name, contentType: file.type || "application/octet-stream", folder }),
+    })
+      .then((r) => { if (!r.ok) throw new Error("Failed to get upload URL"); return r.json(); })
+      .then(({ uploadUrl, publicUrl }) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", uploadUrl, true);
+        xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+        
+        xhr.upload.onprogress = (e) => { 
+          if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 100)); 
+        };
+        
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            onDone(publicUrl);
+            setStatus("✅ Uploaded");
+            setTimeout(() => setStatus(""), 2000);
+          } else { 
+            setStatus("❌ Upload failed: " + xhr.status); 
+          }
+          setUploading(null); 
+          setProgress(0);
+        };
+        
+        xhr.onerror = () => { 
+          setStatus("❌ Upload network error"); 
+          setUploading(null); 
+          setProgress(0); 
+        };
+        
+        xhr.send(file);
+      })
+      .catch((e) => { 
+        setStatus("❌ " + e.message); 
+        setUploading(null); 
+        setProgress(0); 
+      });
   };
 
   const handlePublish = async () => {
     setError("");
-    setLoading(true);
-    setProgress(0);
+    if (!isTweet && !videoUrl) { setError("Upload a video first."); return; }
+    setSaving(true);
     try {
-      if (!isTweet && !mediaFile) throw new Error("Select a video.");
       const user = await getCachedUser();
       if (!user) throw new Error("Not logged in.");
       const supabase = createClient();
       const { data: profile } = await supabase.from("profiles").select("creator_id").eq("user_id", user.id).single();
-      const thumbUrl = (!isTweet && !isShort && thumbnailFile) ? await uploadFile(thumbnailFile, "Thumbnail") : "";
-      const mediaUrl = (!isTweet && mediaFile) ? await uploadFile(mediaFile, "Video") : "";
-      setStatus("Saving...");
-      setProgress(100);
+
       const res = await fetch("/api/save-video", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -80,32 +92,20 @@ function UploadContent() {
           type: isTweet ? "Tweet" : isShort ? "Short" : "Documentary",
           creatorId: profile?.creator_id || null,
           uploaderUserId: user.id,
-          videoUrl: mediaUrl,
-          posterUrl: thumbUrl,
+          videoUrl,
+          posterUrl,
           category: isTweet ? "Tweets" : isShort ? "Shorts" : "History",
           visibility: "public",
           feed_visible: isTweet ? true : isShort ? false : true,
         }),
       });
       if (!res.ok) throw new Error("Save failed: HTTP " + res.status);
-      setSuccess(true);
-      setTimeout(() => router.push(isTweet ? "/" : isShort ? "/feed" : "/creator-dashboard"), 2000);
+      router.push(isTweet ? "/" : isShort ? "/feed" : "/creator-dashboard");
     } catch (err: any) {
-      setError(err.message || "Upload failed.");
-      setLoading(false);
+      setError(err.message);
+      setSaving(false);
     }
   };
-
-  if (success) {
-    return (
-      <main className="min-h-screen bg-black text-white flex items-center justify-center px-4 text-center">
-        <div>
-          <h1 className="text-2xl font-bold mb-2">Published!</h1>
-          <p className="text-white/50">Redirecting...</p>
-        </div>
-      </main>
-    );
-  }
 
   return (
     <main className="min-h-screen bg-[#0a0303] text-white pb-32">
@@ -115,35 +115,48 @@ function UploadContent() {
           <ArrowLeft size={16} /> Back
         </Link>
         <h1 className="text-2xl font-bold">{isTweet ? "Add a Tweet" : isShort ? "Upload Short" : "Upload Video"}</h1>
+        
         {!isTweet && (
           <input type="text" placeholder="Title" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white" />
         )}
         <textarea placeholder={isTweet ? "What is on your mind?" : "Description"} value={description} onChange={e => setDescription(e.target.value)} rows={4} className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white" />
+        
         {!isTweet && (
           <>
-            <div>
-              <p className="text-xs font-bold text-white/60 mb-1">Video File</p>
-              <input type="file" accept="video/*" onChange={e => setMediaFile(e.target.files?.[0] || null)} className="block w-full text-sm text-white/80" />
+            <div className="space-y-1">
+              <p className="text-xs font-bold text-white/60">Video File</p>
+              <input type="file" accept="video/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadFile(f, "videos", setVideoUrl); e.target.value = ""; }} className="block w-full text-sm text-white/80" disabled={!!uploading} />
+              {videoUrl && <p className="text-xs text-green-400 break-all">✓ Video uploaded</p>}
             </div>
+            
             {!isShort && (
-              <div>
-                <p className="text-xs font-bold text-white/60 mb-1">Thumbnail</p>
-                <input type="file" accept="image/*" onChange={e => setThumbnailFile(e.target.files?.[0] || null)} className="block w-full text-sm text-white/80" />
+              <div className="space-y-1">
+                <p className="text-xs font-bold text-white/60">Thumbnail</p>
+                <input type="file" accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadFile(f, "posters", setPosterUrl); e.target.value = ""; }} className="block w-full text-sm text-white/80" disabled={!!uploading} />
+                {posterUrl && <p className="text-xs text-green-400 break-all">✓ Thumbnail uploaded</p>}
               </div>
             )}
           </>
         )}
-        {error && <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm break-words">{error}</div>}
-        {loading ? (
-          <div className="p-4 bg-[#1c1c1e] rounded-xl">
-            <div className="flex justify-between mb-2"><span className="text-sm">{status}</span><span className="text-sm text-[#E53945]">{progress}%</span></div>
-            <div className="h-2 bg-black rounded-full overflow-hidden"><div className="h-full bg-[#E53945] transition-all" style={{ width: progress + "%" }} /></div>
+
+        {uploading && (
+          <div className="p-4 bg-[#1c1c1e] rounded-xl border border-white/10">
+            <div className="flex justify-between mb-2">
+              <span className="text-sm">{status} {uploading}</span>
+              <span className="text-sm text-[#E53945]">{progress}%</span>
+            </div>
+            <div className="h-2 bg-black rounded-full overflow-hidden">
+              <div className="h-full bg-[#E53945] transition-all" style={{ width: progress + "%" }} />
+            </div>
           </div>
-        ) : (
-          <button onClick={handlePublish} className="w-full bg-[#E53945] hover:bg-[#d12e39] text-white font-bold py-4 rounded-xl">
-            Publish {isTweet ? "Tweet" : isShort ? "Short" : "Video"}
-          </button>
         )}
+        
+        {status && !uploading && <p className="text-sm font-semibold">{status}</p>}
+        {error && <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm break-words">{error}</div>}
+        
+        <button onClick={handlePublish} disabled={saving || !!uploading} className="w-full bg-[#E53945] hover:bg-[#d12e39] text-white font-bold py-4 rounded-xl disabled:opacity-50">
+          {saving ? "Saving..." : `Publish ${isTweet ? "Tweet" : isShort ? "Short" : "Video"}`}
+        </button>
       </div>
       <MobileBottomNav />
     </main>
