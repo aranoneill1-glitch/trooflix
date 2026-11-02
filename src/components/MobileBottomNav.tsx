@@ -36,9 +36,9 @@ export default function MobileBottomNav() {
   const tabs = [
     { name: "Home", icon: Home, href: "/" },
     { name: "Shorts", icon: Play, href: "/feed" },
-    { name: "Search", icon: Search, href: "/search" },
-    { name: "Shop", icon: ShoppingBag, href: "/merchandise" },
     { name: "Trooflix", href: "/plus" },
+    { name: "Shop", icon: ShoppingBag, href: "/merchandise" },
+    { name: "Search", icon: Search, href: "/search" },
   ];
 
   const isActive = (path: string) => {
