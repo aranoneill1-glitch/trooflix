@@ -1,34 +1,44 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const S3 = new S3Client({
+  region: "auto",
+  endpoint: process.env.R2_ENDPOINT || `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+  },
+  requestChecksumCalculation: "WHEN_REQUIRED",
+  responseChecksumValidation: "WHEN_REQUIRED",
+});
 
 export async function POST(req: Request) {
   try {
-    const formData = await req.formData();
-    const file = formData.get("file") as File;
-    if (!file) return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    const { filename, contentType, folder } = await req.json();
+    if (!filename) return NextResponse.json({ error: "Missing filename" }, { status: 400 });
 
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-    const filePath = `media/${fileName}`;
+    const fileExt = filename.split('.').pop();
+    const uniqueFileName = `${folder || "media"}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
-    const { error } = await supabaseAdmin.storage
-      .from("avatars")
-      .upload(filePath, file, { contentType: file.type, upsert: false });
+    const command = new PutObjectCommand({
+      Bucket: process.env.R2_BUCKET_NAME,
+      Key: uniqueFileName,
+      ContentType: contentType || "application/octet-stream",
+      ChecksumAlgorithm: undefined,
+    });
 
-    if (error) throw error;
+    const uploadUrl = await getSignedUrl(S3, command, { expiresIn: 3600 });
+    const publicUrlBase = process.env.R2_PUBLIC_URL || `${process.env.R2_ENDPOINT}`;
+    const publicUrl = `${publicUrlBase}/${uniqueFileName}`;
 
-    const { data: { publicUrl } } = supabaseAdmin.storage
-      .from("avatars")
-      .getPublicUrl(filePath);
-
-    return NextResponse.json({ url: publicUrl });
-  } catch (e: any) {
-    console.error("Upload error:", e);
-    return NextResponse.json({ error: String(e) }, { status: 500 });
+    return NextResponse.json({ 
+      uploadUrl, 
+      signedUrl: uploadUrl,
+      publicUrl 
+    });
+  } catch (error: any) {
+    console.error("Presign error:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

@@ -15,18 +15,16 @@ const S3 = new S3Client({
 
 export async function POST(req: Request) {
   try {
-    const { filename, contentType } = await req.json();
-    if (!filename || !contentType) {
-      return NextResponse.json({ error: "Missing filename or contentType" }, { status: 400 });
-    }
+    const { filename, contentType, folder } = await req.json();
+    if (!filename) return NextResponse.json({ error: "Missing filename" }, { status: 400 });
 
     const fileExt = filename.split('.').pop();
-    const uniqueFileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+    const uniqueFileName = `${folder || "media"}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
     const command = new PutObjectCommand({
       Bucket: process.env.R2_BUCKET_NAME,
       Key: uniqueFileName,
-      ContentType: contentType || "video/mp4",
+      ContentType: contentType || "application/octet-stream",
       ChecksumAlgorithm: undefined,
     });
 
@@ -34,9 +32,13 @@ export async function POST(req: Request) {
     const publicUrlBase = process.env.R2_PUBLIC_URL || `${process.env.R2_ENDPOINT}`;
     const publicUrl = `${publicUrlBase}/${uniqueFileName}`;
 
-    return NextResponse.json({ uploadUrl, publicUrl });
+    return NextResponse.json({ 
+      uploadUrl, 
+      signedUrl: uploadUrl,
+      publicUrl 
+    });
   } catch (error: any) {
-    console.error("R2 Presign Error:", error);
+    console.error("Presign error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
