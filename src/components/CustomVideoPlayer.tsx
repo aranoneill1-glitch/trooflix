@@ -20,6 +20,8 @@ export default function CustomVideoPlayer({ src, poster, onClose }: PlayerProps)
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [showControls, setShowControls] = useState(true);
+  const [speed, setSpeed] = useState(1);
+  const [showSpeedMenu, setShowSpeedMenu] = useState(false);
   
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -40,6 +42,14 @@ export default function CustomVideoPlayer({ src, poster, onClose }: PlayerProps)
     if (isPlaying) videoRef.current.pause();
     else videoRef.current.play();
     setIsPlaying(!isPlaying);
+    handleInteraction();
+  };
+
+  const handleSpeedChange = (newSpeed: number) => {
+    if (!videoRef.current) return;
+    videoRef.current.playbackRate = newSpeed;
+    setSpeed(newSpeed);
+    setShowSpeedMenu(false);
     handleInteraction();
   };
 
@@ -132,11 +142,34 @@ export default function CustomVideoPlayer({ src, poster, onClose }: PlayerProps)
               </button>
             </div>
 
-            {/* Bottom Right Settings */}
-            <div className="absolute bottom-28 right-6 pointer-events-auto">
-              <button className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition">
-                <Settings size={24} />
-              </button>
+            {/* Bottom Right Settings & Speed */}
+            <div className="absolute bottom-28 right-6 pointer-events-auto flex flex-col items-end gap-3">
+              <AnimatePresence>
+                {showSpeedMenu && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.9 }}
+                    className="bg-black/60 backdrop-blur-xl border border-white/10 rounded-2xl p-2 flex flex-col gap-1 mb-1"
+                  >
+                    {[1, 1.25, 1.5, 2].map((s) => (
+                      <button 
+                        key={s} 
+                        onClick={() => handleSpeedChange(s)}
+                        className={`px-4 py-2 rounded-xl text-sm font-bold transition ${speed === s ? "bg-white/20 text-white" : "text-white/60 hover:text-white"}`}
+                      >
+                        {s}x
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              <div className="flex gap-2">
+                <button onClick={() => { setShowSpeedMenu(!showSpeedMenu); handleInteraction(); }} className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition text-sm font-bold">
+                  {speed}x
+                </button>
+                <button className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition">
+                  <Settings size={24} />
+                </button>
+              </div>
             </div>
 
             {/* Bottom Timeline */}
