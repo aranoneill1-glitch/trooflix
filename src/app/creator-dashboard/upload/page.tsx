@@ -39,34 +39,25 @@ function UploadContent() {
   const [uploadStatus, setUploadStatus] = useState("");
 
   const uploadThumbnail = async (file: File) => {
-    if (file.size === 0) throw new Error("Thumbnail is 0 bytes. Please try a different image.");
-
-    // Canvas re-encode to bypass iOS 0-byte bug
-    let processedBlob: Blob;
+    if (file.size === 0) throw new Error("Thumbnail is 0 bytes.");
+    let processedBlob: Blob = file;
     try {
       const bitmap = await createImageBitmap(file);
       const canvas = document.createElement("canvas");
       const MAX = 1280;
-      let w = bitmap.width;
-      let h = bitmap.height;
+      let w = bitmap.width, h = bitmap.height;
       if (w > MAX || h > MAX) {
-        if (w > h) { h = (h / w) * MAX; w = MAX; }
-        else { w = (w / h) * MAX; h = MAX; }
+        if (w > h) { h = (h / w) * MAX; w = MAX; } else { w = (w / h) * MAX; h = MAX; }
       }
-      canvas.width = w;
-      canvas.height = h;
+      canvas.width = w; canvas.height = h;
       const ctx = canvas.getContext("2d");
-      if (!ctx) throw new Error("Canvas not supported");
-      ctx.drawImage(bitmap, 0, 0, w, h);
-      processedBlob = await new Promise<Blob>((resolve, reject) => {
-        canvas.toBlob((b) => b ? resolve(b) : reject(new Error("Canvas export failed")), "image/jpeg", 0.85);
-      });
-    } catch (e) {
-      processedBlob = file;
-    }
-
-    if (processedBlob.size === 0) throw new Error("Thumbnail is 0 bytes after processing. The image may not be downloaded from iCloud.");
-
+      if (ctx) {
+        ctx.drawImage(bitmap, 0, 0, w, h);
+        processedBlob = await new Promise<Blob>((resolve, reject) => {
+          canvas.toBlob((b) => b ? resolve(b) : reject(new Error("Canvas export failed")), "image/jpeg", 0.85);
+        });
+      }
+    } catch (e) {}
     const res = await fetch("/api/r2-upload", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -74,7 +65,6 @@ function UploadContent() {
     });
     const { uploadUrl, publicUrl, error } = await res.json();
     if (error) throw new Error(error);
-
     await new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       xhr.open("PUT", uploadUrl, true);
@@ -83,17 +73,13 @@ function UploadContent() {
       xhr.onerror = () => reject(new Error("Network error"));
       xhr.send(processedBlob);
     });
-
     return publicUrl;
   };
 
-  const uploadVideoTus = async (file: File) => {
-    if (file.size === 0) throw new Error("Video is 0 bytes. On iPhone, open Photos and wait for the video to download from iCloud.");
-
+  const uploadVideo = async (file: File) => {
+    if (file.size === 0) throw new Error("Video is 0 bytes. Wait for iCloud download.");
     setUploadStatus("Preparing upload...");
     setUploadProgress(0);
-
-    // Get presigned URL from R2 API
     const res = await fetch("/api/r2-upload", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -101,55 +87,31 @@ function UploadContent() {
     });
     const { uploadUrl, publicUrl, error } = await res.json();
     if (error) throw new Error(error);
-
     setUploadStatus("Uploading Video...");
-
-    // Force iOS to read the file into memory first (prevents 0-byte uploads)
-    let fileBuffer: ArrayBuffer;
-    try {
-      fileBuffer = await file.arrayBuffer();
-    } catch (e) {
-      throw new Error("Failed to read file. The video may not be downloaded from iCloud yet.");
-    }
-
-    if (fileBuffer.byteLength === 0) {
-      throw new Error("File is empty after reading. On iPhone, wait for iCloud download first.");
-    }
-
-    // Upload via XMLHttpRequest with progress tracking
-    await new Promise<void>((resolve, reject) => {
+    return new Promise<string>((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       xhr.open("PUT", uploadUrl, true);
       xhr.setRequestHeader("Content-Type", file.type || "video/mp4");
-
       xhr.upload.onprogress = (event) => {
-        if (event.lengthComputable) {
-          setUploadProgress(Math.round((event.loaded / event.total) * 100));
-        }
+        if (event.lengthComputable) setUploadProgress(Math.round((event.loaded / event.total) * 100));
       };
-
       xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) resolve();
+        if (xhr.status >= 200 && xhr.status < 300) resolve(publicUrl);
         else reject(new Error("Upload failed with status " + xhr.status));
       };
-      xhr.onerror = () => reject(new Error("Network error during upload."));
-      xhr.send(fileBuffer);
+      xhr.onerror = () => reject(new Error("Network error during upload. Please try again."));
+      xhr.send(file);
     });
-
-    return publicUrl;
   };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (isTweet) {
       if (!description.trim()) return alert("Please write some text for your tweet.");
       publishContent(true);
       return;
     }
-
     if (!mediaFile) return alert("Please select a video file.");
-    
     if (isShort) {
       publishContent(true);
     } else {
@@ -161,20 +123,15 @@ function UploadContent() {
   const publishContent = async (shareToFeed: boolean) => {
     setShowSharePrompt(false);
     setLoading(true);
-
     try {
       const user = await getCachedUser();
       if (!user) throw new Error("Not logged in");
-
       const supabase = createClient();
       const { data: profile } = await supabase.from("profiles").select("creator_id").eq("user_id", user.id).single();
-
       const uploadedThumbnailUrl = (!isTweet && !isShort && thumbnailFile) ? await uploadThumbnail(thumbnailFile) : "";
-      const uploadedMediaUrl = (!isTweet && mediaFile) ? await uploadVideoTus(mediaFile) : "";
-
+      const uploadedMediaUrl = (!isTweet && mediaFile) ? await uploadVideo(mediaFile) : "";
       setUploadStatus("Saving data...");
       setUploadProgress(100);
-
       const res = await fetch("/api/save-video", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -191,9 +148,7 @@ function UploadContent() {
           feed_visible: isTweet ? true : (isShort ? false : shareToFeed),
         }),
       });
-
       if (!res.ok) throw new Error("Failed to save data");
-
       setSuccess(true);
       setTimeout(() => router.push(isTweet ? "/" : (isShort ? "/feed" : "/creator-dashboard")), 2200);
     } catch (err: any) {
@@ -228,7 +183,6 @@ function UploadContent() {
             <p className="text-sm text-white/50">{isTweet ? "Share your thoughts with your followers." : (isShort ? "Publish directly to the Shorts feed." : "Publish to your profile and the home feed.")}</p>
           </div>
         </div>
-
         <form onSubmit={handleFormSubmit} className="space-y-6">
           <div className="space-y-4">
             {!isTweet && (
@@ -238,10 +192,9 @@ function UploadContent() {
               </div>
             )}
             <div>
-              <label className="block text-xs font-bold text-white/60 mb-1">{isTweet ? "What's on your mind?" : "Description"} <span className="text-[#E53945]">*</span></label>
-              <textarea required value={description} onChange={e => setDescription(e.target.value)} className={`w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#E53945] resize-none ${isTweet ? 'h-40' : 'h-24'}`} placeholder={isTweet ? "Write your tweet here..." : "Write a description..."} />
+              <label className="block text-xs font-bold text-white/60 mb-1">{isTweet ? "What is on your mind?" : "Description"} <span className="text-[#E53945]">*</span></label>
+              <textarea required value={description} onChange={e => setDescription(e.target.value)} className={"w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#E53945] resize-none " + (isTweet ? "h-40" : "h-24")} placeholder={isTweet ? "Write your tweet here..." : "Write a description..."} />
             </div>
-
             {!isShort && !isTweet && (
               <>
                 <div>
@@ -253,11 +206,11 @@ function UploadContent() {
                 <div>
                   <label className="block text-xs font-bold text-white/60 mb-1">Visibility <span className="text-[#E53945]">*</span></label>
                   <div className="grid grid-cols-2 gap-2">
-                    <button type="button" onClick={() => setVisibility("public")} className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border transition ${visibility === "public" ? "bg-[#E53945]/10 border-[#E53945] text-[#E53945]" : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10"}`}>
+                    <button type="button" onClick={() => setVisibility("public")} className={"flex flex-col items-center gap-1.5 p-3 rounded-xl border transition " + (visibility === "public" ? "bg-[#E53945]/10 border-[#E53945] text-[#E53945]" : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10")}>
                       <Globe size={18} />
                       <span className="text-[10px] font-bold uppercase">Public</span>
                     </button>
-                    <button type="button" onClick={() => setVisibility("premium")} className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border transition ${visibility === "premium" ? "bg-[#D4AF37]/10 border-[#D4AF37] text-[#D4AF37]" : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10"}`}>
+                    <button type="button" onClick={() => setVisibility("premium")} className={"flex flex-col items-center gap-1.5 p-3 rounded-xl border transition " + (visibility === "premium" ? "bg-[#D4AF37]/10 border-[#D4AF37] text-[#D4AF37]" : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10")}>
                       <Lock size={18} />
                       <span className="text-[10px] font-bold uppercase">Premium</span>
                     </button>
@@ -265,23 +218,21 @@ function UploadContent() {
                 </div>
               </>
             )}
-
             {!isTweet && (
               <div>
                 <label className="block text-xs font-bold text-white/60 mb-1">Video File <span className="text-[#E53945]">*</span></label>
-                <div onClick={() => document.getElementById('media-upload')?.click()} className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] hover:bg-white/5 transition">
+                <div onClick={() => document.getElementById("media-upload")?.click()} className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] hover:bg-white/5 transition">
                   <UploadCloud size={24} className="text-white/50 mb-2" />
                   <span className="text-sm font-bold text-white">{mediaFile ? mediaFile.name : "Tap to select video"}</span>
-                  <span className="text-xs text-white/40 mt-1">MP4, MOV</span>
+                  <span className="text-xs text-white/40 mt-1">Any size</span>
                 </div>
                 <input id="media-upload" type="file" accept="video/*" onChange={(e) => setMediaFile(e.target.files?.[0] || null)} className="hidden" />
               </div>
             )}
-
             {!isShort && !isTweet && (
               <div>
                 <label className="block text-xs font-bold text-white/60 mb-1">Thumbnail Image <span className="text-[#E53945]">*</span></label>
-                <div onClick={() => document.getElementById('thumb-upload')?.click()} className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] hover:bg-white/5 transition">
+                <div onClick={() => document.getElementById("thumb-upload")?.click()} className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] hover:bg-white/5 transition">
                   <ImageIcon size={24} className="text-white/50 mb-2" />
                   <span className="text-sm font-bold text-white">{thumbnailFile ? thumbnailFile.name : "Tap to select thumbnail"}</span>
                   <span className="text-xs text-white/40 mt-1">JPG, PNG, WEBP</span>
@@ -290,7 +241,6 @@ function UploadContent() {
               </div>
             )}
           </div>
-
           {loading ? (
             <div className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-4 flex flex-col gap-3 shadow-lg">
               <div className="flex items-center justify-between">
@@ -298,7 +248,7 @@ function UploadContent() {
                 <span className="text-sm font-black text-[#E53945]">{uploadProgress}%</span>
               </div>
               <div className="w-full h-2 bg-black rounded-full overflow-hidden">
-                <div className="h-full bg-[#E53945] transition-all duration-300 ease-out" style={{ width: `${uploadProgress}%` }} />
+                <div className="h-full bg-[#E53945] transition-all duration-300 ease-out" style={{ width: uploadProgress + "%" }} />
               </div>
               <p className="text-[10px] text-white/40 text-center">Please do not close this tab.</p>
             </div>
@@ -309,17 +259,11 @@ function UploadContent() {
           )}
         </form>
       </div>
-
       <AnimatePresence>
         {showSharePrompt && !isShort && !isTweet && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[400]" onClick={() => setShowSharePrompt(false)} />
-            <motion.div
-              initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 30, stiffness: 280 }}
-              className="fixed bottom-0 left-0 right-0 bg-[#0a0303] rounded-t-3xl border-t border-white/10 z-[410] p-6 pb-10 shadow-2xl"
-              style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 24px)" }}
-            >
+            <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 30, stiffness: 280 }} className="fixed bottom-0 left-0 right-0 bg-[#0a0303] rounded-t-3xl border-t border-white/10 z-[410] p-6 pb-10 shadow-2xl" style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 24px)" }}>
               <div className="w-10 h-1 bg-white/30 rounded-full mx-auto mb-5" />
               <h3 className="text-xl font-black text-center mb-2">Share to Home Feed?</h3>
               <p className="text-sm text-white/50 text-center mb-6">Where should this video be visible?</p>
