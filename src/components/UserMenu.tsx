@@ -52,8 +52,7 @@ export default function UserMenu() {
     
     // Show confirmation for 1.2 seconds before redirecting
     setTimeout(() => {
-      router.push("/");
-      router.refresh();
+      window.location.href = "/";
     }, 1200);
   };
 
@@ -164,7 +163,13 @@ export default function UserMenu() {
                 <LogOut size={32} className="text-[#E53945]" />
               </div>
               <h2 className="text-2xl font-black text-white mb-2">Logged Out</h2>
-              <p className="text-sm text-white/50">See you next time.</p>
+              <p className="text-sm text-white/50 mb-6">See you next time.</p>
+              <button 
+                onClick={() => { window.location.href = "/"; }}
+                className="px-6 py-2.5 bg-white/10 hover:bg-white/20 text-white font-bold rounded-full transition"
+              >
+                Return to Homepage
+              </button>
             </motion.div>
           </motion.div>
         )}
