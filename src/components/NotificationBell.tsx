@@ -44,7 +44,7 @@ const urlBase64ToUint8Array = (base64String: string) => {
   return outputArray;
 };
 
-export default function NotificationBell() {
+export default function NotificationBell({ asMenuItem = false }: { asMenuItem?: boolean } = {}) {
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unread, setUnread] = useState(0);
@@ -198,6 +198,13 @@ export default function NotificationBell() {
 
   return (
     <div className="relative" ref={dropdownRef}>
+      {asMenuItem ? (
+        <button onClick={handleOpen} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition text-sm text-white/80 hover:text-white">
+          <Bell size={16} />
+          Notifications
+          {unread > 0 && (<span className="ml-auto w-2 h-2 rounded-full bg-red-500" />)}
+        </button>
+      ) : (
       <button
         onClick={handleOpen}
         className="relative text-white/90 hover:text-white transition p-1"
@@ -208,6 +215,7 @@ export default function NotificationBell() {
           <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-red-500 ring-2 ring-black" />
         )}
       </button>
+      )}
 
       <AnimatePresence>
         {open && (
