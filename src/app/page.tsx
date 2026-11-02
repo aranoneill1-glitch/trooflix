@@ -620,7 +620,7 @@ function AppReelCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMor
       className="absolute w-[70vw] max-w-[240px] aspect-[3/4] rounded-[20px] cursor-pointer shadow-[0_15px_40px_rgba(0,0,0,0.9)] select-none bg-[#1c1c1e] border border-white/10"
     >
       <div className="relative w-full h-full rounded-[20px] overflow-hidden pointer-events-none">
-        <img src={video.backdropUrl} alt={video.title} className="w-full h-full object-cover" draggable={false} />
+        <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover" draggable={false} />
         
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-95" />
 
