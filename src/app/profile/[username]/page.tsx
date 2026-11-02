@@ -224,6 +224,7 @@ export default function PublicProfilePage() {
                           isLiked={!!likedVideos[v.id]} 
                           onToggleLike={() => setLikedVideos(prev => ({ ...prev, [v.id]: !prev[v.id] }))} 
                           hideCreatorInfo={true}
+                          isVertical={v.type?.toLowerCase() === "short"}
                         />
                       ))}
                     </div>
