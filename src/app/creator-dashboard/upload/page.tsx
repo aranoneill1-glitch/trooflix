@@ -23,7 +23,7 @@ export default function UploadContentPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("History");
-  const [visibility, setVisibility] = useState<"plus" | "premium">("plus");
+  const [visibility, setVisibility] = useState<"public" | "premium">("public");
   
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
@@ -153,12 +153,12 @@ export default function UploadContentPage() {
           <div className="space-y-4">
             <div>
               <label className="block text-xs font-bold text-white/60 mb-1">Title <span className="text-[#E53945]">*</span></label>
-              <input required type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#E53945]" placeholder={contentType === 'tweet' ? "What's on your mind?" : "Name your video or podcast..."} />
+              <input required type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#E53945]" placeholder="Name your video..." />
             </div>
 
             <div>
               <label className="block text-xs font-bold text-white/60 mb-1">Description / Text <span className="text-[#E53945]">*</span></label>
-              <textarea required value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#E53945] resize-none h-24" placeholder="Write a description or your tweet here..." />
+              <textarea required value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#E53945] resize-none h-24" placeholder="Write a description..." />
             </div>
 
             {/* Category Selector */}
@@ -180,9 +180,9 @@ export default function UploadContentPage() {
             <div>
               <label className="block text-xs font-bold text-white/60 mb-1">Visibility <span className="text-[#E53945]">*</span></label>
               <div className="grid grid-cols-2 gap-2">
-                <button type="button" onClick={() => setVisibility("plus")} className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border transition ${visibility === "plus" ? "bg-[#E53945]/10 border-[#E53945] text-[#E53945]" : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10"}`}>
-                  <Star size={18} />
-                  <span className="text-[10px] font-bold uppercase">TrooPlus</span>
+                <button type="button" onClick={() => setVisibility("public")} className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border transition ${visibility === "public" ? "bg-[#E53945]/10 border-[#E53945] text-[#E53945]" : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10"}`}>
+                  <Globe size={18} />
+                  <span className="text-[10px] font-bold uppercase">Public</span>
                 </button>
                 <button type="button" onClick={() => setVisibility("premium")} className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border transition ${visibility === "premium" ? "bg-purple-500/10 border-purple-500 text-purple-400" : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10"}`}>
                   <Lock size={18} />
