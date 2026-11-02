@@ -111,7 +111,7 @@ export default function UserMenu() {
                 )}
               </div>
               <div className="shrink-0 pt-0.5">
-                <NotificationBell />
+                <NotificationBell asMenuItem={true} />
               </div>
             </div>
 

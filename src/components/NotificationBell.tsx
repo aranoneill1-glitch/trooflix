@@ -207,10 +207,10 @@ export default function NotificationBell({ asMenuItem = false }: { asMenuItem?: 
       ) : (
       <button
         onClick={handleOpen}
-        className="relative text-white/90 hover:text-white transition p-1"
+        className={asMenuItem ? "relative text-white/80 hover:text-white transition p-1" : "relative text-white/90 hover:text-white transition p-1"}
         aria-label="Notifications"
       >
-        <Bell size={20} />
+        <Bell size={asMenuItem ? 18 : 20} />
         {unread > 0 && (
           <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-red-500 ring-2 ring-black" />
         )}
@@ -220,11 +220,15 @@ export default function NotificationBell({ asMenuItem = false }: { asMenuItem?: 
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: -8 }}
+            initial={{ opacity: 0, y: asMenuItem ? 0 : -8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
+            exit={{ opacity: 0, y: asMenuItem ? 0 : -8 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 top-full mt-2 w-80 max-h-[70vh] overflow-y-auto bg-[#0f0f12] border border-white/10 rounded-xl shadow-2xl z-[200]"
+            className={
+              asMenuItem
+                ? "mt-2 w-full max-h-[300px] overflow-y-auto bg-black/40 border border-white/10 rounded-xl"
+                : "absolute right-0 top-full mt-2 w-80 max-h-[70vh] overflow-y-auto bg-[#0f0f12] border border-white/10 rounded-xl shadow-2xl z-[200]"
+            }
           >
             {/* HEADER WITH TOGGLE SWITCH */}
             <div className="sticky top-0 bg-[#0f0f12] border-b border-white/10 px-4 py-3 flex items-center justify-between z-10">
