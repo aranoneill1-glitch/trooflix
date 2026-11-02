@@ -103,6 +103,27 @@ export async function DELETE(req: Request) {
     const { searchParams } = new URL(req.url);
     const id = Number(searchParams.get("id"));
     const videos = (await kv.get<any[]>(KEY)) || [];
+    
+    // Find the video to delete so we know the R2 URLs
+    const videoToDelete = videos.find((v: any) => String(v.id) === String(id));
+    
+    // Delete the files from R2 if they exist
+    if (videoToDelete) {
+      const urlsToDelete = [videoToDelete.videoUrl, videoToDelete.posterUrl].filter(Boolean);
+      const baseUrl = "https://www.trooflixtv.com"; // Assuming this is the domain
+      
+      for (const url of urlsToDelete) {
+        if (url.startsWith("https://")) {
+          await fetch(baseUrl + "/api/delete-r2-file", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ fileUrl: url }),
+          }).catch(() => {});
+        }
+      }
+    }
+
+    // Remove from database
     const filtered = videos.filter((v: any) => String(v.id) !== String(id));
     await kv.set(KEY, filtered);
     return NextResponse.json({ ok: true, deleted: id });
