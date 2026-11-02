@@ -210,7 +210,7 @@ export default function HomeFeedCard({ video, creator, onMore, onPlay, isActive,
     <div ref={containerRef} className="w-full relative flex flex-col group/feed bg-[#09090B] lg:bg-transparent mb-8 mx-auto rounded-[24px] overflow-hidden border border-white/10 shadow-2xl">
       <div className="w-full relative overflow-hidden flex flex-col lg:bg-[#1c1c1e] lg:rounded-2xl lg:border lg:border-white/5 lg:shadow-lg">
         
-        <div className="relative w-full bg-black overflow-hidden cursor-pointer" style={{ aspectRatio: isVertical ? "9 / 16" : "16 / 9" }} onClick={() => { handleInteraction(); togglePlay(); }} onMouseMove={handleInteraction} onTouchStart={handleInteraction}>
+        <div className="relative w-full bg-black overflow-hidden cursor-pointer" style={{ paddingTop: isVertical ? "177.78%" : "56.25%" }} onClick={() => { handleInteraction(); togglePlay(); }} onMouseMove={handleInteraction} onTouchStart={handleInteraction}>
           <video ref={videoRef} src={videoSrc} onLoadedMetadata={(e) => { const v = e.currentTarget; if (v.videoHeight > v.videoWidth) setIsPortrait(true); }} className="w-full h-full object-cover" playsInline muted={isMuted} preload="metadata" onTimeUpdate={handleTimeUpdate} onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} onError={() => setError(true)} loop />
 
           {error && <div className="absolute inset-0 flex items-center justify-center bg-black/80"><p className="text-white/50 text-sm">Video unavailable</p></div>}
