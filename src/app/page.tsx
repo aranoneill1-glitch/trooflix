@@ -440,7 +440,11 @@ export default function Home() {
                       const bt = b.createdAt ? new Date(b.createdAt).getTime() : b.id;
                       return bt - at;
                     }).slice(0, 12).map((v: any) => {
-                      const creator = creators.find((c: any) => c.id === v.creatorId);
+                      const creator = creators.find((c: any) => 
+                        (v.creatorId && c.id === v.creatorId) || 
+                        (v.uploaderUserId && c.ownerUserId === v.uploaderUserId) ||
+                        (v.uploaderUserId && c.user_id === v.uploaderUserId)
+                      );
                       return <HomeFeedCard key={v.id} video={v} creator={creator} onMore={() => handleCardSelect(v)} onPlay={() => handleInstantPlay(v)} isActive={activeVideoId === v.id} onSetActive={() => setActiveVideoId(v.id)} onOpenComments={() => setCommentSheetVideoId(v.id)} isLiked={!!likedVideos[v.id]} onToggleLike={() => setLikedVideos(prev => ({ ...prev, [v.id]: !prev[v.id] }))} />;
                     })}
                   </div>
