@@ -320,14 +320,19 @@ export default function Home() {
                   <p className="text-[10px] tracking-[0.4em] text-white/50 font-semibold mb-1 uppercase">
                     The Home of Independent Voices
                   </p>
-                  <h2 className="text-2xl font-black tracking-tight text-white">
-                    Discover <span className="text-[#E53945]">Creators</span>
-                  </h2>
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-2xl font-black tracking-tight text-white">
+                      Discover <span className="text-[#E53945]">Creators</span>
+                    </h2>
+                    <Link href="/creators" className="text-xs font-bold text-white/50 hover:text-white transition flex items-center gap-1">
+                      View All <ChevronRight size={14} />
+                    </Link>
+                  </div>
                 </div>
                 
                 {/* Avatars with Follow (Moved up) */}
                 {creators && creators.length > 0 && (
-                  <div className="flex gap-4 overflow-x-auto scrollbar-hide px-4 pb-4 pt-2 relative z-20 mx-4 mb-4 rounded-2xl bg-white/[0.02] border border-white/[0.05] backdrop-blur-md">
+                  <div className="flex gap-4 overflow-x-auto scrollbar-hide px-4 pb-4 relative z-20 mx-4 mb-4">
                     {[...creators].slice(0, 15).map((c: any) => (
                       <Link key={c.id} href={`/profile/${c.slug}`} className="flex flex-col items-center text-center flex-shrink-0 group w-[96px]">
                         <div className="w-20 h-20 rounded-full p-[2px] bg-[#E53945] group-hover:scale-105 transition-transform mb-2">
