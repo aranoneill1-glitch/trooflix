@@ -76,32 +76,81 @@ function UploadContent() {
     return publicUrl;
   };
 
-  const uploadVideo = async (file: File) => {
+  const uploadChunked = async (file: File) => {
     if (file.size === 0) throw new Error("Video is 0 bytes. Wait for iCloud download.");
-    setUploadStatus("Preparing upload...");
+    
+    setUploadStatus("Preparing chunked upload...");
     setUploadProgress(0);
-    const res = await fetch("/api/r2-upload", {
+
+    // 1. Initialize the multipart upload on R2 via a new API route
+    const initRes = await fetch("/api/r2-multipart", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ filename: file.name, contentType: file.type || "video/mp4" }),
     });
-    const { uploadUrl, publicUrl, error } = await res.json();
-    if (error) throw new Error(error);
-    setUploadStatus("Uploading Video...");
-    return new Promise<string>((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.open("PUT", uploadUrl, true);
-      xhr.setRequestHeader("Content-Type", file.type || "video/mp4");
-      xhr.upload.onprogress = (event) => {
-        if (event.lengthComputable) setUploadProgress(Math.round((event.loaded / event.total) * 100));
-      };
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) resolve(publicUrl);
-        else reject(new Error("Upload failed with status " + xhr.status));
-      };
-      xhr.onerror = () => reject(new Error("Network error during upload. Please try again."));
-      xhr.send(file);
+    
+    if (!initRes.ok) throw new Error("Failed to initialize upload");
+    
+    const { uploadId, key } = await initRes.json();
+    const chunkSize = 5 * 1024 * 1024; // 5MB chunks
+    const totalChunks = Math.ceil(file.size / chunkSize);
+    const parts: { PartNumber: number; ETag: string }[] = [];
+
+    // 2. Upload each chunk
+    for (let i = 0; i < totalChunks; i++) {
+      const start = i * chunkSize;
+      const end = Math.min(start + chunkSize, file.size);
+      const chunk = file.slice(start, end);
+
+      setUploadStatus(`Uploading chunk ${i + 1} of ${totalChunks}...`);
+
+      const chunkRes = await fetch("/api/r2-multipart/chunk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uploadId, key, partNumber: i + 1 }),
+      });
+
+      if (!chunkRes.ok) throw new Error("Failed to get chunk URL");
+      const { uploadUrl } = await chunkRes.json();
+
+      // Upload the chunk to R2
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", uploadUrl, true);
+        
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) {
+            const chunkProgress = (event.loaded / event.total) * (100 / totalChunks);
+            const overallProgress = Math.round((i * (100 / totalChunks)) + chunkProgress);
+            setUploadProgress(overallProgress);
+          }
+        };
+
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            const etag = xhr.getResponseHeader("ETag")?.replace(/"/g, "");
+            if (etag) parts.push({ PartNumber: i + 1, ETag: etag });
+            resolve();
+          } else reject(new Error("Chunk upload failed with status " + xhr.status));
+        };
+        xhr.onerror = () => reject(new Error("Network error during chunk upload"));
+        xhr.send(chunk);
+      });
+    }
+
+    // 3. Complete the upload
+    setUploadStatus("Finalizing upload...");
+    const completeRes = await fetch("/api/r2-multipart/complete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ uploadId, key, parts }),
     });
+
+    if (!completeRes.ok) throw new Error("Failed to finalize upload");
+    const { publicUrl } = await completeRes.json();
+    
+    setUploadProgress(100);
+    return publicUrl;
   };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
@@ -128,10 +177,13 @@ function UploadContent() {
       if (!user) throw new Error("Not logged in");
       const supabase = createClient();
       const { data: profile } = await supabase.from("profiles").select("creator_id").eq("user_id", user.id).single();
+      
       const uploadedThumbnailUrl = (!isTweet && !isShort && thumbnailFile) ? await uploadThumbnail(thumbnailFile) : "";
-      const uploadedMediaUrl = (!isTweet && mediaFile) ? await uploadVideo(mediaFile) : "";
+      const uploadedMediaUrl = (!isTweet && mediaFile) ? await uploadChunked(mediaFile) : "";
+
       setUploadStatus("Saving data...");
       setUploadProgress(100);
+
       const res = await fetch("/api/save-video", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -148,6 +200,7 @@ function UploadContent() {
           feed_visible: isTweet ? true : (isShort ? false : shareToFeed),
         }),
       });
+
       if (!res.ok) throw new Error("Failed to save data");
       setSuccess(true);
       setTimeout(() => router.push(isTweet ? "/" : (isShort ? "/feed" : "/creator-dashboard")), 2200);
