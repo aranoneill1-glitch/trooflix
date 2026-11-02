@@ -65,8 +65,8 @@ export default function MobileBottomNav() {
                 className="flex items-center justify-center flex-col gap-1 w-full"
               >
                 {tab.name === "Trooflix" ? (
-                  <div className="relative flex flex-col items-center justify-center w-full h-full pb-1">
-                    <span className="text-[7px] font-black tracking-[0.15em] text-white leading-none mb-[2px] mt-1">MY</span>
+                  <div className="relative flex flex-col items-center justify-center w-full h-full pb-[3px]">
+                    <span className="text-[7px] font-black tracking-[0.15em] text-white leading-none mb-[2px] mt-[2px]">MY</span>
                     <span className="text-[13px] font-black tracking-tighter leading-none">
                       <span className="text-white">TROO</span><span className="text-[#E53945]">FLIX</span>
                     </span>
