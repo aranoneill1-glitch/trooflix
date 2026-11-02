@@ -90,7 +90,7 @@ export default function OverviewPage() {
             label="Add Video"
           />
           <ActionTile
-            href="/admin/podcasters"
+            href="/admin/creators"
             icon={Mic}
             label="Podcasters"
           />

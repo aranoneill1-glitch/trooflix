@@ -12,9 +12,9 @@ type Creator = {
   description: string;
 };
 
-export default function PodcastersPage() {
+export default function CreatorsPage() {
   const [creators, setCreators] = useState<Creator[]>([]);
-  const [podcasterSearch, setPodcasterSearch] = useState("");
+  const [creatorSearch, setCreatorSearch] = useState("");
   const [editingCreator, setEditingCreator] = useState<Creator | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [creatorForm, setCreatorForm] = useState({
@@ -87,7 +87,7 @@ export default function PodcastersPage() {
   };
 
   const removeCreator = async (id: number) => {
-    if (!confirm("Delete this podcaster? Videos assigned to them won't be deleted.")) return;
+    if (!confirm("Delete this creator? Videos assigned to them won't be deleted.")) return;
     await fetch(`/api/creators?id=${id}`, { method: "DELETE" });
     await loadCreators();
   };
@@ -167,14 +167,14 @@ export default function PodcastersPage() {
   };
 
   const filteredCreators = creators.filter((c) =>
-    c.name.toLowerCase().includes(podcasterSearch.toLowerCase())
+    c.name.toLowerCase().includes(creatorSearch.toLowerCase())
   );
 
   return (
     <div className="p-4 md:p-8 max-w-4xl">
       <div className="flex items-start justify-between mb-6 gap-3">
         <div>
-          <h1 className="text-2xl font-bold mb-1">Podcasters</h1>
+          <h1 className="text-2xl font-bold mb-1">Creators</h1>
           <p className="text-white/50 text-sm">
             {editingCreator
               ? `Editing: ${editingCreator.name}`
@@ -186,7 +186,7 @@ export default function PodcastersPage() {
             onClick={() => setShowForm(true)}
             className="bg-red-600 hover:bg-red-500 text-white font-semibold px-4 py-2 rounded-lg text-sm transition flex items-center gap-2 flex-shrink-0"
           >
-            + Add Podcaster
+            + Add Creator
           </button>
         )}
       </div>
@@ -197,7 +197,7 @@ export default function PodcastersPage() {
         {/* Form header with close button */}
         <div className="flex items-center justify-between pb-3 border-b border-white/10 -mt-1">
           <h2 className="text-lg font-bold">
-            {editingCreator ? `Edit ${editingCreator.name}` : "New Podcaster"}
+            {editingCreator ? `Edit ${editingCreator.name}` : "New Creator"}
           </h2>
           <button
             type="button"
@@ -327,7 +327,7 @@ export default function PodcastersPage() {
                 : "Adding…"
               : editingCreator
               ? "Save Changes"
-              : "Add Podcaster"}
+              : "Add Creator"}
           </button>
           {editingCreator && (
             <button
@@ -343,10 +343,10 @@ export default function PodcastersPage() {
       </form>
       )}
 
-      {/* Podcaster list */}
+      {/* Creator list */}
       <div className="flex items-center justify-between mb-4 gap-4">
         <h2 className="text-lg font-bold">
-          All Podcasters ({creators.length})
+          All Creators ({creators.length})
         </h2>
         <div className="relative">
           <Search
@@ -355,14 +355,14 @@ export default function PodcastersPage() {
           />
           <input
             type="text"
-            value={podcasterSearch}
-            onChange={(e) => setPodcasterSearch(e.target.value)}
-            placeholder="Search podcasters…"
+            value={creatorSearch}
+            onChange={(e) => setCreatorSearch(e.target.value)}
+            placeholder="Search creators…"
             className="bg-black/40 border border-white/10 rounded-lg pl-9 pr-9 py-2 text-sm focus:border-red-600 outline-none w-64"
           />
-          {podcasterSearch && (
+          {creatorSearch && (
             <button
-              onClick={() => setPodcasterSearch("")}
+              onClick={() => setCreatorSearch("")}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition text-xs"
               aria-label="Clear search"
             >
@@ -391,7 +391,7 @@ export default function PodcastersPage() {
               <p className="text-sm text-white/50 truncate">{c.description || "No description"}</p>
             </div>
             <a
-              href={`/admin/podcaster/${c.slug}`}
+              href={`/admin/creator/${c.slug}`}
               className="text-white bg-red-600 hover:bg-red-500 text-sm px-3 py-1 rounded transition font-semibold"
             >
               Manage Videos
@@ -411,11 +411,11 @@ export default function PodcastersPage() {
           </div>
         ))}
         {creators.length === 0 && (
-          <p className="text-white/40">No podcasters yet. Add one above.</p>
+          <p className="text-white/40">No creators yet. Add one above.</p>
         )}
         {creators.length > 0 && filteredCreators.length === 0 && (
           <p className="text-white/40">
-            No podcasters match "{podcasterSearch}".
+            No creators match "{creatorSearch}".
           </p>
         )}
       </div>

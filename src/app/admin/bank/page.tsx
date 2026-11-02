@@ -7,8 +7,8 @@ import { ChevronLeft, Landmark, Wallet, TrendingUp, ShieldCheck, Mic, Users } fr
 type BankData = {
   pass_count: number;
   pass_gross_cents: number;
-  podcaster_count: number;
-  podcaster_gross_cents: number;
+  creator_count: number;
+  creator_gross_cents: number;
   creator_sub_count: number;
   creator_sub_your_cut_cents: number;
   merch_count: number;
@@ -78,10 +78,10 @@ export default function AdminBank() {
 
         <div className="bg-[#141418] border border-white/5 rounded-xl p-5">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2 text-white/50"><Mic size={16} /> Podcaster Tiers</div>
-            <span className="text-xs bg-white/5 px-2 py-1 rounded text-white/60">{data.podcaster_count} Subs</span>
+            <div className="flex items-center gap-2 text-white/50"><Mic size={16} /> Creator Tiers</div>
+            <span className="text-xs bg-white/5 px-2 py-1 rounded text-white/60">{data.creator_count} Subs</span>
           </div>
-          <p className="text-2xl font-black">{dollars(data.podcaster_gross_cents)}</p>
+          <p className="text-2xl font-black">{dollars(data.creator_gross_cents)}</p>
           <p className="text-xs text-green-400 mt-1">You keep 100% of this</p>
         </div>
 

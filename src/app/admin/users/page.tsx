@@ -10,7 +10,7 @@ type Profile = {
   display_name?: string | null;
   username?: string | null;
   avatar_url?: string | null;
-  tier?: "user" | "podcaster";
+  tier?: "user" | "creator";
   is_verified?: boolean;
 };
 
@@ -42,7 +42,7 @@ export default function AdminUsersPage() {
     load();
   }, []);
 
-  const setTier = async (userId: string, tier: "user" | "podcaster") => {
+  const setTier = async (userId: string, tier: "user" | "creator") => {
     setUpdating(userId);
     try {
       const res = await fetch("/api/admin/set-tier", {
@@ -253,7 +253,7 @@ export default function AdminUsersPage() {
                   {u.is_verified && (
                     <VerifiedBadge
                       size={14}
-                      variant={u.tier === "podcaster" ? "gold" : "red"}
+                      variant={u.tier === "creator" ? "gold" : "red"}
                     />
                   )}
                 </p>
@@ -264,13 +264,13 @@ export default function AdminUsersPage() {
               <select
                 value={u.tier || "user"}
                 onChange={(e) =>
-                  setTier(u.user_id, e.target.value as "user" | "podcaster")
+                  setTier(u.user_id, e.target.value as "user" | "creator")
                 }
                 disabled={updating === u.user_id}
                 className="bg-black/40 border border-white/10 rounded px-3 py-1.5 text-sm outline-none focus:border-red-600 disabled:opacity-50"
               >
                 <option value="user">TrooPass</option>
-                <option value="podcaster">Creator</option>
+                <option value="creator">Creator</option>
               </select>
 
               <button
