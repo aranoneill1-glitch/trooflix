@@ -110,6 +110,19 @@ export default function UserMenu() {
             </div>
 
             <div className="p-2">
+              {/* Profile Link (For Creators to see their public page) */}
+              {isCreator && (
+                <Link 
+                  href={`/profile/${profile?.username}`}
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition text-sm text-white/80 hover:text-white"
+                >
+                  <User size={16} />
+                  Profile
+                </Link>
+              )}
+
+              {/* Dashboard / Main Link */}
               <Link 
                 href={profileLink}
                 onClick={() => setIsOpen(false)}
