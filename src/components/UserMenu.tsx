@@ -113,7 +113,7 @@ export default function UserMenu() {
               {/* Profile Link (For Creators to see their public page) */}
               {isCreator && (
                 <Link 
-                  href={`/profile/${profile?.username}`}
+                  href="/creator-dashboard?view=public"
                   onClick={() => setIsOpen(false)}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition text-sm text-white/80 hover:text-white"
                 >
