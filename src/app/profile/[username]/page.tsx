@@ -212,20 +212,24 @@ export default function PublicProfilePage() {
                   ) : (
                     <div className="flex flex-col gap-6 pb-20 px-4">
                       {videos.map((v) => (
-                        <HomeFeedCard 
+                                                <div 
                           key={v.id} 
-                          video={v} 
-                          creator={profile} 
-                          onMore={() => {}} 
-                          onPlay={() => {}} 
-                          isActive={activeVideoId === v.id} 
-                          onSetActive={() => setActiveVideoId(v.id)} 
-                          onOpenComments={() => setCommentSheetVideoId(v.id)} 
-                          isLiked={!!likedVideos[v.id]} 
-                          onToggleLike={() => setLikedVideos(prev => ({ ...prev, [v.id]: !prev[v.id] }))} 
-                          hideCreatorInfo={true}
-                          isVertical={v.type?.toLowerCase() === "short"}
-                        />
+                          ref={(el) => { if (el) { const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting && entry.intersectionRatio > 0.6) setActiveVideoId(v.id); }, { threshold: [0.6] }); observer.observe(el); } }}
+                        >
+                          <HomeFeedCard 
+                            video={v} 
+                            creator={profile} 
+                            onMore={() => {}} 
+                            onPlay={() => {}} 
+                            isActive={activeVideoId === v.id} 
+                            onSetActive={() => setActiveVideoId(v.id)} 
+                            onOpenComments={() => setCommentSheetVideoId(v.id)} 
+                            isLiked={!!likedVideos[v.id]} 
+                            onToggleLike={() => setLikedVideos(prev => ({ ...prev, [v.id]: !prev[v.id] }))} 
+                            hideCreatorInfo={true}
+                            isVertical={v.type?.toLowerCase() === "short"}
+                          />
+                        </div>
                       ))}
                     </div>
                   )}
