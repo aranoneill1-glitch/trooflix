@@ -100,14 +100,19 @@ export default function UserMenu() {
             transition={{ duration: 0.15 }}
             className="absolute right-0 mt-3 w-56 bg-[#1c1c1e] border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-[300]"
           >
-            <div className="p-4 border-b border-white/5">
-              <p className="text-sm font-bold text-white truncate">{profile?.display_name || profile?.username}</p>
-              <p className="text-xs text-white/50 truncate">@{profile?.username}</p>
-              {isCreator && (
-                <span className="inline-block mt-2 text-[9px] font-bold text-blue-400 bg-blue-400/10 px-1.5 py-0.5 rounded-sm uppercase tracking-wider">
-                  Creator
-                </span>
-              )}
+            <div className="p-4 border-b border-white/5 flex items-start justify-between gap-2">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold text-white truncate">{profile?.display_name || profile?.username}</p>
+                <p className="text-xs text-white/50 truncate">@{profile?.username}</p>
+                {isCreator && (
+                  <span className="inline-block mt-2 text-[9px] font-bold text-blue-400 bg-blue-400/10 px-1.5 py-0.5 rounded-sm uppercase tracking-wider">
+                    Creator
+                  </span>
+                )}
+              </div>
+              <div className="shrink-0 pt-0.5">
+                <NotificationBell />
+              </div>
             </div>
 
             <div className="p-2">
@@ -132,8 +137,6 @@ export default function UserMenu() {
                 {isCreator ? <LayoutDashboard size={16} /> : <User size={16} />}
                 {isCreator ? "Creator Dashboard" : "My Profile"}
               </Link>
-
-              <NotificationBell asMenuItem={true} />
 
               {isCreator && (
                 <Link 
