@@ -1,44 +1,34 @@
 import { NextResponse } from "next/server";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { createClient } from "@supabase/supabase-js";
 
-const S3 = new S3Client({
-  region: "auto",
-  endpoint: process.env.R2_ENDPOINT || `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-  credentials: {
-    accessKeyId: process.env.R2_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
-  },
-});
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 export async function POST(req: Request) {
   try {
-    const { filename, contentType, folder } = await req.json();
+    const formData = await req.formData();
+    const file = formData.get("file") as File;
+    if (!file) return NextResponse.json({ error: "No file provided" }, { status: 400 });
 
-    if (!filename || !contentType) {
-      return NextResponse.json({ error: "Missing filename or contentType" }, { status: 400 });
-    }
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+    const filePath = `media/${fileName}`;
 
-    const fileExt = filename.split('.').pop();
-    const uniqueFileName = `${folder || 'uploads'}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+    const { error } = await supabaseAdmin.storage
+      .from("avatars")
+      .upload(filePath, file, { contentType: file.type, upsert: false });
 
-    const command = new PutObjectCommand({
-      Bucket: process.env.R2_BUCKET_NAME,
-      Key: uniqueFileName,
-      ContentType: contentType,
-    });
+    if (error) throw error;
 
-    const signedUrl = await getSignedUrl(S3, command, { expiresIn: 3600 });
+    const { data: { publicUrl } } = supabaseAdmin.storage
+      .from("avatars")
+      .getPublicUrl(filePath);
 
-    // Ensure the base URL doesn't have a trailing slash to prevent // in the URL
-    const rawBaseUrl = process.env.R2_PUBLIC_URL || `${process.env.R2_ENDPOINT}`;
-    const cleanBaseUrl = rawBaseUrl.endsWith("/") ? rawBaseUrl.slice(0, -1) : rawBaseUrl;
-    
-    const publicUrl = `${cleanBaseUrl}/${uniqueFileName}`;
-
-    return NextResponse.json({ signedUrl, publicUrl });
-  } catch (error: any) {
-    console.error("R2 Presign Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ url: publicUrl });
+  } catch (e: any) {
+    console.error("Upload error:", e);
+    return NextResponse.json({ error: String(e) }, { status: 500 });
   }
 }

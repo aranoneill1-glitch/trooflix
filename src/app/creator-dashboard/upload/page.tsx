@@ -30,86 +30,49 @@ function UploadContent() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadStatus, setUploadStatus] = useState("");
 
-  const compressVideo = async (file: File) => {
-    setUploadStatus("Compressing video (this may take a minute)...");
-    setUploadProgress(0);
-    try {
-      const video = document.createElement("video");
-      video.src = URL.createObjectURL(file);
-      video.muted = true;
-      await new Promise((resolve, reject) => {
-        video.onloadedmetadata = resolve;
-        video.onerror = reject;
-      });
-      const canvas = document.createElement("canvas");
-      const MAX_WIDTH = 1280;
-      let width = video.videoWidth, height = video.videoHeight;
-      if (width > MAX_WIDTH) { height = (height / width) * MAX_WIDTH; width = MAX_WIDTH; }
-      canvas.width = width; canvas.height = height;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) throw new Error("Canvas not supported");
-      const stream = canvas.captureStream(30);
-      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const source = audioCtx.createMediaElementSource(video);
-      const destination = audioCtx.createMediaStreamDestination();
-      source.connect(destination);
-      destination.stream.getAudioTracks().forEach(t => stream.addTrack(t));
-      const recorder = new MediaRecorder(stream, { mimeType: "video/webm;codecs=vp8,opus", videoBitsPerSecond: 2500000 });
-      const chunks: Blob[] = [];
-      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
-      const done = new Promise<Blob>((resolve) => {
-        recorder.onstop = () => resolve(new Blob(chunks, { type: "video/webm" }));
-      });
-      recorder.start(1000);
-      video.play();
-      const drawFrame = () => {
-        if (video.ended || video.paused) { recorder.stop(); return; }
-        ctx.drawImage(video, 0, 0, width, height);
-        setUploadProgress(Math.round((video.currentTime / video.duration) * 100));
-        requestAnimationFrame(drawFrame);
-      };
-      drawFrame();
-      const compressedBlob = await done;
-      URL.revokeObjectURL(video.src);
-      audioCtx.close();
-      return new File([compressedBlob], file.name.replace(/\.[^.]+$/, ".webm"), { type: "video/webm" });
-    } catch (err) {
-      console.error("Compression failed, using original", err);
-      return file;
-    }
-  };
-
-  const uploadFile = async (file: File, label: string) => {
-    if (file.size === 0) throw new Error(label + " is 0 bytes.");
-    setUploadStatus("Preparing " + label + "...");
-    setUploadProgress(0);
-    const res = await fetch("/api/r2-upload", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ filename: file.name, contentType: file.type || "application/octet-stream" }),
-    });
-    const { uploadUrl, publicUrl, error } = await res.json();
-    if (error) throw new Error(error);
+  const uploadToSupabase = async (file: File, label: string) => {
+    if (file.size === 0) throw new Error(label + " is 0 bytes. On iPhone, wait for iCloud download first.");
     setUploadStatus("Uploading " + label + "...");
-    const buffer = await file.arrayBuffer();
-    await new Promise<void>((resolve, reject) => {
+    setUploadProgress(0);
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    return new Promise<string>((resolve, reject) => {
       const xhr = new XMLHttpRequest();
-      xhr.open("PUT", uploadUrl, true);
-      xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
-      xhr.upload.onprogress = (e) => { if (e.lengthComputable) setUploadProgress(Math.round((e.loaded / e.total) * 100)); };
-      xhr.onload = () => (xhr.status >= 200 && xhr.status < 300) ? resolve() : reject(new Error(label + " failed: " + xhr.status));
+      xhr.open("POST", "/api/upload", true);
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) setUploadProgress(Math.round((e.loaded / e.total) * 100));
+      };
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const data = JSON.parse(xhr.responseText);
+            if (data.url) resolve(data.url);
+            else reject(new Error(label + " upload failed"));
+          } catch (err) { reject(new Error("Invalid server response")); }
+        } else {
+          reject(new Error(label + " failed: " + xhr.status));
+        }
+      };
       xhr.onerror = () => reject(new Error("Network error on " + label));
-      xhr.send(buffer);
+      xhr.send(formData);
     });
-    return publicUrl;
   };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isTweet) { if (!description.trim()) return alert("Write some text."); publishContent(true); return; }
+    if (isTweet) {
+      if (!description.trim()) return alert("Write some text for your tweet.");
+      publishContent(true);
+      return;
+    }
     if (!mediaFile) return alert("Select a video file.");
     if (isShort) publishContent(true);
-    else { if (!thumbnailFile) return alert("Select a thumbnail."); setShowSharePrompt(true); }
+    else {
+      if (!thumbnailFile) return alert("Select a thumbnail.");
+      setShowSharePrompt(true);
+    }
   };
 
   const publishContent = async (shareToFeed: boolean) => {
@@ -121,13 +84,8 @@ function UploadContent() {
       const supabase = createClient();
       const { data: profile } = await supabase.from("profiles").select("creator_id").eq("user_id", user.id).single();
 
-      let finalMediaFile = mediaFile;
-      if (!isTweet && mediaFile && mediaFile.size > 50 * 1024 * 1024) {
-        finalMediaFile = await compressVideo(mediaFile);
-      }
-
-      const thumbUrl = (!isTweet && !isShort && thumbnailFile) ? await uploadFile(thumbnailFile, "Thumbnail") : "";
-      const mediaUrl = (!isTweet && finalMediaFile) ? await uploadFile(finalMediaFile, "Video") : "";
+      const thumbUrl = (!isTweet && !isShort && thumbnailFile) ? await uploadToSupabase(thumbnailFile, "Thumbnail") : "";
+      const mediaUrl = (!isTweet && mediaFile) ? await uploadToSupabase(mediaFile, "Video") : "";
 
       setUploadStatus("Saving...");
       setUploadProgress(100);
