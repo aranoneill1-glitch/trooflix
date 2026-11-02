@@ -335,8 +335,8 @@ export default function Home() {
                   <div className="flex gap-4 overflow-x-auto scrollbar-hide px-4 pb-4 relative z-10 mt-4 mb-8">
                     {[...creators].slice(0, 15).map((c: any) => (
                       <Link key={c.id} href={`/profile/${c.slug}`} className="flex flex-col items-center text-center flex-shrink-0 group w-[96px]">
-                        <div className="w-20 h-20 rounded-full p-[2px] bg-[#E53945] group-hover:scale-105 transition-transform mb-2">
-                          <div className="w-full h-full rounded-full border-2 border-black overflow-hidden bg-[#1c1c1e]">
+                        <div className="w-20 h-20 rounded-full p-[2px] bg-gradient-to-b from-white/40 to-white/10 shadow-[0_0_15px_rgba(255,255,255,0.1)] group-hover:scale-105 transition-transform mb-2 relative">
+                          <div className="w-full h-full rounded-full border-2 border-[#09090B] overflow-hidden bg-[#1c1c1e]">
                             {c.photoUrl ? <img src={c.photoUrl} alt={c.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xl font-bold text-white">{c.name?.[0]?.toUpperCase() || "?"}</div>}
                           </div>
                         </div>
@@ -392,8 +392,8 @@ export default function Home() {
                   <div className="max-w-[1600px] mx-auto px-12 pb-6 grid grid-cols-6 xl:grid-cols-8 gap-4">
                     {[...creators].slice(0, 8).map((c: any) => (
                       <Link key={c.id} href={`/profile/${c.slug}`} className="flex flex-col items-center text-center group cursor-pointer">
-                        <div className="w-24 h-24 rounded-full p-[2px] bg-[#E53945] group-hover:scale-105 transition-transform mb-3">
-                          <div className="w-full h-full rounded-full border-2 border-black overflow-hidden bg-[#1c1c1e]">
+                        <div className="w-24 h-24 rounded-full p-[2px] bg-gradient-to-b from-white/40 to-white/10 shadow-[0_0_20px_rgba(255,255,255,0.1)] group-hover:scale-105 transition-transform mb-3 relative">
+                          <div className="w-full h-full rounded-full border-2 border-[#09090B] overflow-hidden bg-[#1c1c1e]">
                             {c.photoUrl ? <img src={c.photoUrl} alt={c.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xl font-bold text-white">{c.name?.[0]?.toUpperCase() || "?"}</div>}
                           </div>
                         </div>
