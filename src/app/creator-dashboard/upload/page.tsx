@@ -32,32 +32,34 @@ function UploadContent() {
 
   const uploadToSupabase = async (file: File, label: string) => {
     if (file.size === 0) throw new Error(label + " is 0 bytes. On iPhone, wait for iCloud download first.");
-    setUploadStatus("Uploading " + label + "...");
+    setUploadStatus("Preparing " + label + "...");
     setUploadProgress(0);
 
-    const formData = new FormData();
-    formData.append("file", file);
+    const res = await fetch("/api/r2-upload", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ filename: file.name, contentType: file.type || "application/octet-stream" }),
+    });
+    const { uploadUrl, publicUrl, error } = await res.json();
+    if (error) throw new Error(error);
 
-    return new Promise<string>((resolve, reject) => {
+    setUploadStatus("Uploading " + label + "...");
+
+    const buffer = await file.arrayBuffer();
+
+    await new Promise<void>((resolve, reject) => {
       const xhr = new XMLHttpRequest();
-      xhr.open("POST", "/api/upload", true);
+      xhr.open("PUT", uploadUrl, true);
+      xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
       xhr.upload.onprogress = (e) => {
         if (e.lengthComputable) setUploadProgress(Math.round((e.loaded / e.total) * 100));
       };
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          try {
-            const data = JSON.parse(xhr.responseText);
-            if (data.url) resolve(data.url);
-            else reject(new Error(label + " upload failed"));
-          } catch (err) { reject(new Error("Invalid server response")); }
-        } else {
-          reject(new Error(label + " failed: " + xhr.status));
-        }
-      };
+      xhr.onload = () => (xhr.status >= 200 && xhr.status < 300) ? resolve() : reject(new Error(label + " failed: " + xhr.status));
       xhr.onerror = () => reject(new Error("Network error on " + label));
-      xhr.send(formData);
+      xhr.send(buffer);
     });
+
+    return publicUrl;
   };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
