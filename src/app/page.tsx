@@ -316,7 +316,7 @@ export default function Home() {
                 </div>
 
                 {/* Header */}
-                <div className="px-4 pb-2 relative z-20">
+                <div className="px-4 pb-2 relative z-30">
                   <p className="text-[10px] tracking-[0.4em] text-white/50 font-semibold mb-1 uppercase">
                     The Home of Independent Voices
                   </p>
@@ -332,7 +332,7 @@ export default function Home() {
                 
                 {/* Avatars with Follow (Moved up) */}
                 {creators && creators.length > 0 && (
-                  <div className="flex gap-4 overflow-x-auto scrollbar-hide px-4 pb-4 relative z-20 mx-4 mb-4">
+                  <div className="flex gap-4 overflow-x-auto scrollbar-hide px-4 pb-4 relative z-10 mt-4 mb-8">
                     {[...creators].slice(0, 15).map((c: any) => (
                       <Link key={c.id} href={`/profile/${c.slug}`} className="flex flex-col items-center text-center flex-shrink-0 group w-[96px]">
                         <div className="w-20 h-20 rounded-full p-[2px] bg-[#E53945] group-hover:scale-105 transition-transform mb-2">
