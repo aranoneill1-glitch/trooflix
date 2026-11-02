@@ -90,9 +90,6 @@ function CreatorDashboardContent() {
     setUploadingAvatar(true);
 
     try {
-      // BULLETPROOF iOS FIX: Decode image into a canvas, then re-export as JPEG blob.
-      // This forces iOS to actually load the image from iCloud/disk instead of
-      // handing us an empty 0-byte placeholder.
       let processedBlob: Blob;
 
       try {
@@ -115,18 +112,16 @@ function CreatorDashboardContent() {
           canvas.toBlob((b) => b ? resolve(b) : reject(new Error("Failed to export canvas")), "image/jpeg", 0.85);
         });
       } catch (decodeErr) {
-        // Fallback: use the raw file if canvas fails
-        console.warn("Canvas decode failed, using raw file", decodeErr);
         processedBlob = file;
       }
 
       if (processedBlob.size === 0) {
-        throw new Error("Image is 0 bytes after processing. The photo may not be downloaded from iCloud. Open Photos, tap the image, then wait for the download icon to finish.");
+        throw new Error("Image is 0 bytes. Open Photos, wait for it to download from iCloud, then retry.");
       }
 
-      const r2Res = await fetch('/api/r2-upload', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const r2Res = await fetch("/api/r2-upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ filename: "avatar.jpg", contentType: "image/jpeg" }),
       });
       const r2Data = await r2Res.json();
@@ -138,7 +133,7 @@ function CreatorDashboardContent() {
         xhr.setRequestHeader("Content-Type", "image/jpeg");
         xhr.onload = () => {
           if (xhr.status >= 200 && xhr.status < 300) resolve(true);
-          else reject(new Error(`Upload failed: ${xhr.status}`));
+          else reject(new Error("Upload failed: " + xhr.status));
         };
         xhr.onerror = () => reject(new Error("Network error"));
         xhr.send(processedBlob);
