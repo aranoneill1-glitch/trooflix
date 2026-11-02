@@ -128,10 +128,18 @@ function UploadContent() {
 
         xhr.onload = () => {
           if (xhr.status >= 200 && xhr.status < 300) {
-            const etag = xhr.getResponseHeader("ETag")?.replace(/"/g, "");
-            if (etag) parts.push({ PartNumber: i + 1, ETag: etag });
+            let etag = xhr.getResponseHeader("ETag");
+            if (!etag) {
+              reject(new Error("Missing ETag on chunk " + (i + 1) + ". Check R2 CORS settings."));
+              return;
+            }
+            // Cloudflare sometimes returns ETag with quotes, clean it up
+            etag = etag.replace(/^"+|"+$/g, "");
+            parts.push({ PartNumber: i + 1, ETag: etag });
             resolve();
-          } else reject(new Error("Chunk upload failed with status " + xhr.status));
+          } else {
+            reject(new Error("Chunk upload failed with status " + xhr.status));
+          }
         };
         xhr.onerror = () => reject(new Error("Network error during chunk upload"));
         xhr.send(chunk);
@@ -139,6 +147,9 @@ function UploadContent() {
     }
 
     // 3. Complete the upload
+    if (parts.length === 0) {
+      throw new Error("No chunks were uploaded successfully. Please try again.");
+    }
     setUploadStatus("Finalizing upload...");
     const completeRes = await fetch("/api/r2-multipart/complete", {
       method: "POST",
