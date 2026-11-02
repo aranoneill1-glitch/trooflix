@@ -9,6 +9,7 @@ import MobileBottomNav from "@/components/MobileBottomNav";
 import { getCachedUser } from "@/lib/cache";
 import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
+import { r2MultipartUpload } from "@/lib/r2Upload";
 
 const CATEGORIES = ["Documentaries","Podcasts","Independent Films","Books","History","Politics & Geopolitics","War & Conflict","True Crime & Justice","Conspiracy & Mystery","Society & Culture","Business & Finance","Science & Technology","Environment & Nature","Religion & Spirituality","Ancient Civilisation","Comedy","News","Gaming"];
 
@@ -34,30 +35,12 @@ function UploadContent() {
     if (file.size === 0) throw new Error(label + " is 0 bytes. On iPhone, wait for iCloud download first.");
     setUploadStatus("Uploading " + label + "...");
     setUploadProgress(0);
-
-    const formData = new FormData();
-    formData.append("file", file);
-
-    return new Promise<string>((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.open("POST", "/api/upload", true);
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) setUploadProgress(Math.round((e.loaded / e.total) * 100));
-      };
-      xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          try {
-            const data = JSON.parse(xhr.responseText);
-            if (data.url) resolve(data.url);
-            else reject(new Error(label + " upload failed"));
-          } catch (err) { reject(new Error("Invalid server response")); }
-        } else {
-          reject(new Error(label + " failed: " + xhr.status));
-        }
-      };
-      xhr.onerror = () => reject(new Error("Network error on " + label));
-      xhr.send(formData);
+    const folder = label === "Thumbnail" ? "thumbnails" : "videos";
+    const { publicUrl } = await r2MultipartUpload(file, {
+      folder,
+      onProgress: (p) => setUploadProgress(p),
     });
+    return publicUrl;
   };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
