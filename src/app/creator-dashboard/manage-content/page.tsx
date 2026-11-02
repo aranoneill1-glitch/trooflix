@@ -51,7 +51,7 @@ export default function ManageContentPage() {
         .then((r) => r.json())
         .then((data) => {
           const myVideos = Array.isArray(data) 
-            ? data.filter((v: any) => String(v.creatorId) === String(user.id) || !v.creatorId) 
+            ? data.filter((v: any) => v.uploaderUserId && String(v.uploaderUserId) === String(user.id)) 
             : [];
           setVideos(myVideos);
           setLoading(false);

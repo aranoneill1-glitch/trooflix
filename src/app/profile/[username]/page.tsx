@@ -55,9 +55,12 @@ export default function PublicProfilePage() {
         const videosRes = await fetch("/api/videos", { cache: "no-store" });
         const allVideos = await videosRes.json();
         if (Array.isArray(allVideos)) {
-          const creatorVideos = allVideos.filter((v: any) => 
-            String(v.uploaderUserId) === String(profileData.user_id) || String(v.creatorId) === String(creatorId)
-          );
+          const creatorVideos = allVideos.filter((v: any) => {
+              // Ensure both values exist before comparing to prevent null === null leaks
+              const matchesUploader = v.uploaderUserId && String(v.uploaderUserId) === String(profileData.user_id);
+              const matchesCreator = creatorId && v.creatorId && String(v.creatorId) === String(creatorId);
+              return matchesUploader || matchesCreator;
+            });
           setVideos(creatorVideos);
         }
       } catch (err) {}
