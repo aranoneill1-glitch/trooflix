@@ -76,7 +76,6 @@ export default function AppleVideoPlayer({
       <video
         ref={videoRef}
         src={src}
-        poster={poster}
         playsInline
         controls
         className="w-full h-full object-contain"

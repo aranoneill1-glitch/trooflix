@@ -469,7 +469,6 @@ export default function Home() {
         <AppleVideoPlayer
           src={playing.videoUrl ?? playing.bitchuteUrl ?? ""}
           title={playing.title}
-          poster={playing.posterUrl}
           textOverlays={playing?.textOverlays}
           chapters={playing.chapters || []}
           onClose={() => setPlaying(null)}
