@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Airplay, Volume2, RotateCcw, RotateCw, Play, Pause, Settings } from "lucide-react";
+import { X, Airplay, Volume2, VolumeX, RotateCcw, RotateCw, Play, Pause } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface PlayerProps {
@@ -23,6 +23,7 @@ export default function CustomVideoPlayer({ src, poster, onClose }: PlayerProps)
   const [speed, setSpeed] = useState(1);
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
   const [isScrubbing, setIsScrubbing] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
   
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -51,6 +52,22 @@ export default function CustomVideoPlayer({ src, poster, onClose }: PlayerProps)
     videoRef.current.playbackRate = newSpeed;
     setSpeed(newSpeed);
     setShowSpeedMenu(false);
+    handleInteraction();
+  };
+
+  const handleAirplay = () => {
+    if (videoRef.current && (videoRef.current as any).webkitShowPlaybackTargetPicker) {
+      (videoRef.current as any).webkitShowPlaybackTargetPicker();
+    } else {
+      alert("AirPlay is not supported on this browser (iOS/Safari only).");
+    }
+    handleInteraction();
+  };
+
+  const toggleMute = () => {
+    if (!videoRef.current) return;
+    videoRef.current.muted = !videoRef.current.muted;
+    setIsMuted(videoRef.current.muted);
     handleInteraction();
   };
 
@@ -109,7 +126,9 @@ export default function CustomVideoPlayer({ src, poster, onClose }: PlayerProps)
         poster={poster}
         autoPlay
         playsInline
+        x-webkit-airplay="allow"
         onClick={togglePlay}
+        onVolumeChange={() => setIsMuted(videoRef.current?.muted || false)}
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
         className="w-full h-full object-contain"
@@ -128,12 +147,12 @@ export default function CustomVideoPlayer({ src, poster, onClose }: PlayerProps)
                 <button onClick={() => onClose ? onClose() : router.back()} className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition">
                   <X size={24} />
                 </button>
-                <button className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition">
+                <button onClick={handleAirplay} className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition">
                   <Airplay size={24} />
                 </button>
               </div>
-              <button className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition">
-                <Volume2 size={24} />
+              <button onClick={toggleMute} className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition">
+                {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
               </button>
             </div>
 
@@ -174,14 +193,9 @@ export default function CustomVideoPlayer({ src, poster, onClose }: PlayerProps)
                   </motion.div>
                 )}
               </AnimatePresence>
-              <div className="flex gap-2">
-                <button onClick={() => { setShowSpeedMenu(!showSpeedMenu); handleInteraction(); }} className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition text-sm font-bold">
-                  {speed}x
-                </button>
-                <button className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition">
-                  <Settings size={24} />
-                </button>
-              </div>
+              <button onClick={() => { setShowSpeedMenu(!showSpeedMenu); handleInteraction(); }} className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition text-sm font-bold">
+                {speed}x
+              </button>
             </div>
 
             {/* Bottom Timeline */}
