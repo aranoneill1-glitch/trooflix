@@ -9,7 +9,6 @@ import MobileBottomNav from "@/components/MobileBottomNav";
 import { getCachedUser } from "@/lib/cache";
 import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
-import * as tus from "tus-js-client";
 
 const CATEGORIES = [
   "Documentaries", "Podcasts", "Independent Films", "Books", "History", 
@@ -65,7 +64,8 @@ function UploadContent() {
     if (file.size === 0) throw new Error("Video is 0 bytes. On iPhone, open Photos and wait for the video to download from iCloud.");
 
     setUploadStatus("Preparing upload...");
-    
+    setUploadProgress(0);
+
     // Get presigned URL from R2 API
     const res = await fetch("/api/r2-upload", {
       method: "POST",
@@ -77,35 +77,39 @@ function UploadContent() {
 
     setUploadStatus("Uploading Video...");
 
-    // Use TUS resumable upload for the video
-    return new Promise<string>((resolve, reject) => {
-      const upload = new tus.Upload(file, {
-        endpoint: uploadUrl.split("?")[0],
-        retryDelays: [0, 3000, 5000, 10000, 20000],
-        metadata: {
-          filename: file.name,
-          filetype: file.type || "video/mp4",
-        },
-        headers: {
-          "X-Amz-Content-Sha256": "UNSIGNED-PAYLOAD",
-        },
-        uploadDataDuringCreation: true,
-        removeFingerprintOnSuccess: true,
-        onError: function (error) {
-          console.error("TUS Error:", error);
-          reject(new Error("Upload failed. Check your internet and try again."));
-        },
-        onProgress: function (bytesUploaded, bytesTotal) {
-          const percentage = Math.round((bytesUploaded / bytesTotal) * 100);
-          setUploadProgress(percentage);
-        },
-        onSuccess: function () {
-          resolve(publicUrl);
-        },
-      });
+    // Force iOS to read the file into memory first (prevents 0-byte uploads)
+    let fileBuffer: ArrayBuffer;
+    try {
+      fileBuffer = await file.arrayBuffer();
+    } catch (e) {
+      throw new Error("Failed to read file. The video may not be downloaded from iCloud yet.");
+    }
 
-      upload.start();
+    if (fileBuffer.byteLength === 0) {
+      throw new Error("File is empty after reading. On iPhone, wait for iCloud download first.");
+    }
+
+    // Upload via XMLHttpRequest with progress tracking
+    await new Promise<void>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("PUT", uploadUrl, true);
+      xhr.setRequestHeader("Content-Type", file.type || "video/mp4");
+
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          setUploadProgress(Math.round((event.loaded / event.total) * 100));
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) resolve();
+        else reject(new Error("Upload failed with status " + xhr.status));
+      };
+      xhr.onerror = () => reject(new Error("Network error during upload."));
+      xhr.send(fileBuffer);
     });
+
+    return publicUrl;
   };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
