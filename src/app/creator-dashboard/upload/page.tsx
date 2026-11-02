@@ -2,7 +2,7 @@
 
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, CheckCircle2, Image as ImageIcon, Globe, Lock, Home, User, UploadCloud, MessageSquare } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Image as ImageIcon, Globe, Lock, Home, User, UploadCloud, MessageSquare, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
@@ -30,6 +30,8 @@ function UploadContent() {
   const [showSharePrompt, setShowSharePrompt] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadStatus, setUploadStatus] = useState("");
+  const [step, setStep] = useState(1);
+  const totalSteps = isTweet ? 1 : isShort ? 3 : 5;
 
   const uploadToSupabase = async (file: File, label: string) => {
     if (file.size === 0) throw new Error(label + " is 0 bytes. On iPhone, wait for iCloud download first.");
@@ -43,18 +45,26 @@ function UploadContent() {
     return publicUrl;
   };
 
-  const handleFormSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isTweet) {
-      if (!description.trim()) return alert("Write some text for your tweet.");
-      publishContent(true);
-      return;
+  const handleNext = () => {
+    if (step === 1) {
+      if (!isTweet && !mediaFile) return alert("Please select a video file.");
+      if (isTweet && !description.trim()) return alert("Please write your tweet.");
     }
-    if (!mediaFile) return alert("Select a video file.");
-    if (isShort) publishContent(true);
-    else {
-      if (!thumbnailFile) return alert("Select a thumbnail.");
-      setShowSharePrompt(true);
+    if (step === 2) {
+      if (isShort && !title.trim()) return alert("Please enter a title.");
+      if (!isShort && !thumbnailFile) return alert("Please select a thumbnail.");
+    }
+    if (step === 3) {
+      if (isShort && !description.trim()) return alert("Please enter a description.");
+      if (!isShort && !title.trim()) return alert("Please enter a title.");
+    }
+    if (step === 4 && !description.trim()) return alert("Please enter a description.");
+    
+    if (step < totalSteps) {
+      setStep(step + 1);
+    } else {
+      if (isTweet || isShort) publishContent(true);
+      else setShowSharePrompt(true);
     }
   };
 
@@ -119,21 +129,42 @@ function UploadContent() {
         <div className="flex items-center gap-4 mb-8">
           <Link href="/creator-dashboard" className="p-2 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition"><ArrowLeft size={20} /></Link>
           <div><h1 className="text-2xl font-bold">{isTweet ? "Add a Tweet" : (isShort ? "Upload Short" : "Upload Video")}</h1>
-          <p className="text-sm text-white/50">{isTweet ? "Share your thoughts." : (isShort ? "Publish to Shorts feed." : "Publish to your profile and home feed.")}</p></div>
+          <p className="text-sm text-white/50">Step {step} of {totalSteps}</p></div>
         </div>
-        <form onSubmit={handleFormSubmit} className="space-y-6">
+        <div className="w-full h-1 bg-white/10 rounded-full mb-8 overflow-hidden">
+          <div className="h-full bg-[#E53945] transition-all duration-300" style={{ width: `${((step - 1) / (totalSteps - 1)) * 100}%` }} />
+        </div>
+        <div className="space-y-6">
           <div className="space-y-4">
-            {!isTweet && (<div><label className="block text-xs font-bold text-white/60 mb-1">Title *</label><input required type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#E53945]" placeholder="Name your video..." /></div>)}
-            <div><label className="block text-xs font-bold text-white/60 mb-1">{isTweet ? "What is on your mind?" : "Description"} *</label><textarea required value={description} onChange={e => setDescription(e.target.value)} className={"w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#E53945] resize-none " + (isTweet ? "h-40" : "h-24")} placeholder={isTweet ? "Write your tweet..." : "Write a description..."} /></div>
-            {!isShort && !isTweet && (<><div><label className="block text-xs font-bold text-white/60 mb-1">Category *</label><select required value={category} onChange={(e) => setCategory(e.target.value)} className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#E53945] appearance-none">{CATEGORIES.map(cat => (<option key={cat} value={cat}>{cat}</option>))}</select></div>
-            <div><label className="block text-xs font-bold text-white/60 mb-1">Visibility *</label><div className="grid grid-cols-2 gap-2"><button type="button" onClick={() => setVisibility("public")} className={"flex flex-col items-center gap-1.5 p-3 rounded-xl border transition " + (visibility === "public" ? "bg-[#E53945]/10 border-[#E53945] text-[#E53945]" : "bg-white/5 border-white/10 text-white/50")}><Globe size={18} /><span className="text-[10px] font-bold uppercase">Public</span></button><button type="button" onClick={() => setVisibility("premium")} className={"flex flex-col items-center gap-1.5 p-3 rounded-xl border transition " + (visibility === "premium" ? "bg-[#D4AF37]/10 border-[#D4AF37] text-[#D4AF37]" : "bg-white/5 border-white/10 text-white/50")}><Lock size={18} /><span className="text-[10px] font-bold uppercase">Premium</span></button></div></div></>)}
-            {!isTweet && (<div><label className="block text-xs font-bold text-white/60 mb-1">Video File *</label><div onClick={() => document.getElementById("media-upload")?.click()} className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] transition"><UploadCloud size={24} className="text-white/50 mb-2" /><span className="text-sm font-bold text-white">{mediaFile ? mediaFile.name : "Tap to select video"}</span></div><input id="media-upload" type="file" accept="video/*" onChange={(e) => setMediaFile(e.target.files?.[0] || null)} className="hidden" /></div>)}
-            {!isShort && !isTweet && (<div><label className="block text-xs font-bold text-white/60 mb-1">Thumbnail *</label><div onClick={() => document.getElementById("thumb-upload")?.click()} className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] transition"><ImageIcon size={24} className="text-white/50 mb-2" /><span className="text-sm font-bold text-white">{thumbnailFile ? thumbnailFile.name : "Tap to select thumbnail"}</span></div><input id="thumb-upload" type="file" accept="image/*" onChange={(e) => setThumbnailFile(e.target.files?.[0] || null)} className="hidden" /></div>)}
+            {step === 1 && !isTweet && (<div><label className="block text-xs font-bold text-white/60 mb-1">Video File *</label><div onClick={() => document.getElementById("media-upload")?.click()} className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] transition min-h-[200px]"><UploadCloud size={32} className="text-white/50 mb-3" /><span className="text-sm font-bold text-white text-center">{mediaFile ? mediaFile.name : "Tap to select video"}</span></div><input id="media-upload" type="file" accept="video/*" onChange={(e) => setMediaFile(e.target.files?.[0] || null)} className="hidden" /></div>)}
+            
+            {step === 2 && !isShort && !isTweet && (<div><label className="block text-xs font-bold text-white/60 mb-1">Thumbnail *</label><div onClick={() => document.getElementById("thumb-upload")?.click()} className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] transition min-h-[200px]"><ImageIcon size={32} className="text-white/50 mb-3" /><span className="text-sm font-bold text-white text-center">{thumbnailFile ? thumbnailFile.name : "Tap to select thumbnail"}</span></div><input id="thumb-upload" type="file" accept="image/*" onChange={(e) => setThumbnailFile(e.target.files?.[0] || null)} className="hidden" /></div>)}
+
+            {((isTweet && step === 1) || (isShort && step === 2) || (!isShort && !isTweet && step === 3)) && (<div><label className="block text-xs font-bold text-white/60 mb-1">Title *</label><input required type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#E53945]" placeholder="Name your video..." /></div>)}
+
+            {((isTweet && step === 1) || (isShort && step === 3) || (!isShort && !isTweet && step === 4)) && (<div><label className="block text-xs font-bold text-white/60 mb-1">{isTweet ? "What is on your mind?" : "Description"} *</label><textarea required value={description} onChange={e => setDescription(e.target.value)} className={"w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#E53945] resize-none " + (isTweet ? "h-40" : "h-24")} placeholder={isTweet ? "Write your tweet..." : "Write a description..."} /></div>)}
+
+            {step === 5 && !isShort && !isTweet && (<><div><label className="block text-xs font-bold text-white/60 mb-1">Category *</label><select required value={category} onChange={(e) => setCategory(e.target.value)} className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#E53945] appearance-none">{CATEGORIES.map(cat => (<option key={cat} value={cat}>{cat}</option>))}</select></div>
+            <div className="mt-4"><label className="block text-xs font-bold text-white/60 mb-1">Visibility *</label><div className="grid grid-cols-2 gap-2"><button type="button" onClick={() => setVisibility("public")} className={"flex flex-col items-center gap-1.5 p-3 rounded-xl border transition " + (visibility === "public" ? "bg-[#E53945]/10 border-[#E53945] text-[#E53945]" : "bg-white/5 border-white/10 text-white/50")}><Globe size={18} /><span className="text-[10px] font-bold uppercase">Public</span></button><button type="button" onClick={() => setVisibility("premium")} className={"flex flex-col items-center gap-1.5 p-3 rounded-xl border transition " + (visibility === "premium" ? "bg-[#D4AF37]/10 border-[#D4AF37] text-[#D4AF37]" : "bg-white/5 border-white/10 text-white/50")}><Lock size={18} /><span className="text-[10px] font-bold uppercase">Premium</span></button></div></div></>)}
           </div>
+
           {loading ? (
             <div className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-4 flex flex-col gap-3"><div className="flex items-center justify-between"><span className="text-sm font-bold text-white">{uploadStatus}</span><span className="text-sm font-black text-[#E53945]">{uploadProgress}%</span></div><div className="w-full h-2 bg-black rounded-full overflow-hidden"><div className="h-full bg-[#E53945] transition-all duration-300" style={{ width: uploadProgress + "%" }} /></div></div>
-          ) : (<button type="submit" className="w-full bg-[#E53945] hover:bg-[#d12e39] text-white font-bold py-4 rounded-xl transition flex items-center justify-center gap-2">{isTweet ? <MessageSquare size={20} /> : <UploadCloud size={20} />} Publish {isTweet ? "Tweet" : (isShort ? "Short" : "Video")}</button>)}
-        </form>
+          ) : (
+            <div className="flex gap-3 pt-4">
+              {step > 1 && (
+                <button type="button" onClick={() => setStep(step - 1)} className="py-4 px-6 bg-white/5 border border-white/10 text-white font-bold rounded-xl hover:bg-white/10 transition">Back</button>
+              )}
+              <button type="button" onClick={handleNext} className="flex-1 bg-[#E53945] hover:bg-[#d12e39] text-white font-bold py-4 rounded-xl transition flex items-center justify-center gap-2">
+                {step === totalSteps ? (
+                  <>{isTweet ? <MessageSquare size={20} /> : <UploadCloud size={20} />} Publish {isTweet ? "Tweet" : (isShort ? "Short" : "Video")}</>
+                ) : (
+                  <>Next <ChevronRight size={20} /></>
+                )}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
       <AnimatePresence>
         {showSharePrompt && !isShort && !isTweet && (
