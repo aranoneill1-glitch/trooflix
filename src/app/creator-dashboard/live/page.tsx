@@ -11,6 +11,7 @@ export default function GoLivePage() {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement>(null);
   const guestVideoRef = useRef<HTMLVideoElement>(null);
+  const guestAudioRef = useRef<HTMLAudioElement>(null);
   const canvasPreviewRef = useRef<HTMLVideoElement>(null);
   const canvasStreamRef = useRef<MediaStream | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -185,13 +186,22 @@ export default function GoLivePage() {
     };
 
     pc.ontrack = (event) => {
-      if (guestVideoRef.current) {
+      if (event.track.kind === "video" && guestVideoRef.current) {
         guestVideoRef.current.srcObject = event.streams[0];
-        guestVideoRef.current.play().catch(e => console.error("Play failed", e));
+        guestVideoRef.current.play().catch(e => console.error("Video play failed", e));
       }
-      if (event.track.kind === "audio" && audioCtxRef.current && destRef.current) {
-        const source = audioCtxRef.current.createMediaStreamSource(event.streams[0]);
-        source.connect(destRef.current);
+      
+      if (event.track.kind === "audio") {
+        // 1. Play the audio out loud for the Host
+        if (guestAudioRef.current) {
+          guestAudioRef.current.srcObject = new MediaStream([event.track]);
+          guestAudioRef.current.play().catch(e => console.error("Host audio play failed", e));
+        }
+        // 2. Mix the audio into the outgoing broadcast for the viewers
+        if (audioCtxRef.current && destRef.current) {
+          const source = audioCtxRef.current.createMediaStreamSource(new MediaStream([event.track]));
+          source.connect(destRef.current);
+        }
       }
     };
 
@@ -369,6 +379,7 @@ export default function GoLivePage() {
     <main className="min-h-[100dvh] bg-[#0a0303] text-white flex flex-col overflow-hidden">
       
       <video ref={guestVideoRef} autoPlay playsInline style={{ position: "absolute", width: "1px", height: "1px", opacity: 0.01, pointerEvents: "none", top: "-9999px", left: "-9999px" }} muted />
+      <audio ref={guestAudioRef} autoPlay className="hidden" />
 
       <div className="flex-1 flex flex-col lg:flex-row w-full max-w-[1600px] mx-auto overflow-hidden p-4 gap-6">
         
