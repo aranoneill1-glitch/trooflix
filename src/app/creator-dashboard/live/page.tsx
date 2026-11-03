@@ -13,6 +13,7 @@ export default function GoLivePage() {
   const guestVideoRef = useRef<HTMLVideoElement>(null);
   const canvasPreviewRef = useRef<HTMLVideoElement>(null);
   const canvasStreamRef = useRef<MediaStream | null>(null);
+  const guestConnectedRef = useRef(false);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const destRef = useRef<MediaStreamAudioDestinationNode | null>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
@@ -28,6 +29,10 @@ export default function GoLivePage() {
   const [liveInputId, setLiveInputId] = useState<string | null>(null);
   const [joinRequest, setJoinRequest] = useState<any>(null);
   const [guestConnected, setGuestConnected] = useState(false);
+  
+  useEffect(() => {
+    guestConnectedRef.current = guestConnected;
+  }, [guestConnected]);
 
   useEffect(() => {
     async function setupCamera() {
@@ -72,6 +77,10 @@ export default function GoLivePage() {
         (payload) => {
           if (payload.new.status === "pending") {
             setJoinRequest(payload.new);
+          } else if (payload.new.status === "left") {
+            // Guest left, clear their video and reset canvas
+            setGuestConnected(false);
+            if (guestVideoRef.current) guestVideoRef.current.srcObject = null;
           }
         }
       )
@@ -154,7 +163,10 @@ export default function GoLivePage() {
 
     pc.onconnectionstatechange = () => {
       if (pc.connectionState === "connected") setGuestConnected(true);
-      if (pc.connectionState === "failed") alert("Guest connection failed.");
+      if (pc.connectionState === "disconnected" || pc.connectionState === "failed" || pc.connectionState === "closed") {
+        setGuestConnected(false);
+        if (guestVideoRef.current) guestVideoRef.current.srcObject = null;
+      }
     };
 
     pc.onicecandidate = (event) => {
@@ -264,14 +276,28 @@ export default function GoLivePage() {
         ctx.fillStyle = "#000";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+        const isGuestHere = guestConnectedRef.current;
+
         if (isMobile) {
-          // Mobile: Top/Bottom Split
-          if (videoRef.current) drawVideoCover(videoRef.current, 0, 0, 720, 640);
-          if (guestVideoRef.current && guestVideoRef.current.srcObject) drawVideoCover(guestVideoRef.current, 0, 640, 720, 640);
+          // Mobile Layout
+          if (isGuestHere) {
+            // Split Screen (Top/Bottom)
+            if (videoRef.current) drawVideoCover(videoRef.current, 0, 0, 720, 640);
+            if (guestVideoRef.current && guestVideoRef.current.srcObject) drawVideoCover(guestVideoRef.current, 0, 640, 720, 640);
+          } else {
+            // Full Screen (Host only)
+            if (videoRef.current) drawVideoCover(videoRef.current, 0, 0, 720, 1280);
+          }
         } else {
-          // Desktop: Left/Right Split
-          if (videoRef.current) drawVideoCover(videoRef.current, 0, 0, 640, 720);
-          if (guestVideoRef.current && guestVideoRef.current.srcObject) drawVideoCover(guestVideoRef.current, 640, 0, 640, 720);
+          // Desktop Layout
+          if (isGuestHere) {
+            // Split Screen (Left/Right)
+            if (videoRef.current) drawVideoCover(videoRef.current, 0, 0, 640, 720);
+            if (guestVideoRef.current && guestVideoRef.current.srcObject) drawVideoCover(guestVideoRef.current, 640, 0, 640, 720);
+          } else {
+            // Full Screen (Host only)
+            if (videoRef.current) drawVideoCover(videoRef.current, 0, 0, 1280, 720);
+          }
         }
         requestAnimationFrame(draw);
       };
