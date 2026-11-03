@@ -12,6 +12,7 @@ export default function GoLivePage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const guestVideoRef = useRef<HTMLVideoElement>(null);
   const canvasPreviewRef = useRef<HTMLVideoElement>(null);
+  const canvasStreamRef = useRef<MediaStream | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const destRef = useRef<MediaStreamAudioDestinationNode | null>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
@@ -51,6 +52,13 @@ export default function GoLivePage() {
       if (stream) stream.getTracks().forEach((track) => track.stop());
     };
   }, []);
+
+  useEffect(() => {
+    if (isLive && canvasPreviewRef.current && canvasStreamRef.current) {
+      canvasPreviewRef.current.srcObject = canvasStreamRef.current;
+      canvasPreviewRef.current.play().catch(e => console.error("Canvas play failed", e));
+    }
+  }, [isLive]);
 
   useEffect(() => {
     if (isLive === false || liveInputId === null) return;
@@ -270,9 +278,7 @@ export default function GoLivePage() {
       draw();
 
       const canvasStream = canvas.captureStream(30);
-      if (canvasPreviewRef.current) {
-        canvasPreviewRef.current.srcObject = canvasStream;
-      }
+      canvasStreamRef.current = canvasStream;
 
       const finalStream = new MediaStream([
         ...canvasStream.getVideoTracks(),
