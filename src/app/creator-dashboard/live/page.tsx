@@ -359,10 +359,20 @@ export default function GoLivePage() {
           
           {/* Video Container (Zoom Style) */}
           <div className="relative flex-1 bg-black rounded-3xl overflow-hidden border border-white/10 shadow-2xl flex items-center justify-center">
-            {isLive ? (
-              <video ref={canvasPreviewRef} autoPlay muted playsInline className="w-full h-full object-contain" />
-            ) : (
-              <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-contain" style={{ transform: "scaleX(-1)" }} />
+            
+            {/* Host Camera (Always mounted so Canvas can read it) */}
+            <video 
+              ref={videoRef} 
+              autoPlay 
+              muted 
+              playsInline 
+              className={`w-full h-full object-contain ${isLive ? "opacity-0 pointer-events-none absolute" : ""}`} 
+              style={{ transform: "scaleX(-1)" }} 
+            />
+            
+            {/* Live Canvas Preview */}
+            {isLive && (
+              <video ref={canvasPreviewRef} autoPlay muted playsInline className="w-full h-full object-contain absolute inset-0" />
             )}
             
             {/* Live Badge */}
