@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getCachedUser } from "@/lib/cache";
-import { Mic, MicOff, Video, VideoOff, Radio, StopCircle } from "lucide-react";
+import { Mic, MicOff, Video, VideoOff, Radio, StopCircle, Monitor, MonitorOff } from "lucide-react";
 import LiveChat from "@/components/LiveChat";
 
 export default function GoLivePage() {
@@ -16,6 +16,8 @@ export default function GoLivePage() {
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [liveInputId, setLiveInputId] = useState<string | null>(null);
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const pcRef = useRef<RTCPeerConnection | null>(null);
 
   useEffect(() => {
     async function setupCamera() {
@@ -61,6 +63,52 @@ export default function GoLivePage() {
     }
   };
 
+    const toggleScreenShare = async () => {
+    if (!stream) return;
+    try {
+      if (!isScreenSharing) {
+        // Switch to Screen Share
+        const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+        const screenTrack = screenStream.getVideoTracks()[0];
+
+        // Replace the video track in the local preview
+        const audioTrack = stream.getAudioTracks()[0];
+        const newStream = new MediaStream([screenTrack, audioTrack]);
+        setStream(newStream);
+        if (videoRef.current) videoRef.current.srcObject = newStream;
+
+        // Replace the track in the live WebRTC connection
+        if (pcRef.current) {
+          const sender = pcRef.current.getSenders().find(s => s.track?.kind === "video");
+          if (sender) await sender.replaceTrack(screenTrack);
+        }
+
+        setIsScreenSharing(true);
+
+        // Handle user clicking "Stop Sharing" on the browser UI
+        screenTrack.onended = () => toggleScreenShare();
+      } else {
+        // Switch back to Camera
+        const camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+        const camTrack = camStream.getVideoTracks()[0];
+
+        const audioTrack = stream.getAudioTracks()[0];
+        const newStream = new MediaStream([camTrack, audioTrack]);
+        setStream(newStream);
+        if (videoRef.current) videoRef.current.srcObject = newStream;
+
+        if (pcRef.current) {
+          const sender = pcRef.current.getSenders().find(s => s.track?.kind === "video");
+          if (sender) await sender.replaceTrack(camTrack);
+        }
+
+        setIsScreenSharing(false);
+      }
+    } catch (err: any) {
+      alert("Screen sharing failed or was cancelled: " + err.message);
+    }
+  };
+
   const startStream = async () => {
     if (!stream || !userId) return;
     setLoading(true);
@@ -72,14 +120,15 @@ export default function GoLivePage() {
 
       const { whipUrl, whepUrl, liveInputId } = data;
 
-      const peerConnection = new RTCPeerConnection({
+      const pc = new RTCPeerConnection({
         iceServers: [{ urls: "stun:stun.cloudflare.com:3478" }],
       });
+      pcRef.current = pc;
 
-      stream.getTracks().forEach((track) => peerConnection.addTrack(track, stream));
+      stream.getTracks().forEach((track) => pc.addTrack(track, stream));
 
-      const offer = await peerConnection.createOffer();
-      await peerConnection.setLocalDescription(offer);
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
 
       const whipRes = await fetch(whipUrl, {
         method: "POST",
@@ -90,7 +139,7 @@ export default function GoLivePage() {
       if (!whipRes.ok) throw new Error("Failed to connect to Cloudflare");
 
       const answerSdp = await whipRes.text();
-      await peerConnection.setRemoteDescription({ type: "answer", sdp: answerSdp });
+      await pc.setRemoteDescription({ type: "answer", sdp: answerSdp });
 
       const statusRes = await fetch("/api/live/status", {
         method: "POST",
@@ -181,6 +230,9 @@ export default function GoLivePage() {
               </button>
               <button onClick={toggleVideo} className={`p-3 lg:p-4 rounded-full ${isVideoOff ? "bg-red-500/20 text-red-500" : "bg-white/10 hover:bg-white/20"}`}>
                 {isVideoOff ? <VideoOff size={20} /> : <Video size={20} />}
+              </button>
+              <button onClick={toggleScreenShare} className={`p-3 lg:p-4 rounded-full ${isScreenSharing ? "bg-blue-500/20 text-blue-500" : "bg-white/10 hover:bg-white/20"}`}>
+                {isScreenSharing ? <MonitorOff size={20} /> : <Monitor size={20} />}
               </button>
             </div>
 
