@@ -11,6 +11,7 @@ export default function GoLivePage() {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement>(null);
   const guestVideoRef = useRef<HTMLVideoElement>(null);
+  const canvasPreviewRef = useRef<HTMLVideoElement>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   
   const [stream, setStream] = useState<MediaStream | null>(null);
@@ -171,6 +172,13 @@ export default function GoLivePage() {
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "webrtc_signals", filter: `room_id=eq.${liveInputId}` }, async (payload) => {
         const signal = payload.new;
         if (signal.sender_id === "host") return;
+        
+        // If we detect a new track or a disconnect, handle it
+        if (signal.type === "leave") {
+           if (guestVideoRef.current) guestVideoRef.current.srcObject = null;
+           setGuestConnected(false);
+           return;
+        }
 
         if (signal.type === "answer") {
           await pc.setRemoteDescription(new RTCSessionDescription(signal.payload));
@@ -235,6 +243,9 @@ export default function GoLivePage() {
       draw();
 
       const canvasStream = canvas.captureStream(30);
+      if (canvasPreviewRef.current) {
+        canvasPreviewRef.current.srcObject = canvasStream;
+      }
 
       // 3. Mix Audio
       const dest = audioCtx.createMediaStreamDestination();
@@ -346,7 +357,11 @@ export default function GoLivePage() {
           
           {/* Video Container (Zoom Style) */}
           <div className="relative flex-1 bg-black rounded-3xl overflow-hidden border border-white/10 shadow-2xl flex items-center justify-center">
-            <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-contain" />
+            {isLive ? (
+              <video ref={canvasPreviewRef} autoPlay muted playsInline className="w-full h-full object-contain" />
+            ) : (
+              <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-contain" style={{ transform: "scaleX(-1)" }} />
+            )}
             
             {/* Live Badge */}
             {isLive && (
