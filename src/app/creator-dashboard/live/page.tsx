@@ -232,28 +232,44 @@ export default function GoLivePage() {
         audioCtx.createMediaStreamSource(new MediaStream([track])).connect(destRef.current!);
       });
 
-      // Setup Vertical Canvas (720x1280) for Mobile
+      // Setup Responsive Canvas
+      const isMobile = window.innerWidth < 768;
       const canvas = document.createElement("canvas");
-      canvas.width = 720;
-      canvas.height = 1280;
+      canvas.width = isMobile ? 720 : 1280;
+      canvas.height = isMobile ? 1280 : 720;
       const ctx = canvas.getContext("2d")!;
 
       const draw = () => {
         ctx.fillStyle = "#000";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Draw Host (Top Half: 720x640)
-        if (videoRef.current && videoRef.current.readyState >= 2) {
-          ctx.save();
-          ctx.translate(720, 0);
-          ctx.scale(-1, 1);
-          ctx.drawImage(videoRef.current, 0, 0, 720, 640);
-          ctx.restore();
-        }
+        const hostVideo = videoRef.current;
+        const guestVideo = guestVideoRef.current;
 
-        // Draw Guest (Bottom Half: 720x640)
-        if (guestVideoRef.current && guestVideoRef.current.readyState >= 2 && guestVideoRef.current.srcObject) {
-          ctx.drawImage(guestVideoRef.current, 0, 640, 720, 640);
+        if (isMobile) {
+          // Mobile: Vertical Split (Top/Bottom)
+          if (hostVideo && hostVideo.readyState >= 2) {
+            ctx.save();
+            ctx.translate(720, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(hostVideo, 0, 0, 720, 640);
+            ctx.restore();
+          }
+          if (guestVideo && guestVideo.readyState >= 2 && guestVideo.srcObject) {
+            ctx.drawImage(guestVideo, 0, 640, 720, 640);
+          }
+        } else {
+          // Desktop: Horizontal Split (Left/Right)
+          if (hostVideo && hostVideo.readyState >= 2) {
+            ctx.save();
+            ctx.translate(640, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(hostVideo, 0, 0, 640, 720);
+            ctx.restore();
+          }
+          if (guestVideo && guestVideo.readyState >= 2 && guestVideo.srcObject) {
+            ctx.drawImage(guestVideo, 640, 0, 640, 720);
+          }
         }
         requestAnimationFrame(draw);
       };
