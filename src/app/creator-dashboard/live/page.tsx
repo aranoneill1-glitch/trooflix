@@ -220,56 +220,50 @@ export default function GoLivePage() {
     setLoading(true);
 
     try {
-      // Initialize Audio Context
       const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
       const audioCtx = new AudioContext();
       if (audioCtx.state === "suspended") await audioCtx.resume();
       audioCtxRef.current = audioCtx;
       destRef.current = audioCtx.createMediaStreamDestination();
 
-      // Mix Host Audio
       stream.getAudioTracks().forEach(track => {
         audioCtx.createMediaStreamSource(new MediaStream([track])).connect(destRef.current!);
       });
 
-      // Setup Responsive Canvas
       const isMobile = window.innerWidth < 768;
       const canvas = document.createElement("canvas");
       canvas.width = isMobile ? 720 : 1280;
       canvas.height = isMobile ? 1280 : 720;
       const ctx = canvas.getContext("2d")!;
 
+      const drawVideoCover = (video: HTMLVideoElement, x: number, y: number, w: number, h: number) => {
+        if (!video || video.readyState < 2) return;
+        const videoAspect = video.videoWidth / video.videoHeight;
+        const canvasAspect = w / h;
+        let sx = 0, sy = 0, sw = video.videoWidth, sh = video.videoHeight;
+        
+        if (videoAspect > canvasAspect) {
+          sw = video.videoHeight * canvasAspect;
+          sx = (video.videoWidth - sw) / 2;
+        } else {
+          sh = video.videoWidth / canvasAspect;
+          sy = (video.videoHeight - sh) / 2;
+        }
+        ctx.drawImage(video, sx, sy, sw, sh, x, y, w, h);
+      };
+
       const draw = () => {
         ctx.fillStyle = "#000";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        const hostVideo = videoRef.current;
-        const guestVideo = guestVideoRef.current;
-
         if (isMobile) {
-          // Mobile: Vertical Split (Top/Bottom)
-          if (hostVideo && hostVideo.readyState >= 2) {
-            ctx.save();
-            ctx.translate(720, 0);
-            ctx.scale(-1, 1);
-            ctx.drawImage(hostVideo, 0, 0, 720, 640);
-            ctx.restore();
-          }
-          if (guestVideo && guestVideo.readyState >= 2 && guestVideo.srcObject) {
-            ctx.drawImage(guestVideo, 0, 640, 720, 640);
-          }
+          // Mobile: Top/Bottom Split
+          if (videoRef.current) drawVideoCover(videoRef.current, 0, 0, 720, 640);
+          if (guestVideoRef.current && guestVideoRef.current.srcObject) drawVideoCover(guestVideoRef.current, 0, 640, 720, 640);
         } else {
-          // Desktop: Horizontal Split (Left/Right)
-          if (hostVideo && hostVideo.readyState >= 2) {
-            ctx.save();
-            ctx.translate(640, 0);
-            ctx.scale(-1, 1);
-            ctx.drawImage(hostVideo, 0, 0, 640, 720);
-            ctx.restore();
-          }
-          if (guestVideo && guestVideo.readyState >= 2 && guestVideo.srcObject) {
-            ctx.drawImage(guestVideo, 640, 0, 640, 720);
-          }
+          // Desktop: Left/Right Split
+          if (videoRef.current) drawVideoCover(videoRef.current, 0, 0, 640, 720);
+          if (guestVideoRef.current && guestVideoRef.current.srcObject) drawVideoCover(guestVideoRef.current, 640, 0, 640, 720);
         }
         requestAnimationFrame(draw);
       };
@@ -280,13 +274,11 @@ export default function GoLivePage() {
         canvasPreviewRef.current.srcObject = canvasStream;
       }
 
-      // Combine Canvas + Audio
       const finalStream = new MediaStream([
         ...canvasStream.getVideoTracks(),
         ...destRef.current.stream.getAudioTracks()
       ]);
 
-      // Connect to Cloudflare
       let iceServers = [{ urls: "stun:stun.cloudflare.com:3478" }];
       try {
         const turnRes = await fetch("/api/live/turn-credentials");
@@ -365,7 +357,7 @@ export default function GoLivePage() {
       )}
 
       {/* Hidden video tag that feeds into the canvas */}
-      <video ref={guestVideoRef} autoPlay playsInline className="hidden" muted />
+      <video ref={guestVideoRef} autoPlay playsInline style={{ position: "absolute", width: "1px", height: "1px", opacity: 0.01, pointerEvents: "none", top: "-9999px", left: "-9999px" }} muted />
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col lg:flex-row w-full max-w-[1600px] mx-auto overflow-hidden p-4 gap-6">
