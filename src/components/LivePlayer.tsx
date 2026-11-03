@@ -1,22 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import { Heart, Eye, Share2 } from "lucide-react";
+import { Eye, Share2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Stream } from "@cloudflare/stream-react";
 
-type FloatingHeart = { id: number; x: number };
+type FloatingReaction = { id: number; emoji: string; x: number; scale: number; duration: number };
 
 export default function LivePlayer({ whepUrl, liveInputId }: { whepUrl?: string, liveInputId: string }) {
   const [viewers] = useState(Math.floor(Math.random() * 500) + 42);
-  const [hearts, setHearts] = useState<FloatingHeart[]>([]);
+  const [reactions, setReactions] = useState<FloatingReaction[]>([]);
 
-  const spawnHeart = () => {
-    const id = Date.now();
-    setHearts((prev) => [...prev, { id, x: Math.random() * 40 - 20 }]);
+  const spawnReaction = (emoji: string) => {
+    const id = Date.now() + Math.random();
+    const x = Math.random() * 60 - 30; // Random drift left/right
+    const scale = Math.random() * 0.5 + 1; // Random size between 1 and 1.5
+    const duration = Math.random() * 0.5 + 1.5; // Random speed between 1.5s and 2s
+    
+    setReactions((prev) => [...prev, { id, emoji, x, scale, duration }]);
+    
+    // Remove after animation
     setTimeout(() => {
-      setHearts((prev) => prev.filter((h) => h.id !== id));
-    }, 2000);
+      setReactions((prev) => prev.filter((r) => r.id !== id));
+    }, 2500);
   };
 
   return (
@@ -43,28 +49,37 @@ export default function LivePlayer({ whepUrl, liveInputId }: { whepUrl?: string,
 
       {/* Floating Hearts */}
       <AnimatePresence>
-        {hearts.map((h) => (
+        {reactions.map((r) => (
           <motion.div 
-            key={h.id} 
-            initial={{ opacity: 1, y: 0, scale: 0.5, x: 0 }} 
-            animate={{ opacity: 0, y: -150, scale: 1.5, x: h.x }} 
+            key={r.id} 
+            initial={{ opacity: 1, y: 0, scale: 0, x: 0, rotate: 0 }} 
+            animate={{ opacity: 0, y: -250, scale: r.scale, x: r.x, rotate: Math.random() * 40 - 20 }} 
             exit={{ opacity: 0 }} 
-            transition={{ duration: 1.5, ease: "easeOut" }} 
-            className="absolute bottom-20 right-10 text-[#E53945] pointer-events-none z-30"
+            transition={{ duration: r.duration, ease: "easeOut" }} 
+            className="absolute bottom-24 right-12 text-4xl pointer-events-none z-30 drop-shadow-lg"
           >
-            <Heart size={32} fill="currentColor" />
+            {r.emoji}
           </motion.div>
         ))}
       </AnimatePresence>
 
       {/* Bottom Glass UI (Hearts & Share) */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent flex justify-end items-center gap-3 z-20 pointer-events-none">
+      <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent flex justify-between items-end z-20 pointer-events-none">
         <button onClick={() => navigator.share?.({ url: window.location.href })} className="pointer-events-auto p-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/10 text-white transition">
           <Share2 size={20} />
         </button>
-        <button onClick={spawnHeart} className="pointer-events-auto p-4 rounded-full bg-[#E53945] hover:bg-[#d12e39] shadow-[0_0_20px_rgba(229,57,69,0.4)] text-white transition active:scale-90">
-          <Heart size={24} fill="currentColor" />
-        </button>
+        
+        <div className="pointer-events-auto flex items-center gap-1.5 bg-black/40 backdrop-blur-md p-1.5 rounded-full border border-white/10 shadow-lg">
+          {["❤️", "😂", "🔥", "👍", "😮", "🎉"].map((emoji) => (
+            <button 
+              key={emoji}
+              onClick={() => spawnReaction(emoji)} 
+              className="w-10 h-10 flex items-center justify-center text-xl hover:scale-125 hover:bg-white/10 rounded-full transition-all active:scale-90"
+            >
+              {emoji}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
