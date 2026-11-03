@@ -13,10 +13,9 @@ export default function GoLivePage() {
   const guestVideoRef = useRef<HTMLVideoElement>(null);
   const canvasPreviewRef = useRef<HTMLVideoElement>(null);
   const canvasStreamRef = useRef<MediaStream | null>(null);
-  const guestConnectedRef = useRef(false);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const destRef = useRef<MediaStreamAudioDestinationNode | null>(null);
-  const pcRef = useRef<RTCPeerConnection | null>(null);
+  const guestConnectedRef = useRef(false);
   
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [isLive, setIsLive] = useState(false);
@@ -29,7 +28,7 @@ export default function GoLivePage() {
   const [liveInputId, setLiveInputId] = useState<string | null>(null);
   const [joinRequest, setJoinRequest] = useState<any>(null);
   const [guestConnected, setGuestConnected] = useState(false);
-  
+
   useEffect(() => {
     guestConnectedRef.current = guestConnected;
   }, [guestConnected]);
@@ -59,13 +58,6 @@ export default function GoLivePage() {
   }, []);
 
   useEffect(() => {
-    if (isLive && canvasPreviewRef.current && canvasStreamRef.current) {
-      canvasPreviewRef.current.srcObject = canvasStreamRef.current;
-      canvasPreviewRef.current.play().catch(e => console.error("Canvas play failed", e));
-    }
-  }, [isLive]);
-
-  useEffect(() => {
     if (isLive === false || liveInputId === null) return;
     const supabase = createClient();
 
@@ -73,12 +65,11 @@ export default function GoLivePage() {
       .channel("join_requests")
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "stream_join_requests", filter: `live_input_id=eq.${liveInputId}` },
+        { event: "*", schema: "public", table: "stream_join_requests", filter: `live_input_id=eq.${liveInputId}` },
         (payload) => {
-          if (payload.new.status === "pending") {
+          if (payload.eventType === "INSERT" && payload.new.status === "pending") {
             setJoinRequest(payload.new);
-          } else if (payload.new.status === "left") {
-            // Guest left, clear their video and reset canvas
+          } else if (payload.eventType === "UPDATE" && payload.new.status === "left") {
             setGuestConnected(false);
             if (guestVideoRef.current) guestVideoRef.current.srcObject = null;
           }
@@ -88,6 +79,13 @@ export default function GoLivePage() {
 
     return () => { supabase.removeChannel(channel); };
   }, [isLive, liveInputId]);
+
+  useEffect(() => {
+    if (isLive && canvasPreviewRef.current && canvasStreamRef.current) {
+      canvasPreviewRef.current.srcObject = canvasStreamRef.current;
+      canvasPreviewRef.current.play().catch(e => console.error("Canvas play failed", e));
+    }
+  }, [isLive]);
 
   const toggleMute = () => {
     if (stream) {
@@ -117,14 +115,8 @@ export default function GoLivePage() {
         const screenTrack = screenStream.getVideoTracks()[0];
         const audioTrack = stream.getAudioTracks()[0];
         const newStream = new MediaStream([screenTrack, audioTrack]);
-        
         setStream(newStream);
         if (videoRef.current) videoRef.current.srcObject = newStream;
-
-        if (pcRef.current) {
-          const sender = pcRef.current.getSenders().find(s => s.track?.kind === "video");
-          if (sender) await sender.replaceTrack(screenTrack);
-        }
         setIsScreenSharing(true);
         screenTrack.onended = () => toggleScreenShare();
       } else {
@@ -132,14 +124,8 @@ export default function GoLivePage() {
         const camTrack = camStream.getVideoTracks()[0];
         const audioTrack = stream.getAudioTracks()[0];
         const newStream = new MediaStream([camTrack, audioTrack]);
-        
         setStream(newStream);
         if (videoRef.current) videoRef.current.srcObject = newStream;
-
-        if (pcRef.current) {
-          const sender = pcRef.current.getSenders().find(s => s.track?.kind === "video");
-          if (sender) await sender.replaceTrack(camTrack);
-        }
         setIsScreenSharing(false);
       }
     } catch (err: any) {
@@ -182,13 +168,9 @@ export default function GoLivePage() {
         guestVideoRef.current.srcObject = event.streams[0];
         guestVideoRef.current.play().catch(e => console.error("Play failed", e));
       }
-      
-      // Dynamically mix the guest audio into the broadcast
       if (event.track.kind === "audio" && audioCtxRef.current && destRef.current) {
-        const stream = event.streams[0];
-        const source = audioCtxRef.current.createMediaStreamSource(stream);
+        const source = audioCtxRef.current.createMediaStreamSource(event.streams[0]);
         source.connect(destRef.current);
-        console.log("MIXED guest audio into stream");
       }
     };
 
@@ -202,13 +184,6 @@ export default function GoLivePage() {
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "webrtc_signals", filter: `room_id=eq.${liveInputId}` }, async (payload) => {
         const signal = payload.new;
         if (signal.sender_id === "host") return;
-        
-        // If we detect a new track or a disconnect, handle it
-        if (signal.type === "leave") {
-           if (guestVideoRef.current) guestVideoRef.current.srcObject = null;
-           setGuestConnected(false);
-           return;
-        }
 
         if (signal.type === "answer") {
           await pc.setRemoteDescription(new RTCSessionDescription(signal.payload));
@@ -235,6 +210,22 @@ export default function GoLivePage() {
     setJoinRequest(null);
   };
 
+  const drawVideoCover = (video: HTMLVideoElement, x: number, y: number, w: number, h: number, ctx: CanvasRenderingContext2D) => {
+    if (!video || video.readyState < 2) return;
+    const videoAspect = video.videoWidth / video.videoHeight;
+    const canvasAspect = w / h;
+    let sx = 0, sy = 0, sw = video.videoWidth, sh = video.videoHeight;
+    
+    if (videoAspect > canvasAspect) {
+      sw = video.videoHeight * canvasAspect;
+      sx = (video.videoWidth - sw) / 2;
+    } else {
+      sh = video.videoWidth / canvasAspect;
+      sy = (video.videoHeight - sh) / 2;
+    }
+    ctx.drawImage(video, sx, sy, sw, sh, x, y, w, h);
+  };
+
   const startStream = async () => {
     if (stream === null || userId === null) return;
     setLoading(true);
@@ -256,47 +247,24 @@ export default function GoLivePage() {
       canvas.height = isMobile ? 1280 : 720;
       const ctx = canvas.getContext("2d")!;
 
-      const drawVideoCover = (video: HTMLVideoElement, x: number, y: number, w: number, h: number) => {
-        if (!video || video.readyState < 2) return;
-        const videoAspect = video.videoWidth / video.videoHeight;
-        const canvasAspect = w / h;
-        let sx = 0, sy = 0, sw = video.videoWidth, sh = video.videoHeight;
-        
-        if (videoAspect > canvasAspect) {
-          sw = video.videoHeight * canvasAspect;
-          sx = (video.videoWidth - sw) / 2;
-        } else {
-          sh = video.videoWidth / canvasAspect;
-          sy = (video.videoHeight - sh) / 2;
-        }
-        ctx.drawImage(video, sx, sy, sw, sh, x, y, w, h);
-      };
-
       const draw = () => {
         ctx.fillStyle = "#000";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-
         const isGuestHere = guestConnectedRef.current;
 
         if (isMobile) {
-          // Mobile Layout
           if (isGuestHere) {
-            // Split Screen (Top/Bottom)
-            if (videoRef.current) drawVideoCover(videoRef.current, 0, 0, 720, 640);
-            if (guestVideoRef.current && guestVideoRef.current.srcObject) drawVideoCover(guestVideoRef.current, 0, 640, 720, 640);
+            if (videoRef.current) drawVideoCover(videoRef.current, 0, 0, 720, 640, ctx);
+            if (guestVideoRef.current && guestVideoRef.current.srcObject) drawVideoCover(guestVideoRef.current, 0, 640, 720, 640, ctx);
           } else {
-            // Full Screen (Host only)
-            if (videoRef.current) drawVideoCover(videoRef.current, 0, 0, 720, 1280);
+            if (videoRef.current) drawVideoCover(videoRef.current, 0, 0, 720, 1280, ctx);
           }
         } else {
-          // Desktop Layout
           if (isGuestHere) {
-            // Split Screen (Left/Right)
-            if (videoRef.current) drawVideoCover(videoRef.current, 0, 0, 640, 720);
-            if (guestVideoRef.current && guestVideoRef.current.srcObject) drawVideoCover(guestVideoRef.current, 640, 0, 640, 720);
+            if (videoRef.current) drawVideoCover(videoRef.current, 0, 0, 640, 720, ctx);
+            if (guestVideoRef.current && guestVideoRef.current.srcObject) drawVideoCover(guestVideoRef.current, 640, 0, 640, 720, ctx);
           } else {
-            // Full Screen (Host only)
-            if (videoRef.current) drawVideoCover(videoRef.current, 0, 0, 1280, 720);
+            if (videoRef.current) drawVideoCover(videoRef.current, 0, 0, 1280, 720, ctx);
           }
         }
         requestAnimationFrame(draw);
@@ -325,8 +293,6 @@ export default function GoLivePage() {
       if (!res.ok) throw new Error("Failed to create live input");
 
       const pc = new RTCPeerConnection({ iceServers, bundlePolicy: "max-bundle" });
-      pcRef.current = pc;
-
       finalStream.getTracks().forEach((track) => pc.addTrack(track, finalStream));
 
       const offer = await pc.createOffer();
@@ -378,51 +344,31 @@ export default function GoLivePage() {
   return (
     <main className="min-h-[100dvh] bg-[#0a0303] text-white flex flex-col overflow-hidden">
       
-
-
-      {/* Hidden video tag that feeds into the canvas */}
       <video ref={guestVideoRef} autoPlay playsInline style={{ position: "absolute", width: "1px", height: "1px", opacity: 0.01, pointerEvents: "none", top: "-9999px", left: "-9999px" }} muted />
 
-      {/* Main Content Area */}
       <div className="flex-1 flex flex-col lg:flex-row w-full max-w-[1600px] mx-auto overflow-hidden p-4 gap-6">
         
-        {/* Left Side: Video & Controls */}
         <div className="flex-1 flex flex-col gap-4">
-          
-          {/* Video Container (Zoom Style) */}
           <div className="relative flex-1 bg-black rounded-3xl overflow-hidden border border-white/10 shadow-2xl flex items-center justify-center">
+            <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-contain absolute inset-0" style={{ transform: "none" }} />
             
-            {/* Host Camera (Always mounted so Canvas can read it) */}
-            <video 
-              ref={videoRef} 
-              autoPlay 
-              muted 
-              playsInline 
-              className={`w-full h-full object-contain ${isLive ? "opacity-0 pointer-events-none absolute" : ""}`} 
-              style={{ transform: "none" }} 
-            />
-            
-            {/* Live Canvas Preview */}
             {isLive && (
-              <video ref={canvasPreviewRef} autoPlay muted playsInline className="w-full h-full object-contain absolute inset-0" />
+              <video ref={canvasPreviewRef} autoPlay muted playsInline className="w-full h-full object-contain absolute inset-0 z-10 bg-black" />
             )}
-            
-            {/* Live Badge */}
+
             {isLive && (
-              <div className="absolute top-4 left-4 bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-2 shadow-lg">
+              <div className="absolute top-4 left-4 bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-2 shadow-lg z-20">
                 <div className="w-2 h-2 bg-white rounded-full animate-pulse" /> LIVE
               </div>
             )}
             
-            {/* Guest Status Badge */}
             {guestConnected && (
-              <div className="absolute top-4 right-4 bg-green-500/20 border border-green-500/50 text-green-400 text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-2 shadow-lg backdrop-blur-md">
+              <div className="absolute top-4 right-4 bg-green-500/20 border border-green-500/50 text-green-400 text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-2 shadow-lg backdrop-blur-md z-20">
                 <UserCheck size={14} /> Guest Connected
               </div>
             )}
           </div>
 
-          {/* Control Bar (Below video, no overlay) */}
           <div className="bg-[#1c1c1e] border border-white/10 p-3 rounded-2xl flex justify-between items-center shadow-xl w-full max-w-2xl mx-auto">
             <div className="flex gap-2">
               <button onClick={toggleMute} className={`w-12 h-12 rounded-xl flex items-center justify-center transition ${isMuted ? "bg-red-500/20 text-red-500" : "bg-white/5 hover:bg-white/10 text-white"}`}>
@@ -448,10 +394,20 @@ export default function GoLivePage() {
           </div>
         </div>
 
-        {/* Right Side: Chat & Info */}
-        <div className="w-full lg:w-[380px] flex flex-col gap-4">
+        <div className="w-full lg:w-[380px] flex flex-col gap-3">
           {isLive && liveInputId ? (
-             <LiveChat liveInputId={liveInputId} className="flex-1 min-h-[400px]" />
+             <>
+               {joinRequest && (
+                 <div className="bg-[#1c1c1e] border border-[#E53945]/30 p-4 rounded-xl shadow-lg animate-in slide-in-from-bottom-2">
+                   <p className="text-sm font-bold mb-3"><span className="text-[#E53945]">{joinRequest.viewer_name}</span> wants to join the stream!</p>
+                   <div className="flex gap-2">
+                     <button onClick={() => handleJoinResponse("approved")} className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-1.5 rounded-lg text-sm transition">Approve</button>
+                     <button onClick={() => handleJoinResponse("denied")} className="flex-1 bg-red-500/20 hover:bg-red-500/30 text-red-500 font-bold py-1.5 rounded-lg text-sm transition border border-red-500/20">Deny</button>
+                   </div>
+                 </div>
+               )}
+               <LiveChat liveInputId={liveInputId} className="flex-1 min-h-[400px]" />
+             </>
           ) : (
             <div className="flex-1 bg-[#1c1c1e] border border-white/10 rounded-3xl flex flex-col items-center justify-center p-8 text-center">
               <Radio size={48} className="text-white/20 mb-4" />
