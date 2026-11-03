@@ -9,15 +9,17 @@ import LiveChat from "@/components/LiveChat";
 export default function GoLivePage() {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const pcRef = useRef<RTCPeerConnection | null>(null);
+  
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [isLive, setIsLive] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
+  
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [liveInputId, setLiveInputId] = useState<string | null>(null);
-  const [isScreenSharing, setIsScreenSharing] = useState(false);
-  const pcRef = useRef<RTCPeerConnection | null>(null);
 
   useEffect(() => {
     async function setupCamera() {
@@ -63,37 +65,31 @@ export default function GoLivePage() {
     }
   };
 
-    const toggleScreenShare = async () => {
+  const toggleScreenShare = async () => {
     if (!stream) return;
     try {
       if (!isScreenSharing) {
-        // Switch to Screen Share
         const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
         const screenTrack = screenStream.getVideoTracks()[0];
-
-        // Replace the video track in the local preview
         const audioTrack = stream.getAudioTracks()[0];
         const newStream = new MediaStream([screenTrack, audioTrack]);
+        
         setStream(newStream);
         if (videoRef.current) videoRef.current.srcObject = newStream;
 
-        // Replace the track in the live WebRTC connection
         if (pcRef.current) {
           const sender = pcRef.current.getSenders().find(s => s.track?.kind === "video");
           if (sender) await sender.replaceTrack(screenTrack);
         }
-
         setIsScreenSharing(true);
 
-        // Handle user clicking "Stop Sharing" on the browser UI
         screenTrack.onended = () => toggleScreenShare();
       } else {
-        // Switch back to Camera
         const camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
         const camTrack = camStream.getVideoTracks()[0];
-
         const audioTrack = stream.getAudioTracks()[0];
         const newStream = new MediaStream([camTrack, audioTrack]);
+        
         setStream(newStream);
         if (videoRef.current) videoRef.current.srcObject = newStream;
 
@@ -101,7 +97,6 @@ export default function GoLivePage() {
           const sender = pcRef.current.getSenders().find(s => s.track?.kind === "video");
           if (sender) await sender.replaceTrack(camTrack);
         }
-
         setIsScreenSharing(false);
       }
     } catch (err: any) {
@@ -187,35 +182,33 @@ export default function GoLivePage() {
       setLiveInputId(null);
       router.push("/creator-dashboard");
     } catch (err: any) {
-        alert("Failed to stop stream.");
+      alert("Failed to stop stream.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    // LOCK TO EXACTLY ONE SCREEN ON MOBILE
-    <div className="min-h-[100dvh] w-full bg-[#0a0303] text-white p-4 lg:p-8 flex flex-col items-center justify-start overflow-y-auto">
-      <div className="w-full max-w-5xl h-full flex flex-col">
+    <main className="min-h-[100dvh] bg-[#0a0303] text-white p-4 lg:p-8 flex flex-col items-center overflow-y-auto">
+      <div className="w-full max-w-7xl mx-auto flex flex-col gap-6">
         
-        <h1 className="text-xl lg:text-3xl font-black mb-2 lg:mb-6 text-center flex items-center justify-center gap-2 shrink-0">
-          <Radio className={isLive ? "text-red-500 animate-pulse" : "text-white/50"} size={20} />
+        <h1 className="text-2xl lg:text-3xl font-black text-center flex items-center justify-center gap-2 mb-2">
+          <Radio className={isLive ? "text-red-500 animate-pulse" : "text-white/50"} size={24} />
           {isLive ? "You are LIVE" : "Setup Broadcast"}
         </h1>
 
-        {/* LAYOUT: Stacked on mobile filling space, side-by-side on desktop */}
-        <div className={`flex flex-col lg:grid lg:grid-cols-12 gap-6 w-full max-w-7xl mx-auto flex-1 min-h-0 ${!isLive ? "justify-start" : "justify-between"}`}>
+        <div className={isLive ? "grid grid-cols-1 lg:grid-cols-3 gap-6 w-full" : "w-full max-w-3xl mx-auto flex flex-col items-center"}>
           
           {/* VIDEO COLUMN */}
-          <div className={`flex flex-col shrink-0 ${isLive ? "lg:col-span-8" : "max-w-3xl mx-auto w-full"}`}>
-            <div className="bg-black rounded-2xl overflow-hidden aspect-video relative mb-4 border border-white/10 shadow-2xl max-h-[40vh] lg:max-h-none ring-1 ring-white/5">
+          <div className={isLive ? "lg:col-span-2 flex flex-col gap-4" : "w-full flex flex-col gap-4"}>
+            <div className="relative w-full aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 shadow-2xl ring-1 ring-white/5">
               <video
                 ref={videoRef}
                 autoPlay
                 muted
                 playsInline
-                className="w-full h-full object-cover mirror"
-                style={{ transform: "scaleX(-1)" }}
+                className="w-full h-full object-contain bg-black"
+                style={{ transform: (!isScreenSharing && !isVideoOff) ? "scaleX(-1)" : "none" }}
               />
               {isVideoOff && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black">
@@ -224,14 +217,14 @@ export default function GoLivePage() {
               )}
             </div>
 
-            <div className="flex justify-center gap-4 mb-3 lg:mb-8 shrink-0">
-              <button onClick={toggleMute} className={`p-3 lg:p-4 rounded-full ${isMuted ? "bg-red-500/20 text-red-500" : "bg-white/10 hover:bg-white/20"}`}>
+            <div className="flex justify-center gap-4">
+              <button onClick={toggleMute} className={`p-4 rounded-full transition ${isMuted ? "bg-red-500/20 text-red-500" : "bg-white/10 hover:bg-white/20"}`}>
                 {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
               </button>
-              <button onClick={toggleVideo} className={`p-3 lg:p-4 rounded-full ${isVideoOff ? "bg-red-500/20 text-red-500" : "bg-white/10 hover:bg-white/20"}`}>
+              <button onClick={toggleVideo} className={`p-4 rounded-full transition ${isVideoOff ? "bg-red-500/20 text-red-500" : "bg-white/10 hover:bg-white/20"}`}>
                 {isVideoOff ? <VideoOff size={20} /> : <Video size={20} />}
               </button>
-              <button onClick={toggleScreenShare} className={`p-3 lg:p-4 rounded-full ${isScreenSharing ? "bg-blue-500/20 text-blue-500" : "bg-white/10 hover:bg-white/20"}`}>
+              <button onClick={toggleScreenShare} className={`p-4 rounded-full transition ${isScreenSharing ? "bg-blue-500/20 text-blue-500" : "bg-white/10 hover:bg-white/20"}`}>
                 {isScreenSharing ? <MonitorOff size={20} /> : <Monitor size={20} />}
               </button>
             </div>
@@ -240,16 +233,15 @@ export default function GoLivePage() {
               <button
                 onClick={startStream}
                 disabled={loading}
-                className="w-full bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold py-3 lg:py-4 rounded-xl text-base lg:text-lg transition shadow-[0_0_20px_rgba(229,57,69,0.3)] shrink-0 ring-2 ring-[#E53945]/50 ring-offset-2 ring-offset-[#0a0303]"
+                className="w-full max-w-md mx-auto mt-2 bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold py-4 rounded-xl text-lg transition shadow-[0_0_20px_rgba(229,57,69,0.3)]"
               >
-                {/* CHANGED TO TROOFLIX */}
                 {loading ? "Connecting to Trooflix..." : "Go Live Now"}
               </button>
             ) : (
               <button
                 onClick={stopStream}
                 disabled={loading}
-                className="w-full bg-white/10 hover:bg-white/20 border border-white/20 text-red-500 font-bold py-3 lg:py-4 rounded-xl text-base lg:text-lg transition flex items-center justify-center gap-2 shrink-0"
+                className="w-full max-w-md mx-auto mt-2 bg-white/10 hover:bg-white/20 border border-white/20 text-red-500 font-bold py-4 rounded-xl text-lg transition flex items-center justify-center gap-2"
               >
                 <StopCircle size={20} /> End Broadcast
               </button>
@@ -258,13 +250,13 @@ export default function GoLivePage() {
 
           {/* CHAT COLUMN (Only visible when live) */}
           {isLive && liveInputId && (
-            <div className="flex-1 min-h-[400px] lg:min-h-0 flex flex-col lg:col-span-4 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-4 lg:pb-0">
-              <LiveChat liveInputId={liveInputId} className="h-full min-h-0" />
+            <div className="lg:col-span-1 h-[500px] lg:h-[calc(100vh-200px)] animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <LiveChat liveInputId={liveInputId} className="h-full" />
             </div>
           )}
           
         </div>
       </div>
-    </div>
+    </main>
   );
 }
