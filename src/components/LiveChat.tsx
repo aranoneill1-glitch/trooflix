@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { getCachedUser } from "@/lib/cache";
-import { Send, MessageCircle } from "lucide-react";
+import { Send, MessageCircle, Smile } from "lucide-react";
 
 type ChatMessage = {
   id: string;
@@ -14,12 +14,15 @@ type ChatMessage = {
   created_at: string;
 };
 
+const EMOJIS = ["😂", "🔥", "😍", "👏", "😮", "💯", "🚀", "💩", "🎉", "😢", "👀", "🙌", "💪", "🤔", "🙏", "❤️"];
+
 export default function LiveChat({ liveInputId, className = "h-[400px] md:h-[500px]" }: { liveInputId: string, className?: string }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [sending, setSending] = useState(false);
+  const [showEmojis, setShowEmojis] = useState(false);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
@@ -75,6 +78,7 @@ export default function LiveChat({ liveInputId, className = "h-[400px] md:h-[500
     e.preventDefault();
     if (!newMessage.trim() || !user || !profile || sending) return;
     setSending(true);
+    setShowEmojis(false);
 
     const text = newMessage.trim();
     setNewMessage(""); 
@@ -92,15 +96,18 @@ export default function LiveChat({ liveInputId, className = "h-[400px] md:h-[500
   };
 
   return (
-    <div className={`flex flex-col w-full bg-[#0f0f12]/80 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl ${className}`}>
+    <div className={`flex flex-col w-full bg-[#0f0f12]/80 backdrop-blur-2xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl relative ${className}`}>
+      
+      {/* Header */}
       <div className="bg-white/5 px-4 py-3 border-b border-white/10 flex items-center gap-2 shrink-0">
         <MessageCircle size={18} className="text-[#E53945]" />
         <h3 className="font-bold text-white text-sm tracking-wide">Live Chat</h3>
-        <span className="ml-auto text-[10px] font-bold bg-red-500/20 text-red-500 px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse">
+        <span className="ml-auto text-[10px] font-bold bg-red-500/20 text-red-500 px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse border border-red-500/20">
           Live
         </span>
       </div>
 
+      {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-white/10 min-h-0">
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-white/30">
@@ -112,15 +119,15 @@ export default function LiveChat({ liveInputId, className = "h-[400px] md:h-[500
           messages.map((msg) => (
             <div key={msg.id} className="flex gap-2.5 items-start animate-in fade-in slide-in-from-bottom-2 duration-300">
               {msg.avatar_url ? (
-                <img src={msg.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover flex-shrink-0 border border-white/10" />
+                <img src={msg.avatar_url} alt="" className="w-6 h-6 rounded-full object-cover flex-shrink-0 mt-0.5 border border-white/10" />
               ) : (
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center flex-shrink-0 text-xs font-bold border border-white/10">
+                <div className="w-6 h-6 rounded-full bg-[#E53945] flex items-center justify-center flex-shrink-0 text-[10px] font-bold mt-0.5 text-white shadow-sm">
                   {msg.display_name.charAt(0).toUpperCase()}
                 </div>
               )}
-              <div className="flex flex-col min-w-0">
-                <span className="text-[11px] font-bold text-white/50 mb-0.5">{msg.display_name}</span>
-                <div className="bg-white/10 rounded-2xl rounded-tl-sm px-3 py-2 text-sm text-white/90 break-words inline-block w-fit">
+              <div className="flex flex-col min-w-0 leading-tight">
+                <span className="text-[11px] font-semibold text-white/40 mb-1">{msg.display_name}</span>
+                <div className="text-[13px] text-white/90 break-words leading-relaxed">
                   {msg.message}
                 </div>
               </div>
@@ -129,8 +136,25 @@ export default function LiveChat({ liveInputId, className = "h-[400px] md:h-[500
         )}
       </div>
 
+      {/* Emoji Menu */}
+      {showEmojis && (
+        <div className="absolute bottom-[70px] left-3 right-3 bg-[#1c1c1e]/95 backdrop-blur-xl border border-white/10 rounded-xl p-3 shadow-2xl animate-in fade-in slide-in-from-bottom-2 z-50">
+          <div className="grid grid-cols-8 gap-2">
+            {EMOJIS.map((e) => (
+              <button key={e} type="button" onClick={() => { setNewMessage(prev => prev + e); setShowEmojis(false); }} className="text-xl hover:scale-125 transition-transform p-1">
+                {e}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Input Area */}
       {user ? (
-        <form onSubmit={sendMessage} className="p-3 bg-black/40 border-t border-white/10 flex gap-2 shrink-0">
+        <form onSubmit={sendMessage} className="p-3 bg-black/40 border-t border-white/10 flex gap-2 items-center shrink-0 z-50">
+          <button type="button" onClick={() => setShowEmojis(!showEmojis)} className="p-2 text-white/50 hover:text-white transition-colors">
+            <Smile size={20} />
+          </button>
           <input
             type="text"
             value={newMessage}

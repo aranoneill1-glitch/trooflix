@@ -146,7 +146,7 @@ export default function GoLivePage() {
 
   return (
     // LOCK TO EXACTLY ONE SCREEN ON MOBILE
-    <div className="h-[100dvh] w-full overflow-hidden bg-[#09090B] text-white p-3 lg:p-4 flex flex-col items-center justify-start">
+    <div className="min-h-[100dvh] w-full bg-[#0a0303] text-white p-4 lg:p-8 flex flex-col items-center justify-start overflow-y-auto">
       <div className="w-full max-w-5xl h-full flex flex-col">
         
         <h1 className="text-xl lg:text-3xl font-black mb-2 lg:mb-6 text-center flex items-center justify-center gap-2 shrink-0">
@@ -155,11 +155,11 @@ export default function GoLivePage() {
         </h1>
 
         {/* LAYOUT: Stacked on mobile filling space, side-by-side on desktop */}
-        <div className={`flex flex-col lg:grid lg:grid-cols-3 gap-3 lg:gap-6 w-full flex-1 min-h-0 ${!isLive ? "justify-start" : "justify-between"}`}>
+        <div className={`flex flex-col lg:grid lg:grid-cols-12 gap-6 w-full max-w-7xl mx-auto flex-1 min-h-0 ${!isLive ? "justify-start" : "justify-between"}`}>
           
           {/* VIDEO COLUMN */}
-          <div className={`flex flex-col shrink-0 ${isLive ? "lg:col-span-2" : "max-w-3xl mx-auto w-full"}`}>
-            <div className="bg-black rounded-2xl overflow-hidden aspect-video relative mb-2 lg:mb-6 border border-white/10 shadow-2xl max-h-[35vh] lg:max-h-none">
+          <div className={`flex flex-col shrink-0 ${isLive ? "lg:col-span-8" : "max-w-3xl mx-auto w-full"}`}>
+            <div className="bg-black rounded-2xl overflow-hidden aspect-video relative mb-4 border border-white/10 shadow-2xl max-h-[40vh] lg:max-h-none ring-1 ring-white/5">
               <video
                 ref={videoRef}
                 autoPlay
@@ -188,7 +188,7 @@ export default function GoLivePage() {
               <button
                 onClick={startStream}
                 disabled={loading}
-                className="w-full bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold py-3 lg:py-4 rounded-xl text-base lg:text-lg transition shadow-[0_0_20px_rgba(229,57,69,0.3)] shrink-0"
+                className="w-full bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold py-3 lg:py-4 rounded-xl text-base lg:text-lg transition shadow-[0_0_20px_rgba(229,57,69,0.3)] shrink-0 ring-2 ring-[#E53945]/50 ring-offset-2 ring-offset-[#0a0303]"
               >
                 {/* CHANGED TO TROOFLIX */}
                 {loading ? "Connecting to Trooflix..." : "Go Live Now"}
@@ -206,7 +206,7 @@ export default function GoLivePage() {
 
           {/* CHAT COLUMN (Only visible when live) */}
           {isLive && liveInputId && (
-            <div className="flex-1 min-h-0 flex flex-col lg:col-span-1 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-4 lg:pb-0">
+            <div className="flex-1 min-h-[400px] lg:min-h-0 flex flex-col lg:col-span-4 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-4 lg:pb-0">
               <LiveChat liveInputId={liveInputId} className="h-full min-h-0" />
             </div>
           )}
