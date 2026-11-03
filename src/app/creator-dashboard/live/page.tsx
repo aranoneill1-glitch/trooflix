@@ -82,7 +82,6 @@ export default function GoLivePage() {
           if (sender) await sender.replaceTrack(screenTrack);
         }
         setIsScreenSharing(true);
-
         screenTrack.onended = () => toggleScreenShare();
       } else {
         const camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
@@ -109,31 +108,34 @@ export default function GoLivePage() {
     setLoading(true);
 
     try {
+      // 1. Fetch TURN
+      const turnRes = await fetch("/api/live/turn-credentials");
+      const turnData = await turnRes.json();
+      const iceServers = turnData.iceServers || [{ urls: "stun:stun.cloudflare.com:3478" }];
+
+      // 2. Get Live Input from Cloudflare
       const res = await fetch("/api/live/create", { method: "POST" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to create live input");
-
       const { whipUrl, whepUrl, liveInputId } = data;
 
-      const pc = new RTCPeerConnection({
-        iceServers: [{ urls: "stun:stun.cloudflare.com:3478" }],
-      });
+      // 3. Setup PC
+      const pc = new RTCPeerConnection({ iceServers, bundlePolicy: "max-bundle" });
       pcRef.current = pc;
 
       stream.getTracks().forEach((track) => pc.addTrack(track, stream));
 
-      // Force VP8 codec before creating the offer to prevent Cloudflare drops
+      // 4. Force VP8
       const videoTransceiver = pc.getTransceivers().find(t => t.sender.track?.kind === "video");
       if (videoTransceiver) {
         const caps = RTCRtpSender.getCapabilities("video");
         if (caps) {
           const vp8 = caps.codecs.filter(c => c.mimeType === "video/VP8");
-          if (vp8.length > 0) {
-            videoTransceiver.setCodecPreferences(vp8);
-          }
+          if (vp8.length > 0) videoTransceiver.setCodecPreferences(vp8);
         }
       }
 
+      // 5. Connect to WHIP
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
 
@@ -144,10 +146,9 @@ export default function GoLivePage() {
       });
 
       if (!whipRes.ok) throw new Error("Failed to connect to Cloudflare");
+      await pc.setRemoteDescription({ type: "answer", sdp: await whipRes.text() });
 
-      const answerSdp = await whipRes.text();
-      await pc.setRemoteDescription({ type: "answer", sdp: answerSdp });
-
+      // 6. Save to DB
       const statusRes = await fetch("/api/live/status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -159,10 +160,7 @@ export default function GoLivePage() {
         }),
       });
 
-      if (!statusRes.ok) {
-        const errData = await statusRes.json().catch(() => ({}));
-        throw new Error(errData.error || "Failed to update database");
-      }
+      if (!statusRes.ok) throw new Error("Failed to update database");
 
       setLiveInputId(liveInputId);
       setIsLive(true);
@@ -203,7 +201,6 @@ export default function GoLivePage() {
   return (
     <main className="min-h-[100dvh] bg-[#0a0303] text-white p-4 lg:p-8 flex flex-col items-center overflow-y-auto">
       <div className="w-full max-w-7xl mx-auto flex flex-col gap-6">
-        
         <h1 className="text-2xl lg:text-3xl font-black text-center flex items-center justify-center gap-2 mb-2">
           <Radio className={isLive ? "text-red-500 animate-pulse" : "text-white/50"} size={24} />
           {isLive ? "You are LIVE" : "Setup Broadcast"}
@@ -211,62 +208,30 @@ export default function GoLivePage() {
 
         <div className={isLive ? "grid grid-cols-1 lg:grid-cols-3 gap-6 w-full" : "w-full max-w-3xl mx-auto flex flex-col items-center"}>
           
-          {/* VIDEO COLUMN */}
           <div className={isLive ? "lg:col-span-2 flex flex-col gap-4" : "w-full flex flex-col gap-4"}>
             <div className="relative w-full aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 shadow-2xl ring-1 ring-white/5">
-              <video
-                ref={videoRef}
-                autoPlay
-                muted
-                playsInline
-                className="w-full h-full object-contain bg-black"
-                style={{ transform: (!isScreenSharing && !isVideoOff) ? "scaleX(-1)" : "none" }}
-              />
-              {isVideoOff && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black">
-                  <VideoOff size={64} className="text-white/20" />
-                </div>
-              )}
+              <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-contain bg-black" style={{ transform: (!isScreenSharing && !isVideoOff) ? "scaleX(-1)" : "none" }} />
+              {isVideoOff && <div className="absolute inset-0 flex items-center justify-center bg-black"><VideoOff size={64} className="text-white/20" /></div>}
             </div>
 
             <div className="flex justify-center gap-4">
-              <button onClick={toggleMute} className={`p-4 rounded-full transition ${isMuted ? "bg-red-500/20 text-red-500" : "bg-white/10 hover:bg-white/20"}`}>
-                {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
-              </button>
-              <button onClick={toggleVideo} className={`p-4 rounded-full transition ${isVideoOff ? "bg-red-500/20 text-red-500" : "bg-white/10 hover:bg-white/20"}`}>
-                {isVideoOff ? <VideoOff size={20} /> : <Video size={20} />}
-              </button>
-              <button onClick={toggleScreenShare} className={`p-4 rounded-full transition ${isScreenSharing ? "bg-blue-500/20 text-blue-500" : "bg-white/10 hover:bg-white/20"}`}>
-                {isScreenSharing ? <MonitorOff size={20} /> : <Monitor size={20} />}
-              </button>
+              <button onClick={toggleMute} className={`p-4 rounded-full transition ${isMuted ? "bg-red-500/20 text-red-500" : "bg-white/10 hover:bg-white/20"}`}>{isMuted ? <MicOff size={20} /> : <Mic size={20} />}</button>
+              <button onClick={toggleVideo} className={`p-4 rounded-full transition ${isVideoOff ? "bg-red-500/20 text-red-500" : "bg-white/10 hover:bg-white/20"}`}>{isVideoOff ? <VideoOff size={20} /> : <Video size={20} />}</button>
+              <button onClick={toggleScreenShare} className={`p-4 rounded-full transition ${isScreenSharing ? "bg-blue-500/20 text-blue-500" : "bg-white/10 hover:bg-white/20"}`}>{isScreenSharing ? <MonitorOff size={20} /> : <Monitor size={20} />}</button>
             </div>
 
             {!isLive ? (
-              <button
-                onClick={startStream}
-                disabled={loading}
-                className="w-full max-w-md mx-auto mt-2 bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold py-4 rounded-xl text-lg transition shadow-[0_0_20px_rgba(229,57,69,0.3)]"
-              >
-                {loading ? "Connecting to Trooflix..." : "Go Live Now"}
-              </button>
+              <button onClick={startStream} disabled={loading} className="w-full max-w-md mx-auto mt-2 bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold py-4 rounded-xl text-lg transition shadow-[0_0_20px_rgba(229,57,69,0.3)]">{loading ? "Connecting to Trooflix..." : "Go Live Now"}</button>
             ) : (
-              <button
-                onClick={stopStream}
-                disabled={loading}
-                className="w-full max-w-md mx-auto mt-2 bg-white/10 hover:bg-white/20 border border-white/20 text-red-500 font-bold py-4 rounded-xl text-lg transition flex items-center justify-center gap-2"
-              >
-                <StopCircle size={20} /> End Broadcast
-              </button>
+              <button onClick={stopStream} disabled={loading} className="w-full max-w-md mx-auto mt-2 bg-white/10 hover:bg-white/20 border border-white/20 text-red-500 font-bold py-4 rounded-xl text-lg transition flex items-center justify-center gap-2"><StopCircle size={20} /> End Broadcast</button>
             )}
           </div>
 
-          {/* CHAT COLUMN (Only visible when live) */}
           {isLive && liveInputId && (
             <div className="lg:col-span-1 h-[500px] lg:h-[calc(100vh-200px)] animate-in fade-in slide-in-from-bottom-4 duration-500">
               <LiveChat liveInputId={liveInputId} className="h-full" />
             </div>
           )}
-          
         </div>
       </div>
     </main>

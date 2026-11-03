@@ -9,22 +9,20 @@ export async function GET() {
       return NextResponse.json({ error: "TURN keys not configured" }, { status: 500 });
     }
 
-    // Corrected endpoint: generate-ice-servers
-    const res = await fetch(`https://rtc.live.cloudflare.com/v1/turn/keys/${keyId}/credentials/generate-ice-servers`, {
+    const res = await fetch(`https://rtc.live.cloudflare.com/v1/turn/keys/${keyId}/credentials/generate`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${apiToken}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ ttl: 86400 })
+      body: JSON.stringify({ ttl: 86400 }) // Valid for 24 hours
     });
 
-    if (!res.ok) {
-      const errorText = await res.text();
-      throw new Error(`Cloudflare API error: ${res.status} - ${errorText}`);
-    }
+    if (!res.ok) throw new Error("Failed to generate TURN credentials");
 
     const data = await res.json();
+    
+    // Return the iceServers array directly
     return NextResponse.json({ iceServers: data.iceServers });
   } catch (error: any) {
     console.error("TURN API Error:", error);
