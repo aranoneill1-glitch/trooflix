@@ -59,7 +59,7 @@ export default function WatchLivePage() {
           {/* Video Player */}
           {profile?.live_playback_url && (
             <div className="w-full rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] ring-1 ring-white/10">
-              <LivePlayer whepUrl={profile.live_playback_url} />
+              <LivePlayer whepUrl={profile.live_playback_url} liveInputId={profile.live_input_id} />
             </div>
           )}
 
