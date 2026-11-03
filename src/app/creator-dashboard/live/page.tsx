@@ -122,7 +122,7 @@ export default function GoLivePage() {
 
       stream.getTracks().forEach((track) => pc.addTrack(track, stream));
 
-      // Force VP8 codec to prevent Cloudflare from dropping the stream
+      // Force VP8 codec before creating the offer to prevent Cloudflare drops
       const videoTransceiver = pc.getTransceivers().find(t => t.sender.track?.kind === "video");
       if (videoTransceiver) {
         const caps = RTCRtpSender.getCapabilities("video");
