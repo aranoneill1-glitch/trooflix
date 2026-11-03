@@ -391,7 +391,11 @@ export default function GoLivePage() {
         }
       } catch (e) {}
 
-      const res = await fetch("/api/live/create", { method: "POST", body: JSON.stringify({ userId }) });
+      const res = await fetch("/api/live/create", { 
+        method: "POST", 
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }) 
+      });
       const data = await res.json();
       if (!res.ok) throw new Error("Failed to create live input");
 
