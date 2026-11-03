@@ -12,6 +12,8 @@ export default function GoLivePage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const guestVideoRef = useRef<HTMLVideoElement>(null);
   const canvasPreviewRef = useRef<HTMLVideoElement>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const destRef = useRef<MediaStreamAudioDestinationNode | null>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   
   const [stream, setStream] = useState<MediaStream | null>(null);
@@ -160,6 +162,14 @@ export default function GoLivePage() {
         guestVideoRef.current.srcObject = event.streams[0];
         guestVideoRef.current.play().catch(e => console.error("Play failed", e));
       }
+      
+      // Dynamically mix the guest audio into the broadcast
+      if (event.track.kind === "audio" && audioCtxRef.current && destRef.current) {
+        const stream = event.streams[0];
+        const source = audioCtxRef.current.createMediaStreamSource(stream);
+        source.connect(destRef.current);
+        console.log("MIXED guest audio into stream");
+      }
     };
 
     const offer = await pc.createOffer();
@@ -210,33 +220,40 @@ export default function GoLivePage() {
     setLoading(true);
 
     try {
-      // 1. Initialize Audio Context directly on button click to bypass Safari mute
+      // Initialize Audio Context
       const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
       const audioCtx = new AudioContext();
       if (audioCtx.state === "suspended") await audioCtx.resume();
+      audioCtxRef.current = audioCtx;
+      destRef.current = audioCtx.createMediaStreamDestination();
 
-      // 2. Setup Canvas
+      // Mix Host Audio
+      stream.getAudioTracks().forEach(track => {
+        audioCtx.createMediaStreamSource(new MediaStream([track])).connect(destRef.current!);
+      });
+
+      // Setup Vertical Canvas (720x1280) for Mobile
       const canvas = document.createElement("canvas");
-      canvas.width = 1280;
-      canvas.height = 720;
+      canvas.width = 720;
+      canvas.height = 1280;
       const ctx = canvas.getContext("2d")!;
 
       const draw = () => {
         ctx.fillStyle = "#000";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Draw Host (Left)
+        // Draw Host (Top Half: 720x640)
         if (videoRef.current && videoRef.current.readyState >= 2) {
           ctx.save();
-          ctx.translate(640, 0);
+          ctx.translate(720, 0);
           ctx.scale(-1, 1);
-          ctx.drawImage(videoRef.current, 0, 0, 640, 720);
+          ctx.drawImage(videoRef.current, 0, 0, 720, 640);
           ctx.restore();
         }
 
-        // Draw Guest (Right)
+        // Draw Guest (Bottom Half: 720x640)
         if (guestVideoRef.current && guestVideoRef.current.readyState >= 2 && guestVideoRef.current.srcObject) {
-          ctx.drawImage(guestVideoRef.current, 640, 0, 640, 720);
+          ctx.drawImage(guestVideoRef.current, 0, 640, 720, 640);
         }
         requestAnimationFrame(draw);
       };
@@ -247,28 +264,13 @@ export default function GoLivePage() {
         canvasPreviewRef.current.srcObject = canvasStream;
       }
 
-      // 3. Mix Audio
-      const dest = audioCtx.createMediaStreamDestination();
-      
-      // Add Host Mic
-      stream.getAudioTracks().forEach(track => {
-        audioCtx.createMediaStreamSource(new MediaStream([track])).connect(dest);
-      });
-
-      // Add Guest Mic (if already connected, otherwise we'll need to restart stream)
-      if (guestVideoRef.current && guestVideoRef.current.srcObject) {
-        const guestStream = guestVideoRef.current.srcObject as MediaStream;
-        guestStream.getAudioTracks().forEach(track => {
-          audioCtx.createMediaStreamSource(new MediaStream([track])).connect(dest);
-        });
-      }
-
+      // Combine Canvas + Audio
       const finalStream = new MediaStream([
         ...canvasStream.getVideoTracks(),
-        ...dest.stream.getAudioTracks()
+        ...destRef.current.stream.getAudioTracks()
       ]);
 
-      // 4. Connect to Cloudflare
+      // Connect to Cloudflare
       let iceServers = [{ urls: "stun:stun.cloudflare.com:3478" }];
       try {
         const turnRes = await fetch("/api/live/turn-credentials");
