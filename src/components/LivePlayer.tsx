@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, Share2 } from "lucide-react";
+import { Eye, Share2, UserPlus } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
+import { getCachedUser } from "@/lib/cache";
 import { motion, AnimatePresence } from "framer-motion";
 import { Stream } from "@cloudflare/stream-react";
 
@@ -9,7 +11,29 @@ type FloatingReaction = { id: number; emoji: string; x: number; scale: number; d
 
 export default function LivePlayer({ whepUrl, liveInputId }: { whepUrl?: string, liveInputId: string }) {
   const [viewers] = useState(Math.floor(Math.random() * 500) + 42);
+  const [requestedToJoin, setRequestedToJoin] = useState(false);
   const [reactions, setReactions] = useState<FloatingReaction[]>([]);
+
+  const requestToJoin = async () => {
+    if (!liveInputId) return;
+    const user = await getCachedUser();
+    if (!user) return alert("You must be logged in to request to join.");
+    
+    setRequestedToJoin(true);
+    const supabase = createClient();
+    
+    const { error } = await supabase.from("stream_join_requests").insert({
+      live_input_id: liveInputId,
+      viewer_user_id: user.id,
+      viewer_name: user.email?.split("@")[0] || "Viewer"
+    });
+    
+    if (error) {
+      console.error(error);
+      alert("Failed to send request.");
+      setRequestedToJoin(false);
+    }
+  };
 
   const spawnReaction = (emoji: string) => {
     const id = Date.now() + Math.random();
@@ -65,9 +89,15 @@ export default function LivePlayer({ whepUrl, liveInputId }: { whepUrl?: string,
 
       {/* Bottom Glass UI (Hearts & Share) */}
       <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent flex justify-between items-end z-20 pointer-events-none">
-        <button onClick={() => navigator.share?.({ url: window.location.href })} className="pointer-events-auto p-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/10 text-white transition">
-          <Share2 size={20} />
-        </button>
+        <div className="flex gap-2">
+          <button onClick={requestToJoin} disabled={requestedToJoin} className={`pointer-events-auto flex items-center gap-2 px-4 py-3 rounded-full backdrop-blur-md border transition ${requestedToJoin ? "bg-yellow-500/20 border-yellow-500/50 text-yellow-500" : "bg-white/10 hover:bg-white/20 border-white/10 text-white"}`}>
+            <UserPlus size={18} />
+            <span className="text-sm font-bold">{requestedToJoin ? "Request Sent" : "Join Stream"}</span>
+          </button>
+          <button onClick={() => navigator.share?.({ url: window.location.href })} className="pointer-events-auto p-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/10 text-white transition">
+            <Share2 size={20} />
+          </button>
+        </div>
         
         <div className="pointer-events-auto flex items-center gap-1.5 bg-black/40 backdrop-blur-md p-1.5 rounded-full border border-white/10 shadow-lg">
           {["❤️", "😂", "🔥", "👍", "😮", "🎉"].map((emoji) => (

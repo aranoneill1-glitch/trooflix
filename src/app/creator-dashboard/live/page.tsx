@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getCachedUser } from "@/lib/cache";
+import { createClient } from "@/utils/supabase/client";
 import { Mic, MicOff, Video, VideoOff, Radio, StopCircle, Monitor, MonitorOff } from "lucide-react";
 import LiveChat from "@/components/LiveChat";
 
@@ -20,6 +21,38 @@ export default function GoLivePage() {
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [liveInputId, setLiveInputId] = useState<string | null>(null);
+  const [joinRequest, setJoinRequest] = useState<any>(null);
+
+  useEffect(() => {
+    if (!isLive || !liveInputId) return;
+    const supabase = createClient();
+
+    const channel = supabase
+      .channel("join_requests")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "stream_join_requests", filter: `live_input_id=eq.${liveInputId}` },
+        (payload) => {
+          if (payload.new.status === "pending") {
+            setJoinRequest(payload.new);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [isLive, liveInputId]);
+
+  const handleJoinResponse = async (status: "approved" | "denied") => {
+    if (!joinRequest) return;
+    const supabase = createClient();
+    await supabase.from("stream_join_requests").update({ status }).eq("id", joinRequest.id);
+    
+    if (status === "approved") {
+      alert(`Approved ${joinRequest.viewer_name}. (Phase 2 will connect their video here!)`);
+    }
+    setJoinRequest(null);
+  };
 
   useEffect(() => {
     async function setupCamera() {
@@ -219,6 +252,17 @@ export default function GoLivePage() {
 
   return (
     <main className="min-h-[100dvh] bg-[#0a0303] text-white p-4 lg:p-8 flex flex-col items-center overflow-y-auto">
+      
+      {/* JOIN REQUEST POPUP */}
+      {joinRequest && (
+        <div className="fixed top-10 left-1/2 -translate-x-1/2 z-[9999] bg-[#1c1c1e] border border-white/20 p-6 rounded-2xl shadow-2xl animate-in slide-in-from-top-4 fade-in">
+          <p className="text-lg font-bold mb-4"><span className="text-[#E53945]">{joinRequest.viewer_name}</span> wants to join the stream!</p>
+          <div className="flex gap-3">
+            <button onClick={() => handleJoinResponse("approved")} className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-2 rounded-lg transition">Approve</button>
+            <button onClick={() => handleJoinResponse("denied")} className="flex-1 bg-red-500/20 hover:bg-red-500/30 text-red-500 font-bold py-2 rounded-lg transition border border-red-500/20">Deny</button>
+          </div>
+        </div>
+      )}
       <div className="w-full max-w-7xl mx-auto flex flex-col gap-6">
         <h1 className="text-2xl lg:text-3xl font-black text-center flex items-center justify-center gap-2 mb-2">
           <Radio className={isLive ? "text-red-500 animate-pulse" : "text-white/50"} size={24} />
