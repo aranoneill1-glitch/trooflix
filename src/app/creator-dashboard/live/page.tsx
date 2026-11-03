@@ -108,25 +108,17 @@ export default function GoLivePage() {
     setLoading(true);
 
     try {
-      // 1. Fetch TURN safely
       let iceServers = [{ urls: "stun:stun.cloudflare.com:3478" }];
       try {
         const turnRes = await fetch("/api/live/turn-credentials");
         if (turnRes.ok) {
           const turnData = await turnRes.json();
-          if (Array.isArray(turnData.iceServers)) {
+          if (Array.isArray(turnData.iceServers) && turnData.iceServers.length > 0) {
             iceServers = turnData.iceServers;
-          } else if (turnData.iceServers && typeof turnData.iceServers === "object") {
-            iceServers = [turnData.iceServers];
           }
-        } else {
-           console.warn("TURN API returned status:", turnRes.status);
         }
-      } catch (e) {
-        console.warn("TURN fetch failed, falling back to STUN", e);
-      }
+      } catch (e) { console.warn("TURN fetch failed"); }
 
-      // 2. Get Live Input from Cloudflare
       const res = await fetch("/api/live/create", { method: "POST" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to create live input");
@@ -134,14 +126,11 @@ export default function GoLivePage() {
       const { whipUrl, whepUrl, liveInputId } = data;
       if (!whipUrl) throw new Error("No WHIP URL returned from server");
 
-      // 3. Setup PeerConnection
       const pc = new RTCPeerConnection({ iceServers, bundlePolicy: "max-bundle" });
       pcRef.current = pc;
 
-      // 4. Add tracks
       stream.getTracks().forEach((track) => pc.addTrack(track, stream));
 
-      // 5. Safely force VP8
       const transceivers = pc.getTransceivers();
       transceivers.forEach(t => {
         if (t.sender && t.sender.track && t.sender.track.kind === "video") {
@@ -157,7 +146,6 @@ export default function GoLivePage() {
         }
       });
 
-      // 6. Connect to WHIP
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
 
@@ -173,9 +161,12 @@ export default function GoLivePage() {
       }
 
       const answerSdp = await whipRes.text();
+      if (!answerSdp || !answerSdp.includes("v=0")) {
+        throw new Error("Received invalid SDP from Cloudflare");
+      }
+
       await pc.setRemoteDescription({ type: "answer", sdp: answerSdp });
 
-      // 7. Save to Supabase
       const statusRes = await fetch("/api/live/status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

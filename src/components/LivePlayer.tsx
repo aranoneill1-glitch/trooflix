@@ -11,7 +11,7 @@ export default function LivePlayer({ whepUrl }: { whepUrl: string }) {
   const [started, setStarted] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isMuted, setIsMuted] = useState(true); // Default to muted for iOS Autoplay
+  const [isMuted, setIsMuted] = useState(true); 
   
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const [viewers] = useState(Math.floor(Math.random() * 500) + 42);
@@ -25,16 +25,22 @@ export default function LivePlayer({ whepUrl }: { whepUrl: string }) {
     if (pcRef.current) { pcRef.current.close(); pcRef.current = null; }
 
     try {
-      // 1. Fetch TURN credentials
-      const turnRes = await fetch("/api/live/turn-credentials");
-      const turnData = await turnRes.json();
-      const iceServers = turnData.iceServers || [{ urls: "stun:stun.cloudflare.com:3478" }];
+      let iceServers = [{ urls: "stun:stun.cloudflare.com:3478" }];
+      try {
+        const turnRes = await fetch("/api/live/turn-credentials");
+        if (turnRes.ok) {
+          const turnData = await turnRes.json();
+          if (Array.isArray(turnData.iceServers) && turnData.iceServers.length > 0) {
+            iceServers = turnData.iceServers;
+          }
+        }
+      } catch (e) {
+        console.warn("TURN fetch failed, using STUN");
+      }
 
-      // 2. Create Peer Connection
       const pc = new RTCPeerConnection({ iceServers, bundlePolicy: "max-bundle" });
       pcRef.current = pc;
 
-      // 3. Setup transceivers and force VP8
       const videoTransceiver = pc.addTransceiver("video", { direction: "recvonly" });
       pc.addTransceiver("audio", { direction: "recvonly" });
 
@@ -46,7 +52,6 @@ export default function LivePlayer({ whepUrl }: { whepUrl: string }) {
         }
       }
 
-      // 4. Create Offer & Wait for ICE Gathering
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
 
@@ -59,10 +64,9 @@ export default function LivePlayer({ whepUrl }: { whepUrl: string }) {
           }
         };
         pc.addEventListener("icegatheringstatechange", checkState);
-        setTimeout(resolve, 3000); // 3s timeout fallback
+        setTimeout(resolve, 3000); 
       });
 
-      // 5. Send to Cloudflare
       const res = await fetch(whepUrl, { 
         method: "POST", 
         headers: { "Content-Type": "application/sdp" }, 
@@ -71,9 +75,13 @@ export default function LivePlayer({ whepUrl }: { whepUrl: string }) {
 
       if (!res.ok) throw new Error(`Cloudflare Error: ${res.status}`);
 
-      await pc.setRemoteDescription({ type: "answer", sdp: await res.text() });
+      const answerSdp = await res.text();
+      if (!answerSdp || !answerSdp.includes("v=0")) {
+        throw new Error("Received invalid SDP from Cloudflare");
+      }
 
-      // 6. Play Video
+      await pc.setRemoteDescription({ type: "answer", sdp: answerSdp });
+
       pc.ontrack = (event) => {
         if (videoRef.current) {
           videoRef.current.srcObject = event.streams[0];
@@ -81,7 +89,6 @@ export default function LivePlayer({ whepUrl }: { whepUrl: string }) {
             setConnecting(false);
             setStarted(true);
           }).catch(() => {
-             // Autoplay failed, user must tap to play manually
              setConnecting(false);
              setStarted(true); 
           });
