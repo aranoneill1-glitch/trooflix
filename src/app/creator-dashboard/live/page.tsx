@@ -61,21 +61,41 @@ export default function GoLivePage() {
     if (isLive === false || liveInputId === null) return;
     const supabase = createClient();
 
+    // FALLBACK: Fetch any pending requests when the stream starts
+    const fetchPending = async () => {
+      const { data } = await supabase.from("stream_join_requests")
+        .select("*")
+        .eq("live_input_id", liveInputId)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false })
+        .limit(1);
+      
+      if (data && data.length > 0) setJoinRequest(data[0]);
+    };
+    fetchPending();
+
+    // REALTIME: Listen for all events without a filter (more reliable)
     const channel = supabase
-      .channel("join_requests")
+      .channel(`join_requests_${liveInputId}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "stream_join_requests", filter: `live_input_id=eq.${liveInputId}` },
+        { event: "*", schema: "public", table: "stream_join_requests" },
         (payload) => {
-          if (payload.eventType === "INSERT" && payload.new.status === "pending") {
-            setJoinRequest(payload.new);
-          } else if (payload.eventType === "UPDATE" && payload.new.status === "left") {
-            setGuestConnected(false);
-            if (guestVideoRef.current) guestVideoRef.current.srcObject = null;
+          console.log("Realtime Join Request Event:", payload);
+          
+          if (payload.new && (payload.new as any).live_input_id === liveInputId) {
+            if (payload.eventType === "INSERT" && (payload.new as any).status === "pending") {
+              setJoinRequest(payload.new);
+            } else if (payload.eventType === "UPDATE" && (payload.new as any).status === "left") {
+              setGuestConnected(false);
+              if (guestVideoRef.current) guestVideoRef.current.srcObject = null;
+            }
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log("Join Request Subscription Status:", status);
+      });
 
     return () => { supabase.removeChannel(channel); };
   }, [isLive, liveInputId]);
