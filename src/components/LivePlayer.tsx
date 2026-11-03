@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Eye, Share2, UserPlus, LogOut } from "lucide-react";
+import { Eye, Share2, UserPlus, LogOut, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Stream } from "@cloudflare/stream-react";
 import { createClient } from "@/utils/supabase/client";
@@ -18,6 +18,15 @@ export default function LivePlayer({ whepUrl, liveInputId }: { whepUrl?: string,
   const [isApprovedGuest, setIsApprovedGuest] = useState(false);
   const [isCameraOn, setIsCameraOn] = useState(false);
   const [requestId, setRequestId] = useState<string | null>(null);
+  
+  // New state for the loading overlay
+  const [isConnecting, setIsConnecting] = useState(true);
+
+  useEffect(() => {
+    // Hide the "Connecting..." overlay after 3 seconds
+    const timer = setTimeout(() => setIsConnecting(false), 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (!liveInputId) return;
@@ -96,8 +105,17 @@ export default function LivePlayer({ whepUrl, liveInputId }: { whepUrl?: string,
       <div className="relative w-full aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 shadow-2xl group">
         {isCameraOn && isApprovedGuest && <GuestCoStream roomId={liveInputId} />}
         
-        <Stream src={liveInputId} controls autoplay />
+        {/* Added muted to allow autoplay */}
+        <Stream src={liveInputId} controls autoplay muted />
         
+        {/* Connecting Overlay */}
+        {isConnecting && (
+          <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/90 backdrop-blur-sm pointer-events-none">
+            <Loader2 className="animate-spin text-[#E53945] mb-3" size={40} />
+            <p className="text-white font-bold text-lg">Connecting...</p>
+          </div>
+        )}
+
         <div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/60 to-transparent pointer-events-none flex justify-end items-start z-10">
           <div className="bg-black/40 backdrop-blur-md border border-white/10 text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
             <Eye size={14} /> {viewers}

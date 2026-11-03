@@ -142,7 +142,7 @@ export default function WatchLivePage() {
               <LivePlayer liveInputId={profile.live_input_id} />
             </div>
           ) : (
-            <div className="w-full aspect-video rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] ring-1 ring-white/10 bg-[#1c1c1e] flex flex-col items-center justify-center p-6 text-center border border-[#D4AF37]/30 relative animate-in fade-in zoom-in duration-500">
+            <div className="w-full md:aspect-video min-h-[380px] rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] ring-1 ring-white/10 bg-[#1c1c1e] flex flex-col items-center justify-center p-8 text-center border border-[#D4AF37]/30 relative animate-in fade-in zoom-in duration-500">
                {profile?.avatar_url && (
                  <div className="absolute inset-0 opacity-20 bg-cover bg-center blur-xl" style={{ backgroundImage: `url(${profile.avatar_url})` }} />
                )}
