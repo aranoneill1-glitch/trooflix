@@ -98,10 +98,7 @@ export default function LivePlayer({ whepUrl, liveInputId }: { whepUrl?: string,
         
         <Stream src={liveInputId} controls autoplay />
         
-        <div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/80 to-transparent pointer-events-none flex justify-between items-start z-10">
-          <div className="bg-red-600 text-white text-[11px] font-bold px-3 py-1 rounded-md flex items-center gap-2 shadow-lg">
-            <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" /> LIVE
-          </div>
+        <div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/60 to-transparent pointer-events-none flex justify-end items-start z-10">
           <div className="bg-black/40 backdrop-blur-md border border-white/10 text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
             <Eye size={14} /> {viewers}
           </div>
