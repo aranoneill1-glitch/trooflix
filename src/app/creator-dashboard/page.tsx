@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { 
   Video, CheckCircle2, MessageSquare, Eye, Star, Pencil, 
-  ShoppingBag, LayoutDashboard, LayoutGrid, List, Package, Palette, Camera, Trash2, X, Radio, Inbox, Plus, Play, Lock
+  ShoppingBag, LayoutDashboard, LayoutGrid, List, Package, Palette, Camera, Trash2, X, Radio, Inbox, Plus, Play, Lock, Shield, CreditCard
 } from "lucide-react";
 
 import TopBar from "@/components/TopBar";
@@ -457,6 +457,22 @@ function CreatorDashboardContent() {
                   <Link href="/creator-dashboard/subscriptions" className="bg-[#1c1c1e] border border-white/10 hover:border-[#E53945] p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
                     <Star className="text-[#E53945]" size={24} />
                     <span className="text-xs font-bold text-center">Manage Subscription</span>
+                  </Link>
+                </div>
+              </section>
+
+              <section>
+                <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">
+                  Security & Billing
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  <Link href="/creator-dashboard/security-billing" className="bg-[#1c1c1e] border border-white/10 hover:border-[#E53945] p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
+                    <Shield className="text-[#E53945]" size={24} />
+                    <span className="text-xs font-bold text-center">Change Password</span>
+                  </Link>
+                  <Link href="/creator-dashboard/security-billing" className="bg-[#1c1c1e] border border-white/10 hover:border-[#D4AF37] p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
+                    <CreditCard className="text-[#D4AF37]" size={24} />
+                    <span className="text-xs font-bold text-center">Billing</span>
                   </Link>
                 </div>
               </section>
