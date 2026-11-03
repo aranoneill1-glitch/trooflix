@@ -29,18 +29,24 @@ export default function LivePlayer({ whepUrl }: { whepUrl: string }) {
     if (pcRef.current) { pcRef.current.close(); pcRef.current = null; }
 
     try {
-      const pc = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.cloudflare.com:3478" }] });
+      const pc = new RTCPeerConnection({ 
+        iceServers: [
+          { urls: "stun:stun.cloudflare.com:3478" },
+          { urls: "stun:stun.l.google.com:19302" }
+        ] 
+      });
       pcRef.current = pc;
 
-      // **FIX: Add transceivers and force VP8 codec preference**
       const videoTransceiver = pc.addTransceiver("video", { direction: "recvonly" });
       pc.addTransceiver("audio", { direction: "recvonly" });
 
-      // Force VP8 codec to prevent codec mismatch issues with Cloudflare Stream
+      // **CRITICAL FIX: Explicitly prefer H.264 for iOS Safari compatibility**
       if (RTCRtpReceiver.getCapabilities) {
         const caps = RTCRtpReceiver.getCapabilities("video");
         if (caps && caps.codecs) {
-          const preferred = caps.codecs.filter(c => c.mimeType === "video/VP8");
+          const preferred = caps.codecs.filter(c => 
+            c.mimeType === "video/H264" || c.mimeType === "video/VP8"
+          );
           if (preferred.length > 0) {
             videoTransceiver.setCodecPreferences(preferred);
           }
@@ -51,7 +57,7 @@ export default function LivePlayer({ whepUrl }: { whepUrl: string }) {
       await pc.setLocalDescription(offer);
 
       const res = await fetch(whepUrl, { method: "POST", headers: { "Content-Type": "application/sdp" }, body: offer.sdp });
-      if (!res.ok) throw new Error("Failed to connect");
+      if (!res.ok) throw new Error("Failed to connect: " + res.status);
       await pc.setRemoteDescription({ type: "answer", sdp: await res.text() });
 
       pc.ontrack = (event) => {
