@@ -12,6 +12,8 @@ type ChatMessage = {
   avatar_url: string | null;
   message: string;
   created_at: string;
+  type?: string;
+  metadata?: any;
 };
 
 const EMOJIS = ["😂", "🔥", "😍", "👏", "😮", "💯", "🚀", "💩", "🎉", "😢", "👀", "🙌", "💪", "🤔", "🙏", "❤️"];
@@ -36,7 +38,6 @@ export default function LiveChat({ liveInputId, className = "h-[400px] md:h-[500
 
   useEffect(() => {
     if (!liveInputId) return;
-    console.log("LiveChat connected to Room:", liveInputId);
 
     getCachedUser().then(async (u) => {
       if (!u) return;
@@ -51,8 +52,7 @@ export default function LiveChat({ liveInputId, className = "h-[400px] md:h-[500
       .eq("live_input_id", liveInputId)
       .order("created_at", { ascending: true })
       .limit(100)
-      .then(({ data, error }) => {
-        if (error) console.error("Error fetching chat:", error);
+      .then(({ data }) => {
         if (data) setMessages(data);
       });
 
@@ -62,7 +62,6 @@ export default function LiveChat({ liveInputId, className = "h-[400px] md:h-[500
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "live_chat_messages", filter: `live_input_id=eq.${liveInputId}` },
         (payload) => {
-          console.log("New message received from Realtime:", payload.new);
           setMessages((prev) => {
             if (prev.some(m => m.id === payload.new.id)) return prev;
             return [...prev, payload.new as ChatMessage];
@@ -70,7 +69,6 @@ export default function LiveChat({ liveInputId, className = "h-[400px] md:h-[500
         }
       )
       .subscribe((status) => {
-        console.log("Realtime connection status:", status);
         setIsConnected(status === "SUBSCRIBED");
       });
 
@@ -79,43 +77,33 @@ export default function LiveChat({ liveInputId, className = "h-[400px] md:h-[500
 
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Send button clicked. Message:", newMessage);
-
-    if (!newMessage.trim()) return console.log("Message is empty.");
-    if (!user) return console.log("User not found. Please log in.");
-    if (sending) return console.log("Already sending a message...");
-
+    if (!newMessage.trim() || !user || sending) return;
     setSending(true);
     setShowEmojis(false);
 
     const text = newMessage.trim();
     setNewMessage(""); 
 
-    // Fallback name if profile fetch failed
     const displayName = profile?.display_name || profile?.username || user.email?.split('@')[0] || "User";
-    const avatarUrl = profile?.avatar_url || null;
-
+    
     const { data, error } = await supabase.from("live_chat_messages").insert({
       live_input_id: liveInputId,
       user_id: user.id,
       display_name: displayName,
-      avatar_url: avatarUrl,
+      avatar_url: profile?.avatar_url || null,
       message: text,
-    }).select().single(); // Get the inserted row back
+      type: "text"
+    }).select().single();
 
     if (error) {
       console.error("Failed to send message:", error);
-      alert("Failed to send: " + error.message);
-      setNewMessage(text); // Give text back to user
+      setNewMessage(text);
     } else if (data) {
-      console.log("Message sent successfully:", data);
-      // Optimistic UI: Add it to our own screen instantly
       setMessages((prev) => {
         if (prev.some(m => m.id === data.id)) return prev;
         return [...prev, data as ChatMessage];
       });
     }
-
     setSending(false);
   };
 
@@ -147,9 +135,31 @@ export default function LiveChat({ liveInputId, className = "h-[400px] md:h-[500
                   {msg.display_name.charAt(0).toUpperCase()}
                 </div>
               )}
-              <div className="flex flex-col min-w-0 leading-tight">
+              
+              <div className="flex flex-col min-w-0 leading-tight w-full">
                 <span className="text-[11px] font-semibold text-white/40 mb-1">{msg.display_name}</span>
-                <div className="text-[13px] text-white/90 break-words leading-relaxed">{msg.message}</div>
+                
+                {msg.type === "product" && msg.metadata ? (
+                  <div className="mt-1 bg-[#1c1c1e] border border-[#E53945]/30 rounded-xl overflow-hidden shadow-lg w-full max-w-[240px]">
+                    <div className="relative aspect-video bg-black/50">
+                      <img src={msg.metadata.image_url} alt={msg.metadata.name} className="w-full h-full object-cover" />
+                      <div className="absolute top-2 left-2 bg-[#E53945] text-white text-[10px] font-black px-2 py-0.5 rounded shadow-lg uppercase tracking-wider animate-pulse">
+                        LIVE DEAL
+                      </div>
+                    </div>
+                    <div className="p-3">
+                      <h4 className="text-sm font-bold text-white line-clamp-1">{msg.metadata.name}</h4>
+                      <p className="text-emerald-400 font-bold text-sm mt-0.5">${(msg.metadata.price_cents / 100).toFixed(2)}</p>
+                      <a href={`/shop/${msg.metadata.id}`} target="_blank" rel="noreferrer" className="mt-2 w-full bg-white text-black font-bold text-xs py-2 rounded-lg flex items-center justify-center hover:bg-gray-200 transition">
+                        Buy Now
+                      </a>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-[13px] text-white/90 break-words leading-relaxed">
+                    {msg.message}
+                  </div>
+                )}
               </div>
             </div>
           ))
