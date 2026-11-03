@@ -385,16 +385,11 @@ export default function GoLivePage() {
       ]);
 
       // 3. Call API to create Live Input
-      const res = await fetch("/api/live/create", { 
-        method: "POST", 
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId }) 
-      });
-      
-      const data = await res.json().catch(() => ({}));
+      const res = await fetch("/api/live/create", { method: "POST" });
+      const data = await res.json();
       
       if (!res.ok) {
-        throw new Error(data.error || `Server responded with ${res.status}`);
+        throw new Error(data.error || "Failed to create live input");
       }
 
       const { whipUrl, whepUrl, liveInputId } = data;
