@@ -64,20 +64,28 @@ export default function WatchLivePage() {
 
       // Setup Realtime Listener for live visibility changes
       const channel = supabase
-        .channel(`visibility_${username}`)
+        .channel(`visibility_${profileData.user_id}_${Date.now()}`)
         .on(
           "postgres_changes",
-          { event: "UPDATE", schema: "public", table: "profiles", filter: `username=eq.${username}` },
+          { event: "UPDATE", schema: "public", table: "profiles" },
           async (payload) => {
-            const updatedProfile = { ...profileData, ...payload.new };
-            setProfile(updatedProfile);
-            
-            // Re-verify access instantly
-            const newAccess = await checkAccess(updatedProfile, currentUser);
-            setHasAccess(newAccess);
+            // Compare user_id since username might not be in the update payload
+            if (payload.new.user_id === profileData.user_id) {
+              console.log("Realtime visibility change detected! New visibility:", payload.new.live_visibility);
+              
+              const updatedProfile = { ...profileData, ...payload.new };
+              setProfile(updatedProfile);
+              
+              // Re-verify access instantly
+              const newAccess = await checkAccess(updatedProfile, currentUser);
+              console.log("Has access after check:", newAccess);
+              setHasAccess(newAccess);
+            }
           }
         )
-        .subscribe();
+        .subscribe((status) => {
+          console.log("Visibility Realtime Status:", status);
+        });
 
       return () => { supabase.removeChannel(channel); };
     }
