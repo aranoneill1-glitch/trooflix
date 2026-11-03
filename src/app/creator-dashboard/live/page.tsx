@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getCachedUser } from "@/lib/cache";
 import { createClient } from "@/utils/supabase/client";
-import { Mic, MicOff, Video, VideoOff, Radio, StopCircle, Monitor, MonitorOff, UserCheck, PictureInPicture } from "lucide-react";
+import { Mic, MicOff, Video, VideoOff, Radio, StopCircle, Monitor, MonitorOff, UserCheck, PictureInPicture, ShoppingBag, X } from "lucide-react";
 import LiveChat from "@/components/LiveChat";
 
 export default function GoLivePage() {
@@ -29,6 +29,8 @@ export default function GoLivePage() {
   const [liveInputId, setLiveInputId] = useState<string | null>(null);
   const [joinRequest, setJoinRequest] = useState<any>(null);
   const [guestConnected, setGuestConnected] = useState(false);
+  const [showProductMenu, setShowProductMenu] = useState(false);
+  const [myProducts, setMyProducts] = useState<any[]>([]);
   const [connectedGuestName, setConnectedGuestName] = useState("");
 
   useEffect(() => {
@@ -264,6 +266,35 @@ export default function GoLivePage() {
     ctx.drawImage(video, sx, sy, sw, sh, x, y, w, h);
   };
 
+  const openProductMenu = async () => {
+    setShowProductMenu(true);
+    if (myProducts.length > 0) return;
+    const supabase = createClient();
+    const user = await getCachedUser();
+    if (!user) return;
+    const { data } = await supabase.from("products").select("*").eq("creator_id", user.id);
+    if (data) setMyProducts(data);
+  };
+
+  const sendProductToChat = async (product: any) => {
+    if (!liveInputId) return;
+    const supabase = createClient();
+    await supabase.from("live_chat_messages").insert({
+      live_input_id: liveInputId,
+      user_id: userId,
+      display_name: "Trooflix Shop",
+      message: "Showcased a product: " + product.name,
+      type: "product",
+      metadata: {
+        id: product.id,
+        name: product.name,
+        price_cents: product.price_cents,
+        image_url: product.image_url || product.image
+      }
+    });
+    setShowProductMenu(false);
+  };
+
   const togglePiP = async () => {
     try {
       if (document.pictureInPictureElement) {
@@ -402,6 +433,35 @@ export default function GoLivePage() {
       <video ref={guestVideoRef} autoPlay playsInline style={{ position: "absolute", width: "1px", height: "1px", opacity: 0.01, pointerEvents: "none", top: "-9999px", left: "-9999px" }} muted />
       <audio ref={guestAudioRef} autoPlay className="hidden" />
 
+            {/* PRODUCT PICKER MODAL */}
+      {showProductMenu && (
+        <div className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#1c1c1e] border border-white/10 rounded-3xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden shadow-2xl">
+            <div className="p-4 border-b border-white/10 flex justify-between items-center bg-white/5">
+              <h3 className="text-lg font-bold text-white flex items-center gap-2"><ShoppingBag size={20} className="text-[#E53945]"/> Showcase a Product</h3>
+              <button onClick={() => setShowProductMenu(false)} className="p-2 bg-white/10 rounded-full hover:bg-white/20 transition text-white"><X size={18} /></button>
+            </div>
+            <div className="p-4 overflow-y-auto grid grid-cols-2 md:grid-cols-3 gap-4">
+              {myProducts.length === 0 ? (
+                <div className="col-span-full text-center py-10 text-white/50">No products found in your shop.</div>
+              ) : (
+                myProducts.map(p => (
+                  <div key={p.id} onClick={() => sendProductToChat(p)} className="bg-black/50 border border-white/10 rounded-xl overflow-hidden cursor-pointer hover:border-[#E53945] transition group">
+                    <div className="aspect-square relative overflow-hidden">
+                      <img src={p.image_url || p.image} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition" />
+                    </div>
+                    <div className="p-2">
+                      <p className="text-xs font-bold text-white truncate">{p.name}</p>
+                      <p className="text-emerald-400 text-xs font-bold">${(p.price_cents / 100).toFixed(2)}</p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex-1 flex flex-col lg:flex-row w-full max-w-[1600px] mx-auto overflow-hidden p-4 gap-6">
         
         <div className="flex-1 flex flex-col gap-4">
@@ -438,6 +498,9 @@ export default function GoLivePage() {
               </button>
               <button onClick={togglePiP} className="w-12 h-12 rounded-xl flex items-center justify-center transition bg-white/5 hover:bg-white/10 text-white" title="Pop out video">
                 <PictureInPicture size={20} />
+              </button>
+              <button onClick={openProductMenu} className="w-12 h-12 rounded-xl flex items-center justify-center transition bg-[#E53945]/20 hover:bg-[#E53945]/30 text-[#E53945]" title="Showcase Product">
+                <ShoppingBag size={20} />
               </button>
             </div>
 
