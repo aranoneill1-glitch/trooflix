@@ -14,6 +14,7 @@ export default function GoLivePage() {
   const guestAudioRef = useRef<HTMLAudioElement>(null);
   const canvasPreviewRef = useRef<HTMLVideoElement>(null);
   const canvasStreamRef = useRef<MediaStream | null>(null);
+  const hostPcRef = useRef<RTCPeerConnection | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const destRef = useRef<MediaStreamAudioDestinationNode | null>(null);
   const guestConnectedRef = useRef(false);
@@ -165,9 +166,18 @@ export default function GoLivePage() {
     if (liveInputId === null) return;
     const supabase = createClient();
     
+    // Close the previous connection if it exists
+    if (hostPcRef.current) {
+      hostPcRef.current.close();
+    }
+    
+    // Wipe out old signaling messages so they don't confuse the new connection
+    await supabase.from("webrtc_signals").delete().eq("room_id", liveInputId);
+
     const pc = new RTCPeerConnection({
       iceServers: [{ urls: "stun:stun.cloudflare.com:3478" }, { urls: "stun:stun.l.google.com:19302" }]
     });
+    hostPcRef.current = pc;
     
     pc.addTransceiver("video", { direction: "recvonly" });
     pc.addTransceiver("audio", { direction: "recvonly" });
