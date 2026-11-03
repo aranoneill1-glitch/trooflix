@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getCachedUser } from "@/lib/cache";
 import { createClient } from "@/utils/supabase/client";
-import { Mic, MicOff, Video, VideoOff, Radio, StopCircle, Monitor, MonitorOff, UserCheck } from "lucide-react";
+import { Mic, MicOff, Video, VideoOff, Radio, StopCircle, Monitor, MonitorOff, UserCheck, PictureInPicture } from "lucide-react";
 import LiveChat from "@/components/LiveChat";
 
 export default function GoLivePage() {
@@ -264,6 +264,23 @@ export default function GoLivePage() {
     ctx.drawImage(video, sx, sy, sw, sh, x, y, w, h);
   };
 
+  const togglePiP = async () => {
+    try {
+      if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture();
+      } else {
+        // If live, pop out the canvas; if not, pop out the raw camera
+        const videoToPop = isLive ? canvasPreviewRef.current : videoRef.current;
+        if (videoToPop) {
+          await videoToPop.requestPictureInPicture();
+        }
+      }
+    } catch (err) {
+      console.error("PiP failed:", err);
+      alert("Picture-in-Picture is not supported on this browser/device.");
+    }
+  };
+
   const startStream = async () => {
     if (stream === null || userId === null) return;
     setLoading(true);
@@ -418,6 +435,9 @@ export default function GoLivePage() {
               </button>
               <button onClick={toggleScreenShare} className={`w-12 h-12 rounded-xl flex items-center justify-center transition ${isScreenSharing ? "bg-blue-500/20 text-blue-500" : "bg-white/5 hover:bg-white/10 text-white"}`}>
                 {isScreenSharing ? <MonitorOff size={20} /> : <Monitor size={20} />}
+              </button>
+              <button onClick={togglePiP} className="w-12 h-12 rounded-xl flex items-center justify-center transition bg-white/5 hover:bg-white/10 text-white" title="Pop out video">
+                <PictureInPicture size={20} />
               </button>
             </div>
 
