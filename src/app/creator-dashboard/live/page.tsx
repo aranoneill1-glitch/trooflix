@@ -28,6 +28,7 @@ export default function GoLivePage() {
   const [liveInputId, setLiveInputId] = useState<string | null>(null);
   const [joinRequest, setJoinRequest] = useState<any>(null);
   const [guestConnected, setGuestConnected] = useState(false);
+  const [connectedGuestName, setConnectedGuestName] = useState("");
 
   useEffect(() => {
     guestConnectedRef.current = guestConnected;
@@ -226,7 +227,10 @@ export default function GoLivePage() {
     if (joinRequest === null) return;
     const supabase = createClient();
     await supabase.from("stream_join_requests").update({ status }).eq("id", joinRequest.id);
-    if (status === "approved") await connectGuest(joinRequest.viewer_user_id);
+    if (status === "approved") {
+      setConnectedGuestName(joinRequest.viewer_name);
+      await connectGuest(joinRequest.viewer_user_id);
+    }
     setJoinRequest(null);
   };
 
@@ -384,7 +388,7 @@ export default function GoLivePage() {
             
             {guestConnected && (
               <div className="absolute top-4 right-4 bg-green-500/20 border border-green-500/50 text-green-400 text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-2 shadow-lg backdrop-blur-md z-20">
-                <UserCheck size={14} /> Guest Connected
+                <UserCheck size={14} /> {connectedGuestName || "Guest"} Connected
               </div>
             )}
           </div>
@@ -419,7 +423,16 @@ export default function GoLivePage() {
              <>
                {joinRequest && (
                  <div className="bg-[#1c1c1e] border border-[#E53945]/30 p-4 rounded-xl shadow-lg animate-in slide-in-from-bottom-2">
-                   <p className="text-sm font-bold mb-3"><span className="text-[#E53945]">{joinRequest.viewer_name}</span> wants to join the stream!</p>
+                   <div className="flex items-center gap-3 mb-3">
+                     {joinRequest.viewer_avatar ? (
+                       <img src={joinRequest.viewer_avatar} alt="" className="w-9 h-9 rounded-full object-cover border border-white/20 shadow-sm" />
+                     ) : (
+                       <div className="w-9 h-9 rounded-full bg-[#E53945] flex items-center justify-center text-sm font-bold text-white shadow-sm">
+                         {joinRequest.viewer_name.charAt(0).toUpperCase()}
+                       </div>
+                     )}
+                     <p className="text-sm font-bold"><span className="text-[#E53945]">{joinRequest.viewer_name}</span> wants to join!</p>
+                   </div>
                    <div className="flex gap-2">
                      <button onClick={() => handleJoinResponse("approved")} className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-1.5 rounded-lg text-sm transition">Approve</button>
                      <button onClick={() => handleJoinResponse("denied")} className="flex-1 bg-red-500/20 hover:bg-red-500/30 text-red-500 font-bold py-1.5 rounded-lg text-sm transition border border-red-500/20">Deny</button>

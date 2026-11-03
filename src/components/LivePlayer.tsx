@@ -49,10 +49,15 @@ export default function LivePlayer({ whepUrl, liveInputId }: { whepUrl?: string,
     setRequestedToJoin(true);
     const supabase = createClient();
     
+    // Fetch avatar
+    const { data: profile } = await supabase.from("profiles").select("avatar_url").eq("user_id", user.id).single();
+    const avatarUrl = profile?.avatar_url || null;
+    
     const { data, error } = await supabase.from("stream_join_requests").insert({
       live_input_id: liveInputId,
       viewer_user_id: user.id,
       viewer_name: user.email?.split("@")[0] || "Viewer",
+      viewer_avatar: avatarUrl,
       status: "pending"
     }).select().single();
     
