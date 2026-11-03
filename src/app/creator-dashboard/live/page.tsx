@@ -269,11 +269,28 @@ export default function GoLivePage() {
   const openProductMenu = async () => {
     setShowProductMenu(true);
     if (myProducts.length > 0) return;
-    const supabase = createClient();
-    const user = await getCachedUser();
-    if (!user) return;
-    const { data } = await supabase.from("products").select("*").eq("creator_id", user.id);
-    if (data) setMyProducts(data);
+    
+    try {
+      const user = await getCachedUser();
+      if (!user) return;
+
+      // 1. Get the creator ID (just like the main dashboard does)
+      const cr = await fetch(`/api/me/creator?user_id=${user.id}`).then(r => r.json());
+      const cid = cr.creator?.id;
+
+      // 2. Fetch the global products
+      const res = await fetch("/api/products/global").then(r => r.json());
+      
+      if (res.products) {
+        // 3. Filter exactly like the Creator Dashboard does
+        const myItems = res.products.filter((p: any) => 
+          String(p.creator_id) === String(cid) || String(p.creator_id) === String(user.id)
+        );
+        setMyProducts(myItems);
+      }
+    } catch (e) {
+      console.error("Failed to fetch products", e);
+    }
   };
 
   const sendProductToChat = async (product: any) => {
