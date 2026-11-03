@@ -26,39 +26,6 @@ export default function GoLivePage() {
   const [joinRequest, setJoinRequest] = useState<any>(null);
 
   useEffect(() => {
-    if (!isLive || !liveInputId) return;
-    const supabase = createClient();
-
-    const channel = supabase
-      .channel("join_requests")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "stream_join_requests", filter: `live_input_id=eq.${liveInputId}` },
-        (payload) => {
-          if (payload.new.status === "pending") {
-            setJoinRequest(payload.new);
-          }
-        }
-      )
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
-  }, [isLive, liveInputId]);
-
-  const handleJoinResponse = async (status: "approved" | "denied") => {
-    if (!joinRequest) return;
-    const supabase = createClient();
-    await supabase.from("stream_join_requests").update({ status }).eq("id", joinRequest.id);
-    
-    if (status === "approved") {
-      // Start listening for their WebRTC signal
-      await connectGuest(joinRequest.viewer_user_id);
-      alert(`Approved ${joinRequest.viewer_name}. Waiting for their camera...`);
-    }
-    setJoinRequest(null);
-  };
-
-  useEffect(() => {
     async function setupCamera() {
       try {
         const mediaStream = await navigator.mediaDevices.getUserMedia({
@@ -81,6 +48,26 @@ export default function GoLivePage() {
       if (stream) stream.getTracks().forEach((track) => track.stop());
     };
   }, []);
+
+  useEffect(() => {
+    if (isLive === false || liveInputId === null) return;
+    const supabase = createClient();
+
+    const channel = supabase
+      .channel("join_requests")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "stream_join_requests", filter: `live_input_id=eq.${liveInputId}` },
+        (payload) => {
+          if (payload.new.status === "pending") {
+            setJoinRequest(payload.new);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [isLive, liveInputId]);
 
   const toggleMute = () => {
     if (stream) {
@@ -140,8 +127,127 @@ export default function GoLivePage() {
     }
   };
 
+  const connectGuest = async (guestUserId: string) => {
+    if (liveInputId === null) return;
+    const supabase = createClient();
+    
+    const pc = new RTCPeerConnection({
+      iceServers: [{ urls: "stun:stun.cloudflare.com:3478" }, { urls: "stun:stun.l.google.com:19302" }]
+    });
+    hostPcRef.current = pc;
+
+    pc.onicecandidate = (event) => {
+      if (event.candidate) {
+        supabase.from("webrtc_signals").insert({
+          room_id: liveInputId, sender_id: "host", type: "candidate", payload: event.candidate
+        });
+      }
+    };
+
+    pc.ontrack = (event) => {
+      if (guestVideoRef.current) {
+        guestVideoRef.current.srcObject = event.streams[0];
+      }
+    };
+
+    // Host creates the WebRTC Offer
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    await supabase.from("webrtc_signals").insert({
+      room_id: liveInputId, sender_id: "host", type: "offer", payload: offer
+    });
+
+    const channel = supabase.channel(`webrtc_host_${liveInputId}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "webrtc_signals", filter: `room_id=eq.${liveInputId}` }, async (payload) => {
+        const signal = payload.new;
+        if (signal.sender_id === "host") return;
+
+        if (signal.type === "candidate") {
+          await pc.addIceCandidate(new RTCIceCandidate(signal.payload)).catch(console.error);
+        } else if (signal.type === "answer") {
+          await pc.setRemoteDescription(new RTCSessionDescription(signal.payload)).catch(console.error);
+        }
+      })
+      .subscribe();
+
+    return channel;
+  };
+
+  const handleJoinResponse = async (status: "approved" | "denied") => {
+    if (joinRequest === null) return;
+    const supabase = createClient();
+    await supabase.from("stream_join_requests").update({ status }).eq("id", joinRequest.id);
+    
+    if (status === "approved") {
+      await connectGuest(joinRequest.viewer_user_id);
+      alert(`Approved ${joinRequest.viewer_name}. Waiting for their camera...`);
+    }
+    setJoinRequest(null);
+  };
+
+  const createCompositeStream = async (hostStream: MediaStream) => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1280;
+    canvas.height = 720;
+    const ctx = canvas.getContext("2d");
+    if (ctx === null) return hostStream;
+
+    const hostVideo = videoRef.current;
+    const guestVideo = guestVideoRef.current;
+
+    // If guest video isn't loaded yet, just return host stream
+    if (guestVideo === null || guestVideo.srcObject === null) {
+      return hostStream;
+    }
+
+    const draw = () => {
+      if (ctx === null) return;
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      if (hostVideo && hostVideo.readyState >= 2) {
+        ctx.save();
+        ctx.translate(640, 0);
+        ctx.scale(-1, 1);
+        ctx.drawImage(hostVideo, 0, 0, 640, 720);
+        ctx.restore();
+      }
+
+      if (guestVideo && guestVideo.readyState >= 2) {
+        ctx.drawImage(guestVideo, 640, 0, 640, 720);
+      }
+
+      requestAnimationFrame(draw);
+    };
+    draw();
+
+    const canvasStream = canvas.captureStream(30);
+
+    // Mix Audio (Host + Guest)
+    const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const dest = audioCtx.createMediaStreamDestination();
+
+    hostStream.getAudioTracks().forEach(track => {
+      const source = audioCtx.createMediaStreamSource(new MediaStream([track]));
+      source.connect(dest);
+    });
+
+    if (guestVideo && guestVideo.srcObject) {
+      const guestStream = guestVideo.srcObject as MediaStream;
+      guestStream.getAudioTracks().forEach(track => {
+        const source = audioCtx.createMediaStreamSource(new MediaStream([track]));
+        source.connect(dest);
+      });
+    }
+
+    return new MediaStream([
+      ...canvasStream.getVideoTracks(),
+      ...dest.stream.getAudioTracks()
+    ]);
+  };
+
   const startStream = async () => {
-    if (!stream || !userId) return;
+    if (stream === null || userId === null) return;
     setLoading(true);
 
     try {
@@ -161,12 +267,14 @@ export default function GoLivePage() {
       if (!res.ok) throw new Error(data.error || "Failed to create live input");
       
       const { whipUrl, whepUrl, liveInputId } = data;
-      if (!whipUrl) throw new Error("No WHIP URL returned from server");
+      if (whipUrl === undefined) throw new Error("No WHIP URL returned from server");
 
       const pc = new RTCPeerConnection({ iceServers, bundlePolicy: "max-bundle" });
       pcRef.current = pc;
 
-      stream.getTracks().forEach((track) => pc.addTrack(track, stream));
+      // Generate the split-screen stream
+      const streamToSend = await createCompositeStream(stream);
+      streamToSend.getTracks().forEach((track) => pc.addTrack(track, streamToSend));
 
       const transceivers = pc.getTransceivers();
       transceivers.forEach(t => {
@@ -227,45 +335,8 @@ export default function GoLivePage() {
     }
   };
 
-  const connectGuest = async (guestUserId: string) => {
-    if (!liveInputId) return;
-    const supabase = createClient();
-    
-    const pc = new RTCPeerConnection({
-      iceServers: [{ urls: "stun:stun.cloudflare.com:3478" }, { urls: "stun:stun.l.google.com:19302" }]
-    });
-    hostPcRef.current = pc;
-
-    pc.onicecandidate = (event) => {
-      if (event.candidate) {
-        supabase.from("webrtc_signals").insert({
-          room_id: liveInputId, sender_id: "host", type: "candidate", payload: event.candidate
-        });
-      }
-    };
-
-    pc.ontrack = (event) => {
-      if (guestVideoRef.current) {
-        guestVideoRef.current.srcObject = event.streams[0];
-      }
-    };
-
-    const channel = supabase.channel(`webrtc_host_${liveInputId}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "webrtc_signals", filter: `room_id=eq.${liveInputId}` }, async (payload) => {
-        const signal = payload.new;
-        if (signal.sender_id === "host") return;
-
-        if (signal.type === "candidate") {
-          await pc.addIceCandidate(new RTCIceCandidate(signal.payload)).catch(console.error);
-        }
-      })
-      .subscribe();
-
-    return channel;
-  };
-
   const stopStream = async () => {
-    if (!userId) return;
+    if (userId === null) return;
     setLoading(true);
 
     try {
@@ -294,14 +365,6 @@ export default function GoLivePage() {
   return (
     <main className="min-h-[100dvh] bg-[#0a0303] text-white p-4 lg:p-8 flex flex-col items-center overflow-y-auto">
       
-      {/* FLOATING GUEST VIDEO PREVIEW */}
-      <div className="fixed top-24 right-6 w-64 aspect-video bg-black rounded-xl overflow-hidden shadow-2xl border-2 border-green-500 z-[9999] animate-in slide-in-from-right-8">
-        <video ref={guestVideoRef} autoPlay playsInline className="w-full h-full object-cover" />
-        <div className="absolute top-2 left-2 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-sm uppercase tracking-wider">
-          Guest Connected
-        </div>
-      </div>
-      
       {/* JOIN REQUEST POPUP */}
       {joinRequest && (
         <div className="fixed top-10 left-1/2 -translate-x-1/2 z-[9999] bg-[#1c1c1e] border border-white/20 p-6 rounded-2xl shadow-2xl animate-in slide-in-from-top-4 fade-in">
@@ -312,7 +375,17 @@ export default function GoLivePage() {
           </div>
         </div>
       )}
+
+      {/* FLOATING GUEST VIDEO PREVIEW */}
+      <div className="fixed top-24 right-6 w-64 aspect-video bg-black rounded-xl overflow-hidden shadow-2xl border-2 border-green-500 z-[9999] animate-in slide-in-from-right-8">
+        <video ref={guestVideoRef} autoPlay playsInline className="w-full h-full object-cover" muted />
+        <div className="absolute top-2 left-2 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-sm uppercase tracking-wider">
+          Guest Connected
+        </div>
+      </div>
+
       <div className="w-full max-w-7xl mx-auto flex flex-col gap-6">
+        
         <h1 className="text-2xl lg:text-3xl font-black text-center flex items-center justify-center gap-2 mb-2">
           <Radio className={isLive ? "text-red-500 animate-pulse" : "text-white/50"} size={24} />
           {isLive ? "You are LIVE" : "Setup Broadcast"}
