@@ -21,15 +21,15 @@ export default function WatchLivePage() {
       const supabase = createClient();
       const { data, error } = await supabase
         .from("profiles")
-        .select("display_name, avatar_url, is_live, live_playback_url, live_input_id")
+        .select("display_name, avatar_url, is_live, live_input_id")
         .eq("username", username)
         .single();
 
+      // Only check for is_live and live_input_id now
       if (!error && data && data.is_live && data.live_input_id) {
         setProfile(data);
       } else {
-        console.log("Redirecting... is_live:", data?.is_live, "live_input_id:", data?.live_input_id);
-        router.push(`/profile/${username}`); // Kick them back to profile if not live
+        router.push(`/profile/${username}`); 
       }
       setLoading(false);
     }
@@ -57,10 +57,10 @@ export default function WatchLivePage() {
             </Link>
           </div>
 
-          {/* Video Player */}
-          {profile?.live_playback_url && (
+          {/* Video Player - Now only checks for live_input_id */}
+          {profile?.live_input_id && (
             <div className="w-full rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] ring-1 ring-white/10">
-              <LivePlayer whepUrl={profile.live_playback_url} liveInputId={profile.live_input_id} />
+              <LivePlayer liveInputId={profile.live_input_id} />
             </div>
           )}
 
