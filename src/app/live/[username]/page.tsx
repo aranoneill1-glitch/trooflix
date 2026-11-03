@@ -25,9 +25,10 @@ export default function WatchLivePage() {
         .eq("username", username)
         .single();
 
-      if (!error && data && data.is_live && data.live_playback_url) {
+      if (!error && data && data.is_live && data.live_input_id) {
         setProfile(data);
       } else {
+        console.log("Redirecting... is_live:", data?.is_live, "live_input_id:", data?.live_input_id);
         router.push(`/profile/${username}`); // Kick them back to profile if not live
       }
       setLoading(false);
