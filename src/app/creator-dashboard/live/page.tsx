@@ -391,7 +391,7 @@ export default function GoLivePage() {
         }
       } catch (e) {}
 
-      const res = await fetch("/api/live/create", { method: "POST" });
+      const res = await fetch("/api/live/create", { method: "POST", body: JSON.stringify({ userId }) });
       const data = await res.json();
       if (!res.ok) throw new Error("Failed to create live input");
 
@@ -434,6 +434,14 @@ export default function GoLivePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, is_live: false, live_playback_url: null, live_input_id: null }),
       });
+
+      // Delete the Cloudflare Live Input to keep the account clean
+      await fetch("/api/live/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+
       if (stream) stream.getTracks().forEach((t) => t.stop());
       setIsLive(false);
       router.push("/creator-dashboard");
