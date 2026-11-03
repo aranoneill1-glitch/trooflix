@@ -11,6 +11,8 @@ export default function GoLivePage() {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
+  const guestVideoRef = useRef<HTMLVideoElement>(null);
+  const hostPcRef = useRef<RTCPeerConnection | null>(null);
   
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [isLive, setIsLive] = useState(false);
@@ -49,7 +51,9 @@ export default function GoLivePage() {
     await supabase.from("stream_join_requests").update({ status }).eq("id", joinRequest.id);
     
     if (status === "approved") {
-      alert(`Approved ${joinRequest.viewer_name}. (Phase 2 will connect their video here!)`);
+      // Start listening for their WebRTC signal
+      await connectGuest(joinRequest.viewer_user_id);
+      alert(`Approved ${joinRequest.viewer_name}. Waiting for their camera...`);
     }
     setJoinRequest(null);
   };
@@ -223,6 +227,43 @@ export default function GoLivePage() {
     }
   };
 
+  const connectGuest = async (guestUserId: string) => {
+    if (!liveInputId) return;
+    const supabase = createClient();
+    
+    const pc = new RTCPeerConnection({
+      iceServers: [{ urls: "stun:stun.cloudflare.com:3478" }, { urls: "stun:stun.l.google.com:19302" }]
+    });
+    hostPcRef.current = pc;
+
+    pc.onicecandidate = (event) => {
+      if (event.candidate) {
+        supabase.from("webrtc_signals").insert({
+          room_id: liveInputId, sender_id: "host", type: "candidate", payload: event.candidate
+        });
+      }
+    };
+
+    pc.ontrack = (event) => {
+      if (guestVideoRef.current) {
+        guestVideoRef.current.srcObject = event.streams[0];
+      }
+    };
+
+    const channel = supabase.channel(`webrtc_host_${liveInputId}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "webrtc_signals", filter: `room_id=eq.${liveInputId}` }, async (payload) => {
+        const signal = payload.new;
+        if (signal.sender_id === "host") return;
+
+        if (signal.type === "candidate") {
+          await pc.addIceCandidate(new RTCIceCandidate(signal.payload)).catch(console.error);
+        }
+      })
+      .subscribe();
+
+    return channel;
+  };
+
   const stopStream = async () => {
     if (!userId) return;
     setLoading(true);
@@ -252,6 +293,9 @@ export default function GoLivePage() {
 
   return (
     <main className="min-h-[100dvh] bg-[#0a0303] text-white p-4 lg:p-8 flex flex-col items-center overflow-y-auto">
+      
+      {/* Hidden Guest Video */}
+      <video ref={guestVideoRef} autoPlay playsInline className="hidden" />
       
       {/* JOIN REQUEST POPUP */}
       {joinRequest && (

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Eye, Share2, UserPlus } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
+import GuestCoStream from "./GuestCoStream";
 import { getCachedUser } from "@/lib/cache";
 import { motion, AnimatePresence } from "framer-motion";
 import { Stream } from "@cloudflare/stream-react";
@@ -12,7 +13,26 @@ type FloatingReaction = { id: number; emoji: string; x: number; scale: number; d
 export default function LivePlayer({ whepUrl, liveInputId }: { whepUrl?: string, liveInputId: string }) {
   const [viewers] = useState(Math.floor(Math.random() * 500) + 42);
   const [requestedToJoin, setRequestedToJoin] = useState(false);
+  const [isApprovedGuest, setIsApprovedGuest] = useState(false);
   const [reactions, setReactions] = useState<FloatingReaction[]>([]);
+
+  useEffect(() => {
+    if (!liveInputId) return;
+    const supabase = createClient();
+    let channel: any;
+
+    getCachedUser().then(user => {
+      if (!user) return;
+      channel = supabase.channel("approval_watch")
+        .on("postgres_changes", { event: "UPDATE", schema: "public", table: "stream_join_requests", filter: `viewer_user_id=eq.${user.id}` }, (payload) => {
+          if (payload.new.status === "approved" && payload.new.live_input_id === liveInputId) {
+            setIsApprovedGuest(true);
+          }
+        }).subscribe();
+    });
+
+    return () => { if (channel) supabase.removeChannel(channel); };
+  }, [liveInputId]);
 
   const requestToJoin = async () => {
     if (!liveInputId) return;
@@ -51,6 +71,7 @@ export default function LivePlayer({ whepUrl, liveInputId }: { whepUrl?: string,
 
   return (
     <div className="relative w-full aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 shadow-2xl group">
+      {isApprovedGuest && <GuestCoStream roomId={liveInputId} />}
       
       {/* THE OFFICIAL CLOUDFLARE STREAM PLAYER */}
       <div className="absolute inset-0 w-full h-full">
