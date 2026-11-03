@@ -17,7 +17,6 @@ export default function LivePlayer({ whepUrl }: { whepUrl: string }) {
   const retryCount = useRef(0);
   const lastFrameTime = useRef(performance.now());
 
-  // Fake viewer count for UI demo
   const [viewers] = useState(Math.floor(Math.random() * 500) + 42);
   const [hearts, setHearts] = useState<FloatingHeart[]>([]);
 
@@ -33,14 +32,18 @@ export default function LivePlayer({ whepUrl }: { whepUrl: string }) {
       const pc = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.cloudflare.com:3478" }] });
       pcRef.current = pc;
 
+      // **FIX: Add transceivers and force VP8 codec preference**
       const videoTransceiver = pc.addTransceiver("video", { direction: "recvonly" });
       pc.addTransceiver("audio", { direction: "recvonly" });
 
+      // Force VP8 codec to prevent codec mismatch issues with Cloudflare Stream
       if (RTCRtpReceiver.getCapabilities) {
         const caps = RTCRtpReceiver.getCapabilities("video");
         if (caps && caps.codecs) {
-          const preferred = caps.codecs.filter(c => c.mimeType === "video/VP8" || c.mimeType === "video/H264");
-          if (preferred.length > 0) videoTransceiver.setCodecPreferences(preferred);
+          const preferred = caps.codecs.filter(c => c.mimeType === "video/VP8");
+          if (preferred.length > 0) {
+            videoTransceiver.setCodecPreferences(preferred);
+          }
         }
       }
 
@@ -118,7 +121,6 @@ export default function LivePlayer({ whepUrl }: { whepUrl: string }) {
     <div className="relative w-full aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 shadow-2xl group">
       <video ref={videoRef} autoPlay playsInline controls={started} className="w-full h-full object-cover" />
       
-      {/* Top Gradient Overlay */}
       <div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/80 to-transparent pointer-events-none flex justify-between items-start z-10">
         <div className="bg-red-600 text-white text-[11px] font-bold px-3 py-1 rounded-md flex items-center gap-2 shadow-lg">
           <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" /> LIVE
@@ -128,7 +130,6 @@ export default function LivePlayer({ whepUrl }: { whepUrl: string }) {
         </div>
       </div>
 
-      {/* Floating Hearts */}
       <AnimatePresence>
         {hearts.map((h) => (
           <motion.div
@@ -144,7 +145,6 @@ export default function LivePlayer({ whepUrl }: { whepUrl: string }) {
         ))}
       </AnimatePresence>
 
-      {/* Bottom Controls (Only show when started) */}
       {started && (
         <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent flex justify-end items-center gap-3 z-20 pointer-events-none">
           <button onClick={() => navigator.share?.({ url: window.location.href })} className="pointer-events-auto p-3 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/10 text-white transition">
@@ -156,7 +156,6 @@ export default function LivePlayer({ whepUrl }: { whepUrl: string }) {
         </div>
       )}
 
-      {/* State Overlays */}
       {reconnecting && <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm pointer-events-none"><RefreshCw size={32} className="text-[#E53945] animate-spin mb-2" /><p className="text-white font-bold text-sm">Reconnecting...</p></div>}
       {!started && !reconnecting && (
         <div onClick={() => connectStream(false)} className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-black/60 cursor-pointer backdrop-blur-md transition-all">
