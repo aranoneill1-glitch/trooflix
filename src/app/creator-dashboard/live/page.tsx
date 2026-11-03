@@ -74,6 +74,10 @@ export default function GoLivePage() {
     const pc = new RTCPeerConnection({
       iceServers: [{ urls: "stun:stun.cloudflare.com:3478" }, { urls: "stun:stun.l.google.com:19302" }]
     });
+    
+    // Explicitly ask to receive video and audio
+    pc.addTransceiver("video", { direction: "recvonly" });
+    pc.addTransceiver("audio", { direction: "recvonly" });
 
     pc.onconnectionstatechange = () => {
       console.log("WebRTC Connection State:", pc.connectionState);

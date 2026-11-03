@@ -35,6 +35,16 @@ export default function GuestCoStream({ roomId }: { roomId: string }) {
         }
       };
 
+      const fetchMissedOffer = async () => {
+        const { data } = await supabase.from("webrtc_signals").select("*").eq("room_id", roomId).eq("type", "offer").order("created_at", { ascending: false }).limit(1);
+        if (data && data.length > 0) {
+          await pc.setRemoteDescription(new RTCSessionDescription(data[0].payload));
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+          await supabase.from("webrtc_signals").insert({ room_id: roomId, sender_id: user.id, type: "answer", payload: answer });
+        }
+      };
+
       const channel = supabase.channel(`webrtc_${roomId}`)
         .on("postgres_changes", { event: "INSERT", schema: "public", table: "webrtc_signals", filter: `room_id=eq.${roomId}` }, async (payload) => {
           const signal = payload.new;
@@ -51,7 +61,7 @@ export default function GuestCoStream({ roomId }: { roomId: string }) {
             await pc.addIceCandidate(new RTCIceCandidate(signal.payload)).catch(console.error);
           }
         })
-        .subscribe();
+        .subscribe((status) => { if (status === "SUBSCRIBED") fetchMissedOffer(); });
         
       cleanupChannel = channel;
     };
