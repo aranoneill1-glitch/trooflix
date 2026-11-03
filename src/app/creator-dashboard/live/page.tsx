@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getCachedUser } from "@/lib/cache";
 import { createClient } from "@/utils/supabase/client";
-import { Mic, MicOff, Video, VideoOff, Radio, StopCircle, Monitor, MonitorOff, UserCheck, PictureInPicture, ShoppingBag, X } from "lucide-react";
+import { Mic, MicOff, Video, VideoOff, Radio, StopCircle, Monitor, MonitorOff, UserCheck, PictureInPicture, ShoppingBag, X, Globe, Lock } from "lucide-react";
 import LiveChat from "@/components/LiveChat";
 
 export default function GoLivePage() {
@@ -275,6 +275,16 @@ export default function GoLivePage() {
       sy = (video.videoHeight - sh) / 2;
     }
     ctx.drawImage(video, sx, sy, sw, sh, x, y, w, h);
+  };
+
+  const toggleLiveVisibility = async () => {
+    const newVisibility = liveVisibility === "public" ? "subscribers" : "public";
+    setLiveVisibility(newVisibility);
+    
+    if (isLive && userId) {
+      const supabase = createClient();
+      await supabase.from("profiles").update({ live_visibility: newVisibility }).eq("user_id", userId);
+    }
   };
 
   const openProductMenu = async () => {
@@ -552,6 +562,11 @@ export default function GoLivePage() {
               <button onClick={openProductMenu} className="w-12 h-12 rounded-xl flex items-center justify-center transition bg-[#E53945]/20 hover:bg-[#E53945]/30 text-[#E53945]" title="Showcase Product">
                 <ShoppingBag size={20} />
               </button>
+              {isLive && (
+                <button onClick={toggleLiveVisibility} className={`w-12 h-12 rounded-xl flex items-center justify-center transition ${liveVisibility === "subscribers" ? "bg-[#D4AF37]/20 hover:bg-[#D4AF37]/30 text-[#D4AF37]" : "bg-white/5 hover:bg-white/10 text-white"}`} title="Toggle Privacy">
+                  {liveVisibility === "subscribers" ? <Lock size={20} /> : <Globe size={20} />}
+                </button>
+              )}
             </div>
 
             {!isLive ? (
