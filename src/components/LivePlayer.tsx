@@ -20,6 +20,43 @@ export default function LivePlayer({ whepUrl }: { whepUrl: string }) {
   const [viewers] = useState(Math.floor(Math.random() * 500) + 42);
   const [hearts, setHearts] = useState<FloatingHeart[]>([]);
 
+  // Function to strip H.264 from SDP
+  const mungeSdpOffer = (sdp: string): string => {
+    const lines = sdp.split("\r\n");
+    const h264Payloads = new Set<number>();
+
+    // Find H.264 payload types
+    for (const line of lines) {
+      const match = line.match(/^a=rtpmap:(\d+) H264\/90000/i);
+      if (match) {
+        h264Payloads.add(parseInt(match[1]));
+      }
+    }
+
+    if (h264Payloads.size === 0) return sdp;
+
+    const newLines: string[] = [];
+    for (const line of lines) {
+      // Skip H.264 codec lines
+      if (line.match(/^a=rtpmap:(\d+) H264\/90000/i)) continue;
+      if (line.match(/^a=fmtp:(\d+)/) && h264Payloads.has(parseInt(line.match(/^a=fmtp:(\d+)/)![1]))) continue;
+      if (line.match(/^a=rtcp-fb:(\d+)/) && h264Payloads.has(parseInt(line.match(/^a=rtcp-fb:(\d+)/)![1]))) continue;
+
+      // Remove H.264 payloads from m=video line
+      if (line.startsWith("m=video")) {
+        const parts = line.split(" ");
+        const header = parts.slice(0, 3);
+        const payloads = parts.slice(3).filter(pt => !h264Payloads.has(parseInt(pt)));
+        newLines.push([...header, ...payloads].join(" "));
+        continue;
+      }
+
+      newLines.push(line);
+    }
+
+    return newLines.join("\r\n");
+  };
+
   const connectStream = async (isRetry = false) => {
     if (!whepUrl || !videoRef.current) return;
     
@@ -29,7 +66,6 @@ export default function LivePlayer({ whepUrl }: { whepUrl: string }) {
     if (pcRef.current) { pcRef.current.close(); pcRef.current = null; }
 
     try {
-      // 1. Configure ICE servers, including Cloudflare's TURN for tough mobile networks
       const pc = new RTCPeerConnection({
         iceServers: [
           { urls: "stun:stun.cloudflare.com:3478" },
@@ -42,11 +78,10 @@ export default function LivePlayer({ whepUrl }: { whepUrl: string }) {
       });
       pcRef.current = pc;
 
-      // 2. Set up transceivers to receive video and audio
       const videoTransceiver = pc.addTransceiver("video", { direction: "recvonly" });
       pc.addTransceiver("audio", { direction: "recvonly" });
 
-      // 3. Force the video codec to VP8 to prevent iOS Safari from defaulting to an incompatible H.264 profile
+      // Force VP8 codec preference
       if (RTCRtpReceiver.getCapabilities) {
         const caps = RTCRtpReceiver.getCapabilities("video");
         if (caps && caps.codecs) {
@@ -59,10 +94,19 @@ export default function LivePlayer({ whepUrl }: { whepUrl: string }) {
       }
 
       const offer = await pc.createOffer();
-      await pc.setLocalDescription(offer);
+      
+      // Munge the SDP to strip H.264
+      const mungedSdp = mungeSdpOffer(offer.sdp || "");
+      const mungedOffer = { type: "offer" as const, sdp: mungedSdp };
+      
+      await pc.setLocalDescription(mungedOffer);
 
-      // 4. Send the offer to the WHEP endpoint
-      const res = await fetch(whepUrl, { method: "POST", headers: { "Content-Type": "application/sdp" }, body: offer.sdp });
+      const res = await fetch(whepUrl, { 
+        method: "POST", 
+        headers: { "Content-Type": "application/sdp" }, 
+        body: mungedSdp 
+      });
+
       if (!res.ok) {
         throw new Error(`Cloudflare rejected the connection: ${res.status} ${res.statusText}`);
       }
@@ -70,7 +114,6 @@ export default function LivePlayer({ whepUrl }: { whepUrl: string }) {
       const answerSdp = await res.text();
       await pc.setRemoteDescription({ type: "answer", sdp: answerSdp });
 
-      // 5. Handle the incoming media stream
       pc.ontrack = (event) => {
         console.log("Video track received from Cloudflare!");
         if (videoRef.current) {
@@ -112,7 +155,6 @@ export default function LivePlayer({ whepUrl }: { whepUrl: string }) {
     }
   };
 
-  // Handle stream freeze detection
   useEffect(() => {
     if (!started) return;
     const checkFreeze = setInterval(() => {
