@@ -108,34 +108,56 @@ export default function GoLivePage() {
     setLoading(true);
 
     try {
-      // 1. Fetch TURN
-      const turnRes = await fetch("/api/live/turn-credentials");
-      const turnData = await turnRes.json();
-      const iceServers = turnData.iceServers || [{ urls: "stun:stun.cloudflare.com:3478" }];
+      // 1. Fetch TURN safely
+      let iceServers = [{ urls: "stun:stun.cloudflare.com:3478" }];
+      try {
+        const turnRes = await fetch("/api/live/turn-credentials");
+        if (turnRes.ok) {
+          const turnData = await turnRes.json();
+          if (Array.isArray(turnData.iceServers)) {
+            iceServers = turnData.iceServers;
+          } else if (turnData.iceServers && typeof turnData.iceServers === "object") {
+            iceServers = [turnData.iceServers];
+          }
+        } else {
+           console.warn("TURN API returned status:", turnRes.status);
+        }
+      } catch (e) {
+        console.warn("TURN fetch failed, falling back to STUN", e);
+      }
 
       // 2. Get Live Input from Cloudflare
       const res = await fetch("/api/live/create", { method: "POST" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to create live input");
+      
       const { whipUrl, whepUrl, liveInputId } = data;
+      if (!whipUrl) throw new Error("No WHIP URL returned from server");
 
-      // 3. Setup PC
+      // 3. Setup PeerConnection
       const pc = new RTCPeerConnection({ iceServers, bundlePolicy: "max-bundle" });
       pcRef.current = pc;
 
+      // 4. Add tracks
       stream.getTracks().forEach((track) => pc.addTrack(track, stream));
 
-      // 4. Force VP8
-      const videoTransceiver = pc.getTransceivers().find(t => t.sender.track?.kind === "video");
-      if (videoTransceiver) {
-        const caps = RTCRtpSender.getCapabilities("video");
-        if (caps) {
-          const vp8 = caps.codecs.filter(c => c.mimeType === "video/VP8");
-          if (vp8.length > 0) videoTransceiver.setCodecPreferences(vp8);
+      // 5. Safely force VP8
+      const transceivers = pc.getTransceivers();
+      transceivers.forEach(t => {
+        if (t.sender && t.sender.track && t.sender.track.kind === "video") {
+          if (RTCRtpSender.getCapabilities) {
+            const caps = RTCRtpSender.getCapabilities("video");
+            if (caps && caps.codecs) {
+              const vp8 = caps.codecs.filter(c => c.mimeType === "video/VP8");
+              if (vp8.length > 0) {
+                try { t.setCodecPreferences(vp8); } catch (e) { console.warn("Codec pref failed", e); }
+              }
+            }
+          }
         }
-      }
+      });
 
-      // 5. Connect to WHIP
+      // 6. Connect to WHIP
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
 
@@ -145,10 +167,15 @@ export default function GoLivePage() {
         body: offer.sdp,
       });
 
-      if (!whipRes.ok) throw new Error("Failed to connect to Cloudflare");
-      await pc.setRemoteDescription({ type: "answer", sdp: await whipRes.text() });
+      if (!whipRes.ok) {
+        const errorText = await whipRes.text();
+        throw new Error(`WHIP failed: ${whipRes.status} - ${errorText}`);
+      }
 
-      // 6. Save to DB
+      const answerSdp = await whipRes.text();
+      await pc.setRemoteDescription({ type: "answer", sdp: answerSdp });
+
+      // 7. Save to Supabase
       const statusRes = await fetch("/api/live/status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -165,7 +192,8 @@ export default function GoLivePage() {
       setLiveInputId(liveInputId);
       setIsLive(true);
     } catch (err: any) {
-      alert("Failed to start stream: " + err.message);
+      console.error("Stream Start Error Details:", err);
+      alert("Failed to start stream: " + (err.message || "Unknown Error"));
     } finally {
       setLoading(false);
     }
