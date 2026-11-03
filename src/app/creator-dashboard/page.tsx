@@ -16,7 +16,6 @@ import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import HomeFeedCard from "@/components/HomeFeedCard";
 
-const MOCK_SUBSCRIBERS = 142;
 
 const InstagramIcon = ({ size = 16 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
@@ -49,6 +48,8 @@ function CreatorDashboardContent() {
   const [creatorVideos, setCreatorVideos] = useState<any[]>([]);
   const [merch, setMerch] = useState<any[]>([]);
   const [videosLoading, setVideosLoading] = useState(true);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [subscriberCount, setSubscriberCount] = useState(0);
 
   useEffect(() => {
     getCachedUser().then(async (u) => {
@@ -57,6 +58,12 @@ function CreatorDashboardContent() {
         
         const { data: prof } = await supabase.from("profiles").select("*").eq("user_id", u.id).single();
         if (prof) setProfile(prof);
+
+        const targetCreatorId = prof?.creator_id || u.id;
+        const { count: followers } = await supabase.from("follows").select("*", { count: "exact", head: true }).eq("following_id", u.id);
+        const { count: subs } = await supabase.from("creator_subscriptions").select("*", { count: "exact", head: true }).eq("creator_id", targetCreatorId);
+        setFollowerCount(followers || 0);
+        setSubscriberCount(subs || 0);
         setLoading(false);
 
         fetch("/api/videos")
@@ -187,6 +194,12 @@ function CreatorDashboardContent() {
     return true;
   });
 
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
+    if (num >= 1000) return (num / 1000).toFixed(1) + "K";
+    return num.toString();
+  };
+
   const bgStyle = profile?.backdrop_url
     ? profile.backdrop_url.startsWith("http")
       ? { backgroundImage: `url(${profile.backdrop_url})`, backgroundSize: "cover", backgroundPosition: "center" }
@@ -240,8 +253,8 @@ function CreatorDashboardContent() {
                   </div>
 
                   <div className="flex-1 flex justify-around md:justify-start md:gap-8 px-2">
-                    <div className="text-center md:text-left"><span className="font-bold text-white block text-xl">1.2K</span> <span className="text-white/50 text-[11px] uppercase tracking-wider">Followers</span></div>
-                    <div className="text-center md:text-left"><span className="font-bold text-white block text-xl">{MOCK_SUBSCRIBERS}</span> <span className="text-white/50 text-[11px] uppercase tracking-wider">Subscribers</span></div>
+                    <div className="text-center md:text-left"><span className="font-bold text-white block text-xl">{formatNumber(followerCount)}</span> <span className="text-white/50 text-[11px] uppercase tracking-wider">Followers</span></div>
+                    <div className="text-center md:text-left"><span className="font-bold text-white block text-xl">{formatNumber(subscriberCount)}</span> <span className="text-white/50 text-[11px] uppercase tracking-wider">Subscribers</span></div>
                     <div className="text-center md:text-left"><span className="font-bold text-white block text-xl">{creatorVideos.length}</span> <span className="text-white/50 text-[11px] uppercase tracking-wider">Posts</span></div>
                   </div>
                 </div>
