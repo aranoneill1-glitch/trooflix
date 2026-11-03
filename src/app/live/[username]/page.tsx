@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Radio } from "lucide-react";
+import { ArrowLeft, Radio, Lock } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
+import { getCachedUser } from "@/lib/cache";
 import LivePlayer from "@/components/LivePlayer";
 import LiveChat from "@/components/LiveChat";
 
@@ -15,22 +16,59 @@ export default function WatchLivePage() {
   
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [hasAccess, setHasAccess] = useState(false);
+  const [isHost, setIsHost] = useState(false);
 
   useEffect(() => {
     async function checkLiveStatus() {
       const supabase = createClient();
-      const { data, error } = await supabase
+      const { data: profileData, error } = await supabase
         .from("profiles")
-        .select("display_name, avatar_url, is_live, live_input_id")
+        .select("user_id, creator_id, display_name, avatar_url, is_live, live_input_id, live_visibility")
         .eq("username", username)
         .single();
 
-      // Only check for is_live and live_input_id now
-      if (!error && data && data.is_live && data.live_input_id) {
-        setProfile(data);
-      } else {
+      if (error || !profileData || !profileData.is_live || !profileData.live_input_id) {
         router.push(`/profile/${username}`); 
+        return;
       }
+
+      setProfile(profileData);
+
+      const user = await getCachedUser();
+      
+      // If they are the host, they always have access
+      if (user && user.id === profileData.user_id) {
+        setIsHost(true);
+        setHasAccess(true);
+        setLoading(false);
+        return;
+      }
+
+      // If it's public, everyone has access
+      if (profileData.live_visibility === "public" || !profileData.live_visibility) {
+        setHasAccess(true);
+        setLoading(false);
+        return;
+      }
+
+      // If it's subscribers-only, check if the user is subscribed
+      if (profileData.live_visibility === "subscribers") {
+        if (!user) {
+          setHasAccess(false);
+          setLoading(false);
+          return;
+        }
+
+        const targetCreatorId = profileData.creator_id || profileData.user_id;
+        const { count } = await supabase.from("creator_subscriptions")
+          .select("*", { count: "exact", head: true })
+          .eq("subscriber_user_id", user.id)
+          .eq("creator_id", targetCreatorId);
+
+        setHasAccess((count || 0) > 0);
+      }
+
       setLoading(false);
     }
     checkLiveStatus();
@@ -51,7 +89,7 @@ export default function WatchLivePage() {
         {/* LEFT COLUMN: Video & Info */}
         <div className="flex-1 lg:w-3/4 flex flex-col gap-5">
           
-          {/* Top Header: Avatar, LIVE Badge, Back Button */}
+          {/* Top Header */}
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-3">
               {profile?.avatar_url ? (
@@ -67,6 +105,11 @@ export default function WatchLivePage() {
                   <div className="bg-red-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-sm flex items-center gap-1 shadow-sm">
                     <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" /> LIVE
                   </div>
+                  {profile?.live_visibility === "subscribers" && (
+                     <div className="bg-[#D4AF37] text-black text-[9px] font-bold px-1.5 py-0.5 rounded-sm flex items-center gap-1 shadow-sm">
+                     <Lock size={10} /> SUBS ONLY
+                   </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -76,16 +119,32 @@ export default function WatchLivePage() {
             </Link>
           </div>
 
-          {/* Video Player */}
-          {profile?.live_input_id && (
+          {/* Video Player OR Paywall */}
+          {hasAccess ? (
             <div className="w-full rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] ring-1 ring-white/10">
               <LivePlayer liveInputId={profile.live_input_id} />
+            </div>
+          ) : (
+            <div className="w-full aspect-video rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] ring-1 ring-white/10 bg-[#1c1c1e] flex flex-col items-center justify-center p-6 text-center border border-[#D4AF37]/30 relative">
+               {profile?.avatar_url && (
+                 <div className="absolute inset-0 opacity-20 bg-cover bg-center blur-xl" style={{ backgroundImage: `url(${profile.avatar_url})` }} />
+               )}
+               <div className="relative z-10 flex flex-col items-center">
+                 <div className="w-20 h-20 bg-[#D4AF37]/10 rounded-full flex items-center justify-center mb-4 border border-[#D4AF37]/30 shadow-[0_0_30px_rgba(212,175,55,0.2)]">
+                    <Lock size={40} className="text-[#D4AF37]" />
+                 </div>
+                 <h2 className="text-2xl font-black text-white mb-2">Subscribers Only Stream</h2>
+                 <p className="text-white/60 mb-6 max-w-sm">This creator has restricted this live broadcast to their subscribers. Subscribe to join the stream and chat.</p>
+                 <Link href={`/profile/${username}`} className="bg-[#D4AF37] hover:bg-[#c19b2e] text-black font-bold px-8 py-3 rounded-xl transition shadow-lg">
+                   Subscribe to Watch
+                 </Link>
+               </div>
             </div>
           )}
         </div>
 
-        {/* RIGHT COLUMN: Chat */}
-        {profile?.live_input_id && (
+        {/* RIGHT COLUMN: Chat (Only show if access is granted) */}
+        {profile?.live_input_id && hasAccess && (
           <div className="w-full lg:w-1/4 flex flex-col h-[500px] lg:h-[calc(100vh-140px)] lg:sticky lg:top-24">
             <LiveChat liveInputId={profile.live_input_id} className="h-full shadow-2xl" />
           </div>

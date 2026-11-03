@@ -30,6 +30,7 @@ export default function GoLivePage() {
   const [liveInputId, setLiveInputId] = useState<string | null>(null);
   const [joinRequest, setJoinRequest] = useState<any>(null);
   const [guestConnected, setGuestConnected] = useState(false);
+  const [liveVisibility, setLiveVisibility] = useState<"public" | "subscribers">("public");
   const [showProductMenu, setShowProductMenu] = useState(false);
   const [myProducts, setMyProducts] = useState<any[]>([]);
   const [connectedGuestName, setConnectedGuestName] = useState("");
@@ -437,7 +438,7 @@ export default function GoLivePage() {
       await fetch("/api/live/status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, is_live: true, live_playback_url: whepUrl, live_input_id: liveInputId }),
+        body: JSON.stringify({ userId, is_live: true, live_playback_url: whepUrl, live_input_id: liveInputId, live_visibility: liveVisibility }),
       });
 
       setLiveInputId(liveInputId);
@@ -456,7 +457,7 @@ export default function GoLivePage() {
       await fetch("/api/live/status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, is_live: false, live_playback_url: null, live_input_id: null }),
+        body: JSON.stringify({ userId, is_live: false, live_playback_url: null, live_input_id: null, live_visibility: "public" }),
       });
 
       // Delete the Cloudflare Live Input to keep the account clean
@@ -554,9 +555,21 @@ export default function GoLivePage() {
             </div>
 
             {!isLive ? (
-              <button onClick={startStream} disabled={loading} className="bg-[#E53945] hover:bg-[#d12e39] text-white font-bold px-8 py-3 rounded-xl transition flex items-center gap-2">
-                <Radio size={18} /> {loading ? "Connecting..." : "Go Live"}
-              </button>
+              <div className="flex items-center gap-4">
+                {/* Visibility Toggle */}
+                <div className="flex bg-[#0a0303] border border-white/10 rounded-xl p-1">
+                  <button onClick={() => setLiveVisibility("public")} className={`px-4 py-2 text-sm font-bold rounded-lg transition ${liveVisibility === "public" ? "bg-white/10 text-white" : "text-white/50 hover:text-white"}`}>
+                    Everyone
+                  </button>
+                  <button onClick={() => setLiveVisibility("subscribers")} className={`px-4 py-2 text-sm font-bold rounded-lg transition ${liveVisibility === "subscribers" ? "bg-[#D4AF37]/20 text-[#D4AF37]" : "text-white/50 hover:text-white"}`}>
+                    Subscribers Only
+                  </button>
+                </div>
+
+                <button onClick={startStream} disabled={loading} className="bg-[#E53945] hover:bg-[#d12e39] text-white font-bold px-8 py-3 rounded-xl transition flex items-center gap-2">
+                  <Radio size={18} /> {loading ? "Connecting..." : "Go Live"}
+                </button>
+              </div>
             ) : (
               <button onClick={stopStream} disabled={loading} className="bg-white/10 hover:bg-white/20 text-red-500 font-bold px-8 py-3 rounded-xl transition flex items-center gap-2">
                 <StopCircle size={18} /> End Broadcast
