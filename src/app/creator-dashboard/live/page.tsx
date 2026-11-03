@@ -294,8 +294,13 @@ export default function GoLivePage() {
   return (
     <main className="min-h-[100dvh] bg-[#0a0303] text-white p-4 lg:p-8 flex flex-col items-center overflow-y-auto">
       
-      {/* Hidden Guest Video */}
-      <video ref={guestVideoRef} autoPlay playsInline className="hidden" />
+      {/* FLOATING GUEST VIDEO PREVIEW */}
+      <div className="fixed top-24 right-6 w-64 aspect-video bg-black rounded-xl overflow-hidden shadow-2xl border-2 border-green-500 z-[9999] animate-in slide-in-from-right-8">
+        <video ref={guestVideoRef} autoPlay playsInline className="w-full h-full object-cover" />
+        <div className="absolute top-2 left-2 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-sm uppercase tracking-wider">
+          Guest Connected
+        </div>
+      </div>
       
       {/* JOIN REQUEST POPUP */}
       {joinRequest && (
