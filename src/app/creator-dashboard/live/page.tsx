@@ -75,6 +75,10 @@ export default function GoLivePage() {
       iceServers: [{ urls: "stun:stun.cloudflare.com:3478" }, { urls: "stun:stun.l.google.com:19302" }]
     });
 
+    pc.onconnectionstatechange = () => {
+      console.log("WebRTC Connection State:", pc.connectionState);
+    };
+    
     pc.onicecandidate = (event) => {
       if (event.candidate) {
         supabase.from("webrtc_signals").insert({
@@ -249,7 +253,13 @@ export default function GoLivePage() {
       )}
 
       {/* Hidden guest video tag that feeds into the canvas */}
-      <video ref={guestVideoRef} autoPlay playsInline style={{ position: "absolute", opacity: 0, pointerEvents: "none", width: "1px", height: "1px", top: "-9999px", left: "-9999px" }} muted />
+      {/* DEBUG: Floating guest preview to verify WebRTC connection */}
+      <div className="fixed top-24 right-6 w-64 aspect-video bg-black rounded-xl overflow-hidden shadow-2xl border-2 border-green-500 z-[9999]">
+        <video ref={guestVideoRef} autoPlay playsInline className="w-full h-full object-cover" muted />
+        <div className="absolute top-2 left-2 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-sm uppercase tracking-wider">
+          Guest Debug
+        </div>
+      </div>
 
       <div className="w-full max-w-7xl mx-auto flex flex-col gap-6">
         <h1 className="text-2xl lg:text-3xl font-black text-center flex items-center justify-center gap-2 mb-2">
