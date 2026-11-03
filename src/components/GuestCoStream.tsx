@@ -19,7 +19,10 @@ export default function GuestCoStream({ roomId }: { roomId: string }) {
       const user = await getCachedUser();
       if (!user) return;
 
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: true, 
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } 
+      });
       streamRef.current = stream;
 
       const pc = new RTCPeerConnection({
