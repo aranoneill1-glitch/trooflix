@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getCachedUser } from "@/lib/cache";
 import { createClient } from "@/utils/supabase/client";
-import { Mic, MicOff, Video, VideoOff, Radio, StopCircle, Monitor, MonitorOff } from "lucide-react";
+import { Mic, MicOff, Video, VideoOff, Radio, StopCircle, Monitor, MonitorOff, UserCheck } from "lucide-react";
 import LiveChat from "@/components/LiveChat";
 
 export default function GoLivePage() {
@@ -17,11 +17,13 @@ export default function GoLivePage() {
   const [isLive, setIsLive] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
   
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [liveInputId, setLiveInputId] = useState<string | null>(null);
   const [joinRequest, setJoinRequest] = useState<any>(null);
+  const [guestConnected, setGuestConnected] = useState(false);
 
   useEffect(() => {
     async function setupCamera() {
@@ -67,6 +69,64 @@ export default function GoLivePage() {
     return () => { supabase.removeChannel(channel); };
   }, [isLive, liveInputId]);
 
+  const toggleMute = () => {
+    if (stream) {
+      const audioTrack = stream.getAudioTracks()[0];
+      if (audioTrack) {
+        audioTrack.enabled = !audioTrack.enabled;
+        setIsMuted(!audioTrack.enabled);
+      }
+    }
+  };
+
+  const toggleVideo = () => {
+    if (stream) {
+      const videoTrack = stream.getVideoTracks()[0];
+      if (videoTrack) {
+        videoTrack.enabled = !videoTrack.enabled;
+        setIsVideoOff(!videoTrack.enabled);
+      }
+    }
+  };
+
+  const toggleScreenShare = async () => {
+    if (!stream) return;
+    try {
+      if (!isScreenSharing) {
+        const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+        const screenTrack = screenStream.getVideoTracks()[0];
+        const audioTrack = stream.getAudioTracks()[0];
+        const newStream = new MediaStream([screenTrack, audioTrack]);
+        
+        setStream(newStream);
+        if (videoRef.current) videoRef.current.srcObject = newStream;
+
+        if (pcRef.current) {
+          const sender = pcRef.current.getSenders().find(s => s.track?.kind === "video");
+          if (sender) await sender.replaceTrack(screenTrack);
+        }
+        setIsScreenSharing(true);
+        screenTrack.onended = () => toggleScreenShare();
+      } else {
+        const camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+        const camTrack = camStream.getVideoTracks()[0];
+        const audioTrack = stream.getAudioTracks()[0];
+        const newStream = new MediaStream([camTrack, audioTrack]);
+        
+        setStream(newStream);
+        if (videoRef.current) videoRef.current.srcObject = newStream;
+
+        if (pcRef.current) {
+          const sender = pcRef.current.getSenders().find(s => s.track?.kind === "video");
+          if (sender) await sender.replaceTrack(camTrack);
+        }
+        setIsScreenSharing(false);
+      }
+    } catch (err: any) {
+      alert("Screen sharing failed: " + err.message);
+    }
+  };
+
   const connectGuest = async (guestUserId: string) => {
     if (liveInputId === null) return;
     const supabase = createClient();
@@ -82,8 +142,8 @@ export default function GoLivePage() {
     let remoteSet = false;
 
     pc.onconnectionstatechange = () => {
-      console.log("HOST Connection State:", pc.connectionState);
-      if (pc.connectionState === "failed") alert("Guest WebRTC failed. Network blocked.");
+      if (pc.connectionState === "connected") setGuestConnected(true);
+      if (pc.connectionState === "failed") alert("Guest connection failed.");
     };
 
     pc.onicecandidate = (event) => {
@@ -95,7 +155,6 @@ export default function GoLivePage() {
     };
 
     pc.ontrack = (event) => {
-      console.log("HOST: Received Guest Track");
       if (guestVideoRef.current) {
         guestVideoRef.current.srcObject = event.streams[0];
         guestVideoRef.current.play().catch(e => console.error("Play failed", e));
@@ -143,18 +202,22 @@ export default function GoLivePage() {
     setLoading(true);
 
     try {
-      // 1. Setup Canvas IMMEDIATELY
+      // 1. Initialize Audio Context directly on button click to bypass Safari mute
+      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+      const audioCtx = new AudioContext();
+      if (audioCtx.state === "suspended") await audioCtx.resume();
+
+      // 2. Setup Canvas
       const canvas = document.createElement("canvas");
       canvas.width = 1280;
       canvas.height = 720;
       const ctx = canvas.getContext("2d")!;
 
-      // Loop to draw video
       const draw = () => {
         ctx.fillStyle = "#000";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Draw Host
+        // Draw Host (Left)
         if (videoRef.current && videoRef.current.readyState >= 2) {
           ctx.save();
           ctx.translate(640, 0);
@@ -163,7 +226,7 @@ export default function GoLivePage() {
           ctx.restore();
         }
 
-        // Draw Guest (if connected)
+        // Draw Guest (Right)
         if (guestVideoRef.current && guestVideoRef.current.readyState >= 2 && guestVideoRef.current.srcObject) {
           ctx.drawImage(guestVideoRef.current, 640, 0, 640, 720);
         }
@@ -173,22 +236,28 @@ export default function GoLivePage() {
 
       const canvasStream = canvas.captureStream(30);
 
-      // 2. Mix Audio
-      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      if (audioCtx.state === "suspended") await audioCtx.resume();
+      // 3. Mix Audio
       const dest = audioCtx.createMediaStreamDestination();
       
+      // Add Host Mic
       stream.getAudioTracks().forEach(track => {
         audioCtx.createMediaStreamSource(new MediaStream([track])).connect(dest);
       });
 
-      // Combine Canvas + Audio
+      // Add Guest Mic (if already connected, otherwise we'll need to restart stream)
+      if (guestVideoRef.current && guestVideoRef.current.srcObject) {
+        const guestStream = guestVideoRef.current.srcObject as MediaStream;
+        guestStream.getAudioTracks().forEach(track => {
+          audioCtx.createMediaStreamSource(new MediaStream([track])).connect(dest);
+        });
+      }
+
       const finalStream = new MediaStream([
         ...canvasStream.getVideoTracks(),
         ...dest.stream.getAudioTracks()
       ]);
 
-      // 3. Connect to Cloudflare
+      // 4. Connect to Cloudflare
       let iceServers = [{ urls: "stun:stun.cloudflare.com:3478" }];
       try {
         const turnRes = await fetch("/api/live/turn-credentials");
@@ -254,7 +323,7 @@ export default function GoLivePage() {
   };
 
   return (
-    <main className="min-h-[100dvh] bg-[#0a0303] text-white p-4 lg:p-8 flex flex-col items-center overflow-y-auto">
+    <main className="min-h-[100dvh] bg-[#0a0303] text-white flex flex-col overflow-hidden">
       
       {joinRequest && (
         <div className="fixed top-10 left-1/2 -translate-x-1/2 z-[9999] bg-[#1c1c1e] border border-white/20 p-6 rounded-2xl shadow-2xl animate-in slide-in-from-top-4 fade-in">
@@ -266,45 +335,73 @@ export default function GoLivePage() {
         </div>
       )}
 
-      {/* Hidden guest video tag that feeds into the canvas */}
-      {/* DEBUG: Floating guest preview to verify WebRTC connection */}
-      <div className="fixed top-24 right-6 w-64 aspect-video bg-black rounded-xl overflow-hidden shadow-2xl border-2 border-green-500 z-[9999]">
-        <video ref={guestVideoRef} autoPlay playsInline className="w-full h-full object-cover" muted />
-        <div className="absolute top-2 left-2 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-sm uppercase tracking-wider">
-          Guest Debug
-        </div>
-      </div>
+      {/* Hidden video tag that feeds into the canvas */}
+      <video ref={guestVideoRef} autoPlay playsInline className="hidden" muted />
 
-      <div className="w-full max-w-7xl mx-auto flex flex-col gap-6">
-        <h1 className="text-2xl lg:text-3xl font-black text-center flex items-center justify-center gap-2 mb-2">
-          <Radio className={isLive ? "text-red-500 animate-pulse" : "text-white/50"} size={24} />
-          {isLive ? "You are LIVE" : "Setup Broadcast"}
-        </h1>
-
-        <div className={isLive ? "grid grid-cols-1 lg:grid-cols-3 gap-6 w-full" : "w-full max-w-3xl mx-auto flex flex-col items-center"}>
-          <div className={isLive ? "lg:col-span-2 flex flex-col gap-4" : "w-full flex flex-col gap-4"}>
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col lg:flex-row w-full max-w-[1600px] mx-auto overflow-hidden p-4 gap-6">
+        
+        {/* Left Side: Video & Controls */}
+        <div className="flex-1 flex flex-col gap-4">
+          
+          {/* Video Container (Zoom Style) */}
+          <div className="relative flex-1 bg-black rounded-3xl overflow-hidden border border-white/10 shadow-2xl flex items-center justify-center">
+            <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-contain" />
             
-            <div className="relative w-full aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
-              <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-contain bg-black" />
-            </div>
-
-            {!isLive ? (
-              <button onClick={startStream} disabled={loading} className="w-full max-w-md mx-auto mt-2 bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold py-4 rounded-xl text-lg transition">
-                {loading ? "Connecting..." : "Go Live Now"}
-              </button>
-            ) : (
-              <button onClick={stopStream} disabled={loading} className="w-full max-w-md mx-auto mt-2 bg-white/10 hover:bg-white/20 border border-white/20 text-red-500 font-bold py-4 rounded-xl text-lg transition flex items-center justify-center gap-2">
-                <StopCircle size={20} /> End Broadcast
-              </button>
+            {/* Live Badge */}
+            {isLive && (
+              <div className="absolute top-4 left-4 bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-2 shadow-lg">
+                <div className="w-2 h-2 bg-white rounded-full animate-pulse" /> LIVE
+              </div>
+            )}
+            
+            {/* Guest Status Badge */}
+            {guestConnected && (
+              <div className="absolute top-4 right-4 bg-green-500/20 border border-green-500/50 text-green-400 text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-2 shadow-lg backdrop-blur-md">
+                <UserCheck size={14} /> Guest Connected
+              </div>
             )}
           </div>
 
-          {isLive && liveInputId && (
-            <div className="lg:col-span-1 h-[500px] lg:h-[calc(100vh-200px)]">
-              <LiveChat liveInputId={liveInputId} className="h-full" />
+          {/* Control Bar (Below video, no overlay) */}
+          <div className="bg-[#1c1c1e] border border-white/10 p-3 rounded-2xl flex justify-between items-center shadow-xl w-full max-w-2xl mx-auto">
+            <div className="flex gap-2">
+              <button onClick={toggleMute} className={`w-12 h-12 rounded-xl flex items-center justify-center transition ${isMuted ? "bg-red-500/20 text-red-500" : "bg-white/5 hover:bg-white/10 text-white"}`}>
+                {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
+              </button>
+              <button onClick={toggleVideo} className={`w-12 h-12 rounded-xl flex items-center justify-center transition ${isVideoOff ? "bg-red-500/20 text-red-500" : "bg-white/5 hover:bg-white/10 text-white"}`}>
+                {isVideoOff ? <VideoOff size={20} /> : <Video size={20} />}
+              </button>
+              <button onClick={toggleScreenShare} className={`w-12 h-12 rounded-xl flex items-center justify-center transition ${isScreenSharing ? "bg-blue-500/20 text-blue-500" : "bg-white/5 hover:bg-white/10 text-white"}`}>
+                {isScreenSharing ? <MonitorOff size={20} /> : <Monitor size={20} />}
+              </button>
+            </div>
+
+            {!isLive ? (
+              <button onClick={startStream} disabled={loading} className="bg-[#E53945] hover:bg-[#d12e39] text-white font-bold px-8 py-3 rounded-xl transition flex items-center gap-2">
+                <Radio size={18} /> {loading ? "Connecting..." : "Go Live"}
+              </button>
+            ) : (
+              <button onClick={stopStream} disabled={loading} className="bg-white/10 hover:bg-white/20 text-red-500 font-bold px-8 py-3 rounded-xl transition flex items-center gap-2">
+                <StopCircle size={18} /> End Broadcast
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Right Side: Chat & Info */}
+        <div className="w-full lg:w-[380px] flex flex-col gap-4">
+          {isLive && liveInputId ? (
+             <LiveChat liveInputId={liveInputId} className="flex-1 min-h-[400px]" />
+          ) : (
+            <div className="flex-1 bg-[#1c1c1e] border border-white/10 rounded-3xl flex flex-col items-center justify-center p-8 text-center">
+              <Radio size={48} className="text-white/20 mb-4" />
+              <h2 className="text-xl font-bold mb-2">Ready to broadcast</h2>
+              <p className="text-white/50 text-sm">When you go live, your chat and viewer interactions will appear here.</p>
             </div>
           )}
         </div>
+
       </div>
     </main>
   );
