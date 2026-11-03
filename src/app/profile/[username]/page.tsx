@@ -18,7 +18,6 @@ const XIcon = ({ size = 16 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
 );
 
-const MOCK_SUBSCRIBERS = 142;
 
 export default function PublicProfilePage() {
   const params = useParams();
@@ -35,6 +34,8 @@ export default function PublicProfilePage() {
   const [activeVideoId, setActiveVideoId] = useState<number | null>(null);
   const [commentSheetVideoId, setCommentSheetVideoId] = useState<number | null>(null);
   const [likedVideos, setLikedVideos] = useState<Record<number, boolean>>({});
+  const [followerCount, setFollowerCount] = useState(0);
+  const [subscriberCount, setSubscriberCount] = useState(0);
 
   useEffect(() => {
     async function loadProfileAndVideos() {
@@ -43,6 +44,12 @@ export default function PublicProfilePage() {
       
       if (error || !profileData) { setLoading(false); return; }
       setProfile(profileData);
+
+      const targetCreatorId = profileData.creator_id || profileData.user_id;
+      const { count: followers } = await supabase.from("follows").select("*", { count: "exact", head: true }).eq("following_id", profileData.user_id);
+      const { count: subs } = await supabase.from("creator_subscriptions").select("*", { count: "exact", head: true }).eq("creator_id", targetCreatorId);
+      setFollowerCount(followers || 0);
+      setSubscriberCount(subs || 0);
 
       let creatorId = null;
       try {
@@ -80,6 +87,12 @@ export default function PublicProfilePage() {
     }
     if (username) loadProfileAndVideos();
   }, [username]);
+
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
+    if (num >= 1000) return (num / 1000).toFixed(1) + "K";
+    return num.toString();
+  };
 
   if (loading) return <div className="min-h-screen bg-[#09090B] flex items-center justify-center"><div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" /></div>;
   if (!profile) return <main className="min-h-screen bg-[#09090B] text-white flex flex-col items-center justify-center px-4"><h1 className="text-2xl font-bold mb-4">User not found</h1><Link href="/" className="bg-[#E53945] text-white font-bold px-8 py-3 rounded-full">Go Home</Link></main>;
@@ -142,8 +155,8 @@ export default function PublicProfilePage() {
 
                 {/* STATS */}
                 <div className="flex-1 flex justify-around md:justify-start md:gap-8 px-2">
-                  <div className="text-center md:text-left"><span className="font-bold text-white block text-xl">1.2K</span> <span className="text-white/50 text-[11px] uppercase tracking-wider">Followers</span></div>
-                  <div className="text-center md:text-left"><span className="font-bold text-white block text-xl">{MOCK_SUBSCRIBERS}</span> <span className="text-white/50 text-[11px] uppercase tracking-wider">Subscribers</span></div>
+                  <div className="text-center md:text-left"><span className="font-bold text-white block text-xl">{formatNumber(followerCount)}</span> <span className="text-white/50 text-[11px] uppercase tracking-wider">Followers</span></div>
+                  <div className="text-center md:text-left"><span className="font-bold text-white block text-xl">{formatNumber(subscriberCount)}</span> <span className="text-white/50 text-[11px] uppercase tracking-wider">Subscribers</span></div>
                   <div className="text-center md:text-left"><span className="font-bold text-white block text-xl">{videos.length}</span> <span className="text-white/50 text-[11px] uppercase tracking-wider">Posts</span></div>
                 </div>
               </div>

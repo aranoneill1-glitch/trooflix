@@ -151,7 +151,7 @@ export default function LiveChat({ liveInputId, className = "h-[400px] md:h-[500
 
       {/* Input Area */}
       {user ? (
-        <form onSubmit={sendMessage} className="p-3 bg-black/40 border-t border-white/10 flex gap-2 items-center shrink-0 z-50">
+        <form onSubmit={sendMessage} className="p-3 bg-black/40 border-t border-white/10 flex gap-2 items-center shrink-0 z-50 w-full overflow-hidden">
           <button type="button" onClick={() => setShowEmojis(!showEmojis)} className="p-2 text-white/50 hover:text-white transition-colors">
             <Smile size={20} />
           </button>
@@ -160,7 +160,7 @@ export default function LiveChat({ liveInputId, className = "h-[400px] md:h-[500
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Say something..."
-            className="flex-1 bg-white/5 border border-white/10 rounded-full px-4 py-2.5 text-sm text-white outline-none focus:border-[#E53945]/50 transition placeholder:text-white/30"
+            className="flex-1 min-w-0 bg-white/5 border border-white/10 rounded-full px-4 py-2.5 text-sm text-white outline-none focus:border-[#E53945]/50 transition placeholder:text-white/30"
           />
           <button
             type="submit"
