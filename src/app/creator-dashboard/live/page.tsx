@@ -378,15 +378,7 @@ export default function GoLivePage() {
   return (
     <main className="min-h-[100dvh] bg-[#0a0303] text-white flex flex-col overflow-hidden">
       
-      {joinRequest && (
-        <div className="fixed top-10 left-1/2 -translate-x-1/2 z-[9999] bg-[#1c1c1e] border border-white/20 p-6 rounded-2xl shadow-2xl animate-in slide-in-from-top-4 fade-in">
-          <p className="text-lg font-bold mb-4"><span className="text-[#E53945]">{joinRequest.viewer_name}</span> wants to join!</p>
-          <div className="flex gap-3">
-            <button onClick={() => handleJoinResponse("approved")} className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-2 rounded-lg transition">Approve</button>
-            <button onClick={() => handleJoinResponse("denied")} className="flex-1 bg-red-500/20 hover:bg-red-500/30 text-red-500 font-bold py-2 rounded-lg transition">Deny</button>
-          </div>
-        </div>
-      )}
+
 
       {/* Hidden video tag that feeds into the canvas */}
       <video ref={guestVideoRef} autoPlay playsInline style={{ position: "absolute", width: "1px", height: "1px", opacity: 0.01, pointerEvents: "none", top: "-9999px", left: "-9999px" }} muted />
@@ -407,7 +399,7 @@ export default function GoLivePage() {
               muted 
               playsInline 
               className={`w-full h-full object-contain ${isLive ? "opacity-0 pointer-events-none absolute" : ""}`} 
-              style={{ transform: "scaleX(-1)" }} 
+              style={{ transform: "none" }} 
             />
             
             {/* Live Canvas Preview */}

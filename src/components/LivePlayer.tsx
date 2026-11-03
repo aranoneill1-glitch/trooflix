@@ -68,6 +68,7 @@ export default function LivePlayer({ whepUrl, liveInputId }: { whepUrl?: string,
   const leaveCamera = async () => {
     setIsCameraOn(false);
     setIsApprovedGuest(false);
+    setRequestedToJoin(false); // Allow them to request again
     if (requestId) {
       const supabase = createClient();
       await supabase.from("stream_join_requests").update({ status: "left" }).eq("id", requestId);
