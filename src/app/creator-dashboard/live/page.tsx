@@ -334,6 +334,7 @@ export default function GoLivePage() {
     setLoading(true);
 
     try {
+      // 1. Initialize Audio Context
       const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
       const audioCtx = new AudioContext();
       if (audioCtx.state === "suspended") await audioCtx.resume();
@@ -344,6 +345,7 @@ export default function GoLivePage() {
         audioCtx.createMediaStreamSource(new MediaStream([track])).connect(destRef.current!);
       });
 
+      // 2. Setup Canvas
       const isMobile = window.innerWidth < 768;
       const canvas = document.createElement("canvas");
       canvas.width = isMobile ? 720 : 1280;
@@ -382,6 +384,26 @@ export default function GoLivePage() {
         ...destRef.current.stream.getAudioTracks()
       ]);
 
+      // 3. Call API to create Live Input
+      const res = await fetch("/api/live/create", { 
+        method: "POST", 
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }) 
+      });
+      
+      const data = await res.json().catch(() => ({}));
+      
+      if (!res.ok) {
+        throw new Error(data.error || `Server responded with ${res.status}`);
+      }
+
+      const { whipUrl, whepUrl, liveInputId } = data;
+      
+      if (!whipUrl || typeof whipUrl !== "string" || !whipUrl.startsWith("http")) {
+        throw new Error("Invalid WHIP URL received from API: " + JSON.stringify(data));
+      }
+
+      // 4. Connect to Cloudflare via WHIP
       let iceServers = [{ urls: "stun:stun.cloudflare.com:3478" }];
       try {
         const turnRes = await fetch("/api/live/turn-credentials");
@@ -391,21 +413,13 @@ export default function GoLivePage() {
         }
       } catch (e) {}
 
-      const res = await fetch("/api/live/create", { 
-        method: "POST", 
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId }) 
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error("Failed to create live input");
-
       const pc = new RTCPeerConnection({ iceServers, bundlePolicy: "max-bundle" });
       finalStream.getTracks().forEach((track) => pc.addTrack(track, finalStream));
 
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
 
-      const whipRes = await fetch(data.whipUrl, {
+      const whipRes = await fetch(whipUrl, {
         method: "POST",
         headers: { "Content-Type": "application/sdp" },
         body: offer.sdp,
@@ -414,16 +428,17 @@ export default function GoLivePage() {
       if (!whipRes.ok) throw new Error("WHIP connection failed");
       await pc.setRemoteDescription({ type: "answer", sdp: await whipRes.text() });
 
+      // 5. Update Database
       await fetch("/api/live/status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, is_live: true, live_playback_url: data.whepUrl, live_input_id: data.liveInputId }),
+        body: JSON.stringify({ userId, is_live: true, live_playback_url: whepUrl, live_input_id: liveInputId }),
       });
 
-      setLiveInputId(data.liveInputId);
+      setLiveInputId(liveInputId);
       setIsLive(true);
     } catch (err: any) {
-      alert("Failed to start: " + err.message);
+      alert("Failed to start: " + (err.message || "Unknown Error"));
     } finally {
       setLoading(false);
     }
