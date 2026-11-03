@@ -75,26 +75,30 @@ export default function GoLivePage() {
       iceServers: [{ urls: "stun:stun.cloudflare.com:3478" }, { urls: "stun:stun.l.google.com:19302" }]
     });
     
-    // Explicitly ask to receive video and audio
     pc.addTransceiver("video", { direction: "recvonly" });
     pc.addTransceiver("audio", { direction: "recvonly" });
 
+    let iceQueue: RTCIceCandidateInit[] = [];
+    let remoteSet = false;
+
     pc.onconnectionstatechange = () => {
-      console.log("WebRTC Connection State:", pc.connectionState);
+      console.log("HOST Connection State:", pc.connectionState);
+      if (pc.connectionState === "failed") alert("Guest WebRTC failed. Network blocked.");
     };
-    
+
     pc.onicecandidate = (event) => {
       if (event.candidate) {
         supabase.from("webrtc_signals").insert({
           room_id: liveInputId, sender_id: "host", type: "candidate", payload: event.candidate
-        });
+        }).then();
       }
     };
 
     pc.ontrack = (event) => {
+      console.log("HOST: Received Guest Track");
       if (guestVideoRef.current) {
         guestVideoRef.current.srcObject = event.streams[0];
-        guestVideoRef.current.play().catch(e => console.warn("Guest video play blocked", e));
+        guestVideoRef.current.play().catch(e => console.error("Play failed", e));
       }
     };
 
@@ -109,10 +113,16 @@ export default function GoLivePage() {
         const signal = payload.new;
         if (signal.sender_id === "host") return;
 
-        if (signal.type === "candidate") {
-          await pc.addIceCandidate(new RTCIceCandidate(signal.payload)).catch(console.error);
-        } else if (signal.type === "answer") {
-          await pc.setRemoteDescription(new RTCSessionDescription(signal.payload)).catch(console.error);
+        if (signal.type === "answer") {
+          await pc.setRemoteDescription(new RTCSessionDescription(signal.payload));
+          remoteSet = true;
+          while (iceQueue.length > 0) {
+            const candidate = iceQueue.shift();
+            if (candidate) await pc.addIceCandidate(new RTCIceCandidate(candidate)).catch(console.error);
+          }
+        } else if (signal.type === "candidate") {
+          if (remoteSet) await pc.addIceCandidate(new RTCIceCandidate(signal.payload)).catch(console.error);
+          else iceQueue.push(signal.payload);
         }
       })
       .subscribe();
