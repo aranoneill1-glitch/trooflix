@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getCachedUser } from "@/lib/cache";
 import { createClient } from "@/utils/supabase/client";
-import { Mic, MicOff, Video, VideoOff, Radio, StopCircle, Monitor, MonitorOff, UserCheck, PictureInPicture, ShoppingBag, X, Globe, Lock } from "lucide-react";
+import { Mic, MicOff, Video, VideoOff, Radio, StopCircle, Monitor, MonitorOff, UserCheck, PictureInPicture, ShoppingBag, X, Globe, Lock, Loader2 } from "lucide-react";
 import LiveChat from "@/components/LiveChat";
 
 export default function GoLivePage() {
@@ -32,6 +32,7 @@ export default function GoLivePage() {
   const [guestConnected, setGuestConnected] = useState(false);
   const [connectedGuestName, setConnectedGuestName] = useState("");
   const [showProductMenu, setShowProductMenu] = useState(false);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(false);
   const [myProducts, setMyProducts] = useState<any[]>([]);
   const [liveVisibility, setLiveVisibility] = useState<"public" | "subscribers">("public");
 
@@ -181,6 +182,8 @@ export default function GoLivePage() {
     setShowProductMenu(true);
     if (myProducts.length > 0) return;
     
+    setIsLoadingProducts(true);
+    
     try {
       const user = await getCachedUser();
       if (!user) return;
@@ -198,6 +201,8 @@ export default function GoLivePage() {
       }
     } catch (e) {
       console.error("Failed to fetch products", e);
+    } finally {
+      setIsLoadingProducts(false);
     }
   };
 
@@ -475,7 +480,12 @@ export default function GoLivePage() {
               <button onClick={() => setShowProductMenu(false)} className="p-2 bg-white/10 rounded-full hover:bg-white/20 transition text-white"><X size={18} /></button>
             </div>
             <div className="p-4 overflow-y-auto grid grid-cols-2 md:grid-cols-3 gap-4">
-              {myProducts.length === 0 ? (
+              {isLoadingProducts ? (
+                <div className="col-span-full flex flex-col items-center justify-center py-16 text-white/50">
+                  <Loader2 className="w-8 h-8 animate-spin text-[#E53945] mb-4" />
+                  <p className="font-bold">Loading your products...</p>
+                </div>
+              ) : myProducts.length === 0 ? (
                 <div className="col-span-full text-center py-10 text-white/50">No products found in your shop.</div>
               ) : (
                 myProducts.map(p => (
