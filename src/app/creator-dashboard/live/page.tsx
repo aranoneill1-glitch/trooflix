@@ -10,15 +10,13 @@ import LiveChat from "@/components/LiveChat";
 export default function GoLivePage() {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement>(null);
-  const pcRef = useRef<RTCPeerConnection | null>(null);
   const guestVideoRef = useRef<HTMLVideoElement>(null);
-  const hostPcRef = useRef<RTCPeerConnection | null>(null);
+  const pcRef = useRef<RTCPeerConnection | null>(null);
   
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [isLive, setIsLive] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
-  const [isScreenSharing, setIsScreenSharing] = useState(false);
   
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -35,7 +33,7 @@ export default function GoLivePage() {
         setStream(mediaStream);
         if (videoRef.current) videoRef.current.srcObject = mediaStream;
       } catch (err) {
-        alert("Please allow camera and microphone access to go live.");
+        alert("Please allow camera and microphone access.");
       }
     }
     setupCamera();
@@ -69,64 +67,6 @@ export default function GoLivePage() {
     return () => { supabase.removeChannel(channel); };
   }, [isLive, liveInputId]);
 
-  const toggleMute = () => {
-    if (stream) {
-      const audioTrack = stream.getAudioTracks()[0];
-      if (audioTrack) {
-        audioTrack.enabled = !audioTrack.enabled;
-        setIsMuted(!audioTrack.enabled);
-      }
-    }
-  };
-
-  const toggleVideo = () => {
-    if (stream) {
-      const videoTrack = stream.getVideoTracks()[0];
-      if (videoTrack) {
-        videoTrack.enabled = !videoTrack.enabled;
-        setIsVideoOff(!videoTrack.enabled);
-      }
-    }
-  };
-
-  const toggleScreenShare = async () => {
-    if (!stream) return;
-    try {
-      if (!isScreenSharing) {
-        const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
-        const screenTrack = screenStream.getVideoTracks()[0];
-        const audioTrack = stream.getAudioTracks()[0];
-        const newStream = new MediaStream([screenTrack, audioTrack]);
-        
-        setStream(newStream);
-        if (videoRef.current) videoRef.current.srcObject = newStream;
-
-        if (pcRef.current) {
-          const sender = pcRef.current.getSenders().find(s => s.track?.kind === "video");
-          if (sender) await sender.replaceTrack(screenTrack);
-        }
-        setIsScreenSharing(true);
-        screenTrack.onended = () => toggleScreenShare();
-      } else {
-        const camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
-        const camTrack = camStream.getVideoTracks()[0];
-        const audioTrack = stream.getAudioTracks()[0];
-        const newStream = new MediaStream([camTrack, audioTrack]);
-        
-        setStream(newStream);
-        if (videoRef.current) videoRef.current.srcObject = newStream;
-
-        if (pcRef.current) {
-          const sender = pcRef.current.getSenders().find(s => s.track?.kind === "video");
-          if (sender) await sender.replaceTrack(camTrack);
-        }
-        setIsScreenSharing(false);
-      }
-    } catch (err: any) {
-      alert("Screen sharing failed or was cancelled: " + err.message);
-    }
-  };
-
   const connectGuest = async (guestUserId: string) => {
     if (liveInputId === null) return;
     const supabase = createClient();
@@ -134,7 +74,6 @@ export default function GoLivePage() {
     const pc = new RTCPeerConnection({
       iceServers: [{ urls: "stun:stun.cloudflare.com:3478" }, { urls: "stun:stun.l.google.com:19302" }]
     });
-    hostPcRef.current = pc;
 
     pc.onicecandidate = (event) => {
       if (event.candidate) {
@@ -150,7 +89,6 @@ export default function GoLivePage() {
       }
     };
 
-    // Host creates the WebRTC Offer
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
     await supabase.from("webrtc_signals").insert({
@@ -177,73 +115,8 @@ export default function GoLivePage() {
     if (joinRequest === null) return;
     const supabase = createClient();
     await supabase.from("stream_join_requests").update({ status }).eq("id", joinRequest.id);
-    
-    if (status === "approved") {
-      await connectGuest(joinRequest.viewer_user_id);
-      alert(`Approved ${joinRequest.viewer_name}. Waiting for their camera...`);
-    }
+    if (status === "approved") await connectGuest(joinRequest.viewer_user_id);
     setJoinRequest(null);
-  };
-
-  const createCompositeStream = async (hostStream: MediaStream) => {
-    const canvas = document.createElement("canvas");
-    canvas.width = 1280;
-    canvas.height = 720;
-    const ctx = canvas.getContext("2d");
-    if (ctx === null) return hostStream;
-
-    const hostVideo = videoRef.current;
-    const guestVideo = guestVideoRef.current;
-
-    // If guest video isn't loaded yet, just return host stream
-    if (guestVideo === null || guestVideo.srcObject === null) {
-      return hostStream;
-    }
-
-    const draw = () => {
-      if (ctx === null) return;
-      ctx.fillStyle = "#000";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      if (hostVideo && hostVideo.readyState >= 2) {
-        ctx.save();
-        ctx.translate(640, 0);
-        ctx.scale(-1, 1);
-        ctx.drawImage(hostVideo, 0, 0, 640, 720);
-        ctx.restore();
-      }
-
-      if (guestVideo && guestVideo.readyState >= 2) {
-        ctx.drawImage(guestVideo, 640, 0, 640, 720);
-      }
-
-      requestAnimationFrame(draw);
-    };
-    draw();
-
-    const canvasStream = canvas.captureStream(30);
-
-    // Mix Audio (Host + Guest)
-    const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const dest = audioCtx.createMediaStreamDestination();
-
-    hostStream.getAudioTracks().forEach(track => {
-      const source = audioCtx.createMediaStreamSource(new MediaStream([track]));
-      source.connect(dest);
-    });
-
-    if (guestVideo && guestVideo.srcObject) {
-      const guestStream = guestVideo.srcObject as MediaStream;
-      guestStream.getAudioTracks().forEach(track => {
-        const source = audioCtx.createMediaStreamSource(new MediaStream([track]));
-        source.connect(dest);
-      });
-    }
-
-    return new MediaStream([
-      ...canvasStream.getVideoTracks(),
-      ...dest.stream.getAudioTracks()
-    ]);
   };
 
   const startStream = async () => {
@@ -251,85 +124,92 @@ export default function GoLivePage() {
     setLoading(true);
 
     try {
+      // 1. Setup Canvas IMMEDIATELY
+      const canvas = document.createElement("canvas");
+      canvas.width = 1280;
+      canvas.height = 720;
+      const ctx = canvas.getContext("2d")!;
+
+      // Loop to draw video
+      const draw = () => {
+        ctx.fillStyle = "#000";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Draw Host
+        if (videoRef.current && videoRef.current.readyState >= 2) {
+          ctx.save();
+          ctx.translate(640, 0);
+          ctx.scale(-1, 1);
+          ctx.drawImage(videoRef.current, 0, 0, 640, 720);
+          ctx.restore();
+        }
+
+        // Draw Guest (if connected)
+        if (guestVideoRef.current && guestVideoRef.current.readyState >= 2 && guestVideoRef.current.srcObject) {
+          ctx.drawImage(guestVideoRef.current, 640, 0, 640, 720);
+        }
+        requestAnimationFrame(draw);
+      };
+      draw();
+
+      const canvasStream = canvas.captureStream(30);
+
+      // 2. Mix Audio
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      if (audioCtx.state === "suspended") await audioCtx.resume();
+      const dest = audioCtx.createMediaStreamDestination();
+      
+      stream.getAudioTracks().forEach(track => {
+        audioCtx.createMediaStreamSource(new MediaStream([track])).connect(dest);
+      });
+
+      // Combine Canvas + Audio
+      const finalStream = new MediaStream([
+        ...canvasStream.getVideoTracks(),
+        ...dest.stream.getAudioTracks()
+      ]);
+
+      // 3. Connect to Cloudflare
       let iceServers = [{ urls: "stun:stun.cloudflare.com:3478" }];
       try {
         const turnRes = await fetch("/api/live/turn-credentials");
         if (turnRes.ok) {
           const turnData = await turnRes.json();
-          if (Array.isArray(turnData.iceServers) && turnData.iceServers.length > 0) {
-            iceServers = turnData.iceServers;
-          }
+          if (Array.isArray(turnData.iceServers)) iceServers = turnData.iceServers;
         }
-      } catch (e) { console.warn("TURN fetch failed"); }
+      } catch (e) {}
 
       const res = await fetch("/api/live/create", { method: "POST" });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to create live input");
-      
-      const { whipUrl, whepUrl, liveInputId } = data;
-      if (whipUrl === undefined) throw new Error("No WHIP URL returned from server");
+      if (!res.ok) throw new Error("Failed to create live input");
 
       const pc = new RTCPeerConnection({ iceServers, bundlePolicy: "max-bundle" });
       pcRef.current = pc;
 
-      // Generate the split-screen stream
-      const streamToSend = await createCompositeStream(stream);
-      streamToSend.getTracks().forEach((track) => pc.addTrack(track, streamToSend));
-
-      const transceivers = pc.getTransceivers();
-      transceivers.forEach(t => {
-        if (t.sender && t.sender.track && t.sender.track.kind === "video") {
-          if (RTCRtpSender.getCapabilities) {
-            const caps = RTCRtpSender.getCapabilities("video");
-            if (caps && caps.codecs) {
-              const vp8 = caps.codecs.filter(c => c.mimeType === "video/VP8");
-              if (vp8.length > 0) {
-                try { t.setCodecPreferences(vp8); } catch (e) { console.warn("Codec pref failed", e); }
-              }
-            }
-          }
-        }
-      });
+      finalStream.getTracks().forEach((track) => pc.addTrack(track, finalStream));
 
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
 
-      const whipRes = await fetch(whipUrl, {
+      const whipRes = await fetch(data.whipUrl, {
         method: "POST",
         headers: { "Content-Type": "application/sdp" },
         body: offer.sdp,
       });
 
-      if (!whipRes.ok) {
-        const errorText = await whipRes.text();
-        throw new Error(`WHIP failed: ${whipRes.status} - ${errorText}`);
-      }
+      if (!whipRes.ok) throw new Error("WHIP connection failed");
+      await pc.setRemoteDescription({ type: "answer", sdp: await whipRes.text() });
 
-      const answerSdp = await whipRes.text();
-      if (!answerSdp || !answerSdp.includes("v=0")) {
-        throw new Error("Received invalid SDP from Cloudflare");
-      }
-
-      await pc.setRemoteDescription({ type: "answer", sdp: answerSdp });
-
-      const statusRes = await fetch("/api/live/status", {
+      await fetch("/api/live/status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId,
-          is_live: true,
-          live_playback_url: whepUrl,
-          live_input_id: liveInputId,
-        }),
+        body: JSON.stringify({ userId, is_live: true, live_playback_url: data.whepUrl, live_input_id: data.liveInputId }),
       });
 
-      if (!statusRes.ok) throw new Error("Failed to update database");
-
-      setLiveInputId(liveInputId);
+      setLiveInputId(data.liveInputId);
       setIsLive(true);
     } catch (err: any) {
-      console.error("Stream Start Error Details:", err);
-      alert("Failed to start stream: " + (err.message || "Unknown Error"));
+      alert("Failed to start: " + err.message);
     } finally {
       setLoading(false);
     }
@@ -338,22 +218,14 @@ export default function GoLivePage() {
   const stopStream = async () => {
     if (userId === null) return;
     setLoading(true);
-
     try {
       await fetch("/api/live/status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId,
-          is_live: false,
-          live_playback_url: null,
-          live_input_id: null,
-        }),
+        body: JSON.stringify({ userId, is_live: false, live_playback_url: null, live_input_id: null }),
       });
-
-      if (stream) stream.getTracks().forEach((track) => track.stop());
+      if (stream) stream.getTracks().forEach((t) => t.stop());
       setIsLive(false);
-      setLiveInputId(null);
       router.push("/creator-dashboard");
     } catch (err: any) {
       alert("Failed to stop stream.");
@@ -365,55 +237,45 @@ export default function GoLivePage() {
   return (
     <main className="min-h-[100dvh] bg-[#0a0303] text-white p-4 lg:p-8 flex flex-col items-center overflow-y-auto">
       
-      {/* JOIN REQUEST POPUP */}
       {joinRequest && (
         <div className="fixed top-10 left-1/2 -translate-x-1/2 z-[9999] bg-[#1c1c1e] border border-white/20 p-6 rounded-2xl shadow-2xl animate-in slide-in-from-top-4 fade-in">
-          <p className="text-lg font-bold mb-4"><span className="text-[#E53945]">{joinRequest.viewer_name}</span> wants to join the stream!</p>
+          <p className="text-lg font-bold mb-4"><span className="text-[#E53945]">{joinRequest.viewer_name}</span> wants to join!</p>
           <div className="flex gap-3">
             <button onClick={() => handleJoinResponse("approved")} className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-2 rounded-lg transition">Approve</button>
-            <button onClick={() => handleJoinResponse("denied")} className="flex-1 bg-red-500/20 hover:bg-red-500/30 text-red-500 font-bold py-2 rounded-lg transition border border-red-500/20">Deny</button>
+            <button onClick={() => handleJoinResponse("denied")} className="flex-1 bg-red-500/20 hover:bg-red-500/30 text-red-500 font-bold py-2 rounded-lg transition">Deny</button>
           </div>
         </div>
       )}
 
-      {/* FLOATING GUEST VIDEO PREVIEW */}
-      <div className="fixed top-24 right-6 w-64 aspect-video bg-black rounded-xl overflow-hidden shadow-2xl border-2 border-green-500 z-[9999] animate-in slide-in-from-right-8">
-        <video ref={guestVideoRef} autoPlay playsInline className="w-full h-full object-cover" muted />
-        <div className="absolute top-2 left-2 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-sm uppercase tracking-wider">
-          Guest Connected
-        </div>
-      </div>
+      {/* Hidden guest video tag that feeds into the canvas */}
+      <video ref={guestVideoRef} autoPlay playsInline className="hidden" muted />
 
       <div className="w-full max-w-7xl mx-auto flex flex-col gap-6">
-        
         <h1 className="text-2xl lg:text-3xl font-black text-center flex items-center justify-center gap-2 mb-2">
           <Radio className={isLive ? "text-red-500 animate-pulse" : "text-white/50"} size={24} />
           {isLive ? "You are LIVE" : "Setup Broadcast"}
         </h1>
 
         <div className={isLive ? "grid grid-cols-1 lg:grid-cols-3 gap-6 w-full" : "w-full max-w-3xl mx-auto flex flex-col items-center"}>
-          
           <div className={isLive ? "lg:col-span-2 flex flex-col gap-4" : "w-full flex flex-col gap-4"}>
-            <div className="relative w-full aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 shadow-2xl ring-1 ring-white/5">
-              <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-contain bg-black" style={{ transform: (!isScreenSharing && !isVideoOff) ? "scaleX(-1)" : "none" }} />
-              {isVideoOff && <div className="absolute inset-0 flex items-center justify-center bg-black"><VideoOff size={64} className="text-white/20" /></div>}
-            </div>
-
-            <div className="flex justify-center gap-4">
-              <button onClick={toggleMute} className={`p-4 rounded-full transition ${isMuted ? "bg-red-500/20 text-red-500" : "bg-white/10 hover:bg-white/20"}`}>{isMuted ? <MicOff size={20} /> : <Mic size={20} />}</button>
-              <button onClick={toggleVideo} className={`p-4 rounded-full transition ${isVideoOff ? "bg-red-500/20 text-red-500" : "bg-white/10 hover:bg-white/20"}`}>{isVideoOff ? <VideoOff size={20} /> : <Video size={20} />}</button>
-              <button onClick={toggleScreenShare} className={`p-4 rounded-full transition ${isScreenSharing ? "bg-blue-500/20 text-blue-500" : "bg-white/10 hover:bg-white/20"}`}>{isScreenSharing ? <MonitorOff size={20} /> : <Monitor size={20} />}</button>
+            
+            <div className="relative w-full aspect-video bg-black rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
+              <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-contain bg-black" />
             </div>
 
             {!isLive ? (
-              <button onClick={startStream} disabled={loading} className="w-full max-w-md mx-auto mt-2 bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold py-4 rounded-xl text-lg transition shadow-[0_0_20px_rgba(229,57,69,0.3)]">{loading ? "Connecting to Trooflix..." : "Go Live Now"}</button>
+              <button onClick={startStream} disabled={loading} className="w-full max-w-md mx-auto mt-2 bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold py-4 rounded-xl text-lg transition">
+                {loading ? "Connecting..." : "Go Live Now"}
+              </button>
             ) : (
-              <button onClick={stopStream} disabled={loading} className="w-full max-w-md mx-auto mt-2 bg-white/10 hover:bg-white/20 border border-white/20 text-red-500 font-bold py-4 rounded-xl text-lg transition flex items-center justify-center gap-2"><StopCircle size={20} /> End Broadcast</button>
+              <button onClick={stopStream} disabled={loading} className="w-full max-w-md mx-auto mt-2 bg-white/10 hover:bg-white/20 border border-white/20 text-red-500 font-bold py-4 rounded-xl text-lg transition flex items-center justify-center gap-2">
+                <StopCircle size={20} /> End Broadcast
+              </button>
             )}
           </div>
 
           {isLive && liveInputId && (
-            <div className="lg:col-span-1 h-[500px] lg:h-[calc(100vh-200px)] animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="lg:col-span-1 h-[500px] lg:h-[calc(100vh-200px)]">
               <LiveChat liveInputId={liveInputId} className="h-full" />
             </div>
           )}
