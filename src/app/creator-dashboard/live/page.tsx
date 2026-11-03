@@ -14,10 +14,10 @@ export default function GoLivePage() {
   const guestAudioRef = useRef<HTMLAudioElement>(null);
   const canvasPreviewRef = useRef<HTMLVideoElement>(null);
   const canvasStreamRef = useRef<MediaStream | null>(null);
-  const hostPcRef = useRef<RTCPeerConnection | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const destRef = useRef<MediaStreamAudioDestinationNode | null>(null);
   const guestConnectedRef = useRef(false);
+  const hostPcRef = useRef<RTCPeerConnection | null>(null);
   
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [isLive, setIsLive] = useState(false);
@@ -30,10 +30,10 @@ export default function GoLivePage() {
   const [liveInputId, setLiveInputId] = useState<string | null>(null);
   const [joinRequest, setJoinRequest] = useState<any>(null);
   const [guestConnected, setGuestConnected] = useState(false);
-  const [liveVisibility, setLiveVisibility] = useState<"public" | "subscribers">("public");
+  const [connectedGuestName, setConnectedGuestName] = useState("");
   const [showProductMenu, setShowProductMenu] = useState(false);
   const [myProducts, setMyProducts] = useState<any[]>([]);
-  const [connectedGuestName, setConnectedGuestName] = useState("");
+  const [liveVisibility, setLiveVisibility] = useState<"public" | "subscribers">("public");
 
   useEffect(() => {
     guestConnectedRef.current = guestConnected;
@@ -44,11 +44,7 @@ export default function GoLivePage() {
       try {
         const mediaStream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: "user" },
-          audio: { 
-            echoCancellation: true, 
-            noiseSuppression: true, 
-            autoGainControl: true 
-          },
+          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
         });
         setStream(mediaStream);
         if (videoRef.current) videoRef.current.srcObject = mediaStream;
@@ -71,7 +67,6 @@ export default function GoLivePage() {
     if (isLive === false || liveInputId === null) return;
     const supabase = createClient();
 
-    // FALLBACK: Fetch any pending requests when the stream starts
     const fetchPending = async () => {
       const { data } = await supabase.from("stream_join_requests")
         .select("*")
@@ -84,15 +79,12 @@ export default function GoLivePage() {
     };
     fetchPending();
 
-    // REALTIME: Listen for all events without a filter (more reliable)
     const channel = supabase
       .channel(`join_requests_${liveInputId}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "stream_join_requests" },
         (payload) => {
-          console.log("Realtime Join Request Event:", payload);
-          
           if (payload.new && (payload.new as any).live_input_id === liveInputId) {
             if (payload.eventType === "INSERT" && (payload.new as any).status === "pending") {
               setJoinRequest(payload.new);
@@ -103,9 +95,7 @@ export default function GoLivePage() {
           }
         }
       )
-      .subscribe((status) => {
-        console.log("Join Request Subscription Status:", status);
-      });
+      .subscribe();
 
     return () => { supabase.removeChannel(channel); };
   }, [isLive, liveInputId]);
@@ -163,16 +153,81 @@ export default function GoLivePage() {
     }
   };
 
+  const togglePiP = async () => {
+    try {
+      if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture();
+      } else {
+        const videoToPop = isLive ? canvasPreviewRef.current : videoRef.current;
+        if (videoToPop) await videoToPop.requestPictureInPicture();
+      }
+    } catch (err) {
+      console.error("PiP failed:", err);
+      alert("Picture-in-Picture is not supported on this browser/device.");
+    }
+  };
+
+  const toggleLiveVisibility = async () => {
+    const newVisibility = liveVisibility === "public" ? "subscribers" : "public";
+    setLiveVisibility(newVisibility);
+    
+    if (isLive && userId) {
+      const supabase = createClient();
+      await supabase.from("profiles").update({ live_visibility: newVisibility }).eq("user_id", userId);
+    }
+  };
+
+  const openProductMenu = async () => {
+    setShowProductMenu(true);
+    if (myProducts.length > 0) return;
+    
+    try {
+      const user = await getCachedUser();
+      if (!user) return;
+
+      const cr = await fetch(`/api/me/creator?user_id=${user.id}`).then(r => r.json());
+      const cid = cr.creator?.id;
+
+      const res = await fetch("/api/products/global").then(r => r.json());
+      
+      if (res.products) {
+        const myItems = res.products.filter((p: any) => 
+          String(p.creator_id) === String(cid) || String(p.creator_id) === String(user.id)
+        );
+        setMyProducts(myItems);
+      }
+    } catch (e) {
+      console.error("Failed to fetch products", e);
+    }
+  };
+
+  const sendProductToChat = async (product: any) => {
+    if (!liveInputId) return;
+    const supabase = createClient();
+    await supabase.from("live_chat_messages").insert({
+      live_input_id: liveInputId,
+      user_id: userId,
+      display_name: "Trooflix Shop",
+      message: `Showcased a product: ${product.name}`,
+      type: "product",
+      metadata: {
+        id: product.id,
+        name: product.name,
+        price_cents: product.price_cents,
+        image_url: product.image_url || product.image
+      }
+    });
+    setShowProductMenu(false);
+  };
+
   const connectGuest = async (guestUserId: string) => {
     if (liveInputId === null) return;
     const supabase = createClient();
     
-    // Close the previous connection if it exists
     if (hostPcRef.current) {
       hostPcRef.current.close();
     }
     
-    // Wipe out old signaling messages so they don't confuse the new connection
     await supabase.from("webrtc_signals").delete().eq("room_id", liveInputId);
 
     const pc = new RTCPeerConnection({
@@ -209,12 +264,10 @@ export default function GoLivePage() {
       }
       
       if (event.track.kind === "audio") {
-        // 1. Play the audio out loud for the Host
         if (guestAudioRef.current) {
           guestAudioRef.current.srcObject = new MediaStream([event.track]);
           guestAudioRef.current.play().catch(e => console.error("Host audio play failed", e));
         }
-        // 2. Mix the audio into the outgoing broadcast for the viewers
         if (audioCtxRef.current && destRef.current) {
           const source = audioCtxRef.current.createMediaStreamSource(new MediaStream([event.track]));
           source.connect(destRef.current);
@@ -277,85 +330,11 @@ export default function GoLivePage() {
     ctx.drawImage(video, sx, sy, sw, sh, x, y, w, h);
   };
 
-  const toggleLiveVisibility = async () => {
-    const newVisibility = liveVisibility === "public" ? "subscribers" : "public";
-    setLiveVisibility(newVisibility);
-    
-    if (isLive && userId) {
-      const supabase = createClient();
-      await supabase.from("profiles").update({ live_visibility: newVisibility }).eq("user_id", userId);
-    }
-  };
-
-  const openProductMenu = async () => {
-    setShowProductMenu(true);
-    if (myProducts.length > 0) return;
-    
-    try {
-      const user = await getCachedUser();
-      if (!user) return;
-
-      // 1. Get the creator ID (just like the main dashboard does)
-      const cr = await fetch(`/api/me/creator?user_id=${user.id}`).then(r => r.json());
-      const cid = cr.creator?.id;
-
-      // 2. Fetch the global products
-      const res = await fetch("/api/products/global").then(r => r.json());
-      
-      if (res.products) {
-        // 3. Filter exactly like the Creator Dashboard does
-        const myItems = res.products.filter((p: any) => 
-          String(p.creator_id) === String(cid) || String(p.creator_id) === String(user.id)
-        );
-        setMyProducts(myItems);
-      }
-    } catch (e) {
-      console.error("Failed to fetch products", e);
-    }
-  };
-
-  const sendProductToChat = async (product: any) => {
-    if (!liveInputId) return;
-    const supabase = createClient();
-    await supabase.from("live_chat_messages").insert({
-      live_input_id: liveInputId,
-      user_id: userId,
-      display_name: "Trooflix Shop",
-      message: "Showcased a product: " + product.name,
-      type: "product",
-      metadata: {
-        id: product.id,
-        name: product.name,
-        price_cents: product.price_cents,
-        image_url: product.image_url || product.image
-      }
-    });
-    setShowProductMenu(false);
-  };
-
-  const togglePiP = async () => {
-    try {
-      if (document.pictureInPictureElement) {
-        await document.exitPictureInPicture();
-      } else {
-        // If live, pop out the canvas; if not, pop out the raw camera
-        const videoToPop = isLive ? canvasPreviewRef.current : videoRef.current;
-        if (videoToPop) {
-          await videoToPop.requestPictureInPicture();
-        }
-      }
-    } catch (err) {
-      console.error("PiP failed:", err);
-      alert("Picture-in-Picture is not supported on this browser/device.");
-    }
-  };
-
   const startStream = async () => {
     if (stream === null || userId === null) return;
     setLoading(true);
 
     try {
-      // 1. Initialize Audio Context
       const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
       const audioCtx = new AudioContext();
       if (audioCtx.state === "suspended") await audioCtx.resume();
@@ -366,7 +345,6 @@ export default function GoLivePage() {
         audioCtx.createMediaStreamSource(new MediaStream([track])).connect(destRef.current!);
       });
 
-      // 2. Setup Canvas
       const isMobile = window.innerWidth < 768;
       const canvas = document.createElement("canvas");
       canvas.width = isMobile ? 720 : 1280;
@@ -405,21 +383,18 @@ export default function GoLivePage() {
         ...destRef.current.stream.getAudioTracks()
       ]);
 
-      // 3. Call API to create Live Input
-      const res = await fetch("/api/live/create", { method: "POST" });
-      const data = await res.json();
+      const res = await fetch("/api/live/create", { 
+        method: "POST", 
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }) 
+      });
       
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to create live input");
-      }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Failed to create live input");
 
       const { whipUrl, whepUrl, liveInputId } = data;
-      
-      if (!whipUrl || typeof whipUrl !== "string" || !whipUrl.startsWith("http")) {
-        throw new Error("Invalid WHIP URL received from API: " + JSON.stringify(data));
-      }
+      if (!whipUrl) throw new Error("Invalid WHIP URL received from API: " + JSON.stringify(data));
 
-      // 4. Connect to Cloudflare via WHIP
       let iceServers = [{ urls: "stun:stun.cloudflare.com:3478" }];
       try {
         const turnRes = await fetch("/api/live/turn-credentials");
@@ -444,7 +419,6 @@ export default function GoLivePage() {
       if (!whipRes.ok) throw new Error("WHIP connection failed");
       await pc.setRemoteDescription({ type: "answer", sdp: await whipRes.text() });
 
-      // 5. Update Database
       await fetch("/api/live/status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -454,7 +428,7 @@ export default function GoLivePage() {
       setLiveInputId(liveInputId);
       setIsLive(true);
     } catch (err: any) {
-      alert("Failed to start: " + (err.message || "Unknown Error"));
+      alert("Failed to start: " + err.message);
     } finally {
       setLoading(false);
     }
@@ -470,7 +444,6 @@ export default function GoLivePage() {
         body: JSON.stringify({ userId, is_live: false, live_playback_url: null, live_input_id: null, live_visibility: "public" }),
       });
 
-      // Delete the Cloudflare Live Input to keep the account clean
       await fetch("/api/live/delete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -493,7 +466,7 @@ export default function GoLivePage() {
       <video ref={guestVideoRef} autoPlay playsInline style={{ position: "absolute", width: "1px", height: "1px", opacity: 0.01, pointerEvents: "none", top: "-9999px", left: "-9999px" }} muted />
       <audio ref={guestAudioRef} autoPlay className="hidden" />
 
-            {/* PRODUCT PICKER MODAL */}
+      {/* PRODUCT PICKER MODAL */}
       {showProductMenu && (
         <div className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-[#1c1c1e] border border-white/10 rounded-3xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden shadow-2xl">
@@ -545,51 +518,56 @@ export default function GoLivePage() {
             )}
           </div>
 
-          <div className="bg-[#1c1c1e] border border-white/10 p-3 rounded-2xl flex justify-between items-center shadow-xl w-full max-w-2xl mx-auto">
+          <div className="bg-[#1c1c1e]/80 backdrop-blur-xl border border-white/10 p-2.5 rounded-2xl flex flex-wrap justify-center lg:justify-between items-center gap-3 shadow-2xl w-full max-w-3xl mx-auto">
+            
+            {/* Left Side: Media Controls */}
             <div className="flex gap-2">
-              <button onClick={toggleMute} className={`w-12 h-12 rounded-xl flex items-center justify-center transition ${isMuted ? "bg-red-500/20 text-red-500" : "bg-white/5 hover:bg-white/10 text-white"}`}>
-                {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
+              <button onClick={toggleMute} className={`w-11 h-11 rounded-xl flex items-center justify-center transition ${isMuted ? "bg-red-500/20 text-red-500" : "bg-white/5 hover:bg-white/10 text-white"}`} title="Toggle Mic">
+                {isMuted ? <MicOff size={18} /> : <Mic size={18} />}
               </button>
-              <button onClick={toggleVideo} className={`w-12 h-12 rounded-xl flex items-center justify-center transition ${isVideoOff ? "bg-red-500/20 text-red-500" : "bg-white/5 hover:bg-white/10 text-white"}`}>
-                {isVideoOff ? <VideoOff size={20} /> : <Video size={20} />}
+              <button onClick={toggleVideo} className={`w-11 h-11 rounded-xl flex items-center justify-center transition ${isVideoOff ? "bg-red-500/20 text-red-500" : "bg-white/5 hover:bg-white/10 text-white"}`} title="Toggle Camera">
+                {isVideoOff ? <VideoOff size={18} /> : <Video size={18} />}
               </button>
-              <button onClick={toggleScreenShare} className={`w-12 h-12 rounded-xl flex items-center justify-center transition ${isScreenSharing ? "bg-blue-500/20 text-blue-500" : "bg-white/5 hover:bg-white/10 text-white"}`}>
-                {isScreenSharing ? <MonitorOff size={20} /> : <Monitor size={20} />}
+              <button onClick={toggleScreenShare} className={`w-11 h-11 rounded-xl flex items-center justify-center transition ${isScreenSharing ? "bg-blue-500/20 text-blue-500" : "bg-white/5 hover:bg-white/10 text-white"}`} title="Share Screen">
+                {isScreenSharing ? <MonitorOff size={18} /> : <Monitor size={18} />}
               </button>
-              <button onClick={togglePiP} className="w-12 h-12 rounded-xl flex items-center justify-center transition bg-white/5 hover:bg-white/10 text-white" title="Pop out video">
-                <PictureInPicture size={20} />
+              <button onClick={togglePiP} className="w-11 h-11 rounded-xl flex items-center justify-center transition bg-white/5 hover:bg-white/10 text-white" title="Picture in Picture">
+                <PictureInPicture size={18} />
               </button>
-              <button onClick={openProductMenu} className="w-12 h-12 rounded-xl flex items-center justify-center transition bg-[#E53945]/20 hover:bg-[#E53945]/30 text-[#E53945]" title="Showcase Product">
-                <ShoppingBag size={20} />
+              <button onClick={openProductMenu} className="w-11 h-11 rounded-xl flex items-center justify-center transition bg-[#E53945]/20 hover:bg-[#E53945]/30 text-[#E53945]" title="Showcase Product">
+                <ShoppingBag size={18} />
               </button>
-              {isLive && (
-                <button onClick={toggleLiveVisibility} className={`w-12 h-12 rounded-xl flex items-center justify-center transition ${liveVisibility === "subscribers" ? "bg-[#D4AF37]/20 hover:bg-[#D4AF37]/30 text-[#D4AF37]" : "bg-white/5 hover:bg-white/10 text-white"}`} title="Toggle Privacy">
-                  {liveVisibility === "subscribers" ? <Lock size={20} /> : <Globe size={20} />}
-                </button>
-              )}
             </div>
 
-            {!isLive ? (
-              <div className="flex items-center gap-4">
-                {/* Visibility Toggle */}
-                <div className="flex bg-[#0a0303] border border-white/10 rounded-xl p-1">
-                  <button onClick={() => setLiveVisibility("public")} className={`px-4 py-2 text-sm font-bold rounded-lg transition ${liveVisibility === "public" ? "bg-white/10 text-white" : "text-white/50 hover:text-white"}`}>
-                    Everyone
-                  </button>
-                  <button onClick={() => setLiveVisibility("subscribers")} className={`px-4 py-2 text-sm font-bold rounded-lg transition ${liveVisibility === "subscribers" ? "bg-[#D4AF37]/20 text-[#D4AF37]" : "text-white/50 hover:text-white"}`}>
-                    Subscribers Only
-                  </button>
-                </div>
-
-                <button onClick={startStream} disabled={loading} className="bg-[#E53945] hover:bg-[#d12e39] text-white font-bold px-8 py-3 rounded-xl transition flex items-center gap-2">
-                  <Radio size={18} /> {loading ? "Connecting..." : "Go Live"}
+            {/* Right Side: Visibility & Go Live */}
+            <div className="flex items-center gap-3">
+              
+              {/* Visibility Toggle */}
+              <div className="flex bg-black/50 border border-white/10 rounded-xl p-1 shadow-inner">
+                <button onClick={() => setLiveVisibility("public")} className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition ${liveVisibility === "public" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}>
+                  <Globe size={14} /> <span className="hidden sm:inline">Everyone</span>
+                </button>
+                <button onClick={() => setLiveVisibility("subscribers")} className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition ${liveVisibility === "subscribers" ? "bg-[#D4AF37]/20 text-[#D4AF37] shadow-sm" : "text-white/50 hover:text-white"}`}>
+                  <Lock size={14} /> <span className="hidden sm:inline">Subs Only</span>
                 </button>
               </div>
-            ) : (
-              <button onClick={stopStream} disabled={loading} className="bg-white/10 hover:bg-white/20 text-red-500 font-bold px-8 py-3 rounded-xl transition flex items-center gap-2">
-                <StopCircle size={18} /> End Broadcast
-              </button>
-            )}
+
+              {/* Go Live / End Broadcast Button */}
+              {!isLive ? (
+                <button onClick={startStream} disabled={loading} className="bg-[#E53945] hover:bg-[#d12e39] text-white font-bold px-6 py-2.5 rounded-xl transition flex items-center justify-center gap-2 whitespace-nowrap shadow-[0_0_15px_rgba(229,57,69,0.3)] min-w-[120px]">
+                  <Radio size={18} /> {loading ? "Starting..." : "Go Live"}
+                </button>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <button onClick={toggleLiveVisibility} className={`w-11 h-11 rounded-xl flex items-center justify-center transition ${liveVisibility === "subscribers" ? "bg-[#D4AF37]/20 text-[#D4AF37]" : "bg-white/5 hover:bg-white/10 text-white"}`} title="Toggle Privacy">
+                    {liveVisibility === "subscribers" ? <Lock size={18} /> : <Globe size={18} />}
+                  </button>
+                  <button onClick={stopStream} disabled={loading} className="bg-white/10 hover:bg-white/20 text-red-500 font-bold px-6 py-2.5 rounded-xl transition flex items-center justify-center gap-2 whitespace-nowrap border border-white/10 min-w-[120px]">
+                    <StopCircle size={18} /> End
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
