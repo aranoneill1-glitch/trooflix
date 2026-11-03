@@ -504,18 +504,20 @@ function CreatorDashboardContent() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setShowAddContentMenu(false)}
-                className="fixed inset-0 z-[300] bg-black/60 backdrop-blur-sm"
+                className="fixed inset-0 z-[300] bg-black/60 backdrop-blur-md"
               />
               <motion.div
-                initial={{ y: "100%" }}
-                animate={{ y: 0 }}
-                exit={{ y: "100%" }}
-                transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                className="fixed bottom-0 left-0 right-0 z-[301] bg-[#1c1c1e] rounded-t-3xl border-t border-white/10 p-6 pb-28 lg:max-w-md lg:mx-auto lg:rounded-2xl lg:bottom-10 max-h-[85vh] overflow-y-auto"
+                initial={{ y: "100%", opacity: 0, scale: 0.95 }}
+                animate={{ y: 0, opacity: 1, scale: 1 }}
+                exit={{ y: "100%", opacity: 0, scale: 0.95 }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="fixed bottom-0 left-0 right-0 z-[301] bg-[#0a0303]/80 backdrop-blur-2xl rounded-t-[32px] border-t border-white/10 p-6 pb-28 lg:max-w-md lg:mx-auto lg:rounded-[32px] lg:bottom-10 shadow-[0_-20px_50px_rgba(0,0,0,0.5)] max-h-[85vh] overflow-y-auto"
               >
+                <div className="w-12 h-1.5 bg-white/20 rounded-full mx-auto mb-6 lg:hidden" />
+                
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-bold text-white">Create New</h3>
-                  <button onClick={() => setShowAddContentMenu(false)} className="p-2 bg-white/10 rounded-full hover:bg-white/20 transition text-white">
+                  <h3 className="text-2xl font-black text-white tracking-tight">Create New</h3>
+                  <button onClick={() => setShowAddContentMenu(false)} className="p-2.5 bg-white/10 rounded-full hover:bg-white/20 transition text-white border border-white/5">
                     <X size={18} />
                   </button>
                 </div>
@@ -524,13 +526,14 @@ function CreatorDashboardContent() {
                   <Link 
                     href="/creator-dashboard/upload" 
                     onClick={() => setShowAddContentMenu(false)}
-                    className="flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-xl transition"
+                    className="group relative flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 p-4 rounded-2xl transition-all duration-300 overflow-hidden"
                   >
-                    <div className="w-12 h-12 rounded-full bg-[#E53945]/20 flex items-center justify-center flex-shrink-0">
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#E53945]/0 via-[#E53945]/0 to-[#E53945]/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="w-12 h-12 rounded-xl bg-[#E53945]/20 flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(229,57,69,0.2)]">
                       <Video className="text-[#E53945]" size={24} />
                     </div>
-                    <div>
-                      <h4 className="font-bold text-white">Upload Video</h4>
+                    <div className="relative z-10">
+                      <h4 className="font-bold text-white text-base">Upload Video</h4>
                       <p className="text-xs text-white/50">Publish a long-form video or documentary</p>
                     </div>
                   </Link>
@@ -538,13 +541,14 @@ function CreatorDashboardContent() {
                   <Link 
                     href="/creator-dashboard/upload?type=short" 
                     onClick={() => setShowAddContentMenu(false)}
-                    className="flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-xl transition"
+                    className="group relative flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-blue-500/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden"
                   >
-                    <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-blue-500/0 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
                       <Play className="text-blue-400" size={24} />
                     </div>
-                    <div>
-                      <h4 className="font-bold text-white">Upload Short</h4>
+                    <div className="relative z-10">
+                      <h4 className="font-bold text-white text-base">Upload Short</h4>
                       <p className="text-xs text-white/50">Publish to the Shorts feed and your profile</p>
                     </div>
                   </Link>
@@ -552,13 +556,14 @@ function CreatorDashboardContent() {
                   <Link 
                     href="/creator-dashboard/upload?type=tweet" 
                     onClick={() => setShowAddContentMenu(false)}
-                    className="flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-xl transition"
+                    className="group relative flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-green-500/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden"
                   >
-                    <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                    <div className="absolute inset-0 bg-gradient-to-r from-green-500/0 via-green-500/0 to-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(34,197,94,0.2)]">
                       <MessageSquare className="text-green-400" size={24} />
                     </div>
-                    <div>
-                      <h4 className="font-bold text-white">Add a Tweet</h4>
+                    <div className="relative z-10">
+                      <h4 className="font-bold text-white text-base">Add a Tweet</h4>
                       <p className="text-xs text-white/50">Share a text update on the home feed</p>
                     </div>
                   </Link>
@@ -566,13 +571,14 @@ function CreatorDashboardContent() {
                   <Link 
                     href="/creator-dashboard/live"
                     onClick={() => setShowAddContentMenu(false)}
-                    className="flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-xl transition"
+                    className="group relative flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#E53945]/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden"
                   >
-                    <div className="w-12 h-12 rounded-full bg-[#E53945]/20 flex items-center justify-center flex-shrink-0">
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#E53945]/0 via-[#E53945]/0 to-[#E53945]/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="w-12 h-12 rounded-xl bg-[#E53945]/20 flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(229,57,69,0.2)]">
                       <Radio className="text-[#E53945]" size={24} />
                     </div>
-                    <div>
-                      <h4 className="font-bold text-white">Go Live</h4>
+                    <div className="relative z-10">
+                      <h4 className="font-bold text-white text-base">Go Live</h4>
                       <p className="text-xs text-white/50">Start a live stream with your fans</p>
                     </div>
                   </Link>
