@@ -528,6 +528,7 @@ function CreatorDashboardContent() {
                     onClick={() => setShowAddContentMenu(false)}
                     className="group relative flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 p-4 rounded-2xl transition-all duration-300 overflow-hidden"
                   >
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="absolute inset-0 bg-gradient-to-r from-[#E53945]/0 via-[#E53945]/0 to-[#E53945]/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="w-12 h-12 rounded-xl bg-[#E53945]/20 flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(229,57,69,0.2)]">
                       <Video className="text-[#E53945]" size={24} />
@@ -543,6 +544,7 @@ function CreatorDashboardContent() {
                     onClick={() => setShowAddContentMenu(false)}
                     className="group relative flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-blue-500/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden"
                   >
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-blue-500/0 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
                       <Play className="text-blue-400" size={24} />
@@ -558,6 +560,7 @@ function CreatorDashboardContent() {
                     onClick={() => setShowAddContentMenu(false)}
                     className="group relative flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-green-500/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden"
                   >
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="absolute inset-0 bg-gradient-to-r from-green-500/0 via-green-500/0 to-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(34,197,94,0.2)]">
                       <MessageSquare className="text-green-400" size={24} />
@@ -573,6 +576,7 @@ function CreatorDashboardContent() {
                     onClick={() => setShowAddContentMenu(false)}
                     className="group relative flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#E53945]/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden"
                   >
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="absolute inset-0 bg-gradient-to-r from-[#E53945]/0 via-[#E53945]/0 to-[#E53945]/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="w-12 h-12 rounded-xl bg-[#E53945]/20 flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(229,57,69,0.2)]">
                       <Radio className="text-[#E53945]" size={24} />
@@ -611,7 +615,7 @@ function CreatorDashboardContent() {
                   <button 
                     onClick={() => avatarInputRef.current?.click()}
                     disabled={uploadingAvatar}
-                    className="flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-xl transition text-left"
+                    className="group relative flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 p-4 rounded-2xl transition-all duration-300 overflow-hidden text-left"
                   >
                     <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
                       <Camera size={20} className="text-white" />
