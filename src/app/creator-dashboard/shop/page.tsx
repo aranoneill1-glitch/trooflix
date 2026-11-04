@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, Suspense } from "react";
 import Link from "next/link";
-import { ChevronLeft, Plus, Trash2, Edit, ShoppingBag, Package, X, Image as ImageIcon, GripVertical, Save } from "lucide-react";
-import { Reorder, motion, AnimatePresence } from "framer-motion";
+import { useSearchParams } from "next/navigation";
+import { ChevronLeft, Plus, Trash2, Edit, ShoppingBag, Package, X, Image as ImageIcon, GripVertical, Save, ArrowUp, ArrowDown } from "lucide-react";
+import { Reorder } from "framer-motion";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { getCachedUser } from "@/lib/cache";
@@ -20,8 +21,10 @@ type Product = {
   sort_order?: number;
 };
 
-export default function ManageShopPage() {
+function ManageShopContent() {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const searchParams = useSearchParams();
+  const editId = searchParams.get("edit");
   
   const [creatorId, setCreatorId] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
@@ -59,9 +62,15 @@ export default function ManageShopPage() {
       const data = await res.json();
       let loadedProducts = Array.isArray(data.products) ? data.products : [];
       
-      // Sort by sort_order if it exists
       loadedProducts.sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0));
       setProducts(loadedProducts);
+
+      // If the URL has ?edit=123, open that product automatically
+      if (editId) {
+        const productToEdit = loadedProducts.find((p: any) => String(p.id) === editId);
+        if (productToEdit) openModal(productToEdit);
+      }
+
     } catch (e) {
       console.error(e);
     } finally {
@@ -93,7 +102,7 @@ export default function ManageShopPage() {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setImageFile(file);
-      setImageUrl(URL.createObjectURL(file)); // Preview
+      setImageUrl(URL.createObjectURL(file));
     }
   };
 
@@ -176,7 +185,6 @@ export default function ManageShopPage() {
     setIsReordering(false);
     const supabase = createClient();
     
-    // Update sort_order in Supabase for all products
     const updates = products.map((p, index) => ({
       id: p.id,
       sort_order: index,
@@ -193,6 +201,15 @@ export default function ManageShopPage() {
       alert("Failed to save new order: " + error.message);
     } else {
       alert("Order saved successfully!");
+    }
+  };
+
+  const moveItem = (index: number, direction: number) => {
+    const newProducts = [...products];
+    const target = index + direction;
+    if (target >= 0 && target < newProducts.length) {
+      [newProducts[index], newProducts[target]] = [newProducts[target], newProducts[index]];
+      setProducts(newProducts);
     }
   };
 
@@ -253,24 +270,31 @@ export default function ManageShopPage() {
           </div>
         ) : isReordering ? (
           
-          /* REORDER MODE */
-          <Reorder.Group axis="y" values={products} onReorder={setProducts} className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {products.map((product) => (
+          /* REORDER MODE (Vertical List for reliable mobile drag) */
+          <Reorder.Group axis="y" values={products} onReorder={setProducts} className="flex flex-col gap-3">
+            {products.map((product, index) => (
               <Reorder.Item 
                 key={product.id} 
                 value={product} 
-                className="bg-[#1c1c1e] border border-white/10 rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing relative"
-                style={{ touchAction: "none" }} // CRITICAL FOR MOBILE DRAG
+                className="bg-[#1c1c1e] border border-white/10 rounded-2xl p-3 flex items-center gap-4 cursor-grab active:cursor-grabbing relative"
+                style={{ touchAction: "none" }} 
               >
-                <div className="absolute top-2 left-2 z-10 p-1.5 bg-black/60 rounded-md">
-                  <GripVertical size={16} className="text-white/70" />
-                </div>
-                <div className="aspect-square bg-black pointer-events-none">
+                <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-black pointer-events-none">
                   <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" draggable={false} />
                 </div>
-                <div className="p-3">
-                  <h3 className="font-bold text-sm leading-tight line-clamp-1">{product.name}</h3>
+                <div className="flex-1 min-w-0 pointer-events-none">
+                  <h3 className="font-bold text-sm truncate">{product.name}</h3>
                   <p className="text-emerald-400 text-xs font-bold mt-1">${(product.price_cents / 100).toFixed(2)}</p>
+                </div>
+                
+                {/* Fail-safe Up/Down Arrows */}
+                <div className="flex flex-col gap-1 shrink-0">
+                  <button onClick={() => moveItem(index, -1)} disabled={index === 0} className="p-1 bg-white/5 hover:bg-white/10 rounded disabled:opacity-30 text-white">
+                    <ArrowUp size={16} />
+                  </button>
+                  <button onClick={() => moveItem(index, 1)} disabled={index === products.length - 1} className="p-1 bg-white/5 hover:bg-white/10 rounded disabled:opacity-30 text-white">
+                    <ArrowDown size={16} />
+                  </button>
                 </div>
               </Reorder.Item>
             ))}
@@ -283,7 +307,6 @@ export default function ManageShopPage() {
             {products.map((product) => (
               <div key={product.id} className="flex items-center gap-4 bg-[#1c1c1e] border border-white/10 rounded-2xl p-3 hover:border-white/20 transition-colors group">
                 
-                {/* Thumbnail */}
                 <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden shrink-0 relative bg-black border border-white/5">
                   {product.image_url ? (
                     <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
@@ -292,7 +315,6 @@ export default function ManageShopPage() {
                   )}
                 </div>
 
-                {/* Details */}
                 <div className="flex-1 min-w-0 flex flex-col justify-center">
                   <h3 className="text-base font-bold text-white truncate mb-0.5">{product.name}</h3>
                   <p className="text-xs text-white/50 truncate mb-2">{product.description || "No description"}</p>
@@ -302,7 +324,6 @@ export default function ManageShopPage() {
                   </div>
                 </div>
 
-                {/* Actions */}
                 <div className="flex items-center gap-1.5 shrink-0">
                   <button onClick={() => openModal(product)} className="p-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-white transition" title="Edit">
                     <Edit size={18} />
@@ -393,5 +414,13 @@ export default function ManageShopPage() {
 
       <MobileBottomNav />
     </main>
+  );
+}
+
+export default function ManageShopPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#09090B] flex items-center justify-center"><div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" /></div>}>
+      <ManageShopContent />
+    </Suspense>
   );
 }
