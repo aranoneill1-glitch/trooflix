@@ -532,8 +532,8 @@ export default function Home() {
             {loaded && !filtered && !showingFiltered && (
               <>
                 {/* 6. LATEST CONTENT FEED */}
-                <div className="mt-8 pb-32">
-                  <div className="px-4 md:px-12 mb-6 mt-4">
+                <div className="mt-2 pb-32">
+                  <div className="px-4 md:px-12 mb-4 mt-0">
                     <p className="text-[10px] md:text-xs tracking-[0.4em] text-white/50 font-semibold mb-1">
                       LATEST CONTENT
                     </p>
