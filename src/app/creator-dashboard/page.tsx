@@ -50,6 +50,7 @@ function CreatorDashboardContent() {
   const [creatorVideos, setCreatorVideos] = useState<any[]>([]);
   const [merch, setMerch] = useState<any[]>([]);
   const [videosLoading, setVideosLoading] = useState(true);
+  const pressTimer = useRef<NodeJS.Timeout | null>(null);
   const [isReordering, setIsReordering] = useState(false);
   const [selectedMerchItem, setSelectedMerchItem] = useState<any>(null);
   const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
@@ -213,8 +214,7 @@ function CreatorDashboardContent() {
 
 
 
-  const pressTimer = useRef<NodeJS.Timeout | null>(null);
-
+  
   const startPress = (item: any) => {
     pressTimer.current = setTimeout(() => {
       setSelectedMerchItem(item);
