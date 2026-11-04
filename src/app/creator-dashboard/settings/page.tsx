@@ -125,100 +125,87 @@ export default function ProfileSettingsPage() {
   return (
     <main className="min-h-screen bg-[#09090B] text-white pb-32 font-sans selection:bg-[#E53945]/30">
       <TopBar />
-      <div className="max-w-2xl mx-auto px-4 pt-24 pb-6">
+      
+      <div className="max-w-2xl mx-auto pt-24">
         
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <Link href="/creator-dashboard" className="inline-flex items-center gap-1.5 text-sm text-white/50 hover:text-white mb-2 transition">
-              <ChevronLeft size={16} /> Back
+        <div className="flex items-center justify-between px-4 mb-2">
+            <Link href="/creator-dashboard" className="p-2 -ml-2 rounded-full hover:bg-white/10 transition">
+              <ChevronLeft size={24} />
             </Link>
-            <h1 className="text-2xl font-black tracking-tight">Edit profile</h1>
-          </div>
+            <h1 className="text-base font-semibold">Edit profile</h1>
+            <div className="w-8"></div>
         </div>
 
-        <form onSubmit={saveProfile}>
-          
-          {/* Avatar Section */}
-          <div className="flex flex-col items-center justify-center mb-8">
-            <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-              <div className="w-24 h-24 rounded-full overflow-hidden border border-white/20 bg-[#1c1c1e] flex-shrink-0 relative z-10 shadow-xl">
-                {avatarUrl ? <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-3xl font-black text-white/20">{displayName.charAt(0) || "?"}</div>}
-              </div>
-              <div className="absolute inset-0 z-20 rounded-full bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <Camera size={24} className="text-white" />
-              </div>
+        {/* Avatar Section */}
+        <div className="flex flex-col items-center justify-center py-6 border-b border-white/10">
+          <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+            <div className="w-24 h-24 rounded-full overflow-hidden border border-white/20 bg-[#1c1c1e] relative z-10 flex items-center justify-center">
+              {avatarUrl ? <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" /> : <div className="text-3xl font-black text-white/20">{displayName.charAt(0) || "?"}</div>}
             </div>
-            <button type="button" onClick={() => fileInputRef.current?.click()} className="text-[#E53945] text-sm font-semibold mt-4 hover:text-[#d12e39] transition">
-              Edit picture or avatar
-            </button>
-            <input type="file" ref={fileInputRef} onChange={handleImageChange} accept="image/*" className="hidden" />
+            <div className="absolute inset-0 z-20 rounded-full bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <Camera size={24} className="text-white" />
+            </div>
           </div>
+          <button type="button" onClick={() => fileInputRef.current?.click()} className="text-[#E53945] text-sm font-semibold mt-4 hover:text-[#d12e39] transition">
+            Edit picture or avatar
+          </button>
+          <input type="file" ref={fileInputRef} onChange={handleImageChange} accept="image/*" className="hidden" />
+        </div>
 
-          {/* List Fields */}
-          <div className="bg-[#1c1c1e] border border-white/5 rounded-2xl overflow-hidden mb-6">
+        {/* Instagram Style Form Rows */}
+        <form onSubmit={saveProfile}>
+          <div className="flex flex-col w-full">
             
             {/* Name */}
-            <div className="flex items-center px-4 py-4 border-b border-white/5">
-              <label className="w-1/3 text-sm font-semibold text-white/90">Name</label>
-              <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Your name" className="flex-1 bg-transparent text-sm text-white/70 outline-none placeholder:text-white/30 text-right" required />
+            <div className="flex items-center justify-between px-4 py-4 border-b border-white/10">
+              <label className="text-sm font-semibold text-white/90 w-1/3">Name</label>
+              <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Name" className="flex-1 bg-transparent text-sm text-white/70 outline-none placeholder:text-white/40 text-right" required />
             </div>
 
             {/* Username */}
-            <div className="flex items-center px-4 py-4 border-b border-white/5">
-              <label className="w-1/3 text-sm font-semibold text-white/90">Username</label>
-              <div className="flex-1 flex justify-end">
-                <span className="text-white/40 text-sm mr-0.5">@</span>
-                <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="username" className="bg-transparent text-sm text-white/70 outline-none placeholder:text-white/30 text-left w-auto min-w-[120px]" required />
-              </div>
+            <div className="flex items-center justify-between px-4 py-4 border-b border-white/10">
+              <label className="text-sm font-semibold text-white/90 w-1/3">Username</label>
+              <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Username" className="flex-1 bg-transparent text-sm text-white/70 outline-none placeholder:text-white/40 text-right" required />
             </div>
 
             {/* Bio */}
-            <div className="flex items-start px-4 py-4">
-              <label className="w-1/3 text-sm font-semibold text-white/90 pt-0.5">Bio</label>
-              <textarea value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Tell your viewers about yourself..." rows={3} className="flex-1 bg-transparent text-sm text-white/70 outline-none placeholder:text-white/30 resize-none" />
+            <div className="flex items-start justify-between px-4 py-4 border-b border-white/10">
+              <label className="text-sm font-semibold text-white/90 w-1/3 pt-0.5">Bio</label>
+              <textarea value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Bio" rows={3} className="flex-1 bg-transparent text-sm text-white/70 outline-none placeholder:text-white/40 text-right resize-none" />
             </div>
 
-          </div>
-
-          {/* Social Links */}
-          <h2 className="text-sm font-bold text-white/90 px-2 mb-2">Public business information</h2>
-          <div className="bg-[#1c1c1e] border border-white/5 rounded-2xl overflow-hidden mb-8">
-            
             {/* Instagram */}
-            <div className="flex items-center px-4 py-4 border-b border-white/5">
-              <label className="w-1/3 text-sm font-semibold text-white/90 flex items-center gap-2"><InstagramIcon size={16} /> Instagram</label>
-              <div className="flex-1 flex justify-end">
-                <span className="text-white/40 text-sm mr-0.5">@</span>
-                <input type="text" value={instagram} onChange={(e) => setInstagram(e.target.value)} placeholder="username" className="bg-transparent text-sm text-white/70 outline-none placeholder:text-white/30 text-left w-auto min-w-[120px]" />
-              </div>
+            <div className="flex items-center justify-between px-4 py-4 border-b border-white/10">
+              <label className="text-sm font-semibold text-white/90 w-1/3">Instagram</label>
+              <input type="text" value={instagram} onChange={(e) => setInstagram(e.target.value)} placeholder="username" className="flex-1 bg-transparent text-sm text-white/70 outline-none placeholder:text-white/40 text-right" />
             </div>
 
-            {/* X (Twitter) */}
-            <div className="flex items-center px-4 py-4">
-              <label className="w-1/3 text-sm font-semibold text-white/90 flex items-center gap-2"><XIcon size={16} /> X</label>
-              <div className="flex-1 flex justify-end">
-                <span className="text-white/40 text-sm mr-0.5">@</span>
-                <input type="text" value={xHandle} onChange={(e) => setXHandle(e.target.value)} placeholder="username" className="bg-transparent text-sm text-white/70 outline-none placeholder:text-white/30 text-left w-auto min-w-[120px]" />
-              </div>
+            {/* X */}
+            <div className="flex items-center justify-between px-4 py-4 border-b border-white/10">
+              <label className="text-sm font-semibold text-white/90 w-1/3">X (Twitter)</label>
+              <input type="text" value={xHandle} onChange={(e) => setXHandle(e.target.value)} placeholder="username" className="flex-1 bg-transparent text-sm text-white/70 outline-none placeholder:text-white/40 text-right" />
             </div>
 
           </div>
 
           {/* Status Message */}
           {status.message && (
-            <div className={`rounded-xl px-4 py-3 text-sm font-medium mb-6 ${status.type === "success" ? "bg-emerald-950/30 border border-emerald-600/40 text-emerald-300" : "bg-red-950/30 border border-red-600/40 text-red-300"}`}>
+            <div className={`mx-4 mt-4 rounded-xl px-4 py-3 text-sm font-medium ${status.type === "success" ? "bg-emerald-950/30 border border-emerald-600/40 text-emerald-300" : "bg-red-950/30 border border-red-600/40 text-red-300"}`}>
               {status.message}
             </div>
           )}
 
           {/* Save Button */}
-          <button type="submit" disabled={saving} className="w-full flex items-center justify-center gap-2 bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold py-4 rounded-xl transition-all hover:scale-[1.02] shadow-[0_0_20px_rgba(229,57,69,0.3)]">
-            <Save size={18} /> {saving ? "Saving..." : "Save"}
-          </button>
+          <div className="p-4 mt-2">
+            <button type="submit" disabled={saving} className="w-full flex items-center justify-center gap-2 bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold py-3.5 rounded-xl transition-all hover:scale-[1.02] shadow-[0_0_20px_rgba(229,57,69,0.3)]">
+              {saving ? "Saving..." : "Save"}
+            </button>
+          </div>
 
         </form>
       </div>
+      
       <MobileBottomNav />
     </main>
   );
