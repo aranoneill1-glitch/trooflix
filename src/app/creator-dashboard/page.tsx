@@ -14,7 +14,8 @@ import MobileBottomNav from "@/components/MobileBottomNav";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import { getCachedUser, clearUserCache } from "@/lib/cache";
 import { createClient } from "@/utils/supabase/client";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Reorder } from "framer-motion";
+import { GripVertical } from "lucide-react";
 import HomeFeedCard from "@/components/HomeFeedCard";
 
 
@@ -49,6 +50,9 @@ function CreatorDashboardContent() {
   const [creatorVideos, setCreatorVideos] = useState<any[]>([]);
   const [merch, setMerch] = useState<any[]>([]);
   const [videosLoading, setVideosLoading] = useState(true);
+  const [isReordering, setIsReordering] = useState(false);
+  const [selectedMerchItem, setSelectedMerchItem] = useState<any>(null);
+  const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
   const [followerCount, setFollowerCount] = useState(0);
   const [subscriberCount, setSubscriberCount] = useState(0);
 
@@ -206,6 +210,44 @@ function CreatorDashboardContent() {
       ? { backgroundImage: `url(${profile.backdrop_url})`, backgroundSize: "cover", backgroundPosition: "center" }
       : { background: profile.backdrop_url }
     : { background: "#09090B" };
+
+
+  const handlePointerDown = (item: any) => {
+    const timer = setTimeout(() => {
+      setSelectedMerchItem(item);
+    }, 500);
+    setLongPressTimer(timer);
+  };
+
+  const handlePointerUp = () => {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      setLongPressTimer(null);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this product?")) return;
+    const supabase = createClient();
+    await supabase.from("products").delete().eq("id", id);
+    setMerch(prev => prev.filter(p => p.id !== id));
+    setSelectedMerchItem(null);
+  };
+
+  const saveOrder = async () => {
+    setIsReordering(false);
+    const supabase = createClient();
+    const updates = merch.map((item, index) => ({
+      id: item.id,
+      sort_order: index,
+      name: item.name,
+      price_cents: item.price_cents,
+      image_url: item.image_url,
+      creator_id: item.creator_id
+    }));
+    await supabase.from("products").upsert(updates);
+    alert("Order saved successfully!");
+  };
 
   return (
     <main className={`min-h-screen text-white pb-32 font-sans selection:bg-[#E53945]/30 relative overflow-hidden ${!isDashboardView && profile?.backdrop_url ? "bg-transparent" : "bg-[#09090B]"}`}>
