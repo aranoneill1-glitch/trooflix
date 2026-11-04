@@ -581,7 +581,7 @@ export default function GoLivePage() {
           </div>
         </div>
 
-        <div className="w-full lg:w-[380px] flex flex-col gap-3">
+        <div className="w-full lg:w-[380px] flex flex-col gap-3 h-[600px] lg:h-[calc(100vh-140px)]">
           {isLive && liveInputId ? (
              <>
                {joinRequest && (
@@ -602,7 +602,7 @@ export default function GoLivePage() {
                    </div>
                  </div>
                )}
-               <LiveChat liveInputId={liveInputId} className="flex-1 min-h-[400px]" />
+               <LiveChat liveInputId={liveInputId} className="flex-1 h-full min-h-0" />
              </>
           ) : (
             <div className="flex-1 bg-[#1c1c1e] border border-white/10 rounded-3xl flex flex-col items-center justify-center p-8 text-center">
