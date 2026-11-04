@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
+import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import { ShoppingBag, Search, Heart, ShieldCheck, X } from "lucide-react";
+import { ShoppingBag, Search, Heart, ShieldCheck, X, Plus, ArrowRight } from "lucide-react";
 
 export default function MerchandisePage() {
   const [products, setProducts] = useState<any[]>([]);
@@ -18,6 +19,21 @@ export default function MerchandisePage() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  // 1. Extract real creators for the new row
+  const realCreators = useMemo(() => {
+    const map = new Map();
+    products.forEach(p => {
+      if (p.creatorName && p.creatorSlug && !map.has(p.creatorSlug)) {
+        map.set(p.creatorSlug, {
+          name: p.creatorName,
+          slug: p.creatorSlug,
+          photo: p.creatorPhoto || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.creatorName)}&background=1c1c1e&color=fff`,
+        });
+      }
+    });
+    return Array.from(map.values());
+  }, [products]);
 
   const filteredProducts = useMemo(() => {
     if (!searchQuery.trim()) return products;
@@ -72,7 +88,24 @@ export default function MerchandisePage() {
       {/* MAIN CONTENT AREA */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
         
-        {/* 1. FEATURED MERCHANDISE (3-Column Grid) */}
+        {/* 1. NEW CREATOR MERCH ROW */}
+        {realCreators.length > 0 && !searchQuery && (
+          <section className="mb-10">
+            <h2 className="text-xl md:text-2xl font-bold mb-4">Search Creator Merch</h2>
+            <div className="flex overflow-x-auto scrollbar-hide gap-5 pb-4">
+              {realCreators.map((c: any) => (
+                <Link href={`/profile/${c.slug}`} key={c.slug} className="flex flex-col items-center group w-[80px] shrink-0">
+                  <div className="w-[64px] h-[64px] rounded-full overflow-hidden border-2 border-white/10 group-hover:border-[#E53945] transition-all duration-300 mb-2 shadow-lg">
+                    <img src={c.photo} alt={c.name} className="w-full h-full object-cover" />
+                  </div>
+                  <span className="text-[11px] font-bold truncate w-full text-center group-hover:text-[#E53945] transition-colors">{c.name}</span>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* 2. FEATURED MERCHANDISE */}
         {merchandise.length > 0 && (
           <section className="mb-12">
             <h2 className="text-xl md:text-2xl font-bold mb-4">
@@ -86,7 +119,7 @@ export default function MerchandisePage() {
           </section>
         )}
 
-        {/* 2. FEATURED BOOKS (3-Column Grid) */}
+        {/* 3. FEATURED BOOKS */}
         {books.length > 0 && (
           <section className="mb-12">
             <h2 className="text-xl md:text-2xl font-bold mb-4">
@@ -115,40 +148,54 @@ export default function MerchandisePage() {
 
       </div>
 
-      {/* ITEM MODAL */}
+      {/* SMALLER ITEM MODAL */}
       {selectedProduct && (
         <div className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setSelectedProduct(null)}>
-          <div className="bg-[#1c1c1e] border border-white/10 rounded-3xl w-full max-w-lg overflow-hidden flex flex-col relative shadow-2xl animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
-            <button onClick={() => setSelectedProduct(null)} className="absolute top-4 right-4 z-10 p-2 bg-black/50 hover:bg-black/80 rounded-full text-white transition">
-              <X size={20} />
+          
+          {/* Reduced max-width from lg to sm */}
+          <div className="bg-[#1c1c1e] border border-white/10 rounded-3xl w-full max-w-sm overflow-hidden flex flex-col relative shadow-2xl animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+            
+            <button onClick={() => setSelectedProduct(null)} className="absolute top-3 right-3 z-10 p-1.5 bg-black/50 hover:bg-black/80 rounded-full text-white transition">
+              <X size={18} />
             </button>
             
             <div className="w-full aspect-square bg-black relative">
               <img src={selectedProduct.image_url} alt={selectedProduct.name} className="w-full h-full object-cover" />
             </div>
             
-            <div className="p-6 md:p-8">
-              <p className="text-3xl font-black text-[#1DB954] mb-2">${(selectedProduct.price_cents / 100).toFixed(2)}</p>
-              <h2 className="text-xl font-bold text-white mb-4 leading-tight">{selectedProduct.name}</h2>
+            <div className="p-5">
+              <p className="text-2xl font-black text-[#1DB954] mb-1">${(selectedProduct.price_cents / 100).toFixed(2)}</p>
+              <h2 className="text-base font-bold text-white mb-4 leading-tight line-clamp-2">{selectedProduct.name}</h2>
               
-              <div className="flex items-center gap-3 pt-6 border-t border-white/10">
-                {selectedProduct.creatorPhoto ? (
-                  <img src={selectedProduct.creatorPhoto} className="w-12 h-12 rounded-full object-cover border border-white/10" />
-                ) : (
-                  <div className="w-12 h-12 rounded-full bg-[#E53945] flex items-center justify-center font-bold text-white text-lg">
-                    {selectedProduct.creatorName?.charAt(0) || "C"}
+              {/* Clickable Seller Link */}
+              <Link href={`/profile/${selectedProduct.creatorSlug}`} className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition group">
+                <div className="flex items-center gap-2.5">
+                  {selectedProduct.creatorPhoto ? (
+                    <img src={selectedProduct.creatorPhoto} className="w-8 h-8 rounded-full object-cover border border-white/10" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-[#E53945] flex items-center justify-center font-bold text-white text-xs">
+                      {selectedProduct.creatorName?.charAt(0) || "C"}
+                    </div>
+                  )}
+                  <div className="flex flex-col">
+                    <p className="text-xs font-bold text-white group-hover:text-[#E53945] transition-colors">{selectedProduct.creatorName}</p>
+                    <p className="text-[10px] text-white/50">Visit Store</p>
                   </div>
-                )}
-                <div>
-                  <p className="text-sm font-bold text-white">{selectedProduct.creatorName}</p>
-                  <p className="text-xs text-white/50">Seller</p>
                 </div>
+                <ArrowRight size={14} className="text-white/30 group-hover:text-white transition" />
+              </Link>
+
+              {/* Action Buttons */}
+              <div className="flex gap-2 mt-5">
+                <button className="flex-1 flex items-center justify-center gap-1.5 py-3 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl transition border border-white/10">
+                  <Plus size={16} /> Add to Basket
+                </button>
+                <button className="flex-1 py-3 bg-[#E53945] hover:bg-[#d12e39] text-white text-xs font-bold rounded-xl transition shadow-[0_0_15px_rgba(229,57,69,0.3)]">
+                  Buy Now
+                </button>
               </div>
-              
-              <button className="w-full mt-8 py-4 bg-[#E53945] hover:bg-[#d12e39] text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(229,57,69,0.3)]">
-                Buy Now
-              </button>
             </div>
+            
           </div>
         </div>
       )}
@@ -172,7 +219,7 @@ function ProductCard({ product, onClick }: { product: any, onClick: () => void }
           <Heart size={14} />
         </button>
 
-        {/* Delivery Tag (Hidden on small mobile to save space) */}
+        {/* Delivery Tag */}
         <div className="hidden sm:flex absolute bottom-2 left-2 bg-black/60 backdrop-blur-md text-white text-[9px] font-semibold px-1.5 py-0.5 rounded flex items-center gap-1">
           <ShieldCheck size={10} className="text-white" /> Delivery
         </div>
