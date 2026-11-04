@@ -351,7 +351,7 @@ export default function PublicProfilePage() {
                         {localMerch.map((item) => (
                           <Reorder.Item key={item.id} value={item} className="flex items-center gap-4 bg-[#1c1c1e] border border-white/10 rounded-xl p-3 cursor-grab active:cursor-grabbing shadow-lg">
                             <GripVertical size={20} className="text-white/30" />
-                            <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0"><img src={item.image_url} alt={item.name} className="w-full h-full object-cover pointer-events-none select-none" draggable={false} /></div>
+                            <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0"><img src={item.image_url} alt={item.name} className="w-full h-full object-cover select-none pointer-events-none" style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", pointerEvents: "none" }} draggable={false} /></div>
                             <div className="flex-1 min-w-0 text-left"><h3 className="text-sm font-bold text-white truncate">{item.name}</h3></div>
                           </Reorder.Item>
                         ))}
@@ -370,10 +370,10 @@ export default function PublicProfilePage() {
                           onTouchMove={cancelPress}
                           onContextMenu={(e) => { e.preventDefault(); setSelectedMerchItem(item); }}
                           className="bg-[#1c1c1e] border border-white/10 rounded-xl overflow-hidden group cursor-pointer flex flex-col select-none relative z-10" 
-                          style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", userSelect: "none" }}
+                          style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", userSelect: "none", WebkitTapHighlightColor: "transparent" }}
                         >
                           <div className="relative aspect-square pointer-events-none">
-                            <img src={item.image_url} alt={item.name} className="w-full h-full object-cover select-none" draggable={false} />
+                            <img src={item.image_url} alt={item.name} className="w-full h-full object-cover select-none pointer-events-none" style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", pointerEvents: "none" }} draggable={false} />
                           </div>
                           <div className="p-3 flex-1 flex flex-col justify-between text-left pointer-events-none">
                             <h3 className="text-sm font-bold leading-tight line-clamp-2 text-white">{item.name}</h3>
@@ -395,9 +395,9 @@ export default function PublicProfilePage() {
                           onTouchMove={cancelPress}
                           onContextMenu={(e) => { e.preventDefault(); setSelectedMerchItem(item); }}
                           className="flex items-center gap-4 bg-[#1c1c1e] border border-white/10 rounded-2xl p-3 select-none relative z-10" 
-                          style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", userSelect: "none" }}
+                          style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", userSelect: "none", WebkitTapHighlightColor: "transparent" }}
                         >
-                          <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0 relative pointer-events-none"><img src={item.image_url} alt={item.name} className="w-full h-full object-cover select-none" draggable={false} /></div>
+                          <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0 relative pointer-events-none"><img src={item.image_url} alt={item.name} className="w-full h-full object-cover select-none pointer-events-none" style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", pointerEvents: "none" }} draggable={false} /></div>
                           <div className="flex-1 min-w-0 text-left pointer-events-none"><h3 className="text-sm font-bold text-white truncate">{item.name}</h3><p className="text-xs text-white/50 mt-1">Merch</p></div>
                           <p className="text-emerald-400 font-bold text-sm shrink-0 pointer-events-none">${(item.price_cents / 100).toFixed(2)}</p>
                         </div>
