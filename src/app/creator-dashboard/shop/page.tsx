@@ -208,34 +208,39 @@ export default function ManageShopPage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="flex flex-col gap-3">
             {products.map((product) => (
-              <div key={product.id} className="bg-[#1c1c1e] border border-white/10 rounded-2xl overflow-hidden flex flex-col group">
-                <div className="relative aspect-square bg-black">
+              <div key={product.id} className="flex items-center gap-4 bg-[#1c1c1e] border border-white/10 rounded-2xl p-3 hover:border-white/20 transition-colors group">
+                
+                {/* Thumbnail */}
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden shrink-0 relative bg-black border border-white/5">
                   {product.image_url ? (
                     <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-white/10"><ImageIcon size={48} /></div>
+                    <div className="w-full h-full flex items-center justify-center text-white/10"><ImageIcon size={24} /></div>
                   )}
-                  <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onClick={() => openModal(product)} className="p-2 bg-black/60 backdrop-blur-md rounded-lg text-white hover:bg-black/80 transition">
-                      <Edit size={16} />
-                    </button>
-                    <button onClick={() => deleteProduct(product.id)} className="p-2 bg-black/60 backdrop-blur-md rounded-lg text-red-500 hover:bg-red-500/20 transition">
-                      <Trash2 size={16} />
-                    </button>
+                </div>
+
+                {/* Details */}
+                <div className="flex-1 min-w-0 flex flex-col justify-center">
+                  <h3 className="text-base font-bold text-white truncate mb-0.5">{product.name}</h3>
+                  <p className="text-xs text-white/50 truncate mb-2">{product.description || "No description"}</p>
+                  <div className="flex items-center gap-3">
+                    <span className="text-emerald-400 font-bold text-sm">${(product.price_cents / 100).toFixed(2)}</span>
+                    <span className="text-[11px] font-semibold text-white/40 bg-white/5 px-2 py-0.5 rounded-md">{product.inventory_count} in stock</span>
                   </div>
                 </div>
-                <div className="p-4 flex-1 flex flex-col justify-between">
-                  <div>
-                    <h3 className="font-bold text-lg leading-tight mb-1">{product.name}</h3>
-                    <p className="text-sm text-white/50 line-clamp-2 mb-4">{product.description || "No description"}</p>
-                  </div>
-                  <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/5">
-                    <span className="text-emerald-400 font-bold">${(product.price_cents / 100).toFixed(2)}</span>
-                    <span className="text-xs text-white/40">{product.inventory_count} in stock</span>
-                  </div>
+
+                {/* Actions */}
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button onClick={() => openModal(product)} className="p-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-white transition" title="Edit">
+                    <Edit size={18} />
+                  </button>
+                  <button onClick={() => deleteProduct(product.id)} className="p-2.5 bg-white/5 hover:bg-red-500/20 text-white/70 hover:text-red-500 rounded-xl transition" title="Delete">
+                    <Trash2 size={18} />
+                  </button>
                 </div>
+
               </div>
             ))}
           </div>
