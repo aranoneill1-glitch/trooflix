@@ -306,7 +306,7 @@ export default function Home() {
           {!showingFiltered && (
             <>
               {/* MOBILE SECTION: Pills + Header + Avatars + Hero */}
-              <div className="lg:hidden w-full flex flex-col relative z-10 bg-[#0a0303] min-h-screen">
+              <div className="lg:hidden w-full flex flex-col relative z-10 bg-[#0a0303]">
                 {/* Ambient glow for glass refraction */}
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] h-[300px] bg-[#E53945]/20 rounded-full blur-[100px] pointer-events-none z-0" />
                 
@@ -687,7 +687,7 @@ function AppReelHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { 
   };
 
   return (
-    <div className="relative w-full h-[240px] flex items-center justify-center mb-0 mt-0 bg-[#0a0303] overflow-hidden">
+    <div className="relative w-full h-[240px] flex items-center justify-center mb-0 mt-0 bg-[#0a0303] overflow-visible">
       <div className="relative z-10 w-full h-full flex items-center justify-center">
         {videos.map((video, i) => (
           <AppReelCard
