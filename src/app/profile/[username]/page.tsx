@@ -111,7 +111,16 @@ export default function PublicProfilePage() {
   const subscriptionPrice = profile.subscription_price_cents ? (profile.subscription_price_cents / 100).toFixed(2) : "3.99";
 
   const filteredVideos = videos.filter(v => {
-    if (activeContentTab === "Videos") return !v.type?.toLowerCase().includes("podcast");
+    const type = (v.type || "").toLowerCase();
+    
+    if (activeContentTab === "Videos") {
+      // Videos tab: No tweets, no shorts, no premium videos
+      return type !== "tweet" && type !== "short" && v.visibility !== "premium";
+    }
+    if (activeContentTab === "Premium") {
+      // Premium tab: ONLY premium videos
+      return v.visibility === "premium";
+    }
     return true;
   });
 
@@ -312,11 +321,11 @@ export default function PublicProfilePage() {
 
               {activeContentTab === "Premium" && (
                 <div className="w-full">
-                  {videos.length === 0 ? (
+                  {filteredVideos.length === 0 ? (
                     <div className="text-center py-20 text-white/50">No premium content yet.</div>
                   ) : (
                     <div className="grid grid-cols-3 gap-4">
-                      {videos.map((video) => (
+                      {filteredVideos.map((video) => (
                         <div key={video.id} className="bg-[#1c1c1e] border border-white/10 rounded-2xl overflow-hidden group cursor-pointer relative">
                           <div className="relative aspect-square">
                             <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-40" />

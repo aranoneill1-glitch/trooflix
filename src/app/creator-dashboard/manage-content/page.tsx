@@ -25,6 +25,7 @@ type VideoType = {
   viewCount?: number;
   likeCount?: number;
   is_premium?: boolean;
+  visibility?: string;
 };
 
 export default function ManageContentPage() {
@@ -84,9 +85,9 @@ export default function ManageContentPage() {
       if (searchQuery && !v.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
       
       // 2. Tab Filter
-      if (activeTab === "Videos") return v.type?.toLowerCase() !== "podcast";
+      if (activeTab === "Videos") return v.type?.toLowerCase() !== "tweet" && v.type?.toLowerCase() !== "short" && v.visibility !== "premium";
       if (activeTab === "Podcasts") return v.type?.toLowerCase() === "podcast";
-      if (activeTab === "Premium") return v.is_premium === true; // Or however you flag premium
+      if (activeTab === "Premium") return v.visibility === "premium" || v.is_premium === true; // Or however you flag premium
       if (activeTab === "Drafts") return false; // Placeholder if you add draft logic
       
       return true; // "All"

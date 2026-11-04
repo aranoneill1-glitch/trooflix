@@ -196,7 +196,14 @@ function CreatorDashboardContent() {
   const username = profile?.username || "creator";
 
   const filteredVideos = creatorVideos.filter(v => {
-    if (activeContentTab === "Videos") return !v.type?.toLowerCase().includes("podcast");
+    const type = (v.type || "").toLowerCase();
+    
+    if (activeContentTab === "Videos") {
+      return type !== "tweet" && type !== "short" && v.visibility !== "premium";
+    }
+    if (activeContentTab === "Premium") {
+      return v.visibility === "premium";
+    }
     return true;
   });
 
@@ -379,7 +386,7 @@ function CreatorDashboardContent() {
 
               {activeContentTab === "Premium" && (
                 <div className="w-full">
-                  {creatorVideos.length === 0 ? (
+                  {filteredVideos.length === 0 ? (
                     <div className="text-center py-20 text-white/50">No premium content yet.</div>
                   ) : (
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
