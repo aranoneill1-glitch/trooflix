@@ -6,11 +6,12 @@ import Link from "next/link";
 import { 
   Plus, Search, Video, Mic, Eye, Heart, 
   MoreVertical, Pencil, Trash2, Play, LayoutGrid, List, 
-  FileText, Crown, Clock, ChevronLeft 
+  FileText, Crown, Clock, ChevronLeft, X, MessageSquare, Radio 
 } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { getCachedUser } from "@/lib/cache";
+import { motion, AnimatePresence } from "framer-motion";
 
 type VideoType = {
   id: number;
@@ -37,6 +38,7 @@ export default function ManageContentPage() {
   const [activeTab, setActiveTab] = useState<"All" | "Videos" | "Podcasts" | "Premium" | "Drafts">("All");
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
+  const [showAddContentMenu, setShowAddContentMenu] = useState(false);
 
   useEffect(() => {
     getCachedUser().then((user) => {
@@ -118,9 +120,9 @@ export default function ManageContentPage() {
             </Link>
             <h1 className="text-3xl font-black tracking-tight">Manage Content</h1>
           </div>
-          <Link href="/creator-dashboard/upload" className="flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white font-bold text-xs sm:text-sm px-4 py-2 sm:px-5 sm:py-2.5 rounded-full transition-all whitespace-nowrap shadow-lg shrink-0">
+          <button onClick={() => setShowAddContentMenu(true)} className="flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white font-bold text-xs sm:text-sm px-4 py-2 sm:px-5 sm:py-2.5 rounded-full transition-all whitespace-nowrap shadow-lg shrink-0">
             <Plus size={16} className="text-[#E53945]" /> Upload New
-          </Link>
+          </button>
         </div>
 
         {/* STATS BAR */}
@@ -344,6 +346,96 @@ export default function ManageContentPage() {
       )}
 
       <MobileBottomNav />
+    
+      {/* SLIDE-UP CREATE MENU */}
+      <AnimatePresence>
+        {showAddContentMenu && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowAddContentMenu(false)}
+              className="fixed inset-0 z-[300] bg-black/60 backdrop-blur-md"
+            />
+            <motion.div
+              initial={{ y: "100%", opacity: 0, scale: 0.95 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: "100%", opacity: 0, scale: 0.95 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="fixed bottom-0 left-0 right-0 z-[301] bg-[#0a0303]/80 backdrop-blur-2xl rounded-t-[32px] border-t border-white/10 p-6 pb-28 lg:max-w-md lg:mx-auto lg:rounded-[32px] lg:bottom-10 shadow-[0_0_50px_rgba(0,0,0,0.8)] max-h-[85vh] overflow-y-auto"
+            >
+              <div className="w-12 h-1.5 bg-white/20 rounded-full mx-auto mb-6 lg:hidden" />
+              
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-black text-white tracking-tight">Create New</h3>
+                <button onClick={() => setShowAddContentMenu(false)} className="p-2.5 bg-white/10 rounded-full hover:bg-white/20 transition text-white border border-white/5">
+                  <X size={18} />
+                </button>
+              </div>
+              
+              <div className="flex flex-col gap-3">
+                <button 
+                  onClick={() => { setShowAddContentMenu(false); router.push("/creator-dashboard/upload"); }}
+                  className="group relative flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 p-4 rounded-2xl transition-all duration-300 overflow-hidden text-left w-full"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#E53945]/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="w-12 h-12 rounded-xl bg-[#E53945]/20 flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(229,57,69,0.2)]">
+                    <Video className="text-[#E53945]" size={24} />
+                  </div>
+                  <div className="relative z-10">
+                    <h4 className="font-bold text-white text-base">Upload Video</h4>
+                    <p className="text-xs text-white/50">Publish a long-form video or documentary</p>
+                  </div>
+                </button>
+
+                <button 
+                  onClick={() => { setShowAddContentMenu(false); router.push("/creator-dashboard/upload?type=short"); }}
+                  className="group relative flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-blue-500/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden text-left w-full"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
+                    <Play className="text-blue-400" size={24} />
+                  </div>
+                  <div className="relative z-10">
+                    <h4 className="font-bold text-white text-base">Upload Short</h4>
+                    <p className="text-xs text-white/50">Publish to the Shorts feed and your profile</p>
+                  </div>
+                </button>
+                
+                <button 
+                  onClick={() => { setShowAddContentMenu(false); router.push("/creator-dashboard/upload?type=tweet"); }}
+                  className="group relative flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-green-500/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden text-left w-full"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent to-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(34,197,94,0.2)]">
+                    <MessageSquare className="text-green-400" size={24} />
+                  </div>
+                  <div className="relative z-10">
+                    <h4 className="font-bold text-white text-base">Add a Tweet</h4>
+                    <p className="text-xs text-white/50">Share a text update on the home feed</p>
+                  </div>
+                </button>
+
+                <button 
+                  onClick={() => { setShowAddContentMenu(false); router.push("/creator-dashboard/live"); }}
+                  className="group relative flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#E53945]/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden text-left w-full"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#E53945]/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="w-12 h-12 rounded-xl bg-[#E53945]/20 flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(229,57,69,0.2)]">
+                    <Radio className="text-[#E53945]" size={24} />
+                  </div>
+                  <div className="relative z-10">
+                    <h4 className="font-bold text-white text-base">Go Live</h4>
+                    <p className="text-xs text-white/50">Start a live stream with your fans</p>
+                  </div>
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
     </main>
   );
 }
