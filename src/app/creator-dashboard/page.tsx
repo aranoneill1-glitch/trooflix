@@ -389,8 +389,8 @@ function CreatorDashboardContent() {
                   {filteredVideos.length === 0 ? (
                     <div className="text-center py-20 text-white/50">No premium content yet.</div>
                   ) : (
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                      {creatorVideos.map((video) => (
+                    <div className="grid grid-cols-3 gap-4">
+                      {filteredVideos.map((video) => (
                         <div key={video.id} className="bg-[#1c1c1e] border border-white/5 rounded-2xl overflow-hidden group cursor-pointer relative shadow-lg">
                           <div className="relative aspect-[3/4] md:aspect-square">
                             <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-60" />
