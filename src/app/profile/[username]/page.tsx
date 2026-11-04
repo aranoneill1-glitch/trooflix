@@ -43,6 +43,7 @@ export default function PublicProfilePage() {
   const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
   const [followerCount, setFollowerCount] = useState(0);
   const [subscriberCount, setSubscriberCount] = useState(0);
+  const pressTimer = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     getCachedUser().then(setCurrentUser);
@@ -123,8 +124,6 @@ export default function PublicProfilePage() {
 
   // Determine if the logged-in user owns this profile
   const isOwner = currentUser && profile && currentUser.id === profile.user_id;
-
-  const pressTimer = useRef<NodeJS.Timeout | null>(null);
 
   const startPress = (item: any) => {
     if (!isOwner) return;
