@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { ShoppingBag, Search, Heart, ShieldCheck, X } from "lucide-react";
@@ -21,7 +20,6 @@ export default function MerchandisePage() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Extract unique creators directly from the listed products
   const realCreators = useMemo(() => {
     const map = new Map();
     products.forEach(p => {
@@ -36,7 +34,6 @@ export default function MerchandisePage() {
     return Array.from(map.values());
   }, [products]);
 
-  // Filter and split into Merchandise and Books
   const filteredProducts = useMemo(() => {
     if (!searchQuery.trim()) return products;
     const q = searchQuery.toLowerCase();
@@ -55,26 +52,48 @@ export default function MerchandisePage() {
     <main className="min-h-screen bg-[#09090B] text-white pb-24 lg:pb-20">
       <TopBar />
       
-      <div className="max-w-7xl mx-auto px-4 md:px-8 pt-24 lg:pt-32">
+      {/* CINEMATIC HERO */}
+      <div className="relative w-full h-[45vh] md:h-[55vh] flex flex-col justify-end overflow-hidden pb-8 md:pb-12">
         
-        {/* HEADER & SEARCH */}
-        <div className="mb-10">
-          <h1 className="text-4xl md:text-5xl font-black mb-6 tracking-tight">
-            Trooflix <span className="text-[#E53945]">Marketplace</span>
-          </h1>
+        {/* Background Image & Overlays */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=2000&auto=format&fit=crop" 
+            alt="Marketplace" 
+            className="w-full h-full object-cover object-center" 
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#09090B] via-[#09090B]/60 to-black/30" />
+        </div>
+
+        {/* Hero Content */}
+        <div className="relative z-10 px-4 md:px-8 w-full max-w-7xl mx-auto flex flex-col items-start">
           
-          <div className="relative w-full max-w-2xl">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50" size={20} />
+          <p className="text-[#E53945] font-bold tracking-[0.3em] text-[10px] md:text-xs uppercase mb-2 md:mb-3 drop-shadow-md">
+            Explore Merchandise
+          </p>
+          
+          <h1 className="text-5xl md:text-7xl font-black text-white leading-none tracking-tight drop-shadow-2xl mb-6">
+            Marketplace
+          </h1>
+
+          {/* Glass Search Bar */}
+          <div className="relative w-full max-w-lg">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/60" size={20} />
             <input
               type="text"
               placeholder="Search merchandise and books..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white/[0.04] border border-white/10 rounded-full py-4 pl-12 pr-4 text-sm md:text-base text-white placeholder:text-white/40 focus:outline-none focus:border-[#E53945]/50 focus:bg-white/[0.08] transition-all backdrop-blur-xl shadow-lg"
+              className="w-full bg-black/40 backdrop-blur-xl border border-white/20 rounded-full py-3.5 pl-12 pr-4 text-sm text-white placeholder:text-white/50 focus:outline-none focus:border-[#E53945]/50 focus:bg-black/60 transition-all shadow-xl"
             />
           </div>
-        </div>
 
+        </div>
+      </div>
+
+      {/* MAIN CONTENT AREA */}
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
+        
         {/* 1. FEATURED CREATOR STORES */}
         {realCreators.length > 0 && !searchQuery && (
           <section className="mb-12">
@@ -95,7 +114,9 @@ export default function MerchandisePage() {
         {/* 2. FEATURED MERCHANDISE */}
         {merchandise.length > 0 && (
           <section className="mb-12">
-            <h2 className="text-xl md:text-2xl font-bold mb-4">Featured Merchandise</h2>
+            <h2 className="text-xl md:text-2xl font-bold mb-4">
+               {searchQuery ? "Merchandise Results" : "Featured Merchandise"}
+            </h2>
             <div className="flex overflow-x-auto scrollbar-hide gap-4 pb-4">
               {merchandise.map((p) => (
                 <ProductCard key={p.id} product={p} onClick={() => setSelectedProduct(p)} />
@@ -107,7 +128,9 @@ export default function MerchandisePage() {
         {/* 3. FEATURED BOOKS */}
         {books.length > 0 && (
           <section className="mb-12">
-            <h2 className="text-xl md:text-2xl font-bold mb-4">Featured Books</h2>
+            <h2 className="text-xl md:text-2xl font-bold mb-4">
+              {searchQuery ? "Book Results" : "Featured Books"}
+            </h2>
             <div className="flex overflow-x-auto scrollbar-hide gap-4 pb-4">
               {books.map((p) => (
                 <ProductCard key={p.id} product={p} onClick={() => setSelectedProduct(p)} />
@@ -144,7 +167,7 @@ export default function MerchandisePage() {
             </div>
             
             <div className="p-6 md:p-8">
-              <p className="text-3xl font-black text-emerald-400 mb-2">£{(selectedProduct.price_cents / 100).toFixed(2)}</p>
+              <p className="text-3xl font-black text-[#1DB954] mb-2">£{(selectedProduct.price_cents / 100).toFixed(2)}</p>
               <h2 className="text-xl font-bold text-white mb-4 leading-tight">{selectedProduct.name}</h2>
               
               <div className="flex items-center gap-3 pt-6 border-t border-white/10">
