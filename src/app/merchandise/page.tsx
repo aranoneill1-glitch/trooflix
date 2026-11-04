@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import { ShoppingBag, Search, ArrowLeft } from "lucide-react";
+import { ShoppingBag, Search } from "lucide-react";
 
 export default function MerchandisePage() {
   const router = useRouter();
@@ -54,7 +54,7 @@ export default function MerchandisePage() {
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <img 
-            src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2000&auto=format&fit=crop" 
+            src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=2000&auto=format&fit=crop" 
             alt="Marketplace" 
             className="w-full h-full object-cover object-center" 
           />
@@ -62,16 +62,9 @@ export default function MerchandisePage() {
           <div className="absolute inset-0 bg-gradient-to-t from-[#09090B] via-[#09090B]/40 to-black/60" />
         </div>
 
-        {/* Top Overlay: Back Button & Search */}
-        <div className="relative z-10 px-4 md:px-8 pt-24 md:pt-28 flex flex-col gap-4 w-full max-w-7xl mx-auto">
-          <button 
-            onClick={() => router.back()} 
-            className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-black/40 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all text-white"
-          >
-            <ArrowLeft size={20} />
-          </button>
-          
-          <div className="relative w-full max-w-lg">
+        {/* Top Overlay: Full-width Search */}
+        <div className="relative z-10 px-4 md:px-8 pt-24 md:pt-28 w-full max-w-7xl mx-auto">
+          <div className="relative w-full">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/60" size={20} />
             <input
               type="text"
