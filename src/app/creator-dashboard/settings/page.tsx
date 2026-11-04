@@ -127,81 +127,94 @@ export default function ProfileSettingsPage() {
       <TopBar />
       <div className="max-w-2xl mx-auto px-4 pt-24 pb-6">
         
-        <Link href="/creator-dashboard" className="inline-flex items-center gap-2 text-sm text-white/50 hover:text-white mb-8 transition">
-          <ChevronLeft size={16} /> Back to Dashboard
-        </Link>
-
-        <div className="mb-8">
-          <h1 className="text-3xl font-black tracking-tight mb-2">Edit Profile</h1>
-          <p className="text-sm text-white/50">Manage your public presence and social links.</p>
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <Link href="/creator-dashboard" className="inline-flex items-center gap-1.5 text-sm text-white/50 hover:text-white mb-2 transition">
+              <ChevronLeft size={16} /> Back
+            </Link>
+            <h1 className="text-2xl font-black tracking-tight">Edit profile</h1>
+          </div>
         </div>
 
-        <form onSubmit={saveProfile} className="space-y-6">
+        <form onSubmit={saveProfile}>
           
-          <div className="bg-[#1c1c1e] border border-white/5 rounded-3xl p-6 flex flex-col items-center justify-center">
+          {/* Avatar Section */}
+          <div className="flex flex-col items-center justify-center mb-8">
             <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-              <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-[#09090B] ring-2 ring-white/10 bg-black flex-shrink-0 relative z-10">
+              <div className="w-24 h-24 rounded-full overflow-hidden border border-white/20 bg-[#1c1c1e] flex-shrink-0 relative z-10 shadow-xl">
                 {avatarUrl ? <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-3xl font-black text-white/20">{displayName.charAt(0) || "?"}</div>}
               </div>
               <div className="absolute inset-0 z-20 rounded-full bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <Camera size={28} className="text-white" />
+                <Camera size={24} className="text-white" />
               </div>
             </div>
-            <p className="text-sm font-semibold text-white mt-4">Change Profile Photo</p>
+            <button type="button" onClick={() => fileInputRef.current?.click()} className="text-[#E53945] text-sm font-semibold mt-4 hover:text-[#d12e39] transition">
+              Edit picture or avatar
+            </button>
             <input type="file" ref={fileInputRef} onChange={handleImageChange} accept="image/*" className="hidden" />
           </div>
 
-          <div className="bg-[#1c1c1e] border border-white/5 rounded-3xl p-6 md:p-8 space-y-6">
+          {/* List Fields */}
+          <div className="bg-[#1c1c1e] border border-white/5 rounded-2xl overflow-hidden mb-6">
             
-            <div>
-              <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 flex items-center gap-2">
-                <User size={14} /> Display Name
-              </label>
-              <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="e.g. John Doe" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white outline-none focus:border-[#E53945] transition" required />
+            {/* Name */}
+            <div className="flex items-center px-4 py-4 border-b border-white/5">
+              <label className="w-1/3 text-sm font-semibold text-white/90">Name</label>
+              <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Your name" className="flex-1 bg-transparent text-sm text-white/70 outline-none placeholder:text-white/30 text-right" required />
             </div>
 
-            <div>
-              <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 flex items-center gap-2">
-                <AtSign size={14} /> Username Handle
-              </label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 font-bold">@</span>
-                <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="johndoe" className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-3.5 text-white outline-none focus:border-[#E53945] transition" required />
+            {/* Username */}
+            <div className="flex items-center px-4 py-4 border-b border-white/5">
+              <label className="w-1/3 text-sm font-semibold text-white/90">Username</label>
+              <div className="flex-1 flex justify-end">
+                <span className="text-white/40 text-sm mr-0.5">@</span>
+                <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="username" className="bg-transparent text-sm text-white/70 outline-none placeholder:text-white/30 text-left w-auto min-w-[120px]" required />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 flex items-center gap-2"><InstagramIcon size={14} /> Instagram</label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 font-bold">@</span>
-                  <input type="text" value={instagram} onChange={(e) => setInstagram(e.target.value)} placeholder="username" className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-3.5 text-white outline-none focus:border-[#E53945] transition" />
-                </div>
-              </div>
-              <div>
-                <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 flex items-center gap-2"><XIcon size={14} /> X (Twitter)</label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 font-bold">@</span>
-                  <input type="text" value={xHandle} onChange={(e) => setXHandle(e.target.value)} placeholder="username" className="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-3.5 text-white outline-none focus:border-[#E53945] transition" />
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 flex items-center gap-2"><AlignLeft size={14} /> Bio</label>
-              <textarea value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Tell your viewers about yourself..." rows={4} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white outline-none focus:border-[#E53945] transition resize-none" />
+            {/* Bio */}
+            <div className="flex items-start px-4 py-4">
+              <label className="w-1/3 text-sm font-semibold text-white/90 pt-0.5">Bio</label>
+              <textarea value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Tell your viewers about yourself..." rows={3} className="flex-1 bg-transparent text-sm text-white/70 outline-none placeholder:text-white/30 resize-none" />
             </div>
 
           </div>
 
+          {/* Social Links */}
+          <h2 className="text-sm font-bold text-white/90 px-2 mb-2">Public business information</h2>
+          <div className="bg-[#1c1c1e] border border-white/5 rounded-2xl overflow-hidden mb-8">
+            
+            {/* Instagram */}
+            <div className="flex items-center px-4 py-4 border-b border-white/5">
+              <label className="w-1/3 text-sm font-semibold text-white/90 flex items-center gap-2"><InstagramIcon size={16} /> Instagram</label>
+              <div className="flex-1 flex justify-end">
+                <span className="text-white/40 text-sm mr-0.5">@</span>
+                <input type="text" value={instagram} onChange={(e) => setInstagram(e.target.value)} placeholder="username" className="bg-transparent text-sm text-white/70 outline-none placeholder:text-white/30 text-left w-auto min-w-[120px]" />
+              </div>
+            </div>
+
+            {/* X (Twitter) */}
+            <div className="flex items-center px-4 py-4">
+              <label className="w-1/3 text-sm font-semibold text-white/90 flex items-center gap-2"><XIcon size={16} /> X</label>
+              <div className="flex-1 flex justify-end">
+                <span className="text-white/40 text-sm mr-0.5">@</span>
+                <input type="text" value={xHandle} onChange={(e) => setXHandle(e.target.value)} placeholder="username" className="bg-transparent text-sm text-white/70 outline-none placeholder:text-white/30 text-left w-auto min-w-[120px]" />
+              </div>
+            </div>
+
+          </div>
+
+          {/* Status Message */}
           {status.message && (
-            <div className={`rounded-xl px-4 py-3 text-sm font-medium ${status.type === "success" ? "bg-emerald-950/30 border border-emerald-600/40 text-emerald-300" : "bg-red-950/30 border border-red-600/40 text-red-300"}`}>
+            <div className={`rounded-xl px-4 py-3 text-sm font-medium mb-6 ${status.type === "success" ? "bg-emerald-950/30 border border-emerald-600/40 text-emerald-300" : "bg-red-950/30 border border-red-600/40 text-red-300"}`}>
               {status.message}
             </div>
           )}
 
+          {/* Save Button */}
           <button type="submit" disabled={saving} className="w-full flex items-center justify-center gap-2 bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold py-4 rounded-xl transition-all hover:scale-[1.02] shadow-[0_0_20px_rgba(229,57,69,0.3)]">
-            <Save size={18} /> {saving ? "Saving Changes…" : "Save Profile"}
+            <Save size={18} /> {saving ? "Saving..." : "Save"}
           </button>
 
         </form>
