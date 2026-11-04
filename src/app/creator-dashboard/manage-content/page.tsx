@@ -260,7 +260,7 @@ export default function ManageContentPage() {
                       
                       {activeMenuId === video.id && (
                         <div className="absolute right-0 bottom-full mb-2 z-20 w-36 bg-[#2c2c2e] border border-white/10 rounded-xl shadow-2xl overflow-hidden py-1">
-                          <button className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-white hover:bg-white/10 transition text-left">
+                          <button onClick={() => router.push(`/creator-dashboard/upload?edit=${video.id}`)} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-white hover:bg-white/10 transition text-left">
                             <Pencil size={14} /> Edit
                           </button>
                           <button className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-white hover:bg-white/10 transition text-left">
@@ -282,10 +282,10 @@ export default function ManageContentPage() {
         ) : (
           <div className="flex flex-col gap-3">
             {filteredVideos.map((video) => (
-              <div key={video.id} className="flex items-center gap-4 bg-[#1c1c1e] border border-white/10 rounded-2xl p-3 hover:border-[#E53945]/50 transition-colors relative group">
+              <div key={video.id} className="flex items-center gap-3 md:gap-4 bg-[#1c1c1e] border border-white/10 rounded-2xl p-2.5 md:p-3 hover:border-[#E53945]/50 transition-colors relative group">
                 
                 {/* Thumbnail */}
-                <div className="w-32 aspect-video rounded-lg overflow-hidden bg-black shrink-0 relative">
+                <div className="w-24 md:w-32 aspect-video rounded-lg overflow-hidden bg-black shrink-0 relative">
                   <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover" />
                   <div className={`absolute top-1 left-1 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-sm ${video.type?.toLowerCase() === 'podcast' ? 'bg-blue-500' : 'bg-[#E53945]'}`}>
                     {video.type || "VIDEO"}
@@ -293,33 +293,34 @@ export default function ManageContentPage() {
                 </div>
 
                 {/* Info */}
-                <div className="flex-1 min-w-0 py-1">
+                <div className="flex-1 min-w-0 py-0.5">
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="text-sm font-bold text-white truncate">{video.title}</h3>
                     {video.is_premium && <Crown size={14} className="text-yellow-500 shrink-0" />}
                   </div>
-                  <div className="flex items-center gap-4 text-xs text-white/50">
-                    <span className="flex items-center gap-1"><Eye size={12} /> {(video.viewCount || 0).toLocaleString()} views</span>
-                    <span className="flex items-center gap-1"><Heart size={12} /> {(video.likeCount || 0).toLocaleString()} likes</span>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] md:text-xs text-white/50">
+                    <span className="flex items-center gap-1"><Eye size={12} /> {(video.viewCount || 0).toLocaleString()}</span>
+                    <span className="flex items-center gap-1"><Heart size={12} /> {(video.likeCount || 0).toLocaleString()}</span>
                     <span className="flex items-center gap-1"><Clock size={12} /> {video.createdAt ? new Date(video.createdAt).toLocaleDateString() : 'Just now'}</span>
                   </div>
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-1 shrink-0 px-2">
-                  <button className="p-2 text-white/50 hover:text-white rounded-lg transition hidden md:block">
+                <div className="flex items-center gap-1 shrink-0 px-1">
+                  <button onClick={() => router.push(`/creator-dashboard/upload?edit=${video.id}`)} className="p-2 text-white/50 hover:text-white rounded-lg transition hidden md:block">
                     <Pencil size={16} />
                   </button>
                   <button onClick={() => handleDelete(video.id)} className="p-2 text-white/50 hover:text-red-500 rounded-lg transition hidden md:block">
                     <Trash2 size={16} />
                   </button>
+                  
                   <div className="relative md:hidden">
-                    <button onClick={() => setActiveMenuId(activeMenuId === video.id ? null : video.id)} className="p-2 text-white/50 hover:text-white rounded-lg transition">
+                    <button onClick={() => setActiveMenuId(activeMenuId === video.id ? null : video.id)} className="p-1.5 text-white/50 hover:text-white rounded-lg transition">
                       <MoreVertical size={18} />
                     </button>
                     {activeMenuId === video.id && (
                       <div className="absolute right-0 bottom-full mb-2 z-20 w-36 bg-[#2c2c2e] border border-white/10 rounded-xl shadow-2xl overflow-hidden py-1">
-                        <button className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-white hover:bg-white/10 transition text-left">
+                        <button onClick={() => router.push(`/creator-dashboard/upload?edit=${video.id}`)} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-white hover:bg-white/10 transition text-left">
                           <Pencil size={14} /> Edit
                         </button>
                         <button onClick={() => handleDelete(video.id)} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 transition text-left">
