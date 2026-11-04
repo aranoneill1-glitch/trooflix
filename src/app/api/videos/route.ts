@@ -1,27 +1,73 @@
 import { NextResponse } from "next/server";
-import { kv } from "@vercel/kv";
 
-const KEY = "trooflix:videos";
-
-// FORCE NEXT.JS TO NEVER CACHE THIS API ROUTE
 export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
 export async function GET() {
   try {
-    const videos = (await kv.get<any[]>(KEY)) || [];
+    const KV_URL = (process.env.KV_REST_API_URL || "").replace(/"/g, "").replace(/\\n/g, "").trim().replace(/\/$/, "");
+    const KV_TOKEN = (process.env.KV_REST_API_TOKEN || "").replace(/"/g, "").replace(/\\n/g, "").trim();
+
+    if (!KV_URL || !KV_TOKEN) return NextResponse.json([]);
+
+    const res = await fetch(`${KV_URL}/get/trooflix:videos`, {
+      headers: { Authorization: `Bearer ${KV_TOKEN}` },
+      cache: 'no-store'
+    });
+    
+    if (!res.ok) return NextResponse.json([]);
+    
+    const data = await res.json();
+    if (!data.result) return NextResponse.json([]);
+
+    // ROBUST PARSER: Handles raw arrays, double-stringified objects, and JSON strings
+    let videos = [];
+    try {
+      let parsed = JSON.parse(data.result);
+      
+      // Unwrap if it's { value: "..." }
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && parsed.value) {
+        parsed = typeof parsed.value === 'string' ? JSON.parse(parsed.value) : parsed.value;
+      }
+      
+      // Final check
+      if (Array.isArray(parsed)) {
+        videos = parsed;
+      }
+    } catch (e) {
+      console.error("Failed to parse KV data:", e);
+      return NextResponse.json([]);
+    }
+
     const sorted = [...videos].sort((a, b) => b.id - a.id);
     return NextResponse.json(sorted);
-  } catch (e) {
-    console.error("GET error:", e);
+    
+  } catch (e: any) {
+    console.error("API GET Error:", e.message);
     return NextResponse.json([]);
   }
 }
 
 export async function POST(req: Request) {
   try {
+    const KV_URL = (process.env.KV_REST_API_URL || "").replace(/"/g, "").replace(/\\n/g, "").trim().replace(/\/$/, "");
+    const KV_TOKEN = (process.env.KV_REST_API_TOKEN || "").replace(/"/g, "").replace(/\\n/g, "").trim();
+    
     const body = await req.json();
-    const videos = (await kv.get<any[]>(KEY)) || [];
+    
+    // Get current videos
+    const getRes = await fetch(`${KV_URL}/get/trooflix:videos`, {
+      headers: { Authorization: `Bearer ${KV_TOKEN}` }
+    });
+    const getData = await getRes.json();
+    
+    let videos = [];
+    if (getData.result) {
+      let parsed = JSON.parse(getData.result);
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && parsed.value) {
+        parsed = typeof parsed.value === 'string' ? JSON.parse(parsed.value) : parsed.value;
+      }
+      if (Array.isArray(parsed)) videos = parsed;
+    }
 
     const newVideo = {
       id: Date.now(),
@@ -35,100 +81,23 @@ export async function POST(req: Request) {
       creatorId: body.creatorId || null,
       uploaderUserId: body.uploaderUserId || null,
       videoUrl: body.videoUrl ?? body.bitchuteUrl ?? "",
-      posterUrl:
-        body.posterUrl ||
-        `/api/poster?title=${encodeURIComponent(body.title || "Untitled")}&category=${encodeURIComponent(body.category || "Uncensored")}`,
-      backdropUrl:
-        body.backdropUrl ||
-        `/api/poster?size=wide&title=${encodeURIComponent(body.title || "Untitled")}&category=${encodeURIComponent(body.category || "Uncensored")}`,
-      year: body.year || new Date().getFullYear(),
-      rating: body.rating || "TV-MA",
-      match: body.match || 95,
-      duration: body.duration || "",
-      createdAt: new Date().toISOString(),
+      posterUrl: body.posterUrl || `/api/poster?title=${encodeURIComponent(body.title || "Untitled")}&category=${encodeURIComponent(body.category || "Uncategorized")}`,
+      backdropUrl: body.backdropUrl || body.posterUrl || "",
     };
 
-    videos.push(newVideo);
-    await kv.set(KEY, videos);
-    return NextResponse.json(newVideo);
-  } catch (e: any) {
-    console.error("POST error:", e);
-    return NextResponse.json({ error: String(e) }, { status: 500 });
-  }
-}
-
-export async function PUT(req: Request) {
-  try {
-    const { searchParams } = new URL(req.url);
-    const id = Number(searchParams.get("id"));
-    const body = await req.json();
-    const videos = (await kv.get<any[]>(KEY)) || [];
-
-    const index = videos.findIndex((v: any) => String(v.id) === String(id));
-    if (index === -1) {
-      return NextResponse.json({ error: "Video not found" }, { status: 404 });
-    }
-
-    videos[index] = {
-      ...videos[index],
-      title: body.title ?? videos[index].title,
-      description: body.description ?? videos[index].description,
-      category: body.category ?? videos[index].category,
-      type: body.type ?? videos[index].type,
-      visibility: body.visibility ?? videos[index].visibility,
-      feed_visible: body.feed_visible !== undefined ? body.feed_visible : (videos[index].feed_visible !== false),
-      featured: body.featured ?? videos[index].featured,
-      creatorId: body.creatorId !== undefined ? body.creatorId : (videos[index].creatorId ?? null),
-      uploaderUserId: body.uploaderUserId !== undefined ? body.uploaderUserId : (videos[index].uploaderUserId ?? null),
-      videoUrl: body.videoUrl ?? body.bitchuteUrl ?? videos[index].videoUrl ?? videos[index].bitchuteUrl ?? "",
-      posterUrl: body.posterUrl ?? videos[index].posterUrl,
-      backdropUrl: body.backdropUrl ?? videos[index].backdropUrl,
-      year: body.year ?? videos[index].year,
-      rating: body.rating ?? videos[index].rating,
-      pinned: body.pinned ?? videos[index].pinned ?? false,
-      order: body.order ?? videos[index].order ?? 0,
-      textOverlays: Array.isArray(body.textOverlays) ? body.textOverlays : (videos[index].textOverlays || []),
-    };
-
-    await kv.set(KEY, videos);
-    return NextResponse.json(videos[index]);
-  } catch (e: any) {
-    console.error("PUT error:", e);
-    return NextResponse.json({ error: String(e) }, { status: 500 });
-  }
-}
-
-export async function DELETE(req: Request) {
-  try {
-    const { searchParams } = new URL(req.url);
-    const id = Number(searchParams.get("id"));
-    const videos = (await kv.get<any[]>(KEY)) || [];
+    const updated = [newVideo, ...videos];
     
-    // Find the video to delete so we know the R2 URLs
-    const videoToDelete = videos.find((v: any) => String(v.id) === String(id));
-    
-    // Delete the files from R2 if they exist
-    if (videoToDelete) {
-      const urlsToDelete = [videoToDelete.videoUrl, videoToDelete.posterUrl].filter(Boolean);
-      const baseUrl = "https://www.trooflixtv.com"; // Assuming this is the domain
-      
-      for (const url of urlsToDelete) {
-        if (url.startsWith("https://")) {
-          await fetch(baseUrl + "/api/delete-r2-file", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ fileUrl: url }),
-          }).catch(() => {});
-        }
-      }
-    }
+    await fetch(`${KV_URL}/set/trooflix:videos`, {
+      method: "POST",
+      headers: { 
+        Authorization: `Bearer ${KV_TOKEN}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ value: JSON.stringify(updated) })
+    });
 
-    // Remove from database
-    const filtered = videos.filter((v: any) => String(v.id) !== String(id));
-    await kv.set(KEY, filtered);
-    return NextResponse.json({ ok: true, deleted: id });
+    return NextResponse.json({ success: true, video: newVideo });
   } catch (e: any) {
-    console.error("DELETE error:", e);
-    return NextResponse.json({ error: String(e) }, { status: 500 });
+    return NextResponse.json({ error: "Failed to save" }, { status: 500 });
   }
 }
