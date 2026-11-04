@@ -857,22 +857,28 @@ function DetailModal({ item, onClose, onPlay, creators }: { item: Video; onClose
           <div className="absolute bottom-0 left-0 right-0 p-5 md:p-10">
             <h2 className="text-3xl md:text-5xl font-black mb-2 md:mb-3 drop-shadow-lg">{item.title}</h2>
             <p className="text-sm md:text-base text-white/70 mb-4 md:mb-5">{metaParts.join(" · ")}</p>
-            <div className="flex gap-2 md:gap-3 flex-wrap">
+            <div className="flex items-center gap-2 md:gap-3 flex-wrap">
               <button onClick={() => onPlay(item)} className="flex items-center gap-2 bg-white/20 backdrop-blur-xl border border-white/30 text-white font-bold px-6 md:px-8 py-2.5 md:py-3 rounded-xl shadow-lg hover:bg-white/30 transition-all active:scale-95"><Play size={18} fill="currentColor" /> Play</button>
-              <SaveButton videoId={item.id} variant="labeled" size={18} />
+              
+              <div className="flex items-center justify-center w-[46px] h-[46px] md:w-[50px] md:h-[50px] bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl hover:bg-white/20 transition-all text-white cursor-pointer">
+                <SaveButton videoId={item.id} variant="icon" size={20} />
+              </div>
+
+              <div className="flex items-center gap-2 bg-[#000000]/40 backdrop-blur-md border border-white/10 rounded-xl px-3 py-1.5 md:py-2 ml-0 md:ml-2 shadow-lg">
+                {uploaderPhoto ? <img src={uploaderPhoto} alt={uploaderName} className="w-7 h-7 md:w-8 md:h-8 rounded-full object-cover border border-white/20" /> : <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-xs font-bold text-white">{uploaderInitial}</div>}
+                <div className="min-w-0 flex flex-col justify-center">
+                  <p className="text-[8px] uppercase tracking-widest text-white/50 leading-none mb-0.5">Uploaded by</p>
+                  {uploaderSlug ? <a href={`/podcaster/${uploaderSlug}`} className="text-xs md:text-sm font-semibold text-white hover:underline truncate leading-tight">{uploaderName}</a> : <p className="text-xs md:text-sm font-semibold text-white truncate leading-tight">{uploaderName}</p>}
+                </div>
+              </div>
             </div>
           </div>
         </div>
-        <div className="p-5 md:p-10 space-y-5">
-          {item.description && <p className="text-white/90 leading-relaxed text-sm md:text-base">{item.description}</p>}
-          <div className="flex items-center gap-3 pt-2 border-t border-white/10">
-            {uploaderPhoto ? <img src={uploaderPhoto} alt={uploaderName} className="w-10 h-10 md:w-11 md:h-11 rounded-xl object-cover border border-white/20" /> : <div className="w-10 h-10 md:w-11 md:h-11 rounded-xl bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center font-bold text-white">{uploaderInitial}</div>}
-            <div className="min-w-0 flex-1">
-              <p className="text-[11px] uppercase tracking-widest text-white/40">Uploaded by</p>
-              {uploaderSlug ? <a href={`/podcaster/${uploaderSlug}`} className="font-semibold text-white hover:underline block truncate">{uploaderName}</a> : <p className="font-semibold text-white truncate">{uploaderName}</p>}
-            </div>
-            <div className="w-11 h-11 md:w-12 md:h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition flex-shrink-0"><LikeButton videoId={item.id} size={22} stacked /></div>
+        <div className="p-5 md:p-10 flex items-start justify-between gap-4">
+          <div className="flex-1">
+            {item.description && <p className="text-white/90 leading-relaxed text-sm md:text-base">{item.description}</p>}
           </div>
+          <div className="w-11 h-11 md:w-12 md:h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition flex-shrink-0 cursor-pointer"><LikeButton videoId={item.id} size={22} stacked /></div>
         </div>
       </motion.div>
     </motion.div>
