@@ -41,7 +41,7 @@ export default function MerchandisePage() {
       <div className="relative w-full h-[45vh] md:h-[55vh] flex flex-col justify-end overflow-hidden pb-8 md:pb-12">
         <div className="absolute inset-0 z-0">
           <img 
-            src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=2000&auto=format&fit=crop" 
+            src="/images.jpeg" 
             alt="Marketplace" 
             className="w-full h-full object-cover object-center" 
           />
