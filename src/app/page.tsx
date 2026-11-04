@@ -521,7 +521,7 @@ export default function Home() {
 
             {!filtered && showingFiltered && (
               <div className="px-4 md:px-12">
-                <div className="flex items-center justify-between mb-4">
+                <div className="mt-10 flex items-center justify-between mb-4">
                   <h2 className="text-2xl md:text-3xl font-bold">{activeCategory || activeTab}</h2>
                   {activeCategory && <button onClick={() => setActiveCategory(null)} className="text-sm text-white/50 hover:text-white transition">Clear filter</button>}
                 </div>
