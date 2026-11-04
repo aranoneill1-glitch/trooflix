@@ -1,7 +1,7 @@
 "use client";
 import { getCachedUser } from "@/lib/cache";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState , useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, UserPlus, MessageSquare, CheckCircle2, LayoutGrid, List, ShoppingBag, Star, Lock, Play , GripVertical } from "lucide-react";
 import HomeFeedCard from "@/components/HomeFeedCard";
@@ -124,22 +124,19 @@ export default function PublicProfilePage() {
   // Determine if the logged-in user owns this profile
   const isOwner = currentUser && profile && currentUser.id === profile.user_id;
 
-  const handlePointerDown = (item: any) => {
-    if (!isOwner) {
-      alert("You must be logged in as the owner (SSECA) to edit this shop.");
-      return;
-    }
-    console.log("Long press started on:", item.name);
-    const timer = setTimeout(() => {
+  const pressTimer = useRef<NodeJS.Timeout | null>(null);
+
+  const startPress = (item: any) => {
+    if (!isOwner) return;
+    pressTimer.current = setTimeout(() => {
       setSelectedMerchItem(item);
-    }, 500); // 500ms hold to trigger
-    setLongPressTimer(timer);
+    }, 500);
   };
 
-  const handlePointerUp = () => {
-    if (longPressTimer) {
-      clearTimeout(longPressTimer);
-      setLongPressTimer(null);
+  const cancelPress = () => {
+    if (pressTimer.current) {
+      clearTimeout(pressTimer.current);
+      pressTimer.current = null;
     }
   };
 
@@ -366,12 +363,13 @@ export default function PublicProfilePage() {
                       {localMerch.map((item) => (
                         <div 
                           key={item.id} 
+                          onMouseDown={() => startPress(item)}
+                          onMouseUp={cancelPress}
+                          onMouseLeave={cancelPress}
+                          onTouchStart={() => startPress(item)}
+                          onTouchEnd={cancelPress}
+                          onTouchMove={cancelPress}
                           onContextMenu={(e) => { e.preventDefault(); setSelectedMerchItem(item); }}
-                          onPointerDown={() => handlePointerDown(item)}
-                          onPointerUp={handlePointerUp}
-                          onPointerLeave={handlePointerUp}
-                          onTouchStart={() => handlePointerDown(item)}
-                          onTouchEnd={handlePointerUp}
                           className="bg-[#1c1c1e] border border-white/10 rounded-xl overflow-hidden group cursor-pointer flex flex-col select-none relative z-10" 
                           style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", userSelect: "none" }}
                         >
@@ -390,12 +388,13 @@ export default function PublicProfilePage() {
                       {localMerch.map((item) => (
                         <div 
                           key={item.id} 
+                          onMouseDown={() => startPress(item)}
+                          onMouseUp={cancelPress}
+                          onMouseLeave={cancelPress}
+                          onTouchStart={() => startPress(item)}
+                          onTouchEnd={cancelPress}
+                          onTouchMove={cancelPress}
                           onContextMenu={(e) => { e.preventDefault(); setSelectedMerchItem(item); }}
-                          onPointerDown={() => handlePointerDown(item)}
-                          onPointerUp={handlePointerUp}
-                          onPointerLeave={handlePointerUp}
-                          onTouchStart={() => handlePointerDown(item)}
-                          onTouchEnd={handlePointerUp}
                           className="flex items-center gap-4 bg-[#1c1c1e] border border-white/10 rounded-2xl p-3 select-none relative z-10" 
                           style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", userSelect: "none" }}
                         >

@@ -213,17 +213,18 @@ function CreatorDashboardContent() {
 
 
 
-  const handlePointerDown = (item: any) => {
-    const timer = setTimeout(() => {
+  const pressTimer = useRef<NodeJS.Timeout | null>(null);
+
+  const startPress = (item: any) => {
+    pressTimer.current = setTimeout(() => {
       setSelectedMerchItem(item);
     }, 500);
-    setLongPressTimer(timer);
   };
 
-  const handlePointerUp = () => {
-    if (longPressTimer) {
-      clearTimeout(longPressTimer);
-      setLongPressTimer(null);
+  const cancelPress = () => {
+    if (pressTimer.current) {
+      clearTimeout(pressTimer.current);
+      pressTimer.current = null;
     }
   };
 
@@ -322,7 +323,7 @@ function CreatorDashboardContent() {
               </div>
 
               <div className="flex gap-3 mb-8 w-full">
-                <button className="flex-1 flex items-center justify-center gap-2 bg-[#E53945] text-white font-bold py-3 rounded-full hover:bg-[#d12e39] transition shadow-lg shadow-[#E53945]/20"><Star size={18} fill="currentColor" /> Subscribe</button>
+                <button onClick={() => setShowAddContentMenu(true)} className="flex-1 flex items-center justify-center gap-2 bg-[#E53945] text-white font-bold py-3 rounded-full hover:bg-[#d12e39] transition shadow-lg shadow-[#E53945]/20"><Plus size={18} /> Add Content</button>
                 <Link href="/messages" className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-full transition border border-white/10">
                   <Inbox size={18} /> Inbox
                 </Link>
