@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, Plus, RefreshCw, Video, Radio, X, Play, MessageSquare } from "lucide-react";
+import { Menu, Plus, RefreshCw, Video, Radio, X, Play, MessageSquare, Tag } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import UserMenu from "@/components/UserMenu";
 import NotificationBell from "@/components/NotificationBell";
@@ -188,6 +188,20 @@ export default function TopBar({ onMenu }: Props) {
                   <div>
                     <h4 className="font-bold text-white">Go Live</h4>
                     <p className="text-xs text-white/50">Stream a live Q&A with your fans</p>
+                  </div>
+                </Link>
+
+                <Link 
+                  href="/creator-dashboard/shop"
+                  onClick={() => setShowCreateMenu(false)}
+                  className="group relative flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-500/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden"
+                >
+                  <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(168,85,247,0.2)]">
+                    <Tag className="text-purple-400" size={24} />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-white">Add an Item</h4>
+                    <p className="text-xs text-white/50">Add an item to your store</p>
                   </div>
                 </Link>
               </div>
