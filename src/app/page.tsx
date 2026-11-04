@@ -96,6 +96,8 @@ export default function Home() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
 
   const handleLogout = async () => {
     const supabase = createClient();
@@ -302,25 +304,110 @@ export default function Home() {
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] h-[300px] bg-[#E53945]/20 rounded-full blur-[100px] pointer-events-none z-0" />
                 
                 <div className="absolute top-0 left-0 w-full h-[300px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#E53945]/15 via-[#0a0303]/0 to-transparent pointer-events-none z-0" />
-                {/* Search Bar (Replaced Pills) */}
-                <div className="px-4 pt-24 pb-3 relative z-20 w-full animate-in fade-in slide-in-from-top-4 duration-500">
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      const fd = new FormData(e.currentTarget);
-                      const q = fd.get("q") as string;
-                      if (q.trim()) router.push(`/search?q=${encodeURIComponent(q)}`);
-                    }}
-                    className="relative w-full"
-                  >
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50" size={18} />
-                    <input
-                      type="text"
-                      name="q"
-                      placeholder="Search videos, creators, podcasts..."
-                      className="w-full bg-white/[0.04] border border-white/10 rounded-full py-3 pl-11 pr-4 text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-[#E53945]/50 focus:bg-white/[0.08] transition-all backdrop-blur-xl shadow-lg"
-                    />
-                  </form>
+                {/* Interactive Search Bar */}
+                <div className="px-4 pt-24 pb-3 relative z-[100] w-full animate-in fade-in slide-in-from-top-4 duration-500">
+                  <div className="relative w-full max-w-2xl mx-auto">
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        if (searchQuery.trim()) {
+                          setShowSearchDropdown(false);
+                          router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+                        }
+                      }}
+                      className="relative w-full"
+                    >
+                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50" size={18} />
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => {
+                          setSearchQuery(e.target.value);
+                          setShowSearchDropdown(e.target.value.trim().length > 0);
+                        }}
+                        onFocus={() => {
+                          if (searchQuery.trim().length > 0) setShowSearchDropdown(true);
+                        }}
+                        onBlur={() => setTimeout(() => setShowSearchDropdown(false), 200)}
+                        placeholder="Search videos, creators, podcasts..."
+                        className="w-full bg-white/[0.04] border border-white/10 rounded-full py-3.5 pl-11 pr-4 text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-[#E53945]/50 focus:bg-white/[0.08] transition-all backdrop-blur-xl shadow-lg"
+                      />
+                      {searchQuery && (
+                        <button type="button" onClick={() => { setSearchQuery(""); setShowSearchDropdown(false); }} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 bg-white/10 rounded-full hover:bg-white/20 transition">
+                          <X size={14} />
+                        </button>
+                      )}
+                    </form>
+
+                    {/* GLASS DROPDOWN */}
+                    {showSearchDropdown && (
+                      <div className="absolute top-full left-0 right-0 mt-2 bg-[#0a0303]/90 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col z-[100] animate-in fade-in slide-in-from-top-2">
+                        
+                        {/* MATCHING CREATORS */}
+                        {creators.filter(c => 
+                          (c.display_name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) || 
+                          (c.username?.toLowerCase() || "").includes(searchQuery.toLowerCase())
+                        ).length > 0 && (
+                          <div className="p-2 border-b border-white/5">
+                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-wider px-3 py-1">Creators</p>
+                            {creators.filter(c => 
+                              (c.display_name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) || 
+                              (c.username?.toLowerCase() || "").includes(searchQuery.toLowerCase())
+                            ).slice(0, 3).map(c => (
+                              <Link key={c.user_id} href={`/profile/${c.username}`} className="flex items-center gap-3 p-2 hover:bg-white/10 rounded-xl transition">
+                                <div className="w-8 h-8 rounded-full overflow-hidden bg-[#1c1c1e] shrink-0 border border-white/10">
+                                  {c.avatar_url ? <img src={c.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xs font-bold">{c.display_name?.[0] || "?"}</div>}
+                                </div>
+                                <div className="flex flex-col min-w-0">
+                                  <span className="text-sm font-bold text-white truncate">{c.display_name}</span>
+                                  <span className="text-[11px] text-white/50 truncate">@{c.username}</span>
+                                </div>
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* MATCHING VIDEOS */}
+                        {videos.filter(v => (v.title?.toLowerCase() || "").includes(searchQuery.toLowerCase())).length > 0 && (
+                          <div className="p-2 border-b border-white/5">
+                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-wider px-3 py-1">Videos</p>
+                            {videos.filter(v => (v.title?.toLowerCase() || "").includes(searchQuery.toLowerCase())).slice(0, 3).map(v => (
+                              <Link key={v.id} href={`/watch/${v.id}`} className="flex items-center gap-3 p-2 hover:bg-white/10 rounded-xl transition">
+                                <div className="w-12 h-8 rounded overflow-hidden bg-[#1c1c1e] shrink-0 border border-white/10">
+                                  <img src={v.posterUrl || v.backdropUrl} className="w-full h-full object-cover" />
+                                </div>
+                                <div className="flex flex-col min-w-0">
+                                  <span className="text-sm font-bold text-white truncate">{v.title}</span>
+                                  <span className="text-[11px] text-white/50 truncate">{v.type} • {v.category}</span>
+                                </div>
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* NO RESULTS */}
+                        {creators.filter(c => (c.display_name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) || (c.username?.toLowerCase() || "").includes(searchQuery.toLowerCase())).length === 0 &&
+                         videos.filter(v => (v.title?.toLowerCase() || "").includes(searchQuery.toLowerCase())).length === 0 && (
+                          <div className="p-6 text-center text-sm text-white/50">
+                            No quick results found for "{searchQuery}".
+                          </div>
+                        )}
+
+                        {/* PRESS ENTER */}
+                        <button 
+                          onClick={() => {
+                            if (searchQuery.trim()) {
+                              setShowSearchDropdown(false);
+                              router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+                            }
+                          }}
+                          className="w-full p-3 bg-white/5 hover:bg-white/10 text-[#E53945] text-xs font-bold transition flex items-center justify-center gap-2"
+                        >
+                          Press Enter to see all results for "{searchQuery}"
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Header */}
