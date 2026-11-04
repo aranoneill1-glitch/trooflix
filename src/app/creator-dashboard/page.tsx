@@ -202,7 +202,7 @@ function CreatorDashboardContent() {
       return type !== "tweet" && type !== "short" && v.visibility !== "premium";
     }
     if (activeContentTab === "Premium") {
-      return v.visibility === "premium";
+      return v.visibility === "premium" && type !== "tweet" && type !== "short";
     }
     return true;
   });

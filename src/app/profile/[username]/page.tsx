@@ -118,8 +118,8 @@ export default function PublicProfilePage() {
       return type !== "tweet" && type !== "short" && v.visibility !== "premium";
     }
     if (activeContentTab === "Premium") {
-      // Premium tab: ONLY premium videos
-      return v.visibility === "premium";
+      // Premium tab: ONLY premium videos, NO tweets, NO shorts
+      return v.visibility === "premium" && type !== "tweet" && type !== "short";
     }
     return true;
   });
