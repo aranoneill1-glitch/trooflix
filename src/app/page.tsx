@@ -312,7 +312,7 @@ export default function Home() {
                 
                 <div className="absolute top-0 left-0 w-full h-[300px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#E53945]/15 via-[#0a0303]/0 to-transparent pointer-events-none z-0" />
                 {/* Interactive Search Bar */}
-                <div className="px-4 pt-24 pb-3 relative z-[100] w-full animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="px-4 pt-12 pb-3 relative z-[100] w-full animate-in fade-in slide-in-from-top-4 duration-500">
                   <div className="relative w-full max-w-2xl mx-auto">
                     <form
                       onSubmit={(e) => {
@@ -434,7 +434,7 @@ export default function Home() {
                 
                 {/* Avatars with Follow (Moved up) */}
                 {creators && creators.length > 0 && (
-                  <div className="flex gap-4 overflow-x-auto scrollbar-hide px-4 pb-4 relative z-10 mt-4 mb-8">
+                  <div className="flex gap-4 overflow-x-auto scrollbar-hide px-4 pb-4 relative z-10 mt-2 mb-3">
                     {[...creators].slice(0, 15).map((c: any) => (
                       <Link key={c.id} href={`/profile/${c.slug}`} className="flex flex-col items-center text-center flex-shrink-0 group w-[96px]">
                         <div className="w-20 h-20 rounded-full p-[2px] bg-gradient-to-b from-white/40 to-white/10 shadow-[0_0_15px_rgba(255,255,255,0.1)] group-hover:scale-105 transition-transform mb-2 relative">
@@ -687,7 +687,7 @@ function AppReelHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { 
   };
 
   return (
-    <div className="relative w-full h-[240px] flex items-center justify-center mb-3 mt-1 bg-[#0a0303] overflow-hidden">
+    <div className="relative w-full h-[240px] flex items-center justify-center mb-0 mt-0 bg-[#0a0303] overflow-hidden">
       <div className="relative z-10 w-full h-full flex items-center justify-center">
         {videos.map((video, i) => (
           <AppReelCard
