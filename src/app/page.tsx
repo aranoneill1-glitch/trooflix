@@ -594,7 +594,7 @@ function DesktopHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[],
   const activeVideo = videos[activeIndex];
 
   return (
-    <section className="relative w-full lg:h-[65vh] min-h-[500px] flex items-center justify-start overflow-hidden bg-black">
+    <section className="relative w-full lg:h-[45vh] min-h-[350px] flex items-center justify-start overflow-hidden bg-black">
       <AnimatePresence mode="wait">
         <motion.div
           key={activeVideo.id}
@@ -610,40 +610,40 @@ function DesktopHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[],
         </motion.div>
       </AnimatePresence>
 
-      <div className="relative z-10 px-12 md:px-16 lg:px-24 max-w-3xl flex flex-col items-start pt-10">
+      <div className="relative z-10 px-8 md:px-12 lg:px-16 max-w-2xl flex flex-col items-start pt-10">
         <motion.div
            key={`text-${activeVideo.id}`}
            initial={{ opacity: 0, y: 20 }}
            animate={{ opacity: 1, y: 0 }}
            transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <h1 className="text-4xl lg:text-6xl font-black text-white leading-[1.1] mb-6 drop-shadow-2xl">
+          <h1 className="text-2xl lg:text-4xl font-black text-white leading-[1.1] mb-4 drop-shadow-2xl">
             {activeVideo.title}
           </h1>
           
-          <div className="flex items-center gap-4 text-sm font-semibold mb-6">
+          <div className="flex items-center gap-3 text-xs font-semibold mb-4">
             <span className="text-white/80">{activeVideo.year}</span>
             <span className="border border-white/30 px-2 py-0.5 rounded text-xs">{activeVideo.rating || "TV-MA"}</span>
             <span className="text-white/80">{activeVideo.duration}</span>
             <span className="text-[#1ed760] font-bold">{activeVideo.match}% Match</span>
           </div>
 
-          <p className="text-base text-white/80 leading-relaxed mb-8 line-clamp-3 drop-shadow-md max-w-2xl">
+          <p className="text-sm text-white/80 leading-relaxed mb-6 line-clamp-3 drop-shadow-md max-w-2xl">
             {activeVideo.description || "No description available."}
           </p>
           
           <div className="flex items-center gap-4">
             <button 
               onClick={() => onPlay(activeVideo)}
-              className="flex items-center gap-2 bg-[#E53945] hover:bg-[#d12e39] text-white px-8 py-3.5 rounded-full font-bold text-lg transition-transform hover:scale-105 shadow-xl"
+              className="flex items-center gap-2 bg-[#E53945] hover:bg-[#d12e39] text-white px-5 py-2.5 rounded-full font-bold text-sm transition-transform hover:scale-105 shadow-xl"
             >
-              <Play size={24} fill="currentColor" /> Play
+              <Play size={18} fill="currentColor" /> Play
             </button>
             <button 
               onClick={() => onMore(activeVideo)}
               className="flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white px-8 py-3.5 rounded-full font-bold text-lg transition-transform hover:scale-105 border border-white/10"
             >
-              <Info size={24} /> More Info
+              <Info size={18} /> More Info
             </button>
           </div>
         </motion.div>
@@ -687,7 +687,7 @@ function AppReelHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { 
   };
 
   return (
-    <div className="relative w-full h-[330px] flex items-center justify-center mb-3 mt-1 bg-[#0a0303] overflow-hidden">
+    <div className="relative w-full h-[240px] flex items-center justify-center mb-3 mt-1 bg-[#0a0303] overflow-hidden">
       <div className="relative z-10 w-full h-full flex items-center justify-center">
         {videos.map((video, i) => (
           <AppReelCard
@@ -727,38 +727,38 @@ function AppReelCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMor
       onPointerUp={onPointerUp}
       onClick={() => { if (isActive) onMore(video); }}
       style={{ x, scale, opacity, zIndex, touchAction: "pan-y" }}
-      className="absolute w-[70vw] max-w-[240px] aspect-[3/4] rounded-[20px] cursor-pointer shadow-[0_15px_40px_rgba(0,0,0,0.9)] select-none bg-[#1c1c1e] border border-white/10"
+      className="absolute w-[60vw] max-w-[180px] aspect-[3/4] rounded-[20px] cursor-pointer shadow-[0_15px_40px_rgba(0,0,0,0.9)] select-none bg-[#1c1c1e] border border-white/10"
     >
       <div className="relative w-full h-full rounded-[20px] overflow-hidden pointer-events-none">
         <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover" draggable={false} />
         
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-95" />
 
-        <div className="absolute bottom-0 inset-x-0 p-3 flex flex-col items-start gap-1.5 pointer-events-auto">
-          <h3 className="text-lg font-black tracking-tight text-white drop-shadow-lg leading-tight line-clamp-2">
+        <div className="absolute bottom-0 inset-x-0 p-2 flex flex-col items-start gap-1 pointer-events-auto">
+          <h3 className="text-sm font-black tracking-tight text-white drop-shadow-lg leading-tight line-clamp-2">
             {video.title}
           </h3>
           
-          <div className="flex items-center gap-1.5 text-[9px] font-semibold text-white/80">
+          <div className="flex items-center gap-1 text-[8px] font-semibold text-white/80">
              <span>{video.year}</span>
              <span className="border border-white/30 px-1 py-0.5 rounded">{video.rating || "TV-MA"}</span>
              <span>{video.duration}</span>
           </div>
 
           {isActive && (
-            <div className="flex items-center gap-2 w-full mt-1.5">
+            <div className="flex items-center gap-2 w-full mt-1">
               <button 
                 onClick={(e) => { e.stopPropagation(); onPlay(video); }}
-                className="flex-1 flex items-center justify-center gap-1.5 bg-[#E53945] text-white px-3 py-2 rounded-full font-bold text-xs hover:bg-[#d12e39] transition active:scale-95 shadow-lg"
+                className="flex-1 flex items-center justify-center gap-1.5 bg-[#E53945] text-white px-2 py-1.5 rounded-full font-bold text-[10px] hover:bg-[#d12e39] transition active:scale-95 shadow-lg"
               >
-                <Play size={12} fill="currentColor" /> Play
+                <Play size={10} fill="currentColor" /> Play
               </button>
               
               <button 
                 onClick={(e) => { e.stopPropagation(); }}
-                className="w-8 h-8 flex items-center justify-center bg-white/20 backdrop-blur-md border border-white/30 text-white rounded-full hover:bg-white/30 transition active:scale-95 shrink-0"
+                className="w-6 h-6 flex items-center justify-center bg-white/20 backdrop-blur-md border border-white/30 text-white rounded-full hover:bg-white/30 transition active:scale-95 shrink-0"
               >
-                <Plus size={14} />
+                <Plus size={12} />
               </button>
             </div>
           )}
