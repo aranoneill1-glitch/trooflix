@@ -35,7 +35,7 @@ export default function ManageContentPage() {
   // UI States
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<"All" | "Videos" | "Podcasts" | "Premium" | "Drafts">("All");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -192,20 +192,7 @@ export default function ManageContentPage() {
                 className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl pl-9 pr-4 py-2 text-sm text-white outline-none focus:border-[#E53945] transition"
               />
             </div>
-            <div className="flex items-center gap-1 bg-[#1c1c1e] p-1 rounded-xl">
-              <button
-                onClick={() => setViewMode("grid")}
-                className={`p-2 rounded-lg transition ${viewMode === "grid" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}
-              >
-                <LayoutGrid size={16} />
-              </button>
-              <button
-                onClick={() => setViewMode("list")}
-                className={`p-2 rounded-lg transition ${viewMode === "list" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}
-              >
-                <List size={16} />
-              </button>
-            </div>
+            
           </div>
         </div>
 
