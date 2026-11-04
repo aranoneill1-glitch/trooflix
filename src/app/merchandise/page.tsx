@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { ShoppingBag, Search, Heart, ShieldCheck, X } from "lucide-react";
@@ -19,20 +18,6 @@ export default function MerchandisePage() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
-
-  const realCreators = useMemo(() => {
-    const map = new Map();
-    products.forEach(p => {
-      if (p.creatorName && p.creatorSlug && !map.has(p.creatorSlug)) {
-        map.set(p.creatorSlug, {
-          name: p.creatorName,
-          slug: p.creatorSlug,
-          photo: p.creatorPhoto || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.creatorName)}&background=1c1c1e&color=fff`,
-        });
-      }
-    });
-    return Array.from(map.values());
-  }, [products]);
 
   const filteredProducts = useMemo(() => {
     if (!searchQuery.trim()) return products;
@@ -54,8 +39,6 @@ export default function MerchandisePage() {
       
       {/* CINEMATIC HERO */}
       <div className="relative w-full h-[45vh] md:h-[55vh] flex flex-col justify-end overflow-hidden pb-8 md:pb-12">
-        
-        {/* Background Image & Overlays */}
         <div className="absolute inset-0 z-0">
           <img 
             src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=2000&auto=format&fit=crop" 
@@ -65,18 +48,14 @@ export default function MerchandisePage() {
           <div className="absolute inset-0 bg-gradient-to-t from-[#09090B] via-[#09090B]/60 to-black/30" />
         </div>
 
-        {/* Hero Content */}
         <div className="relative z-10 px-4 md:px-8 w-full max-w-7xl mx-auto flex flex-col items-start">
-          
           <p className="text-[#E53945] font-bold tracking-[0.3em] text-[10px] md:text-xs uppercase mb-2 md:mb-3 drop-shadow-md">
             Explore Merchandise
           </p>
-          
           <h1 className="text-5xl md:text-7xl font-black text-white leading-none tracking-tight drop-shadow-2xl mb-6">
             Marketplace
           </h1>
 
-          {/* Glass Search Bar */}
           <div className="relative w-full max-w-lg">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/60" size={20} />
             <input
@@ -87,37 +66,19 @@ export default function MerchandisePage() {
               className="w-full bg-black/40 backdrop-blur-xl border border-white/20 rounded-full py-3.5 pl-12 pr-4 text-sm text-white placeholder:text-white/50 focus:outline-none focus:border-[#E53945]/50 focus:bg-black/60 transition-all shadow-xl"
             />
           </div>
-
         </div>
       </div>
 
       {/* MAIN CONTENT AREA */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
         
-        {/* 1. FEATURED CREATOR STORES */}
-        {realCreators.length > 0 && !searchQuery && (
-          <section className="mb-12">
-            <h2 className="text-xl md:text-2xl font-bold mb-4">Featured Creator Stores</h2>
-            <div className="flex overflow-x-auto scrollbar-hide gap-5 pb-4">
-              {realCreators.map((c: any) => (
-                <Link href={`/profile/${c.slug}`} key={c.slug} className="flex flex-col items-center group w-[90px] shrink-0">
-                  <div className="w-[72px] h-[72px] rounded-full overflow-hidden border-2 border-white/10 group-hover:border-[#E53945] transition-all duration-300 mb-2 shadow-lg">
-                    <img src={c.photo} alt={c.name} className="w-full h-full object-cover" />
-                  </div>
-                  <span className="text-xs font-bold truncate w-full text-center group-hover:text-[#E53945] transition-colors">{c.name}</span>
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* 2. FEATURED MERCHANDISE */}
+        {/* 1. FEATURED MERCHANDISE (3-Column Grid) */}
         {merchandise.length > 0 && (
           <section className="mb-12">
             <h2 className="text-xl md:text-2xl font-bold mb-4">
                {searchQuery ? "Merchandise Results" : "Featured Merchandise"}
             </h2>
-            <div className="flex overflow-x-auto scrollbar-hide gap-4 pb-4">
+            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4 pb-4">
               {merchandise.map((p) => (
                 <ProductCard key={p.id} product={p} onClick={() => setSelectedProduct(p)} />
               ))}
@@ -125,13 +86,13 @@ export default function MerchandisePage() {
           </section>
         )}
 
-        {/* 3. FEATURED BOOKS */}
+        {/* 2. FEATURED BOOKS (3-Column Grid) */}
         {books.length > 0 && (
           <section className="mb-12">
             <h2 className="text-xl md:text-2xl font-bold mb-4">
               {searchQuery ? "Book Results" : "Featured Books"}
             </h2>
-            <div className="flex overflow-x-auto scrollbar-hide gap-4 pb-4">
+            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4 pb-4">
               {books.map((p) => (
                 <ProductCard key={p.id} product={p} onClick={() => setSelectedProduct(p)} />
               ))}
@@ -167,7 +128,7 @@ export default function MerchandisePage() {
             </div>
             
             <div className="p-6 md:p-8">
-              <p className="text-3xl font-black text-[#1DB954] mb-2">£{(selectedProduct.price_cents / 100).toFixed(2)}</p>
+              <p className="text-3xl font-black text-[#1DB954] mb-2">${(selectedProduct.price_cents / 100).toFixed(2)}</p>
               <h2 className="text-xl font-bold text-white mb-4 leading-tight">{selectedProduct.name}</h2>
               
               <div className="flex items-center gap-3 pt-6 border-t border-white/10">
@@ -200,26 +161,26 @@ export default function MerchandisePage() {
 // VINTED-STYLE PRODUCT CARD
 function ProductCard({ product, onClick }: { product: any, onClick: () => void }) {
   return (
-    <div onClick={onClick} className="flex flex-col group cursor-pointer w-[160px] md:w-[200px] shrink-0">
+    <div onClick={onClick} className="flex flex-col group cursor-pointer w-full">
       
       {/* Image Container */}
-      <div className="relative aspect-square w-full rounded-2xl overflow-hidden mb-3 border border-white/5 bg-[#1c1c1e]">
+      <div className="relative aspect-square w-full rounded-2xl overflow-hidden mb-2 border border-white/5 bg-[#1c1c1e]">
         <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
         
         {/* Like Button */}
-        <button className="absolute top-2.5 right-2.5 p-2 bg-white rounded-full text-black shadow-md hover:scale-110 transition" onClick={(e) => e.stopPropagation()}>
-          <Heart size={16} />
+        <button className="absolute top-2 right-2 p-1.5 bg-white rounded-full text-black shadow-md hover:scale-110 transition" onClick={(e) => e.stopPropagation()}>
+          <Heart size={14} />
         </button>
 
-        {/* Delivery Tag */}
-        <div className="absolute bottom-2.5 left-2.5 bg-black/60 backdrop-blur-md text-white text-[10px] font-semibold px-2 py-1 rounded-md flex items-center gap-1">
-          <ShieldCheck size={12} className="text-white" /> Delivery or Collection
+        {/* Delivery Tag (Hidden on small mobile to save space) */}
+        <div className="hidden sm:flex absolute bottom-2 left-2 bg-black/60 backdrop-blur-md text-white text-[9px] font-semibold px-1.5 py-0.5 rounded flex items-center gap-1">
+          <ShieldCheck size={10} className="text-white" /> Delivery
         </div>
       </div>
 
       {/* Details */}
-      <p className="text-[#1DB954] font-black text-lg md:text-xl tracking-tight leading-none mb-1">£{(product.price_cents / 100).toFixed(2)}</p>
-      <h3 className="text-sm font-semibold text-white/90 line-clamp-2 leading-tight">{product.name}</h3>
+      <p className="text-[#1DB954] font-black text-sm md:text-base tracking-tight leading-none mb-1">${(product.price_cents / 100).toFixed(2)}</p>
+      <h3 className="text-[11px] md:text-sm font-semibold text-white/90 line-clamp-2 leading-tight">{product.name}</h3>
     </div>
   );
 }
