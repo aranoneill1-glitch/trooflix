@@ -1,325 +1,191 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { Bell } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Bell, X, Trash2, CheckCircle2, Heart, MessageCircle, UserPlus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { createClient } from "@/utils/supabase/client";
 import { getCachedUser } from "@/lib/cache";
-import VerifiedBadge from "@/components/VerifiedBadge";
 
 type Notification = {
-  id: number;
-  actor_id: string;
-  type: "like" | "comment" | "follow" | "repost" | "report_update";
-  post_id: number | null;
-  read: boolean;
+  id: string;
+  type: "like" | "comment" | "follow" | "system";
+  title: string;
+  message: string;
+  is_read: boolean;
   created_at: string;
-  meta?: any;
+  sender_avatar: string | null;
 };
 
-type Actor = {
-  user_id: string;
-  username: string | null;
-  display_name: string | null;
-  avatar_url: string | null;
-  is_verified?: boolean;
-  tier?: "user" | "pro" | "podcaster";
-};
-
-function timeAgo(iso: string): string {
-  const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
-  if (diff < 60) return "now";
-  if (diff < 3600) return `${Math.floor(diff / 60)}m`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
-  if (diff < 604800) return `${Math.floor(diff / 86400)}d`;
-  return `${Math.floor(diff / 604800)}w`;
-}
-
-const urlBase64ToUint8Array = (base64String: string) => {
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-  const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-  for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
-  return outputArray;
-};
-
-export default function NotificationBell({ asMenuItem = false }: { asMenuItem?: boolean } = {}) {
-  const [open, setOpen] = useState(false);
+export default function NotificationBell() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"unread" | "all">("unread");
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unread, setUnread] = useState(0);
-  const [actors, setActors] = useState<Record<string, Actor>>({});
-  const [userId, setUserId] = useState<string | null>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // Push Notification State
-  const [pushEnabled, setPushEnabled] = useState(false);
-  const [pushLoading, setPushLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const supabase = createClient();
 
   useEffect(() => {
-    getCachedUser().then((u) => setUserId(u?.id || null));
-  }, []);
+    async function fetchNotifications() {
+      const user = await getCachedUser();
+      if (!user) return;
 
-  // Check push status on mount
-  useEffect(() => {
-    if ("serviceWorker" in navigator && "PushManager" in window) {
-      navigator.serviceWorker.ready.then((reg) => {
-        reg.pushManager.getSubscription().then((sub) => {
-          if (sub) setPushEnabled(true);
-        });
-      });
+      // Assuming you have a notifications table. 
+      // If not, this will just return empty and show the empty state.
+      const { data } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (data) setNotifications(data);
+      setLoading(false);
     }
-  }, []);
+    fetchNotifications();
+  }, [supabase]);
 
-  const togglePush = async () => {
-    if (pushLoading || !userId) return;
-    setPushLoading(true);
+  const unreadCount = notifications.filter(n => !n.is_read).length;
+  const displayedNotifications = activeTab === "unread" ? notifications.filter(n => !n.is_read) : notifications;
+
+  const markAllRead = async () => {
+    const user = await getCachedUser();
+    if (!user) return;
     
-    try {
-      if (pushEnabled) {
-        // Turn OFF
-        const reg = await navigator.serviceWorker.ready;
-        const sub = await reg.pushManager.getSubscription();
-        if (sub) {
-          await sub.unsubscribe();
-          await fetch('/api/push/subscribe', {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ endpoint: sub.endpoint })
-          });
-        }
-        setPushEnabled(false);
-      } else {
-        // Turn ON
-        const reg = await navigator.serviceWorker.register('/sw.js');
-        const perm = await Notification.requestPermission();
-        if (perm === 'granted') {
-          const sub = await reg.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!)
-          });
-          
-          await fetch('/api/push/subscribe', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ subscription: sub, userId })
-          });
-          setPushEnabled(true);
-        }
-      }
-    } catch (err) {
-      console.error("Push toggle error:", err);
-    } finally {
-      setPushLoading(false);
-    }
+    // Optimistic UI update
+    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+    
+    // Database update
+    await supabase.from("notifications").update({ is_read: true }).eq("user_id", user.id);
   };
 
-  // Fetch notifications when user is known + on mount
-  useEffect(() => {
-    if (!userId) return;
-    const load = async () => {
-      try {
-        const res = await fetch(`/api/notifications?user_id=${userId}`, { cache: "no-store" });
-        const d = await res.json();
-        const list: Notification[] = Array.isArray(d.notifications) ? d.notifications : [];
-        setNotifications(list);
-        setUnread(d.unread || 0);
-
-        // Fetch actor profiles (once)
-        const actorIds = Array.from(new Set(list.map((n) => n.actor_id)));
-        const profiles: Record<string, Actor> = {};
-        await Promise.all(
-          actorIds.map(async (id) => {
-            try {
-              const r = await fetch(`/api/profile?user_id=${id}`);
-              const pd = await r.json();
-              if (pd.profile) profiles[id] = { ...pd.profile, user_id: id };
-            } catch {}
-          })
-        );
-        setActors(profiles);
-      } catch {}
-    };
-    load();
-    // Refresh every 30 seconds
-    const interval = setInterval(load, 30000);
-    return () => clearInterval(interval);
-  }, [userId]);
-
-  // Close on outside click
-  useEffect(() => {
-    if (!open) return;
-    const onDown = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", onDown);
-    return () => document.removeEventListener("mousedown", onDown);
-  }, [open]);
-
-  const handleOpen = async () => {
-    setOpen((v) => !v);
-    // Mark all as read when opening
-    if (!open && unread > 0 && userId) {
-      try {
-        await fetch("/api/notifications", {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user_id: userId }),
-        });
-        setUnread(0);
-        setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-      } catch {}
-    }
+  const deleteNotification = async (id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+    await supabase.from("notifications").delete().eq("id", id);
   };
 
-  if (!userId) return null;
+  // Group by Date
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
 
-  const labelFor = (n: Notification) => {
-    if (n.type === "like") return "liked your post";
-    if (n.type === "comment") return "commented on your post";
-    if (n.type === "follow") return "started following you";
-    if (n.type === "repost") return "reposted your post";
-    if (n.type === "report_update") {
-      const outcome = n.meta?.outcome;
-      if (outcome === "actioned") return "— action taken on your report";
-      if (outcome === "dismissed") return "— your report was reviewed, no action needed";
-      return "— your report was reviewed";
-    }
-    return "did something";
+  const grouped = {
+    Today: displayedNotifications.filter(n => new Date(n.created_at).toDateString() === today.toDateString()),
+    Yesterday: displayedNotifications.filter(n => new Date(n.created_at).toDateString() === yesterday.toDateString()),
+    Older: displayedNotifications.filter(n => new Date(n.created_at) < yesterday && new Date(n.created_at).toDateString() !== yesterday.toDateString()),
   };
 
-  const hrefFor = (n: Notification) => {
-    if (n.type === "follow") return `/u/${actors[n.actor_id]?.username || ""}`;
-    if (n.post_id) return `/feed?reel=${n.post_id}`;
-    return "/feed";
+  const formatTime = (dateString: string) => {
+    return new Date(dateString).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
   };
 
   return (
-    <div className="relative" ref={dropdownRef}>
-      {asMenuItem ? (
-        <button onClick={handleOpen} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition text-sm text-white/80 hover:text-white">
-          <Bell size={16} />
-          Notifications
-          {unread > 0 && (<span className="ml-auto w-2 h-2 rounded-full bg-red-500" />)}
-        </button>
-      ) : (
-      <button
-        onClick={handleOpen}
-        className={asMenuItem ? "relative text-white/80 hover:text-white transition p-1" : "relative text-white/90 hover:text-white transition p-1"}
-        aria-label="Notifications"
-      >
-        <Bell size={asMenuItem ? 18 : 20} />
-        {unread > 0 && (
-          <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-red-500 ring-2 ring-black" />
+    <>
+      <button onClick={() => setIsOpen(true)} className="relative p-2 text-white/70 hover:text-white transition">
+        <Bell size={22} />
+        {unreadCount > 0 && (
+          <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-[#E53945] rounded-full border-2 border-[#0a0303]" />
         )}
       </button>
-      )}
 
       <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, y: asMenuItem ? 0 : -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: asMenuItem ? 0 : -8 }}
-            transition={{ duration: 0.15 }}
-            className={
-              asMenuItem
-                ? "mt-2 w-full max-h-[300px] overflow-y-auto bg-black/40 border border-white/10 rounded-xl"
-                : "absolute right-0 top-full mt-2 w-80 max-h-[70vh] overflow-y-auto bg-[#0f0f12] border border-white/10 rounded-xl shadow-2xl z-[200]"
-            }
+        {isOpen && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
+            className="fixed inset-0 z-[9999] bg-[#0a0303] text-white flex flex-col overflow-hidden"
           >
-            {/* HEADER WITH TOGGLE SWITCH */}
-            <div className="sticky top-0 bg-[#0f0f12] border-b border-white/10 px-4 py-3 flex items-center justify-between z-10">
-              <p className="text-sm font-bold">Notifications</p>
-              
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] uppercase font-bold tracking-wider text-white/50">
-                  Push Alerts
-                </span>
-                <button
-                  onClick={togglePush}
-                  disabled={pushLoading}
-                  className={`relative w-8 h-4 rounded-full transition-colors ${
-                    pushEnabled ? "bg-green-500" : "bg-white/20"
-                  } ${pushLoading ? "opacity-50" : ""}`}
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b border-white/10 bg-[#0a0303]/90 backdrop-blur-md shrink-0">
+              <button onClick={() => setIsOpen(false)} className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition">
+                <X size={20} />
+              </button>
+              <h1 className="text-xl font-bold tracking-tight">Notification center</h1>
+              <div className="w-10" /> {/* Spacer for symmetry */}
+            </div>
+
+            {/* Segmented Control */}
+            <div className="flex justify-center mt-6 shrink-0">
+              <div className="flex bg-[#1c1c1e] p-1 rounded-full border border-white/5">
+                <button 
+                  onClick={() => setActiveTab("unread")} 
+                  className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${activeTab === "unread" ? "bg-[#E53945] text-white shadow-lg" : "text-white/50 hover:text-white"}`}
                 >
-                  <span
-                    className={`absolute top-[2px] left-[2px] w-3 h-3 bg-white rounded-full transition-transform ${
-                      pushEnabled ? "translate-x-4" : "translate-x-0"
-                    }`}
-                  />
+                  Unread ({unreadCount})
+                </button>
+                <button 
+                  onClick={() => setActiveTab("all")} 
+                  className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${activeTab === "all" ? "bg-[#E53945] text-white shadow-lg" : "text-white/50 hover:text-white"}`}
+                >
+                  All ({notifications.length})
                 </button>
               </div>
             </div>
 
-            {notifications.length === 0 ? (
-              <div className="p-6 text-center text-white/50 text-sm">
-                No notifications yet
-              </div>
-            ) : (
-              notifications.map((n) => {
-                const actor = actors[n.actor_id];
-                const name = actor?.display_name || actor?.username || "Someone";
-                const username = actor?.username;
-                const isSystem = n.type === "report_update";
-                return (
-                  <Link
-                    key={n.id}
-                    href={hrefFor(n)}
-                    onClick={() => setOpen(false)}
-                    className={`flex items-start gap-3 px-4 py-3 border-b border-white/5 hover:bg-white/5 transition ${
-                      !n.read ? "bg-white/[0.03]" : ""
-                    }`}
-                  >
-                    {isSystem ? (
-                      <div className="w-9 h-9 rounded-full bg-blue-600/20 flex items-center justify-center flex-shrink-0">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2">
-                          <circle cx="12" cy="12" r="10" />
-                          <path d="M12 16v-4M12 8h.01" />
-                        </svg>
-                      </div>
-                    ) : actor?.avatar_url ? (
-                      <img
-                        src={actor.avatar_url}
-                        alt=""
-                        className="w-9 h-9 rounded-full object-cover flex-shrink-0"
-                      />
-                    ) : (
-                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-xs font-bold flex-shrink-0">
-                        {name[0]?.toUpperCase() || "?"}
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-white/90 leading-snug">
-                        {isSystem ? (
-                          <>
-                            <span className="font-semibold">Trooflix Team</span>{" "}
-                            {labelFor(n)}
-                          </>
-                        ) : (
-                          <>
-                            <span className="font-semibold inline-flex items-center gap-1">
-                              {name}
-                              {actor?.is_verified && <VerifiedBadge size={12} variant={actor.tier === "podcaster" ? "gold" : "red"} />}
-                            </span>{" "}
-                            {labelFor(n)}
-                          </>
-                        )}
-                      </p>
-                      <p className="text-xs text-white/40 mt-0.5">{timeAgo(n.created_at)}</p>
+            {/* List */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-6 max-w-3xl mx-auto w-full">
+              {loading ? (
+                <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" /></div>
+              ) : displayedNotifications.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-white/30">
+                  <Bell size={48} className="mb-4 opacity-50" />
+                  <p className="text-lg font-bold">You're all caught up!</p>
+                  <p className="text-sm mt-1">No {activeTab} notifications to show.</p>
+                </div>
+              ) : (
+                Object.entries(grouped).map(([groupName, items]) => items.length > 0 && (
+                  <div key={groupName} className="space-y-3">
+                    <div className="flex justify-between items-end px-2">
+                      <h3 className="text-sm font-bold text-white/40 uppercase tracking-wider">{groupName}</h3>
+                      {groupName === "Today" && unreadCount > 0 && activeTab === "unread" && (
+                        <button onClick={markAllRead} className="text-xs font-bold text-[#E53945] hover:text-[#d12e39]">Mark all read</button>
+                      )}
                     </div>
-                    {!n.read && (
-                      <span className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0 mt-2" />
-                    )}
-                  </Link>
-                );
-              })
-            )}
+
+                    {items.map(n => (
+                      <div key={n.id} className="bg-[#1c1c1e] border border-white/5 hover:border-white/10 p-4 rounded-2xl flex items-start gap-4 transition-all group relative overflow-hidden">
+                        
+                        {/* Icon / Avatar */}
+                        <div className="w-10 h-10 rounded-full bg-[#0a0303] flex items-center justify-center shrink-0 border border-white/10 overflow-hidden">
+                          {n.sender_avatar ? (
+                            <img src={n.sender_avatar} alt="" className="w-full h-full object-cover" />
+                          ) : n.type === "like" ? (
+                            <Heart size={18} className="text-[#E53945]" fill="currentColor" />
+                          ) : n.type === "comment" ? (
+                            <MessageCircle size={18} className="text-blue-400" />
+                          ) : n.type === "follow" ? (
+                            <UserPlus size={18} className="text-green-400" />
+                          ) : (
+                            <Bell size={18} className="text-white/50" />
+                          )}
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 min-w-0 pt-0.5">
+                          <div className="flex justify-between items-start gap-4">
+                            <h4 className={`text-base font-bold truncate ${n.is_read ? "text-white/70" : "text-white"}`}>
+                              {n.title}
+                            </h4>
+                            <span className="text-xs text-white/40 shrink-0">{formatTime(n.created_at)}</span>
+                          </div>
+                          <p className="text-sm text-white/50 mt-1 line-clamp-2 leading-relaxed">{n.message}</p>
+                        </div>
+
+                        {/* Delete Action (Visible on Hover) */}
+                        <button onClick={() => deleteNotification(n.id)} className="absolute right-4 bottom-4 p-2 text-white/20 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ))
+              )}
+
+              {displayedNotifications.length > 0 && (
+                <div className="text-center text-white/30 text-sm py-8">
+                  There are no more recent notifications to see
+                </div>
+              )}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </>
   );
 }
