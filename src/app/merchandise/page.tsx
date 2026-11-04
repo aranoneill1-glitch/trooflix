@@ -5,14 +5,20 @@ import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { ShoppingBag, Search, Heart, ShieldCheck, X, Plus, ArrowRight } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
 
 export default function MerchandisePage() {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [creatorProfiles, setCreatorProfiles] = useState<any[]>([]);
 
   useEffect(() => {
+    const supabase = createClient();
+    supabase.from("profiles").select("username, avatar_url, display_name").not("avatar_url", "is", null)
+      .then(({ data }) => { if (data) setCreatorProfiles(data); });
+
     fetch("/api/products/global")
       .then((r) => r.json())
       .then((d) => setProducts(d.products || []))
@@ -25,15 +31,18 @@ export default function MerchandisePage() {
     const map = new Map();
     products.forEach(p => {
       if (p.creatorName && p.creatorSlug && !map.has(p.creatorSlug)) {
+        // Look up the real avatar from the profiles we just fetched
+        const realProfile = creatorProfiles.find(c => c.username === p.creatorSlug);
+        
         map.set(p.creatorSlug, {
           name: p.creatorName,
           slug: p.creatorSlug,
-          photo: p.creatorPhoto || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.creatorName)}&background=1c1c1e&color=fff`,
+          photo: realProfile?.avatar_url || p.creatorPhoto || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.creatorName)}&background=1c1c1e&color=fff`,
         });
       }
     });
     return Array.from(map.values());
-  }, [products]);
+  }, [products, creatorProfiles]);
 
   const filteredProducts = useMemo(() => {
     if (!searchQuery.trim()) return products;
@@ -94,11 +103,11 @@ export default function MerchandisePage() {
             <h2 className="text-xl md:text-2xl font-bold mb-4">Search Creator Merch</h2>
             <div className="flex overflow-x-auto scrollbar-hide gap-5 pb-4">
               {realCreators.map((c: any) => (
-                <Link href={`/profile/${c.slug}`} key={c.slug} className="flex flex-col items-center group w-[80px] shrink-0">
-                  <div className="w-[64px] h-[64px] rounded-full overflow-hidden border-2 border-white/10 group-hover:border-[#E53945] transition-all duration-300 mb-2 shadow-lg">
+                <Link href={`/profile/${c.slug}`} key={c.slug} className="flex flex-col items-center group w-[135px] shrink-0">
+                  <div className="w-[115px] h-[115px] rounded-full overflow-hidden border-2 border-white/10 group-hover:border-[#E53945] transition-all duration-300 mb-3 shadow-xl">
                     <img src={c.photo} alt={c.name} className="w-full h-full object-cover" />
                   </div>
-                  <span className="text-[11px] font-bold truncate w-full text-center group-hover:text-[#E53945] transition-colors">{c.name}</span>
+                  <span className="text-sm font-bold truncate w-full text-center group-hover:text-[#E53945] transition-colors">{c.name}</span>
                 </Link>
               ))}
             </div>
