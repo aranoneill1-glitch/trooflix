@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { Search, X, Play, CheckCircle2, User, TrendingUp, ChevronRight, Filter } from "lucide-react";
 import Link from "next/link";
 import MobileBottomNav from "@/components/MobileBottomNav";
@@ -30,9 +31,21 @@ const GENRE_CATEGORIES = [
 
 const TRENDING_TAGS = ["History", "Politics", "Ancient Civilisations", "Technology", "Science & Health"];
 
-export default function SearchPage() {
-  const [query, setQuery] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
+function SearchContent() {
+  const searchParams = useSearchParams();
+  const initialQuery = searchParams.get("q") || "";
+  
+  const [query, setQuery] = useState(initialQuery);
+  const [isSearching, setIsSearching] = useState(!!initialQuery);
+
+  // Listen for changes in the URL (e.g., if they search from the top bar while already on the search page)
+  useEffect(() => {
+    const q = searchParams.get("q");
+    if (q !== null) {
+      setQuery(q);
+      setIsSearching(!!q);
+    }
+  }, [searchParams]);
   const [activeFilter, setActiveFilter] = useState<"all" | "videos" | "creators">("all");
   
   const [allVideos, setAllVideos] = useState<any[]>([]);
@@ -373,5 +386,13 @@ export default function SearchPage() {
         <MobileBottomNav />
       </div>
     </main>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#09090B] flex items-center justify-center"><div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" /></div>}>
+      <SearchContent />
+    </Suspense>
   );
 }
