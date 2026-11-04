@@ -2,13 +2,11 @@ import { NextResponse } from "next/server";
 
 export const dynamic = 'force-dynamic';
 
+const KV_URL = "https://neat-monster-216395.upstash.io";
+const KV_TOKEN = "gQAAAAAAA01LAAIgcDE3ZTRiZTkyZGNmNjI0M2ZmODg0ZDRmMTNmMDhkYzhhMQ";
+
 export async function GET() {
   try {
-    const KV_URL = (process.env.KV_REST_API_URL || "").replace(/"/g, "").replace(/\\n/g, "").trim().replace(/\/$/, "");
-    const KV_TOKEN = (process.env.KV_REST_API_TOKEN || "").replace(/"/g, "").replace(/\\n/g, "").trim();
-
-    if (!KV_URL || !KV_TOKEN) return NextResponse.json([]);
-
     const res = await fetch(`${KV_URL}/get/trooflix:videos`, {
       headers: { Authorization: `Bearer ${KV_TOKEN}` },
       cache: 'no-store'
@@ -19,42 +17,25 @@ export async function GET() {
     const data = await res.json();
     if (!data.result) return NextResponse.json([]);
 
-    // ROBUST PARSER: Handles raw arrays, double-stringified objects, and JSON strings
-    let videos = [];
-    try {
-      let parsed = JSON.parse(data.result);
-      
-      // Unwrap if it's { value: "..." }
-      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && parsed.value) {
-        parsed = typeof parsed.value === 'string' ? JSON.parse(parsed.value) : parsed.value;
-      }
-      
-      // Final check
-      if (Array.isArray(parsed)) {
-        videos = parsed;
-      }
-    } catch (e) {
-      console.error("Failed to parse KV data:", e);
-      return NextResponse.json([]);
+    let parsed = JSON.parse(data.result);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && parsed.value) {
+      parsed = typeof parsed.value === 'string' ? JSON.parse(parsed.value) : parsed.value;
     }
-
+    
+    const videos = Array.isArray(parsed) ? parsed : [];
     const sorted = [...videos].sort((a, b) => b.id - a.id);
+    
     return NextResponse.json(sorted);
     
   } catch (e: any) {
-    console.error("API GET Error:", e.message);
     return NextResponse.json([]);
   }
 }
 
 export async function POST(req: Request) {
   try {
-    const KV_URL = (process.env.KV_REST_API_URL || "").replace(/"/g, "").replace(/\\n/g, "").trim().replace(/\/$/, "");
-    const KV_TOKEN = (process.env.KV_REST_API_TOKEN || "").replace(/"/g, "").replace(/\\n/g, "").trim();
-    
     const body = await req.json();
     
-    // Get current videos
     const getRes = await fetch(`${KV_URL}/get/trooflix:videos`, {
       headers: { Authorization: `Bearer ${KV_TOKEN}` }
     });
