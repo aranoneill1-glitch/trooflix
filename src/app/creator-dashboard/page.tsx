@@ -755,6 +755,32 @@ function CreatorDashboardContent() {
           className="hidden" 
         />
 
+
+      {/* LONG PRESS OPTIONS MENU */}
+      <AnimatePresence>
+        {selectedMerchItem && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setSelectedMerchItem(null)}
+              className="fixed inset-0 z-[300] bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="fixed bottom-0 left-0 right-0 z-[301] bg-[#1c1c1e] rounded-t-3xl border-t border-white/10 p-6 pb-12 max-w-md mx-auto"
+            >
+              <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mb-6" />
+              <div className="flex flex-col gap-2">
+                <button onClick={() => { setSelectedMerchItem(null); window.location.href = "/creator-dashboard/shop"; }} className="w-full py-4 text-center font-bold text-white bg-white/5 hover:bg-white/10 rounded-xl transition">Edit Product</button>
+                <button onClick={() => { setSelectedMerchItem(null); setIsReordering(true); }} className="w-full py-4 text-center font-bold text-white bg-white/5 hover:bg-white/10 rounded-xl transition">Reorder Grid</button>
+                <button onClick={() => handleDelete(selectedMerchItem.id)} className="w-full py-4 text-center font-bold text-red-500 bg-red-500/10 hover:bg-red-500/20 rounded-xl transition border border-red-500/20 mt-2">Delete Product</button>
+                <button onClick={() => setSelectedMerchItem(null)} className="w-full py-3 mt-2 text-sm text-white/50 hover:text-white transition">Cancel</button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
         <MobileBottomNav />
       </div>
     </main>
