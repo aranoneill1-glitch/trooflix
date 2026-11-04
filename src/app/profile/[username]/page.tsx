@@ -1,14 +1,16 @@
 "use client";
+import { getCachedUser } from "@/lib/cache";
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, UserPlus, MessageSquare, CheckCircle2, LayoutGrid, List, ShoppingBag, Star, Lock, Play } from "lucide-react";
+import { ArrowLeft, UserPlus, MessageSquare, CheckCircle2, LayoutGrid, List, ShoppingBag, Star, Lock, Play , GripVertical } from "lucide-react";
 import HomeFeedCard from "@/components/HomeFeedCard";
 import CommentSheet from "@/components/CommentSheet";
 import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { createClient } from "@/utils/supabase/client";
+import { motion, AnimatePresence, Reorder } from "framer-motion";
 
 const InstagramIcon = ({ size = 16 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
@@ -34,10 +36,16 @@ export default function PublicProfilePage() {
   const [activeVideoId, setActiveVideoId] = useState<number | null>(null);
   const [commentSheetVideoId, setCommentSheetVideoId] = useState<number | null>(null);
   const [likedVideos, setLikedVideos] = useState<Record<number, boolean>>({});
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [localMerch, setLocalMerch] = useState<any[]>([]);
+  const [isReordering, setIsReordering] = useState(false);
+  const [selectedMerchItem, setSelectedMerchItem] = useState<any>(null);
+  const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
   const [followerCount, setFollowerCount] = useState(0);
   const [subscriberCount, setSubscriberCount] = useState(0);
 
   useEffect(() => {
+    getCachedUser().then(setCurrentUser);
     async function loadProfileAndVideos() {
       const supabase = createClient();
       const { data: profileData, error } = await supabase.from("profiles").select("*").eq("username", username).single();
@@ -80,6 +88,7 @@ export default function PublicProfilePage() {
             String(p.creatorSlug) === String(username) || String(p.creator_id) === String(creatorId)
           );
           setMerch(creatorMerch);
+          setLocalMerch(creatorMerch);
         }
       } catch (err) {}
 
@@ -110,6 +119,58 @@ export default function PublicProfilePage() {
       ? { backgroundImage: `url(${profile.backdrop_url})`, backgroundSize: "cover", backgroundPosition: "center" }
       : { background: profile.backdrop_url }
     : { background: "#09090B" };
+
+
+  // Determine if the logged-in user owns this profile
+  const isOwner = currentUser && profile && currentUser.id === profile.user_id;
+
+  const handlePointerDown = (item: any) => {
+    if (!isOwner) return;
+    const timer = setTimeout(() => {
+      setSelectedMerchItem(item);
+    }, 500); // 500ms hold to trigger
+    setLongPressTimer(timer);
+  };
+
+  const handlePointerUp = () => {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      setLongPressTimer(null);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this product?")) return;
+    const supabase = createClient();
+    await supabase.from("products").delete().eq("id", id);
+    setLocalMerch(prev => prev.filter(p => p.id !== id));
+    setMerch(prev => prev.filter(p => p.id !== id));
+    setSelectedMerchItem(null);
+  };
+
+  const saveOrder = async () => {
+    setIsReordering(false);
+    const supabase = createClient();
+    
+    // Update the sort_order for each item based on its new index
+    const updates = localMerch.map((item, index) => ({
+      id: item.id,
+      sort_order: index,
+      name: item.name,
+      price_cents: item.price_cents,
+      image_url: item.image_url,
+      creator_id: item.creator_id
+    }));
+
+    // Upsert the new order to Supabase
+    const { error } = await supabase.from("products").upsert(updates);
+    if (error) {
+      console.error("Failed to save order", error);
+      alert("Failed to save the new order.");
+    } else {
+      setMerch(localMerch); // Update the main state
+    }
+  };
 
   return (
     <main className={`min-h-screen text-white pb-32 font-sans selection:bg-[#E53945]/30 relative overflow-hidden bg-transparent`}>
@@ -274,14 +335,40 @@ export default function PublicProfilePage() {
 
               {activeContentTab === "Shop" && (
                 <div className="w-full">
-                  {merch.length === 0 ? (
+                  {localMerch.length === 0 ? (
                     <div className="text-center py-12 bg-[#1c1c1e] border border-white/5 rounded-2xl"><ShoppingBag size={32} className="mx-auto text-white/20 mb-3" /><p className="text-white/50 text-sm">No products available yet.</p></div>
+                  ) : isReordering ? (
+                    // REORDER MODE
+                    <div className="bg-[#1c1c1e]/50 p-4 rounded-2xl border border-[#E53945]/30">
+                      <div className="flex justify-between items-center mb-4">
+                        <p className="text-sm font-bold text-white">Drag to reorder</p>
+                        <div className="flex gap-2">
+                          <button onClick={() => { setIsReordering(false); setLocalMerch(merch); }} className="px-4 py-2 text-xs font-bold text-white/70 hover:text-white bg-white/5 rounded-lg transition">Cancel</button>
+                          <button onClick={saveOrder} className="px-4 py-2 text-xs font-bold text-white bg-[#E53945] hover:bg-[#d12e39] rounded-lg transition">Save Order</button>
+                        </div>
+                      </div>
+                      <Reorder.Group axis="y" values={localMerch} onReorder={setLocalMerch} className="flex flex-col gap-3">
+                        {localMerch.map((item) => (
+                          <Reorder.Item key={item.id} value={item} className="flex items-center gap-4 bg-[#1c1c1e] border border-white/10 rounded-xl p-3 cursor-grab active:cursor-grabbing shadow-lg">
+                            <GripVertical size={20} className="text-white/30" />
+                            <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0"><img src={item.image_url} alt={item.name} className="w-full h-full object-cover" /></div>
+                            <div className="flex-1 min-w-0 text-left"><h3 className="text-sm font-bold text-white truncate">{item.name}</h3></div>
+                          </Reorder.Item>
+                        ))}
+                      </Reorder.Group>
+                    </div>
                   ) : contentView === "grid" ? (
                     <div className="grid grid-cols-3 gap-4">
-                      {merch.map((item) => (
-                        <div key={item.id} className="bg-[#1c1c1e] border border-white/10 rounded-xl overflow-hidden group cursor-pointer flex flex-col">
+                      {localMerch.map((item) => (
+                        <div 
+                          key={item.id} 
+                          onPointerDown={() => handlePointerDown(item)}
+                          onPointerUp={handlePointerUp}
+                          onPointerLeave={handlePointerUp}
+                          className="bg-[#1c1c1e] border border-white/10 rounded-xl overflow-hidden group cursor-pointer flex flex-col select-none"
+                        >
                           <div className="relative aspect-square">
-                            <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+                            <img src={item.image_url} alt={item.name} className="w-full h-full object-cover pointer-events-none" />
                           </div>
                           <div className="p-3 flex-1 flex flex-col justify-between text-left">
                             <h3 className="text-sm font-bold leading-tight line-clamp-2 text-white">{item.name}</h3>
@@ -292,9 +379,15 @@ export default function PublicProfilePage() {
                     </div>
                   ) : (
                     <div className="flex flex-col gap-3">
-                      {merch.map((item) => (
-                        <div key={item.id} className="flex items-center gap-4 bg-[#1c1c1e] border border-white/10 rounded-2xl p-3">
-                          <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0 relative"><img src={item.image_url} alt={item.name} className="w-full h-full object-cover" /></div>
+                      {localMerch.map((item) => (
+                        <div 
+                          key={item.id} 
+                          onPointerDown={() => handlePointerDown(item)}
+                          onPointerUp={handlePointerUp}
+                          onPointerLeave={handlePointerUp}
+                          className="flex items-center gap-4 bg-[#1c1c1e] border border-white/10 rounded-2xl p-3 select-none"
+                        >
+                          <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0 relative"><img src={item.image_url} alt={item.name} className="w-full h-full object-cover pointer-events-none" /></div>
                           <div className="flex-1 min-w-0 text-left"><h3 className="text-sm font-bold text-white truncate">{item.name}</h3><p className="text-xs text-white/50 mt-1">Merch</p></div>
                           <p className="text-emerald-400 font-bold text-sm shrink-0">${(item.price_cents / 100).toFixed(2)}</p>
                         </div>
