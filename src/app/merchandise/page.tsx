@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
@@ -17,19 +17,28 @@ type Product = {
   type?: string;
 };
 
-const MOCK_CREATORS = [
-  { name: "The History Guy", photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=History", tags: "Books · Videos · Merch" },
-  { name: "Truth Seekers", photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Truth", tags: "Books · Videos · Merch" },
-  { name: "Dr. Jane Goodall", photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jane", tags: "Books · Documentaries · Merch" },
-  { name: "Frontier Media", photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Frontier", tags: "Books · Videos · Merch" },
-  { name: "Modern History Co.", photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Modern", tags: "Books · Videos · Merch" },
-  { name: "The Unseen", photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=Unseen", tags: "Books · Videos · Merch" },
-];
-
 export default function MerchandisePage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Extract unique creators directly from the products that are actually listed
+  const realCreators = useMemo(() => {
+    const map = new Map();
+    products.forEach(p => {
+      if (p.creatorName && p.creatorSlug && !map.has(p.creatorSlug)) {
+        map.set(p.creatorSlug, {
+          name: p.creatorName,
+          slug: p.creatorSlug,
+          photo: p.creatorPhoto || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.creatorName)}&background=1c1c1e&color=fff`,
+          productCount: 1
+        });
+      } else if (map.has(p.creatorSlug)) {
+        map.get(p.creatorSlug).productCount += 1;
+      }
+    });
+    return Array.from(map.values());
+  }, [products]);
 
   useEffect(() => {
     fetch("/api/products/global")
@@ -69,9 +78,7 @@ export default function MerchandisePage() {
               <p className="text-white/60 text-sm lg:text-lg mb-6 lg:mb-8 max-w-lg">
                 Discover exclusive books, merch and more from the creators you love. Every purchase helps independent voices keep creating.
               </p>
-              <button className="bg-[#E53945] hover:bg-[#d12e39] text-white px-6 lg:px-8 py-2.5 lg:py-3 rounded-lg font-bold transition flex items-center gap-2 text-sm lg:text-base">
-                Explore Marketplace <ArrowRight size={18} />
-              </button>
+              
             </div>
 
             {/* Trust Badges (Hidden on mobile to save space) */}
@@ -99,16 +106,18 @@ export default function MerchandisePage() {
               
               {/* Mobile: Horizontal scroll, Desktop: Grid */}
               <div className="flex overflow-x-auto scrollbar-hide gap-4 lg:grid lg:grid-cols-6 pb-2 lg:pb-0">
-                {MOCK_CREATORS.map((c, i) => (
-                  <div key={i} className="flex flex-col items-center text-center group cursor-pointer flex-shrink-0 w-[100px] lg:w-auto">
+                {realCreators.length > 0 ? realCreators.map((c: any, i: number) => (
+                  <Link href={`/profile/${c.slug}`} key={i} className="flex flex-col items-center text-center group cursor-pointer flex-shrink-0 w-[100px] lg:w-auto">
                     <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-white/10 group-hover:border-[#E53945] transition mb-3">
                       <img src={c.photo} alt={c.name} className="w-full h-full object-cover" />
                     </div>
                     <h3 className="text-sm font-bold text-white group-hover:text-[#E53945] transition truncate w-full">{c.name}</h3>
-                    <p className="text-[10px] text-white/40 mb-3 truncate w-full">{c.tags}</p>
-                    <button className="px-4 py-1.5 rounded-full border border-white/20 text-xs font-bold hover:bg-white hover:text-black transition">Follow</button>
-                  </div>
-                ))}
+                    <p className="text-[10px] text-white/40 mb-3 truncate w-full">{c.productCount} {c.productCount === 1 ? 'Item' : 'Items'}</p>
+                    <span className="px-4 py-1.5 rounded-full border border-white/20 text-xs font-bold group-hover:bg-white group-hover:text-black transition">Visit</span>
+                  </Link>
+                )) : (
+                  <div className="col-span-full text-white/40 py-4 text-center border border-dashed border-white/10 rounded-xl">No creators with products yet.</div>
+                )}
               </div>
             </section>
 
@@ -202,15 +211,15 @@ export default function MerchandisePage() {
             <div className="bg-[#0f0f13] border border-white/5 rounded-2xl p-5 lg:p-6">
               <h3 className="font-bold text-white text-sm lg:text-base mb-4 lg:mb-6">Top Selling Creators</h3>
               <div className="space-y-3 lg:space-y-4">
-                {MOCK_CREATORS.slice(0, 5).map((c, i) => (
-                  <div key={i} className="flex items-center gap-3 cursor-pointer group">
+                {realCreators.slice(0, 5).map((c: any, i: number) => (
+                  <Link href={`/profile/${c.slug}`} key={i} className="flex items-center gap-3 cursor-pointer group">
                     <span className="text-xs lg:text-sm font-bold text-white/30 w-3 lg:w-4">{i + 1}</span>
-                    <img src={c.photo} alt={c.name} className="w-7 h-7 lg:w-8 lg:h-8 rounded-full border border-white/10 group-hover:border-[#E53945] transition" />
+                    <img src={c.photo} alt={c.name} className="w-7 h-7 lg:w-8 lg:h-8 rounded-full border border-white/10 group-hover:border-[#E53945] transition object-cover" />
                     <div className="min-w-0">
                       <p className="text-xs lg:text-sm font-bold text-white group-hover:text-[#E53945] transition truncate">{c.name}</p>
-                      <p className="text-[9px] lg:text-[10px] text-white/40 truncate">{c.tags}</p>
+                      <p className="text-[9px] lg:text-[10px] text-white/40 truncate">{c.productCount} Items</p>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>
