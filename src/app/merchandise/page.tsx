@@ -5,13 +5,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import { ShoppingBag, Search } from "lucide-react";
+import { ShoppingBag, Search, Heart, ShieldCheck, X } from "lucide-react";
 
 export default function MerchandisePage() {
-  const router = useRouter();
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
 
   useEffect(() => {
     fetch("/api/products/global")
@@ -21,6 +21,7 @@ export default function MerchandisePage() {
       .finally(() => setLoading(false));
   }, []);
 
+  // Extract unique creators directly from the listed products
   const realCreators = useMemo(() => {
     const map = new Map();
     products.forEach(p => {
@@ -35,117 +36,167 @@ export default function MerchandisePage() {
     return Array.from(map.values());
   }, [products]);
 
+  // Filter and split into Merchandise and Books
   const filteredProducts = useMemo(() => {
     if (!searchQuery.trim()) return products;
     const q = searchQuery.toLowerCase();
-    return products.filter(p => 
-      p.name?.toLowerCase().includes(q) || 
-      p.creatorName?.toLowerCase().includes(q)
-    );
+    return products.filter(p => p.name?.toLowerCase().includes(q) || p.creatorName?.toLowerCase().includes(q));
   }, [products, searchQuery]);
+
+  const merchandise = useMemo(() => {
+    return filteredProducts.filter(p => p.type?.toLowerCase().includes('merch') || !p.type?.toLowerCase().includes('book'));
+  }, [filteredProducts]);
+
+  const books = useMemo(() => {
+    return filteredProducts.filter(p => p.type?.toLowerCase().includes('book'));
+  }, [filteredProducts]);
 
   return (
     <main className="min-h-screen bg-[#09090B] text-white pb-24 lg:pb-20">
       <TopBar />
       
-      {/* CINEMATIC HERO */}
-      <div className="relative w-full h-[45vh] md:h-[60vh] flex flex-col justify-between overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 pt-24 lg:pt-32">
         
-        {/* Background Image */}
-        <div className="absolute inset-0 z-0">
-          <img 
-            src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=2000&auto=format&fit=crop" 
-            alt="Marketplace" 
-            className="w-full h-full object-cover object-center" 
-          />
-          {/* Gradients to make text readable */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#09090B] via-[#09090B]/40 to-black/60" />
-        </div>
-
-        {/* Top Overlay: Full-width Search */}
-        <div className="relative z-10 px-4 md:px-8 pt-24 md:pt-28 w-full max-w-7xl mx-auto">
-          <div className="relative w-full">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/60" size={20} />
+        {/* HEADER & SEARCH */}
+        <div className="mb-10">
+          <h1 className="text-4xl md:text-5xl font-black mb-6 tracking-tight">
+            Trooflix <span className="text-[#E53945]">Marketplace</span>
+          </h1>
+          
+          <div className="relative w-full max-w-2xl">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50" size={20} />
             <input
               type="text"
               placeholder="Search merchandise and books..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-black/40 backdrop-blur-xl border border-white/20 rounded-full py-3.5 pl-12 pr-4 text-sm text-white placeholder:text-white/50 focus:outline-none focus:border-[#E53945]/50 focus:bg-black/60 transition-all shadow-xl"
+              className="w-full bg-white/[0.04] border border-white/10 rounded-full py-4 pl-12 pr-4 text-sm md:text-base text-white placeholder:text-white/40 focus:outline-none focus:border-[#E53945]/50 focus:bg-white/[0.08] transition-all backdrop-blur-xl shadow-lg"
             />
           </div>
         </div>
 
-        {/* Bottom Overlay: Title */}
-        <div className="relative z-10 px-4 md:px-8 pb-8 md:pb-12 w-full max-w-7xl mx-auto">
-          <p className="text-[#E53945] font-bold tracking-[0.3em] text-[10px] md:text-xs uppercase mb-2 md:mb-3 drop-shadow-md">
-            Explore Merchandise
-          </p>
-          <h1 className="text-5xl md:text-7xl font-black text-white leading-none tracking-tight drop-shadow-2xl">
-            Marketplace
-          </h1>
-        </div>
-      </div>
-
-      {/* MAIN CONTENT AREA */}
-      <div className="max-w-7xl mx-auto px-4 md:px-8 py-10">
-        
         {/* 1. FEATURED CREATOR STORES */}
         {realCreators.length > 0 && !searchQuery && (
-          <section className="mb-16 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <h2 className="text-xl lg:text-2xl font-bold mb-6">Featured Creator Stores</h2>
-            <div className="flex overflow-x-auto scrollbar-hide gap-6 pb-4">
+          <section className="mb-12">
+            <h2 className="text-xl md:text-2xl font-bold mb-4">Featured Creator Stores</h2>
+            <div className="flex overflow-x-auto scrollbar-hide gap-5 pb-4">
               {realCreators.map((c: any) => (
-                <Link href={`/profile/${c.slug}`} key={c.slug} className="flex flex-col items-center group w-[100px] shrink-0">
-                  <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-white/10 group-hover:border-[#E53945] transition-all duration-300 mb-3 shadow-lg">
+                <Link href={`/profile/${c.slug}`} key={c.slug} className="flex flex-col items-center group w-[90px] shrink-0">
+                  <div className="w-[72px] h-[72px] rounded-full overflow-hidden border-2 border-white/10 group-hover:border-[#E53945] transition-all duration-300 mb-2 shadow-lg">
                     <img src={c.photo} alt={c.name} className="w-full h-full object-cover" />
                   </div>
-                  <span className="text-sm font-bold truncate w-full text-center group-hover:text-[#E53945] transition-colors">{c.name}</span>
+                  <span className="text-xs font-bold truncate w-full text-center group-hover:text-[#E53945] transition-colors">{c.name}</span>
                 </Link>
               ))}
             </div>
           </section>
         )}
 
-        {/* 2. CREATORS BOOKS AND MERCHANDISE */}
-        <section className="animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100">
-          <h2 className="text-xl lg:text-2xl font-bold mb-6">
-            {searchQuery ? `Search Results for "${searchQuery}"` : "Creators Books and Merchandise"}
-          </h2>
-          
-          {loading ? (
-            <div className="flex justify-center py-20">
-              <div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" />
-            </div>
-          ) : filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-6">
-              {filteredProducts.map((p) => (
-                <Link href={`/shop/${p.id}`} key={p.id} className="bg-[#1c1c1e] border border-white/5 rounded-2xl p-3 flex flex-col hover:border-white/20 transition-all duration-300 hover:-translate-y-1 group shadow-lg">
-                  <div className="aspect-[4/5] w-full rounded-xl overflow-hidden mb-4 bg-white/5 relative">
-                    <img src={p.image_url} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-                  </div>
-                  <h3 className="text-sm font-bold leading-tight line-clamp-2 mb-1 group-hover:text-[#E53945] transition-colors">{p.name}</h3>
-                  <p className="text-xs text-white/50 mb-3">{p.creatorName}</p>
-                  <p className="text-lg font-black text-white mt-auto">${(p.price_cents / 100).toFixed(2)}</p>
-                </Link>
+        {/* 2. FEATURED MERCHANDISE */}
+        {merchandise.length > 0 && (
+          <section className="mb-12">
+            <h2 className="text-xl md:text-2xl font-bold mb-4">Featured Merchandise</h2>
+            <div className="flex overflow-x-auto scrollbar-hide gap-4 pb-4">
+              {merchandise.map((p) => (
+                <ProductCard key={p.id} product={p} onClick={() => setSelectedProduct(p)} />
               ))}
             </div>
-          ) : (
-            <div className="text-center py-24 border border-dashed border-white/10 rounded-3xl bg-white/5">
-              <ShoppingBag className="mx-auto text-white/20 mb-4" size={48} />
-              <h3 className="text-lg font-bold text-white mb-2">
-                {searchQuery ? "No items found" : "No products listed yet"}
-              </h3>
-              <p className="text-white/50 text-sm">
-                {searchQuery ? `We couldn't find anything matching "${searchQuery}".` : "Check back soon for exclusive merch and publications."}
-              </p>
+          </section>
+        )}
+
+        {/* 3. FEATURED BOOKS */}
+        {books.length > 0 && (
+          <section className="mb-12">
+            <h2 className="text-xl md:text-2xl font-bold mb-4">Featured Books</h2>
+            <div className="flex overflow-x-auto scrollbar-hide gap-4 pb-4">
+              {books.map((p) => (
+                <ProductCard key={p.id} product={p} onClick={() => setSelectedProduct(p)} />
+              ))}
             </div>
-          )}
-        </section>
+          </section>
+        )}
+
+        {/* EMPTY STATE */}
+        {!loading && filteredProducts.length === 0 && (
+          <div className="text-center py-24 border border-dashed border-white/10 rounded-3xl bg-white/5">
+            <ShoppingBag className="mx-auto text-white/20 mb-4" size={48} />
+            <h3 className="text-lg font-bold text-white mb-2">
+              {searchQuery ? "No items found" : "No products listed yet"}
+            </h3>
+            <p className="text-white/50 text-sm">
+              {searchQuery ? `We couldn't find anything matching "${searchQuery}".` : "Check back soon for exclusive merch and publications."}
+            </p>
+          </div>
+        )}
 
       </div>
 
+      {/* ITEM MODAL */}
+      {selectedProduct && (
+        <div className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setSelectedProduct(null)}>
+          <div className="bg-[#1c1c1e] border border-white/10 rounded-3xl w-full max-w-lg overflow-hidden flex flex-col relative shadow-2xl animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setSelectedProduct(null)} className="absolute top-4 right-4 z-10 p-2 bg-black/50 hover:bg-black/80 rounded-full text-white transition">
+              <X size={20} />
+            </button>
+            
+            <div className="w-full aspect-square bg-black relative">
+              <img src={selectedProduct.image_url} alt={selectedProduct.name} className="w-full h-full object-cover" />
+            </div>
+            
+            <div className="p-6 md:p-8">
+              <p className="text-3xl font-black text-emerald-400 mb-2">£{(selectedProduct.price_cents / 100).toFixed(2)}</p>
+              <h2 className="text-xl font-bold text-white mb-4 leading-tight">{selectedProduct.name}</h2>
+              
+              <div className="flex items-center gap-3 pt-6 border-t border-white/10">
+                {selectedProduct.creatorPhoto ? (
+                  <img src={selectedProduct.creatorPhoto} className="w-12 h-12 rounded-full object-cover border border-white/10" />
+                ) : (
+                  <div className="w-12 h-12 rounded-full bg-[#E53945] flex items-center justify-center font-bold text-white text-lg">
+                    {selectedProduct.creatorName?.charAt(0) || "C"}
+                  </div>
+                )}
+                <div>
+                  <p className="text-sm font-bold text-white">{selectedProduct.creatorName}</p>
+                  <p className="text-xs text-white/50">Seller</p>
+                </div>
+              </div>
+              
+              <button className="w-full mt-8 py-4 bg-[#E53945] hover:bg-[#d12e39] text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(229,57,69,0.3)]">
+                Buy Now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <MobileBottomNav />
     </main>
+  );
+}
+
+// VINTED-STYLE PRODUCT CARD
+function ProductCard({ product, onClick }: { product: any, onClick: () => void }) {
+  return (
+    <div onClick={onClick} className="flex flex-col group cursor-pointer w-[160px] md:w-[200px] shrink-0">
+      
+      {/* Image Container */}
+      <div className="relative aspect-square w-full rounded-2xl overflow-hidden mb-3 border border-white/5 bg-[#1c1c1e]">
+        <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+        
+        {/* Like Button */}
+        <button className="absolute top-2.5 right-2.5 p-2 bg-white rounded-full text-black shadow-md hover:scale-110 transition" onClick={(e) => e.stopPropagation()}>
+          <Heart size={16} />
+        </button>
+
+        {/* Delivery Tag */}
+        <div className="absolute bottom-2.5 left-2.5 bg-black/60 backdrop-blur-md text-white text-[10px] font-semibold px-2 py-1 rounded-md flex items-center gap-1">
+          <ShieldCheck size={12} className="text-white" /> Delivery or Collection
+        </div>
+      </div>
+
+      {/* Details */}
+      <p className="text-[#1DB954] font-black text-lg md:text-xl tracking-tight leading-none mb-1">£{(product.price_cents / 100).toFixed(2)}</p>
+      <h3 className="text-sm font-semibold text-white/90 line-clamp-2 leading-tight">{product.name}</h3>
+    </div>
   );
 }
