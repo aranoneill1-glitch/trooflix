@@ -302,17 +302,25 @@ export default function Home() {
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] h-[300px] bg-[#E53945]/20 rounded-full blur-[100px] pointer-events-none z-0" />
                 
                 <div className="absolute top-0 left-0 w-full h-[300px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#E53945]/15 via-[#0a0303]/0 to-transparent pointer-events-none z-0" />
-                {/* Category Pills (Moved to top) */}
-                <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 pt-24 pb-3 relative z-20">
-                  {CATEGORIES.map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => { setActiveCategory(cat === activeCategory ? null : cat); }}
-                      className={`px-5 py-1.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all duration-300 backdrop-blur-xl border ${activeCategory === cat ? "bg-white text-black border-white shadow-[0_4px_20px_rgba(255,255,255,0.2)]" : "bg-white/[0.04] text-white/80 border-white/10 hover:bg-white/10 hover:border-white/20 shadow-sm"}`}
-                    >
-                      {cat.split(" ")[0]}
-                    </button>
-                  ))}
+                {/* Search Bar (Replaced Pills) */}
+                <div className="px-4 pt-24 pb-3 relative z-20 w-full animate-in fade-in slide-in-from-top-4 duration-500">
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      const fd = new FormData(e.currentTarget);
+                      const q = fd.get("q") as string;
+                      if (q.trim()) router.push(`/search?q=${encodeURIComponent(q)}`);
+                    }}
+                    className="relative w-full"
+                  >
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50" size={18} />
+                    <input
+                      type="text"
+                      name="q"
+                      placeholder="Search videos, creators, podcasts..."
+                      className="w-full bg-white/[0.04] border border-white/10 rounded-full py-3 pl-11 pr-4 text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-[#E53945]/50 focus:bg-white/[0.08] transition-all backdrop-blur-xl shadow-lg"
+                    />
+                  </form>
                 </div>
 
                 {/* Header */}
