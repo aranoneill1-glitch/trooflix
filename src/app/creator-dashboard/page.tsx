@@ -1,5 +1,5 @@
 "use client";
-import { ChevronRight , Tag } from "lucide-react";
+import { ChevronRight , Tag, MoreVertical } from "lucide-react";
 
 import { useEffect, useState, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
@@ -411,21 +411,53 @@ function CreatorDashboardContent() {
                   ) : contentView === "grid" ? (
                     <div className="grid grid-cols-3 gap-4">
                       {merch.map((item) => (
-                        <div key={item.id} className="bg-[#1c1c1e] border border-white/10 rounded-xl overflow-hidden flex flex-col">
-                          <div className="relative aspect-square"><img src={item.image_url} alt={item.name} className="w-full h-full object-cover select-none pointer-events-none" style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", pointerEvents: "none" }} draggable={false} /></div>
-                          <div className="p-3 flex-1 flex flex-col justify-between text-left"><h3 className="text-sm font-bold leading-tight line-clamp-2 text-white">{item.name}</h3><p className="text-emerald-400 font-bold text-xs mt-2">${(item.price_cents / 100).toFixed(2)}</p></div>
-                        </div>
-                      ))}
+            <div 
+              key={item.id} 
+              onPointerDown={() => startPress(item)}
+              onPointerUp={cancelPress}
+              onPointerLeave={cancelPress}
+              onContextMenu={(e) => { e.preventDefault(); setSelectedMerchItem(item); }}
+              className="bg-[#1c1c1e] border border-white/10 rounded-xl overflow-hidden group cursor-pointer flex flex-col relative" 
+              style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none" }}
+            >
+              <div className="relative aspect-square pointer-events-none">
+                <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+              </div>
+              <button onClick={(e) => { e.stopPropagation(); setSelectedMerchItem(item); }} className="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-black/90 rounded-full text-white z-20">
+                <MoreVertical size={16} />
+              </button>
+              <div className="p-3 flex-1 flex flex-col justify-between text-left pointer-events-none">
+                <h3 className="text-sm font-bold leading-tight line-clamp-2 text-white">{item.name}</h3>
+                <p className="text-emerald-400 font-bold text-xs mt-2">${(item.price_cents / 100).toFixed(2)}</p>
+              </div>
+            </div>
+          ))}
                     </div>
                   ) : (
                     <div className="flex flex-col gap-3">
                       {merch.map((item) => (
-                        <div key={item.id} className="flex items-center gap-4 bg-[#1c1c1e] border border-white/10 rounded-2xl p-3">
-                          <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0 relative"><img src={item.image_url} alt={item.name} className="w-full h-full object-cover select-none pointer-events-none" style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", pointerEvents: "none" }} draggable={false} /></div>
-                          <div className="flex-1 min-w-0 text-left"><h3 className="text-sm font-bold text-white truncate">{item.name}</h3><p className="text-xs text-white/50 mt-1">Merch</p></div>
-                          <p className="text-emerald-400 font-bold text-sm shrink-0">${(item.price_cents / 100).toFixed(2)}</p>
-                        </div>
-                      ))}
+            <div 
+              key={item.id} 
+              onPointerDown={() => startPress(item)}
+              onPointerUp={cancelPress}
+              onPointerLeave={cancelPress}
+              onContextMenu={(e) => { e.preventDefault(); setSelectedMerchItem(item); }}
+              className="flex items-center gap-4 bg-[#1c1c1e] border border-white/10 rounded-2xl p-3 relative" 
+              style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none" }}
+            >
+              <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0 relative pointer-events-none">
+                <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+              </div>
+              <div className="flex-1 min-w-0 text-left pointer-events-none">
+                <h3 className="text-sm font-bold text-white truncate">{item.name}</h3>
+                <p className="text-xs text-white/50 mt-1">Merch</p>
+              </div>
+              <p className="text-emerald-400 font-bold text-sm shrink-0 pointer-events-none">${(item.price_cents / 100).toFixed(2)}</p>
+              <button onClick={(e) => { e.stopPropagation(); setSelectedMerchItem(item); }} className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-white z-20">
+                <MoreVertical size={16} />
+              </button>
+            </div>
+          ))}
                     </div>
                   )}
                 </div>
