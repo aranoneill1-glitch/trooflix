@@ -1,4 +1,5 @@
 "use client";
+import { ChevronRight } from "lucide-react";
 
 import { useEffect, useState, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
@@ -418,14 +419,20 @@ function CreatorDashboardContent() {
                 <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">
                   Content
                 </h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                  <Link href="/creator-dashboard/manage-content" className="bg-[#1c1c1e] border border-white/10 hover:border-[#E53945] p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
-                    <Video className="text-[#E53945]" size={24} />
-                    <span className="text-xs font-bold text-center">Manage Content</span>
+                <div className="flex flex-col gap-2 w-full max-w-2xl">
+                  <Link href="/creator-dashboard/manage-content" className="bg-[#1c1c1e] border border-white/10 hover:border-white/20 p-4 rounded-xl flex items-center justify-between transition-all group">
+                    <div className="flex items-center gap-4">
+                      <Video className="text-[#E53945]" size={20} />
+                      <span className="text-sm font-bold text-white group-hover:text-white/90">Manage Content</span>
+                    </div>
+                    <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
                   </Link>
-                  <button onClick={() => setShowAddContentMenu(true)} className="bg-[#1c1c1e] border border-white/10 hover:border-[#E53945] p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
-                    <Plus className="text-[#E53945]" size={24} />
-                    <span className="text-xs font-bold text-center">Add Content</span>
+                  <button onClick={() => setShowAddContentMenu(true)} className="bg-[#1c1c1e] border border-white/10 hover:border-white/20 p-4 rounded-xl flex items-center justify-between transition-all group w-full text-left">
+                    <div className="flex items-center gap-4">
+                      <Plus className="text-[#E53945]" size={20} />
+                      <span className="text-sm font-bold text-white group-hover:text-white/90">Add Content</span>
+                    </div>
+                    <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
                   </button>
                 </div>
               </section>
@@ -434,14 +441,20 @@ function CreatorDashboardContent() {
                 <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">
                   Profile
                 </h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                  <Link href="/creator-dashboard/settings" className="bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
-                    <Pencil className="text-white" size={24} />
-                    <span className="text-xs font-bold text-center">Manage Profile</span>
+                <div className="flex flex-col gap-2 w-full max-w-2xl">
+                  <Link href="/creator-dashboard/settings" className="bg-[#1c1c1e] border border-white/10 hover:border-white/20 p-4 rounded-xl flex items-center justify-between transition-all group">
+                    <div className="flex items-center gap-4">
+                      <Pencil className="text-white/70" size={20} />
+                      <span className="text-sm font-bold text-white group-hover:text-white/90">Manage Profile</span>
+                    </div>
+                    <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
                   </Link>
-                  <Link href="/creator-dashboard/theme" className="bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
-                    <Palette className="text-white" size={24} />
-                    <span className="text-xs font-bold text-center">Profile Theme</span>
+                  <Link href="/creator-dashboard/theme" className="bg-[#1c1c1e] border border-white/10 hover:border-white/20 p-4 rounded-xl flex items-center justify-between transition-all group">
+                    <div className="flex items-center gap-4">
+                      <Palette className="text-white/70" size={20} />
+                      <span className="text-sm font-bold text-white group-hover:text-white/90">Profile Theme</span>
+                    </div>
+                    <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
                   </Link>
                 </div>
               </section>
@@ -450,14 +463,20 @@ function CreatorDashboardContent() {
                 <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">
                   Marketplace
                 </h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                  <Link href="/creator-dashboard/shop" className="bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
-                    <ShoppingBag className="text-white" size={24} />
-                    <span className="text-xs font-bold text-center">Manage Shop</span>
+                <div className="flex flex-col gap-2 w-full max-w-2xl">
+                  <Link href="/creator-dashboard/shop" className="bg-[#1c1c1e] border border-white/10 hover:border-white/20 p-4 rounded-xl flex items-center justify-between transition-all group">
+                    <div className="flex items-center gap-4">
+                      <ShoppingBag className="text-white/70" size={20} />
+                      <span className="text-sm font-bold text-white group-hover:text-white/90">Manage Shop</span>
+                    </div>
+                    <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
                   </Link>
-                  <Link href="/creator-dashboard/orders" className="bg-[#1c1c1e] border border-white/10 hover:border-white/30 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
-                    <Package className="text-white" size={24} />
-                    <span className="text-xs font-bold text-center">Manage Orders</span>
+                  <Link href="/creator-dashboard/orders" className="bg-[#1c1c1e] border border-white/10 hover:border-white/20 p-4 rounded-xl flex items-center justify-between transition-all group">
+                    <div className="flex items-center gap-4">
+                      <Package className="text-white/70" size={20} />
+                      <span className="text-sm font-bold text-white group-hover:text-white/90">Manage Orders</span>
+                    </div>
+                    <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
                   </Link>
                 </div>
               </section>
@@ -466,10 +485,13 @@ function CreatorDashboardContent() {
                 <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">
                   Subscriptions
                 </h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                  <Link href="/creator-dashboard/subscriptions" className="bg-[#1c1c1e] border border-white/10 hover:border-[#E53945] p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
-                    <Star className="text-[#E53945]" size={24} />
-                    <span className="text-xs font-bold text-center">Manage Subscription</span>
+                <div className="flex flex-col gap-2 w-full max-w-2xl">
+                  <Link href="/creator-dashboard/subscriptions" className="bg-[#1c1c1e] border border-white/10 hover:border-white/20 p-4 rounded-xl flex items-center justify-between transition-all group">
+                    <div className="flex items-center gap-4">
+                      <Star className="text-[#E53945]" size={20} />
+                      <span className="text-sm font-bold text-white group-hover:text-white/90">Manage Subscription</span>
+                    </div>
+                    <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
                   </Link>
                 </div>
               </section>
@@ -478,14 +500,20 @@ function CreatorDashboardContent() {
                 <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">
                   Security & Billing
                 </h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                  <Link href="/creator-dashboard/security-billing" className="bg-[#1c1c1e] border border-white/10 hover:border-[#E53945] p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
-                    <Shield className="text-[#E53945]" size={24} />
-                    <span className="text-xs font-bold text-center">Change Password</span>
+                <div className="flex flex-col gap-2 w-full max-w-2xl">
+                  <Link href="/creator-dashboard/security-billing" className="bg-[#1c1c1e] border border-white/10 hover:border-white/20 p-4 rounded-xl flex items-center justify-between transition-all group">
+                    <div className="flex items-center gap-4">
+                      <Shield className="text-[#E53945]" size={20} />
+                      <span className="text-sm font-bold text-white group-hover:text-white/90">Change Password</span>
+                    </div>
+                    <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
                   </Link>
-                  <Link href="/creator-dashboard/security-billing" className="bg-[#1c1c1e] border border-white/10 hover:border-[#D4AF37] p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors">
-                    <CreditCard className="text-[#D4AF37]" size={24} />
-                    <span className="text-xs font-bold text-center">Billing</span>
+                  <Link href="/creator-dashboard/security-billing" className="bg-[#1c1c1e] border border-white/10 hover:border-white/20 p-4 rounded-xl flex items-center justify-between transition-all group">
+                    <div className="flex items-center gap-4">
+                      <CreditCard className="text-[#D4AF37]" size={20} />
+                      <span className="text-sm font-bold text-white group-hover:text-white/90">Billing</span>
+                    </div>
+                    <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
                   </Link>
                 </div>
               </section>
