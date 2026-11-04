@@ -100,7 +100,14 @@ export default function MerchandisePage() {
         {/* 1. NEW CREATOR MERCH ROW */}
         {realCreators.length > 0 && !searchQuery && (
           <section className="mb-10">
-            <h2 className="text-xl md:text-2xl font-bold mb-4">Search Creator Merch</h2>
+            <div className="mb-6">
+              <p className="text-[10px] md:text-xs tracking-[0.4em] text-white/50 font-semibold mb-1 uppercase">
+                Own The Knowledge
+              </p>
+              <h2 className="text-2xl md:text-4xl font-black tracking-tight text-white">
+                Support the <span className="text-[#E53945]">Creators</span>
+              </h2>
+            </div>
             <div className="flex overflow-x-auto scrollbar-hide gap-5 pb-4">
               {realCreators.map((c: any) => (
                 <Link href={`/profile/${c.slug}`} key={c.slug} className="flex flex-col items-center group w-[135px] shrink-0">
