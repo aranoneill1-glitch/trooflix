@@ -2,11 +2,13 @@
 
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import { ShoppingBag, Search, Sparkles } from "lucide-react";
+import { ShoppingBag, Search, ArrowLeft } from "lucide-react";
 
 export default function MerchandisePage() {
+  const router = useRouter();
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -46,50 +48,56 @@ export default function MerchandisePage() {
     <main className="min-h-screen bg-[#09090B] text-white pb-24 lg:pb-20">
       <TopBar />
       
-      <div className="max-w-7xl mx-auto px-4 lg:px-8 pt-24 lg:pt-32">
+      {/* CINEMATIC HERO */}
+      <div className="relative w-full h-[45vh] md:h-[60vh] flex flex-col justify-between overflow-hidden">
         
-        {/* HERO BANNER */}
-        <div className="relative w-full rounded-[32px] overflow-hidden bg-[#1c1c1e] border border-white/10 mb-12 shadow-2xl">
-          {/* Background Image with Overlay */}
-          <div className="absolute inset-0 z-0">
-            <img 
-              src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2000&auto=format&fit=crop" 
-              alt="Marketplace" 
-              className="w-full h-full object-cover opacity-40 object-center" 
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#09090B] via-[#09090B]/80 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#09090B] via-transparent to-transparent" />
-          </div>
-          
-          {/* Hero Content */}
-          <div className="relative z-10 px-6 py-16 md:px-12 md:py-24 lg:py-32 flex flex-col items-center text-center max-w-3xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E53945]/20 border border-[#E53945]/30 text-[#E53945] text-xs font-bold uppercase tracking-wider mb-6 backdrop-blur-md">
-              <Sparkles size={14} /> Creator Marketplace
-            </div>
-            
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-black mb-4 tracking-tight drop-shadow-2xl">
-              Shop <span className="text-[#E53945]">Independent</span>
-            </h1>
-            
-            <p className="text-white/70 text-sm md:text-lg mb-8 max-w-lg leading-relaxed drop-shadow-md">
-              Discover exclusive books, merchandise, and products directly from the creators you love. Every purchase supports independent voices.
-            </p>
+        {/* Background Image */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2000&auto=format&fit=crop" 
+            alt="Marketplace" 
+            className="w-full h-full object-cover object-center" 
+          />
+          {/* Gradients to make text readable */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#09090B] via-[#09090B]/40 to-black/60" />
+        </div>
 
-            {/* Integrated Glass Search Bar */}
-            <div className="relative w-full max-w-lg">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/60" size={20} />
-              <input
-                type="text"
-                placeholder="Search merchandise and books..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-black/40 backdrop-blur-xl border border-white/20 rounded-full py-3.5 pl-12 pr-4 text-sm text-white placeholder:text-white/50 focus:outline-none focus:border-[#E53945]/50 focus:bg-black/60 transition-all shadow-xl"
-              />
-            </div>
+        {/* Top Overlay: Back Button & Search */}
+        <div className="relative z-10 px-4 md:px-8 pt-24 md:pt-28 flex flex-col gap-4 w-full max-w-7xl mx-auto">
+          <button 
+            onClick={() => router.back()} 
+            className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-black/40 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all text-white"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          
+          <div className="relative w-full max-w-lg">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/60" size={20} />
+            <input
+              type="text"
+              placeholder="Search merchandise and books..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-black/40 backdrop-blur-xl border border-white/20 rounded-full py-3.5 pl-12 pr-4 text-sm text-white placeholder:text-white/50 focus:outline-none focus:border-[#E53945]/50 focus:bg-black/60 transition-all shadow-xl"
+            />
           </div>
         </div>
 
-        {/* 1. FEATURED CREATOR STORES (Hidden when searching) */}
+        {/* Bottom Overlay: Title */}
+        <div className="relative z-10 px-4 md:px-8 pb-8 md:pb-12 w-full max-w-7xl mx-auto">
+          <p className="text-[#E53945] font-bold tracking-[0.3em] text-[10px] md:text-xs uppercase mb-2 md:mb-3 drop-shadow-md">
+            Explore Merchandise
+          </p>
+          <h1 className="text-5xl md:text-7xl font-black text-white leading-none tracking-tight drop-shadow-2xl">
+            Marketplace
+          </h1>
+        </div>
+      </div>
+
+      {/* MAIN CONTENT AREA */}
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-10">
+        
+        {/* 1. FEATURED CREATOR STORES */}
         {realCreators.length > 0 && !searchQuery && (
           <section className="mb-16 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <h2 className="text-xl lg:text-2xl font-bold mb-6">Featured Creator Stores</h2>
