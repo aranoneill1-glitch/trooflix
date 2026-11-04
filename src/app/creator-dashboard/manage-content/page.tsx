@@ -6,12 +6,14 @@ import Link from "next/link";
 import { 
   Plus, Search, Video, Mic, Eye, Heart, 
   MoreVertical, Pencil, Trash2, Play, LayoutGrid, List, 
-  FileText, Crown, Clock, ChevronLeft, X, MessageSquare, Radio 
+  FileText, Crown, Clock, Globe, Lock, ChevronLeft, X, MessageSquare, Radio 
 } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { getCachedUser } from "@/lib/cache";
 import { motion, AnimatePresence } from "framer-motion";
+
+const CATEGORIES = ["Documentaries","Podcasts","Independent Films","Books","History","Politics & Geopolitics","War & Conflict","True Crime & Justice","Conspiracy & Mystery","Society & Culture","Business & Finance","Science & Technology","Environment & Nature","Religion & Spirituality","Ancient Civilisation","Comedy","News","Gaming"];
 
 type VideoType = {
   id: number;
@@ -39,6 +41,12 @@ export default function ManageContentPage() {
   const [activeTab, setActiveTab] = useState<"All" | "Videos" | "Podcasts" | "Premium" | "Drafts">("All");
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
+  const [editingVideo, setEditingVideo] = useState<any>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editCategory, setEditCategory] = useState("History");
+  const [editVisibility, setEditVisibility] = useState("public");
+  const [savingEdit, setSavingEdit] = useState(false);
   const [showAddContentMenu, setShowAddContentMenu] = useState(false);
 
   useEffect(() => {
@@ -62,6 +70,44 @@ export default function ManageContentPage() {
         .catch(() => setLoading(false));
     });
   }, [router]);
+
+  const openEditModal = (video: any) => {
+    setEditingVideo(video);
+    setEditTitle(video.title || "");
+    setEditDescription(video.description || "");
+    setEditCategory(video.category || "History");
+    setEditVisibility(video.visibility || "public");
+    setActiveMenuId(null);
+  };
+
+  const saveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingEdit(true);
+    try {
+      const res = await fetch("/api/videos/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: editingVideo.id,
+          title: editTitle,
+          description: editDescription,
+          category: editCategory,
+          visibility: editVisibility
+        }),
+      });
+      if (res.ok) {
+        setVideos(prev => prev.map(v => v.id === editingVideo.id ? { ...v, title: editTitle, description: editDescription, category: editCategory, visibility: editVisibility } : v));
+        setEditingVideo(null);
+      } else {
+        const err = await res.json();
+        alert("Failed to save: " + err.error);
+      }
+    } catch (err: any) {
+      alert("Error: " + err.message);
+    } finally {
+      setSavingEdit(false);
+    }
+  };
 
   const handleDelete = async (videoId: number) => {
     if (!confirm("Are you sure you want to delete this content? This cannot be undone.")) return;
@@ -263,7 +309,7 @@ export default function ManageContentPage() {
                       
                       {activeMenuId === video.id && (
                         <div className="absolute right-0 bottom-full mb-2 z-20 w-36 bg-[#2c2c2e] border border-white/10 rounded-xl shadow-2xl overflow-hidden py-1">
-                          <button onClick={() => router.push(`/creator-dashboard/upload?edit=${video.id}`)} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-white hover:bg-white/10 transition text-left">
+                          <button onClick={() => openEditModal(video)} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-white hover:bg-white/10 transition text-left">
                             <Pencil size={14} /> Edit
                           </button>
                           <button className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-white hover:bg-white/10 transition text-left">
@@ -310,7 +356,7 @@ export default function ManageContentPage() {
 
                 {/* Actions */}
                 <div className="flex items-center gap-1 shrink-0 px-1">
-                  <button onClick={() => router.push(`/creator-dashboard/upload?edit=${video.id}`)} className="p-2 text-white/50 hover:text-white rounded-lg transition hidden md:block">
+                  <button onClick={() => openEditModal(video)} className="p-2 text-white/50 hover:text-white rounded-lg transition hidden md:block">
                     <Pencil size={16} />
                   </button>
                   <button onClick={() => handleDelete(video.id)} className="p-2 text-white/50 hover:text-red-500 rounded-lg transition hidden md:block">
@@ -323,7 +369,7 @@ export default function ManageContentPage() {
                     </button>
                     {activeMenuId === video.id && (
                       <div className="absolute right-0 bottom-full mb-2 z-20 w-36 bg-[#2c2c2e] border border-white/10 rounded-xl shadow-2xl overflow-hidden py-1">
-                        <button onClick={() => router.push(`/creator-dashboard/upload?edit=${video.id}`)} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-white hover:bg-white/10 transition text-left">
+                        <button onClick={() => openEditModal(video)} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-white hover:bg-white/10 transition text-left">
                           <Pencil size={14} /> Edit
                         </button>
                         <button onClick={() => handleDelete(video.id)} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 transition text-left">
@@ -346,6 +392,49 @@ export default function ManageContentPage() {
         <div className="fixed inset-0 z-10" onClick={() => setActiveMenuId(null)} />
       )}
 
+      
+      {editingVideo && (
+        <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#1c1c1e] border border-white/10 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between p-6 border-b border-white/5">
+              <h2 className="text-xl font-bold">Edit Video</h2>
+              <button onClick={() => setEditingVideo(null)} className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition">
+                <X size={18} />
+              </button>
+            </div>
+            <form onSubmit={saveEdit} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+              <div>
+                <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 block">Title</label>
+                <input required type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#E53945] transition" />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 block">Description</label>
+                <textarea required value={editDescription} onChange={(e) => setEditDescription(e.target.value)} rows={3} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#E53945] transition resize-none" />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 block">Category</label>
+                <select value={editCategory} onChange={(e) => setEditCategory(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#E53945] transition appearance-none">
+                  {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 block">Visibility</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button type="button" onClick={() => setEditVisibility("public")} className={`flex items-center justify-center gap-2 p-3 rounded-xl border transition ${editVisibility === "public" ? "bg-[#E53945]/10 border-[#E53945] text-[#E53945]" : "bg-black/40 border-white/10 text-white/50"}`}>
+                    <Globe size={18} /> Public
+                  </button>
+                  <button type="button" onClick={() => setEditVisibility("premium")} className={`flex items-center justify-center gap-2 p-3 rounded-xl border transition ${editVisibility === "premium" ? "bg-[#D4AF37]/10 border-[#D4AF37] text-[#D4AF37]" : "bg-black/40 border-white/10 text-white/50"}`}>
+                    <Lock size={18} /> Premium
+                  </button>
+                </div>
+              </div>
+              <button type="submit" disabled={savingEdit} className="w-full mt-4 bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold py-3.5 rounded-xl transition shadow-lg shadow-[#E53945]/20">
+                {savingEdit ? "Saving..." : "Save Changes"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
       <MobileBottomNav />
     
       {/* SLIDE-UP CREATE MENU */}
