@@ -855,20 +855,20 @@ function DetailModal({ item, onClose, onPlay, creators }: { item: Video; onClose
           <button onClick={onClose} className="absolute top-3 right-3 md:top-4 md:right-4 z-20 bg-black/70 hover:bg-black/90 rounded-full p-2 transition" aria-label="Close"><X size={20} /></button>
 
           <div className="absolute bottom-0 left-0 right-0 p-5 md:p-10">
-            <h2 className="text-3xl md:text-5xl font-black mb-2 md:mb-3 drop-shadow-lg">{item.title}</h2>
-            <p className="text-sm md:text-base text-white/70 mb-4 md:mb-5">{metaParts.join(" · ")}</p>
+            <h2 className="text-2xl md:text-4xl font-black mb-1 md:mb-2 drop-shadow-lg">{item.title}</h2>
+            <p className="text-xs md:text-sm text-white/70 mb-3 md:mb-4">{metaParts.join(" · ")}</p>
             <div className="flex items-center gap-2 md:gap-3 flex-wrap">
-              <button onClick={() => onPlay(item)} className="flex items-center gap-2 bg-white/20 backdrop-blur-xl border border-white/30 text-white font-bold px-6 md:px-8 py-2.5 md:py-3 rounded-xl shadow-lg hover:bg-white/30 transition-all active:scale-95"><Play size={18} fill="currentColor" /> Play</button>
+              <button onClick={() => onPlay(item)} className="flex items-center gap-2 bg-white/20 backdrop-blur-xl border border-white/30 text-white font-bold text-sm px-4 md:px-5 py-2 md:py-2.5 rounded-xl shadow-lg hover:bg-white/30 transition-all active:scale-95"><Play size={18} fill="currentColor" /> Play</button>
               
-              <div className="flex items-center justify-center w-[46px] h-[46px] md:w-[50px] md:h-[50px] bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl hover:bg-white/20 transition-all text-white cursor-pointer">
+              <div className="flex items-center justify-center w-[36px] h-[36px] md:w-[40px] md:h-[40px] bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl hover:bg-white/20 transition-all text-white cursor-pointer">
                 <SaveButton videoId={item.id} variant="icon" size={20} />
               </div>
 
-              <div className="flex items-center gap-2 bg-[#000000]/40 backdrop-blur-md border border-white/10 rounded-xl px-3 py-1.5 md:py-2 ml-0 md:ml-2 shadow-lg">
-                {uploaderPhoto ? <img src={uploaderPhoto} alt={uploaderName} className="w-7 h-7 md:w-8 md:h-8 rounded-full object-cover border border-white/20" /> : <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-xs font-bold text-white">{uploaderInitial}</div>}
+              <div className="flex items-center gap-2 bg-[#000000]/40 backdrop-blur-md border border-white/10 rounded-xl px-2 py-1 md:py-1.5 ml-0 md:ml-2 shadow-lg">
+                {uploaderPhoto ? <img src={uploaderPhoto} alt={uploaderName} className="w-6 h-6 md:w-7 md:h-7 rounded-full object-cover border border-white/20" /> : <div className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-[10px] font-bold text-white">{uploaderInitial}</div>}
                 <div className="min-w-0 flex flex-col justify-center">
-                  <p className="text-[8px] uppercase tracking-widest text-white/50 leading-none mb-0.5">Uploaded by</p>
-                  {uploaderSlug ? <a href={`/podcaster/${uploaderSlug}`} className="text-xs md:text-sm font-semibold text-white hover:underline truncate leading-tight">{uploaderName}</a> : <p className="text-xs md:text-sm font-semibold text-white truncate leading-tight">{uploaderName}</p>}
+                  <p className="text-[7px] uppercase tracking-widest text-white/50 leading-none mb-0.5">Uploaded by</p>
+                  {uploaderSlug ? <a href={`/podcaster/${uploaderSlug}`} className="text-[10px] md:text-xs font-semibold text-white hover:underline truncate leading-tight">{uploaderName}</a> : <p className="text-[10px] md:text-xs font-semibold text-white truncate leading-tight">{uploaderName}</p>}
                 </div>
               </div>
             </div>
