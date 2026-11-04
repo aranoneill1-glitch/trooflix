@@ -118,8 +118,8 @@ export default function ManageContentPage() {
             </Link>
             <h1 className="text-3xl font-black tracking-tight">Manage Content</h1>
           </div>
-          <Link href="/creator-dashboard/upload" className="flex items-center gap-2 bg-[#E53945] hover:bg-[#d12e39] text-white font-bold px-5 py-2.5 rounded-xl transition shadow-lg shadow-[#E53945]/20">
-            <Plus size={18} /> Upload New
+          <Link href="/creator-dashboard/upload" className="flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white font-bold text-xs sm:text-sm px-4 py-2 sm:px-5 sm:py-2.5 rounded-full transition-all whitespace-nowrap shadow-lg shrink-0">
+            <Plus size={16} className="text-[#E53945]" /> Upload New
           </Link>
         </div>
 
