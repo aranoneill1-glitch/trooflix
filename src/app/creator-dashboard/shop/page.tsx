@@ -2,10 +2,12 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { ChevronLeft, Plus, Trash2, Edit, ShoppingBag, Package, X, Image as ImageIcon } from "lucide-react";
+import { ChevronLeft, Plus, Trash2, Edit, ShoppingBag, Package, X, Image as ImageIcon, GripVertical, Save } from "lucide-react";
+import { Reorder, motion, AnimatePresence } from "framer-motion";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { getCachedUser } from "@/lib/cache";
+import { createClient } from "@/utils/supabase/client";
 
 type Product = {
   id: number;
@@ -15,6 +17,7 @@ type Product = {
   inventory_count: number;
   image_url: string;
   active: boolean;
+  sort_order?: number;
 };
 
 export default function ManageShopPage() {
@@ -23,6 +26,7 @@ export default function ManageShopPage() {
   const [creatorId, setCreatorId] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isReordering, setIsReordering] = useState(false);
 
   // Form State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -53,7 +57,11 @@ export default function ManageShopPage() {
     try {
       const res = await fetch(`/api/creator/products?creatorId=${cid}`);
       const data = await res.json();
-      setProducts(Array.isArray(data.products) ? data.products : []);
+      let loadedProducts = Array.isArray(data.products) ? data.products : [];
+      
+      // Sort by sort_order if it exists
+      loadedProducts.sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0));
+      setProducts(loadedProducts);
     } catch (e) {
       console.error(e);
     } finally {
@@ -97,7 +105,6 @@ export default function ManageShopPage() {
     try {
       let finalImageUrl = imageUrl;
 
-      // UPLOAD TO R2 VIA PRESIGNED URL
       if (imageFile) {
         const presign = await fetch("/api/upload", {
           method: "POST",
@@ -165,6 +172,30 @@ export default function ManageShopPage() {
     }
   };
 
+  const saveOrder = async () => {
+    setIsReordering(false);
+    const supabase = createClient();
+    
+    // Update sort_order in Supabase for all products
+    const updates = products.map((p, index) => ({
+      id: p.id,
+      sort_order: index,
+      name: p.name,
+      price_cents: p.price_cents,
+      image_url: p.image_url,
+      description: p.description,
+      inventory_count: p.inventory_count,
+      creator_id: creatorId
+    }));
+
+    const { error } = await supabase.from("products").upsert(updates);
+    if (error) {
+      alert("Failed to save new order: " + error.message);
+    } else {
+      alert("Order saved successfully!");
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#09090B] flex items-center justify-center">
@@ -190,12 +221,25 @@ export default function ManageShopPage() {
             </h1>
             <p className="text-sm text-white/50">Create and manage your merchandise inventory.</p>
           </div>
-          <button 
-            onClick={() => openModal()} 
-            className="flex items-center gap-2 bg-[#E53945] hover:bg-[#d12e39] text-white font-bold px-6 py-3 rounded-xl transition shadow-lg shadow-[#E53945]/20"
-          >
-            <Plus size={18} /> Add Product
-          </button>
+          <div className="flex gap-2">
+            {isReordering ? (
+              <>
+                <button onClick={() => { setIsReordering(false); fetchProducts(creatorId!); }} className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-sm font-bold transition">Cancel</button>
+                <button onClick={saveOrder} className="flex items-center gap-2 bg-[#E53945] hover:bg-[#d12e39] text-white font-bold px-6 py-2 rounded-xl transition shadow-lg shadow-[#E53945]/20">
+                  <Save size={18} /> Save Order
+                </button>
+              </>
+            ) : (
+              <>
+                <button onClick={() => setIsReordering(true)} className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold px-4 py-3 rounded-xl transition">
+                  <GripVertical size={18} /> Reorder
+                </button>
+                <button onClick={() => openModal()} className="flex items-center gap-2 bg-[#E53945] hover:bg-[#d12e39] text-white font-bold px-6 py-3 rounded-xl transition shadow-lg shadow-[#E53945]/20">
+                  <Plus size={18} /> Add Product
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         {products.length === 0 ? (
@@ -207,7 +251,34 @@ export default function ManageShopPage() {
               <Plus size={18} /> Create Product
             </button>
           </div>
+        ) : isReordering ? (
+          
+          /* REORDER MODE */
+          <Reorder.Group axis="y" values={products} onReorder={setProducts} className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {products.map((product) => (
+              <Reorder.Item 
+                key={product.id} 
+                value={product} 
+                className="bg-[#1c1c1e] border border-white/10 rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing relative"
+                style={{ touchAction: "none" }} // CRITICAL FOR MOBILE DRAG
+              >
+                <div className="absolute top-2 left-2 z-10 p-1.5 bg-black/60 rounded-md">
+                  <GripVertical size={16} className="text-white/70" />
+                </div>
+                <div className="aspect-square bg-black pointer-events-none">
+                  <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" draggable={false} />
+                </div>
+                <div className="p-3">
+                  <h3 className="font-bold text-sm leading-tight line-clamp-1">{product.name}</h3>
+                  <p className="text-emerald-400 text-xs font-bold mt-1">${(product.price_cents / 100).toFixed(2)}</p>
+                </div>
+              </Reorder.Item>
+            ))}
+          </Reorder.Group>
+
         ) : (
+          
+          /* NORMAL ROW VIEW */
           <div className="flex flex-col gap-3">
             {products.map((product) => (
               <div key={product.id} className="flex items-center gap-4 bg-[#1c1c1e] border border-white/10 rounded-2xl p-3 hover:border-white/20 transition-colors group">
@@ -248,6 +319,7 @@ export default function ManageShopPage() {
 
       </div>
 
+      {/* FORM MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-[#1c1c1e] border border-white/10 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
