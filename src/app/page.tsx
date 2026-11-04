@@ -97,6 +97,7 @@ export default function Home() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [allUsers, setAllUsers] = useState<any[]>([]);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
 
   const handleLogout = async () => {
@@ -141,6 +142,12 @@ export default function Home() {
 
   useEffect(() => {
     getCachedCreators().then(setCreators).catch(() => {});
+    
+    // Fetch all users for the search dropdown
+    const supabase = createClient();
+    supabase.from("profiles").select("user_id, display_name, username, avatar_url, is_verified, tier").then(({ data }) => {
+      if (data) setAllUsers(data);
+    });
     getCachedUser().then(setUser);
     
     fetch("/api/videos", { cache: "no-store" })
@@ -344,13 +351,13 @@ export default function Home() {
                       <div className="absolute top-full left-0 right-0 mt-2 bg-[#0a0303]/90 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col z-[100] animate-in fade-in slide-in-from-top-2">
                         
                         {/* MATCHING CREATORS */}
-                        {creators.filter(c => 
+                        {allUsers.filter(c => 
                           (c.display_name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) || 
                           (c.username?.toLowerCase() || "").includes(searchQuery.toLowerCase())
                         ).length > 0 && (
                           <div className="p-2 border-b border-white/5">
                             <p className="text-[10px] font-bold text-white/40 uppercase tracking-wider px-3 py-1">Creators</p>
-                            {creators.filter(c => 
+                            {allUsers.filter(c => 
                               (c.display_name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) || 
                               (c.username?.toLowerCase() || "").includes(searchQuery.toLowerCase())
                             ).slice(0, 3).map(c => (
@@ -386,7 +393,7 @@ export default function Home() {
                         )}
 
                         {/* NO RESULTS */}
-                        {creators.filter(c => (c.display_name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) || (c.username?.toLowerCase() || "").includes(searchQuery.toLowerCase())).length === 0 &&
+                        {allUsers.filter(c => (c.display_name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) || (c.username?.toLowerCase() || "").includes(searchQuery.toLowerCase())).length === 0 &&
                          videos.filter(v => (v.title?.toLowerCase() || "").includes(searchQuery.toLowerCase())).length === 0 && (
                           <div className="p-6 text-center text-sm text-white/50">
                             No quick results found for "{searchQuery}".
