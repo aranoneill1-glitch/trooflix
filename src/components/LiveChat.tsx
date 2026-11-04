@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { getCachedUser } from "@/lib/cache";
-import { Send, MessageCircle, Smile, AlertCircle } from "lucide-react";
+import { Send, MessageCircle, Smile, AlertCircle, Gift, DollarSign } from "lucide-react";
 
 type ChatMessage = {
   id: string;
@@ -107,6 +107,34 @@ export default function LiveChat({ liveInputId, className = "h-[400px] md:h-[500
     setSending(false);
   };
 
+  const sendTip = async (amount: number) => {
+    if (!user) return alert("Please log in to leave a tip.");
+    
+    const displayName = profile?.display_name || profile?.username || user.email?.split('@')[0] || "User";
+    
+    const { data, error } = await supabase.from("live_chat_messages").insert({
+      live_input_id: liveInputId,
+      user_id: user.id,
+      display_name: displayName,
+      avatar_url: profile?.avatar_url || null,
+      message: `Left a $${amount} tip!`,
+      type: "tip",
+      metadata: { amount }
+    }).select().single();
+
+    if (error) {
+      console.error("Tip failed:", error);
+      alert("Failed to send tip. (Payment integration coming soon!)");
+    }
+  };
+
+  const handleCustomTip = () => {
+    const amount = prompt("Enter a custom tip amount ($):");
+    if (amount && !isNaN(Number(amount)) && Number(amount) > 0) {
+      sendTip(Number(amount));
+    }
+  };
+
   return (
     <div className={`flex flex-col w-full bg-[#0f0f12]/80 backdrop-blur-2xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl relative ${className}`}>
       
@@ -139,6 +167,7 @@ export default function LiveChat({ liveInputId, className = "h-[400px] md:h-[500
               <div className="flex flex-col min-w-0 leading-tight w-full">
                 <span className="text-[11px] font-semibold text-white/40 mb-1">{msg.display_name}</span>
                 
+                {/* RENDER PRODUCT CARD */}
                 {msg.type === "product" && msg.metadata ? (
                   <div className="mt-1 bg-[#1c1c1e] border border-[#E53945]/30 rounded-xl overflow-hidden shadow-lg w-full max-w-[240px]">
                     <div className="relative aspect-video bg-black/50">
@@ -155,7 +184,19 @@ export default function LiveChat({ liveInputId, className = "h-[400px] md:h-[500
                       </a>
                     </div>
                   </div>
+                ) : msg.type === "tip" && msg.metadata ? (
+                  /* RENDER TIP CARD */
+                  <div className="mt-1 bg-gradient-to-r from-[#D4AF37]/20 to-transparent border border-[#D4AF37]/40 rounded-xl p-3 shadow-[0_0_15px_rgba(212,175,55,0.15)] flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-[#D4AF37] flex items-center justify-center shadow-lg shrink-0">
+                      <DollarSign size={16} className="text-black font-bold" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-[#D4AF37]">{msg.display_name} tipped ${msg.metadata.amount}!</p>
+                      <p className="text-[10px] text-[#D4AF37]/70 uppercase tracking-wider font-bold mt-0.5">Support the stream</p>
+                    </div>
+                  </div>
                 ) : (
+                  /* RENDER NORMAL TEXT */
                   <div className="text-[13px] text-white/90 break-words leading-relaxed">
                     {msg.message}
                   </div>
@@ -167,12 +208,27 @@ export default function LiveChat({ liveInputId, className = "h-[400px] md:h-[500
       </div>
 
       {showEmojis && (
-        <div className="absolute bottom-[70px] left-3 right-3 bg-[#1c1c1e]/95 backdrop-blur-xl border border-white/10 rounded-xl p-3 shadow-2xl animate-in fade-in slide-in-from-bottom-2 z-50">
+        <div className="absolute bottom-[130px] left-3 right-3 bg-[#1c1c1e]/95 backdrop-blur-xl border border-white/10 rounded-xl p-3 shadow-2xl animate-in fade-in slide-in-from-bottom-2 z-50">
           <div className="grid grid-cols-8 gap-2">
             {EMOJIS.map((e) => (
               <button key={e} type="button" onClick={() => { setNewMessage(prev => prev + e); setShowEmojis(false); }} className="text-xl hover:scale-125 transition-transform p-1">{e}</button>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* TIP BAR */}
+      {user && (
+        <div className="bg-black/30 border-t border-white/5 p-2 flex gap-2 overflow-x-auto scrollbar-none items-center justify-center shrink-0">
+          <button onClick={() => sendTip(5)} className="flex items-center gap-1 bg-[#D4AF37]/10 hover:bg-[#D4AF37]/20 border border-[#D4AF37]/30 text-[#D4AF37] px-3 py-1.5 rounded-full text-xs font-bold transition whitespace-nowrap">
+            <Gift size={14} /> $5
+          </button>
+          <button onClick={() => sendTip(10)} className="flex items-center gap-1 bg-[#D4AF37]/10 hover:bg-[#D4AF37]/20 border border-[#D4AF37]/30 text-[#D4AF37] px-3 py-1.5 rounded-full text-xs font-bold transition whitespace-nowrap">
+            <Gift size={14} /> $10
+          </button>
+          <button onClick={handleCustomTip} className="flex items-center gap-1 bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 px-3 py-1.5 rounded-full text-xs font-bold transition whitespace-nowrap">
+            Custom
+          </button>
         </div>
       )}
 
