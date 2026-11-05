@@ -686,7 +686,7 @@ function AppReelHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { 
   };
 
   return (
-    <div className="relative w-full pt-[60px] h-[48vh] min-h-[360px] flex items-center justify-center mb-0 overflow-hidden" style={{ perspective: "1200px" }}>
+    <div className="relative w-full pt-[60px] h-[48vh] min-h-[360px] flex items-center justify-center mb-0 overflow-hidden bg-[#0a0303]" style={{ perspective: "1200px" }}>
       <div className="relative z-10 w-full h-full flex items-center justify-center">
         {videos.map((video, i) => (
           <AppReelCard
@@ -739,14 +739,7 @@ function AppReelCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMor
             {video.title}
           </h3>
           
-          <div className="flex gap-2 w-full">
-             <button onClick={(e) => { e.stopPropagation(); onPlay(video); }} className="flex-1 bg-[#E53945] hover:bg-[#d12e39] text-white py-1.5 rounded-lg font-bold text-[10px] transition flex items-center justify-center gap-1">
-               <Play size={10} fill="currentColor" /> Play
-             </button>
-             <button onClick={(e) => { e.stopPropagation(); onMore(video); }} className="flex-1 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white py-1.5 rounded-lg font-bold text-[10px] transition flex items-center justify-center gap-1 border border-white/10">
-               <Info size={10} /> Info
-             </button>
-          </div>
+          
         </div>
       </div>
     </motion.div>
