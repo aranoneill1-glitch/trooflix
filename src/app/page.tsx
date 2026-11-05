@@ -251,7 +251,7 @@ export default function Home() {
       {/* Subtle ambient background gradient */}
       <div className="absolute top-0 left-0 w-full h-[60vh] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/[0.05] via-transparent to-transparent pointer-events-none z-0" />
       
-      <div className="relative z-[100]"><TopBar /></div>
+      <div className="fixed top-0 left-0 right-0 z-[190] bg-[#0a0303]"><TopBar /></div>
       
       <AnimatePresence>
         {drawerOpen && (
@@ -426,7 +426,7 @@ export default function Home() {
                   </p>
                   <div className="flex items-center justify-between">
                     <h2 className="text-2xl font-black tracking-tight text-white">
-                      Discover <span className="text-[#E53945]">Creators</span>
+                      Discover <span className="text-[#E53945]">Creator</span>
                     </h2>
                     <Link href="/creators" className="text-xs font-bold text-white/50 hover:text-white transition flex items-center gap-1">
                       View All <ChevronRight size={14} />
@@ -487,7 +487,7 @@ export default function Home() {
                     The Home of Independent Voices
                   </p>
                   <h2 className="text-2xl md:text-4xl font-black tracking-tight text-white">
-                    Discover <span className="text-[#E53945]">Creators</span>
+                    Discover <span className="text-[#E53945]">Creator</span>
                   </h2>
                 </div>
                 
