@@ -193,14 +193,7 @@ export default function PlusPage() {
             
             {/* A. CINEMATIC WELCOME HERO (No Boxes) */}
             <div className="relative w-full h-[40vh] min-h-[320px] flex items-center pt-16 pb-8">
-              {/* Background Image */}
-              <div className="absolute inset-0 z-0">
-                {heroBackdrop && (
-                  <img src={heroBackdrop} alt="Welcome" className="w-full h-full object-cover opacity-40" />
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0303] via-[#0a0303]/80 to-transparent" />
-                <div className="absolute inset-0 bg-gradient-to-r from-[#0a0303] via-transparent to-transparent" />
-              </div>
+
 
               {/* Content */}
               <div className="relative z-10 w-full max-w-7xl mx-auto px-5 md:px-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
