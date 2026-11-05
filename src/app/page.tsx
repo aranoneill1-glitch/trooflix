@@ -656,7 +656,7 @@ function AppReelHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[],
   const activeVideo = videos[activeIndex];
 
   return (
-    <div className="relative w-full h-[65vh] min-h-[450px] max-h-[700px] overflow-hidden bg-[#0a0303]">
+    <div className="relative w-full h-[60vh] min-h-[400px] max-h-[700px] overflow-hidden bg-[#0a0303]">
       <AnimatePresence mode="wait">
         <motion.div
           key={activeVideo.id}
@@ -666,54 +666,30 @@ function AppReelHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[],
           transition={{ duration: 0.8 }}
           className="absolute inset-0 z-0"
         >
-          <img src={activeVideo.backdropUrl || activeVideo.posterUrl} alt={activeVideo.title} className="w-full h-full object-cover object-center" />
+          <img src={activeVideo.backdropUrl || activeVideo.posterUrl} alt={activeVideo.title} className="w-full h-full object-cover object-top" />
           
-          {/* Top fade for TopBar readability */}
+          {/* Top fade so TopBar is visible */}
           <div className="absolute inset-0 bg-gradient-to-b from-[#0a0303]/90 via-[#0a0303]/20 to-transparent h-1/3" />
           
           {/* Bottom fade blending into the page */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0303] via-[#0a0303]/80 to-transparent h-2/3" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0303] via-[#0a0303]/80 to-transparent h-1/2" />
         </motion.div>
       </AnimatePresence>
 
-      {/* Content overlay at the bottom */}
-      <div className="absolute bottom-0 left-0 w-full p-6 pb-8 z-10 flex flex-col items-start">
-        <motion.div
-           key={`text-${activeVideo.id}`}
-           initial={{ opacity: 0, y: 20 }}
-           animate={{ opacity: 1, y: 0 }}
-           transition={{ duration: 0.5, delay: 0.2 }}
-           className="w-full"
+      {/* Just the buttons, NO BIO */}
+      <div className="absolute bottom-0 left-0 w-full p-6 pb-10 z-10 flex items-center justify-center gap-4">
+        <button 
+          onClick={() => onPlay(activeVideo)}
+          className="flex-1 max-w-[200px] flex items-center justify-center gap-2 bg-[#E53945] hover:bg-[#d12e39] text-white px-6 py-3.5 rounded-xl font-bold text-sm transition-transform hover:scale-105 shadow-xl"
         >
-          <h1 className="text-3xl md:text-5xl font-black text-white leading-[1.1] mb-3 drop-shadow-2xl">
-            {activeVideo.title}
-          </h1>
-          
-          <div className="flex items-center gap-3 text-xs font-semibold mb-3">
-            <span className="text-white/80">{activeVideo.year}</span>
-            <span className="border border-white/30 px-2 py-0.5 rounded text-xs">{activeVideo.rating || "TV-MA"}</span>
-            <span className="text-[#1ed760] font-bold">{activeVideo.match}% Match</span>
-          </div>
-
-          <p className="text-sm text-white/90 leading-relaxed mb-5 line-clamp-2 drop-shadow-md max-w-2xl">
-            {activeVideo.description || "No description available."}
-          </p>
-          
-          <div className="flex items-center gap-3 w-full">
-            <button 
-              onClick={() => onPlay(activeVideo)}
-              className="flex-1 flex items-center justify-center gap-2 bg-[#E53945] hover:bg-[#d12e39] text-white px-4 py-3 rounded-xl font-bold text-sm transition-transform hover:scale-105 shadow-xl"
-            >
-              <Play size={18} fill="currentColor" /> Play
-            </button>
-            <button 
-              onClick={() => onMore(activeVideo)}
-              className="flex-1 flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white px-4 py-3 rounded-xl font-bold text-sm transition-transform hover:scale-105 border border-white/10"
-            >
-              <Info size={18} /> More Info
-            </button>
-          </div>
-        </motion.div>
+          <Play size={18} fill="currentColor" /> Play
+        </button>
+        <button 
+          onClick={() => onMore(activeVideo)}
+          className="flex-1 max-w-[200px] flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white px-6 py-3.5 rounded-xl font-bold text-sm transition-transform hover:scale-105 border border-white/10"
+        >
+          <Info size={18} /> More Info
+        </button>
       </div>
     </div>
   );
