@@ -42,7 +42,7 @@ export async function GET() {
         name: p.name,
         price_cents: p.price_cents,
         image_url: p.image_url,
-        stock: p.stock || 0,
+        stock: p.inventory_count || 0,
         creator_id: p.creator_id, // <--- FIX: Added missing creator_id
         creatorName: creator.name || dbProfile.username || "Unknown Creator",
         creatorSlug: creator.slug || dbProfile.username || "",
