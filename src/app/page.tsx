@@ -358,7 +358,7 @@ export default function Home() {
                           (c.username?.toLowerCase() || "").includes(searchQuery.toLowerCase())
                         ).length > 0 && (
                           <div className="p-2 border-b border-white/5">
-                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-wider px-3 py-1">Creators</p>
+                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-wider px-3 py-1">Creator</p>
                             {allUsers.filter(c => 
                               (c.display_name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) || 
                               (c.username?.toLowerCase() || "").includes(searchQuery.toLowerCase())
