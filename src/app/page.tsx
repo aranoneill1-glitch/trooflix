@@ -309,7 +309,18 @@ export default function Home() {
                 <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-[#E53945]/20 rounded-full blur-[120px] pointer-events-none z-0" />
                 
                 <div className="fixed top-0 left-0 w-full h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#E53945]/15 via-[#0a0303]/0 to-transparent pointer-events-none z-0" />
-                <div className="px-4 pt-[60px] pb-3 relative z-[100] w-full animate-in fade-in slide-in-from-top-4 duration-500">
+<div className="pt-[60px] w-full relative z-10">
+{/* App Reel Hero (Moved below Avatars) */}
+                {heroPool.length > 0 && (
+                  <AppReelHero 
+                    videos={heroPool} 
+                    activeIndex={heroIndex} 
+                    onPlay={handleInstantPlay}
+                    onMore={(v) => setSelected(v)}
+                  />
+                )}
+</div>
+                <div className="hidden">
                   <div className="relative w-full max-w-2xl mx-auto">
                     <form
                       onSubmit={(e) => {
@@ -451,15 +462,7 @@ export default function Home() {
                   </div>
                 )}
 
-                {/* App Reel Hero (Moved below Avatars) */}
-                {heroPool.length > 0 && (
-                  <AppReelHero 
-                    videos={heroPool} 
-                    activeIndex={heroIndex} 
-                    onPlay={handleInstantPlay}
-                    onMore={(v) => setSelected(v)}
-                  />
-                )}
+                
 
               </div>
 
@@ -654,7 +657,7 @@ function AppReelHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[],
 
   return (
     <div className="relative w-full px-4 pb-6">
-      <section className="relative w-full h-[55vh] min-h-[400px] max-h-[600px] flex items-end justify-start overflow-hidden bg-[#1c1c1e] rounded-[24px] shadow-2xl">
+      <section className="relative w-full h-[41vh] min-h-[300px] max-h-[450px] flex items-end justify-start overflow-hidden bg-[#1c1c1e] rounded-[24px] shadow-2xl">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeVideo.id}
