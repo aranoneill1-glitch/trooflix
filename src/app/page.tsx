@@ -686,7 +686,7 @@ function AppReelHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { 
   };
 
   return (
-    <div className="relative w-full pt-[75px] h-[60vh] min-h-[450px] flex items-center justify-center mb-4 overflow-hidden" style={{ perspective: "1200px" }}>
+    <div className="relative w-full pt-[60px] h-[48vh] min-h-[360px] flex items-center justify-center mb-0 overflow-hidden" style={{ perspective: "1200px" }}>
       <div className="relative z-10 w-full h-full flex items-center justify-center">
         {videos.map((video, i) => (
           <AppReelCard
