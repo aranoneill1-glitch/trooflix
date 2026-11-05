@@ -250,7 +250,7 @@ export default function Home() {
 {/* Subtle ambient background gradient */}
       <div className="fixed top-0 left-0 w-full h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/[0.05] via-transparent to-transparent pointer-events-none z-0" />
       
-      <div className="px-4 pt-16 pb-3 relative z-[100] w-full animate-in fade-in slide-in-from-top-4 duration-500"><TopBar /></div>
+      <div className="relative z-[100]"><TopBar /></div>
       
       <AnimatePresence>
         {drawerOpen && (
@@ -309,7 +309,7 @@ export default function Home() {
                 <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-[#E53945]/20 rounded-full blur-[120px] pointer-events-none z-0" />
                 
                 <div className="fixed top-0 left-0 w-full h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#E53945]/15 via-[#0a0303]/0 to-transparent pointer-events-none z-0" />
-                <div className="px-4 pt-16 pb-3 relative z-[100] w-full animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="px-4 pt-[60px] pb-3 relative z-[100] w-full animate-in fade-in slide-in-from-top-4 duration-500">
                   <div className="relative w-full max-w-2xl mx-auto">
                     <form
                       onSubmit={(e) => {
