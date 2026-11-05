@@ -49,12 +49,13 @@ export default function CategoryPage() {
         // Filter videos based on the category name matching the video type or category field
         // Adjust this logic once we know exactly how your videos are tagged in the DB
         const filtered = Array.isArray(data) ? data.filter(v => 
-          v.category?.toLowerCase().includes(categoryInfo.title.toLowerCase()) || 
-          v.type?.toLowerCase().includes(categoryInfo.title.toLowerCase())
+          v.type?.toLowerCase() !== "tweet" && 
+          v.type?.toLowerCase() !== "short" && 
+          (v.category?.toLowerCase() === categoryInfo.title.toLowerCase() || 
+           v.type?.toLowerCase() === categoryInfo.title.toLowerCase())
         ) : [];
         
-        // If no filtered videos, just show all for the demo
-        setVideos(filtered.length > 0 ? filtered : (Array.isArray(data) ? data.slice(0, 10) : []));
+        setVideos(filtered);
         setLoading(false);
       })
       .catch(() => setLoading(false));
