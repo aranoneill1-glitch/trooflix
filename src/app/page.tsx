@@ -686,7 +686,7 @@ function AppReelHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { 
   };
 
   return (
-    <div className="relative w-full h-[55vh] min-h-[420px] flex items-center justify-center mb-4 overflow-hidden bg-[#0a0303]" style={{ perspective: "1200px" }}>
+    <div className="relative w-full pt-[75px] h-[60vh] min-h-[450px] flex items-center justify-center mb-4 overflow-hidden bg-[#0a0303]" style={{ perspective: "1200px" }}>
       <div className="relative z-10 w-full h-full flex items-center justify-center">
         {videos.map((video, i) => (
           <AppReelCard
@@ -714,7 +714,7 @@ function AppReelCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMor
     return i - c + (d / 300);
   });
 
-  const x = useTransform(offset, (o) => `${o * 55}%`); 
+  const x = useTransform(offset, (o) => `${o * 45}%`); 
   const scale = useTransform(offset, (o) => Math.max(0.8, 1 - Math.abs(o) * 0.15)); 
   const rotateY = useTransform(offset, (o) => Math.max(-45, Math.min(45, o * -40)));
   const opacity = useTransform(offset, (o) => Math.abs(o) > 1.5 ? 0 : 1 - Math.abs(o) * 0.15); 
@@ -727,7 +727,7 @@ function AppReelCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMor
       onPointerUp={onPointerUp}
       onClick={() => { if (isActive) onMore(video); }}
       style={{ x, scale, rotateY, opacity, zIndex, touchAction: "pan-y", transformStyle: "preserve-3d" }}
-      className="absolute w-[65vw] max-w-[260px] aspect-[2/3] rounded-[16px] cursor-pointer shadow-[0_20px_60px_rgba(0,0,0,0.9)] select-none bg-[#1c1c1e] border border-white/10 overflow-hidden"
+      className="absolute w-[48vw] max-w-[195px] aspect-[2/3] rounded-[16px] cursor-pointer shadow-2xl select-none overflow-hidden"
     >
       <div className="relative w-full h-full overflow-hidden pointer-events-none">
         <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover" draggable={false} />
