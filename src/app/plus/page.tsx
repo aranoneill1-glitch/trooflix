@@ -182,7 +182,7 @@ export default function PlusPage() {
   if (user) {
     return (
       <main className="min-h-screen bg-[#0a0303] text-white pb-32 font-sans selection:bg-[#E53945]/30">
-        <div className="relative z-[100]"><TopBar onMenu={() => {}} /></div>
+        <div className="relative z-[100]"><TopBar /></div>
 
         {dashboardLoading ? (
           <div className="flex justify-center py-40">
