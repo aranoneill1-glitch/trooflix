@@ -181,7 +181,8 @@ export default function MerchandisePage() {
             
             <div className="p-5">
               <p className="text-2xl font-black text-[#1DB954] mb-1">${(selectedProduct.price_cents / 100).toFixed(2)}</p>
-              <h2 className="text-base font-bold text-white mb-4 leading-tight line-clamp-2">{selectedProduct.name}</h2>
+              <h2 className="text-base font-bold text-white mb-2 leading-tight line-clamp-2">{selectedProduct.name}</h2>
+              <p className="text-xs text-white/60 mb-4">Stock: {selectedProduct.stock} available</p>
               
               {/* Clickable Seller Link */}
               <Link href={`/profile/${selectedProduct.creatorSlug}`} className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition group">

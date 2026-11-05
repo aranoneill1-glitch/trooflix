@@ -28,18 +28,25 @@ export async function GET() {
     const creators = (await kv.get<any[]>(CREATORS_KEY)) || [];
     const creatorMap = new Map(creators.map((c: any) => [Number(c.id), c]));
 
+    // Fetch fallback profiles from Supabase
+    const creatorIds = [...new Set(products.map(p => p.creator_id))];
+    const { data: profiles } = await supabaseAdmin.from("profiles").select("user_id, avatar_url, username").in("user_id", creatorIds);
+    const profileMap = new Map(profiles?.map(pr => [Number(pr.user_id), pr]) || []);
+
     // 3. Merge them together for the frontend
     const enrichedProducts = products.map((p) => {
       const creator = creatorMap.get(Number(p.creator_id)) || {};
+      const dbProfile: any = profileMap.get(Number(p.creator_id)) || {};
       return {
         id: p.id,
         name: p.name,
         price_cents: p.price_cents,
         image_url: p.image_url,
+        stock: p.stock || 0,
         creator_id: p.creator_id, // <--- FIX: Added missing creator_id
-        creatorName: creator.name || "Unknown Creator",
-        creatorSlug: creator.slug || "",
-        creatorPhoto: creator.photoUrl || "",
+        creatorName: creator.name || dbProfile.username || "Unknown Creator",
+        creatorSlug: creator.slug || dbProfile.username || "",
+        creatorPhoto: creator.photoUrl || dbProfile.avatar_url || "",
       };
     });
 
