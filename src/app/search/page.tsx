@@ -98,7 +98,7 @@ function SearchContent() {
   const filteredVideos = useMemo(() => {
     if (query.length === 0) return [];
     
-    const results = allVideos.map(v => {
+    const results = allVideos.filter(v => v.type !== "tweet" && v.type !== "short").map(v => {
       const creator = allProfiles.find(p => 
         String(p.creator_id) === String(v.creatorId) || 
         String(p.user_id) === String(v.uploaderUserId)
