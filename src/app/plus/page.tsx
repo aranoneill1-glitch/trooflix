@@ -65,7 +65,7 @@ export default function PlusPage() {
           fetch(`/api/follows?user_id=${u.id}`, { cache: "no-store" }).then(r => r.json()).catch(() => ({ ids: [] })),
           fetch(`/api/wishlist?userId=${u.id}`, { cache: "no-store" }).then(r => r.json()).catch(() => ({ items: [] })),
         ]).then(([vData, cData, fData, wData]) => {
-          setVideos(Array.isArray(vData) ? vData.filter(v => v.type !== "tweet" && v.type !== "short") : []);
+          setVideos(Array.isArray(vData) ? vData.filter(v => v.type?.toLowerCase() !== "tweet" && v.type?.toLowerCase() !== "short") : []);
           setCreators(Array.isArray(cData) ? cData : []);
           setFollowedCreatorIds(Array.isArray(fData.ids) ? fData.ids : []);
           setWishlistItems(Array.isArray(wData.items) ? wData.items : []);

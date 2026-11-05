@@ -56,7 +56,7 @@ export default function MyListPage() {
       const allVideos: Video[] = Array.isArray(vidsRes) ? vidsRes : [];
 
       setSavedIds(ids);
-      setVideos(allVideos.filter((v) => ids.includes(v.id) && v.type !== "tweet" && v.type !== "short"));
+      setVideos(allVideos.filter((v) => ids.includes(v.id) && v.type?.toLowerCase() !== "tweet" && v.type?.toLowerCase() !== "short"));
       setLoading(false);
     };
 
