@@ -312,7 +312,7 @@ export default function Home() {
                 
                 <div className="absolute top-0 left-0 w-full h-[300px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#E53945]/15 via-[#0a0303]/0 to-transparent pointer-events-none z-0" />
                 {/* Interactive Search Bar */}
-                <div className="px-4 pt-20 pb-3 relative z-[100] w-full animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="px-4 pt-20 pb-3 sticky top-0 z-[90] w-full bg-[#0a0303]/95 backdrop-blur-xl animate-in fade-in slide-in-from-top-4 duration-500">
                   <div className="relative w-full max-w-2xl mx-auto">
                     <form
                       onSubmit={(e) => {
