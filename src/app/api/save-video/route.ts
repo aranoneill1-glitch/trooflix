@@ -1,15 +1,29 @@
 import { NextResponse } from "next/server";
-import { kv } from "@vercel/kv";
 
+const KV_URL = "https://neat-monster-216395.upstash.io";
+const KV_TOKEN = "gQAAAAAAA01LAAIgcDE3ZTRiZTkyZGNmNjI0M2ZmODg0ZDRmMTNmMDhkYzhhMQ";
 const KEY = "trooflix:videos";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = force-dynamic;
 export const revalidate = 0;
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const videos = (await kv.get<any[]>(KEY)) || [];
+
+    const getRes = await fetch(`${KV_URL}/get/${KEY}`, {
+      headers: { Authorization: `Bearer ${KV_TOKEN}` }
+    });
+    const getData = await getRes.json();
+    
+    let videos = [];
+    if (getData.result) {
+      let parsed = JSON.parse(getData.result);
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed) && parsed.value) {
+        parsed = typeof parsed.value === "string" ? JSON.parse(parsed.value) : parsed.value;
+      }
+      if (Array.isArray(parsed)) videos = parsed;
+    }
 
     const newVideo = {
       id: Date.now(),
@@ -23,8 +37,8 @@ export async function POST(req: Request) {
       creatorId: body.creatorId || null,
       uploaderUserId: body.uploaderUserId || null,
       videoUrl: body.videoUrl ?? body.bitchuteUrl ?? "",
-      posterUrl: body.posterUrl || `/api/poster?title=${encodeURIComponent(body.title || "Untitled")}&category=${encodeURIComponent(body.category || "Uncensored")}`,
-      backdropUrl: body.backdropUrl || `/api/poster?size=wide&title=${encodeURIComponent(body.title || "Untitled")}&category=${encodeURIComponent(body.category || "Uncensored")}`,
+      posterUrl: body.posterUrl || `/api/poster?title=${encodeURIComponent(body.title || "Untitled")}&category=${encodeURIComponent(body.category || "Uncategorized")}`,
+      backdropUrl: body.backdropUrl || `/api/poster?size=wide&title=${encodeURIComponent(body.title || "Untitled")}&category=${encodeURIComponent(body.category || "Uncategorized")}`,
       year: body.year || new Date().getFullYear(),
       rating: body.rating || "TV-MA",
       match: body.match || 95,
@@ -33,7 +47,16 @@ export async function POST(req: Request) {
     };
 
     videos.push(newVideo);
-    await kv.set(KEY, videos);
+
+    await fetch(`${KV_URL}/set/${KEY}`, {
+      method: "POST",
+      headers: { 
+        Authorization: `Bearer ${KV_TOKEN}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ value: JSON.stringify(videos) })
+    });
+
     return NextResponse.json(newVideo);
   } catch (e: any) {
     console.error("POST error:", e);

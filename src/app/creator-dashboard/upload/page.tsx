@@ -75,7 +75,13 @@ function UploadContent() {
       const user = await getCachedUser();
       if (!user) throw new Error("Not logged in");
       const supabase = createClient();
-      const { data: profile } = await supabase.from("profiles").select("creator_id").eq("user_id", user.id).single();
+      let creatorId = null;
+      try {
+        const { data: profile } = await supabase.from("profiles").select("creator_id").eq("user_id", user.id).maybeSingle();
+        if (profile) creatorId = profile.creator_id;
+      } catch (err) {
+        console.warn("Profile fetch failed, proceeding with userId only", err);
+      }
 
       const thumbUrl = (!isTweet && !isShort && thumbnailFile) ? await uploadToSupabase(thumbnailFile, "Thumbnail") : "";
       const mediaUrl = (!isTweet && mediaFile) ? await uploadToSupabase(mediaFile, "Video") : "";
