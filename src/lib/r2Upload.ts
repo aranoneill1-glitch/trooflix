@@ -4,7 +4,7 @@ export async function r2MultipartUpload(
 ): Promise<{ publicUrl: string; key: string }> {
   // 1. Detect mobile to use smaller chunks (iOS Safari OOM protection)
   const isMobile = typeof navigator !== "undefined" && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  const partSize = isMobile ? 4 * 1024 * 1024 : 10 * 1024 * 1024;
+  const partSize = isMobile ? 5 * 1024 * 1024 : 10 * 1024 * 1024;
   const concurrency = isMobile ? 1 : 3;
   const totalParts = Math.max(1, Math.ceil(file.size / partSize));
 
