@@ -32,8 +32,14 @@ export default function SignupPage() {
       .then((r) => r.json())
       .then((data) => {
         const videos = Array.isArray(data) ? data : [];
-        const featuredVideos = videos.filter((v: any) => v.featured && v.backdropUrl);
-        const pool = featuredVideos.length > 0 ? featuredVideos : videos.filter((v: any) => v.backdropUrl);
+        const validBackgrounds = videos.filter((v: any) => 
+          v.backdropUrl && 
+          v.type?.toLowerCase() !== "tweet" && 
+          v.type?.toLowerCase() !== "short" && 
+          v.visibility !== "premium"
+        );
+        const featuredVideos = validBackgrounds.filter((v: any) => v.featured);
+        const pool = featuredVideos.length > 0 ? featuredVideos : validBackgrounds;
         if (pool.length > 0) {
           const pick = pool[Math.floor(Math.random() * pool.length)];
           setFeatured({ backdropUrl: pick.backdropUrl, title: pick.title });
