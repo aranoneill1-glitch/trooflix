@@ -210,7 +210,7 @@ export default function HomeFeedCard({ video, creator, onMore, onPlay, isActive,
     <div ref={containerRef} className="w-full relative flex flex-col group/feed mb-8 mx-auto overflow-hidden">
       <div className="w-full relative overflow-hidden flex flex-col ">
         
-        <div className="relative w-full bg-black overflow-hidden cursor-pointer flex" onClick={() => { handleInteraction(); togglePlay(); }} onMouseMove={handleInteraction} onTouchStart={handleInteraction}>
+        <div className="relative w-full bg-black overflow-hidden cursor-pointer flex rounded-2xl" onClick={() => { handleInteraction(); togglePlay(); }} onMouseMove={handleInteraction} onTouchStart={handleInteraction}>
           <video ref={videoRef} src={videoSrc} onLoadedMetadata={(e) => { const v = e.currentTarget; if (v.videoHeight > v.videoWidth) setIsPortrait(true); }} className="w-full h-full object-cover" playsInline muted={isMuted} preload="metadata" onTimeUpdate={handleTimeUpdate} onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} onError={() => setError(true)} loop />
 
           {error && <div className="absolute inset-0 flex items-center justify-center bg-black/80"><p className="text-white/50 text-sm">Video unavailable</p></div>}
