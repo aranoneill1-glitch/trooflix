@@ -248,7 +248,7 @@ export default function Home() {
     <>
         <main className="min-h-screen bg-[#0a0303] text-white overflow-x-hidden pb-20 lg:pb-0 relative">
 {/* Subtle ambient background gradient */}
-      <div className="fixed top-0 left-0 w-full h-[60vh] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/[0.05] via-transparent to-transparent pointer-events-none z-0" />
+      <div className="fixed top-0 left-0 w-full h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/[0.05] via-transparent to-transparent pointer-events-none z-0" />
       
       <div className="px-4 pt-16 pb-3 relative z-[100] w-full animate-in fade-in slide-in-from-top-4 duration-500"><TopBar /></div>
       
@@ -306,9 +306,9 @@ export default function Home() {
               {/* MOBILE SECTION: Pills + Header + Avatars + Hero */}
               <div className="lg:hidden w-full flex flex-col relative z-10 bg-transparent">
                 {/* Ambient glow for glass refraction */}
-                <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[300px] h-[300px] bg-[#E53945]/20 rounded-full blur-[100px] pointer-events-none z-0" />
+                <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-[#E53945]/20 rounded-full blur-[120px] pointer-events-none z-0" />
                 
-                <div className="fixed top-0 left-0 w-full h-[300px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#E53945]/15 via-[#0a0303]/0 to-transparent pointer-events-none z-0" />
+                <div className="fixed top-0 left-0 w-full h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#E53945]/15 via-[#0a0303]/0 to-transparent pointer-events-none z-0" />
                 {/* Interactive Search Bar */}
                 {/* Spacer for fixed search bar */}
                 {/* Interactive Search Bar (fixed) */}
