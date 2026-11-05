@@ -98,7 +98,16 @@ export async function POST(req: Request) {
       } catch (err) { console.warn("Notification failed:", err); }
     }
 
-    return NextResponse.json({ ok: true, comment: { ...data, like_count: 0 } });
+    let enriched: any = { ...data, like_count: 0 };
+    try {
+      const { data: prof } = await supabaseAdmin.from("profiles").select("avatar_url, display_name, is_verified").eq("user_id", userId).maybeSingle();
+      if (prof) {
+        enriched.avatar_url = prof.avatar_url || null;
+        enriched.display_name = prof.display_name || null;
+        enriched.is_verified = !!prof.is_verified;
+      }
+    } catch {}
+    return NextResponse.json({ ok: true, comment: enriched });
   } catch (e: any) { return NextResponse.json({ error: String(e) }, { status: 500 }); }
 }
 
