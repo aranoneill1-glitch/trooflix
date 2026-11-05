@@ -96,7 +96,7 @@ function UploadContent() {
           title: isTweet ? "Tweet" : title,
           description,
           type: isTweet ? "Tweet" : (isShort ? "Short" : "Documentary"),
-          creatorId: profile?.creator_id || null,
+          creatorId: creatorId || null,
           uploaderUserId: user.id,
           videoUrl: mediaUrl,
           posterUrl: thumbUrl,
