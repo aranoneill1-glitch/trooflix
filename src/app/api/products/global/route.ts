@@ -29,7 +29,7 @@ export async function GET() {
     const creatorMap = new Map(creators.map((c: any) => [Number(c.id), c]));
 
     // Fetch fallback profiles from Supabase
-    const creatorIds = [...new Set(products.map(p => p.creator_id))];
+    const creatorIds = [...new Set(products.map(p => Number(p.creator_id)).filter(Boolean))];
     const { data: profiles } = await supabaseAdmin.from("profiles").select("user_id, avatar_url, username").in("user_id", creatorIds);
     const profileMap = new Map(profiles?.map(pr => [Number(pr.user_id), pr]) || []);
 

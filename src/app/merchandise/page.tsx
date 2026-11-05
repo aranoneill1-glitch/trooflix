@@ -18,7 +18,7 @@ export default function MerchandisePage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase.from("profiles").select("username, avatar_url, display_name").not("avatar_url", "is", null)
+    supabase.from("profiles").select("user_id, username, avatar_url, display_name").not("avatar_url", "is", null)
       .then(({ data }) => { if (data) setCreatorProfiles(data); });
 
     fetch("/api/products/global")
@@ -68,7 +68,7 @@ export default function MerchandisePage() {
     products.forEach(p => {
       if (p.creatorName && p.creatorSlug && !map.has(p.creatorSlug)) {
         // Look up the real avatar from the profiles we just fetched
-        const realProfile = creatorProfiles.find(c => c.username === p.creatorSlug);
+        const realProfile = creatorProfiles.find(c => String(c.user_id) === String(p.creator_id) || String(c.username) === String(p.creatorSlug));
         
         map.set(p.creatorSlug, {
           name: p.creatorName,
