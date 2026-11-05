@@ -11,7 +11,7 @@ import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { r2MultipartUpload } from "@/lib/r2Upload";
 
-const CATEGORIES = ["Documentaries","Podcasts","Independent Films","Books","History","Politics & Geopolitics","War & Conflict","True Crime & Justice","Conspiracy & Mystery","Society & Culture","Business & Finance","Science & Technology","Environment & Nature","Religion & Spirituality","Ancient Civilisation","Comedy","News","Gaming"];
+const CATEGORIES = ["Documentaries","Podcasts","Independent Films","Books","History","Politics & Geopolitics","War & Conflict","True Crime & Justice","Conspiracy & Mystery","Society & Culture","Business & Finance","Science & Technology","Environment & Nature","Religion & Spirituality","Ancient Civilisation","Comedy","News","Gaming","Medicine"];
 
 function UploadContent() {
   const router = useRouter();

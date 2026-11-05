@@ -29,7 +29,8 @@ const GENRE_CATEGORIES = [
   { name: "Ancient Civilisation", color: "bg-[#8400e7]/60", image: "https://unsplash.com/photos/4Wue5DQnxSw/download?force=true&w=600" },
   { name: "Comedy", color: "bg-[#E13377]/60", image: "https://unsplash.com/photos/jvNoSUrQkgU/download?force=true&w=600" },
   { name: "News", color: "bg-[#2E77D0]/60", image: "https://unsplash.com/photos/hWJsOnaWTqs/download?force=true&w=600" },
-  { name: "Gaming", color: "bg-[#006450]/60", image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=600&auto=format&fit=crop" }
+  { name: "Gaming", color: "bg-[#006450]/60", image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=600&auto=format&fit=crop" },
+  { name: "Medicine", color: "bg-[#1DB954]/60", image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=600&auto=format&fit=crop" }
 ];
 
 const TRENDING_TAGS = ["History", "Politics", "Ancient Civilisations", "Technology", "Science & Health"];

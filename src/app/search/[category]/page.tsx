@@ -26,6 +26,7 @@ const CATEGORY_DATA: Record<string, { title: string, image: string }> = {
   "comedy": { title: "Comedy", image: "https://unsplash.com/photos/jvNoSUrQkgU/download?force=true&w=1200" },
   "news": { title: "News", image: "https://unsplash.com/photos/hWJsOnaWTqs/download?force=true&w=1200" },
   "gaming": { title: "Gaming", image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1200&auto=format&fit=crop" },
+  "medicine": { title: "Medicine", image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=1200&auto=format&fit=crop" },
 };
 
 export default function CategoryPage() {

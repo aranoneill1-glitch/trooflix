@@ -13,7 +13,7 @@ import MobileBottomNav from "@/components/MobileBottomNav";
 import { getCachedUser } from "@/lib/cache";
 import { motion, AnimatePresence } from "framer-motion";
 
-const CATEGORIES = ["Documentaries","Podcasts","Independent Films","Books","History","Politics & Geopolitics","War & Conflict","True Crime & Justice","Conspiracy & Mystery","Society & Culture","Business & Finance","Science & Technology","Environment & Nature","Religion & Spirituality","Ancient Civilisation","Comedy","News","Gaming"];
+const CATEGORIES = ["Documentaries","Podcasts","Independent Films","Books","History","Politics & Geopolitics","War & Conflict","True Crime & Justice","Conspiracy & Mystery","Society & Culture","Business & Finance","Science & Technology","Environment & Nature","Religion & Spirituality","Ancient Civilisation","Comedy","News","Gaming","Medicine"];
 
 type VideoType = {
   id: number;
