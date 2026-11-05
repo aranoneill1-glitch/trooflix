@@ -358,7 +358,7 @@ export default function Home() {
                           (c.username?.toLowerCase() || "").includes(searchQuery.toLowerCase())
                         ).length > 0 && (
                           <div className="p-2 border-b border-white/5">
-                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-wider px-3 py-1">Creator</p>
+                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-wider px-3 py-1">Creators</p>
                             {allUsers.filter(c => 
                               (c.display_name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) || 
                               (c.username?.toLowerCase() || "").includes(searchQuery.toLowerCase())
@@ -426,7 +426,7 @@ export default function Home() {
                   </p>
                   <div className="flex items-center justify-between">
                     <h2 className="text-2xl font-black tracking-tight text-white">
-                      Discover <span className="text-[#E53945]">Creator</span>
+                      Discover <span className="text-[#E53945]">Creators</span>
                     </h2>
                     <Link href="/creators" className="text-xs font-bold text-white/50 hover:text-white transition flex items-center gap-1">
                       View All <ChevronRight size={14} />
@@ -487,7 +487,7 @@ export default function Home() {
                     The Home of Independent Voices
                   </p>
                   <h2 className="text-2xl md:text-4xl font-black tracking-tight text-white">
-                    Discover <span className="text-[#E53945]">Creator</span>
+                    Discover <span className="text-[#E53945]">Creators</span>
                   </h2>
                 </div>
                 
