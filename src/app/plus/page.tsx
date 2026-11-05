@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Play, Sparkles, Video, Check, Crown, Clock, Users, List, Heart, History, Mic, FolderHeart, Download, ArrowRight, ChevronRight } from "lucide-react";
+import { Play, Sparkles, Video, Check, Crown, Clock, Users, List, Heart, Star, History, Mic, FolderHeart, Download, ArrowRight, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getCachedUser } from "@/lib/cache";
 import TopBar from "@/components/TopBar";
@@ -45,6 +45,7 @@ export default function PlusPage() {
   const [followedCreatorIds, setFollowedCreatorIds] = useState<number[]>([]);
   const [progressList, setProgressList] = useState<any[]>([]);
   const [watchlistCount, setWatchlistCount] = useState(0);
+  const [wishlistItems, setWishlistItems] = useState<any[]>([]);
   const [dashboardLoading, setDashboardLoading] = useState(true);
   const [playing, setPlaying] = useState<Video | null>(null);
 
@@ -62,10 +63,12 @@ export default function PlusPage() {
           fetch("/api/videos", { cache: "no-store" }).then(r => r.json()),
           fetch("/api/creators", { cache: "no-store" }).then(r => r.json()).catch(() => []),
           fetch(`/api/follows?user_id=${u.id}`, { cache: "no-store" }).then(r => r.json()).catch(() => ({ ids: [] })),
-        ]).then(([vData, cData, fData]) => {
+          fetch(`/api/wishlist?userId=${u.id}`, { cache: "no-store" }).then(r => r.json()).catch(() => ({ items: [] })),
+        ]).then(([vData, cData, fData, wData]) => {
           setVideos(Array.isArray(vData) ? vData : []);
           setCreators(Array.isArray(cData) ? cData : []);
           setFollowedCreatorIds(Array.isArray(fData.ids) ? fData.ids : []);
+          setWishlistItems(Array.isArray(wData.items) ? wData.items : []);
           setProgressList(getAllProgress());
           
           try {
@@ -257,6 +260,32 @@ export default function PlusPage() {
 
             <div className="max-w-7xl mx-auto space-y-10">
               
+              {/* WISHLIST ROW */}
+              {wishlistItems.length > 0 && (
+                <section>
+                  <div className="flex items-center justify-between px-5 md:px-12 mb-4">
+                    <h2 className="text-xl md:text-2xl font-black tracking-tight flex items-center gap-2">
+                      My Wishlist
+                    </h2>
+                    <Link href="/merchandise" className="text-xs font-bold text-white/50 hover:text-white transition flex items-center gap-1">Shop More <ChevronRight size={14} /></Link>
+                  </div>
+                  <div className="flex gap-4 overflow-x-auto scrollbar-hide px-5 md:px-12 pb-4">
+                    {wishlistItems.map((p) => (
+                      <Link key={p.id} href="/merchandise" className="flex flex-col w-[140px] md:w-[180px] shrink-0 group">
+                        <div className="relative aspect-square w-full rounded-2xl overflow-hidden mb-2 border border-white/5 bg-[#1c1c1e]">
+                          <img src={p.image_url} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                          <div className="absolute top-2 right-2 bg-yellow-500 text-white p-1 rounded-full shadow-md">
+                            <Star size={12} fill="currentColor" />
+                          </div>
+                        </div>
+                        <p className="text-[#1DB954] font-black text-sm md:text-base tracking-tight leading-none mb-1">${(p.price_cents / 100).toFixed(2)}</p>
+                        <h3 className="text-[11px] md:text-sm font-semibold text-white/90 line-clamp-2 leading-tight">{p.name}</h3>
+                      </Link>
+                    ))}
+                  </div>
+                </section>
+              )}
+
               {/* B. CONTINUE WATCHING (Edge-to-edge, no boxes) */}
               {continueWatching.length > 0 && (
                 <section>
