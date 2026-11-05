@@ -20,7 +20,7 @@ export default function SignupPage() {
   
   // Toggle between the two tiers
   const [activeTab, setActiveTab] = useState<"troopass" | "creator">("troopass");
-  const [featured, setFeatured] = useState<{ backdropUrl?: string; title?: string } | null>(null);
+  const [featured, setFeatured] = useState<{ posterUrl?: string; title?: string } | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setReady(true), 50);
@@ -33,7 +33,7 @@ export default function SignupPage() {
       .then((data) => {
         const videos = Array.isArray(data) ? data : [];
         const validBackgrounds = videos.filter((v: any) => 
-          v.backdropUrl && 
+          v.posterUrl && 
           v.type?.toLowerCase() !== "tweet" && 
           v.type?.toLowerCase() !== "short" && 
           v.visibility !== "premium"
@@ -42,7 +42,7 @@ export default function SignupPage() {
         const pool = featuredVideos.length > 0 ? featuredVideos : validBackgrounds;
         if (pool.length > 0) {
           const pick = pool[Math.floor(Math.random() * pool.length)];
-          setFeatured({ backdropUrl: pick.backdropUrl, title: pick.title });
+          setFeatured({ posterUrl: pick.posterUrl, title: pick.title });
         }
       })
       .catch(() => {});
@@ -124,9 +124,9 @@ export default function SignupPage() {
     <main className="min-h-screen bg-[#0a0303] text-white flex flex-col items-center py-12 px-4 selection:bg-[#E53945]/30 relative overflow-hidden">
       
       {/* Background Featured Image */}
-      {featured?.backdropUrl && (
+      {featured?.posterUrl && (
         <>
-          <img src={featured.backdropUrl} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20" />
+          <img src={featured.posterUrl} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20" />
           <div className="absolute inset-0 bg-gradient-to-b from-[#0a0303]/80 via-[#0a0303]/95 to-[#0a0303]" />
         </>
       )}

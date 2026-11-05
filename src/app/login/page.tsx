@@ -17,7 +17,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   const [showIntro, setShowIntro] = useState(false);
-  const [featured, setFeatured] = useState<{ backdropUrl?: string; title?: string } | null>(null);
+  const [featured, setFeatured] = useState<{ posterUrl?: string; title?: string } | null>(null);
   const [ready, setReady] = useState(false);
 
   const router = useRouter();
@@ -46,7 +46,7 @@ export default function LoginPage() {
       .then((data) => {
         const videos = Array.isArray(data) ? data : [];
         const validBackgrounds = videos.filter((v: any) => 
-          v.backdropUrl && 
+          v.posterUrl && 
           v.type?.toLowerCase() !== "tweet" && 
           v.type?.toLowerCase() !== "short" && 
           v.visibility !== "premium"
@@ -55,7 +55,7 @@ export default function LoginPage() {
         const pool = featuredVideos.length > 0 ? featuredVideos : validBackgrounds;
         if (pool.length > 0) {
           const pick = pool[Math.floor(Math.random() * pool.length)];
-          setFeatured({ backdropUrl: pick.backdropUrl, title: pick.title });
+          setFeatured({ posterUrl: pick.posterUrl, title: pick.title });
         }
       })
       .catch(() => {})
@@ -131,10 +131,10 @@ export default function LoginPage() {
       {/* ============ LEFT / TOP: BRAND + FEATURED ============ */}
       <div className="relative md:w-1/2 h-[30vh] md:h-screen flex-shrink-0 overflow-hidden">
         {/* Backdrop */}
-        {featured?.backdropUrl ? (
+        {featured?.posterUrl ? (
           <>
             <img
-              src={featured.backdropUrl}
+              src={featured.posterUrl}
               alt=""
               className="absolute inset-0 w-full h-full object-cover"
             />
