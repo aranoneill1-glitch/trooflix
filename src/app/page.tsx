@@ -656,53 +656,23 @@ function AppReelHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[],
   const activeVideo = videos[activeIndex];
 
   return (
-    <div className="relative w-full px-4 pb-6">
-      <section className="relative w-full h-[41vh] min-h-[300px] max-h-[450px] flex items-end justify-start overflow-hidden bg-[#1c1c1e] rounded-[24px] shadow-2xl">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeVideo.id}
-            initial={{ opacity: 0, scale: 1.05 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.8 }}
-            className="absolute inset-0 z-0"
-          >
-            <img src={activeVideo.backdropUrl || activeVideo.posterUrl} alt={activeVideo.title} className="w-full h-full object-cover object-center" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0303] via-[#0a0303]/60 to-transparent w-full" />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#0a0303]/60 to-transparent w-full" />
-          </motion.div>
-        </AnimatePresence>
-
-        <div className="relative z-10 p-5 flex flex-col items-start w-full">
-          <motion.div
-            key={`text-${activeVideo.id}`}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="w-full"
-          >
-            <h1 className="text-2xl font-black text-white leading-[1.1] mb-2 drop-shadow-2xl line-clamp-2">
-              {activeVideo.title}
-            </h1>
-            <div className="flex items-center gap-2 text-[10px] font-semibold mb-3">
-              <span className="text-white/80">{activeVideo.year}</span>
-              <span className="border border-white/30 px-1.5 py-0.5 rounded">{activeVideo.rating || "TV-MA"}</span>
-              <span className="text-[#1ed760] font-bold">{activeVideo.match}% Match</span>
-            </div>
-            <p className="text-xs text-white/80 leading-relaxed mb-4 line-clamp-2 drop-shadow-md">
-              {activeVideo.description || "No description available."}
-            </p>
-            <div className="flex items-center gap-3 w-full">
-              <button onClick={() => onPlay(activeVideo)} className="flex-1 flex items-center justify-center gap-2 bg-[#E53945] hover:bg-[#d12e39] text-white px-4 py-2.5 rounded-xl font-bold text-sm shadow-xl transition-transform hover:scale-105">
-                <Play size={16} fill="currentColor" /> Play
-              </button>
-              <button onClick={() => onMore(activeVideo)} className="flex-1 flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white px-4 py-2.5 rounded-xl font-bold text-sm border border-white/10 transition-transform hover:scale-105">
-                <Info size={16} /> More Info
-              </button>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+    <div className="relative w-full h-[41vh] min-h-[300px] max-h-[450px] overflow-hidden bg-[#0a0303]">
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeVideo.id}
+          initial={{ opacity: 0, scale: 1.05 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.8 }}
+          className="absolute inset-0 z-0"
+        >
+          <img src={activeVideo.backdropUrl || activeVideo.posterUrl} alt={activeVideo.title} className="w-full h-full object-cover object-center" />
+          
+          {/* Subtle gradients so it fades smoothly into the page below */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0303] via-transparent to-transparent w-full" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0a0303]/80 via-transparent to-transparent w-full h-1/4" />
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }
