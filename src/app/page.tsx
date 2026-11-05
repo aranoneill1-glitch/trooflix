@@ -247,6 +247,7 @@ export default function Home() {
   return (
     <>
         <main className="min-h-screen bg-[#0a0303] text-white [overflow-x:clip] pb-20 lg:pb-0 relative">
+<style>{`.pin-to-top { position: fixed !important; top: 0 !important; }`}</style>
       {/* Subtle ambient background gradient */}
       <div className="absolute top-0 left-0 w-full h-[60vh] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/[0.05] via-transparent to-transparent pointer-events-none z-0" />
       
@@ -313,7 +314,7 @@ export default function Home() {
                 {/* Spacer for fixed search bar */}
                 <div className="h-[140px] w-full shrink-0 pointer-events-none" aria-hidden="true" />
                 {/* Interactive Search Bar (fixed) */}
-                <div className="fixed top-0 left-0 right-0 z-[190] px-4 pt-20 pb-3 bg-[#0a0303] animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="pin-to-top left-0 right-0 z-[190] px-4 pt-20 pb-3 bg-[#0a0303] animate-in fade-in slide-in-from-top-4 duration-500">
                   <div className="relative w-full max-w-2xl mx-auto">
                     <form
                       onSubmit={(e) => {
