@@ -309,7 +309,7 @@ export default function Home() {
                 <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-[#E53945]/20 rounded-full blur-[120px] pointer-events-none z-0" />
                 
                 <div className="fixed top-0 left-0 w-full h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#E53945]/15 via-[#0a0303]/0 to-transparent pointer-events-none z-0" />
-<div className="pt-[60px] w-full relative z-10">
+<div className="w-full relative z-10">
 {/* App Reel Hero (Moved below Avatars) */}
                 {heroPool.length > 0 && (
                   <AppReelHero 
@@ -656,7 +656,7 @@ function AppReelHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[],
   const activeVideo = videos[activeIndex];
 
   return (
-    <div className="relative w-full h-[41vh] min-h-[300px] max-h-[450px] overflow-hidden bg-[#0a0303]">
+    <div className="relative w-full h-[65vh] min-h-[450px] max-h-[700px] overflow-hidden bg-[#0a0303]">
       <AnimatePresence mode="wait">
         <motion.div
           key={activeVideo.id}
@@ -668,11 +668,53 @@ function AppReelHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[],
         >
           <img src={activeVideo.backdropUrl || activeVideo.posterUrl} alt={activeVideo.title} className="w-full h-full object-cover object-center" />
           
-          {/* Subtle gradients so it fades smoothly into the page below */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0303] via-transparent to-transparent w-full" />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0a0303]/80 via-transparent to-transparent w-full h-1/4" />
+          {/* Top fade for TopBar readability */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0a0303]/90 via-[#0a0303]/20 to-transparent h-1/3" />
+          
+          {/* Bottom fade blending into the page */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0303] via-[#0a0303]/80 to-transparent h-2/3" />
         </motion.div>
       </AnimatePresence>
+
+      {/* Content overlay at the bottom */}
+      <div className="absolute bottom-0 left-0 w-full p-6 pb-8 z-10 flex flex-col items-start">
+        <motion.div
+           key={`text-${activeVideo.id}`}
+           initial={{ opacity: 0, y: 20 }}
+           animate={{ opacity: 1, y: 0 }}
+           transition={{ duration: 0.5, delay: 0.2 }}
+           className="w-full"
+        >
+          <h1 className="text-3xl md:text-5xl font-black text-white leading-[1.1] mb-3 drop-shadow-2xl">
+            {activeVideo.title}
+          </h1>
+          
+          <div className="flex items-center gap-3 text-xs font-semibold mb-3">
+            <span className="text-white/80">{activeVideo.year}</span>
+            <span className="border border-white/30 px-2 py-0.5 rounded text-xs">{activeVideo.rating || "TV-MA"}</span>
+            <span className="text-[#1ed760] font-bold">{activeVideo.match}% Match</span>
+          </div>
+
+          <p className="text-sm text-white/90 leading-relaxed mb-5 line-clamp-2 drop-shadow-md max-w-2xl">
+            {activeVideo.description || "No description available."}
+          </p>
+          
+          <div className="flex items-center gap-3 w-full">
+            <button 
+              onClick={() => onPlay(activeVideo)}
+              className="flex-1 flex items-center justify-center gap-2 bg-[#E53945] hover:bg-[#d12e39] text-white px-4 py-3 rounded-xl font-bold text-sm transition-transform hover:scale-105 shadow-xl"
+            >
+              <Play size={18} fill="currentColor" /> Play
+            </button>
+            <button 
+              onClick={() => onMore(activeVideo)}
+              className="flex-1 flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white px-4 py-3 rounded-xl font-bold text-sm transition-transform hover:scale-105 border border-white/10"
+            >
+              <Info size={18} /> More Info
+            </button>
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 }
