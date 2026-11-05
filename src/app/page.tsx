@@ -312,7 +312,7 @@ export default function Home() {
                 {/* Interactive Search Bar */}
                 {/* Spacer for fixed search bar */}
                 {/* Interactive Search Bar (fixed) */}
-                <div className="px-4 pt-20 pb-3 relative z-[100] w-full animate-in fade-in slide-in-from-top-4 duration-500">
+                <div className="px-4 pt-16 pb-3 relative z-[100] w-full animate-in fade-in slide-in-from-top-4 duration-500">
                   <div className="relative w-full max-w-2xl mx-auto">
                     <form
                       onSubmit={(e) => {
