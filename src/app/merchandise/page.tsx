@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import { ShoppingBag, Search, Heart, ShieldCheck, X, Plus, ArrowRight } from "lucide-react";
+import { ShoppingBag, Search, Star, ShieldCheck, X, Plus, ArrowRight } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 
 export default function MerchandisePage() {
@@ -13,6 +13,8 @@ export default function MerchandisePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [creatorProfiles, setCreatorProfiles] = useState<any[]>([]);
+  const [user, setUser] = useState<any>(null);
+  const [wishlistedIds, setWishlistedIds] = useState<number[]>([]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -25,6 +27,40 @@ export default function MerchandisePage() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) {
+        setUser(data.user);
+        fetch(`/api/wishlist?userId=${data.user.id}`)
+          .then(r => r.json())
+          .then(d => {
+            if (d.items) setWishlistedIds(d.items.map((i: any) => i.id));
+          });
+      }
+    });
+  }, []);
+
+  const toggleWishlist = async (e: React.MouseEvent, productId: number) => {
+    e.stopPropagation();
+    if (!user) return alert("Please log in to add to wishlist.");
+    
+    const isWishlisted = wishlistedIds.includes(productId);
+    setWishlistedIds(prev => isWishlisted ? prev.filter(id => id !== productId) : [...prev, productId]);
+    
+    try {
+      if (isWishlisted) {
+        await fetch(`/api/wishlist?userId=${user.id}&productId=${productId}`, { method: "DELETE" });
+      } else {
+        await fetch("/api/wishlist", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: user.id, productId })
+        });
+      }
+    } catch (e) { console.error("Wishlist error:", e); }
+  };
 
   // 1. Extract real creators for the new row
   const realCreators = useMemo(() => {
@@ -129,7 +165,7 @@ export default function MerchandisePage() {
             </h2>
             <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4 pb-4">
               {merchandise.map((p) => (
-                <ProductCard key={p.id} product={p} onClick={() => setSelectedProduct(p)} />
+                <ProductCard key={p.id} product={p} isWishlisted={wishlistedIds.includes(p.id)} onToggleWishlist={(e) => toggleWishlist(e, p.id)} onClick={() => setSelectedProduct(p)} />
               ))}
             </div>
           </section>
@@ -143,7 +179,7 @@ export default function MerchandisePage() {
             </h2>
             <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4 pb-4">
               {books.map((p) => (
-                <ProductCard key={p.id} product={p} onClick={() => setSelectedProduct(p)} />
+                <ProductCard key={p.id} product={p} isWishlisted={wishlistedIds.includes(p.id)} onToggleWishlist={(e) => toggleWishlist(e, p.id)} onClick={() => setSelectedProduct(p)} />
               ))}
             </div>
           </section>
@@ -223,7 +259,7 @@ export default function MerchandisePage() {
 }
 
 // VINTED-STYLE PRODUCT CARD
-function ProductCard({ product, onClick }: { product: any, onClick: () => void }) {
+function ProductCard({ product, isWishlisted, onToggleWishlist, onClick }: { product: any, isWishlisted: boolean, onToggleWishlist: (e: React.MouseEvent) => void, onClick: () => void }) {
   return (
     <div onClick={onClick} className="flex flex-col group cursor-pointer w-full">
       
@@ -232,8 +268,8 @@ function ProductCard({ product, onClick }: { product: any, onClick: () => void }
         <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
         
         {/* Like Button */}
-        <button className="absolute top-2 right-2 p-1.5 bg-white rounded-full text-black shadow-md hover:scale-110 transition" onClick={(e) => e.stopPropagation()}>
-          <Heart size={14} />
+        <button className={`absolute top-2 right-2 p-1.5 rounded-full shadow-md hover:scale-110 transition ${isWishlisted ? "bg-yellow-500 text-white" : "bg-white text-black"}`} onClick={onToggleWishlist}>
+          <Star size={14} fill={isWishlisted ? "currentColor" : "none"} />
         </button>
 
         {/* Delivery Tag */}
