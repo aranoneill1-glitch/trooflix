@@ -315,6 +315,7 @@ export default function Home() {
                   <AppReelHero 
                     videos={heroPool} 
                     activeIndex={heroIndex} 
+                    setActiveIndex={setHeroIndex} 
                     onPlay={handleInstantPlay}
                     onMore={(v) => setSelected(v)}
                   />
@@ -651,45 +652,58 @@ function DesktopHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[],
 }
 
 /* ============ MOBILE APP REEL HERO ============ */
-function AppReelHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[], activeIndex: number, onPlay: (v: Video) => void, onMore: (v: Video) => void }) {
-  if (!videos || videos.length === 0) return null;
-  const activeVideo = videos[activeIndex];
+function AppReelHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { videos: Video[], activeIndex: number, setActiveIndex: (i: number) => void, onPlay: (v: Video) => void, onMore: (v: Video) => void }) {
+  const dragX = useMotionValue(0);
+  const currentIndex = useMotionValue(activeIndex);
+  const pointerStartX = useRef(0);
+
+  useEffect(() => {
+    animate(currentIndex, activeIndex, { type: "spring", stiffness: 300, damping: 30 });
+  }, [activeIndex, currentIndex]);
+
+  const handlePointerDown = (e: React.PointerEvent, index: number) => {
+    if (index !== activeIndex) return;
+    if ((e.target as HTMLElement).closest("button")) return;
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    pointerStartX.current = e.clientX;
+    dragX.set(0);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent, index: number) => {
+    if (index !== activeIndex) return;
+    if (!(e.currentTarget as HTMLElement).hasPointerCapture(e.pointerId)) return;
+    dragX.set(e.clientX - pointerStartX.current);
+  };
+
+  const handlePointerUp = (e: React.PointerEvent, index: number) => {
+    if (index !== activeIndex) return;
+    if (!(e.currentTarget as HTMLElement).hasPointerCapture(e.pointerId)) return;
+    (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+    const swipe = dragX.get();
+    if (swipe < -40) setActiveIndex((activeIndex + 1) % videos.length);
+    else if (swipe > 40) setActiveIndex((activeIndex - 1 + videos.length) % videos.length);
+    animate(dragX, 0, { type: "spring", stiffness: 300, damping: 30 });
+  };
 
   return (
-    <div className="relative w-full h-[60vh] min-h-[400px] max-h-[700px] overflow-hidden bg-[#0a0303]">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeVideo.id}
-          initial={{ opacity: 0, scale: 1.05 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.8 }}
-          className="absolute inset-0 z-0"
-        >
-          <img src={activeVideo.backdropUrl || activeVideo.posterUrl} alt={activeVideo.title} className="w-full h-full object-cover object-top" />
-          
-          {/* Top fade so TopBar is visible */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0a0303]/90 via-[#0a0303]/20 to-transparent h-1/3" />
-          
-          {/* Bottom fade blending into the page */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0303] via-[#0a0303]/80 to-transparent h-1/2" />
-        </motion.div>
-      </AnimatePresence>
-
-      {/* Just the buttons, NO BIO */}
-      <div className="absolute bottom-0 left-0 w-full p-6 pb-10 z-10 flex items-center justify-center gap-4">
-        <button 
-          onClick={() => onPlay(activeVideo)}
-          className="flex-1 max-w-[200px] flex items-center justify-center gap-2 bg-[#E53945] hover:bg-[#d12e39] text-white px-6 py-3.5 rounded-xl font-bold text-sm transition-transform hover:scale-105 shadow-xl"
-        >
-          <Play size={18} fill="currentColor" /> Play
-        </button>
-        <button 
-          onClick={() => onMore(activeVideo)}
-          className="flex-1 max-w-[200px] flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white px-6 py-3.5 rounded-xl font-bold text-sm transition-transform hover:scale-105 border border-white/10"
-        >
-          <Info size={18} /> More Info
-        </button>
+    <div className="relative w-full h-[55vh] min-h-[420px] flex items-center justify-center mb-4 overflow-hidden bg-[#0a0303]" style={{ perspective: "1200px" }}>
+      <div className="relative z-10 w-full h-full flex items-center justify-center">
+        {videos.map((video, i) => (
+          <AppReelCard
+            key={video.id}
+            video={video}
+            i={i}
+            activeIndex={activeIndex}
+            currentIndex={currentIndex}
+            dragX={dragX}
+            onPlay={onPlay}
+            onMore={onMore}
+            isActive={i === activeIndex}
+            onPointerDown={(e: React.PointerEvent) => handlePointerDown(e, i)}
+            onPointerMove={(e: React.PointerEvent) => handlePointerMove(e, i)}
+            onPointerUp={(e: React.PointerEvent) => handlePointerUp(e, i)}
+          />
+        ))}
       </div>
     </div>
   );
@@ -697,12 +711,13 @@ function AppReelHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[],
 
 function AppReelCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMore, isActive, onPointerDown, onPointerMove, onPointerUp }: any) {
   const offset = useTransform([currentIndex, dragX], ([c, d]: any[]) => {
-    return i - c + (d / 250);
+    return i - c + (d / 300);
   });
 
-  const x = useTransform(offset, (o) => `${o * 70}%`); 
-  const scale = useTransform(offset, (o) => Math.max(0.85, 1 - Math.abs(o) * 0.15)); 
-  const opacity = useTransform(offset, (o) => Math.abs(o) > 1.5 ? 0 : 1); 
+  const x = useTransform(offset, (o) => `${o * 55}%`); 
+  const scale = useTransform(offset, (o) => Math.max(0.8, 1 - Math.abs(o) * 0.15)); 
+  const rotateY = useTransform(offset, (o) => Math.max(-45, Math.min(45, o * -40)));
+  const opacity = useTransform(offset, (o) => Math.abs(o) > 1.5 ? 0 : 1 - Math.abs(o) * 0.15); 
   const zIndex = useTransform(offset, (o) => Math.round(100 - Math.abs(o) * 10)); 
 
   return (
@@ -711,49 +726,34 @@ function AppReelCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMor
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onClick={() => { if (isActive) onMore(video); }}
-      style={{ x, scale, opacity, zIndex, touchAction: "pan-y" }}
-      className="absolute w-[60vw] max-w-[180px] aspect-[3/4] rounded-[20px] cursor-pointer shadow-[0_15px_40px_rgba(0,0,0,0.9)] select-none bg-[#1c1c1e] border border-white/10"
+      style={{ x, scale, rotateY, opacity, zIndex, touchAction: "pan-y", transformStyle: "preserve-3d" }}
+      className="absolute w-[65vw] max-w-[260px] aspect-[2/3] rounded-[16px] cursor-pointer shadow-[0_20px_60px_rgba(0,0,0,0.9)] select-none bg-[#1c1c1e] border border-white/10 overflow-hidden"
     >
-      <div className="relative w-full h-full rounded-[20px] overflow-hidden pointer-events-none">
+      <div className="relative w-full h-full overflow-hidden pointer-events-none">
         <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover" draggable={false} />
         
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-95" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent opacity-90" />
 
-        <div className="absolute bottom-0 inset-x-0 p-2 flex flex-col items-start gap-1 pointer-events-auto">
-          <h3 className="text-sm font-black tracking-tight text-white drop-shadow-lg leading-tight line-clamp-2">
+        <div className="absolute bottom-0 inset-x-0 p-3 flex flex-col items-center gap-2 pointer-events-auto">
+          <h3 className="text-sm font-black tracking-tight text-white drop-shadow-lg text-center leading-tight line-clamp-2 w-full">
             {video.title}
           </h3>
           
-          <div className="flex items-center gap-1 text-[8px] font-semibold text-white/80">
-             <span>{video.year}</span>
-             <span className="border border-white/30 px-1 py-0.5 rounded">{video.rating || "TV-MA"}</span>
-             <span>{video.duration}</span>
+          <div className="flex gap-2 w-full">
+             <button onClick={(e) => { e.stopPropagation(); onPlay(video); }} className="flex-1 bg-[#E53945] hover:bg-[#d12e39] text-white py-1.5 rounded-lg font-bold text-[10px] transition flex items-center justify-center gap-1">
+               <Play size={10} fill="currentColor" /> Play
+             </button>
+             <button onClick={(e) => { e.stopPropagation(); onMore(video); }} className="flex-1 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white py-1.5 rounded-lg font-bold text-[10px] transition flex items-center justify-center gap-1 border border-white/10">
+               <Info size={10} /> Info
+             </button>
           </div>
-
-          {isActive && (
-            <div className="flex items-center gap-2 w-full mt-1">
-              <button 
-                onClick={(e) => { e.stopPropagation(); onPlay(video); }}
-                className="flex-1 flex items-center justify-center gap-1.5 bg-[#E53945] text-white px-2 py-1.5 rounded-full font-bold text-[10px] hover:bg-[#d12e39] transition active:scale-95 shadow-lg"
-              >
-                <Play size={10} fill="currentColor" /> Play
-              </button>
-              
-              <button 
-                onClick={(e) => { e.stopPropagation(); }}
-                className="w-6 h-6 flex items-center justify-center bg-white/20 backdrop-blur-md border border-white/30 text-white rounded-full hover:bg-white/30 transition active:scale-95 shrink-0"
-              >
-                <Plus size={12} />
-              </button>
-            </div>
-          )}
         </div>
       </div>
     </motion.div>
   );
 }
 
-/* ============ GRID ============ */
+
 function Grid({ items, onSelect, onPlay }: { items: Video[]; onSelect: (v: Video) => void; onPlay: (v: Video) => void }) {
   const [hovered, setHovered] = useState<number | null>(null);
   return (
