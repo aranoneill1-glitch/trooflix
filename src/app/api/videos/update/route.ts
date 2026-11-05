@@ -7,7 +7,7 @@ const KV_TOKEN = "gQAAAAAAA01LAAIgcDE3ZTRiZTkyZGNmNjI0M2ZmODg0ZDRmMTNmMDhkYzhhMQ
 
 export async function POST(req: Request) {
   try {
-    const { id, title, description, category, visibility } = await req.json();
+    const { id, title, description, category, visibility, type } = await req.json();
     if (!id) return NextResponse.json({ error: "Missing video ID" }, { status: 400 });
 
     const getRes = await fetch(`${KV_URL}/get/trooflix:videos`, {
@@ -33,6 +33,7 @@ export async function POST(req: Request) {
       description: description || videos[idx].description,
       category: category || videos[idx].category,
       visibility: visibility || videos[idx].visibility,
+      type: type || videos[idx].type,
     };
 
     await fetch(`${KV_URL}/set/trooflix:videos`, {

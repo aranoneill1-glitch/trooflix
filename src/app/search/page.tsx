@@ -19,14 +19,17 @@ const GENRE_CATEGORIES = [
   { name: "History", color: "bg-[#8b5cf6]/60", image: "https://unsplash.com/photos/JioCsloIYro/download?force=true&w=600" },
   { name: "Politics & Geopolitics", color: "bg-[#006450]/60", image: "https://unsplash.com/photos/2J5-T03yGQU/download?force=true&w=600" },
   { name: "War & Conflict", color: "bg-[#E53945]/60", image: "https://images.unsplash.com/photo-1579912205439-4cef16dc975e?q=80&w=600&auto=format&fit=crop" },
-  { name: "True Crime", color: "bg-[#1e3264]/60", image: "https://unsplash.com/photos/yYpmCA32U_M/download?force=true&w=600" },
+  { name: "True Crime & Justice", color: "bg-[#1e3264]/60", image: "https://unsplash.com/photos/yYpmCA32U_M/download?force=true&w=600" },
   { name: "Conspiracy & Mystery", color: "bg-[#7d4b96]/60", image: "https://unsplash.com/photos/BxELNNMN88Y/download?force=true&w=600" },
   { name: "Society & Culture", color: "bg-[#e86f2c]/60", image: "https://unsplash.com/photos/ehdsg7SHm6A/download?force=true&w=600" },
-  { name: "Science & Health", color: "bg-[#0d73ec]/60", image: "https://unsplash.com/photos/gMpwyM4Lyuw/download?force=true&w=600" },
-  { name: "Technology", color: "bg-[#00897b]/60", image: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=600&auto=format&fit=crop" },
-  { name: "Religion & Belief", color: "bg-[#4527A0]/60", image: "https://unsplash.com/photos/UVssyWRCB24/download?force=true&w=600" },
-  { name: "Ancient Civilisations", color: "bg-[#bf360c]/60", image: "https://unsplash.com/photos/4Wue5DQnxSw/download?force=true&w=600" },
-  { name: "Comedy", color: "bg-[#ff9800]/60", image: "https://unsplash.com/photos/jvNoSUrQkgU/download?force=true&w=600" },
+  { name: "Science & Technology", color: "bg-[#0d73ec]/60", image: "https://unsplash.com/photos/gMpwyM4Lyuw/download?force=true&w=600" },
+  { name: "Business & Finance", color: "bg-[#8b5cf6]/60", image: "https://unsplash.com/photos/8lnbXtxFGZw/download?force=true&w=600" },
+  { name: "Environment & Nature", color: "bg-[#1DB954]/60", image: "https://unsplash.com/photos/1Z2niiBPg5A/download?force=true&w=600" },
+  { name: "Religion & Spirituality", color: "bg-[#E53945]/60", image: "https://unsplash.com/photos/UVssyWRCB24/download?force=true&w=600" },
+  { name: "Ancient Civilisation", color: "bg-[#8400e7]/60", image: "https://unsplash.com/photos/4Wue5DQnxSw/download?force=true&w=600" },
+  { name: "Comedy", color: "bg-[#E13377]/60", image: "https://unsplash.com/photos/jvNoSUrQkgU/download?force=true&w=600" },
+  { name: "News", color: "bg-[#2E77D0]/60", image: "https://unsplash.com/photos/hWJsOnaWTqs/download?force=true&w=600" },
+  { name: "Gaming", color: "bg-[#006450]/60", image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=600&auto=format&fit=crop" }
 ];
 
 const TRENDING_TAGS = ["History", "Politics", "Ancient Civilisations", "Technology", "Science & Health"];

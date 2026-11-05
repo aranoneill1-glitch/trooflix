@@ -45,6 +45,7 @@ export default function ManageContentPage() {
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editCategory, setEditCategory] = useState("History");
+  const [editType, setEditType] = useState("Documentary");
   const [editVisibility, setEditVisibility] = useState("public");
   const [savingEdit, setSavingEdit] = useState(false);
   const [showAddContentMenu, setShowAddContentMenu] = useState(false);
@@ -76,6 +77,7 @@ export default function ManageContentPage() {
     setEditTitle(video.title || "");
     setEditDescription(video.description || "");
     setEditCategory(video.category || "History");
+    setEditType(video.type || "Documentary");
     setEditVisibility(video.visibility || "public");
     setActiveMenuId(null);
   };
@@ -92,11 +94,12 @@ export default function ManageContentPage() {
           title: editTitle,
           description: editDescription,
           category: editCategory,
+          type: editType,
           visibility: editVisibility
         }),
       });
       if (res.ok) {
-        setVideos(prev => prev.map(v => v.id === editingVideo.id ? { ...v, title: editTitle, description: editDescription, category: editCategory, visibility: editVisibility } : v));
+        setVideos(prev => prev.map(v => v.id === editingVideo.id ? { ...v, title: editTitle, description: editDescription, category: editCategory, type: editType, visibility: editVisibility } : v));
         setEditingVideo(null);
       } else {
         const err = await res.json();
@@ -410,6 +413,16 @@ export default function ManageContentPage() {
               <div>
                 <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 block">Description</label>
                 <textarea required value={editDescription} onChange={(e) => setEditDescription(e.target.value)} rows={3} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#E53945] transition resize-none" />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 block">Content Type</label>
+                <select value={editType} onChange={(e) => setEditType(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#E53945] transition appearance-none">
+                  <option value="Documentary">Documentary</option>
+                  <option value="Podcast">Podcast</option>
+                  <option value="Independent Film">Independent Film</option>
+                  <option value="Short">Short</option>
+                  <option value="Tweet">Tweet</option>
+                </select>
               </div>
               <div>
                 <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 block">Category</label>
