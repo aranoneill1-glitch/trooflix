@@ -456,7 +456,6 @@ export default function Home() {
                   <AppReelHero 
                     videos={heroPool} 
                     activeIndex={heroIndex} 
-                    setActiveIndex={setHeroIndex} 
                     onPlay={handleInstantPlay}
                     onMore={(v) => setSelected(v)}
                   />
@@ -649,59 +648,58 @@ function DesktopHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[],
 }
 
 /* ============ MOBILE APP REEL HERO ============ */
-function AppReelHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { videos: Video[], activeIndex: number, setActiveIndex: (i: number) => void, onPlay: (v: Video) => void, onMore: (v: Video) => void }) {
-  const dragX = useMotionValue(0);
-  const currentIndex = useMotionValue(activeIndex);
-  const pointerStartX = useRef(0);
-
-  useEffect(() => {
-    animate(currentIndex, activeIndex, { type: "spring", stiffness: 300, damping: 30 });
-  }, [activeIndex]);
-
-  const handlePointerDown = (e: React.PointerEvent, index: number) => {
-    if (index !== activeIndex) return;
-    if ((e.target as HTMLElement).closest("button")) return;
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    pointerStartX.current = e.clientX;
-    dragX.set(0);
-  };
-
-  const handlePointerMove = (e: React.PointerEvent, index: number) => {
-    if (index !== activeIndex) return;
-    if (!(e.currentTarget as HTMLElement).hasPointerCapture(e.pointerId)) return;
-    dragX.set(e.clientX - pointerStartX.current);
-  };
-
-  const handlePointerUp = (e: React.PointerEvent, index: number) => {
-    if (index !== activeIndex) return;
-    if (!(e.currentTarget as HTMLElement).hasPointerCapture(e.pointerId)) return;
-    (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
-    const swipe = dragX.get();
-    if (swipe < -40) setActiveIndex((activeIndex + 1) % videos.length);
-    else if (swipe > 40) setActiveIndex((activeIndex - 1 + videos.length) % videos.length);
-    animate(dragX, 0, { type: "spring", stiffness: 300, damping: 30 });
-  };
+function AppReelHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[], activeIndex: number, onPlay: (v: Video) => void, onMore: (v: Video) => void }) {
+  if (!videos || videos.length === 0) return null;
+  const activeVideo = videos[activeIndex];
 
   return (
-    <div className="relative w-full h-[240px] flex items-center justify-center mb-0 mt-0 bg-[#0a0303] overflow-visible">
-      <div className="relative z-10 w-full h-full flex items-center justify-center">
-        {videos.map((video, i) => (
-          <AppReelCard
-            key={video.id}
-            video={video}
-            i={i}
-            activeIndex={activeIndex}
-            currentIndex={currentIndex}
-            dragX={dragX}
-            onPlay={onPlay}
-            onMore={onMore}
-            isActive={i === activeIndex}
-            onPointerDown={(e: React.PointerEvent) => handlePointerDown(e, i)}
-            onPointerMove={(e: React.PointerEvent) => handlePointerMove(e, i)}
-            onPointerUp={(e: React.PointerEvent) => handlePointerUp(e, i)}
-          />
-        ))}
-      </div>
+    <div className="relative w-full px-4 pb-6">
+      <section className="relative w-full h-[55vh] min-h-[400px] max-h-[600px] flex items-end justify-start overflow-hidden bg-[#1c1c1e] rounded-[24px] shadow-2xl">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeVideo.id}
+            initial={{ opacity: 0, scale: 1.05 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8 }}
+            className="absolute inset-0 z-0"
+          >
+            <img src={activeVideo.backdropUrl || activeVideo.posterUrl} alt={activeVideo.title} className="w-full h-full object-cover object-center" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0303] via-[#0a0303]/60 to-transparent w-full" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0a0303]/60 to-transparent w-full" />
+          </motion.div>
+        </AnimatePresence>
+
+        <div className="relative z-10 p-5 flex flex-col items-start w-full">
+          <motion.div
+            key={`text-${activeVideo.id}`}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="w-full"
+          >
+            <h1 className="text-2xl font-black text-white leading-[1.1] mb-2 drop-shadow-2xl line-clamp-2">
+              {activeVideo.title}
+            </h1>
+            <div className="flex items-center gap-2 text-[10px] font-semibold mb-3">
+              <span className="text-white/80">{activeVideo.year}</span>
+              <span className="border border-white/30 px-1.5 py-0.5 rounded">{activeVideo.rating || "TV-MA"}</span>
+              <span className="text-[#1ed760] font-bold">{activeVideo.match}% Match</span>
+            </div>
+            <p className="text-xs text-white/80 leading-relaxed mb-4 line-clamp-2 drop-shadow-md">
+              {activeVideo.description || "No description available."}
+            </p>
+            <div className="flex items-center gap-3 w-full">
+              <button onClick={() => onPlay(activeVideo)} className="flex-1 flex items-center justify-center gap-2 bg-[#E53945] hover:bg-[#d12e39] text-white px-4 py-2.5 rounded-xl font-bold text-sm shadow-xl transition-transform hover:scale-105">
+                <Play size={16} fill="currentColor" /> Play
+              </button>
+              <button onClick={() => onMore(activeVideo)} className="flex-1 flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white px-4 py-2.5 rounded-xl font-bold text-sm border border-white/10 transition-transform hover:scale-105">
+                <Info size={16} /> More Info
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      </section>
     </div>
   );
 }
