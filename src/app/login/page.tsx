@@ -45,9 +45,10 @@ export default function LoginPage() {
       .then((r) => r.json())
       .then((data) => {
         const videos = Array.isArray(data) ? data : [];
-        const featuredVideos = videos.filter((v: any) => v.featured);
-        if (featuredVideos.length > 0) {
-          const pick = featuredVideos[Math.floor(Math.random() * featuredVideos.length)];
+        const featuredVideos = videos.filter((v: any) => v.featured && v.backdropUrl);
+        const pool = featuredVideos.length > 0 ? featuredVideos : videos.filter((v: any) => v.backdropUrl);
+        if (pool.length > 0) {
+          const pick = pool[Math.floor(Math.random() * pool.length)];
           setFeatured({ backdropUrl: pick.backdropUrl, title: pick.title });
         }
       })

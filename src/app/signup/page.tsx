@@ -20,10 +20,26 @@ export default function SignupPage() {
   
   // Toggle between the two tiers
   const [activeTab, setActiveTab] = useState<"troopass" | "creator">("troopass");
+  const [featured, setFeatured] = useState<{ backdropUrl?: string; title?: string } | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setReady(true), 50);
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/videos", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((data) => {
+        const videos = Array.isArray(data) ? data : [];
+        const featuredVideos = videos.filter((v: any) => v.featured && v.backdropUrl);
+        const pool = featuredVideos.length > 0 ? featuredVideos : videos.filter((v: any) => v.backdropUrl);
+        if (pool.length > 0) {
+          const pick = pool[Math.floor(Math.random() * pool.length)];
+          setFeatured({ backdropUrl: pick.backdropUrl, title: pick.title });
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const submit = async (e: React.FormEvent) => {
@@ -101,6 +117,14 @@ export default function SignupPage() {
   return (
     <main className="min-h-screen bg-[#0a0303] text-white flex flex-col items-center py-12 px-4 selection:bg-[#E53945]/30 relative overflow-hidden">
       
+      {/* Background Featured Image */}
+      {featured?.backdropUrl && (
+        <>
+          <img src={featured.backdropUrl} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0a0303]/80 via-[#0a0303]/95 to-[#0a0303]" />
+        </>
+      )}
+
       {/* Top ambient light */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] md:w-[600px] h-[300px] bg-[#E53945]/10 rounded-full blur-[100px] pointer-events-none" />
 
