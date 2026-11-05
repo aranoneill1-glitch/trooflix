@@ -166,7 +166,7 @@ export default function HomeFeedCard({ video, creator, onMore, onPlay, isActive,
 
   if (video.type?.toLowerCase() === "tweet") {
     return (
-      <div className="w-full relative flex flex-col bg-[#1c1c1e] mb-8 mx-auto rounded-[24px] border border-white/10 shadow-2xl p-5">
+      <div className="w-full relative flex flex-col mb-8 mx-auto p-5">
         {!hideCreatorInfo && (
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-full overflow-hidden bg-[#1c1c1e] border border-white/20 shrink-0">
@@ -207,8 +207,8 @@ export default function HomeFeedCard({ video, creator, onMore, onPlay, isActive,
   if (!videoSrc) return null;
 
   return (
-    <div ref={containerRef} className="w-full relative flex flex-col group/feed bg-[#09090B] lg:bg-transparent mb-8 mx-auto rounded-[24px] overflow-hidden border border-white/10 shadow-2xl">
-      <div className="w-full relative overflow-hidden flex flex-col lg:bg-[#1c1c1e] lg:rounded-2xl lg:border lg:border-white/5 lg:shadow-lg">
+    <div ref={containerRef} className="w-full relative flex flex-col group/feed mb-8 mx-auto overflow-hidden">
+      <div className="w-full relative overflow-hidden flex flex-col ">
         
         <div className="relative w-full bg-black overflow-hidden cursor-pointer flex" onClick={() => { handleInteraction(); togglePlay(); }} onMouseMove={handleInteraction} onTouchStart={handleInteraction}>
           <video ref={videoRef} src={videoSrc} onLoadedMetadata={(e) => { const v = e.currentTarget; if (v.videoHeight > v.videoWidth) setIsPortrait(true); }} className="w-full h-full object-cover" playsInline muted={isMuted} preload="metadata" onTimeUpdate={handleTimeUpdate} onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} onError={() => setError(true)} loop />
