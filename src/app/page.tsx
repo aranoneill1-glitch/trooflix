@@ -306,10 +306,7 @@ export default function Home() {
               {/* MOBILE SECTION: Pills + Header + Avatars + Hero */}
               <div className="lg:hidden w-full flex flex-col relative z-10 bg-transparent">
                 {/* Ambient glow for glass refraction */}
-                <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-[#E53945]/20 rounded-full blur-[120px] pointer-events-none z-0" />
-                
-                <div className="fixed top-0 left-0 w-full h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#E53945]/15 via-[#0a0303]/0 to-transparent pointer-events-none z-0" />
-<div className="w-full relative z-10">
+                <div className="w-full relative z-10">
 {/* App Reel Hero (Moved below Avatars) */}
                 {heroPool.length > 0 && (
                   <AppReelHero 
