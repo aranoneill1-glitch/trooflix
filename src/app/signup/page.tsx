@@ -102,7 +102,8 @@ export default function SignupPage() {
           userId: authData.user.id,
           username: cleanHandle,
           displayName: cleanHandle,
-          tier: activeTab === "troopass" ? "user" : "creator",
+          tier: "free",
+          verification_tick: "none",
         }),
       });
 
