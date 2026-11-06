@@ -142,10 +142,13 @@ export default function PublicProfilePage() {
     setFollowerCount((prev: number) => prev + (newIsFollowing ? 1 : -1));
 
     try {
+      const payload = { userId: user.id, creatorId: targetCreatorId };
+      console.log("DEBUG: Sending follow payload:", payload);
+      
       const res = await fetch("/api/follows", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.id, creatorId: targetCreatorId })
+        body: JSON.stringify(payload)
       });
       if (!res.ok) {
         const err = await res.json();

@@ -36,7 +36,8 @@ export async function GET(req: Request) {
     if (error) throw error;
     return NextResponse.json({ ids: (data || []).map((r: any) => r.creator_id) });
   } catch (e: any) {
-    return NextResponse.json({ ids: [], count: 0, isFollowing: false, error: String(e) });
+    console.error("API GET Follows Error:", e);
+    return NextResponse.json({ error: String(e) }, { status: 500 });
   }
 }
 
@@ -96,6 +97,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true, following: true });
     }
   } catch (e: any) {
+    console.error("API POST Follows Error:", e);
     return NextResponse.json({ error: String(e) }, { status: 500 });
   }
 }
