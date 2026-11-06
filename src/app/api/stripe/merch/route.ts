@@ -11,55 +11,55 @@ const supabaseAdmin = createServerClient(
 
 export async function POST(req: Request) {
   try {
-    const { userId, productId, creatorSlug } = await req.json();
-    if (!userId || !productId) return NextResponse.json({ error: "Missing data" }, { status: 400 });
+    const { userId, items } = await req.json();
+    if (!userId || !items || !Array.isArray(items) || items.length === 0) {
+      return NextResponse.json({ error: "Missing data or empty cart" }, { status: 400 });
+    }
 
-    const { data: product } = await supabaseAdmin
-      .from("products")
-      .select("*")
-      .eq("id", productId)
-      .maybeSingle();
+    const productIds = items.map((i: any) => i.id);
+    const { data: products } = await supabaseAdmin.from("products").select("*").in("id", productIds);
 
-    if (!product) return NextResponse.json({ error: "Product not found" }, { status: 404 });
+    if (!products || products.length === 0) return NextResponse.json({ error: "Products not found" }, { status: 404 });
 
-    // Fetch user email to send the Stripe receipt
     const { data: userData } = await supabaseAdmin.auth.admin.getUserById(userId);
     const userEmail = userData?.user?.email;
 
     const baseUrl = process.env.NEXT_PUBLIC_URL || "https://trooflixtv.com";
 
+    const lineItems = items.map((cartItem: any) => {
+      const dbProduct = products.find((p: any) => p.id === cartItem.id);
+      if (!dbProduct) return null;
+      return {
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: dbProduct.name,
+            description: dbProduct.description || undefined,
+            images: dbProduct.image_url ? [dbProduct.image_url] : undefined,
+          },
+          unit_amount: dbProduct.price_cents,
+        },
+        quantity: cartItem.quantity,
+      };
+    }).filter(Boolean) as Stripe.Checkout.SessionCreateParams.LineItem[];
+
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       customer_email: userEmail,
-      line_items: [
-        {
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: product.name,
-              description: product.description || undefined,
-              images: product.image_url ? [product.image_url] : undefined,
-            },
-            unit_amount: product.price_cents,
-          },
-          quantity: 1,
-        },
-      ],
+      line_items: lineItems,
       payment_intent_data: {
         description: `Trooflix Merch Order`,
       },
       shipping_address_collection: {
         allowed_countries: ["US", "CA", "GB", "AU", "IE", "NZ"],
       },
-      // REDIRECT TO THE NEW SUCCESS PAGE
-      success_url: `${baseUrl}/checkout/success?creator=${creatorSlug}`,
-      cancel_url: `${baseUrl}/podcaster/${creatorSlug}`,
+      success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/merchandise`,
       client_reference_id: userId,
       metadata: {
-        type: "merch",
-        userId,
-        creatorId: String(product.creator_id),
-        productId: String(product.id),
+        type: "merch_cart",
+        userId: userId,
+        items: JSON.stringify(items),
       },
     });
 

@@ -20,6 +20,7 @@ export default function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"unread" | "all" | "basket">("unread");
   const [basketItems, setBasketItems] = useState<any[]>([]);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
@@ -43,11 +44,35 @@ export default function NotificationBell() {
     localStorage.setItem("trooflix_basket", JSON.stringify(updated));
   };
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (basketItems.length === 0) return;
-    alert("Checkout successful! (Mock integration)");
-    setBasketItems([]);
-    localStorage.removeItem("trooflix_basket");
+    setCheckoutLoading(true);
+    
+    try {
+      const user = await getCachedUser();
+      if (!user) {
+        alert("Please log in to checkout.");
+        setCheckoutLoading(false);
+        return;
+      }
+
+      const items = basketItems.map(item => ({ id: item.id, quantity: item.quantity }));
+      const res = await fetch("/api/stripe/merch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id, items })
+      });
+      
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Checkout failed");
+      
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (err: any) {
+      alert("Checkout error: " + err.message);
+      setCheckoutLoading(false);
+    }
   };
 
   const totalPrice = basketItems.reduce((acc, item) => acc + (item.price_cents * item.quantity), 0) / 100;
@@ -191,8 +216,8 @@ export default function NotificationBell() {
                           <span>Total</span>
                           <span>${totalPrice.toFixed(2)}</span>
                         </div>
-                        <button onClick={handleCheckout} className="w-full bg-[#E53945] hover:bg-[#d12e39] text-white font-bold py-3.5 rounded-xl transition">
-                          Checkout
+                        <button onClick={handleCheckout} disabled={checkoutLoading} className="w-full bg-[#E53945] hover:bg-[#d12e39] text-white font-bold py-3.5 rounded-xl transition disabled:opacity-50">
+                          {checkoutLoading ? "Redirecting to Stripe..." : "Checkout"}
                         </button>
                       </div>
                     </>

@@ -63,39 +63,45 @@ export async function POST(req: Request) {
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
       
-      if (session.metadata?.type === "merch") {
+      if (session.metadata?.type === "merch_cart") {
         const sessionDetails = session as any;
         const shipping = sessionDetails.collected_information?.shipping_details || sessionDetails.shipping_details;
         
-        // FIX: Safely extract metadata into variables to satisfy TypeScript
         const userId = session.metadata?.userId;
-        const creatorId = session.metadata?.creatorId;
-        const productId = session.metadata?.productId;
+        const itemsJson = session.metadata?.items;
 
-        if (!userId || !creatorId || !productId) {
+        if (!userId || !itemsJson) {
           return new NextResponse("Missing metadata", { status: 400 });
         }
-        
-        const { error } = await supabaseAdmin.from("merch_orders").upsert({
-          buyer_user_id: userId,
-          creator_id: Number(creatorId),
-          product_id: Number(productId),
-          stripe_session_id: session.id,
-          amount_cents: session.amount_total || 0,
-          status: "paid",
-          shipping_name: shipping?.name || null,
-          shipping_address: shipping?.address?.line1 || null,
-          shipping_city: shipping?.address?.city || null,
-          shipping_postal_code: shipping?.address?.postal_code || null,
-          shipping_country: shipping?.address?.country || null,
-        }, { onConflict: "stripe_session_id" });
 
-        if (error) return new NextResponse(`Database Error: ${error.message}`, { status: 500 });
+        const items = JSON.parse(itemsJson);
+        let lastCreatorId = null;
+
+        for (const item of items) {
+          const { data: product } = await supabaseAdmin.from("products").select("creator_id, price_cents").eq("id", item.id).maybeSingle();
+          if (!product) continue;
+          
+          lastCreatorId = product.creator_id;
+
+          await supabaseAdmin.from("merch_orders").insert({
+            buyer_user_id: userId,
+            creator_id: Number(product.creator_id),
+            product_id: Number(item.id),
+            stripe_session_id: session.id,
+            amount_cents: (product.price_cents * item.quantity),
+            status: "paid",
+            shipping_name: shipping?.name || null,
+            shipping_address: shipping?.address?.line1 || null,
+            shipping_city: shipping?.address?.city || null,
+            shipping_postal_code: shipping?.address?.postal_code || null,
+            shipping_country: shipping?.address?.country || null,
+          });
+        }
 
         // Push Notification for Order
         try {
           const creators = (await kv.get<any[]>(CREATORS_KEY)) || [];
-          const creator = creators.find((c: any) => Number(c.id) === Number(creatorId));
+          const creator = creators.find((c: any) => Number(c.id) === Number(lastCreatorId));
           
           if (creator && creator.ownerUserId) {
             await fetch(`${process.env.NEXT_PUBLIC_URL || "https://www.trooflixtv.com"}/api/push/send`, {
