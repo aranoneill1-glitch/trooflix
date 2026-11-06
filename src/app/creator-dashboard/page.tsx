@@ -326,7 +326,7 @@ function CreatorDashboardContent() {
 
                 <div className="px-1">
                   <div className="flex items-center justify-between mb-1">
-                    <h1 className="text-2xl md:text-3xl font-black flex items-center gap-2 text-white">{displayName} {profile?.is_verified && <VerifiedBadge size={20} variant="gold" />}</h1>
+                    <h1 className="text-2xl md:text-3xl font-black flex items-center gap-2 text-white">{displayName} {profile?.verification_tick && profile.verification_tick !== "none" && <VerifiedBadge size={20} variant={profile.verification_tick as any} />}</h1>
                     
                     
                   </div>

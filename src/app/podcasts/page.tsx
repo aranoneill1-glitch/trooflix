@@ -149,7 +149,7 @@ export default function PodcastsPage() {
                   <div className="p-4 pt-8 flex-1 flex flex-col">
                     <div className="flex items-center gap-1.5 mb-1">
                       <h3 className="font-bold text-lg leading-tight truncate group-hover:text-red-400 transition-colors">{c.name}</h3>
-                      {c.isVerified && <VerifiedBadge size={14} variant="gold" />}
+                      {(c as any).verification_tick && (c as any).verification_tick !== "none" && <VerifiedBadge size={14} variant={(c as any).verification_tick as any} />}
                     </div>
                     <p className="text-xs text-white/40 line-clamp-2 mb-4 flex-1">
                       {c.description || "Listen to podcasts from this creator."}

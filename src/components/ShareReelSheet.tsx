@@ -187,7 +187,7 @@ export default function ShareReelSheet({
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold inline-flex items-center gap-1 truncate">
                         {label(u)}
-                        {u.is_verified && <VerifiedBadge size={12} />}
+                        {(u as any).verification_tick && (u as any).verification_tick !== "none" && <VerifiedBadge size={12} variant={(u as any).verification_tick as any} />}
                       </p>
                       {handle(u) && (
                         <p className="text-xs text-white/50 truncate">{handle(u)}</p>

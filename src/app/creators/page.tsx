@@ -74,7 +74,7 @@ function ContentRow({ title, icon: Icon, items, loading }: { title: string, icon
             <div className="absolute inset-x-0 bottom-0 p-3 md:p-4 flex flex-col justify-end">
               <div className="flex items-center gap-1.5 mb-1">
                 <p className="font-bold text-sm md:text-base leading-tight truncate">{c.name}</p>
-                {c.isVerified && <VerifiedBadge size={12} variant="gold" />}
+                {(c as any).verification_tick && (c as any).verification_tick !== "none" && <VerifiedBadge size={12} variant={(c as any).verification_tick as any} />}
               </div>
               <p className="text-[10px] text-white/60 line-clamp-1">{c.category || "Creator"}</p>
             </div>
@@ -515,7 +515,7 @@ export default function CreatorsPage() {
                       <div className="p-4 pt-8 flex-1 flex flex-col">
                         <div className="flex items-center gap-1.5 mb-1">
                           <h3 className="font-bold text-lg leading-tight truncate group-hover:text-[#E53945] transition-colors">{c.name}</h3>
-                          {c.isVerified && <VerifiedBadge size={14} variant="gold" />}
+                          {(c as any).verification_tick && (c as any).verification_tick !== "none" && <VerifiedBadge size={14} variant={(c as any).verification_tick as any} />}
                         </div>
                         <p className="text-xs text-white/40 line-clamp-2 mb-4 flex-1">{c.description}</p>
                         <div className="flex items-center justify-between mt-auto pt-3 border-t border-[#303030]">

@@ -10,6 +10,7 @@ import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { createClient } from "@/utils/supabase/client";
+import VerifiedBadge from "@/components/VerifiedBadge";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
 
 const InstagramIcon = ({ size = 16 }: { size?: number }) => (
@@ -295,7 +296,7 @@ export default function PublicProfilePage() {
               <div className="px-1">
                 <div className="flex items-center justify-between mb-1">
                   <h1 className="text-2xl md:text-3xl font-black flex items-center gap-2 text-white">
-                    {displayName} {profile.is_verified && <CheckCircle2 size={20} className="text-[#1ed760]" fill="currentColor" />}
+                    {displayName} {(profile as any).verification_tick && (profile as any).verification_tick !== "none" && <VerifiedBadge size={20} variant={(profile as any).verification_tick as any} />}
                   </h1>
                   
                   {/* FOLLOW BUTTON (Top Right) */}

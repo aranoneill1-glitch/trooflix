@@ -12,7 +12,7 @@ export async function GET() {
   try {
     const { data, error } = await supabaseAdmin
       .from("profiles")
-      .select("user_id, display_name, username, avatar_url, bio, tier, is_verified, updated_at")
+      .select("user_id, display_name, username, avatar_url, bio, tier, is_verified, verification_tick, updated_at")
       .eq("tier", "podcaster")
       .not("username", "like", "mockcreator_%")
       .order("updated_at", { ascending: false });
@@ -33,6 +33,7 @@ export async function GET() {
         heroBackdropUrl: "",
         description: p.bio || "",
         isVerified: p.is_verified ?? true,
+        verification_tick: (p as any).verification_tick || (p.tier === "creator" || p.tier === "podcaster" || p.tier === "pro" ? "creator_gold" : p.tier === "plus" ? "plus_red" : "none"),
         ownerUserId: p.user_id,
         createdAt: p.updated_at,
       };

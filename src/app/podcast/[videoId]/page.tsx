@@ -214,7 +214,7 @@ export default function WatchPage() {
                   <div>
                     <Link href={`/podcaster/${creator.slug}`} className="font-bold text-sm md:text-base hover:text-white/80 flex items-center gap-1">
                       {creator.name}
-                      {creator.isVerified && <VerifiedBadge size={14} variant="gold" />}
+                      {(creator as any).verification_tick && (creator as any).verification_tick !== "none" && <VerifiedBadge size={14} variant={(creator as any).verification_tick as any} />}
                     </Link>
                     <p className="text-xs text-white/50">
                       {followerCount !== null ? `${followerCount.toLocaleString()} subscribers` : "Subscriber"}

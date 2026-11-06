@@ -7,6 +7,7 @@ import Link from "next/link";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import TopBar from "@/components/TopBar";
 import { createClient } from "@/utils/supabase/client";
+import VerifiedBadge from "@/components/VerifiedBadge";
 
 const PRIMARY_CATEGORIES = [
   { name: "Documentaries", color: "bg-[#E13377]/60", image: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=600&auto=format&fit=crop" },
@@ -66,7 +67,7 @@ function SearchContent() {
 
       const profilesPromise = supabase
         .from("profiles")
-        .select("user_id, creator_id, display_name, username, avatar_url, is_verified, tier, bio")
+        .select("user_id, creator_id, display_name, username, avatar_url, is_verified, verification_tick, tier, bio")
         .then(res => res.data || []);
 
       const [videosData, profilesData] = await Promise.all([videosPromise, profilesPromise]);
@@ -238,7 +239,7 @@ function SearchContent() {
                             <div className="min-w-0">
                               <div className="flex items-center gap-1.5">
                                 <span className="text-white font-bold text-sm md:text-lg truncate group-hover:text-[#E53945] transition-colors">{profile.display_name || "User"}</span>
-                                {profile.is_verified && <CheckCircle2 size={14} className="text-[#1ed760] hidden md:block" fill="currentColor" />}
+                                {(profile as any).verification_tick && (profile as any).verification_tick !== "none" && <VerifiedBadge size={14} variant={(profile as any).verification_tick as any} className="hidden md:block" />}
                               </div>
                               <span className="text-xs md:text-sm text-white/50 truncate block">@{profile.username || "user"}</span>
                             </div>
