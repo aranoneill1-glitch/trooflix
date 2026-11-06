@@ -66,7 +66,7 @@ function CreatorDashboardContent() {
         if (prof) setProfile(prof);
 
         const targetCreatorId = prof?.creator_id || u.id;
-        const { count: followers } = await supabase.from("follows").select("*", { count: "exact", head: true }).eq("following_id", u.id);
+        const { count: followers } = await supabase.from("follows").select("*", { count: "exact", head: true }).eq("creator_id", targetCreatorId);
         const { count: subs } = await supabase.from("creator_subscriptions").select("*", { count: "exact", head: true }).eq("creator_id", targetCreatorId);
         setFollowerCount(followers || 0);
         setSubscriberCount(subs || 0);
