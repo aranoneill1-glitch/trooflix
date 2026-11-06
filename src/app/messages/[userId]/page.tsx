@@ -424,7 +424,7 @@ export default function ThreadPage() {
         <div className="flex items-center gap-3 px-3 py-2.5 md:px-6">
           <button
             onClick={() => router.push("/messages")}
-            className="w-9 h-9 -ml-1 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition"
+            className="w-9 h-9 -ml-1 flex items-center justify-center rounded-full bg-[#1c1c1e] border border-white/10 hover:bg-[#262626] transition"
             aria-label="Back"
           >
             <ChevronLeft size={22} className="text-white" />
@@ -526,7 +526,7 @@ export default function ThreadPage() {
                         isChrome
                           ? "max-w-[78%] md:max-w-[65%]"
                           : `max-w-[78%] md:max-w-[65%] px-3 py-2 text-[15px] leading-[1.35] ${
-                              mine ? "bg-[#dc2626]" : "bg-white/10"
+                              mine ? "bg-[#dc2626]" : "bg-[#262626]"
                             } text-white rounded-3xl ${tailCorner}`
                       }`}
                       onPointerDown={() => startLongPress(m)}
@@ -637,7 +637,7 @@ export default function ThreadPage() {
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
-            className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0 disabled:opacity-50"
+            className="w-10 h-10 rounded-full bg-[#1c1c1e] border border-white/10 hover:bg-[#262626] flex items-center justify-center flex-shrink-0 disabled:opacity-50 transition"
             aria-label="Camera"
           >
             {uploading ? (
@@ -648,7 +648,7 @@ export default function ThreadPage() {
           </button>
 
           {/* Input pill */}
-          <div className="flex-1 flex items-center gap-3 bg-white/10 rounded-full px-4 py-2.5 min-w-0">
+          <div className="flex-1 flex items-center gap-3 bg-[#1c1c1e] border border-white/10 rounded-full px-4 py-2.5 min-w-0">
             <textarea
               ref={inputRef}
               value={body}
