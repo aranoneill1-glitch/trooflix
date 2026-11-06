@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
-import { Volume2, VolumeX, Heart, MessageCircle, Play, Pause } from "lucide-react";
+import { Volume2, VolumeX, Heart, Eye, MessageCircle, Play, Pause } from "lucide-react";
+import LikeButton from "@/components/LikeButton";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import CommentSheet from "@/components/CommentSheet";
 
@@ -100,6 +101,9 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
+  const progressBarRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const wasPlayingRef = useRef(false);
   const [showPlayIcon, setShowPlayIcon] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -156,8 +160,40 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
     setIsExpanded(!isExpanded);
   };
 
+  const handleSeek = (e: React.PointerEvent) => {
+    if (!videoRef.current || !progressBarRef.current) return;
+    const rect = progressBarRef.current.getBoundingClientRect();
+    const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+    const percentage = (x / rect.width) * 100;
+    setProgress(percentage);
+    if (videoRef.current.duration) {
+      videoRef.current.currentTime = (percentage / 100) * videoRef.current.duration;
+    }
+  };
+
+  const handleDragStart = (e: React.PointerEvent) => {
+    setIsDragging(true);
+    if (videoRef.current) {
+      wasPlayingRef.current = !videoRef.current.paused;
+      videoRef.current.pause();
+    }
+    handleSeek(e);
+  };
+
+  const handleDragMove = (e: React.PointerEvent) => {
+    if (!isDragging) return;
+    handleSeek(e);
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+    if (videoRef.current && wasPlayingRef.current) {
+      videoRef.current.play().catch(() => {});
+    }
+  };
+
   return (
-    <div className="relative w-full h-[100dvh] snap-start snap-always bg-black flex items-center justify-center overflow-hidden pb-16">
+    <div className="relative w-full h-[100dvh] snap-start snap-always bg-black flex items-center justify-center overflow-hidden">
       
       <video
         ref={videoRef}
@@ -173,7 +209,7 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
           }
         }}
         onError={() => setHasError(true)}
-        className="w-full h-full object-contain cursor-pointer"
+        className="w-full h-full object-cover cursor-pointer"
         onClick={handleScreenClick}
       />
 
@@ -220,13 +256,18 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
       {/* RIGHT SIDE ACTION BUTTONS */}
       <div className="absolute right-3 bottom-[110px] flex flex-col items-center gap-6 z-30">
         
+        <div className="flex flex-col items-center gap-1 text-white">
+          <Eye size={22} />
+          <span className="text-[11px] font-bold">{(video as any).views || 0}</span>
+        </div>
+
         <button onClick={onToggleMute} className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/60 transition">
           {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
         </button>
 
-        <button className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/60 transition">
-          <Heart size={26} />
-        </button>
+        <div className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/60 transition">
+          <LikeButton videoId={video.id} size={26} />
+        </div>
 
         <button onClick={onOpenComments} className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/60 transition">
           <MessageCircle size={24} />
@@ -258,14 +299,21 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
         </div>
       </div>
 
-      {/* PROGRESS BAR */}
-      <div className="absolute left-4 right-[80px] bottom-[114px] z-30 flex items-center gap-3 pointer-events-none">
-        <div className="relative flex-1 h-[2px] bg-white/30 rounded-full">
-          <div className="absolute top-0 left-0 h-full bg-white rounded-full transition-all duration-100 ease-linear" style={{ width: `${progress}%` }} />
-          <div className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-white rounded-full shadow-md transition-all duration-100 ease-linear" style={{ left: `calc(${progress}% - 5px)` }} />
+      {/* PROGRESS BAR (DRAGGABLE) */}
+      <div className="absolute left-4 right-[80px] bottom-[80px] z-30 flex items-center gap-3 pointer-events-none">
+        <div 
+          ref={progressBarRef}
+          className="relative flex-1 h-[6px] bg-white/30 rounded-full cursor-pointer touch-none py-2 -my-2 pointer-events-auto"
+          onPointerDown={handleDragStart}
+          onPointerMove={handleDragMove}
+          onPointerUp={handleDragEnd}
+          onPointerCancel={handleDragEnd}
+        >
+          <div className="absolute top-1/2 -translate-y-1/2 left-0 h-[6px] bg-white rounded-full pointer-events-none" style={{ width: `${progress}%` }} />
+          <div className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-white rounded-full shadow-lg pointer-events-none" style={{ left: `calc(${progress}% - 7px)` }} />
         </div>
-        <span className="text-white/90 text-[12px] font-semibold tabular-nums tracking-wide">
-          {videoRef.current ? formatTime(videoRef.current.currentTime) : "0:00"}
+        <span className="text-white/90 text-[12px] font-semibold tabular-nums tracking-wide pointer-events-none">
+          {formatTime((progress / 100) * (videoRef.current?.duration || 0))}
         </span>
       </div>
 
