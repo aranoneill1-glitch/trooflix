@@ -124,15 +124,20 @@ export default function PublicProfilePage() {
     setFollowerCount((prev: number) => prev + (newIsFollowing ? 1 : -1));
 
     try {
-      await fetch("/api/follows", {
+      const res = await fetch("/api/follows", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: user.id, creatorId: targetCreatorId })
       });
-    } catch (e) {
-      console.error(e);
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Follow failed");
+      }
+    } catch (e: any) {
+      console.error("Follow error:", e);
       setIsFollowing(!newIsFollowing);
       setFollowerCount((prev: number) => prev + (newIsFollowing ? -1 : 1));
+      alert("Follow failed: " + (e.message || "Unknown error"));
     }
   };
 

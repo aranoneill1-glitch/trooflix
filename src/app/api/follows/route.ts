@@ -14,13 +14,29 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get("user_id");
-    if (!userId) return NextResponse.json({ ids: [] });
+    const creatorId = searchParams.get("creator_id");
 
+    // Mode 1: Get count + isFollowing for a specific creator
+    if (creatorId) {
+      const targetId = Number(creatorId);
+      const { count } = await supabaseAdmin.from("follows").select("*", { count: "exact", head: true }).eq("creator_id", targetId);
+      
+      let isFollowing = false;
+      if (userId) {
+        const { data: followCheck } = await supabaseAdmin.from("follows").select("id").eq("follower_id", userId).eq("creator_id", targetId).maybeSingle();
+        isFollowing = !!followCheck;
+      }
+      
+      return NextResponse.json({ count: count || 0, isFollowing });
+    }
+
+    // Mode 2: Get list of creator IDs the user follows
+    if (!userId) return NextResponse.json({ ids: [] });
     const { data, error } = await supabaseAdmin.from("follows").select("creator_id").eq("follower_id", userId);
     if (error) throw error;
     return NextResponse.json({ ids: (data || []).map((r: any) => r.creator_id) });
   } catch (e: any) {
-    return NextResponse.json({ ids: [] });
+    return NextResponse.json({ ids: [], count: 0, isFollowing: false, error: String(e) });
   }
 }
 
