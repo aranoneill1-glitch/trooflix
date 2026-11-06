@@ -17,6 +17,7 @@ import { useRealtimeDMs } from "@/hooks/useRealtimeDMs";
 import GifPicker from "@/components/GifPicker";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import { getCachedUser } from "@/lib/cache";
+import TopBar from "@/components/TopBar";
 import { motion, AnimatePresence } from "framer-motion";
 
 type Message = {
@@ -419,8 +420,9 @@ export default function ThreadPage() {
 
   return (
     <main className="min-h-screen bg-black text-white flex flex-col">
+      <TopBar />
       {/* Header — white bar */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-black border-b border-white/10">
+      <header className="fixed top-[64px] left-0 right-0 z-50 bg-black border-b border-white/10">
         <div className="flex items-center gap-3 px-3 py-2.5 md:px-6">
           <button
             onClick={() => router.push("/messages")}
@@ -458,7 +460,7 @@ export default function ThreadPage() {
       </header>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto pt-20 pb-24 px-4 md:px-6">
+      <div className="flex-1 overflow-y-auto pt-[144px] pb-24 px-4 md:px-6">
         <div className="max-w-2xl w-full mx-auto">
           {loading && (
             <p className="text-white/40 text-center py-12">Loading…</p>

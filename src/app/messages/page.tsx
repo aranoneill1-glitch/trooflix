@@ -172,7 +172,7 @@ export default function MessagesInbox() {
       </div>
 
       {/* Scrollable list - GREY BACKGROUND APPLIED HERE */}
-      <div className="flex-1 overflow-y-auto pb-24 lg:pb-4 bg-[#1c1c1e]">
+      <div className="flex-1 overflow-y-auto pb-24 lg:pb-4 bg-black">
         <div className="max-w-3xl mx-auto">
         {loading && (
           <p className="text-white/50 py-12 text-center px-6">Loading…</p>
