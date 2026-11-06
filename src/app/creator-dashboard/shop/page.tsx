@@ -37,6 +37,7 @@ function ManageShopContent() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
+  const [productType, setProductType] = useState("merch");
   const [inventory, setInventory] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -143,6 +144,7 @@ function ManageShopContent() {
         name,
         description,
         price_cents: priceCents,
+        type: productType,
         inventory_count: Number(inventory) || 0,
         image_url: finalImageUrl,
       };
@@ -381,7 +383,11 @@ function ManageShopContent() {
 
               <div>
                 <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 block">Product Name</label>
-                <input required type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Vintage Logo Tee" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#E53945] transition" />
+                <div className="flex bg-black/40 border border-white/10 rounded-xl p-1 mb-4">
+                    <button type="button" onClick={() => setProductType("merch")} className={`flex-1 py-2 text-sm font-bold rounded-lg transition ${productType === "merch" ? "bg-[#E53945] text-white" : "text-white/50 hover:text-white"}`}>Merch</button>
+                    <button type="button" onClick={() => setProductType("book")} className={`flex-1 py-2 text-sm font-bold rounded-lg transition ${productType === "book" ? "bg-[#E53945] text-white" : "text-white/50 hover:text-white"}`}>Book</button>
+                  </div>
+                  <input required type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Vintage Logo Tee" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#E53945] transition" />
               </div>
 
               <div>

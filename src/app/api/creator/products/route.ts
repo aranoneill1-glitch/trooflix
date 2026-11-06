@@ -28,7 +28,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const { creatorId, name, description, price_cents, image_url, inventory_count } = await req.json();
+    const { creatorId, name, description, price_cents, image_url, inventory_count, type } = await req.json();
     if (!creatorId || !name || !price_cents) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
@@ -42,6 +42,7 @@ export async function POST(req: Request) {
         price_cents: Number(price_cents),
         image_url,
         inventory_count: Number(inventory_count) || 0,
+        type: type || "merch",
         active: true,
       })
       .select()
