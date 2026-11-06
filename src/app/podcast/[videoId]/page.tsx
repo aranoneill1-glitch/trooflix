@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Play, Share, ChevronLeft, MoreHorizontal, List } from "lucide-react";
+import AuthPlaybackGate from "@/components/AuthPlaybackGate";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import FollowButton from "@/components/FollowButton";
@@ -74,6 +75,7 @@ export default function WatchPage() {
   const [reportOpen, setReportOpen] = useState(false);
   const [followerCount, setFollowerCount] = useState<number | null>(null);
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
+  const [showAuthGate, setShowAuthGate] = useState(false);
 
   useEffect(() => {
     getCachedUser().then((u) => {
@@ -292,7 +294,11 @@ export default function WatchPage() {
       />
 
       {/* THE REAL PLAYER */}
-      {isPlayerOpen && (
+      {showAuthGate && (
+        <AuthPlaybackGate onClose={() => setShowAuthGate(false)} videoTitle={video.title} />
+      )}
+
+      {isPlayerOpen && userId && (
         <AppleVideoPlayer
           src={video.videoUrl ?? video.bitchuteUrl ?? ""}
           poster={video.posterUrl}
@@ -302,6 +308,8 @@ export default function WatchPage() {
           chapters={video.chapters || []}
         />
       )}
+
+      {isPlayerOpen && !userId && (() => { setShowAuthGate(true); setIsPlayerOpen(false); return null; })()}
     </main>
   );
 }

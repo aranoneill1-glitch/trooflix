@@ -21,13 +21,12 @@ import Link from "next/link";
 import { motion, AnimatePresence, useMotionValue, useTransform, animate } from "framer-motion";
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Play, Info, ChevronLeft, ChevronRight, X,
+import { Play, Info, ChevronLeft, ChevronRight, X,
   Search, Bell, HomeIcon, Menu,
   Compass, LogOut, LogIn, Users, ShoppingBag, Sparkles, BookOpen, Flame, List,
   CheckCircle2, Pause, VolumeX, Volume2, MoreVertical, Plus, Maximize,
-  ThumbsUp, MessageCircle, Share2, Bookmark
-} from "lucide-react";
+  ThumbsUp, MessageCircle, Share2, Bookmark } from "lucide-react";
+import AuthPlaybackGate from "@/components/AuthPlaybackGate";
 import AppleVideoPlayer from "@/components/AppleVideoPlayer";
 import UserMenu from "@/components/UserMenu";
 import { useSearch } from "@/context/SearchContext";
@@ -90,6 +89,7 @@ export default function Home() {
   const { search } = useSearch();
   const [selected, setSelected] = useState<Video | null>(null);
   const [playing, setPlaying] = useState<Video | null>(null);
+  const [gateVideo, setGateVideo] = useState<Video | null>(null);
   const [activeVideoId, setActiveVideoId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState("Home");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
@@ -241,7 +241,11 @@ export default function Home() {
   };
 
   const handleInstantPlay = (video: Video) => {
-    setSelected(null); 
+    setSelected(null);
+    if (!user) {
+      setGateVideo(video);
+      return;
+    }
     setPlaying(video);
   };
 
@@ -592,7 +596,8 @@ export default function Home() {
         {selected && <DetailModal item={selected} onClose={() => setSelected(null)} onPlay={handleInstantPlay} creators={creators} />}
       </AnimatePresence>
 
-      {playing && (
+      {gateVideo && <AuthPlaybackGate onClose={() => setGateVideo(null)} videoTitle={gateVideo.title} />}
+        {playing && (
         <AppleVideoPlayer
           src={playing.videoUrl ?? playing.bitchuteUrl ?? ""}
           title={playing.title}
