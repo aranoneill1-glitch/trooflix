@@ -67,7 +67,7 @@ export default function ShortsFeedPage() {
   return (
     <main className="h-[100dvh] w-full bg-black overflow-y-scroll snap-y snap-mandatory scrollbar-hide">
       {videos.map((video) => {
-        const creator = creators.find((c) => c.id === video.creatorId) || null;
+        const creator = creators.find((c) => String(c.id) === String(video.creatorId)) || null;
         return (
           <VideoShort
             key={video.id}
@@ -117,8 +117,10 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
     getCachedUser().then((u: any) => {
       if (u) {
         setUser(u);
-        if (creator?.id) {
-          fetch(`/api/follows?creator_id=${creator.id}&user_id=${u.id}`)
+        const rawId = creator?.id ?? (video as any).creatorId ?? (video as any).uploaderUserId;
+        const checkId = Number(rawId);
+        if (checkId && !isNaN(checkId)) {
+          fetch(`/api/follows?creator_id=${checkId}&user_id=${u.id}`)
             .then(r => r.json())
             .then(d => setIsFollowing(d.isFollowing || false))
             .catch(() => {});
@@ -131,20 +133,38 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
     e.preventDefault();
     e.stopPropagation();
     if (!user) return alert("Please log in to follow creators.");
-    if (!creator?.id || isSubmittingFollow) return;
+    if (isSubmittingFollow) return;
+
+    // Resolve numeric creator ID from multiple sources
+    const rawId = creator?.id ?? (video as any).creatorId ?? (video as any).uploaderUserId;
+    const targetId = Number(rawId);
+    
+    console.log("DEBUG Shorts Follow: creator =", creator, "| video.creatorId =", (video as any).creatorId, "| resolved targetId =", targetId);
+
+    if (!targetId || isNaN(targetId)) {
+      alert("Could not identify the creator for this video. Creator ID is missing.");
+      return;
+    }
 
     setIsSubmittingFollow(true);
     const newIsFollowing = !isFollowing;
     setIsFollowing(newIsFollowing);
 
     try {
-      await fetch("/api/follows", {
+      const res = await fetch("/api/follows", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.id, creatorId: creator.id })
+        body: JSON.stringify({ userId: user.id, creatorId: targetId })
       });
-    } catch (err) {
-      setIsFollowing(!newIsFollowing); // rollback on error
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Follow failed");
+      }
+      console.log("DEBUG Shorts Follow: success, now following =", newIsFollowing);
+    } catch (err: any) {
+      console.error("DEBUG Shorts Follow: error =", err);
+      setIsFollowing(!newIsFollowing); // rollback
+      alert("Follow failed: " + (err.message || "Unknown error"));
     } finally {
       setIsSubmittingFollow(false);
     }
