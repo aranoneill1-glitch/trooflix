@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, CheckCircle2, Image as ImageIcon, Globe, Lock, Home, User, UploadCloud, MessageSquare, ChevronRight } from "lucide-react";
 import Link from "next/link";
@@ -31,7 +31,51 @@ function UploadContent() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadStatus, setUploadStatus] = useState("");
   const [step, setStep] = useState(1);
+  const [userTier, setUserTier] = useState<"free" | "plus" | "creator">("free");
+  const [videoDuration, setVideoDuration] = useState(0);
+  const [checkingTier, setCheckingTier] = useState(true);
   const totalSteps = isTweet ? 1 : isShort ? 3 : 5;
+
+  // Fetch user tier on mount
+  useEffect(() => {
+    getCachedUser().then(async (u) => {
+      if (!u) { setCheckingTier(false); return; }
+      try {
+        const r = await fetch("/api/profile?user_id=" + u.id);
+        const d = await r.json();
+        const tier = d.profile?.tier || "free";
+        setUserTier(tier === "creator" || tier === "plus" ? tier : "free");
+      } catch { setUserTier("free"); }
+      setCheckingTier(false);
+    });
+  }, []);
+
+  // Extract video duration when file is picked
+  useEffect(() => {
+    if (!mediaFile) { setVideoDuration(0); return; }
+    const vid = document.createElement("video");
+    vid.preload = "metadata";
+    vid.onloadedmetadata = () => {
+      const dur = isFinite(vid.duration) ? vid.duration : 0;
+      setVideoDuration(dur);
+      URL.revokeObjectURL(vid.src);
+    };
+    vid.onerror = () => setVideoDuration(0);
+    vid.src = URL.createObjectURL(mediaFile);
+  }, [mediaFile]);
+
+  // Hard gate: Redirect if this upload type isn't allowed for their tier
+  useEffect(() => {
+    if (checkingTier) return;
+    if (isTweet && userTier !== "creator") {
+      alert("Only Creator tier can post Tweets. Redirecting you to upgrade...");
+      router.push("/upgrade");
+    }
+    if (!isShort && !isTweet && userTier !== "creator") {
+      alert("Only Creator tier can upload long-form videos. Redirecting you to upgrade...");
+      router.push("/upgrade");
+    }
+  }, [userTier, isShort, isTweet, checkingTier, router]);
 
   const uploadToSupabase = async (file: File, label: string) => {
     if (file.size === 0) throw new Error(label + " is 0 bytes. On iPhone, wait for iCloud download first.");
@@ -49,6 +93,10 @@ function UploadContent() {
     if (step === 1) {
       if (!isTweet && !mediaFile) return alert("Please select a video file.");
       if (isTweet && !description.trim()) return alert("Please write your tweet.");
+      // Free tier short must be under 3 minutes
+      if (isShort && userTier === "free" && videoDuration > 180) {
+        return alert("Free accounts can only upload Shorts up to 3 minutes long. Upgrade to Plus for unlimited Shorts length.");
+      }
     }
     if (step === 2) {
       if (isShort && !title.trim()) return alert("Please enter a title.");
@@ -103,6 +151,7 @@ function UploadContent() {
           category: isTweet ? "Tweets" : (isShort ? "Shorts" : category),
           visibility: isTweet ? "public" : (isShort ? "public" : visibility),
           feed_visible: isTweet ? true : (isShort ? false : shareToFeed),
+          duration: videoDuration > 0 ? Math.floor(videoDuration / 60) + ":" + String(Math.floor(videoDuration % 60)).padStart(2, "0") : "",
         }),
       });
 
