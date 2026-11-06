@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Play, Sparkles, Video, Check, Crown, Clock, Users, List, Heart, Star, History, Mic, FolderHeart, Download, ArrowRight, ChevronRight } from "lucide-react";
+import { Play, Sparkles, Video, Check, Crown, Clock, Users, List, Heart, Star, History, Mic, FolderHeart, Download, ArrowRight, Package, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getCachedUser } from "@/lib/cache";
 import TopBar from "@/components/TopBar";
@@ -46,6 +46,7 @@ export default function PlusPage() {
   const [progressList, setProgressList] = useState<any[]>([]);
   const [watchlistCount, setWatchlistCount] = useState(0);
   const [wishlistItems, setWishlistItems] = useState<any[]>([]);
+  const [myOrders, setMyOrders] = useState<any[]>([]);
   const [dashboardLoading, setDashboardLoading] = useState(true);
   const [playing, setPlaying] = useState<Video | null>(null);
 
@@ -253,6 +254,44 @@ export default function PlusPage() {
 
             <div className="max-w-7xl mx-auto space-y-10">
               
+              {/* MY ORDERS ROW */}
+              {myOrders.length > 0 && (
+                <section>
+                  <div className="flex items-center justify-between px-5 md:px-12 mb-4">
+                    <h2 className="text-xl md:text-2xl font-black tracking-tight flex items-center gap-2">
+                      My Orders <Package size={20} className="text-[#E53945]" />
+                    </h2>
+                    <Link href="/orders" className="text-xs font-bold text-white/50 hover:text-white transition flex items-center gap-1">See All <ChevronRight size={14} /></Link>
+                  </div>
+                  <div className="flex gap-4 overflow-x-auto scrollbar-hide px-5 md:px-12 pb-4">
+                    {myOrders.slice(0, 10).map((order) => (
+                      <div key={order.id} className="flex flex-col w-[160px] md:w-[220px] shrink-0 bg-[#1c1c1e] border border-white/10 rounded-2xl overflow-hidden shadow-lg">
+                        <div className="relative aspect-square w-full bg-black/50">
+                          <img src={order.product?.image_url} alt={order.product?.name} className="w-full h-full object-cover" />
+                          <div className="absolute top-2 right-2">
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${order.status === "shipped" ? "bg-green-500/90 text-white" : "bg-yellow-500/90 text-black"}`}>
+                              {order.status}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="p-3">
+                          <p className="text-[10px] text-white/40 font-mono mb-1">{order.order_code}</p>
+                          <p className="text-sm font-bold text-white truncate">{order.product?.name}</p>
+                          <p className="text-xs text-[#1DB954] font-bold mb-2">${(order.amount_cents / 100).toFixed(2)}</p>
+                          
+                          {order.status === "shipped" && order.tracking_number && (
+                            <div className="mt-2 pt-2 border-t border-white/10">
+                              <p className="text-[10px] text-white/50">Tracking:</p>
+                              <p className="text-[10px] font-mono text-white/80 truncate">{order.shipping_carrier} - {order.tracking_number}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
               {/* WISHLIST ROW */}
               {wishlistItems.length > 0 && (
                 <section>
