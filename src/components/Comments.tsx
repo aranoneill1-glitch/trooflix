@@ -422,7 +422,7 @@ export default function Comments({ videoId, onMetaChange }: { videoId: number, o
                     <div className="flex items-center gap-2 text-sm flex-wrap">
                       <span className="font-semibold inline-flex items-center gap-1">
                         <span>@{username(c.user_email, c.display_name)}</span>
-                        {c.is_verified && <VerifiedBadge size={12} variant={(c as any).tier === "podcaster" ? "gold" : "red"} />}
+                        {(c as any).verification_tick && (c as any).verification_tick !== "none" && <VerifiedBadge size={12} variant={(c as any).verification_tick as any} />}
                       </span>
                       <span className="text-white/50 text-xs">
                         {timeAgo(c.created_at)}

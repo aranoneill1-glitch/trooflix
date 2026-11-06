@@ -46,12 +46,12 @@ export async function GET(req: Request) {
     const userIds = Array.from(new Set((comments || []).map((c: any) => c.user_id)));
     const profiles: Record<string, any> = {};
     if (userIds.length > 0) {
-      const { data: profs } = await supabaseAdmin.from("profiles").select("user_id, avatar_url, display_name, is_verified").in("user_id", userIds);
-      (profs || []).forEach((p: any) => { profiles[p.user_id] = { avatar_url: p.avatar_url || null, display_name: p.display_name || null, is_verified: !!p.is_verified }; });
+      const { data: profs } = await supabaseAdmin.from("profiles").select("user_id, avatar_url, display_name, is_verified, verification_tick").in("user_id", userIds);
+      (profs || []).forEach((p: any) => { profiles[p.user_id] = { avatar_url: p.avatar_url || null, display_name: p.display_name || null, is_verified: !!p.is_verified, verification_tick: p.verification_tick || "none" }; });
     }
 
     const withCounts = (comments || []).map((c: any) => ({
-      ...c, like_count: likeCounts[c.id] || 0, avatar_url: profiles[c.user_id]?.avatar_url || null, display_name: profiles[c.user_id]?.display_name || null, is_verified: profiles[c.user_id]?.is_verified ?? false,
+      ...c, like_count: likeCounts[c.id] || 0, avatar_url: profiles[c.user_id]?.avatar_url || null, display_name: profiles[c.user_id]?.display_name || null, is_verified: profiles[c.user_id]?.is_verified ?? false, verification_tick: profiles[c.user_id]?.verification_tick || "none",
     }));
 
     if (sort === "oldest") withCounts.sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
@@ -100,11 +100,12 @@ export async function POST(req: Request) {
 
     let enriched: any = { ...data, like_count: 0 };
     try {
-      const { data: prof } = await supabaseAdmin.from("profiles").select("avatar_url, display_name, is_verified").eq("user_id", userId).maybeSingle();
+      const { data: prof } = await supabaseAdmin.from("profiles").select("avatar_url, display_name, is_verified, verification_tick").eq("user_id", userId).maybeSingle();
       if (prof) {
         enriched.avatar_url = prof.avatar_url || null;
         enriched.display_name = prof.display_name || null;
         enriched.is_verified = !!prof.is_verified;
+        enriched.verification_tick = prof.verification_tick || "none";
       }
     } catch {}
     return NextResponse.json({ ok: true, comment: enriched });

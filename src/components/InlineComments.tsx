@@ -20,6 +20,7 @@ type Comment = {
   user_username?: string;
   user_avatar?: string;
   user_is_verified?: boolean;
+  user_verification_tick?: string;
   user_tier?: string;
 };
 
@@ -73,6 +74,7 @@ export default function InlineComments({ videoId }: { videoId: number }) {
         user_username: profiles[c.user_id]?.username || "",
         user_avatar: profiles[c.user_id]?.avatar_url || "",
         user_is_verified: profiles[c.user_id]?.is_verified || false,
+        user_verification_tick: profiles[c.user_id]?.verification_tick || "none",
         user_tier: profiles[c.user_id]?.tier || "user",
       }));
 
@@ -211,7 +213,7 @@ export default function InlineComments({ videoId }: { videoId: number }) {
           <div className="flex items-baseline gap-2 mb-1">
             <Link href={c.user_username ? `/u/${c.user_username}` : "#"} className="text-sm font-bold hover:underline inline-flex items-center gap-1">
               {c.user_username ? `@${c.user_username}` : c.user_display_name}
-              {c.user_is_verified && <VerifiedBadge size={12} variant={c.user_tier === "podcaster" ? "gold" : "red"} />}
+              {c.user_verification_tick && c.user_verification_tick !== "none" && <VerifiedBadge size={12} variant={c.user_verification_tick as any} />}
             </Link>
             <span className="text-xs text-white/40">{timeAgo(c.created_at)}</span>
           </div>
