@@ -171,7 +171,7 @@ export default function MyTrooFlixContent({ embedded = false }: { embedded?: boo
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0303] flex items-center justify-center">
+      <div className={`${embedded ? "" : "min-h-screen bg-[#0a0303]"} flex items-center justify-center py-20`}>
         <div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" />
       </div>
     );
@@ -182,7 +182,7 @@ export default function MyTrooFlixContent({ embedded = false }: { embedded?: boo
   // ==========================================
   if (user) {
     return (
-      <main className="min-h-screen bg-[#0a0303] text-white pb-32 font-sans selection:bg-[#E53945]/30">
+      <main className={`${embedded ? "bg-transparent pb-4" : "min-h-screen bg-[#0a0303] pb-32"} text-white font-sans selection:bg-[#E53945]/30`}>
         {!embedded && <div className="relative z-[100]"><TopBar /></div>}
 
         {dashboardLoading ? (
