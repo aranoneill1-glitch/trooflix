@@ -417,7 +417,7 @@ function CreatorDashboardContent() {
               {activeContentTab === "Shop" && (
                 <div className="w-full">
                   {merch.length === 0 ? (
-                    <div className="text-center py-12 bg-[#1c1c1e] border border-white/5 rounded-2xl"><ShoppingBag size={32} className="mx-auto text-white/20 mb-3" /><p className="text-white/50 text-sm">No products available yet.</p></div>
+                    <div className="text-center py-12 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl"><ShoppingBag size={32} className="mx-auto text-white/20 mb-3" /><p className="text-white/50 text-sm">No products available yet.</p></div>
                   ) : contentView === "grid" ? (
                     <div className="grid grid-cols-3 gap-4">
                       {merch.map((item) => (
@@ -427,7 +427,7 @@ function CreatorDashboardContent() {
               onPointerUp={cancelPress}
               onPointerLeave={cancelPress}
               onContextMenu={(e) => { e.preventDefault(); setSelectedMerchItem(item); }}
-              className="bg-[#1c1c1e] border border-white/10 rounded-xl overflow-hidden group cursor-pointer flex flex-col relative" 
+              className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden group cursor-pointer flex flex-col relative shadow-lg" 
               style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none" }}
             >
               <div className="relative aspect-square pointer-events-none">
@@ -482,7 +482,7 @@ function CreatorDashboardContent() {
                   ) : contentView === "grid" ? (
                     <div className="grid grid-cols-3 gap-4">
                       {filteredVideos.map((video) => (
-                        <div key={video.id} className="bg-[#1c1c1e] border border-white/10 rounded-2xl overflow-hidden group cursor-pointer">
+                        <div key={video.id} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden group cursor-pointer shadow-lg">
                           <div className="relative aspect-square">
                             <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                             <div className={`absolute top-2 left-2 text-white text-[10px] font-bold px-2 py-0.5 rounded-sm ${video.type?.toLowerCase() === 'podcast' ? 'bg-blue-500' : 'bg-[#E53945]'}`}>{video.type || "VIDEO"}</div>
@@ -494,7 +494,7 @@ function CreatorDashboardContent() {
                   ) : (
                     <div className="flex flex-col gap-3">
                       {filteredVideos.map((video) => (
-                        <div key={video.id} className="flex items-center gap-4 bg-[#1c1c1e] border border-white/10 rounded-2xl p-3 cursor-pointer hover:bg-[#242426] transition-colors">
+                        <div key={video.id} className="flex items-center gap-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-3 cursor-pointer hover:bg-white/10 transition-colors shadow-lg">
                           <div className="w-24 h-16 rounded-lg overflow-hidden shrink-0 relative"><img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover" /></div>
                           <div className="flex-1 min-w-0 text-left"><h3 className="text-sm font-bold text-white truncate">{video.title}</h3></div>
                         </div>
