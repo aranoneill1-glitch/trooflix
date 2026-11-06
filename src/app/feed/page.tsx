@@ -117,17 +117,58 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
     getCachedUser().then((u: any) => {
       if (u) {
         setUser(u);
-        const rawId = creator?.id ?? (video as any).creatorId ?? (video as any).uploaderUserId;
-        const checkId = Number(rawId);
-        if (checkId && !isNaN(checkId)) {
-          fetch(`/api/follows?creator_id=${checkId}&user_id=${u.id}`)
-            .then(r => r.json())
-            .then(d => setIsFollowing(d.isFollowing || false))
-            .catch(() => {});
-        }
+        (async () => {
+          let checkId = Number(creator?.id ?? 0);
+          if (!checkId || isNaN(checkId)) {
+            const vidCreator = Number((video as any).creatorId);
+            if ((video as any).creatorId && !isNaN(vidCreator)) {
+              checkId = vidCreator;
+            } else if ((video as any).uploaderUserId) {
+              try {
+                const r = await fetch("/api/creators");
+                const list = await r.json();
+                const match = (Array.isArray(list) ? list : []).find(
+                  (c: any) => String(c.user_id) === String((video as any).uploaderUserId) || String(c.ownerUserId) === String((video as any).uploaderUserId)
+                );
+                if (match?.id) checkId = Number(match.id);
+              } catch {}
+            }
+          }
+          if (checkId && !isNaN(checkId)) {
+            fetch(`/api/follows?creator_id=${checkId}&user_id=${u.id}`)
+              .then(r => r.json())
+              .then(d => setIsFollowing(d.isFollowing || false))
+              .catch(() => {});
+          }
+        })();
       }
     });
   }, [creator?.id]);
+
+  const resolveCreatorId = async (): Promise<number | null> => {
+    // 1. If we already have the numeric creator from the creators list, use it
+    if (creator?.id) return Number(creator.id);
+
+    // 2. If video.creatorId is a real number, use it
+    const vidCreator = Number((video as any).creatorId);
+    if (video.creatorId && !isNaN(vidCreator)) return vidCreator;
+
+    // 3. Otherwise, look up the creator by their UUID (uploaderUserId)
+    const uploaderUuid = (video as any).uploaderUserId;
+    if (!uploaderUuid) return null;
+
+    try {
+      const res = await fetch("/api/creators");
+      const list = await res.json();
+      const match = (Array.isArray(list) ? list : []).find(
+        (c: any) => String(c.user_id) === String(uploaderUuid) || String(c.ownerUserId) === String(uploaderUuid)
+      );
+      if (match?.id) return Number(match.id);
+    } catch (err) {
+      console.error("Creator lookup failed:", err);
+    }
+    return null;
+  };
 
   const handleFollow = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -135,22 +176,19 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
     if (!user) return alert("Please log in to follow creators.");
     if (isSubmittingFollow) return;
 
-    // Resolve numeric creator ID from multiple sources
-    const rawId = creator?.id ?? (video as any).creatorId ?? (video as any).uploaderUserId;
-    const targetId = Number(rawId);
-    
-    console.log("DEBUG Shorts Follow: creator =", creator, "| video.creatorId =", (video as any).creatorId, "| resolved targetId =", targetId);
-
-    if (!targetId || isNaN(targetId)) {
-      alert("Could not identify the creator for this video. Creator ID is missing.");
-      return;
-    }
-
     setIsSubmittingFollow(true);
-    const newIsFollowing = !isFollowing;
-    setIsFollowing(newIsFollowing);
-
     try {
+      const targetId = await resolveCreatorId();
+      console.log("DEBUG Shorts Follow: resolved creatorId =", targetId);
+
+      if (!targetId || isNaN(targetId)) {
+        alert("This creator doesn't have a followable profile yet.");
+        return;
+      }
+
+      const newIsFollowing = !isFollowing;
+      setIsFollowing(newIsFollowing);
+
       const res = await fetch("/api/follows", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -160,10 +198,10 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
         const err = await res.json().catch(() => ({}));
         throw new Error(err.error || "Follow failed");
       }
-      console.log("DEBUG Shorts Follow: success, now following =", newIsFollowing);
+      console.log("DEBUG Shorts Follow: success, following =", newIsFollowing);
     } catch (err: any) {
       console.error("DEBUG Shorts Follow: error =", err);
-      setIsFollowing(!newIsFollowing); // rollback
+      setIsFollowing(!isFollowing); // rollback
       alert("Follow failed: " + (err.message || "Unknown error"));
     } finally {
       setIsSubmittingFollow(false);
