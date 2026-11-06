@@ -22,7 +22,12 @@ export async function POST(req: Request) {
     if (!products || products.length === 0) return NextResponse.json({ error: "Products not found" }, { status: 404 });
 
     const { data: userData } = await supabaseAdmin.auth.admin.getUserById(userId);
-    const userEmail = userData?.user?.email;
+    let userEmail = userData?.user?.email;
+    
+    // Only pass the email to Stripe if it looks valid (contains @ and .)
+    if (userEmail && (!userEmail.includes("@") || !userEmail.includes("."))) {
+      userEmail = undefined;
+    }
 
     const baseUrl = process.env.NEXT_PUBLIC_URL || "https://trooflixtv.com";
 
