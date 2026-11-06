@@ -116,6 +116,31 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
   const creatorSlug = creator?.slug || "";
   const creatorInitial = creatorName.charAt(0).toUpperCase();
 
+  // Fallback: If KV doesn't have this creator, fetch from Supabase profiles
+  const [fallbackPhoto, setFallbackPhoto] = useState("");
+  const [fallbackName, setFallbackName] = useState("");
+  const [fallbackSlug, setFallbackSlug] = useState("");
+
+  useEffect(() => {
+    if (creatorPhoto) return;
+    const userId = (video as any).uploaderUserId || (video as any).creatorId;
+    if (!userId) return;
+    fetch(`/api/profile?user_id=${userId}`)
+      .then(r => r.json())
+      .then(d => {
+        if (d.profile) {
+          if (d.profile.avatar_url) setFallbackPhoto(d.profile.avatar_url);
+          if (d.profile.display_name || d.profile.username) setFallbackName(d.profile.display_name || d.profile.username);
+          if (d.profile.username) setFallbackSlug(d.profile.username);
+        }
+      })
+      .catch(() => {});
+  }, [creatorPhoto, video]);
+
+  const finalPhoto = creatorPhoto || fallbackPhoto;
+  const finalName = creator?.name || fallbackName || "Creator";
+  const finalSlug = creatorSlug || fallbackSlug;
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -242,54 +267,48 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
 
       {/* TOP LEFT: CREATOR AVATAR + NAME */}
       <Link
-        href={creatorSlug ? `/profile/${creatorSlug}` : `/profile/${video.uploaderUserId || "creator"}`}
+        href={finalSlug ? `/profile/${finalSlug}` : `/profile/${video.uploaderUserId || "creator"}`}
         className="absolute top-12 left-4 z-30 flex items-center gap-3 group"
       >
-        <div className="w-11 h-11 rounded-full overflow-hidden bg-[#1c1c1e] shrink-0">
-          {creatorPhoto ? (
-            <img src={creatorPhoto} alt={creatorName} className="w-full h-full object-cover" />
+        <div className="w-11 h-11 rounded-full overflow-hidden bg-[#1c1c1e] shrink-0 border border-white/20">
+          {finalPhoto ? (
+            <img src={finalPhoto} alt={finalName} className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-base font-black text-white bg-gradient-to-br from-[#E53945] to-[#8a1e26]">
-              {creatorInitial}
+              {finalName.charAt(0).toUpperCase()}
             </div>
           )}
         </div>
         <span className="text-white text-sm font-bold drop-shadow-lg group-hover:text-[#E53945] transition">
-          {creatorName}
+          {finalName}
         </span>
       </Link>
 
       {/* RIGHT SIDE ACTION BUTTONS */}
-      <div className="absolute right-3 bottom-[110px] flex flex-col items-center gap-6 z-30">
+      <div className="absolute right-3 bottom-[110px] flex flex-col items-center gap-5 z-30">
         
-        <div className="flex flex-col items-center gap-1 text-white">
-          <Eye size={22} />
+        <div className="flex flex-col items-center gap-1 text-white drop-shadow-lg">
+          <Eye size={26} />
           <span className="text-[11px] font-bold">{(video as any).views || 0}</span>
         </div>
 
-        <button onClick={onToggleMute} className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/60 transition">
-          {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
+        <button onClick={onToggleMute} className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
+          {isMuted ? <VolumeX size={28} /> : <Volume2 size={28} />}
         </button>
 
-        <div className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/60 transition">
-          <LikeButton videoId={video.id} size={26} />
+        <div className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
+          <LikeButton videoId={video.id} size={28} stacked />
         </div>
 
-        <button onClick={onOpenComments} className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/60 transition">
-          <MessageCircle size={24} />
+        <button onClick={onOpenComments} className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
+          <MessageCircle size={28} />
         </button>
 
       </div>
 
       {/* BOTTOM TEXT INFO */}
       <div className="absolute left-4 right-[80px] bottom-[132px] z-30 flex flex-col items-start pointer-events-none">
-        <h2 className="text-white text-[22px] font-bold leading-tight mb-1.5 drop-shadow-lg line-clamp-2">
-          {video.title}
-        </h2>
-        <p className="text-white/90 text-[13px] font-semibold mb-1 drop-shadow-md">
-          {video.type || "Clip"} • {video.category || "Trending"}
-        </p>
-        
+
         <div 
           className="text-white/80 text-[14px] drop-shadow-md leading-snug cursor-pointer pointer-events-auto"
           onClick={toggleExpand}
