@@ -284,7 +284,7 @@ function CreatorDashboardContent() {
           
           {(true) && (
           <div className="flex items-center justify-center mb-6">
-            <div className="flex bg-[#1c1c1e] p-1 rounded-full border border-white/10 shadow-lg">
+            <div className="flex bg-white/10 backdrop-blur-xl p-1 rounded-full border border-white/20 shadow-2xl">
               <button onClick={() => { setIsDashboardView(false); setShowMyTrooFlix(false); }} className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${!isDashboardView && !showMyTrooFlix ? "bg-white text-black shadow-md" : "text-white/50 hover:text-white"}`}><Eye size={16} /> Profile</button>
               <button onClick={() => { setIsDashboardView(true); setShowMyTrooFlix(false); }} className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${isDashboardView && !showMyTrooFlix ? "bg-white text-black shadow-md" : "text-white/50 hover:text-white"}`}><LayoutDashboard size={16} /> Dashboard</button>
               <button onClick={() => { setShowMyTrooFlix(true); setIsDashboardView(false); }} className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${showMyTrooFlix ? "bg-white text-black shadow-md" : "text-white/50 hover:text-white"}`}><Play size={16} /> MyTrooFlix</button>
@@ -328,9 +328,7 @@ function CreatorDashboardContent() {
                   <div className="flex items-center justify-between mb-1">
                     <h1 className="text-2xl md:text-3xl font-black flex items-center gap-2 text-white">{displayName} {profile?.is_verified && <VerifiedBadge size={20} variant="gold" />}</h1>
                     
-                    <Link href="/creator-dashboard/live" className="shrink-0 flex items-center gap-1.5 bg-[#E53945] text-white font-bold px-5 py-1.5 rounded-full hover:bg-[#d12e39] transition shadow-lg shadow-[#E53945]/20 text-sm">
-                      <Radio size={16} /> Go Live
-                    </Link>
+                    
                   </div>
                   <p className="text-sm md:text-base text-white/50 mb-3">@{username}</p>
                   
@@ -343,9 +341,9 @@ function CreatorDashboardContent() {
               </div>
 
               <div className="flex gap-3 mb-8 w-full">
-                <button onClick={() => setShowAddContentMenu(true)} className="flex-1 flex items-center justify-center gap-2 bg-[#E53945] text-white font-bold py-3 rounded-full hover:bg-[#d12e39] transition shadow-lg shadow-[#E53945]/20"><Plus size={18} /> Add Content</button>
-                <Link href="/creator-dashboard/live" className="flex-1 flex items-center justify-center gap-2 bg-[#E53945] hover:bg-[#d12e39] text-white font-bold py-3 rounded-full transition shadow-lg shadow-[#E53945]/20">
-                  <Radio size={18} /> Go Live
+                <button onClick={() => setShowAddContentMenu(true)} className="flex-1 flex items-center justify-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-white font-bold py-2.5 rounded-full hover:bg-white/20 transition shadow-lg"><Plus size={16} /> Add Content</button>
+                <Link href="/creator-dashboard/live" className="flex-1 flex items-center justify-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-white font-bold py-2.5 rounded-full hover:bg-white/20 transition shadow-lg">
+                  <Radio size={16} /> Go Live
                 </Link>
               </div>
 
