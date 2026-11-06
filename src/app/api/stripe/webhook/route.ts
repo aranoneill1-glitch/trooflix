@@ -79,10 +79,14 @@ export async function POST(req: Request) {
         const orderCode = "TRF-" + Math.floor(100000 + Math.random() * 900000);
 
         for (const item of items) {
-          const { data: product } = await supabaseAdmin.from("products").select("creator_id, price_cents").eq("id", item.id).maybeSingle();
+          const { data: product } = await supabaseAdmin.from("products").select("creator_id, price_cents, inventory_count").eq("id", item.id).maybeSingle();
           if (!product) continue;
           
           lastCreatorId = product.creator_id;
+
+          // Deduct inventory
+          const newInventory = Math.max(0, (product.inventory_count || 0) - item.quantity);
+          await supabaseAdmin.from("products").update({ inventory_count: newInventory }).eq("id", item.id);
 
           await supabaseAdmin.from("merch_orders").insert({
             buyer_user_id: userId,
