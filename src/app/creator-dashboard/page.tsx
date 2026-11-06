@@ -269,11 +269,11 @@ function CreatorDashboardContent() {
   };
 
   return (
-    <main className={`min-h-screen text-white pb-32 font-sans selection:bg-[#E53945]/30 relative overflow-hidden ${!isDashboardView && profile?.backdrop_url ? "bg-transparent" : "bg-[#09090B]"}`}>
+    <main className={`min-h-screen text-white pb-32 font-sans selection:bg-[#E53945]/30 relative overflow-hidden ${profile?.backdrop_url ? "bg-transparent" : "bg-[#09090B]"}`}>
       
-      {!isDashboardView && (
+      {profile?.backdrop_url && (
         <div className="fixed inset-0 z-0" style={bgStyle}>
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-md" />
         </div>
       )}
 
