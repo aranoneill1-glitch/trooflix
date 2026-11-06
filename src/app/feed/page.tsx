@@ -32,7 +32,7 @@ export default function ShortsFeedPage() {
   const [videos, setVideos] = useState<Video[]>([]);
   const [creators, setCreators] = useState<Creator[]>([]);
   const [loading, setLoading] = useState(true);
-  const [mutedVideos, setMutedVideos] = useState<Record<number, boolean>>({});
+  const [isMuted, setIsMuted] = useState(true);
   const [commentSheetVideoId, setCommentSheetVideoId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -51,8 +51,8 @@ export default function ShortsFeedPage() {
     }).catch(() => setLoading(false));
   }, []);
 
-  const toggleMute = (id: number, currentMuted: boolean) => {
-    setMutedVideos(prev => ({ ...prev, [id]: !currentMuted }));
+  const toggleMute = () => {
+    setIsMuted(prev => !prev);
   };
 
   if (loading) {
@@ -72,8 +72,8 @@ export default function ShortsFeedPage() {
             key={video.id}
             video={video}
             creator={creator}
-            isMuted={mutedVideos[video.id] ?? true}
-            onToggleMute={() => toggleMute(video.id, mutedVideos[video.id] ?? true)}
+            isMuted={isMuted}
+            onToggleMute={toggleMute}
             onOpenComments={() => setCommentSheetVideoId(video.id)}
           />
         );
@@ -285,7 +285,7 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
 
 
             {/* BOTTOM LEFT: DESCRIPTION, AVATAR, BUTTONS */}
-      <div className="absolute left-4 right-[80px] bottom-[95px] z-30 flex flex-col items-start gap-3 pointer-events-none">
+      <div className="absolute left-4 right-[80px] bottom-[125px] z-30 flex flex-col items-start gap-3 pointer-events-none">
 
         {/* 1. Description */}
         <div 
