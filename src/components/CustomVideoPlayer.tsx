@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import PaywallModal from "@/components/PaywallModal";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Airplay, Volume2, VolumeX, RotateCcw, RotateCw, Play, Pause } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -9,9 +10,11 @@ interface PlayerProps {
   src: string;
   poster?: string;
   onClose?: () => void;
+  userTier?: "free" | "plus" | "creator";
+  isLongForm?: boolean;
 }
 
-export default function CustomVideoPlayer({ src, poster, onClose }: PlayerProps) {
+export default function CustomVideoPlayer({ src, poster, onClose, userTier = "free", isLongForm = true }: PlayerProps) {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement>(null);
   
@@ -24,6 +27,8 @@ export default function CustomVideoPlayer({ src, poster, onClose }: PlayerProps)
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
   const [isScrubbing, setIsScrubbing] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [hasHitLimit, setHasHitLimit] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
   
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -131,6 +136,21 @@ export default function CustomVideoPlayer({ src, poster, onClose }: PlayerProps)
         onVolumeChange={() => setIsMuted(videoRef.current?.muted || false)}
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
+        onTimeUpdate={() => {
+          if (!videoRef.current) return;
+          if (userTier !== "free" || !isLongForm) return;
+          const t = videoRef.current.currentTime;
+          if (t >= 180) {
+            videoRef.current.pause();
+            if (!hasHitLimit) {
+              try { videoRef.current.currentTime = 180; } catch {}
+              setHasHitLimit(true);
+              setShowPaywall(true);
+            }
+          } else if (t < 175 && hasHitLimit) {
+            setHasHitLimit(false);
+          }
+        }}
         className="w-full h-full object-contain"
       />
 
@@ -218,6 +238,13 @@ export default function CustomVideoPlayer({ src, poster, onClose }: PlayerProps)
           </motion.div>
         )}
       </AnimatePresence>
+      {showPaywall && (
+        <PaywallModal
+          onClose={() => setShowPaywall(false)}
+          onContinue={() => setShowPaywall(false)}
+          currentTime={currentTime}
+        />
+      )}
     </div>
   );
 }
