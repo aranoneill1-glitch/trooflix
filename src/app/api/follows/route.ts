@@ -27,7 +27,8 @@ export async function GET(req: Request) {
         isFollowing = !!followCheck;
       }
       
-      return NextResponse.json({ count: count || 0, isFollowing });
+      const { count: subs } = await supabaseAdmin.from("creator_subscriptions").select("*", { count: "exact", head: true }).eq("creator_id", targetId);
+      return NextResponse.json({ count: count || 0, isFollowing, subscriberCount: subs || 0 });
     }
 
     // Mode 2: Get list of creator IDs the user follows
@@ -47,7 +48,10 @@ export async function POST(req: Request) {
     if (!userId || !creatorId) return NextResponse.json({ error: "userId and creatorId required" }, { status: 400 });
 
     const targetId = Number(creatorId);
-    if (isNaN(targetId)) return NextResponse.json({ error: "Invalid creatorId. Must be a number." }, { status: 400 });
+    if (isNaN(targetId)) {
+      console.error("Invalid creatorId received:", creatorId);
+      return NextResponse.json({ error: "Invalid creatorId. Must be a number." }, { status: 400 });
+    }
 
     const { data: existing } = await supabaseAdmin.from("follows").select("id").eq("follower_id", userId).eq("creator_id", targetId).maybeSingle();
 

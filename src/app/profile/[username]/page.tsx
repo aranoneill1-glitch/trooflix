@@ -44,6 +44,7 @@ export default function PublicProfilePage() {
   const [followerCount, setFollowerCount] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
   const [resolvedCreatorId, setResolvedCreatorId] = useState<number | null>(null);
+  const [isSubmittingFollow, setIsSubmittingFollow] = useState(false);
   const [subscriberCount, setSubscriberCount] = useState(0);
   const pressTimer = useRef<NodeJS.Timeout | null>(null);
 
@@ -124,8 +125,11 @@ export default function PublicProfilePage() {
     return num.toString();
   };
 
-  const handleFollow = async () => {
-    if (!profile) return;
+  const handleFollow = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!profile || isSubmittingFollow) return;
+    setIsSubmittingFollow(true);
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return window.location.href = "/login";
@@ -159,6 +163,8 @@ export default function PublicProfilePage() {
       setIsFollowing(!newIsFollowing);
       setFollowerCount((prev: number) => prev + (newIsFollowing ? -1 : 1));
       alert("Follow failed: " + (e.message || "Unknown error"));
+    } finally {
+      setIsSubmittingFollow(false);
     }
   };
 
@@ -299,7 +305,8 @@ export default function PublicProfilePage() {
                   {/* FOLLOW BUTTON (Top Right) */}
                   <button 
                     onClick={handleFollow}
-                    className={`shrink-0 flex items-center justify-center gap-1.5 font-bold px-5 py-1.5 rounded-full transition shadow-lg text-sm ${isFollowing ? "bg-white/10 text-white border border-white/20" : "bg-white text-black hover:bg-gray-200"}`}
+                    disabled={isSubmittingFollow}
+                    className={`shrink-0 flex items-center justify-center gap-1.5 font-bold px-5 py-1.5 rounded-full transition shadow-lg text-sm ${isSubmittingFollow ? "opacity-50 cursor-wait" : isFollowing ? "bg-white/10 text-white border border-white/20" : "bg-white text-black hover:bg-gray-200"}`}
                   >
                     <UserPlus size={16} /> {isFollowing ? "Following" : "Follow"}
                   </button>
