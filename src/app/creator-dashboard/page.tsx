@@ -39,11 +39,19 @@ function CreatorDashboardContent() {
 
   const userTier: "free" | "plus" | "creator" = (() => {
     if (!profile?.tier) return "free";
-    if ((profile.tier === "plus" || profile.tier === "creator") && profile.plus_expires_at) {
+    // Normalize legacy tier names
+    const raw = String(profile.tier).toLowerCase();
+    let normalized: "free" | "plus" | "creator";
+    if (raw === "creator" || raw === "podcaster" || raw === "pro") normalized = "creator";
+    else if (raw === "plus" || raw === "pass" || raw === "troopass") normalized = "plus";
+    else normalized = "free"; // "user", null, unknown → free
+    // Apply grace period expiry
+    if (normalized !== "free" && profile.plus_expires_at) {
       if (new Date(profile.plus_expires_at) < new Date()) return "free";
     }
-    return profile.tier as "free" | "plus" | "creator";
+    return normalized;
   })();
+  const isFreeTier = userTier === "free";
   const [loading, setLoading] = useState(true);
   const [isDashboardView, setIsDashboardView] = useState(false);
   const [showMyTrooFlix, setShowMyTrooFlix] = useState(false);
@@ -520,7 +528,7 @@ function CreatorDashboardContent() {
             </div>
           )}
 
-          {isDashboardView && !showMyTrooFlix && (
+          {isDashboardView && !showMyTrooFlix && !isFreeTier && (
             <div className="animate-in fade-in duration-300 space-y-8 max-w-4xl mx-auto">
               
               <section>
