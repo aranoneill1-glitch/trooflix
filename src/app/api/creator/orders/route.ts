@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient as createServerClient } from "@supabase/supabase-js";
 
-export const dynamic = "force-dynamic"; // <-- CRITICAL FIX
-
 const supabaseAdmin = createServerClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -10,11 +8,12 @@ const supabaseAdmin = createServerClient(
 );
 
 export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const creatorId = searchParams.get("creatorId");
-  if (!creatorId) return NextResponse.json({ orders: [] });
-
   try {
+    const { searchParams } = new URL(req.url);
+    const creatorId = searchParams.get("creatorId");
+    if (!creatorId) return NextResponse.json({ orders: [] });
+
+    // 1. Fetch the orders for this creator
     const { data: orders, error } = await supabaseAdmin
       .from("merch_orders")
       .select("*")
@@ -22,40 +21,48 @@ export async function GET(req: Request) {
       .order("created_at", { ascending: false });
 
     if (error) throw error;
+    if (!orders || orders.length === 0) return NextResponse.json({ orders: [] });
 
-    const productIds = [...new Set(orders?.map(o => o.product_id))];
+    // 2. Fetch the products to show the item names/images
+    const productIds = [...new Set(orders.map(o => o.product_id))];
     const { data: products } = await supabaseAdmin
       .from("products")
-      .select("*")
+      .select("id, name, image_url")
       .in("id", productIds);
 
-    const productsMap = new Map(products?.map(p => [p.id, p]) || []);
+    // 3. Merge them
+    const enrichedOrders = orders.map(order => {
+      const product = products?.find(p => p.id === order.product_id);
+      return {
+        ...order,
+        product_name: product?.name || "Unknown Item",
+        product_image: product?.image_url || "",
+      };
+    });
 
-    const enrichedOrders = orders?.map(o => ({
-      ...o,
-      order_code: `TRF-${String(o.id).padStart(6, '0')}`,
-      product: productsMap.get(o.product_id) || null
-    }));
-
-    return NextResponse.json({ orders: enrichedOrders || [] });
-  } catch (e) {
-    return NextResponse.json({ orders: [] });
+    return NextResponse.json({ orders: enrichedOrders });
+  } catch (e: any) {
+    console.error("Fetch orders error:", e);
+    return NextResponse.json({ error: String(e) }, { status: 500 });
   }
 }
 
 export async function PATCH(req: Request) {
   try {
-    const { orderId, status, tracking_number, shipping_carrier } = await req.json();
-    if (!orderId || !status) return NextResponse.json({ error: "Missing data" }, { status: 400 });
+    const { orderId, trackingNumber } = await req.json();
+    if (!orderId || !trackingNumber) return NextResponse.json({ error: "Missing data" }, { status: 400 });
 
     const { error } = await supabaseAdmin
       .from("merch_orders")
-      .update({ status, tracking_number, shipping_carrier })
-      .eq("id", Number(orderId));
+      .update({ 
+        tracking_number: trackingNumber,
+        status: "shipped"
+      })
+      .eq("id", orderId);
 
     if (error) throw error;
-    return NextResponse.json({ ok: true });
-  } catch (e) {
+    return NextResponse.json({ success: true });
+  } catch (e: any) {
     return NextResponse.json({ error: String(e) }, { status: 500 });
   }
 }
