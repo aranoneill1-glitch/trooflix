@@ -419,10 +419,10 @@ export default function ThreadPage() {
   };
 
   return (
-    <main className="min-h-screen bg-black text-white flex flex-col">
+    <main className="fixed inset-0 h-[100dvh] pt-[64px] bg-black text-white flex flex-col overflow-hidden">
       <TopBar />
       {/* Header — white bar */}
-      <header className="fixed top-[64px] left-0 right-0 z-50 bg-black border-b border-white/10">
+      <header className="flex-shrink-0 bg-black border-b border-white/10">
         <div className="flex items-center gap-3 px-3 py-2.5 md:px-6">
           <button
             onClick={() => router.push("/messages")}
@@ -460,7 +460,7 @@ export default function ThreadPage() {
       </header>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto pt-[144px] pb-24 px-4 md:px-6">
+      <div className="flex-1 min-h-0 overflow-y-auto px-4 md:px-6">
         <div className="max-w-2xl w-full mx-auto">
           {loading && (
             <p className="text-white/40 text-center py-12">Loading…</p>
@@ -621,7 +621,7 @@ export default function ThreadPage() {
       </div>
 
       {/* Composer */}
-      <div className="fixed bottom-0 left-0 right-0 bg-black border-t border-white/10 pb-[env(safe-area-inset-bottom)]">
+      <div className="flex-shrink-0 bg-black border-t border-white/10 pb-[env(safe-area-inset-bottom)]">
         <div className="max-w-2xl mx-auto px-3 md:px-4 py-2 flex items-center gap-2">
           <input
             ref={fileInputRef}
