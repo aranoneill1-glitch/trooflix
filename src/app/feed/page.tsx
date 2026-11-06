@@ -289,11 +289,37 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
 
       </div>
 
-      {/* BOTTOM TEXT INFO */}
-      <div className="absolute left-4 right-[80px] bottom-[132px] z-30 flex flex-col items-start pointer-events-none">
+      {/* BOTTOM LEFT: AVATAR, NAME, FOLLOW, DESCRIPTION */}
+      <div className="absolute left-4 right-[80px] bottom-[90px] z-30 flex flex-col items-start gap-3 pointer-events-none">
+        
+        {/* Creator Row */}
+        <div className="flex items-center gap-2 pointer-events-auto">
+          <Link href={finalSlug ? `/profile/${finalSlug}` : "#"} className="flex items-center gap-2 group">
+            <div className="w-8 h-8 rounded-full overflow-hidden border border-white/20 bg-[#1c1c1e]">
+              {finalPhoto ? (
+                <img src={finalPhoto} alt={finalName} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-xs font-black text-white bg-gradient-to-br from-[#E53945] to-[#8a1e26]">
+                  {finalName.charAt(0).toUpperCase()}
+                </div>
+              )}
+            </div>
+            <span className="text-white text-[14px] font-semibold drop-shadow-md group-hover:text-white/80 transition-colors">
+              {finalName}
+            </span>
+          </Link>
+          
+          <button 
+            onClick={(e) => e.preventDefault()} 
+            className="ml-1 px-3 py-1 text-xs font-bold text-white border border-white/30 rounded-md bg-white/10 hover:bg-white/20 transition backdrop-blur-sm"
+          >
+            Follow
+          </button>
+        </div>
 
+        {/* Description */}
         <div 
-          className="text-white/80 text-[14px] drop-shadow-md leading-snug cursor-pointer pointer-events-auto"
+          className="text-white text-[14px] drop-shadow-md leading-snug cursor-pointer pointer-events-auto"
           onClick={toggleExpand}
         >
           <span className={isExpanded ? "" : "line-clamp-2"}>
@@ -308,7 +334,7 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
       </div>
 
       {/* PROGRESS BAR (DRAGGABLE) */}
-      <div className="absolute left-0 right-0 bottom-0 z-40 pb-1 pointer-events-none">
+      <div className="absolute left-0 right-0 bottom-[64px] z-40 pointer-events-none">
         <div 
           ref={progressBarRef}
           className="relative w-full h-[4px] bg-white/20 cursor-pointer touch-none py-3 -my-3 pointer-events-auto"
