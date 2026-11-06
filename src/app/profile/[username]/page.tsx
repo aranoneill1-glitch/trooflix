@@ -42,6 +42,7 @@ export default function PublicProfilePage() {
   const [selectedMerchItem, setSelectedMerchItem] = useState<any>(null);
   const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
   const [followerCount, setFollowerCount] = useState(0);
+  const [isFollowing, setIsFollowing] = useState(false);
   const [subscriberCount, setSubscriberCount] = useState(0);
   const pressTimer = useRef<NodeJS.Timeout | null>(null);
 
@@ -58,6 +59,12 @@ export default function PublicProfilePage() {
       const { count: followers } = await supabase.from("follows").select("*", { count: "exact", head: true }).eq("creator_id", targetCreatorId);
       const { count: subs } = await supabase.from("creator_subscriptions").select("*", { count: "exact", head: true }).eq("creator_id", targetCreatorId);
       setFollowerCount(followers || 0);
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: followCheck } = await supabase.from("follows").select("id").eq("follower_id", user.id).eq("creator_id", targetCreatorId).maybeSingle();
+        setIsFollowing(!!followCheck);
+      }
       setSubscriberCount(subs || 0);
 
       let creatorId = null;
@@ -102,6 +109,31 @@ export default function PublicProfilePage() {
     if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
     if (num >= 1000) return (num / 1000).toFixed(1) + "K";
     return num.toString();
+  };
+
+  const handleFollow = async () => {
+    if (!profile) return;
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return window.location.href = "/login";
+
+    const targetCreatorId = profile.creator_id || profile.user_id;
+    const newIsFollowing = !isFollowing;
+    
+    setIsFollowing(newIsFollowing);
+    setFollowerCount((prev: number) => prev + (newIsFollowing ? 1 : -1));
+
+    try {
+      await fetch("/api/follows", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id, creatorId: targetCreatorId })
+      });
+    } catch (e) {
+      console.error(e);
+      setIsFollowing(!newIsFollowing);
+      setFollowerCount((prev: number) => prev + (newIsFollowing ? -1 : 1));
+    }
   };
 
   if (loading) return <div className="min-h-screen bg-[#09090B] flex items-center justify-center"><div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" /></div>;
@@ -239,8 +271,11 @@ export default function PublicProfilePage() {
                   </h1>
                   
                   {/* FOLLOW BUTTON (Top Right) */}
-                  <button className="shrink-0 flex items-center justify-center gap-1.5 bg-white text-black font-bold px-5 py-1.5 rounded-full hover:bg-gray-200 transition shadow-lg text-sm">
-                    <UserPlus size={16} /> Follow
+                  <button 
+                    onClick={handleFollow}
+                    className={`shrink-0 flex items-center justify-center gap-1.5 font-bold px-5 py-1.5 rounded-full transition shadow-lg text-sm ${isFollowing ? "bg-white/10 text-white border border-white/20" : "bg-white text-black hover:bg-gray-200"}`}
+                  >
+                    <UserPlus size={16} /> {isFollowing ? "Following" : "Follow"}
                   </button>
                 </div>
                 
