@@ -18,7 +18,7 @@ type Notification = {
 
 export default function NotificationBell({ hideTrigger = false }: { hideTrigger?: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"unread" | "all" | "basket">("unread");
+  const [activeTab, setActiveTab] = useState<"unread" | "all" | "basket">("all");
   const [basketItems, setBasketItems] = useState<any[]>([]);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -151,7 +151,7 @@ export default function NotificationBell({ hideTrigger = false }: { hideTrigger?
         {isOpen && (
           <motion.div 
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
-            className="fixed inset-0 z-[9999] bg-[#0a0303] text-white flex flex-col overflow-hidden"
+            className="fixed top-[64px] left-0 right-0 bottom-0 z-[190] bg-[#0a0303] text-white flex flex-col overflow-hidden"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-white/10 bg-[#0a0303]/90 backdrop-blur-md shrink-0">
@@ -166,16 +166,16 @@ export default function NotificationBell({ hideTrigger = false }: { hideTrigger?
             <div className="flex justify-center mt-6 shrink-0">
               <div className="flex bg-[#1c1c1e] p-1 rounded-full border border-white/5">
                 <button 
-                  onClick={() => setActiveTab("unread")} 
-                  className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${activeTab === "unread" ? "bg-[#E53945] text-white shadow-lg" : "text-white/50 hover:text-white"}`}
-                >
-                  Unread ({unreadCount})
-                </button>
-                <button 
                   onClick={() => setActiveTab("all")} 
                   className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${activeTab === "all" ? "bg-[#E53945] text-white shadow-lg" : "text-white/50 hover:text-white"}`}
                 >
                   All ({notifications.length})
+                </button>
+                <button 
+                  onClick={() => setActiveTab("unread")} 
+                  className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${activeTab === "unread" ? "bg-[#E53945] text-white shadow-lg" : "text-white/50 hover:text-white"}`}
+                >
+                  Unread ({unreadCount})
                 </button>
                 <button 
                   onClick={() => setActiveTab("basket")} 
