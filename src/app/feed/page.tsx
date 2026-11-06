@@ -284,27 +284,10 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
 
 
 
-      {/* BOTTOM LEFT: BUTTONS, DESCRIPTION, AVATAR */}
+            {/* BOTTOM LEFT: DESCRIPTION, AVATAR, BUTTONS */}
       <div className="absolute left-4 right-[80px] bottom-[95px] z-30 flex flex-col items-start gap-3 pointer-events-none">
 
-        {/* 1. Action Buttons Row */}
-        <div className="flex items-center gap-5 pointer-events-auto mb-1">
-          <button onClick={onToggleMute} className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
-            {isMuted ? <VolumeX size={26} strokeWidth={1.5} /> : <Volume2 size={26} strokeWidth={1.5} />}
-          </button>
-          <button onClick={onOpenComments} className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
-            <MessageCircle size={26} strokeWidth={1.5} />
-          </button>
-          <div className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
-            <LikeButton videoId={video.id} size={26} stacked={false} />
-          </div>
-          <div className="flex items-center gap-1.5 text-white drop-shadow-lg">
-            <Eye size={26} strokeWidth={1.5} />
-            <span className="text-[13px] font-bold">{(video as any).views || 0}</span>
-          </div>
-        </div>
-
-        {/* 2. Description */}
+        {/* 1. Description */}
         <div 
           className="text-white text-[14px] drop-shadow-md leading-snug cursor-pointer pointer-events-auto"
           onClick={toggleExpand}
@@ -319,8 +302,8 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
           )}
         </div>
 
-        {/* 3. Avatar Row */}
-        <div className="flex items-center gap-2 pointer-events-auto mt-1">
+        {/* 2. Avatar Row */}
+        <div className="flex items-center gap-2 pointer-events-auto">
           <Link href={finalSlug ? `/profile/${finalSlug}` : "#"} className="flex items-center gap-2 group">
             <div className="w-8 h-8 rounded-full overflow-hidden border border-white/20 bg-[#1c1c1e]">
               {finalPhoto ? (
@@ -342,6 +325,23 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
           >
             Follow
           </button>
+        </div>
+
+        {/* 3. Action Buttons Row */}
+        <div className="flex items-center gap-5 pointer-events-auto">
+          <button onClick={onToggleMute} className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
+            {isMuted ? <VolumeX size={26} strokeWidth={1.5} /> : <Volume2 size={26} strokeWidth={1.5} />}
+          </button>
+          <button onClick={onOpenComments} className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
+            <MessageCircle size={26} strokeWidth={1.5} />
+          </button>
+          <div className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
+            <LikeButton videoId={video.id} size={26} stacked={false} />
+          </div>
+          <div className="flex items-center gap-1.5 text-white drop-shadow-lg">
+            <Eye size={26} strokeWidth={1.5} />
+            <span className="text-[13px] font-bold">{(video as any).views || 0}</span>
+          </div>
         </div>
 
       </div>
