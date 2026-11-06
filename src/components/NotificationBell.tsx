@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Bell, X, Trash2, CheckCircle2, Heart, MessageCircle, UserPlus } from "lucide-react";
+import { Bell, X, Trash2, CheckCircle2, Heart, MessageCircle, UserPlus, ShoppingBag, Plus, Minus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/utils/supabase/client";
 import { getCachedUser } from "@/lib/cache";
@@ -18,10 +18,39 @@ type Notification = {
 
 export default function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"unread" | "all">("unread");
+  const [activeTab, setActiveTab] = useState<"unread" | "all" | "basket">("unread");
+  const [basketItems, setBasketItems] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
+
+  useEffect(() => {
+    const stored = localStorage.getItem("trooflix_basket");
+    if (stored) {
+      try { setBasketItems(JSON.parse(stored)); } catch {}
+    }
+  }, [isOpen]);
+
+  const updateQuantity = (id: number, delta: number) => {
+    const updated = basketItems.map(item => item.id === id ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item);
+    setBasketItems(updated);
+    localStorage.setItem("trooflix_basket", JSON.stringify(updated));
+  };
+
+  const removeBasketItem = (id: number) => {
+    const updated = basketItems.filter(item => item.id !== id);
+    setBasketItems(updated);
+    localStorage.setItem("trooflix_basket", JSON.stringify(updated));
+  };
+
+  const handleCheckout = () => {
+    if (basketItems.length === 0) return;
+    alert("Checkout successful! (Mock integration)");
+    setBasketItems([]);
+    localStorage.removeItem("trooflix_basket");
+  };
+
+  const totalPrice = basketItems.reduce((acc, item) => acc + (item.price_cents * item.quantity), 0) / 100;
 
   useEffect(() => {
     async function fetchNotifications() {
@@ -115,12 +144,61 @@ export default function NotificationBell() {
                 >
                   All ({notifications.length})
                 </button>
+                <button 
+                  onClick={() => setActiveTab("basket")} 
+                  className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${activeTab === "basket" ? "bg-[#E53945] text-white shadow-lg" : "text-white/50 hover:text-white"}`}
+                >
+                  Basket ({basketItems.length})
+                </button>
               </div>
             </div>
 
             {/* List */}
             <div className="flex-1 overflow-y-auto p-4 space-y-6 max-w-3xl mx-auto w-full">
-              {loading ? (
+              {activeTab === "basket" ? (
+                <div className="space-y-4">
+                  {basketItems.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center text-white/30 py-20">
+                      <ShoppingBag size={48} className="mb-4 opacity-50" />
+                      <p className="text-lg font-bold">Your basket is empty</p>
+                      <p className="text-sm mt-1">Add items from the shop to see them here.</p>
+                    </div>
+                  ) : (
+                    <>
+                      {basketItems.map((item) => (
+                        <div key={item.id} className="bg-[#1c1c1e] border border-white/5 p-4 rounded-2xl flex items-center gap-3">
+                          <img src={item.image_url} alt={item.name} className="w-16 h-16 rounded-xl object-cover shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold text-white truncate">{item.name}</p>
+                            <p className="text-xs text-white/50">${(item.price_cents / 100).toFixed(2)} each</p>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <button onClick={() => updateQuantity(item.id, -1)} className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center">
+                              <Minus size={12} />
+                            </button>
+                            <span className="text-xs font-bold w-5 text-center">{item.quantity}</span>
+                            <button onClick={() => updateQuantity(item.id, 1)} className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center">
+                              <Plus size={12} />
+                            </button>
+                            <button onClick={() => removeBasketItem(item.id)} className="ml-1 p-1.5 text-white/40 hover:text-red-500">
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                      <div className="mt-6 p-4 bg-[#1c1c1e] border border-white/5 rounded-2xl">
+                        <div className="flex justify-between items-center mb-4 text-lg font-bold">
+                          <span>Total</span>
+                          <span>${totalPrice.toFixed(2)}</span>
+                        </div>
+                        <button onClick={handleCheckout} className="w-full bg-[#E53945] hover:bg-[#d12e39] text-white font-bold py-3.5 rounded-xl transition">
+                          Checkout
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ) : loading ? (
                 <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" /></div>
               ) : displayedNotifications.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-white/30">
