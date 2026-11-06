@@ -353,9 +353,9 @@ function CreatorDashboardContent() {
                     <button key={tab} onClick={() => setActiveContentTab(tab)} className={`pb-3 text-sm font-bold transition-colors ${activeContentTab === tab ? "text-white border-b-2 border-[#E53945]" : "text-white/50 hover:text-white"}`}>{tab}</button>
                   ))}
                 </div>
-                <div className="flex items-center gap-1 bg-[#1c1c1e] p-1 rounded-lg mb-2">
-                  <button onClick={() => setContentView("grid")} className={`p-1.5 rounded-md transition ${contentView === "grid" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}><LayoutGrid size={16} /></button>
-                  <button onClick={() => setContentView("list")} className={`p-1.5 rounded-md transition ${contentView === "list" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}><List size={16} /></button>
+                <div className="flex items-center gap-1 bg-white/10 backdrop-blur-xl p-1 rounded-full border border-white/20 shadow-lg mb-2">
+                  <button onClick={() => setContentView("grid")} className={`p-1.5 rounded-full transition ${contentView === "grid" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}><LayoutGrid size={16} /></button>
+                  <button onClick={() => setContentView("list")} className={`p-1.5 rounded-full transition ${contentView === "list" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}><List size={16} /></button>
                 </div>
               </div>
 
