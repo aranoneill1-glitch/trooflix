@@ -87,11 +87,11 @@ export default function MerchandisePage() {
   }, [products, searchQuery]);
 
   const merchandise = useMemo(() => {
-    return filteredProducts.filter(p => p.type?.toLowerCase().includes('merch') || !p.type?.toLowerCase().includes('book'));
+    return filteredProducts.filter(p => p.type?.toLowerCase() !== 'book');
   }, [filteredProducts]);
 
   const books = useMemo(() => {
-    return filteredProducts.filter(p => p.type?.toLowerCase().includes('book'));
+    return filteredProducts.filter(p => p.type?.toLowerCase() === 'book');
   }, [filteredProducts]);
 
   return (
