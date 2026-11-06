@@ -55,7 +55,7 @@ export default function CreatorOrdersPage() {
 
   return (
     <main className="min-h-screen bg-[#0a0303] text-white pb-24">
-      <div className="max-w-4xl mx-auto px-4 pt-10">
+      <div className="max-w-6xl mx-auto px-4 pt-10">
         <div className="flex items-center gap-4 mb-8">
           <Link href="/creator-dashboard" className="p-2 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition">
             <ArrowLeft size={20} />
@@ -74,64 +74,73 @@ export default function CreatorOrdersPage() {
             <p className="text-white/50 text-sm">When someone buys your merch, it will appear here.</p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {orders.map(function(order) { return (
-              <div key={order.id} className="bg-[#1c1c1e] border border-white/10 rounded-2xl p-4 md:p-6 shadow-xl">
-                <div className="flex flex-col md:flex-row gap-6">
-                  <div className="flex items-center gap-4 shrink-0">
-                    <img src={order.product_image} alt={order.product_name} className="w-20 h-20 rounded-xl object-cover border border-white/10" />
-                    <div>
-                      <p className="text-sm text-white/50 font-bold uppercase tracking-wider mb-1">Item</p>
-                      <h3 className="text-lg font-bold text-white leading-tight">{order.product_name}</h3>
-                      <p className="text-[#1DB954] font-black">{"$" + (order.amount_cents / 100).toFixed(2)}</p>
+          <div className="bg-[#1c1c1e] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
+            {/* Table Header */}
+            <div className="hidden md:grid grid-cols-12 gap-4 p-4 border-b border-white/10 bg-white/5 text-xs font-bold text-white/50 uppercase tracking-wider">
+              <div className="col-span-2">Date</div>
+              <div className="col-span-3">Item</div>
+              <div className="col-span-4">Customer & Shipping</div>
+              <div className="col-span-3 text-right">Status & Action</div>
+            </div>
+
+            {/* Table Rows */}
+            <div className="divide-y divide-white/5">
+              {orders.map(function(order) { return (
+                <div key={order.id} className="grid grid-cols-1 md:grid-cols-12 gap-4 p-4 items-center hover:bg-white/[0.02] transition-colors">
+                  
+                  {/* Date */}
+                  <div className="col-span-2 text-sm text-white/60 font-medium">
+                    {new Date(order.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                  </div>
+
+                  {/* Item */}
+                  <div className="col-span-3 flex items-center gap-3">
+                    <img src={order.product_image} alt={order.product_name} className="w-12 h-12 rounded-lg object-cover border border-white/10 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-white truncate">{order.product_name}</p>
+                      <p className="text-xs text-[#1DB954] font-bold">{"$" + (order.amount_cents / 100).toFixed(2)}</p>
                     </div>
                   </div>
 
-                  <div className="flex-1 bg-black/40 rounded-xl p-4 border border-white/5">
-                    <p className="text-xs text-white/50 font-bold uppercase tracking-wider mb-2 flex items-center gap-1">
-                      <Truck size={12} /> Shipping Details
-                    </p>
-                    <p className="text-sm font-bold">{order.shipping_name}</p>
-                    <p className="text-sm text-white/70">{order.shipping_address}</p>
-                    <p className="text-sm text-white/70">{order.shipping_city}, {order.shipping_postal_code}</p>
-                    <p className="text-sm text-white/70">{order.shipping_country}</p>
+                  {/* Shipping */}
+                  <div className="col-span-4 text-sm">
+                    <p className="font-bold text-white/90">{order.shipping_name}</p>
+                    <p className="text-xs text-white/50 truncate">{order.shipping_address}</p>
+                    <p className="text-xs text-white/50">{order.shipping_city}, {order.shipping_postal_code} ({order.shipping_country})</p>
+                  </div>
+
+                  {/* Status & Action */}
+                  <div className="col-span-3 flex flex-col items-start md:items-end gap-2">
+                    {order.status === "paid" ? (
+                      <div className="flex w-full md:w-auto items-center gap-2">
+                        <input 
+                          type="text" 
+                          placeholder="Tracking #" 
+                          value={trackingInputs[order.id] || ""}
+                          onChange={function(e) { setTrackingInputs(function(prev) { return { ...prev, [order.id]: e.target.value }; }); }}
+                          className="w-full md:w-32 bg-black/50 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#E53945]"
+                        />
+                        <button 
+                          onClick={function() { handleShip(order.id); }}
+                          disabled={updating === order.id}
+                          className="bg-[#E53945] hover:bg-[#d12e39] text-white font-bold text-xs px-3 py-1.5 rounded-lg transition disabled:opacity-50 shrink-0"
+                        >
+                          {updating === order.id ? "..." : "Ship"}
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-start md:items-end gap-1">
+                        <div className="flex items-center gap-1.5 bg-green-500/10 text-green-400 px-2.5 py-1 rounded-md border border-green-500/20">
+                          <CheckCircle2 size={14} />
+                          <span className="text-xs font-bold uppercase tracking-wide">Shipped</span>
+                        </div>
+                        <span className="text-[10px] text-white/40 font-mono">{order.tracking_number}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
-
-                <div className="mt-6 pt-4 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-white/50">Status:</span>
-                    <span className={"px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider " + (order.status === "shipped" ? "bg-green-500/20 text-green-400" : "bg-yellow-500/20 text-yellow-400")}>
-                      {order.status}
-                    </span>
-                  </div>
-
-                  {order.status === "paid" ? (
-                    <div className="flex w-full md:w-auto items-center gap-2">
-                      <input 
-                        type="text" 
-                        placeholder="Enter Tracking #" 
-                        value={trackingInputs[order.id] || ""}
-                        onChange={function(e) { setTrackingInputs(function(prev) { return { ...prev, [order.id]: e.target.value }; }); }}
-                        className="bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#E53945]"
-                      />
-                      <button 
-                        onClick={function() { handleShip(order.id); }}
-                        disabled={updating === order.id}
-                        className="bg-[#E53945] hover:bg-[#d12e39] text-white font-bold text-sm px-4 py-2 rounded-lg transition disabled:opacity-50"
-                      >
-                        {updating === order.id ? "Saving..." : "Mark Shipped"}
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2 bg-green-500/10 px-3 py-2 rounded-lg border border-green-500/20">
-                      <CheckCircle2 size={16} className="text-green-400" />
-                      <span className="text-sm font-bold text-green-400">Tracking: {order.tracking_number}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ); })}
+              ); })}
+            </div>
           </div>
         )}
       </div>
