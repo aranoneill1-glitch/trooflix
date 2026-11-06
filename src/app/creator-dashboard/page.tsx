@@ -633,7 +633,7 @@ function CreatorDashboardContent() {
                 animate={{ y: 0, opacity: 1, scale: 1 }}
                 exit={{ y: "100%", opacity: 0, scale: 0.95 }}
                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="fixed bottom-0 left-0 right-0 z-[301] bg-[#0a0303]/80 backdrop-blur-2xl rounded-t-[32px] border-t border-white/10 p-6 pb-28 lg:max-w-md lg:mx-auto lg:rounded-[32px] lg:bottom-10 shadow-[0_-20px_50px_rgba(0,0,0,0.5)] max-h-[85vh] overflow-y-auto"
+                className="fixed bottom-0 left-0 right-0 z-[301] bg-black/40 backdrop-blur-3xl rounded-t-[32px] border-t border-white/20 p-6 pb-28 lg:max-w-md lg:mx-auto lg:rounded-[32px] lg:bottom-10 shadow-[0_-20px_50px_rgba(0,0,0,0.5)] max-h-[85vh] overflow-y-auto"
               >
                 <div className="w-12 h-1.5 bg-white/20 rounded-full mx-auto mb-6 lg:hidden" />
                 
@@ -648,7 +648,7 @@ function CreatorDashboardContent() {
                   <Link 
                     href="/creator-dashboard/upload" 
                     onClick={() => setShowAddContentMenu(false)}
-                    className="group relative flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 p-4 rounded-2xl transition-all duration-300 overflow-hidden"
+                    className="group relative flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/20 hover:border-white/20 p-4 rounded-2xl transition-all duration-300 overflow-hidden"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="absolute inset-0 bg-gradient-to-r from-[#E53945]/0 via-[#E53945]/0 to-[#E53945]/5 opacity-0 group-hover:opacity-100 transition-opacity" />
