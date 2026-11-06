@@ -290,7 +290,7 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
       </div>
 
       {/* BOTTOM LEFT: AVATAR, NAME, FOLLOW, DESCRIPTION */}
-      <div className="absolute left-4 right-[80px] bottom-[90px] z-30 flex flex-col items-start gap-3 pointer-events-none">
+      <div className="absolute left-4 right-[80px] bottom-[110px] z-30 flex flex-col items-start gap-3 pointer-events-none">
         
         {/* Creator Row */}
         <div className="flex items-center gap-2 pointer-events-auto">
@@ -334,16 +334,16 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
       </div>
 
       {/* PROGRESS BAR (DRAGGABLE) */}
-      <div className="absolute left-0 right-0 bottom-[64px] z-40 pointer-events-none">
+      <div className="absolute left-0 right-0 bottom-[85px] z-40 pointer-events-none">
         <div 
           ref={progressBarRef}
-          className="relative w-full h-[4px] bg-white/20 cursor-pointer touch-none py-3 -my-3 pointer-events-auto"
+          className="relative w-full h-[3px] bg-white/20 cursor-pointer touch-none py-3 -my-3 pointer-events-auto"
           onPointerDown={handleDragStart}
           onPointerMove={handleDragMove}
           onPointerUp={handleDragEnd}
           onPointerCancel={handleDragEnd}
         >
-          <div className="absolute top-1/2 -translate-y-1/2 left-0 h-[3px] bg-white pointer-events-none" style={{ width: `${progress}%` }} />
+          <div className="absolute top-1/2 -translate-y-1/2 left-0 h-[2px] bg-white pointer-events-none" style={{ width: `${progress}%` }} />
         </div>
       </div>
 
