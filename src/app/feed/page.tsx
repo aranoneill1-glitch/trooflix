@@ -284,37 +284,43 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
 
 
 
-      {/* LEFT SIDE ACTION BUTTONS */}
-      <div className="absolute left-4 bottom-[160px] z-30 flex items-center gap-5">
-        
-        {/* 1. Volume */}
-        <button onClick={onToggleMute} className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
-          {isMuted ? <VolumeX size={28} strokeWidth={1.5} /> : <Volume2 size={28} strokeWidth={1.5} />}
-        </button>
+      {/* BOTTOM LEFT: BUTTONS, DESCRIPTION, AVATAR */}
+      <div className="absolute left-4 right-[80px] bottom-[95px] z-30 flex flex-col items-start gap-3 pointer-events-none">
 
-        {/* 2. Comments */}
-        <button onClick={onOpenComments} className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
-          <MessageCircle size={28} strokeWidth={1.5} />
-        </button>
-
-        {/* 3. Likes */}
-        <div className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
-          <LikeButton videoId={video.id} size={28} stacked={false} />
+        {/* 1. Action Buttons Row */}
+        <div className="flex items-center gap-5 pointer-events-auto mb-1">
+          <button onClick={onToggleMute} className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
+            {isMuted ? <VolumeX size={26} strokeWidth={1.5} /> : <Volume2 size={26} strokeWidth={1.5} />}
+          </button>
+          <button onClick={onOpenComments} className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
+            <MessageCircle size={26} strokeWidth={1.5} />
+          </button>
+          <div className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
+            <LikeButton videoId={video.id} size={26} stacked={false} />
+          </div>
+          <div className="flex items-center gap-1.5 text-white drop-shadow-lg">
+            <Eye size={26} strokeWidth={1.5} />
+            <span className="text-[13px] font-bold">{(video as any).views || 0}</span>
+          </div>
         </div>
 
-        {/* 4. Views */}
-        <div className="flex items-center gap-1.5 text-white drop-shadow-lg">
-          <Eye size={28} strokeWidth={1.5} />
-          <span className="text-[13px] font-bold">{(video as any).views || 0}</span>
+        {/* 2. Description */}
+        <div 
+          className="text-white text-[14px] drop-shadow-md leading-snug cursor-pointer pointer-events-auto"
+          onClick={toggleExpand}
+        >
+          <span className={isExpanded ? "" : "line-clamp-2"}>
+            {video.description || "Watch this exclusive clip on Trooflix."}
+          </span>
+          {!isExpanded && hasLongDescription && (
+            <span className="text-white/60 font-bold ml-1.5 hover:text-white">
+              ... more
+            </span>
+          )}
         </div>
 
-      </div>
-
-      {/* BOTTOM LEFT: AVATAR, NAME, FOLLOW, DESCRIPTION */}
-      <div className="absolute left-4 right-[80px] bottom-[110px] z-30 flex flex-col items-start gap-3 pointer-events-none">
-        
-        {/* Creator Row */}
-        <div className="flex items-center gap-2 pointer-events-auto">
+        {/* 3. Avatar Row */}
+        <div className="flex items-center gap-2 pointer-events-auto mt-1">
           <Link href={finalSlug ? `/profile/${finalSlug}` : "#"} className="flex items-center gap-2 group">
             <div className="w-8 h-8 rounded-full overflow-hidden border border-white/20 bg-[#1c1c1e]">
               {finalPhoto ? (
@@ -338,20 +344,6 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
           </button>
         </div>
 
-        {/* Description */}
-        <div 
-          className="text-white text-[14px] drop-shadow-md leading-snug cursor-pointer pointer-events-auto"
-          onClick={toggleExpand}
-        >
-          <span className={isExpanded ? "" : "line-clamp-2"}>
-            {video.description || "Watch this exclusive clip on Trooflix."}
-          </span>
-          {!isExpanded && hasLongDescription && (
-            <span className="text-white/60 font-bold ml-1.5 hover:text-white">
-              ... more
-            </span>
-          )}
-        </div>
       </div>
 
       {/* PROGRESS BAR (DRAGGABLE) */}
