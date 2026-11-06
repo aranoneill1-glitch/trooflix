@@ -70,16 +70,12 @@ export default function PublicProfilePage() {
       if (targetCreatorId) targetCreatorId = Number(targetCreatorId);
       console.log("DEBUG: Resolved Creator ID =", targetCreatorId);
       setResolvedCreatorId(targetCreatorId);
-      const { count: followers } = await supabase.from("follows").select("*", { count: "exact", head: true }).eq("creator_id", targetCreatorId);
-      const { count: subs } = await supabase.from("creator_subscriptions").select("*", { count: "exact", head: true }).eq("creator_id", targetCreatorId);
-      setFollowerCount(followers || 0);
-      
       const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: followCheck } = await supabase.from("follows").select("id").eq("follower_id", user.id).eq("creator_id", targetCreatorId).maybeSingle();
-        setIsFollowing(!!followCheck);
-      }
-      setSubscriberCount(subs || 0);
+      const followRes = await fetch(`/api/follows?creator_id=${targetCreatorId}${user ? `&user_id=${user.id}` : ""}`);
+      const followData = await followRes.json();
+      setFollowerCount(followData.count || 0);
+      setSubscriberCount(followData.subscriberCount || 0);
+      setIsFollowing(followData.isFollowing || false);
 
       let creatorId = null;
       try {
