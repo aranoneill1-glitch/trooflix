@@ -1,4 +1,5 @@
 "use client";
+import { getCachedUser } from "@/lib/cache";
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
@@ -107,6 +108,47 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
   const [showPlayIcon, setShowPlayIcon] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [isSubmittingFollow, setIsSubmittingFollow] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
+  // Check if user is following this creator
+  useEffect(() => {
+    getCachedUser().then((u: any) => {
+      if (u) {
+        setUser(u);
+        if (creator?.id) {
+          fetch(`/api/follows?creator_id=${creator.id}&user_id=${u.id}`)
+            .then(r => r.json())
+            .then(d => setIsFollowing(d.isFollowing || false))
+            .catch(() => {});
+        }
+      }
+    });
+  }, [creator?.id]);
+
+  const handleFollow = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!user) return alert("Please log in to follow creators.");
+    if (!creator?.id || isSubmittingFollow) return;
+
+    setIsSubmittingFollow(true);
+    const newIsFollowing = !isFollowing;
+    setIsFollowing(newIsFollowing);
+
+    try {
+      await fetch("/api/follows", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id, creatorId: creator.id })
+      });
+    } catch (err) {
+      setIsFollowing(!newIsFollowing); // rollback on error
+    } finally {
+      setIsSubmittingFollow(false);
+    }
+  };
 
   const videoSrc = video.videoUrl || video.bitchuteUrl || "";
   const hasLongDescription = (video.description || "").length > 65;
@@ -320,10 +362,11 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
           </Link>
           
           <button 
-            onClick={(e) => e.preventDefault()} 
-            className="ml-1 px-3 py-1 text-xs font-bold text-white border border-white/30 rounded-md bg-white/10 hover:bg-white/20 transition backdrop-blur-sm"
+            onClick={handleFollow} 
+            disabled={isSubmittingFollow}
+            className={`ml-1 px-3 py-1 text-xs font-bold rounded-md transition backdrop-blur-sm border ${isFollowing ? "bg-white/10 border-white/20 text-white" : "bg-white/20 border-white/30 text-white hover:bg-white/30"} ${isSubmittingFollow ? "opacity-50 cursor-wait" : ""}`}
           >
-            Follow
+            {isFollowing ? "Following" : "Follow"}
           </button>
         </div>
 
