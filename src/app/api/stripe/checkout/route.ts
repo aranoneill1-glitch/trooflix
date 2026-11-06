@@ -25,16 +25,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid type" }, { status: 400 });
     }
 
-    // === PASS or PODCASTER: fixed Stripe prices ===
+    // === PASS or PODCASTER: inline price_data (correct prices, no dashboard changes needed) ===
     if (type === "pass" || type === "podcaster") {
-      const priceId =
-        type === "pass"
-          ? process.env.STRIPE_PRO_PRICE_ID
-          : process.env.STRIPE_PODCASTER_PRICE_ID;
-
-      if (!priceId) {
-        return NextResponse.json({ error: `Price ID missing for ${type}` }, { status: 500 });
-      }
+      const isPlus = type === "pass";
+      const priceCents = isPlus ? 399 : 999; // $3.99 Plus / $9.99 Creator
+      const productName = isPlus ? "Trooflix Plus" : "Trooflix Creator";
+      const productDescription = isPlus
+        ? "Unlimited long-form viewing, live streams, unlimited-length reels, red glass tick."
+        : "Everything in Plus, long-form uploads, live broadcast, full Creator Dashboard, gold tick.";
 
       const { data: profile } = await supabaseAdmin
         .from("profiles")
@@ -57,7 +55,20 @@ export async function POST(req: Request) {
 
       const session = await stripe.checkout.sessions.create({
         customer: customerId,
-        line_items: [{ price: priceId, quantity: 1 }],
+        line_items: [
+          {
+            price_data: {
+              currency: "usd",
+              unit_amount: priceCents,
+              recurring: { interval: "month" },
+              product_data: {
+                name: productName,
+                description: productDescription,
+              },
+            },
+            quantity: 1,
+          },
+        ],
         mode: "subscription",
         success_url: `${process.env.NEXT_PUBLIC_URL || "https://www.trooflixtv.com"}/profile?upgraded=${type}`,
         cancel_url: `${process.env.NEXT_PUBLIC_URL || "https://www.trooflixtv.com"}/upgrade`,
