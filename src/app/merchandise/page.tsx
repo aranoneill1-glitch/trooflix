@@ -12,6 +12,7 @@ export default function MerchandisePage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [basket, setBasket] = useState<any[]>([]);
   const [creatorProfiles, setCreatorProfiles] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null);
   const [wishlistedIds, setWishlistedIds] = useState<number[]>([]);
@@ -41,6 +42,26 @@ export default function MerchandisePage() {
       }
     });
   }, []);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("trooflix_basket");
+    if (stored) {
+      try { setBasket(JSON.parse(stored)); } catch (e) {}
+    }
+  }, []);
+
+  const addToBasket = (product: any) => {
+    const newBasket = [...basket];
+    const existing = newBasket.find(item => item.id === product.id);
+    if (existing) {
+      existing.quantity += 1;
+    } else {
+      newBasket.push({ ...product, quantity: 1 });
+    }
+    setBasket(newBasket);
+    localStorage.setItem("trooflix_basket", JSON.stringify(newBasket));
+    alert(`Added "${product.name}" to your basket!`);
+  };
 
   const toggleWishlist = async (e: React.MouseEvent, productId: number) => {
     e.stopPropagation();
@@ -254,7 +275,7 @@ export default function MerchandisePage() {
 
               {/* Action Buttons */}
               <div className="flex gap-2 mt-5">
-                <button className="flex-1 flex items-center justify-center gap-1.5 py-3 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl transition border border-white/10">
+                <button onClick={() => addToBasket(selectedProduct)} className="flex-1 flex items-center justify-center gap-1.5 py-3 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl transition border border-white/10">
                   <Plus size={16} /> Add to Basket
                 </button>
                 <button className="flex-1 py-3 bg-[#E53945] hover:bg-[#d12e39] text-white text-xs font-bold rounded-xl transition shadow-[0_0_15px_rgba(229,57,69,0.3)]">
