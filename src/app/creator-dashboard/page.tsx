@@ -734,14 +734,14 @@ function CreatorDashboardContent() {
                   <Link 
                     href={userTier !== "free" ? "/creator-dashboard/shop" : "/upgrade?feature=add_product"}
                     onClick={() => setShowAddContentMenu(false)}
-                    className="group relative flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-500/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden"
+                    className={`group relative flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-500/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden ${userTier === "free" ? "opacity-50" : ""}`}
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(168,85,247,0.2)]">
                       <Tag className="text-purple-400" size={24} />
                     </div>
                     <div className="relative z-10">
-                      <h4 className="font-bold text-white text-base">Add an Item</h4>
+                      <h4 className="font-bold text-white text-base flex items-center gap-1.5">Add an Item {userTier === "free" && <Lock size={12} className="text-yellow-400" />}</h4>
                       <p className="text-xs text-white/50">Add an item to your store</p>
                     </div>
                   </Link>

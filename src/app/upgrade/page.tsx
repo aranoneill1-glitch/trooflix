@@ -2,87 +2,77 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Check, X, Sparkles } from "lucide-react";
+import { ChevronLeft, Check, X, Sparkles, Crown, Video } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import { getCachedUser } from "@/lib/cache";
 
-type Tier = "user" | "pass" | "podcaster";
+type Tier = "free" | "plus" | "creator";
 
-const FEATURES = [
-  { label: "Watch reels (always free)", free: true, pass: true, podcaster: true },
-  { label: "Post reels (up to 90s)", free: true, pass: true, podcaster: true },
-  { label: "Post images & Troos", free: true, pass: true, podcaster: true },
-  { label: "Watch full podcasts", free: false, pass: true, podcaster: true },
-  { label: "Watch full documentaries", free: false, pass: true, podcaster: true },
-  { label: "Unlimited-length reels", free: false, pass: true, podcaster: true },
-  { label: "Red verified badge", free: false, pass: true, podcaster: false },
-  { label: "Post full podcasts", free: false, pass: false, podcaster: true },
-  { label: "Post documentaries", free: false, pass: false, podcaster: true },
-  { label: "Dedicated podcaster page", free: false, pass: false, podcaster: true },
-  { label: "Featured on home page", free: false, pass: false, podcaster: true },
-  { label: "Gold verified badge", free: false, pass: false, podcaster: true },
+const FEATURES: { label: string; free: boolean; plus: boolean; creator: boolean }[] = [
+  { label: "Watch unlimited Shorts", free: true, plus: true, creator: true },
+  { label: "Like, comment & share", free: true, plus: true, creator: true },
+  { label: "Send direct messages", free: true, plus: true, creator: true },
+  { label: "Buy merch & books", free: true, plus: true, creator: true },
+  { label: "Upload Shorts (≤3 min)", free: true, plus: true, creator: true },
+  { label: "3-min long-form previews", free: true, plus: false, creator: false },
+  { label: "Unlimited long-form viewing", free: false, plus: true, creator: true },
+  { label: "Upload Shorts (any length)", free: false, plus: true, creator: true },
+  { label: "Watch live streams (public)", free: false, plus: true, creator: true },
+  { label: "Upload merch / open shop", free: false, plus: true, creator: true },
+  { label: "Upload long-form (podcasts, docs)", free: false, plus: false, creator: true },
+  { label: "Post Tweets", free: false, plus: false, creator: true },
+  { label: "Go Live (broadcast)", free: false, plus: false, creator: true },
+  { label: "Full Creator Dashboard", free: false, plus: false, creator: true },
+  { label: "Custom profile theme", free: false, plus: false, creator: true },
+  { label: "Red glass tick", free: false, plus: true, creator: false },
+  { label: "Gold tick", free: false, plus: false, creator: true },
 ];
 
 const isIOS = typeof window !== "undefined" && /iPhone|iPad|iPod/.test(navigator.userAgent);
 
 export default function UpgradePage() {
   const router = useRouter();
-  const [currentTier, setCurrentTier] = useState<Tier>("user");
+  const [currentTier, setCurrentTier] = useState<Tier>("free");
   const [loading, setLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
-  const [podcasterLoading, setPodcasterLoading] = useState(false);
+  const [creatorLoading, setCreatorLoading] = useState(false);
 
   useEffect(() => {
     getCachedUser().then(async (u) => {
-      if (!u) {
-        setLoading(false);
-        return;
-      }
+      if (!u) { setLoading(false); return; }
       try {
         const res = await fetch(`/api/profile?user_id=${u.id}`, { cache: "no-store" });
         const d = await res.json();
         const profile = d.profile;
-
-        if (profile?.tier === "podcaster") {
-          setCurrentTier("podcaster");
-        } else if (profile?.has_pass === true) {
-          const expires = profile?.pass_expires_at;
-          if (!expires || new Date(expires) > new Date()) {
-            setCurrentTier("pass");
-          } else {
-            setCurrentTier("user");
-          }
-        } else {
-          setCurrentTier("user");
+        const raw = String(profile?.tier || "free").toLowerCase();
+        let normalized: Tier;
+        if (raw === "creator" || raw === "podcaster" || raw === "pro") normalized = "creator";
+        else if (raw === "plus" || raw === "pass" || raw === "troopass") normalized = "plus";
+        else normalized = "free";
+        if (normalized !== "free" && profile?.plus_expires_at) {
+          if (new Date(profile.plus_expires_at) < new Date()) normalized = "free";
         }
+        setCurrentTier(normalized);
       } catch {}
       setLoading(false);
     });
   }, []);
 
-  const handlePassCheckout = async () => {
+  const handlePlusCheckout = async () => {
     setCheckoutLoading(true);
     try {
       const user = await getCachedUser();
-      if (!user) {
-        router.push("/login");
-        return;
-      }
-
+      if (!user) { router.push("/login"); return; }
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: user.id, type: "pass" }),
       });
-
       const d = await res.json();
-      if (d.url) {
-        window.location.href = d.url;
-      } else {
-        alert(d.error || "Could not start checkout");
-      }
+      if (d.url) window.location.href = d.url;
+      else alert(d.error || "Could not start checkout");
     } catch {
       alert("Network error");
     } finally {
@@ -90,31 +80,23 @@ export default function UpgradePage() {
     }
   };
 
-  const handlePodcasterCheckout = async () => {
-    setPodcasterLoading(true);
+  const handleCreatorCheckout = async () => {
+    setCreatorLoading(true);
     try {
       const user = await getCachedUser();
-      if (!user) {
-        router.push("/login");
-        return;
-      }
-
+      if (!user) { router.push("/login"); return; }
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: user.id, type: "podcaster" }),
       });
-
       const d = await res.json();
-      if (d.url) {
-        window.location.href = d.url;
-      } else {
-        alert(d.error || "Could not start checkout");
-      }
+      if (d.url) window.location.href = d.url;
+      else alert(d.error || "Could not start checkout");
     } catch {
       alert("Network error");
     } finally {
-      setPodcasterLoading(false);
+      setCreatorLoading(false);
     }
   };
 
@@ -132,115 +114,117 @@ export default function UpgradePage() {
 
         <div className="text-center mb-10">
           <p className="text-xs tracking-[0.3em] text-red-500 font-bold mb-2">CHOOSE YOUR PLAN</p>
-          <h1 className="text-3xl md:text-5xl font-black mb-3">Watch everything on Trooflix</h1>
+          <h1 className="text-3xl md:text-5xl font-black mb-3">Unlock everything on Trooflix</h1>
           <p className="text-white/60 text-sm md:text-base max-w-2xl mx-auto">
-            One pass. Every podcast, every documentary. Or become a creator and share your own.
+            Watch everything, or become a creator and monetize your work. Cancel anytime.
           </p>
         </div>
 
-        {/* 3 cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
-          {/* Free */}
           <TierCard
             name="Free"
-            tagline="Browse & preview"
+            tagline="Start exploring"
             price="$0"
             priceSub="forever"
+            icon={Sparkles}
+            badge={null}
             features={[
-              "Watch reels (always free)",
-              "Post reels up to 90s",
-              "Post images & Troos",
-              "120-second previews of podcasts",
+              "Watch unlimited Shorts",
+              "3-min long-form previews",
+              "Like, comment & send DMs",
+              "Buy merch & books",
+              "Upload Shorts (≤3 min)",
             ]}
-            isCurrent={currentTier === "user"}
-            ctaLabel={currentTier === "user" ? "You're on Free" : "Current plan"}
+            isCurrent={currentTier === "free"}
+            ctaLabel={currentTier === "free" ? "Your current plan" : "Downgrade to Free"}
             ctaDisabled={true}
           />
 
-          {/* Trooflix Pass */}
           <TierCard
-            name="Trooflix Pass"
-            tagline="Unlock everything"
-            badge={<VerifiedBadge size={20} variant="red" />}
-            price="$9.99"
-            priceSub="per month"
+            name="Plus"
+            tagline="The full viewer"
+            price="$3.99"
+            priceSub="/month"
+            icon={Crown}
+            badge={<VerifiedBadge size={20} variant="plus_red" />}
             features={[
-              "Watch all podcasts (full length)",
-              "Watch all documentaries",
-              "Unlimited-length reels",
-              "Red verified badge",
-              "Support independent creators",
+              "Everything in Free",
+              "Unlimited long-form viewing",
+              "Upload Shorts (any length)",
+              "Watch live streams (public)",
+              "Upload merch / open shop",
+              "Red glass tick",
             ]}
-            isCurrent={currentTier === "pass"}
+            isCurrent={currentTier === "plus"}
             ctaLabel={
-              currentTier === "pass"
-                ? "You have Pass"
-                : currentTier === "podcaster"
-                ? "Included in Podcaster"
+              currentTier === "plus"
+                ? "You have Plus"
+                : currentTier === "creator"
+                ? "Included in Creator"
                 : checkoutLoading
                 ? "Redirecting…"
-                : "Get Trooflix Pass"
+                : "Get Plus — $3.99"
             }
-            onClick={handlePassCheckout}
-            ctaDisabled={currentTier !== "user" || checkoutLoading}
+            onClick={handlePlusCheckout}
+            ctaDisabled={currentTier !== "free" || checkoutLoading}
             highlight={true}
           />
 
-          {/* Podcaster */}
           <TierCard
-            name="Podcaster"
-            tagline="Create & monetize"
-            badge={<VerifiedBadge size={20} variant="gold" />}
-            price="$15.99"
-            priceSub="per month"
+            name="Creator"
+            tagline="Build your empire"
+            price="$9.99"
+            priceSub="/month"
+            icon={Video}
+            badge={<VerifiedBadge size={20} variant="creator_gold" />}
             features={[
-              "Everything in Pass",
-              "Post podcasts & documentaries",
-              "Dedicated podcaster page",
-              "Featured on home page",
-              "Gold verified badge",
-              "Apply via our review process",
+              "Everything in Plus",
+              "Upload long-form (podcasts, docs)",
+              "Post Tweets",
+              "Go Live (broadcast)",
+              "Full Creator Dashboard",
+              "Custom profile theme",
+              "Gold tick",
             ]}
-            isCurrent={currentTier === "podcaster"}
+            isCurrent={currentTier === "creator"}
             ctaLabel={
-              currentTier === "podcaster"
-                ? "You're a Podcaster"
-                : podcasterLoading
+              currentTier === "creator"
+                ? "You're a Creator"
+                : creatorLoading
                 ? "Redirecting…"
-                : "Become a Creator"
+                : "Get Creator — $9.99"
             }
-            onClick={handlePodcasterCheckout}
-            ctaDisabled={currentTier === "podcaster" || podcasterLoading}
+            onClick={handleCreatorCheckout}
+            ctaDisabled={currentTier === "creator" || creatorLoading}
           />
         </div>
 
-        {/* Feature comparison */}
-        <div className="bg-[#0f0f12] border border-white/5 rounded-2xl overflow-hidden">
-          <div className="px-5 py-4 border-b border-white/5">
-            <h2 className="text-lg font-bold">Compare plans</h2>
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-white/10">
+            <h2 className="text-lg font-bold">Compare all plans</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-white/5">
+                <tr className="border-b border-white/10">
                   <th className="text-left px-5 py-3 font-semibold text-white/60 w-1/2">Feature</th>
                   <th className="text-center px-3 py-3 font-semibold text-white/60">Free</th>
-                  <th className="text-center px-3 py-3 font-semibold text-white/60">Pass</th>
-                  <th className="text-center px-3 py-3 font-semibold text-white/60">Podcaster</th>
+                  <th className="text-center px-3 py-3 font-semibold text-white/60">Plus</th>
+                  <th className="text-center px-3 py-3 font-semibold text-white/60">Creator</th>
                 </tr>
               </thead>
               <tbody>
                 {FEATURES.map((f, i) => (
                   <tr key={i} className="border-b border-white/5 last:border-0">
-                    <td className="px-5 py-3 text-white/90">{f.label}</td>
+                    <td className="px-5 py-3 text-white/80">{f.label}</td>
                     <td className="text-center px-3 py-3">
-                      {f.free ? <Check size={16} className="inline text-green-500" /> : <X size={16} className="inline text-white/20" />}
+                      {f.free ? <Check size={16} className="text-green-500 mx-auto" /> : <X size={16} className="text-white/20 mx-auto" />}
                     </td>
                     <td className="text-center px-3 py-3">
-                      {f.pass ? <Check size={16} className="inline text-green-500" /> : <X size={16} className="inline text-white/20" />}
+                      {f.plus ? <Check size={16} className="text-green-500 mx-auto" /> : <X size={16} className="text-white/20 mx-auto" />}
                     </td>
                     <td className="text-center px-3 py-3">
-                      {f.podcaster ? <Check size={16} className="inline text-green-500" /> : <X size={16} className="inline text-white/20" />}
+                      {f.creator ? <Check size={16} className="text-green-500 mx-auto" /> : <X size={16} className="text-white/20 mx-auto" />}
                     </td>
                   </tr>
                 ))}
@@ -249,7 +233,7 @@ export default function UpgradePage() {
           </div>
         </div>
 
-        <p className="text-center text-xs text-white/40 mt-8 max-w-xl mx-auto">
+        <p className="text-center text-xs text-white/40 mt-6">
           Secure payments powered by Stripe. Cancel anytime.
         </p>
       </div>
@@ -263,6 +247,7 @@ function TierCard({
   name,
   tagline,
   badge,
+  icon: Icon,
   features,
   isCurrent,
   ctaLabel,
@@ -274,7 +259,8 @@ function TierCard({
 }: {
   name: string;
   tagline: string;
-  badge?: React.ReactNode;
+  badge: React.ReactNode;
+  icon: any;
   features: string[];
   isCurrent: boolean;
   ctaLabel: string;
@@ -288,8 +274,8 @@ function TierCard({
     <div
       className={`relative rounded-2xl p-6 flex flex-col ${
         highlight
-          ? "bg-gradient-to-b from-red-950/40 to-[#0f0f12] border-2 border-red-600/40"
-          : "bg-[#0f0f12] border border-white/10"
+          ? "bg-white/10 backdrop-blur-xl border-2 border-red-600/40 shadow-[0_0_30px_rgba(229,57,69,0.15)]"
+          : "bg-white/5 backdrop-blur-xl border border-white/10"
       } ${isCurrent ? "ring-2 ring-white/20" : ""}`}
     >
       {highlight && !isCurrent && (
@@ -304,6 +290,7 @@ function TierCard({
       )}
 
       <div className="flex items-center gap-2 mb-1">
+        <Icon size={22} className={highlight ? "text-[#E53945]" : "text-white/60"} />
         <h3 className="text-xl font-black">{name}</h3>
         {badge}
       </div>
