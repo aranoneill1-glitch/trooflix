@@ -265,43 +265,26 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
       <div className="absolute inset-x-0 bottom-0 h-[60%] bg-gradient-to-t from-black via-black/70 to-transparent pointer-events-none" />
       <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/60 to-transparent pointer-events-none" />
 
-      {/* TOP LEFT: CREATOR AVATAR + NAME */}
-      <Link
-        href={finalSlug ? `/profile/${finalSlug}` : `/profile/${video.uploaderUserId || "creator"}`}
-        className="absolute top-12 left-4 z-30 flex items-center gap-3 group"
-      >
-        <div className="w-11 h-11 rounded-full overflow-hidden bg-[#1c1c1e] shrink-0 border border-white/20">
-          {finalPhoto ? (
-            <img src={finalPhoto} alt={finalName} className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-base font-black text-white bg-gradient-to-br from-[#E53945] to-[#8a1e26]">
-              {finalName.charAt(0).toUpperCase()}
-            </div>
-          )}
-        </div>
-        <span className="text-white text-sm font-bold drop-shadow-lg group-hover:text-[#E53945] transition">
-          {finalName}
-        </span>
-      </Link>
+
 
       {/* RIGHT SIDE ACTION BUTTONS */}
-      <div className="absolute right-3 bottom-[110px] flex flex-col items-center gap-5 z-30">
+      <div className="absolute right-3 bottom-[140px] flex flex-col items-center gap-6 z-30">
         
         <div className="flex flex-col items-center gap-1 text-white drop-shadow-lg">
-          <Eye size={26} />
-          <span className="text-[11px] font-bold">{(video as any).views || 0}</span>
+          <Eye size={30} strokeWidth={1.5} />
+          <span className="text-[12px] font-bold">{(video as any).views || 0}</span>
         </div>
 
         <button onClick={onToggleMute} className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
-          {isMuted ? <VolumeX size={28} /> : <Volume2 size={28} />}
+          {isMuted ? <VolumeX size={30} strokeWidth={1.5} /> : <Volume2 size={30} strokeWidth={1.5} />}
         </button>
 
         <div className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
-          <LikeButton videoId={video.id} size={28} stacked />
+          <LikeButton videoId={video.id} size={30} stacked />
         </div>
 
         <button onClick={onOpenComments} className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
-          <MessageCircle size={28} />
+          <MessageCircle size={30} strokeWidth={1.5} />
         </button>
 
       </div>
@@ -325,21 +308,17 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
       </div>
 
       {/* PROGRESS BAR (DRAGGABLE) */}
-      <div className="absolute left-4 right-[80px] bottom-[80px] z-30 flex items-center gap-3 pointer-events-none">
+      <div className="absolute left-0 right-0 bottom-0 z-40 pb-1 pointer-events-none">
         <div 
           ref={progressBarRef}
-          className="relative flex-1 h-[6px] bg-white/30 rounded-full cursor-pointer touch-none py-2 -my-2 pointer-events-auto"
+          className="relative w-full h-[4px] bg-white/20 cursor-pointer touch-none py-3 -my-3 pointer-events-auto"
           onPointerDown={handleDragStart}
           onPointerMove={handleDragMove}
           onPointerUp={handleDragEnd}
           onPointerCancel={handleDragEnd}
         >
-          <div className="absolute top-1/2 -translate-y-1/2 left-0 h-[6px] bg-white rounded-full pointer-events-none" style={{ width: `${progress}%` }} />
-          <div className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-white rounded-full shadow-lg pointer-events-none" style={{ left: `calc(${progress}% - 7px)` }} />
+          <div className="absolute top-1/2 -translate-y-1/2 left-0 h-[3px] bg-white pointer-events-none" style={{ width: `${progress}%` }} />
         </div>
-        <span className="text-white/90 text-[12px] font-semibold tabular-nums tracking-wide pointer-events-none">
-          {formatTime((progress / 100) * (videoRef.current?.duration || 0))}
-        </span>
       </div>
 
     </div>
