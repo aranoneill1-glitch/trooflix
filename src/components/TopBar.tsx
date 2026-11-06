@@ -80,15 +80,7 @@ export default function TopBar({ onMenu }: Props) {
 
         <div className="ml-auto flex items-center gap-4 md:gap-5">
           
-          {isCreator && (
-            <button
-              onClick={() => setShowCreateMenu(true)}
-              className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition"
-              title="Add Content"
-            >
-              <Plus size={20} />
-            </button>
-          )}
+
 
           <PWAInstallButton />
 

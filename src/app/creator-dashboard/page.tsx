@@ -37,7 +37,7 @@ function CreatorDashboardContent() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [isDashboardView, setIsDashboardView] = useState(true);
+  const [isDashboardView, setIsDashboardView] = useState(false);
   const [showMyTrooFlix, setShowMyTrooFlix] = useState(false);
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
   const [showAddContentMenu, setShowAddContentMenu] = useState(false);
