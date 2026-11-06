@@ -159,6 +159,23 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
     return () => observer.disconnect();
   }, []);
 
+  const requestRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const animate = () => {
+      if (videoRef.current && !isDragging && !videoRef.current.paused) {
+        const p = (videoRef.current.currentTime / videoRef.current.duration) * 100;
+        setProgress(p || 0);
+      }
+      requestRef.current = requestAnimationFrame(animate);
+    };
+
+    requestRef.current = requestAnimationFrame(animate);
+    return () => {
+      if (requestRef.current) cancelAnimationFrame(requestRef.current);
+    };
+  }, [isDragging]);
+
   const handleScreenClick = () => {
     if (videoRef.current) {
       if (videoRef.current.paused) {
@@ -227,7 +244,7 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
         playsInline
         muted={isMuted}
         preload="auto"
-        onTimeUpdate={handleTimeUpdate}
+        
         onLoadedData={() => {
           if (videoRef.current) {
             videoRef.current.play().catch(() => {});
@@ -337,7 +354,7 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
       <div className="absolute left-0 right-0 bottom-[85px] z-40 pointer-events-none">
         <div 
           ref={progressBarRef}
-          className="relative w-full h-[3px] bg-white/20 cursor-pointer touch-none py-3 -my-3 pointer-events-auto"
+          className="relative w-full h-[3px] bg-transparent cursor-pointer touch-none py-3 -my-3 pointer-events-auto"
           onPointerDown={handleDragStart}
           onPointerMove={handleDragMove}
           onPointerUp={handleDragEnd}
