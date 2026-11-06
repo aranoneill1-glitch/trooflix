@@ -60,7 +60,7 @@ export async function PUT(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
-    const { name, description, price_cents, image_url, inventory_count } = await req.json();
+    const { name, description, price_cents, image_url, inventory_count, type } = await req.json();
     
     if (!id || !name || !price_cents) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -74,6 +74,7 @@ export async function PUT(req: Request) {
         price_cents: Number(price_cents),
         image_url,
         inventory_count: Number(inventory_count),
+        type: type || "merch",
       })
       .eq("id", Number(id))
       .select()

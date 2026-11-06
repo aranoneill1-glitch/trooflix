@@ -16,6 +16,7 @@ type Product = {
   description: string;
   price_cents: number;
   inventory_count: number;
+  type?: string | null;
   image_url: string;
   active: boolean;
   sort_order?: number;
@@ -87,12 +88,14 @@ function ManageShopContent() {
       setDescription(product.description || "");
       setPrice((product.price_cents / 100).toFixed(2));
       setInventory(product.inventory_count.toString());
+      setProductType(product.type || "merch");
       setImageUrl(product.image_url || "");
     } else {
       setEditingId(null);
       setName("");
       setDescription("");
       setPrice("");
+      setProductType("merch");
       setInventory("");
       setImageUrl("");
     }
