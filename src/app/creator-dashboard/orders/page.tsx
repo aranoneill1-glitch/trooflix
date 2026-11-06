@@ -80,8 +80,8 @@ export default function CreatorOrdersPage() {
           <div className="bg-[#1c1c1e] border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
             {/* Table Header */}
             <div className="hidden md:grid grid-cols-12 gap-4 p-4 border-b border-white/10 bg-white/5 text-xs font-bold text-white/50 uppercase tracking-wider">
-              <div className="col-span-2">Date</div>
-              <div className="col-span-3">Item</div>
+              <div className="col-span-3">Order # & Date</div>
+              <div className="col-span-2">Item</div>
               <div className="col-span-3">Customer & Shipping</div>
               <div className="col-span-4 text-right">Status & Action</div>
             </div>
@@ -92,12 +92,13 @@ export default function CreatorOrdersPage() {
                 <div key={order.id} className="grid grid-cols-1 md:grid-cols-12 gap-4 p-4 items-center hover:bg-white/[0.02] transition-colors">
                   
                   {/* Date */}
-                  <div className="col-span-2 text-sm text-white/60 font-medium">
-                    {new Date(order.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                  <div className="col-span-3">
+                    <p className="text-sm font-bold text-white">{order.order_code || "TRF-UNKNOWN"}</p>
+                    <p className="text-xs text-white/40">{new Date(order.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</p>
                   </div>
 
                   {/* Item */}
-                  <div className="col-span-3 flex items-center gap-3">
+                  <div className="col-span-2 flex items-center gap-3">
                     <img src={order.product_image} alt={order.product_name} className="w-12 h-12 rounded-lg object-cover border border-white/10 shrink-0" />
                     <div className="min-w-0">
                       <p className="text-sm font-bold text-white truncate">{order.product_name}</p>

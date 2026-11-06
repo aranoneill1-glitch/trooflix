@@ -76,6 +76,7 @@ export async function POST(req: Request) {
 
         const items = JSON.parse(itemsJson);
         let lastCreatorId = null;
+        const orderCode = "TRF-" + Math.floor(100000 + Math.random() * 900000);
 
         for (const item of items) {
           const { data: product } = await supabaseAdmin.from("products").select("creator_id, price_cents").eq("id", item.id).maybeSingle();
@@ -90,6 +91,7 @@ export async function POST(req: Request) {
             stripe_session_id: session.id,
             amount_cents: (product.price_cents * item.quantity),
             status: "paid",
+            order_code: orderCode,
             shipping_name: shipping?.name || null,
             shipping_address: shipping?.address?.line1 || null,
             shipping_city: shipping?.address?.city || null,
