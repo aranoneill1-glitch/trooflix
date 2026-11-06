@@ -57,16 +57,17 @@ export default function PublicProfilePage() {
       setProfile(profileData);
 
       let targetCreatorId = profileData.creator_id;
-      if (!targetCreatorId) {
+      if (!targetCreatorId || isNaN(Number(targetCreatorId))) {
         try {
           const creatorsRes = await fetch('/api/creators');
           const creatorsList = await creatorsRes.json();
           const creatorMatch = creatorsList.find((c: any) => String(c.user_id) === String(profileData.user_id));
           if (creatorMatch) targetCreatorId = creatorMatch.id;
-        } catch (e) {
-          console.error("Failed to resolve creator ID", e);
-        }
+          else targetCreatorId = null;
+        } catch (e) { targetCreatorId = null; }
       }
+      if (targetCreatorId) targetCreatorId = Number(targetCreatorId);
+      console.log("DEBUG: Resolved Creator ID =", targetCreatorId);
       setResolvedCreatorId(targetCreatorId);
       const { count: followers } = await supabase.from("follows").select("*", { count: "exact", head: true }).eq("creator_id", targetCreatorId);
       const { count: subs } = await supabase.from("creator_subscriptions").select("*", { count: "exact", head: true }).eq("creator_id", targetCreatorId);
@@ -130,6 +131,10 @@ export default function PublicProfilePage() {
     if (!user) return window.location.href = "/login";
 
     const targetCreatorId = resolvedCreatorId;
+    if (!targetCreatorId || isNaN(Number(targetCreatorId))) {
+      alert("Error: Could not find this creator's numeric ID. Please refresh the page and try again.");
+      return;
+    }
     if (!targetCreatorId) return alert("Could not find this creator's ID.");
     const newIsFollowing = !isFollowing;
     
