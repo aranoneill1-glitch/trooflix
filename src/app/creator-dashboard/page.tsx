@@ -452,7 +452,7 @@ function CreatorDashboardContent() {
               onPointerUp={cancelPress}
               onPointerLeave={cancelPress}
               onContextMenu={(e) => { e.preventDefault(); setSelectedMerchItem(item); }}
-              className="flex items-center gap-4 bg-[#1c1c1e] border border-white/10 rounded-2xl p-3 relative" 
+              className="flex items-center gap-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-3 relative shadow-lg" 
               style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none" }}
             >
               <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0 relative pointer-events-none">
