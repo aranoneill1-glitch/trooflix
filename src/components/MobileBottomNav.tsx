@@ -36,7 +36,7 @@ export default function MobileBottomNav() {
   const tabs = [
     { name: "Home", icon: Home, href: "/" },
     { name: "Shorts", icon: Play, href: "/feed" },
-    { name: "Trooflix", href: "/plus" },
+    { name: "Trooflix", href: "/creator-dashboard" },
     { name: "Shop", icon: ShoppingBag, href: "/merchandise" },
     { name: "Search", icon: Search, href: "/search" },
   ];

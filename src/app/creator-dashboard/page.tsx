@@ -14,6 +14,7 @@ import MobileBottomNav from "@/components/MobileBottomNav";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import { getCachedUser, clearUserCache } from "@/lib/cache";
 import { createClient } from "@/utils/supabase/client";
+import MyTrooFlixContent from "@/components/MyTrooFlixContent";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
 import { GripVertical } from "lucide-react";
 import HomeFeedCard from "@/components/HomeFeedCard";
@@ -37,6 +38,7 @@ function CreatorDashboardContent() {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isDashboardView, setIsDashboardView] = useState(true);
+  const [showMyTrooFlix, setShowMyTrooFlix] = useState(false);
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
   const [showAddContentMenu, setShowAddContentMenu] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -283,13 +285,16 @@ function CreatorDashboardContent() {
           {(true) && (
           <div className="flex items-center justify-center mb-6">
             <div className="flex bg-[#1c1c1e] p-1 rounded-full border border-white/10 shadow-lg">
-              <button onClick={() => setIsDashboardView(false)} className={`flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold transition-all ${!isDashboardView ? "bg-white text-black shadow-md" : "text-white/50 hover:text-white"}`}><Eye size={16} /> Profile</button>
-              <button onClick={() => setIsDashboardView(true)} className={`flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold transition-all ${isDashboardView ? "bg-white text-black shadow-md" : "text-white/50 hover:text-white"}`}><LayoutDashboard size={16} /> Dashboard</button>
+              <button onClick={() => { setIsDashboardView(false); setShowMyTrooFlix(false); }} className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${!isDashboardView && !showMyTrooFlix ? "bg-white text-black shadow-md" : "text-white/50 hover:text-white"}`}><Eye size={16} /> Profile</button>
+              <button onClick={() => { setIsDashboardView(true); setShowMyTrooFlix(false); }} className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${isDashboardView && !showMyTrooFlix ? "bg-white text-black shadow-md" : "text-white/50 hover:text-white"}`}><LayoutDashboard size={16} /> Dashboard</button>
+              <button onClick={() => { setShowMyTrooFlix(true); setIsDashboardView(false); }} className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${showMyTrooFlix ? "bg-white text-black shadow-md" : "text-white/50 hover:text-white"}`}><Play size={16} /> MyTrooFlix</button>
             </div>
           </div>
           )}
 
-          {!isDashboardView && (
+          {showMyTrooFlix && <MyTrooFlixContent embedded />}
+
+          {!isDashboardView && !showMyTrooFlix && (
             <div className="animate-in fade-in duration-300">
               <div className="flex flex-col mb-6 w-full">
                 <div className="flex items-center gap-4 w-full mb-4">
@@ -503,7 +508,7 @@ function CreatorDashboardContent() {
             </div>
           )}
 
-          {isDashboardView && (
+          {isDashboardView && !showMyTrooFlix && (
             <div className="animate-in fade-in duration-300 space-y-8 max-w-4xl mx-auto">
               
               <section>
