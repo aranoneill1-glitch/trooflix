@@ -284,25 +284,29 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
 
 
 
-      {/* RIGHT SIDE ACTION BUTTONS */}
-      <div className="absolute right-3 bottom-[140px] flex flex-col items-center gap-6 z-30">
+      {/* LEFT SIDE ACTION BUTTONS */}
+      <div className="absolute left-4 bottom-[160px] z-30 flex items-center gap-5">
         
-        <div className="flex flex-col items-center gap-1 text-white drop-shadow-lg">
-          <Eye size={30} strokeWidth={1.5} />
-          <span className="text-[12px] font-bold">{(video as any).views || 0}</span>
-        </div>
-
+        {/* 1. Volume */}
         <button onClick={onToggleMute} className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
-          {isMuted ? <VolumeX size={30} strokeWidth={1.5} /> : <Volume2 size={30} strokeWidth={1.5} />}
+          {isMuted ? <VolumeX size={28} strokeWidth={1.5} /> : <Volume2 size={28} strokeWidth={1.5} />}
         </button>
 
+        {/* 2. Comments */}
+        <button onClick={onOpenComments} className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
+          <MessageCircle size={28} strokeWidth={1.5} />
+        </button>
+
+        {/* 3. Likes */}
         <div className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
-          <LikeButton videoId={video.id} size={30} stacked />
+          <LikeButton videoId={video.id} size={28} stacked={false} />
         </div>
 
-        <button onClick={onOpenComments} className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
-          <MessageCircle size={30} strokeWidth={1.5} />
-        </button>
+        {/* 4. Views */}
+        <div className="flex items-center gap-1.5 text-white drop-shadow-lg">
+          <Eye size={28} strokeWidth={1.5} />
+          <span className="text-[13px] font-bold">{(video as any).views || 0}</span>
+        </div>
 
       </div>
 
