@@ -36,6 +36,14 @@ function CreatorDashboardContent() {
 
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
+
+  const userTier: "free" | "plus" | "creator" = (() => {
+    if (!profile?.tier) return "free";
+    if ((profile.tier === "plus" || profile.tier === "creator") && profile.plus_expires_at) {
+      if (new Date(profile.plus_expires_at) < new Date()) return "free";
+    }
+    return profile.tier as "free" | "plus" | "creator";
+  })();
   const [loading, setLoading] = useState(true);
   const [isDashboardView, setIsDashboardView] = useState(false);
   const [showMyTrooFlix, setShowMyTrooFlix] = useState(false);
@@ -286,7 +294,7 @@ function CreatorDashboardContent() {
           <div className="flex items-center justify-center mb-6">
             <div className="flex bg-white/10 backdrop-blur-xl p-1 rounded-full border border-white/20 shadow-2xl">
               <button onClick={() => { setIsDashboardView(false); setShowMyTrooFlix(false); }} className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${!isDashboardView && !showMyTrooFlix ? "bg-white text-black shadow-md" : "text-white/50 hover:text-white"}`}><Eye size={16} /> Profile</button>
-              <button onClick={() => { setIsDashboardView(true); setShowMyTrooFlix(false); }} className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${isDashboardView && !showMyTrooFlix ? "bg-white text-black shadow-md" : "text-white/50 hover:text-white"}`}><LayoutDashboard size={16} /> Dashboard</button>
+              <button onClick={() => { if (userTier === "free") { window.location.href = "/upgrade?feature=dashboard"; return; } setIsDashboardView(true); setShowMyTrooFlix(false); }} className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${isDashboardView && !showMyTrooFlix ? "bg-white text-black shadow-md" : "text-white/50 hover:text-white"} ${userTier === "free" ? "opacity-60" : ""}`}><LayoutDashboard size={16} /> Dashboard {userTier === "free" && <Lock size={11} className="text-white/60" />}</button>
               <button onClick={() => { setShowMyTrooFlix(true); setIsDashboardView(false); }} className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${showMyTrooFlix ? "bg-white text-black shadow-md" : "text-white/50 hover:text-white"}`}><Play size={16} /> MyTrooFlix</button>
             </div>
           </div>
@@ -342,9 +350,15 @@ function CreatorDashboardContent() {
 
               <div className="flex gap-3 mb-8 w-full">
                 <button onClick={() => setShowAddContentMenu(true)} className="flex-1 flex items-center justify-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-white font-bold py-2.5 rounded-full hover:bg-white/20 transition shadow-lg"><Plus size={16} /> Add Content</button>
-                <Link href="/creator-dashboard/live" className="flex-1 flex items-center justify-center gap-2 bg-white/10 backdrop-blur-md border border-[#E53945] text-[#E53945] font-bold py-2.5 rounded-full hover:bg-[#E53945]/10 transition shadow-lg">
-                  <Radio size={16} /> Go Live
-                </Link>
+                {userTier === "creator" ? (
+                  <Link href="/creator-dashboard/live" className="flex-1 flex items-center justify-center gap-2 bg-white/10 backdrop-blur-md border border-[#E53945] text-[#E53945] font-bold py-2.5 rounded-full hover:bg-[#E53945]/10 transition shadow-lg">
+                    <Radio size={16} /> Go Live
+                  </Link>
+                ) : (
+                  <button onClick={() => { window.location.href = "/upgrade?feature=go_live"; }} className="flex-1 flex items-center justify-center gap-2 bg-white/5 backdrop-blur-md border border-white/20 text-white/50 font-bold py-2.5 rounded-full hover:bg-white/10 transition shadow-lg">
+                    <Radio size={16} /> Go Live <Lock size={11} />
+                  </button>
+                )}
               </div>
 
               <div className="flex items-center justify-between border-b border-white/10 mb-6">
@@ -656,7 +670,7 @@ function CreatorDashboardContent() {
                       <Video className="text-[#E53945]" size={24} />
                     </div>
                     <div className="relative z-10">
-                      <h4 className="font-bold text-white text-base">Upload Video</h4>
+                      <h4 className="font-bold text-white text-base flex items-center gap-1.5">Upload Video {userTier !== "creator" && <Lock size={12} className="text-yellow-400" />}</h4>
                       <p className="text-xs text-white/50">Publish a long-form video or documentary</p>
                     </div>
                   </Link>
@@ -678,9 +692,9 @@ function CreatorDashboardContent() {
                   </Link>
                   
                   <Link 
-                    href="/creator-dashboard/upload?type=tweet" 
+                    href={userTier === "creator" ? "/creator-dashboard/upload?type=tweet" : "/upgrade?feature=add_tweet"}
                     onClick={() => setShowAddContentMenu(false)}
-                    className="group relative flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-green-500/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden"
+                    className={`group relative flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-green-500/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden ${userTier !== "creator" ? "opacity-50" : ""}`}
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="absolute inset-0 bg-gradient-to-r from-green-500/0 via-green-500/0 to-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -688,15 +702,15 @@ function CreatorDashboardContent() {
                       <MessageSquare className="text-green-400" size={24} />
                     </div>
                     <div className="relative z-10">
-                      <h4 className="font-bold text-white text-base">Add a Tweet</h4>
+                      <h4 className="font-bold text-white text-base flex items-center gap-1.5">Add a Tweet {userTier !== "creator" && <Lock size={12} className="text-yellow-400" />}</h4>
                       <p className="text-xs text-white/50">Share a text update on the home feed</p>
                     </div>
                   </Link>
 
                   <Link 
-                    href="/creator-dashboard/live"
+                    href={userTier === "creator" ? "/creator-dashboard/live" : "/upgrade?feature=go_live"}
                     onClick={() => setShowAddContentMenu(false)}
-                    className="group relative flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#E53945]/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden"
+                    className={`group relative flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#E53945]/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden ${userTier !== "creator" ? "opacity-50" : ""}`}
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="absolute inset-0 bg-gradient-to-r from-[#E53945]/0 via-[#E53945]/0 to-[#E53945]/5 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -704,13 +718,13 @@ function CreatorDashboardContent() {
                       <Radio className="text-[#E53945]" size={24} />
                     </div>
                     <div className="relative z-10">
-                      <h4 className="font-bold text-white text-base">Go Live</h4>
+                      <h4 className="font-bold text-white text-base flex items-center gap-1.5">Go Live {userTier !== "creator" && <Lock size={12} className="text-yellow-400" />}</h4>
                       <p className="text-xs text-white/50">Start a live stream with your fans</p>
                     </div>
                   </Link>
 
                   <Link 
-                    href="/creator-dashboard/shop"
+                    href={userTier !== "free" ? "/creator-dashboard/shop" : "/upgrade?feature=add_product"}
                     onClick={() => setShowAddContentMenu(false)}
                     className="group relative flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-500/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden"
                   >
