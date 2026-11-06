@@ -157,11 +157,25 @@ export default function MerchandisePage() {
           </section>
         )}
 
+        {/* 1.5 WHAT'S NEW */}
+        {filteredProducts.length > 0 && !searchQuery && (
+          <section className="mb-12">
+            <h2 className="text-xl md:text-2xl font-bold mb-4">What's New</h2>
+            <div className="flex overflow-x-auto scrollbar-hide gap-4 pb-4">
+              {filteredProducts.slice(0, 10).map((p) => (
+                <div key={p.id} className="w-[140px] md:w-[180px] shrink-0">
+                  <ProductCard product={p} isWishlisted={wishlistedIds.includes(p.id)} onToggleWishlist={(e) => toggleWishlist(e, p.id)} onClick={() => setSelectedProduct(p)} />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* 2. FEATURED MERCHANDISE */}
         {merchandise.length > 0 && (
           <section className="mb-12">
             <h2 className="text-xl md:text-2xl font-bold mb-4">
-               {searchQuery ? "Merchandise Results" : "Featured Merchandise"}
+               {searchQuery ? "Merchandise Results" : "Featured Merch"}
             </h2>
             <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4 pb-4">
               {merchandise.map((p) => (
