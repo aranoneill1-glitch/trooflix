@@ -342,7 +342,7 @@ function CreatorDashboardContent() {
 
               <div className="flex gap-3 mb-8 w-full">
                 <button onClick={() => setShowAddContentMenu(true)} className="flex-1 flex items-center justify-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-white font-bold py-2.5 rounded-full hover:bg-white/20 transition shadow-lg"><Plus size={16} /> Add Content</button>
-                <Link href="/creator-dashboard/live" className="flex-1 flex items-center justify-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-white font-bold py-2.5 rounded-full hover:bg-white/20 transition shadow-lg">
+                <Link href="/creator-dashboard/live" className="flex-1 flex items-center justify-center gap-2 bg-white/10 backdrop-blur-md border border-[#E53945] text-[#E53945] font-bold py-2.5 rounded-full hover:bg-[#E53945]/10 transition shadow-lg">
                   <Radio size={16} /> Go Live
                 </Link>
               </div>
