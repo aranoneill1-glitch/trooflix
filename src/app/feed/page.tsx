@@ -385,7 +385,7 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
 
 
             {/* BOTTOM LEFT: DESCRIPTION, AVATAR, BUTTONS */}
-      <div className="absolute left-4 right-[80px] bottom-[125px] z-30 flex flex-col items-start gap-3 pointer-events-none">
+      <div className="absolute left-4 right-[80px] bottom-[105px] z-30 flex flex-col items-start gap-3 pointer-events-none">
 
         {/* 1. Description */}
         <div 
