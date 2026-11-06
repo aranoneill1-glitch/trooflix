@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, LogOut, Settings, CreditCard, LayoutDashboard, } from "lucide-react";
+import { User, LogOut, Settings, CreditCard, LayoutDashboard, MessageCircle, Bell } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { getCachedUser, clearUserCache } from "@/lib/cache";
 import { motion, AnimatePresence } from "framer-motion";
@@ -113,27 +113,27 @@ export default function UserMenu() {
             </div>
 
             <div className="p-2">
-              {/* Profile Link (For Creators to see their public page) */}
-              {isCreator && (
-                <Link 
-                  href="/creator-dashboard?view=public"
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition text-sm text-white/80 hover:text-white"
-                >
-                  <User size={16} />
-                  Profile
-                </Link>
-              )}
-
-              {/* Dashboard / Main Link */}
+              {/* Messages */}
               <Link 
-                href={profileLink}
+                href="/messages"
                 onClick={() => setIsOpen(false)}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition text-sm text-white/80 hover:text-white"
               >
-                {isCreator ? <LayoutDashboard size={16} /> : <User size={16} />}
-                {isCreator ? "Creator Dashboard" : "My Profile"}
+                <MessageCircle size={16} />
+                Messages
               </Link>
+
+              {/* Notifications (opens the bell modal) */}
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  window.dispatchEvent(new CustomEvent('open-notifications'));
+                }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition text-sm text-white/80 hover:text-white"
+              >
+                <Bell size={16} />
+                Notifications
+              </button>
 
               {isCreator && (
                 <Link 

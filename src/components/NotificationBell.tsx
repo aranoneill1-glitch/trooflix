@@ -16,7 +16,7 @@ type Notification = {
   sender_avatar: string | null;
 };
 
-export default function NotificationBell() {
+export default function NotificationBell({ hideTrigger = false }: { hideTrigger?: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"unread" | "all" | "basket">("unread");
   const [basketItems, setBasketItems] = useState<any[]>([]);
@@ -24,6 +24,12 @@ export default function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
+
+  useEffect(() => {
+    const handleOpen = () => setIsOpen(true);
+    window.addEventListener('open-notifications', handleOpen);
+    return () => window.removeEventListener('open-notifications', handleOpen);
+  }, []);
 
   useEffect(() => {
     const stored = localStorage.getItem("trooflix_basket");
@@ -132,12 +138,14 @@ export default function NotificationBell() {
 
   return (
     <>
-      <button onClick={() => setIsOpen(true)} className="relative p-2 text-white/70 hover:text-white transition">
-        <Bell size={22} />
-        {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-[#E53945] rounded-full border-2 border-[#0a0303]" />
-        )}
-      </button>
+      {!hideTrigger && (
+        <button onClick={() => setIsOpen(true)} className="relative p-2 text-white/70 hover:text-white transition">
+          <Bell size={22} />
+          {unreadCount > 0 && (
+            <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-[#E53945] rounded-full border-2 border-[#0a0303]" />
+          )}
+        </button>
+      )}
 
       <AnimatePresence>
         {isOpen && (

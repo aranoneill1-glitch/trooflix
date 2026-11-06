@@ -101,7 +101,7 @@ export default function TopBar({ onMenu }: Props) {
             <RefreshCw size={20} className={isRefreshing ? "animate-spin" : ""} />
           </button>
           
-          <NotificationBell />
+          <NotificationBell hideTrigger />
 
           <div className="flex items-center gap-3">
             <UserMenu />
