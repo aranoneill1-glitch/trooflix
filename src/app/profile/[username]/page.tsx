@@ -43,6 +43,7 @@ export default function PublicProfilePage() {
   const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
   const [followerCount, setFollowerCount] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
+  const [resolvedCreatorId, setResolvedCreatorId] = useState<number | null>(null);
   const [subscriberCount, setSubscriberCount] = useState(0);
   const pressTimer = useRef<NodeJS.Timeout | null>(null);
 
@@ -55,7 +56,18 @@ export default function PublicProfilePage() {
       if (error || !profileData) { setLoading(false); return; }
       setProfile(profileData);
 
-      const targetCreatorId = profileData.creator_id || profileData.user_id;
+      let targetCreatorId = profileData.creator_id;
+      if (!targetCreatorId) {
+        try {
+          const creatorsRes = await fetch('/api/creators');
+          const creatorsList = await creatorsRes.json();
+          const creatorMatch = creatorsList.find((c: any) => String(c.user_id) === String(profileData.user_id));
+          if (creatorMatch) targetCreatorId = creatorMatch.id;
+        } catch (e) {
+          console.error("Failed to resolve creator ID", e);
+        }
+      }
+      setResolvedCreatorId(targetCreatorId);
       const { count: followers } = await supabase.from("follows").select("*", { count: "exact", head: true }).eq("creator_id", targetCreatorId);
       const { count: subs } = await supabase.from("creator_subscriptions").select("*", { count: "exact", head: true }).eq("creator_id", targetCreatorId);
       setFollowerCount(followers || 0);
@@ -117,7 +129,8 @@ export default function PublicProfilePage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return window.location.href = "/login";
 
-    const targetCreatorId = profile.creator_id || profile.user_id;
+    const targetCreatorId = resolvedCreatorId;
+    if (!targetCreatorId) return alert("Could not find this creator's ID.");
     const newIsFollowing = !isFollowing;
     
     setIsFollowing(newIsFollowing);

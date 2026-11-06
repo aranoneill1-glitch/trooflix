@@ -45,7 +45,10 @@ export async function POST(req: Request) {
     const { userId, creatorId } = await req.json();
     if (!userId || !creatorId) return NextResponse.json({ error: "userId and creatorId required" }, { status: 400 });
 
-    const { data: existing } = await supabaseAdmin.from("follows").select("id").eq("follower_id", userId).eq("creator_id", Number(creatorId)).maybeSingle();
+    const targetId = Number(creatorId);
+    if (isNaN(targetId)) return NextResponse.json({ error: "Invalid creatorId. Must be a number." }, { status: 400 });
+
+    const { data: existing } = await supabaseAdmin.from("follows").select("id").eq("follower_id", userId).eq("creator_id", targetId).maybeSingle();
 
     if (existing) {
       await supabaseAdmin.from("follows").delete().eq("id", existing.id);
