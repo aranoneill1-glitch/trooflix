@@ -95,6 +95,7 @@ export default function Home() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [followedCreatorIds, setFollowedCreatorIds] = useState<number[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
@@ -147,7 +148,7 @@ export default function Home() {
     supabase.from("profiles").select("user_id, display_name, username, avatar_url, is_verified, tier").then(({ data }) => {
       if (data) setAllUsers(data);
     });
-    getCachedUser().then(setUser);
+    getCachedUser().then((u) => { setUser(u); if (u) { fetch(`/api/follows?user_id=${u.id}`).then(r => r.json()).then(d => setFollowedCreatorIds(d.ids || [])).catch(() => {}); } });
     
     fetch("/api/videos", { cache: "no-store" })
       .then((r) => r.json())
@@ -242,6 +243,28 @@ export default function Home() {
   const handleInstantPlay = (video: Video) => {
     setSelected(null); 
     setPlaying(video);
+  };
+
+  const toggleFollow = async (e: React.MouseEvent, creatorId: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!user) {
+      window.location.href = "/login";
+      return;
+    }
+    
+    const isFollowing = followedCreatorIds.includes(creatorId);
+    setFollowedCreatorIds(prev => isFollowing ? prev.filter(id => id !== creatorId) : [...prev, creatorId]);
+
+    try {
+      await fetch("/api/follows", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id, creatorId })
+      });
+    } catch (err) {
+      setFollowedCreatorIds(prev => isFollowing ? [...prev, creatorId] : prev.filter(id => id !== creatorId));
+    }
   };
 
   return (
@@ -450,10 +473,10 @@ export default function Home() {
                         </div>
                         <span className="text-xs font-semibold text-white/80 group-hover:text-white transition truncate w-full mb-2">{c.name || "Creator"}</span>
                         <button 
-                          onClick={(e) => e.preventDefault()}
-                          className="px-4 py-1 rounded-full border border-white/20 text-[10px] font-bold hover:bg-white hover:text-black transition"
+                          onClick={(e) => toggleFollow(e, c.id)}
+                          className={`px-4 py-1 rounded-full border text-[10px] font-bold transition ${followedCreatorIds.includes(c.id) ? "bg-white/10 border-white/20 text-white" : "border-white/20 hover:bg-white hover:text-black"}`}
                         >
-                          Follow
+                          {followedCreatorIds.includes(c.id) ? "Following" : "Follow"}
                         </button>
                       </Link>
                     ))}
@@ -498,10 +521,10 @@ export default function Home() {
                         </div>
                         <span className="text-sm font-bold text-white group-hover:text-[#E53945] transition truncate w-full mb-2">{c.name || "Creator"}</span>
                         <button 
-                          onClick={(e) => e.preventDefault()}
-                          className="px-4 py-1.5 rounded-full border border-white/20 text-xs font-bold hover:bg-white hover:text-black transition"
+                          onClick={(e) => toggleFollow(e, c.id)}
+                          className={`px-4 py-1.5 rounded-full border text-xs font-bold transition ${followedCreatorIds.includes(c.id) ? "bg-white/10 border-white/20 text-white" : "border-white/20 hover:bg-white hover:text-black"}`}
                         >
-                          Follow
+                          {followedCreatorIds.includes(c.id) ? "Following" : "Follow"}
                         </button>
                       </Link>
                     ))}
@@ -816,10 +839,10 @@ function DetailModal({ item, onClose, onPlay, creators }: { item: Video; onClose
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4" onClick={onClose}>
       <motion.div key={item.id} ref={modalContentRef} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.2 }} 
-        className="bg-[#141414] shadow-2xl rounded-lg relative w-full max-w-4xl overflow-y-auto" 
+        className="bg-black shadow-2xl rounded-lg relative w-full max-w-4xl overflow-y-auto" 
         style={{ maxHeight: "90dvh" }} onClick={(e) => e.stopPropagation()}>
         <div className="relative h-[260px] md:h-[420px] w-full overflow-hidden">
-          <img src={item.backdropUrl} alt={item.title} className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${previewReady ? "opacity-0" : "opacity-100"}`} />
+          
           {videoSrc && (
             <>
               <video ref={previewRef} src={videoSrc} muted playsInline preload="metadata" className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${previewReady ? "opacity-100" : "opacity-0"}`} />
@@ -830,7 +853,7 @@ function DetailModal({ item, onClose, onPlay, creators }: { item: Video; onClose
           <button onClick={onClose} className="absolute top-3 right-3 md:top-4 md:right-4 z-20 bg-black/70 hover:bg-black/90 rounded-full p-2 transition" aria-label="Close"><X size={20} /></button>
 
           <div className="absolute bottom-0 left-0 right-0 p-5 md:p-10">
-            <h2 className="text-2xl md:text-4xl font-black mb-1 md:mb-2 drop-shadow-lg">{item.title}</h2>
+            
             <p className="text-xs md:text-sm text-white/70 mb-3 md:mb-4">{metaParts.join(" · ")}</p>
             <div className="flex items-center gap-2 md:gap-3 flex-wrap">
               <button onClick={() => onPlay(item)} className="flex items-center gap-2 bg-white/20 backdrop-blur-xl border border-white/30 text-white font-bold text-sm px-4 md:px-5 py-2 md:py-2.5 rounded-xl shadow-lg hover:bg-white/30 transition-all active:scale-95"><Play size={18} fill="currentColor" /> Play</button>
@@ -853,7 +876,7 @@ function DetailModal({ item, onClose, onPlay, creators }: { item: Video; onClose
           <div className="flex-1">
             {item.description && <p className="text-white/90 leading-relaxed text-sm md:text-base">{item.description}</p>}
           </div>
-          <div className="w-11 h-11 md:w-12 md:h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition flex-shrink-0 cursor-pointer"><LikeButton videoId={item.id} size={22} stacked /></div>
+          
         </div>
       </motion.div>
     </motion.div>
