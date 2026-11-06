@@ -254,70 +254,6 @@ export default function PlusPage() {
 
             <div className="max-w-7xl mx-auto space-y-10">
               
-              {/* MY ORDERS ROW */}
-              {myOrders.length > 0 && (
-                <section>
-                  <div className="flex items-center justify-between px-5 md:px-12 mb-4">
-                    <h2 className="text-xl md:text-2xl font-black tracking-tight flex items-center gap-2">
-                      My Orders <Package size={20} className="text-[#E53945]" />
-                    </h2>
-                    <Link href="/orders" className="text-xs font-bold text-white/50 hover:text-white transition flex items-center gap-1">See All <ChevronRight size={14} /></Link>
-                  </div>
-                  <div className="flex gap-4 overflow-x-auto scrollbar-hide px-5 md:px-12 pb-4">
-                    {myOrders.slice(0, 10).map((order) => (
-                      <div key={order.id} className="flex flex-col w-[160px] md:w-[220px] shrink-0 bg-[#1c1c1e] border border-white/10 rounded-2xl overflow-hidden shadow-lg">
-                        <div className="relative aspect-square w-full bg-black/50">
-                          <img src={order.product?.image_url} alt={order.product?.name} className="w-full h-full object-cover" />
-                          <div className="absolute top-2 right-2">
-                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${order.status === "shipped" ? "bg-green-500/90 text-white" : "bg-yellow-500/90 text-black"}`}>
-                              {order.status}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="p-3">
-                          <p className="text-[10px] text-white/40 font-mono mb-1">{order.order_code}</p>
-                          <p className="text-sm font-bold text-white truncate">{order.product?.name}</p>
-                          <p className="text-xs text-[#1DB954] font-bold mb-2">${(order.amount_cents / 100).toFixed(2)}</p>
-                          
-                          {order.status === "shipped" && order.tracking_number && (
-                            <div className="mt-2 pt-2 border-t border-white/10">
-                              <p className="text-[10px] text-white/50">Tracking:</p>
-                              <p className="text-[10px] font-mono text-white/80 truncate">{order.shipping_carrier} - {order.tracking_number}</p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              )}
-
-              {/* WISHLIST ROW */}
-              {wishlistItems.length > 0 && (
-                <section>
-                  <div className="flex items-center justify-between px-5 md:px-12 mb-4">
-                    <h2 className="text-xl md:text-2xl font-black tracking-tight flex items-center gap-2">
-                      My Wishlist
-                    </h2>
-                    <Link href="/merchandise" className="text-xs font-bold text-white/50 hover:text-white transition flex items-center gap-1">Shop More <ChevronRight size={14} /></Link>
-                  </div>
-                  <div className="flex gap-4 overflow-x-auto scrollbar-hide px-5 md:px-12 pb-4">
-                    {wishlistItems.map((p) => (
-                      <Link key={p.id} href="/merchandise" className="flex flex-col w-[140px] md:w-[180px] shrink-0 group">
-                        <div className="relative aspect-square w-full rounded-2xl overflow-hidden mb-2 border border-white/5 bg-[#1c1c1e]">
-                          <img src={p.image_url} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-                          <div className="absolute top-2 right-2 bg-yellow-500 text-white p-1 rounded-full shadow-md">
-                            <Star size={12} fill="currentColor" />
-                          </div>
-                        </div>
-                        <p className="text-[#1DB954] font-black text-sm md:text-base tracking-tight leading-none mb-1">${(p.price_cents / 100).toFixed(2)}</p>
-                        <h3 className="text-[11px] md:text-sm font-semibold text-white/90 line-clamp-2 leading-tight">{p.name}</h3>
-                      </Link>
-                    ))}
-                  </div>
-                </section>
-              )}
-
               {/* B. CONTINUE WATCHING (Edge-to-edge, no boxes) */}
               {continueWatching.length > 0 && (
                 <section>
@@ -470,6 +406,68 @@ export default function PlusPage() {
                   ))}
                 </div>
               </section>
+
+              {/* SHOP ORDERS + WISHLIST (in Your Library area) */}
+              {myOrders.length > 0 && (
+                <section className="px-5 md:px-12 mb-10">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xl md:text-2xl font-black tracking-tight flex items-center gap-2">
+                      Shop Orders <Package size={20} className="text-[#E53945]" />
+                    </h2>
+                    <Link href="/orders" className="text-xs font-bold text-white/50 hover:text-white transition flex items-center gap-1">See All <ChevronRight size={14} /></Link>
+                  </div>
+                  <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4">
+                    {myOrders.slice(0, 10).map((order) => (
+                      <div key={order.id} className="flex flex-col w-[160px] md:w-[220px] shrink-0 bg-[#1c1c1e] border border-white/10 rounded-2xl overflow-hidden shadow-lg">
+                        <div className="relative aspect-square w-full bg-black/50">
+                          <img src={order.product?.image_url} alt={order.product?.name} className="w-full h-full object-cover" />
+                          <div className="absolute top-2 right-2">
+                            <span className={"px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider " + (order.status === "shipped" ? "bg-green-500/90 text-white" : "bg-yellow-500/90 text-black")}>
+                              {order.status}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="p-3">
+                          <p className="text-[10px] text-white/40 font-mono mb-1">{order.order_code}</p>
+                          <p className="text-sm font-bold text-white truncate">{order.product?.name}</p>
+                          <p className="text-xs text-[#1DB954] font-bold mb-2">{"$" + (order.amount_cents / 100).toFixed(2)}</p>
+                          {order.status === "shipped" && order.tracking_number && (
+                            <div className="mt-2 pt-2 border-t border-white/10">
+                              <p className="text-[10px] text-white/50">Tracking:</p>
+                              <p className="text-[10px] font-mono text-white/80 truncate">{order.shipping_carrier} - {order.tracking_number}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {wishlistItems.length > 0 && (
+                <section className="px-5 md:px-12 mb-10">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xl md:text-2xl font-black tracking-tight flex items-center gap-2">
+                      Shop Wishlist <Heart size={20} className="text-[#E53945]" />
+                    </h2>
+                    <Link href="/merchandise" className="text-xs font-bold text-white/50 hover:text-white transition flex items-center gap-1">Shop More <ChevronRight size={14} /></Link>
+                  </div>
+                  <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4">
+                    {wishlistItems.map((p) => (
+                      <Link key={p.id} href="/merchandise" className="flex flex-col w-[140px] md:w-[180px] shrink-0 group">
+                        <div className="relative aspect-square w-full rounded-2xl overflow-hidden mb-2 border border-white/5 bg-[#1c1c1e]">
+                          <img src={p.image_url} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                          <div className="absolute top-2 right-2 bg-yellow-500 text-white p-1 rounded-full shadow-md">
+                            <Star size={12} fill="currentColor" />
+                          </div>
+                        </div>
+                        <p className="text-[#1DB954] font-black text-sm md:text-base tracking-tight leading-none mb-1">{"$" + (p.price_cents / 100).toFixed(2)}</p>
+                        <h3 className="text-[11px] md:text-sm font-semibold text-white/90 line-clamp-2 leading-tight">{p.name}</h3>
+                      </Link>
+                    ))}
+                  </div>
+                </section>
+              )}
 
               {/* H. YOUR ACTIVITY */}
               <section className="px-5 md:px-12 pb-10">
