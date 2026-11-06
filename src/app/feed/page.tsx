@@ -207,6 +207,12 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
           if (videoRef.current) {
             videoRef.current.play().catch(() => {});
           }
+          // Trigger permanent view count
+          fetch("/api/views", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ videoId: video.id })
+          }).catch(() => {});
         }}
         onError={() => setHasError(true)}
         className="w-full h-full object-cover cursor-pointer"
