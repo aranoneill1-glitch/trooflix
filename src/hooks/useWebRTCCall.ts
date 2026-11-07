@@ -317,16 +317,23 @@ export function useWebRTCCall(userId: string | null) {
 
     const newFacing: FacingMode = facingMode === "user" ? "environment" : "user";
     try {
+      // 1. Stop the old track to free the camera
+      currentVideoTrack.stop();
+
+      // 2. Get new stream
       const newStream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: newFacing }, audio: false,
       });
       const newTrack = newStream.getVideoTracks()[0];
+      
+      // 3. Replace on PeerConnection
       const sender = pcRef.current.getSenders().find((s) => s.track?.kind === "video");
       if (sender) await sender.replaceTrack(newTrack);
-      currentVideoTrack.stop();
-      localStreamRef.current.removeTrack(currentVideoTrack);
-      localStreamRef.current.addTrack(newTrack);
-      setLocalStream(new MediaStream(localStreamRef.current.getTracks()));
+
+      // 4. Create a COMPLETELY new MediaStream object so React/iOS updates
+      const newLocalStream = new MediaStream([newTrack, ...localStreamRef.current.getAudioTracks()]);
+      localStreamRef.current = newLocalStream;
+      setLocalStream(newLocalStream);
       setFacingMode(newFacing);
     } catch (e) { console.error("Flip camera failed:", e); }
   }, [facingMode]);
