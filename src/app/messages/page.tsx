@@ -62,7 +62,7 @@ export default function MessagesInbox() {
   const [loading, setLoading] = useState(true);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
-  const [filter, setFilter] = useState<"all" | "unread">("all");
+  const [filter, setFilter] = useState<"all" | "unread" | "requests">("all");
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Profile[]>([]);
@@ -147,7 +147,11 @@ export default function MessagesInbox() {
   const visible =
     filter === "unread"
       ? conversations.filter((c) => c.unread_count > 0)
+      : filter === "requests"
+      ? conversations.filter((c) => !c.last_from_me && c.unread_count > 0)
       : conversations;
+
+  const requestsCount = conversations.filter((c) => !c.last_from_me && c.unread_count > 0).length;
 
     const [activeTab, setActiveTab] = useState<"messages" | "calls">("messages");
   const [userTier, setUserTier] = useState<"free" | "plus" | "creator">("free");
@@ -222,6 +226,40 @@ export default function MessagesInbox() {
         </div>
       </div>
 
+      {/* All / Unread / Requests sub-tabs */}
+      <div className={`border-b border-white/5 flex-shrink-0 ${activeTab === "messages" ? "" : "hidden"}`} style={{ background: "#000000" }}>
+        <div className="max-w-3xl mx-auto flex gap-2 px-4 md:px-6 py-2.5 overflow-x-auto scrollbar-hide">
+          <button
+            onClick={() => setFilter("all")}
+            className={`px-4 py-1.5 rounded-full text-xs font-bold transition whitespace-nowrap ${filter === "all" ? "bg-white/10 text-white" : "text-white/50 hover:text-white/80"}`}
+          >
+            All
+          </button>
+          <button
+            onClick={() => setFilter("unread")}
+            className={`px-4 py-1.5 rounded-full text-xs font-bold transition whitespace-nowrap flex items-center gap-1.5 ${filter === "unread" ? "bg-white/10 text-white" : "text-white/50 hover:text-white/80"}`}
+          >
+            Unread
+            {totalUnread > 0 && (
+              <span className="bg-[#E53945] text-white text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                {totalUnread}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => setFilter("requests")}
+            className={`px-4 py-1.5 rounded-full text-xs font-bold transition whitespace-nowrap flex items-center gap-1.5 ${filter === "requests" ? "bg-white/10 text-white" : "text-white/50 hover:text-white/80"}`}
+          >
+            Requests
+            {requestsCount > 0 && (
+              <span className="bg-white/20 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                {requestsCount}
+              </span>
+            )}
+          </button>
+        </div>
+      </div>
+
       {/* Scrollable list - GREY BACKGROUND APPLIED HERE */}
       <div className={`flex-1 overflow-y-auto pb-24 lg:pb-4 bg-black ${activeTab === "calls" ? "hidden" : ""}`}>
         <div className="max-w-3xl mx-auto">
@@ -232,7 +270,7 @@ export default function MessagesInbox() {
         {!loading && visible.length === 0 && (
           <div className="text-white/50 py-16 text-center px-6">
             <p className="mb-2">
-              {filter === "unread" ? "No unread messages." : "No messages yet."}
+              {filter === "unread" ? "No unread messages." : filter === "requests" ? "No message requests." : "No messages yet."}
             </p>
             <button
               onClick={() => setSearchOpen(true)}
