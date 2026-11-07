@@ -52,7 +52,7 @@ export default function FeaturesPage() {
             <ShieldCheck size={32} className="text-[#E53945] mb-6" />
             <h3 className="text-2xl font-bold mb-3">Zero Censorship. Zero Algorithms.</h3>
             <p className="text-white/60 leading-relaxed">
-              We don't shadowban. We don't demonetize based on "sensitive topics." Your followers get notified when you post, and your content is delivered exactly as you uploaded it.
+              We don't shadowban. We don't demonetize or deplatform based on "sensitive topics." Your followers get notified when you post, and your content is delivered exactly as you uploaded it.
             </p>
           </div>
 
