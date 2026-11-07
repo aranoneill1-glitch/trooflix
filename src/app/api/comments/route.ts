@@ -123,11 +123,18 @@ export async function POST(req: Request) {
     const ownerId = await findPostOwner(Number(videoId));
     if (ownerId && ownerId !== userId) {
       try {
-        await supabaseAdmin.from("notifications").insert({ user_id: ownerId, actor_id: userId, type: "comment", post_id: Number(videoId), title: "New comment", message: "Someone commented on your post" });
-        
-        // Fetch commenter name for push
+        // Fetch commenter name FIRST so we can use it in both DB and Push
         const { data: profile } = await supabaseAdmin.from("profiles").select("display_name, username").eq("user_id", userId).maybeSingle();
         const commenterName = profile?.display_name || profile?.username || "Someone";
+
+        await supabaseAdmin.from("notifications").insert({ 
+          user_id: ownerId, 
+          actor_id: userId, 
+          type: "comment", 
+          post_id: Number(videoId), 
+          title: "New comment", 
+          message: `${commenterName} commented on your post` 
+        });
 
         // Push Notification
         await fetch(`${process.env.NEXT_PUBLIC_URL || "https://www.trooflixtv.com"}/api/push/send`, {
