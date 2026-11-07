@@ -334,7 +334,33 @@ export default function Home() {
               <div className="lg:hidden w-full flex flex-col relative z-10 bg-transparent">
                 {/* Ambient glow for glass refraction */}
                 <div className="w-full relative z-10">
-{/* App Reel Hero (Moved below Avatars) */}
+
+                {/* CINEMATIC HEADLINE */}
+                <div className="w-full text-center px-4 pt-10 pb-8 relative z-10">
+                  <h1 className="text-[40px] leading-[1.05] md:text-7xl font-black tracking-tighter mb-4">
+                    <span className="text-white drop-shadow-lg">STOP LETTING BIG TECH</span><br/>
+                    <span className="text-[#E53945] drop-shadow-[0_0_30px_rgba(229,57,69,0.5)]">EAT YOUR LUNCH.</span>
+                  </h1>
+                  <p className="text-sm md:text-xl text-white/70 max-w-2xl mx-auto mb-8 font-medium leading-relaxed">
+                    The home of independent voices. Uncensored, unscripted, and paid directly to the creators you love.
+                  </p>
+                  <div className="flex items-center justify-center gap-3 md:gap-4 flex-wrap">
+                    <button 
+                      onClick={() => window.scrollTo({ top: window.innerHeight * 0.8, behavior: 'smooth' })}
+                      className="bg-white text-black font-bold px-8 py-3.5 rounded-full hover:bg-gray-200 transition text-sm md:text-base shadow-xl"
+                    >
+                      Start Watching
+                    </button>
+                    <a 
+                      href="/signup" 
+                      className="bg-white/10 backdrop-blur-md border border-white/20 text-white font-bold px-8 py-3.5 rounded-full hover:bg-white/20 transition text-sm md:text-base shadow-xl"
+                    >
+                      Become a Creator
+                    </a>
+                  </div>
+                </div>
+
+                {/* App Reel Hero (Moved below Avatars) */}
                 {heroPool.length > 0 && (
                   <AppReelHero 
                     videos={heroPool} 
