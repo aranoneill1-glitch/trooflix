@@ -8,7 +8,7 @@ import { getCachedUser } from "@/lib/cache";
 
 type Notification = {
   id: string;
-  type: "like" | "comment" | "follow" | "system";
+  type: "like" | "comment" | "follow" | "system" | "purchase" | "repost" | "report_update";
   title: string;
   message: string;
   is_read: boolean;
@@ -255,16 +255,18 @@ export default function NotificationBell({ hideTrigger = false }: { hideTrigger?
                         {/* Icon / Avatar */}
                         <div className="w-10 h-10 rounded-full bg-[#0a0303] flex items-center justify-center shrink-0 border border-white/10 overflow-hidden">
                           {n.sender_avatar ? (
-                            <img src={n.sender_avatar} alt="" className="w-full h-full object-cover" />
-                          ) : n.type === "like" ? (
-                            <Heart size={18} className="text-[#E53945]" fill="currentColor" />
-                          ) : n.type === "comment" ? (
-                            <MessageCircle size={18} className="text-blue-400" />
-                          ) : n.type === "follow" ? (
-                            <UserPlus size={18} className="text-green-400" />
-                          ) : (
-                            <Bell size={18} className="text-white/50" />
-                          )}
+                    <img src={n.sender_avatar} alt="" className="w-full h-full object-cover" />
+                  ) : n.type === "like" ? (
+                    <Heart size={18} className="text-[#E53945]" fill="currentColor" />
+                  ) : n.type === "comment" ? (
+                    <MessageCircle size={18} className="text-blue-400" />
+                  ) : n.type === "follow" ? (
+                    <UserPlus size={18} className="text-green-400" />
+                  ) : n.type === "purchase" ? (
+                    <ShoppingBag size={18} className="text-yellow-400" />
+                  ) : (
+                    <Bell size={18} className="text-white/50" />
+                  )}
                         </div>
 
                         {/* Content */}

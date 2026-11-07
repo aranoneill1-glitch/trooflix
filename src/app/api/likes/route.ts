@@ -130,14 +130,20 @@ export async function POST(req: Request) {
         
         if (ownerId && ownerId !== userId) {
           try {
-            const { error: notifErr } = await supabaseAdmin.from("notifications").insert({ user_id: ownerId, actor_id: userId, type: "like", post_id: vid, title: "New like", message: "Someone liked your post" });
-            if (notifErr) console.error("[Likes API] NOTIFICATION INSERT FAILED:", JSON.stringify(notifErr));
-            else console.log("[Likes API] ✅ Notification inserted for user:", ownerId);
-            
-            // Fetch liker's name for the push notification
+            // Fetch liker name first
             const { data: profile } = await supabaseAdmin.from("profiles").select("display_name, username").eq("user_id", userId).maybeSingle();
             const likerName = profile?.display_name || profile?.username || "Someone";
 
+            await supabaseAdmin.from("notifications").insert({ 
+              user_id: ownerId, 
+              actor_id: userId, 
+              type: "like", 
+              post_id: vid, 
+              title: "New like", 
+              message: `${likerName} liked your post` 
+            });
+            
+            
             await fetch(`${process.env.NEXT_PUBLIC_URL || "https://www.trooflixtv.com"}/api/push/send`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
