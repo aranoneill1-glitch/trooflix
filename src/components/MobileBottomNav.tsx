@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Search, Home, Play, ShoppingBag, Crown } from "lucide-react";
+import { Search, Home, Play, ShoppingBag, Crown, MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function MobileBottomNav() {
@@ -37,7 +37,7 @@ export default function MobileBottomNav() {
     { name: "Home", icon: Home, href: "/" },
     { name: "Shorts", icon: Play, href: "/feed" },
     { name: "Trooflix", href: "/creator-dashboard" },
-    { name: "Shop", icon: ShoppingBag, href: "/merchandise" },
+    { name: "Chat", icon: MessageCircle, href: "/messages" },
     { name: "Search", icon: Search, href: "/search" },
   ];
 

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, Plus, RefreshCw, Video, Radio, X, Play, MessageSquare, Tag } from "lucide-react";
+import { Menu, Plus, RefreshCw, Video, Radio, X, Play, MessageSquare, Tag, ShoppingBag } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import UserMenu from "@/components/UserMenu";
 import NotificationBell from "@/components/NotificationBell";
@@ -92,6 +92,10 @@ export default function TopBar({ onMenu }: Props) {
           >
             <RefreshCw size={20} className={isRefreshing ? "animate-spin" : ""} />
           </button>
+          <Link href="/merchandise" className="text-white/90 hover:text-white transition" aria-label="Shop">
+            <ShoppingBag size={20} />
+          </Link>
+
           
           <NotificationBell hideTrigger />
 

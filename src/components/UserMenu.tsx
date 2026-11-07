@@ -188,16 +188,6 @@ export default function UserMenu() {
             </div>
 
             <div className="p-2">
-              {/* Messages */}
-              <Link 
-                href="/messages"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition text-sm text-white/80 hover:text-white"
-              >
-                <MessageCircle size={16} />
-                Messages
-              </Link>
-
               {/* Notifications with push toggle */}
               <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition">
                 <button
