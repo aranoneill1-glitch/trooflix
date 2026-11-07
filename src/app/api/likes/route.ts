@@ -84,7 +84,10 @@ export async function POST(req: Request) {
       if (anonId) insertRow.anon_id = anonId;
 
       const { error } = await supabaseAdmin.from("likes").insert(insertRow);
-      if (error) throw error;
+      if (error) {
+        console.error("[Likes API] INSERT FAILED:", JSON.stringify(error));
+        throw error;
+      }
 
       let dislikeQ = supabaseAdmin.from("dislikes").delete().eq("video_id", vid);
       if (userId) dislikeQ = dislikeQ.eq("user_id", userId);
@@ -97,7 +100,9 @@ export async function POST(req: Request) {
         
         if (ownerId && ownerId !== userId) {
           try {
-            await supabaseAdmin.from("notifications").insert({ user_id: ownerId, actor_id: userId, type: "like", post_id: vid, title: "New like", message: "Someone liked your post" });
+            const { error: notifErr } = await supabaseAdmin.from("notifications").insert({ user_id: ownerId, actor_id: userId, type: "like", post_id: vid, title: "New like", message: "Someone liked your post" });
+            if (notifErr) console.error("[Likes API] NOTIFICATION INSERT FAILED:", JSON.stringify(notifErr));
+            else console.log("[Likes API] ✅ Notification inserted for user:", ownerId);
             
             // Fetch liker's name for the push notification
             const { data: profile } = await supabaseAdmin.from("profiles").select("display_name, username").eq("user_id", userId).maybeSingle();
