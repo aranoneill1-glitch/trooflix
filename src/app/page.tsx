@@ -345,17 +345,17 @@ export default function Home() {
                   </p>
                   <div className="flex flex-col w-full max-w-sm gap-3">
                     <a 
-                      href="/signup" 
+                      href="/features" 
                       className="w-full flex items-center justify-center gap-2 bg-white text-black font-bold text-lg py-4 rounded-full hover:bg-gray-200 transition"
                     >
-                      Apply as a Creator
+                      Explore Features
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
                     </a>
                     <a 
-                      href="/upgrade" 
+                      href="/apply" 
                       className="w-full flex items-center justify-center gap-2 bg-[#1c1c1e] border border-white/10 text-white font-bold text-lg py-4 rounded-full hover:bg-[#2c2c2e] transition"
                     >
-                      View Pricing
+                      Apply as a Creator
                     </a>
                   </div>
                 </div>
