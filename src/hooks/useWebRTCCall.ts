@@ -347,18 +347,16 @@ export function useWebRTCCall(userId: string | null) {
       rId = role === "caller" ? currentPeer : userId;
     }
 
-    const duration = callStartTimeRef.current
-      ? Math.floor((Date.now() - callStartTimeRef.current) / 1000)
-      : 0;
-
+    const duration = callStartTimeRef.current ? Math.floor((Date.now() - callStartTimeRef.current) / 1000) : 0;
     console.log("[WebRTC] 📞 Logging call:", { status: finalStatus, caller: cId, receiver: rId, duration });
 
     try {
-      await fetch("/api/calls/log", {
+      const res = await fetch("/api/calls/log", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ callerId: cId, receiverId: rId, status: finalStatus, duration }),
       });
+      if (!res.ok) throw new Error(await res.text());
       console.log("[WebRTC] ✅ Call logged successfully");
     } catch (e) {
       console.error("[WebRTC] ❌ Failed to log call", e);
@@ -382,19 +380,23 @@ export function useWebRTCCall(userId: string | null) {
     const currentPeer = peerUserIdRef.current;
     const role = callRoleRef.current;
     
+    // 1. Send hangup signal
     if (currentCallId && userId && currentPeer) {
       await sendSignal(currentCallId, userId, currentPeer, "hangup", null);
     }
     
+    // 2. Determine IDs
     let cId, rId;
     if (role && userId && currentPeer) {
       cId = role === "caller" ? userId : currentPeer;
       rId = role === "caller" ? currentPeer : userId;
     }
     
+    // 3. Log the call
     const status = callStartTimeRef.current ? 'completed' : 'unanswered';
     await logCompletedCall(status, cId, rId);
     
+    // 4. Cleanup
     cleanup();
     setStatus("idle");
   }, [userId, sendSignal, cleanup, logCompletedCall]);
@@ -483,7 +485,7 @@ export function useWebRTCCall(userId: string | null) {
               console.log("[WebRTC] ICE queued, pending:", pendingIceCandidates.current.length);
             }
           } else if (signal_type === "hangup" || signal_type === "reject") {
-            const finalStatus = signal_type === "reject" ? "unanswered" : (callStartTimeRef.current ? "completed" : "unanswered");
+            const finalStatus = signal_type === "reject" ? "unanswered" : "completed";
             await logCompletedCall(finalStatus);
             if (signal_type === "reject") setStatus("rejected");
             else setStatus("ended");
