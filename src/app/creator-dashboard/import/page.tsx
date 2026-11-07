@@ -3,6 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, FileArchive, Download, CheckCircle2, ChevronRight, Loader2 } from "lucide-react";
+import { unzipSync, strFromU8 } from "fflate";
+import { getCachedUser } from "@/lib/cache";
+import { r2MultipartUpload } from "@/lib/r2Upload";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 
@@ -31,14 +34,89 @@ export default function ImportPage() {
   const startImport = async () => {
     if (!file) return;
     setProcessing(true);
-    setStatus("Reading ZIP file...");
-    setTimeout(() => {
-      setStatus("Extracting videos...");
+    setProgress(5);
+    setStatus("Unzipping Takeout file in browser...");
+
+    try {
+      const user = await getCachedUser();
+      if (!user) throw new Error("Not logged in");
+
+      // 1. Read the ZIP file
+      const arrayBuffer = await file.arrayBuffer();
+      const uint8 = new Uint8Array(arrayBuffer);
+      
+      setProgress(15);
+      setStatus("Reading zip contents...");
+      const unzipped = unzipSync(uint8);
+
+      // 2. Find all MP4 files in the zip
+      const videoKeys = Object.keys(unzipped).filter((key) => 
+        key.endsWith(".mp4") && key.includes("YouTube and YouTube Music/videos/")
+      );
+
+      if (videoKeys.length === 0) {
+        throw new Error("No .mp4 files found. Did you select .mp4 as the format in Google Takeout?");
+      }
+
+      let importedCount = 0;
+
+      // 3. Process each video
+      for (let i = 0; i < videoKeys.length; i++) {
+        const key = videoKeys[i];
+        const videoData = unzipped[key];
+        
+        // YouTube Takeout names files like: "Video Title-abc123.mp4"
+        const fileName = key.split("/").pop() || "video.mp4";
+        const title = fileName.replace(".mp4", "").split("-")[0] || "Imported Video";
+        
+        setStatus(`Uploading ${i + 1} of ${videoKeys.length}: ${title}`);
+        
+        // Convert the uint8 array to a File object
+        const blob = new Blob([videoData], { type: "video/mp4" });
+        const videoFile = new File([blob], fileName, { type: "video/mp4" });
+
+        // Upload to Cloudflare R2
+        const { publicUrl } = await r2MultipartUpload(videoFile, {
+          folder: "videos",
+          onProgress: (p) => {
+            // Calculate overall progress: 15% start + (video chunk progress)
+            const overall = 15 + ((i / videoKeys.length) * 80) + ((p / 100) * (80 / videoKeys.length));
+            setProgress(Math.min(99, Math.round(overall)));
+          },
+        });
+
+        // 4. Save to database via existing API (saving as Draft)
+        await fetch("/api/save-video", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: title,
+            description: "Imported from YouTube",
+            category: "Documentary", // Default category, user can change later
+            visibility: "public",
+            type: "Documentary",
+            uploaderUserId: user.id,
+            videoUrl: publicUrl,
+            feed_visible: false, // Keep as draft/hidden so they can review
+          }),
+        });
+
+        importedCount++;
+      }
+
+      setProgress(100);
+      setStatus("Import complete!");
       setTimeout(() => {
         setProcessing(false);
         setDone(true);
-      }, 2000);
-    }, 1500);
+      }, 1000);
+
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || "Failed to import. Check the file and try again.");
+      setProcessing(false);
+      setProgress(0);
+    }
   };
 
   return (
