@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search, Plus, CheckCheck } from "lucide-react";
+import { Phone as PhoneIcon } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { createClient } from "@/utils/supabase/client";
@@ -148,6 +149,33 @@ export default function MessagesInbox() {
       ? conversations.filter((c) => c.unread_count > 0)
       : conversations;
 
+    const [activeTab, setActiveTab] = useState<"messages" | "calls">("messages");
+  const [userTier, setUserTier] = useState<"free" | "plus" | "creator">("free");
+
+  useEffect(() => {
+    getCachedUser().then(async (u) => {
+      if (!u) return;
+      try {
+        const r = await fetch(`/api/profile?user_id=${u.id}`);
+        const d = await r.json();
+        const raw = String(d.profile?.tier || "free").toLowerCase();
+        let norm: "free" | "plus" | "creator" = "free";
+        if (raw === "creator" || raw === "podcaster" || raw === "pro") norm = "creator";
+        else if (raw === "plus" || raw === "pass") norm = "plus";
+        if (norm !== "free" && d.profile?.plus_expires_at) {
+          if (new Date(d.profile.plus_expires_at) < new Date()) norm = "free";
+        }
+        setUserTier(norm);
+      } catch {}
+    });
+  }, []);
+
+  const startCallFromList = (userId: string, name: string, avatar: string | null) => {
+    window.dispatchEvent(new CustomEvent("start-call", {
+      detail: { recipientId: userId, recipientName: name, recipientAvatar: avatar }
+    }));
+  };
+
   const totalUnread = conversations.reduce((n, c) => n + c.unread_count, 0);
 
   return (
@@ -160,7 +188,7 @@ export default function MessagesInbox() {
         style={{ background: "#000000" }}
       >
         <div className="max-w-3xl mx-auto flex items-center justify-between px-4 md:px-6 py-3">
-          <h1 className="text-2xl md:text-3xl font-black">Messages</h1>
+          <h1 className="text-2xl md:text-3xl font-black">Troo<span className="text-[#E53945]">Chat</span></h1>
           <button
             onClick={() => setSearchOpen(true)}
             className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition"
@@ -171,8 +199,32 @@ export default function MessagesInbox() {
         </div>
       </div>
 
+      {/* WhatsApp-style Tabs */}
+      <div className="border-b border-white/5 flex-shrink-0" style={{ background: "#000000" }}>
+        <div className="max-w-3xl mx-auto flex">
+          <button
+            onClick={() => setActiveTab("messages")}
+            className={`flex-1 py-3.5 text-[15px] font-bold transition relative ${activeTab === "messages" ? "text-white" : "text-white/40 hover:text-white/70"}`}
+          >
+            Messages
+            {activeTab === "messages" && (
+              <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#E53945] rounded-t-full" />
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab("calls")}
+            className={`flex-1 py-3.5 text-[15px] font-bold transition relative ${activeTab === "calls" ? "text-white" : "text-white/40 hover:text-white/70"}`}
+          >
+            Calls
+            {activeTab === "calls" && (
+              <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#E53945] rounded-t-full" />
+            )}
+          </button>
+        </div>
+      </div>
+
       {/* Scrollable list - GREY BACKGROUND APPLIED HERE */}
-      <div className="flex-1 overflow-y-auto pb-24 lg:pb-4 bg-black">
+      <div className={`flex-1 overflow-y-auto pb-24 lg:pb-4 bg-black ${activeTab === "calls" ? "hidden" : ""}`}>
         <div className="max-w-3xl mx-auto">
         {loading && (
           <p className="text-white/50 py-12 text-center px-6">Loading…</p>
@@ -316,6 +368,80 @@ export default function MessagesInbox() {
       )}
 
       <MobileBottomNav />
+    
+      {/* ========== CALLS TAB CONTENT ========== */}
+      {activeTab === "calls" && (
+        <div className="flex-1 overflow-y-auto pb-24 lg:pb-4 bg-black">
+          <div className="max-w-3xl mx-auto">
+            {userTier === "free" ? (
+              <div className="text-center py-16 px-6">
+                <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-white/5 flex items-center justify-center">
+                  <PhoneIcon size={32} className="text-white/40" />
+                </div>
+                <h3 className="text-lg font-bold text-white mb-2">Upgrade to make calls</h3>
+                <p className="text-sm text-white/50 mb-6 max-w-xs mx-auto">
+                  Voice calls are available on Plus and Creator plans. Upgrade to start calling your TrooChat contacts.
+                </p>
+                <a
+                  href="/upgrade"
+                  className="inline-block bg-[#E53945] hover:bg-[#d12e39] text-white font-bold px-6 py-3 rounded-full transition"
+                >
+                  Upgrade to Plus
+                </a>
+              </div>
+            ) : visible.length === 0 ? (
+              <div className="text-center py-16 px-6">
+                <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-white/5 flex items-center justify-center">
+                  <PhoneIcon size={32} className="text-white/40" />
+                </div>
+                <p className="text-white/50 mb-2">No contacts yet.</p>
+                <button onClick={() => setSearchOpen(true)} className="text-red-500 hover:underline text-sm">
+                  Find someone to call →
+                </button>
+              </div>
+            ) : (
+              <div>
+                <div className="px-4 md:px-6 py-3 text-[11px] font-bold text-white/40 uppercase tracking-wider">
+                  Recent contacts — tap to call
+                </div>
+                {visible.map((c) => {
+                  const p = profiles[c.other_user_id];
+                  const name = p?.display_name || p?.username || "User";
+                  const avatar = p?.avatar_url || null;
+                  return (
+                    <div
+                      key={c.other_user_id}
+                      className="flex items-center gap-4 px-4 md:px-6 py-3.5 hover:bg-white/[0.06] transition border-b border-white/5"
+                    >
+                      <div className="w-14 h-14 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center overflow-hidden flex-shrink-0">
+                        {avatar ? (
+                          <img src={avatar} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-white font-bold text-xl">
+                            {(name[0] || "?").toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[16px] font-medium text-white truncate">{name}</p>
+                        <p className="text-[13px] text-white/50">Tap to start a voice call</p>
+                      </div>
+                      <button
+                        onClick={() => startCallFromList(c.other_user_id, name, avatar)}
+                        className="w-11 h-11 rounded-full bg-[#E53945] hover:bg-[#d12e39] flex items-center justify-center transition shadow-lg"
+                        aria-label={`Call ${name}`}
+                      >
+                        <PhoneIcon size={20} className="text-white" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
     </main>
   );
 }
