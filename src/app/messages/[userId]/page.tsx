@@ -17,8 +17,6 @@ import { useRealtimeDMs } from "@/hooks/useRealtimeDMs";
 import GifPicker from "@/components/GifPicker";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import { getCachedUser } from "@/lib/cache";
-import { useWebRTCCall } from "@/hooks/useWebRTCCall";
-import CallModal from "@/components/CallModal";
 import { Phone } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import { motion, AnimatePresence } from "framer-motion";
@@ -99,12 +97,10 @@ export default function ThreadPage() {
 
   const bottomRef = useRef<HTMLDivElement>(null);
   
-  // Voice call state
+  // Voice call state (delegated to global instance)
   const [userTier, setUserTier] = useState<"free" | "plus" | "creator">("free");
-  const [showCallModal, setShowCallModal] = useState(false);
-  const webrtc = useWebRTCCall(me);
 
-  // Fetch tier + subscribe to call state
+  // Fetch tier only
   useEffect(() => {
     if (!me) return;
     fetch(`/api/profile?user_id=${me}`)
@@ -121,14 +117,6 @@ export default function ThreadPage() {
       })
       .catch(() => {});
   }, [me]);
-
-  // Auto-show/hide call modal
-  useEffect(() => {
-    if (["calling", "connected", "ended", "rejected", "failed"].includes(webrtc.status)) {
-      setShowCallModal(true);
-    }
-    if (webrtc.status === "idle") setShowCallModal(false);
-  }, [webrtc.status]);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -494,9 +482,16 @@ export default function ThreadPage() {
         {/* Call button — Plus/Creator only */}
         {userTier !== "free" && other && (
           <button
-            onClick={() => { webrtc.startCall(other.user_id, other.display_name || other.username || "User", other.avatar_url || null); }}
-            disabled={webrtc.status !== "idle"}
-            className="ml-auto p-2 bg-white/5 hover:bg-white/10 rounded-full text-white/70 hover:text-white transition disabled:opacity-30"
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent("start-call", {
+                detail: {
+                  recipientId: other.user_id,
+                  recipientName: other.display_name || other.username || "User",
+                  recipientAvatar: other.avatar_url || null,
+                }
+              }));
+            }}
+            className="ml-auto p-2 bg-white/5 hover:bg-white/10 rounded-full text-white/70 hover:text-white transition"
             aria-label="Start call"
             title="Start voice call"
           >
@@ -859,18 +854,6 @@ export default function ThreadPage() {
         )}
       </AnimatePresence>
 
-      {/* Voice Call Modal */}
-      {showCallModal && (
-        <CallModal
-          status={webrtc.status as any}
-          peerName={webrtc.peerName}
-          peerAvatar={webrtc.peerAvatar}
-          remoteStream={webrtc.remoteStream}
-          muted={webrtc.muted}
-          onToggleMute={webrtc.toggleMute}
-          onEnd={() => { webrtc.endCall(); setShowCallModal(false); }}
-        />
-      )}
     </main>
   );
 }

@@ -22,6 +22,17 @@ export default function GlobalIncomingCall() {
     }
   }, [webrtc.status]);
 
+  // Listen for "start-call" custom events from anywhere in the app
+  useEffect(() => {
+    const handleStartCall = (e: any) => {
+      const { recipientId, recipientName, recipientAvatar } = e.detail;
+      webrtc.startCall(recipientId, recipientName, recipientAvatar);
+      setShowActive(true);
+    };
+    window.addEventListener("start-call", handleStartCall);
+    return () => window.removeEventListener("start-call", handleStartCall);
+  }, [webrtc]);
+
   if (!userId) return null;
 
   return (
