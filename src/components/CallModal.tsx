@@ -32,12 +32,78 @@ export default function CallModal({ status, peerName, peerAvatar, remoteStream, 
   }, [status]);
 
   useEffect(() => {
-    if (!audioRef.current) return;
-    if (!remoteStream) return;
+    const audio = audioRef.current;
+    const stream = remoteStream;
+    if (!audio || !stream) {
+      if (!stream) console.log("[CallModal] No remote stream yet");
+      return;
+    }
     
-    console.log("[CallModal] Setting remote stream. Tracks:", remoteStream.getTracks().map(t => t.kind + ":" + t.readyState));
+    console.log("[CallModal] 🔄 Playing remote stream via BOTH video element AND Web Audio API");
     
-    // Try to set up iOS audio session to route to speaker (Safari 16.4+)
+    // Method 1: Video element (primary)
+    audio.srcObject = stream;
+    audio.muted = false;
+    audio.volume = 1;
+    audio.play()
+      .then(() => console.log("[CallModal] ✅ Video element playing"))
+      .catch((e: any) => console.error("[CallModal] ❌ Video element failed:", e));
+    
+    // Method 2: Web Audio API (backup - bypasses video element quirks)
+    try {
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      const ctx = new AudioContextClass();
+      const source = ctx.createMediaStreamSource(stream);
+      source.connect(ctx.destination);
+      ctx.resume().then(() => {
+        console.log("[CallModal] ✅ Web Audio API connected. Context state:", ctx.state);
+        (window as any).__remoteAudioCtx = ctx;
+      }).catch((e: any) => console.error("[CallModal] Web Audio failed:", e));
+    } catch (e) {
+      console.error("[CallModal] Web Audio init failed:", e);
+    }
+    
+    // Log track info
+    const audioTracks = stream.getAudioTracks();
+    console.log("[CallModal] Remote audio tracks:", audioTracks.length);
+    audioTracks.forEach((t, i) => {
+      console.log(`[CallModal] Track ${i}: enabled=${t.enabled} muted=${t.muted} state=${t.readyState} label="${t.label}"`);
+    });
+    
+    return () => {
+      if ((window as any).__remoteAudioCtx) {
+        try { (window as any).__remoteAudioCtx.close(); } catch {}
+        (window as any).__remoteAudioCtx = null;
+      }
+    };
+  }, [remoteStream]);
+
+  // iOS Audio Session setup on call start
+  useEffect(() => {
+    if (status !== "connected") return;
+    try {
+      const nav: any = navigator;
+      if (nav.audioSession) {
+        nav.audioSession.type = "play-and-record";
+        console.log("[CallModal] 🍎 iOS audioSession set to play-and-record");
+      }
+    } catch (e) {
+      console.log("[CallModal] audioSession setup failed:", e);
+    }
+  }, [status]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    const stream = remoteStream;
+    if (!audio || !stream) {
+      if (!stream) console.log("[CallModal] No remote stream yet");
+      return;
+    }
+    
+    console.log("[CallModal] 🔄 Playing remote stream");
+    console.log("[CallModal] Tracks:", stream.getTracks().map(t => t.kind + ":" + t.readyState));
+    
+    // Try iOS audio session
     try {
       const nav: any = navigator;
       if (nav.audioSession && typeof nav.audioSession.type !== "undefined") {
@@ -48,35 +114,52 @@ export default function CallModal({ status, peerName, peerAvatar, remoteStream, 
       console.log("[CallModal] audioSession not available:", e);
     }
     
-    audioRef.current.srcObject = remoteStream;
-    audioRef.current.muted = false;
-    audioRef.current.volume = 1;
-    
-    console.log("[CallModal] 🎤 About to play. Element:", {
-      tag: audioRef.current.tagName,
-      muted: audioRef.current.muted,
-      volume: audioRef.current.volume,
-      srcObject: !!audioRef.current.srcObject,
-      tracks: (audioRef.current.srcObject as MediaStream)?.getAudioTracks().map(t => ({
-        enabled: t.enabled, muted: t.muted, state: t.readyState
-      }))
-    });
-    const playPromise = audioRef.current.play();
+    // Method 1: video/audio element
+    audio.srcObject = stream;
+    audio.muted = false;
+    audio.volume = 1;
+    const playPromise = audio.play();
     if (playPromise !== undefined) {
       playPromise
         .then(() => {
-          console.log("[CallModal] ✅ Audio playing");
+          console.log("[CallModal] ✅ Video element playing");
           setNeedsTapToHear(false);
         })
-        .catch((err) => {
-          console.error("[CallModal] ❌ Audio play failed:", err);
+        .catch((err: any) => {
+          console.error("[CallModal] ❌ Video element play failed:", err);
           setNeedsTapToHear(true);
         });
     }
     
-    remoteStream.getAudioTracks().forEach((t) => {
-      console.log("[CallModal] Track:", t.label, "| enabled:", t.enabled, "| muted:", t.muted, "| state:", t.readyState);
+    // Method 2: Web Audio API fallback (most reliable across browsers)
+    let ctx: AudioContext | null = null;
+    try {
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      ctx = new AudioContextClass();
+      const source = ctx.createMediaStreamSource(stream);
+      source.connect(ctx.destination);
+      ctx.resume().then(() => {
+        console.log("[CallModal] ✅ Web Audio API running. State:", ctx?.state);
+        (window as any).__remoteAudioCtx = ctx;
+      }).catch((e: any) => console.error("[CallModal] Web Audio resume failed:", e));
+    } catch (e) {
+      console.error("[CallModal] Web Audio init failed:", e);
+    }
+    
+    // Log each track
+    stream.getAudioTracks().forEach((t, i) => {
+      console.log(`[CallModal] Track ${i}: ${t.label} enabled=${t.enabled} muted=${t.muted} state=${t.readyState}`);
     });
+    
+    return () => {
+      if (ctx) {
+        try { ctx.close(); } catch {}
+      }
+      if ((window as any).__remoteAudioCtx) {
+        try { (window as any).__remoteAudioCtx.close(); } catch {}
+        (window as any).__remoteAudioCtx = null;
+      }
+    };
   }, [remoteStream]);
 
   const startLocalMicAnalyzer = async () => {
