@@ -219,27 +219,23 @@ export default function MessagesInbox() {
         </div>
       </div>
 
-      {/* WhatsApp-style Tabs */}
-      <div className="border-b border-white/5 flex-shrink-0" style={{ background: "#000000" }}>
-        <div className="max-w-3xl mx-auto flex">
-          <button
-            onClick={() => setActiveTab("messages")}
-            className={`flex-1 py-3.5 text-[15px] font-bold transition relative ${activeTab === "messages" ? "text-white" : "text-white/40 hover:text-white/70"}`}
-          >
-            Messages
-            {activeTab === "messages" && (
-              <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#E53945] rounded-t-full" />
-            )}
-          </button>
-          <button
-            onClick={() => setActiveTab("calls")}
-            className={`flex-1 py-3.5 text-[15px] font-bold transition relative ${activeTab === "calls" ? "text-white" : "text-white/40 hover:text-white/70"}`}
-          >
-            Calls
-            {activeTab === "calls" && (
-              <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-[#E53945] rounded-t-full" />
-            )}
-          </button>
+      {/* Glass Pill Tabs (matching Plus page) */}
+      <div className="flex-shrink-0 pt-4 pb-2" style={{ background: "#000000" }}>
+        <div className="max-w-3xl mx-auto flex justify-center px-4 md:px-6">
+          <div className="flex bg-white/10 backdrop-blur-xl p-1 rounded-full border border-white/20 shadow-2xl">
+            <button
+              onClick={() => setActiveTab("messages")}
+              className={`px-8 py-2 rounded-full text-sm font-bold transition-all ${activeTab === "messages" ? "bg-white text-black shadow-md" : "text-white/50 hover:text-white"}`}
+            >
+              Messages
+            </button>
+            <button
+              onClick={() => setActiveTab("calls")}
+              className={`px-8 py-2 rounded-full text-sm font-bold transition-all ${activeTab === "calls" ? "bg-white text-black shadow-md" : "text-white/50 hover:text-white"}`}
+            >
+              Calls
+            </button>
+          </div>
         </div>
       </div>
 
