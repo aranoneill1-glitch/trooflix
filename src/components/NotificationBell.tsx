@@ -90,12 +90,15 @@ export default function NotificationBell({ hideTrigger = false }: { hideTrigger?
 
       // Assuming you have a notifications table. 
       // If not, this will just return empty and show the empty state.
-      const { data } = await supabase
+      console.log("[NotificationBell] Fetching for user:", user.id);
+      const { data, error: fetchError } = await supabase
         .from("notifications")
         .select("*")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
+      if (fetchError) console.error("[NotificationBell] Fetch error:", fetchError);
 
+      console.log("[NotificationBell] Fetched rows:", data?.length || 0);
       if (data && data.length > 0) {
         // Batch fetch actor profiles for avatars
         const actorIds = [...new Set(data.map((n: any) => n.actor_id).filter(Boolean))];
