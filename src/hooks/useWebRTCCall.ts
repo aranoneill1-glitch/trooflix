@@ -57,23 +57,23 @@ export function useWebRTCCall(userId: string | null) {
   }, []);
 
   // ---- LOG CALL ----
-  const logCompletedCall = useCallback(async (
-    finalStatus: "completed" | "unanswered",
-    explicitCallerId?: string,
-    explicitReceiverId?: string
-  ) => {
+  const logCompletedCall = useCallback(async (finalStatus: "completed" | "unanswered" | "declined", explicitCallerId?: string, explicitReceiverId?: string) => {
     let cId = explicitCallerId;
     let rId = explicitReceiverId;
-
+    
+    // Fallback to refs if IDs are missing
     if (!cId || !rId) {
       const role = callRoleRef.current;
       const currentPeer = peerUserIdRef.current;
-      if (!role || !userId || !currentPeer) {
-        console.warn("[WebRTC] Cannot log call, missing IDs");
-        return;
+      if (userId && currentPeer) {
+        cId = role === "caller" ? userId : currentPeer;
+        rId = role === "caller" ? currentPeer : userId;
       }
-      cId = role === "caller" ? userId : currentPeer;
-      rId = role === "caller" ? currentPeer : userId;
+    }
+
+    if (!cId || !rId) {
+      console.warn("[WebRTC] Cannot log call, missing IDs", { cId, rId, userId, peer: peerUserIdRef.current });
+      return;
     }
 
     const duration = callStartTimeRef.current ? Math.floor((Date.now() - callStartTimeRef.current) / 1000) : 0;
@@ -87,7 +87,6 @@ export function useWebRTCCall(userId: string | null) {
       });
       if (!res.ok) throw new Error(await res.text());
       console.log("[WebRTC] ✅ Call logged successfully");
-      window.dispatchEvent(new CustomEvent("call-ended"));
     } catch (e) {
       console.error("[WebRTC] ❌ Failed to log call", e);
     }
@@ -243,12 +242,19 @@ export function useWebRTCCall(userId: string | null) {
     console.log("[WebRTC] 🛑 End call triggered");
     const currentCallId = currentCallIdRef.current;
     const currentPeer = peerUserIdRef.current;
-
+    const role = callRoleRef.current;
+    
     if (currentCallId && userId && currentPeer) {
       await sendSignal(currentCallId, userId, currentPeer, "hangup", null);
     }
-
-    await logCompletedCall(callStartTimeRef.current ? "completed" : "unanswered");
+    
+    let cId, rId;
+    if (userId && currentPeer) {
+      cId = role === "caller" ? userId : currentPeer;
+      rId = role === "caller" ? currentPeer : userId;
+    }
+    
+    await logCompletedCall(callStartTimeRef.current ? "completed" : "unanswered", cId, rId);
     cleanup();
     setStatus("idle");
   }, [userId, sendSignal, cleanup, logCompletedCall]);
@@ -324,7 +330,13 @@ export function useWebRTCCall(userId: string | null) {
             }
           } else if (signal_type === "hangup" || signal_type === "reject") {
             console.log("[WebRTC] 📥 Received hangup/reject signal");
-            await logCompletedCall(signal_type === "reject" ? "unanswered" : (callStartTimeRef.current ? "completed" : "unanswered"));
+            const role = callRoleRef.current;
+            let cId, rId;
+            if (userId && peerUserIdRef.current) {
+              cId = role === "caller" ? userId : peerUserIdRef.current;
+              rId = role === "caller" ? peerUserIdRef.current : userId;
+            }
+            await logCompletedCall(signal_type === "reject" ? "unanswered" : (callStartTimeRef.current ? "completed" : "unanswered"), cId, rId);
             if (signal_type === "reject") setStatus("rejected");
             else setStatus("ended");
             setTimeout(() => { cleanup(); setStatus("idle"); }, 1500);
