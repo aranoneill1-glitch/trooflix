@@ -237,6 +237,7 @@ export function useWebRTCCall(userId: string | null) {
         },
         async (payload: any) => {
           const row = payload.new;
+          console.log("[WebRTC] Signal received:", row?.signal_type, "from", row?.sender_id, "to", row?.recipient_id);
           if (!row) return;
           const { call_id, sender_id, signal_type, signal_data } = row;
 
@@ -291,7 +292,9 @@ export function useWebRTCCall(userId: string | null) {
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log("[WebRTC] Subscription status:", status, "for user:", userId);
+      });
 
     channelRef.current = channel;
 
