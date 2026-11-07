@@ -111,13 +111,40 @@ export default function NotificationBell({ hideTrigger = false }: { hideTrigger?
     // Optimistic UI update
     setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
     
-    // Database update
-    await supabase.from("notifications").update({ is_read: true }).eq("user_id", user.id);
+    // Server-side update (bypasses RLS)
+    try {
+      await fetch("/api/notifications", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id }),
+      });
+    } catch (e) {
+      console.warn("Mark all read failed:", e);
+    }
   };
 
   const deleteNotification = async (id: string) => {
+    const user = await getCachedUser();
+    if (!user) return;
+    
+    // Optimistic UI update
     setNotifications(prev => prev.filter(n => n.id !== id));
-    await supabase.from("notifications").delete().eq("id", id);
+    
+    // Server-side delete (bypasses RLS)
+    try {
+      const res = await fetch(`/api/notifications?id=${id}&userId=${user.id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        // Restore on failure
+        console.warn("Delete failed, refetching...");
+        const r = await fetch(`/api/notifications?userId=${user.id}`);
+        const d = await r.json();
+        setNotifications(d.notifications || []);
+      }
+    } catch (e) {
+      console.warn("Delete error:", e);
+    }
   };
 
   // Group by Date

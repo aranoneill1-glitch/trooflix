@@ -48,3 +48,41 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: String(e) }, { status: 500 });
   }
 }
+
+export async function DELETE(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+    const userId = searchParams.get("userId");
+    if (!id || !userId) return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+
+    // Safety: only delete notifications that belong to this user
+    const { error } = await supabaseAdmin
+      .from("notifications")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", userId);
+
+    if (error) throw error;
+    return NextResponse.json({ ok: true });
+  } catch (e: any) {
+    return NextResponse.json({ error: String(e) }, { status: 500 });
+  }
+}
+
+export async function PATCH(req: Request) {
+  try {
+    const { userId } = await req.json();
+    if (!userId) return NextResponse.json({ error: "Missing userId" }, { status: 400 });
+
+    const { error } = await supabaseAdmin
+      .from("notifications")
+      .update({ is_read: true })
+      .eq("user_id", userId);
+
+    if (error) throw error;
+    return NextResponse.json({ ok: true });
+  } catch (e: any) {
+    return NextResponse.json({ error: String(e) }, { status: 500 });
+  }
+}
