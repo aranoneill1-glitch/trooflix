@@ -153,7 +153,10 @@ export function useWebRTCCall(userId: string | null) {
       }
       // Accept BOTH "connected" AND ICE "connected/completed" as success
       if (pc.connectionState === "connected" || pc.iceConnectionState === "connected" || pc.iceConnectionState === "completed") {
-        if (!callStartTimeRef.current) callStartTimeRef.current = Date.now();
+        if (!callStartTimeRef.current) {
+          callStartTimeRef.current = Date.now();
+          console.log("[WebRTC] ⏱️  Start timer (Connection)");
+        }
         setStatus("connected");
       }
       else if (pc.connectionState === "failed") setStatus("failed");
@@ -166,6 +169,10 @@ export function useWebRTCCall(userId: string | null) {
 
     pc.oniceconnectionstatechange = () => {
       if (pc.iceConnectionState === "connected" || pc.iceConnectionState === "completed") {
+        if (!callStartTimeRef.current) {
+          callStartTimeRef.current = Date.now();
+          console.log("[WebRTC] ⏱️  Start timer (ICE)");
+        }
         console.log("[WebRTC] ✅ ICE connected - forcing status to connected");
         setStatus("connected");
       }
@@ -329,32 +336,34 @@ export function useWebRTCCall(userId: string | null) {
     let cId = explicitCallerId;
     let rId = explicitReceiverId;
     
-    // If explicit IDs aren't provided (like when ending a connected call), figure them out
     if (!cId || !rId) {
       const role = callRoleRef.current;
-      if (!role || !userId || !peerUserId) {
-        console.warn("[WebRTC] Cannot log call, missing user IDs");
+      const currentPeer = peerUserIdRef.current;
+      if (!role || !userId || !currentPeer) {
+        console.warn("[WebRTC] Cannot log call, missing user IDs", { role, userId, currentPeer });
         return;
       }
-      cId = role === "caller" ? userId : peerUserId;
-      rId = role === "caller" ? peerUserId : userId;
+      cId = role === "caller" ? userId : currentPeer;
+      rId = role === "caller" ? currentPeer : userId;
     }
 
     const duration = callStartTimeRef.current
       ? Math.floor((Date.now() - callStartTimeRef.current) / 1000)
       : 0;
 
+    console.log("[WebRTC] 📞 Logging call:", { status: finalStatus, caller: cId, receiver: rId, duration });
+
     try {
-      console.log("[WebRTC] Logging call to DB:", { caller: cId, receiver: rId, status: finalStatus, duration });
       await fetch("/api/calls/log", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ callerId: cId, receiverId: rId, status: finalStatus, duration }),
       });
+      console.log("[WebRTC] ✅ Call logged successfully");
     } catch (e) {
-      console.error("[WebRTC] Failed to log call", e);
+      console.error("[WebRTC] ❌ Failed to log call", e);
     }
-  }, [userId, peerUserId]);
+  }, [userId]);
 
   const rejectCall = useCallback(async () => {
     if (!incoming || !userId) return;
@@ -369,16 +378,26 @@ export function useWebRTCCall(userId: string | null) {
   }, [incoming, userId, sendSignal, cleanup, logCompletedCall]);
 
   const endCall = useCallback(async () => {
-    if (callId && userId && peerUserId) {
-      await sendSignal(callId, userId, peerUserId, "hangup", null);
+    const currentCallId = currentCallIdRef.current;
+    const currentPeer = peerUserIdRef.current;
+    const role = callRoleRef.current;
+    
+    if (currentCallId && userId && currentPeer) {
+      await sendSignal(currentCallId, userId, currentPeer, "hangup", null);
     }
     
-    const duration = callStartTimeRef.current ? Math.floor((Date.now() - callStartTimeRef.current) / 1000) : 0;
-    await logCompletedCall(duration > 0 ? 'completed' : 'unanswered');
+    let cId, rId;
+    if (role && userId && currentPeer) {
+      cId = role === "caller" ? userId : currentPeer;
+      rId = role === "caller" ? currentPeer : userId;
+    }
+    
+    const status = callStartTimeRef.current ? 'completed' : 'unanswered';
+    await logCompletedCall(status, cId, rId);
     
     cleanup();
     setStatus("idle");
-  }, [callId, userId, peerUserId, sendSignal, cleanup, logCompletedCall]);
+  }, [userId, sendSignal, cleanup, logCompletedCall]);
 
   // ---- TOGGLE MUTE ----
   const toggleMute = useCallback(() => {
