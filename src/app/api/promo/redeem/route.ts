@@ -15,13 +15,17 @@ export async function POST(req: Request) {
     const cleanCode = String(code).trim().toUpperCase();
 
     // 1. Look up the code
-    const { data: promo } = await supabaseAdmin
+    const { data: promo, error: lookupError } = await supabaseAdmin
       .from("promo_codes")
       .select("*")
       .eq("code", cleanCode)
       .eq("is_active", true)
       .maybeSingle();
 
+    if (lookupError) {
+      console.error("promo_codes lookup error:", lookupError);
+      return NextResponse.json({ error: "Promo lookup failed: " + lookupError.message }, { status: 500 });
+    }
     if (!promo) return NextResponse.json({ error: "Invalid promo code" }, { status: 404 });
 
     // 2. Check max uses
@@ -57,11 +61,15 @@ export async function POST(req: Request) {
     if (updateErr) return NextResponse.json({ error: updateErr.message }, { status: 500 });
 
     // 5. Log the redemption + increment uses
-    await supabaseAdmin.from("promo_redemptions").insert({
+    const { error: redeemErr } = await supabaseAdmin.from("promo_redemptions").insert({
       user_id: userId,
       code: cleanCode,
       granted_tier: promo.grants_tier,
     });
+    if (redeemErr) {
+      console.error("promo_redemptions insert error:", redeemErr);
+      return NextResponse.json({ error: "Redemption log failed: " + redeemErr.message }, { status: 500 });
+    }
 
     await supabaseAdmin
       .from("promo_codes")
