@@ -128,31 +128,35 @@ function ProfileSettingsContent() {
     <main className="min-h-screen bg-[#09090B] text-white pb-32 font-sans selection:bg-[#E53945]/30">
       <TopBar />
       
-            {isOnboarding && (
-        <div className="max-w-2xl mx-auto mb-8 bg-gradient-to-r from-[#E53945]/20 via-[#E53945]/10 to-transparent border border-[#E53945]/30 rounded-2xl p-5 animate-in fade-in slide-in-from-top-4 duration-500">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#E53945]/30 flex items-center justify-center shrink-0">
-              <span className="text-xl">👋</span>
-            </div>
-            <div className="flex-1">
-              <h2 className="text-lg font-black text-white mb-1">Welcome to Trooflix!</h2>
-              <p className="text-sm text-white/70 leading-relaxed">
-                Let's set up your profile. Add a photo, bio, and social handles so people can find you.
-                Once you save, you'll be taken to your dashboard.
-              </p>
+      <div className="max-w-2xl mx-auto pt-24 pb-32 px-4">
+
+        {/* ONBOARDING BANNER (only shows during signup) */}
+        {isOnboarding && (
+          <div className="mb-8 bg-gradient-to-r from-[#E53945]/20 via-[#E53945]/10 to-transparent border border-[#E53945]/30 rounded-2xl p-5 animate-in fade-in slide-in-from-top-4 duration-500">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-full bg-[#E53945]/30 flex items-center justify-center shrink-0 text-2xl">
+                👋
+              </div>
+              <div className="flex-1">
+                <h2 className="text-lg font-black text-white mb-1">Welcome to Trooflix!</h2>
+                <p className="text-sm text-white/70 leading-relaxed">
+                  Let's set up your profile — add a photo, bio, and social handles so people can find you. Once you save, you'll be taken to your dashboard.
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-<div className="max-w-2xl mx-auto pt-24">
-        
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 mb-2">
-            <Link href="/creator-dashboard" className="inline-flex items-center gap-2 text-white/50 hover:text-white mb-8 transition text-sm font-semibold">
-        <ArrowLeft size={16} /> Skip for now
-      </Link>
-            <h1 className="text-base font-semibold">Edit profile</h1>
-            <div className="w-8"></div>
+        )}
+
+        {/* HEADER ROW */}
+        <div className="flex items-center justify-between mb-6">
+          <Link
+            href="/creator-dashboard"
+            className="inline-flex items-center gap-1.5 text-white/60 hover:text-white transition text-sm font-semibold"
+          >
+            <ArrowLeft size={16} /> Skip for now
+          </Link>
+          <h1 className="text-base font-bold text-white">Edit profile</h1>
+          <div className="w-24" />
         </div>
 
         {/* Avatar Section */}
