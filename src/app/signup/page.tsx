@@ -185,6 +185,33 @@ export default function SignupPage() {
 
       clearUserCache();
 
+      // If a promo code was entered, try to redeem it FIRST
+      if (promoCode.trim()) {
+        try {
+          const promoRes = await fetch("/api/promo/redeem", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId: authData.user.id, code: promoCode.trim() }),
+          });
+          const promoData = await promoRes.json();
+          if (promoRes.ok && promoData.success) {
+            // Promo applied! No Stripe needed.
+            router.push("/");
+            router.refresh();
+            return;
+          }
+          // Promo failed — show the error and stop. Don't fall through to Stripe.
+          setError(promoData.error || "Invalid promo code. Please check and try again.");
+          setLoading(false);
+          return;
+        } catch (e) {
+          setError("Could not validate promo code. Please try again.");
+          setLoading(false);
+          return;
+        }
+      }
+
+      // No promo code — normal flow
       if (selectedTier === "free") {
         router.push("/");
         router.refresh();
