@@ -61,13 +61,16 @@ export function useWebRTCCall(userId: string | null) {
     setRemoteStream(remote);
 
     pc.ontrack = (event) => {
+      console.log("[WebRTC] 🎵 ontrack fired! Track kind:", event.track.kind, "| Streams:", event.streams.length);
       event.streams[0].getTracks().forEach((track) => {
+        console.log("[WebRTC] Adding track to remote stream:", track.kind, "| enabled:", track.enabled);
         remote.addTrack(track);
       });
-      setRemoteStream(remote);
+      setRemoteStream(new MediaStream(remote.getTracks()));
     };
 
     pc.onicecandidate = (event) => {
+      if (event.candidate) console.log("[WebRTC] Local ICE candidate:", event.candidate.candidate.slice(0, 40) + "...");
       if (event.candidate && currentCallIdRef.current && userId) {
         const peer = peerUserId;
         if (peer) {
@@ -79,6 +82,7 @@ export function useWebRTCCall(userId: string | null) {
     };
 
     pc.onconnectionstatechange = () => {
+      console.log("[WebRTC] 🔌 Connection state:", pc.connectionState, "| iceState:", pc.iceConnectionState, "| gatherState:", pc.iceGatheringState);
       if (pc.connectionState === "connected") setStatus("connected");
       else if (pc.connectionState === "failed") setStatus("failed");
       else if (pc.connectionState === "disconnected") {
@@ -263,25 +267,33 @@ export function useWebRTCCall(userId: string | null) {
               setIncoming({ callId: call_id, fromUserId: sender_id, fromName: "Someone", fromAvatar: null, offer: signal_data });
             }
           } else if (signal_type === "answer") {
+            console.log("[WebRTC] CALLER received answer signal");
             const pc = pcRef.current;
+            console.log("[WebRTC] Caller pc state:", pc?.signalingState, "| connectionState:", pc?.connectionState);
             if (pc && pc.signalingState !== "stable") {
               try {
                 await pc.setRemoteDescription(new RTCSessionDescription(signal_data));
+                console.log("[WebRTC] ✅ Caller remote description set");
                 // Drain pending ICE
                 for (const candidate of pendingIceCandidates.current) {
                   try { await pc.addIceCandidate(new RTCIceCandidate(candidate)); } catch {}
                 }
                 pendingIceCandidates.current = [];
+                console.log("[WebRTC] Drained pending ICE");
               } catch (e) {
-                console.error("setRemoteDescription(answer) failed", e);
+                console.error("[WebRTC] ❌ setRemoteDescription(answer) failed:", e);
               }
+            } else {
+              console.warn("[WebRTC] ⚠️ Skipped answer - pc null or already stable. pc:", !!pc, "state:", pc?.signalingState);
             }
           } else if (signal_type === "ice") {
+            console.log("[WebRTC] ICE candidate received. Has remote desc:", !!pcRef.current?.remoteDescription);
             const pc = pcRef.current;
             if (pc && pc.remoteDescription) {
-              try { await pc.addIceCandidate(new RTCIceCandidate(signal_data)); } catch {}
+              try { await pc.addIceCandidate(new RTCIceCandidate(signal_data)); console.log("[WebRTC] ICE added"); } catch(e) { console.error("[WebRTC] ICE add failed:", e); }
             } else {
               pendingIceCandidates.current.push(signal_data);
+              console.log("[WebRTC] ICE queued, pending:", pendingIceCandidates.current.length);
             }
           } else if (signal_type === "hangup" || signal_type === "reject") {
             if (signal_type === "reject") setStatus("rejected");
