@@ -31,17 +31,17 @@ export default function FeaturesPage() {
             <div className="w-14 h-14 bg-[#E53945] rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-[#E53945]/40">
               <DollarSign size={28} className="text-white" />
             </div>
-            <h2 className="text-3xl md:text-4xl font-black mb-4">Keep 90% of Your Revenue.</h2>
+            <h2 className="text-3xl md:text-4xl font-black mb-4">Keep 99% of Your Revenue.</h2>
             <p className="text-white/70 text-lg leading-relaxed mb-6">
-              Why let Big Tech take 45% of your hard-earned money? Whether it's subscriptions, tips, or merch sales, you keep 90%. We take a flat 10% to keep the servers running.
+              Why let Big Tech take 45% of your hard-earned money? Whether it's subscriptions, tips, or merch sales, you keep 99%. We take a flat 1% to keep the servers running.
             </p>
             <ul className="space-y-3">
               <li className="flex items-center gap-3 text-white/90"><CheckCircle2 size={20} className="text-green-500" /> Instant Payouts for Creator Tier</li>
-              <li className="flex items-center gap-3 text-white/90"><CheckCircle2 size={20} className="text-green-500" /> Transparent flat fee (no hidden Stripe cuts)</li>
+              <li className="flex items-center gap-3 text-white/90"><CheckCircle2 size={20} className="text-green-500" /> Transparent 1% flat fee (plus standard Stripe processing)</li>
             </ul>
           </div>
           <div className="flex-1 w-full relative h-64 md:h-auto md:self-stretch bg-black/40 rounded-2xl border border-white/10 overflow-hidden flex items-center justify-center">
-            <span className="text-6xl md:text-8xl font-black text-[#E53945]">90%</span>
+            <span className="text-6xl md:text-8xl font-black text-[#E53945]">99%</span>
           </div>
         </div>
 
