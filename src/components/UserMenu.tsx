@@ -219,7 +219,7 @@ export default function UserMenu() {
                     aria-label="Toggle push notifications"
                   >
                     <span
-                      className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${pushEnabled ? "translate-x-[18px]" : "translate-x-0.5"} ${pushBusy ? "animate-pulse" : ""}`}
+                      className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${pushEnabled ? "translate-x-[16px]" : "translate-x-0"} ${pushBusy ? "animate-pulse" : ""}`}
                     />
                   </button>
                 )}
