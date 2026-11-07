@@ -336,7 +336,7 @@ export default function Home() {
                 <div className="w-full relative z-10">
 
                 {/* CINEMATIC HEADLINE */}
-                <div className="w-full text-center px-6 pt-12 pb-12 relative z-10 flex flex-col items-center justify-center">
+                <div className="w-full text-center px-6 pt-24 md:pt-32 pb-6 relative z-10 flex flex-col items-center justify-center">
                   <h1 className="text-[44px] md:text-[80px] font-black tracking-tighter text-white leading-[1.05] mb-6">
                     Stop letting Big Tech <span className="text-[#E53945]">eat your lunch.</span>
                   </h1>
