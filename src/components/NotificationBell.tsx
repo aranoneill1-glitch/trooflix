@@ -101,6 +101,9 @@ export default function NotificationBell({ hideTrigger = false }: { hideTrigger?
     fetchNotifications();
   }, [supabase]);
 
+  const unreadCount = notifications.filter((n: Notification) => !n.is_read).length;
+  const displayedNotifications = activeTab === "unread" ? notifications.filter((n: Notification) => !n.is_read) : notifications;
+
   const markAllRead = async () => {
     const user = await getCachedUser();
     if (!user) return;
