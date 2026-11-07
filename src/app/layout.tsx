@@ -66,7 +66,7 @@ export default function RootLayout({
       <PushNotificationManager />
       <body className={inter.className}>
         
-        <GlobalIncomingCall />{typeof window !== "undefined" && (
+        {/* <GlobalIncomingCall /> */}{typeof window !== "undefined" && (
         <script
           dangerouslySetInnerHTML={{
             __html: `
