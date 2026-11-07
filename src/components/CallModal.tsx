@@ -29,6 +29,7 @@ export default function CallModal({
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const [duration, setDuration] = useState(0);
   const [speakerOn, setSpeakerOn] = useState(true);
+  const showVideo = status === "connected" && hasRemoteVideo;
   const [swapped, setSwapped] = useState(false);
 
   useEffect(() => {
@@ -50,25 +51,30 @@ export default function CallModal({
 
   // Remote stream
   useEffect(() => {
-    if (remoteVideoRef.current && remoteStream) {
-      remoteVideoRef.current.srcObject = remoteStream;
-      remoteVideoRef.current.muted = false;
-      remoteVideoRef.current.volume = 1;
-      remoteVideoRef.current.play().catch((e) => console.warn("Remote play failed:", e));
+    const video = remoteVideoRef.current;
+    if (video && remoteStream) {
+      if (video.srcObject !== remoteStream) video.srcObject = remoteStream;
+      video.muted = false;
+      video.volume = 1;
+      video.play().catch((e) => console.warn("Remote play failed:", e));
     }
-  }, [remoteStream]);
+  }, [remoteStream, swapped, showVideo]);
 
   // Local self-view
   useEffect(() => {
-    if (localVideoRef.current && localStream) {
-      localVideoRef.current.srcObject = localStream;
-      localVideoRef.current.muted = true;
-      const playPromise = localVideoRef.current.play();
-      if (playPromise !== undefined) {
-        playPromise.catch((e) => console.warn("Local video play blocked:", e));
-      }
+    const video = localVideoRef.current;
+    if (video && localStream) {
+      if (video.srcObject !== localStream) video.srcObject = localStream;
+      video.muted = true;
+      video.play().catch((e) => console.warn("Local play blocked:", e));
+      
+      // iOS sometimes needs a tiny delay to render video frames after a CSS swap
+      const timer = setTimeout(() => {
+        video.play().catch(() => {});
+      }, 100);
+      return () => clearTimeout(timer);
     }
-  }, [localStream]);
+  }, [localStream, swapped, showVideo]);
 
   useEffect(() => {
     try {
@@ -78,8 +84,7 @@ export default function CallModal({
   }, []);
 
   const toggleSpeaker = () => setSpeakerOn(!speakerOn);
-  const showVideo = status === "connected" && hasRemoteVideo;
-
+  
   const statusLabel =
     status === "calling" ? "Calling..." :
     status === "ringing" ? "Connecting..." :
