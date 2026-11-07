@@ -172,6 +172,10 @@ export default function CallModal({ status, peerName, peerAvatar, remoteStream, 
   const handleTapToHear = async () => {
     if (!audioRef.current || !remoteStream) return;
     try {
+      // Play a silent sound to unlock the audio context on Safari/iOS
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      await ctx.resume();
+      
       audioRef.current.srcObject = remoteStream;
       audioRef.current.muted = false;
       audioRef.current.volume = 1;

@@ -54,9 +54,7 @@ export function useWebRTCCall(userId: string | null) {
   const createPeerConnection = useCallback(() => {
     if (pcRef.current) return pcRef.current;
     const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
-    // Force audio m-line to be negotiated
-    pc.addTransceiver("audio", { direction: "sendrecv" });
-    (window as any).__webrtcPc = pc; // Expose for debugging stats
+    (window as any).__webrtcPc = pc; // Expose for debugging
 
     // Forward remote tracks
     const remote = new MediaStream();
@@ -64,22 +62,15 @@ export function useWebRTCCall(userId: string | null) {
     setRemoteStream(remote);
 
     pc.ontrack = (event) => {
-      console.log("[WebRTC] 🎵 ontrack fired! Track kind:", event.track.kind, "| Streams:", event.streams.length);
+      console.log("[WebRTC] 🎵 ontrack fired! Track kind:", event.track.kind);
       
-      // Add the new track to our remote stream
-      const incomingTrack = event.track;
-      // Remove any existing track of the same kind (avoid duplicates)
-      remote.getTracks().forEach((t) => {
-        if (t.kind === incomingTrack.kind && t.id !== incomingTrack.id) {
-          remote.removeTrack(t);
-        }
-      });
-      remote.addTrack(incomingTrack);
-      
-      console.log("[WebRTC] Track added. Remote stream now has:", remote.getTracks().map(t => t.kind));
-      
-      // Force re-render by creating new stream reference each time
-      setRemoteStream(new MediaStream(remote.getTracks()));
+      if (event.streams && event.streams[0]) {
+        // Use the stream directly from the event
+        setRemoteStream(event.streams[0]);
+      } else {
+        // Fallback if no stream, create one from the track
+        setRemoteStream(new MediaStream([event.track]));
+      }
     };
 
     pc.onicecandidate = (event) => {
