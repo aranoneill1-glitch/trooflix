@@ -18,10 +18,31 @@ export default function CallModal({ status, peerName, peerAvatar, remoteStream, 
   const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
-    if (audioRef.current && remoteStream) {
-      audioRef.current.srcObject = remoteStream;
-      audioRef.current.play().catch(() => {});
+    if (!audioRef.current) return;
+    if (!remoteStream) {
+      console.log("[CallModal] No remote stream yet");
+      return;
     }
+    
+    console.log("[CallModal] Setting remote stream. Tracks:", remoteStream.getTracks().map(t => t.kind + ":" + t.enabled + ":" + t.readyState));
+    
+    audioRef.current.srcObject = remoteStream;
+    audioRef.current.muted = false;
+    audioRef.current.volume = 1;
+    
+    const playPromise = audioRef.current.play();
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => console.log("[CallModal] ✅ Audio playing"))
+        .catch((err) => console.error("[CallModal] ❌ Audio play failed:", err));
+    }
+    
+    // Also check track states
+    remoteStream.getAudioTracks().forEach((t) => {
+      console.log("[CallModal] Audio track:", t.label, "| enabled:", t.enabled, "| muted:", t.muted, "| state:", t.readyState);
+      t.onunmute = () => console.log("[CallModal] 🎤 Audio track unmuted");
+      t.onmute = () => console.log("[CallModal] 🔇 Audio track muted");
+    });
   }, [remoteStream]);
 
   const statusLabel = 
@@ -41,7 +62,7 @@ export default function CallModal({ status, peerName, peerAvatar, remoteStream, 
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-[10010] bg-gradient-to-b from-[#1c1c1e] via-[#0a0303] to-black flex flex-col items-center justify-between p-6 pt-16 pb-10"
       >
-        <audio ref={audioRef} autoPlay playsInline hidden />
+        <audio ref={audioRef} autoPlay playsInline style={{ display: "none" }} />
 
         {/* Header */}
         <div className="w-full max-w-md flex justify-end">

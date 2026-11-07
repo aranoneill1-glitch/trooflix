@@ -62,10 +62,20 @@ export function useWebRTCCall(userId: string | null) {
 
     pc.ontrack = (event) => {
       console.log("[WebRTC] 🎵 ontrack fired! Track kind:", event.track.kind, "| Streams:", event.streams.length);
-      event.streams[0].getTracks().forEach((track) => {
-        console.log("[WebRTC] Adding track to remote stream:", track.kind, "| enabled:", track.enabled);
-        remote.addTrack(track);
+      
+      // Add the new track to our remote stream
+      const incomingTrack = event.track;
+      // Remove any existing track of the same kind (avoid duplicates)
+      remote.getTracks().forEach((t) => {
+        if (t.kind === incomingTrack.kind && t.id !== incomingTrack.id) {
+          remote.removeTrack(t);
+        }
       });
+      remote.addTrack(incomingTrack);
+      
+      console.log("[WebRTC] Track added. Remote stream now has:", remote.getTracks().map(t => t.kind));
+      
+      // Force re-render by creating new stream reference each time
       setRemoteStream(new MediaStream(remote.getTracks()));
     };
 
