@@ -325,7 +325,7 @@ export function useWebRTCCall(userId: string | null) {
   }, [incoming, userId, createPeerConnection, sendSignal]);
 
   // ---- REJECT INCOMING ----
-  const logCompletedCall = async (finalStatus: 'completed' | 'unanswered' | 'declined', explicitCallerId?: string, explicitReceiverId?: string) => {
+  const logCompletedCall = useCallback(async (finalStatus: 'completed' | 'unanswered' | 'declined', explicitCallerId?: string, explicitReceiverId?: string) => {
     let cId = explicitCallerId;
     let rId = explicitReceiverId;
     
@@ -354,7 +354,7 @@ export function useWebRTCCall(userId: string | null) {
     } catch (e) {
       console.error("[WebRTC] Failed to log call", e);
     }
-  };
+  }, [userId, peerUserId]);
 
   const rejectCall = useCallback(async () => {
     if (!incoming || !userId) return;
@@ -366,7 +366,7 @@ export function useWebRTCCall(userId: string | null) {
     setIncoming(null);
     cleanup();
     setStatus("idle");
-  }, [incoming, userId, sendSignal, cleanup]);
+  }, [incoming, userId, sendSignal, cleanup, logCompletedCall]);
 
   const endCall = useCallback(async () => {
     if (callId && userId && peerUserId) {
@@ -378,7 +378,7 @@ export function useWebRTCCall(userId: string | null) {
     
     cleanup();
     setStatus("idle");
-  }, [callId, userId, peerUserId, sendSignal, cleanup]);
+  }, [callId, userId, peerUserId, sendSignal, cleanup, logCompletedCall]);
 
   // ---- TOGGLE MUTE ----
   const toggleMute = useCallback(() => {
@@ -464,6 +464,8 @@ export function useWebRTCCall(userId: string | null) {
               console.log("[WebRTC] ICE queued, pending:", pendingIceCandidates.current.length);
             }
           } else if (signal_type === "hangup" || signal_type === "reject") {
+            const finalStatus = signal_type === "reject" ? "unanswered" : (callStartTimeRef.current ? "completed" : "unanswered");
+            await logCompletedCall(finalStatus);
             if (signal_type === "reject") setStatus("rejected");
             else setStatus("ended");
             setTimeout(() => {
@@ -483,7 +485,7 @@ export function useWebRTCCall(userId: string | null) {
       try { supabase.removeChannel(channel); } catch {}
       channelRef.current = null;
     };
-  }, [userId, status, sendSignal, cleanup]);
+  }, [userId, status, sendSignal, cleanup, logCompletedCall]);
 
   return {
     status,
