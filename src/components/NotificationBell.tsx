@@ -95,7 +95,7 @@ export default function NotificationBell({ hideTrigger = false }: { hideTrigger?
         .from("notifications")
         .select("*")
         .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
+        .order("id", { ascending: false });
       if (fetchError) console.error("[NotificationBell] Fetch error:", fetchError);
 
       console.log("[NotificationBell] Fetched rows:", data?.length || 0);
