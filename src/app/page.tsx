@@ -336,25 +336,26 @@ export default function Home() {
                 <div className="w-full relative z-10">
 
                 {/* CINEMATIC HEADLINE */}
-                <div className="w-full text-center px-4 pt-10 pb-8 relative z-10">
-                  <h1 className="text-4xl md:text-6xl font-black tracking-tight text-white mb-4">
-                    STOP LETTING BIG TECH <span className="text-[#E53945]">EAT YOUR LUNCH.</span>
+                <div className="w-full text-center px-6 pt-12 pb-12 relative z-10 flex flex-col items-center justify-center">
+                  <h1 className="text-[44px] md:text-[80px] font-black tracking-tighter text-white leading-[1.05] mb-6">
+                    Stop letting Big Tech <span className="text-[#E53945]">eat your lunch.</span>
                   </h1>
-                  <p className="text-sm md:text-xl text-white/70 max-w-2xl mx-auto mb-8 font-medium leading-relaxed">
-                    The home of independent voices. Uncensored, unscripted, and paid directly to the creators you love.
+                  <p className="text-[15px] md:text-xl text-white/50 max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
+                    Traditional platforms take massive cuts and hide your content behind algorithms. Trooflix was built for creators who are tired of sharing their revenue with billionaires and being censored in the process.
                   </p>
-                  <div className="flex items-center justify-center gap-3 md:gap-4 flex-wrap">
-                    <button 
-                      onClick={() => window.scrollTo({ top: window.innerHeight * 0.8, behavior: 'smooth' })}
-                      className="bg-white text-black font-bold px-8 py-3.5 rounded-full hover:bg-gray-200 transition text-sm md:text-base shadow-xl"
-                    >
-                      Start Watching
-                    </button>
+                  <div className="flex flex-col w-full max-w-sm gap-3">
                     <a 
                       href="/signup" 
-                      className="bg-white/10 backdrop-blur-md border border-white/20 text-white font-bold px-8 py-3.5 rounded-full hover:bg-white/20 transition text-sm md:text-base shadow-xl"
+                      className="w-full flex items-center justify-center gap-2 bg-white text-black font-bold text-lg py-4 rounded-full hover:bg-gray-200 transition"
                     >
-                      Become a Creator
+                      Apply as a Creator
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+                    </a>
+                    <a 
+                      href="/upgrade" 
+                      className="w-full flex items-center justify-center gap-2 bg-[#1c1c1e] border border-white/10 text-white font-bold text-lg py-4 rounded-full hover:bg-[#2c2c2e] transition"
+                    >
+                      View Pricing
                     </a>
                   </div>
                 </div>
