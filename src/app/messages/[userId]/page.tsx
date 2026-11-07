@@ -19,6 +19,7 @@ import GifPicker from "@/components/GifPicker";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import { getCachedUser } from "@/lib/cache";
 import TopBar from "@/components/TopBar";
+import MobileBottomNav from "@/components/MobileBottomNav";
 import { motion, AnimatePresence } from "framer-motion";
 
 type Message = {
@@ -442,7 +443,7 @@ export default function ThreadPage() {
   };
 
   return (
-    <main className="fixed inset-0 h-[100dvh] pt-[64px] bg-black text-white flex flex-col overflow-hidden">
+    <main className="fixed inset-0 h-[100dvh] pt-[64px] pb-[72px] bg-black text-white flex flex-col overflow-hidden">
       <TopBar />
       {/* Header — white bar */}
       <header className="flex-shrink-0 bg-black border-b border-white/10">

@@ -137,7 +137,7 @@ export default function CallModal({
 
         {/* PiP self-view (video only) */}
         {showVideo && localStream && (
-          <div className="absolute top-20 right-4 w-28 h-40 rounded-2xl overflow-hidden border-2 border-white/30 shadow-2xl z-20 bg-black">
+          <div className="absolute top-20 right-4 w-28 h-40 rounded-2xl overflow-hidden shadow-2xl z-20 bg-transparent">
             <video
               ref={localVideoRef}
               autoPlay
