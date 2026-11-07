@@ -15,6 +15,9 @@ export default function UserMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [pushBusy, setPushBusy] = useState(false);
+  const [pushSupported, setPushSupported] = useState(true);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -42,6 +45,78 @@ export default function UserMenu() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    // Check if push is supported + already enabled
+    if (typeof window === "undefined" || !("serviceWorker" in navigator) || !("PushManager" in window)) {
+      setPushSupported(false);
+      return;
+    }
+    if (Notification.permission === "denied") {
+      setPushEnabled(false);
+      return;
+    }
+    navigator.serviceWorker.ready.then((reg) => {
+      reg.pushManager.getSubscription().then((sub) => {
+        setPushEnabled(!!sub && Notification.permission === "granted");
+      });
+    });
+  }, []);
+
+  const urlBase64ToUint8Array = (base64String: string) => {
+    const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+    return outputArray;
+  };
+
+  const togglePush = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (pushBusy || !pushSupported) return;
+    setPushBusy(true);
+
+    try {
+      if (pushEnabled) {
+        // Disable
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.getSubscription();
+        if (subscription) await subscription.unsubscribe();
+        await fetch("/api/push/unsubscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: user?.id }),
+        }).catch(() => {});
+        setPushEnabled(false);
+      } else {
+        // Enable
+        if (!user) return;
+        const registration = await navigator.serviceWorker.register("/sw.js");
+        const permission = await Notification.requestPermission();
+        if (permission !== "granted") {
+          setPushBusy(false);
+          return;
+        }
+        const subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!),
+        });
+        await fetch("/api/push/subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ subscription, userId: user.id }),
+        });
+        setPushEnabled(true);
+      }
+    } catch (err) {
+      console.error("Push toggle error:", err);
+      alert("Could not update notifications. Try again.");
+    } finally {
+      setPushBusy(false);
+    }
+  };
 
   const handleLogout = async () => {
     setIsOpen(false);
@@ -123,17 +198,32 @@ export default function UserMenu() {
                 Messages
               </Link>
 
-              {/* Notifications (opens the bell modal) */}
-              <button
-                onClick={() => {
-                  setIsOpen(false);
-                  window.dispatchEvent(new CustomEvent('open-notifications'));
-                }}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition text-sm text-white/80 hover:text-white"
-              >
-                <Bell size={16} />
-                Notifications
-              </button>
+              {/* Notifications with push toggle */}
+              <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition">
+                <button
+                  onClick={() => {
+                    setIsOpen(false);
+                    window.dispatchEvent(new CustomEvent('open-notifications'));
+                  }}
+                  className="flex-1 flex items-center gap-3 text-sm text-white/80 hover:text-white text-left"
+                >
+                  <Bell size={16} />
+                  Notifications
+                </button>
+                {pushSupported && (
+                  <button
+                    onClick={togglePush}
+                    disabled={pushBusy}
+                    className={`relative w-9 h-5 rounded-full transition-colors shrink-0 ${pushEnabled ? "bg-[#E53945]" : "bg-white/20"} ${pushBusy ? "opacity-50" : ""}`}
+                    title={pushEnabled ? "Disable push notifications" : "Enable push notifications"}
+                    aria-label="Toggle push notifications"
+                  >
+                    <span
+                      className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${pushEnabled ? "translate-x-[18px]" : "translate-x-0.5"} ${pushBusy ? "animate-pulse" : ""}`}
+                    />
+                  </button>
+                )}
+              </div>
 
               {isCreator && (
                 <Link 
