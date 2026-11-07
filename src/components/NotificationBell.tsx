@@ -5,6 +5,7 @@ import { Bell, X, Trash2, CheckCircle2, Heart, MessageCircle, UserPlus, Shopping
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/utils/supabase/client";
 import { getCachedUser } from "@/lib/cache";
+import EnablePush from "@/components/EnablePush";
 
 type Notification = {
   id: string;
@@ -18,7 +19,7 @@ type Notification = {
 
 export default function NotificationBell({ hideTrigger = false }: { hideTrigger?: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"unread" | "all" | "basket">("all");
+  const [activeTab, setActiveTab] = useState<"unread" | "all" | "basket" | "push">("all");
   const [basketItems, setBasketItems] = useState<any[]>([]);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -183,12 +184,20 @@ export default function NotificationBell({ hideTrigger = false }: { hideTrigger?
                 >
                   Basket ({basketItems.length})
                 </button>
+                <button 
+                  onClick={() => setActiveTab("push")} 
+                  className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${activeTab === "push" ? "bg-[#E53945] text-white shadow-lg" : "text-white/50 hover:text-white"}`}
+                >
+                  Push
+                </button>
               </div>
             </div>
 
             {/* List */}
             <div className="flex-1 overflow-y-auto p-4 space-y-6 max-w-3xl mx-auto w-full">
-              {activeTab === "basket" ? (
+              {activeTab === "push" ? (
+                <EnablePush />
+              ) : activeTab === "basket" ? (
                 <div className="space-y-4">
                   {basketItems.length === 0 ? (
                     <div className="flex flex-col items-center justify-center text-white/30 py-20">
