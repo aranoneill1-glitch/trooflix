@@ -875,6 +875,7 @@ export default function ThreadPage() {
         )}
       </AnimatePresence>
 
+      <div className="fixed bottom-0 left-0 right-0 z-[250]"><MobileBottomNav /></div>
     </main>
   );
 }
