@@ -15,8 +15,9 @@ type Props = {
 };
 
 export default function CallModal({ status, peerName, peerAvatar, remoteStream, muted, onToggleMute, onEnd }: Props) {
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const audioRef = useRef<HTMLVideoElement>(null);
   const [needsTapToHear, setNeedsTapToHear] = useState(false);
+  const [speakerOn, setSpeakerOn] = useState(true);
 
   useEffect(() => {
     if (!audioRef.current) return;
@@ -57,6 +58,28 @@ export default function CallModal({ status, peerName, peerAvatar, remoteStream, 
     });
   }, [remoteStream]);
 
+  const toggleSpeaker = () => {
+    if (!audioRef.current) return;
+    // Video elements route to speaker by default; toggle to try earpiece
+    if (speakerOn) {
+      // Force mute then unmute to re-route
+      audioRef.current.volume = 0;
+      setTimeout(() => {
+        if (audioRef.current) audioRef.current.volume = 1;
+      }, 50);
+      setSpeakerOn(false);
+    } else {
+      // Force speaker
+      try {
+        const nav: any = navigator;
+        if (nav.audioSession) nav.audioSession.type = "play-and-record";
+      } catch {}
+      audioRef.current.volume = 1;
+      audioRef.current.play().catch(() => {});
+      setSpeakerOn(true);
+    }
+  };
+
   const handleTapToHear = async () => {
     if (!audioRef.current || !remoteStream) return;
     try {
@@ -88,7 +111,7 @@ export default function CallModal({ status, peerName, peerAvatar, remoteStream, 
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-[10010] bg-gradient-to-b from-[#1c1c1e] via-[#0a0303] to-black flex flex-col items-center justify-between p-6 pt-16 pb-10"
       >
-        <audio ref={audioRef} autoPlay playsInline style={{ position: "absolute", left: "-9999px", top: "-9999px", width: "1px", height: "1px", opacity: 0.01 }} />
+        <video ref={audioRef as any} autoPlay playsInline style={{ position: "absolute", left: "-9999px", top: "-9999px", width: "1px", height: "1px", opacity: 0.01 }} />
 
         {/* Header */}
         <div className="w-full max-w-md flex justify-end">
@@ -135,6 +158,14 @@ export default function CallModal({ status, peerName, peerAvatar, remoteStream, 
 
         {/* Bottom: controls */}
         <div className="flex items-center gap-6">
+          <button
+            onClick={toggleSpeaker}
+            className={`w-16 h-16 rounded-full flex items-center justify-center transition ${speakerOn ? "bg-white/30" : "bg-white/10 hover:bg-white/20"}`}
+            aria-label={speakerOn ? "Earpiece" : "Speaker"}
+            title={speakerOn ? "Switch to earpiece" : "Switch to speaker"}
+          >
+            <span className="text-2xl">{speakerOn ? "🔊" : "📞"}</span>
+          </button>
           <button
             onClick={onToggleMute}
             disabled={status !== "connected"}

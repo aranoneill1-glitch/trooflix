@@ -151,6 +151,17 @@ export function useWebRTCCall(userId: string | null) {
     if (!userId) return;
     if (status !== "idle") return;
 
+    // Set iOS audio session to play-and-record BEFORE mic access
+    try {
+      const nav: any = navigator;
+      if (nav.audioSession) {
+        nav.audioSession.type = "play-and-record";
+        console.log("[WebRTC] 🍎 audioSession set before getUserMedia");
+      }
+    } catch (e) {
+      console.log("[WebRTC] audioSession setup failed:", e);
+    }
+
     setPeerUserId(recipientId);
     setPeerName(recipientName);
     setPeerAvatar(recipientAvatar);
@@ -188,6 +199,17 @@ export function useWebRTCCall(userId: string | null) {
   // ---- ACCEPT INCOMING ----
   const acceptCall = useCallback(async () => {
     if (!incoming || !userId) return;
+
+    // Set iOS audio session to play-and-record BEFORE mic access
+    try {
+      const nav: any = navigator;
+      if (nav.audioSession) {
+        nav.audioSession.type = "play-and-record";
+        console.log("[WebRTC] 🍎 audioSession set before accept");
+      }
+    } catch (e) {
+      console.log("[WebRTC] audioSession setup failed:", e);
+    }
     const { callId: incomingCallId, fromUserId, fromName, fromAvatar, offer } = incoming;
     setIncoming(null);
     setPeerUserId(fromUserId);
