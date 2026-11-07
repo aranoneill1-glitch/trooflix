@@ -1,5 +1,5 @@
 "use client";
-import { ChevronRight , Tag, MoreVertical } from "lucide-react";
+import { ChevronRight , Tag, MoreVertical , Download} from "lucide-react";
 
 import { useEffect, useState, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
@@ -535,7 +535,14 @@ function CreatorDashboardContent() {
                 <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">
                   Content
                 </h2>
-                <div className="flex flex-col gap-2 w-full max-w-2xl">
+                <Link href="/creator-dashboard/import" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-lg">
+                    <div className="flex items-center gap-4">
+                      <Download className="text-[#E53945]" size={20} />
+                      <span className="text-sm font-bold text-white group-hover:text-white/90">Import from YouTube</span>
+                    </div>
+                    <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
+                  </Link>
+                  <div className="flex flex-col gap-2 w-full max-w-2xl">
                   <Link href="/creator-dashboard/manage-content" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-lg">
                     <div className="flex items-center gap-4">
                       <Video className="text-[#E53945]" size={20} />
