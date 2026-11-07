@@ -17,6 +17,9 @@ import { useRealtimeDMs } from "@/hooks/useRealtimeDMs";
 import GifPicker from "@/components/GifPicker";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import { getCachedUser } from "@/lib/cache";
+import { useWebRTCCall } from "@/hooks/useWebRTCCall";
+import CallModal from "@/components/CallModal";
+import { Phone } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -95,6 +98,37 @@ export default function ThreadPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const bottomRef = useRef<HTMLDivElement>(null);
+  
+  // Voice call state
+  const [userTier, setUserTier] = useState<"free" | "plus" | "creator">("free");
+  const [showCallModal, setShowCallModal] = useState(false);
+  const webrtc = useWebRTCCall(me);
+
+  // Fetch tier + subscribe to call state
+  useEffect(() => {
+    if (!me) return;
+    fetch(`/api/profile?user_id=${me}`)
+      .then((r) => r.json())
+      .then((d) => {
+        const raw = String(d.profile?.tier || "free").toLowerCase();
+        let norm: "free" | "plus" | "creator" = "free";
+        if (raw === "creator" || raw === "podcaster" || raw === "pro") norm = "creator";
+        else if (raw === "plus" || raw === "pass") norm = "plus";
+        if (norm !== "free" && d.profile?.plus_expires_at) {
+          if (new Date(d.profile.plus_expires_at) < new Date()) norm = "free";
+        }
+        setUserTier(norm);
+      })
+      .catch(() => {});
+  }, [me]);
+
+  // Auto-show/hide call modal
+  useEffect(() => {
+    if (["calling", "connected", "ended", "rejected", "failed"].includes(webrtc.status)) {
+      setShowCallModal(true);
+    }
+    if (webrtc.status === "idle") setShowCallModal(false);
+  }, [webrtc.status]);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -455,9 +489,21 @@ export default function ThreadPage() {
                 {other?.username ? other.username : ""}
               </p>
             </div>
-          </Link>
-
-        </div>
+          
+        </Link>
+        {/* Call button — Plus/Creator only */}
+        {userTier !== "free" && other && (
+          <button
+            onClick={() => { webrtc.startCall(other.user_id, other.display_name || other.username || "User", other.avatar_url || null); }}
+            disabled={webrtc.status !== "idle"}
+            className="ml-auto p-2 bg-white/5 hover:bg-white/10 rounded-full text-white/70 hover:text-white transition disabled:opacity-30"
+            aria-label="Start call"
+            title="Start voice call"
+          >
+            <Phone size={20} />
+          </button>
+        )}
+      </div>
       </header>
 
       {/* Messages */}
@@ -813,6 +859,18 @@ export default function ThreadPage() {
         )}
       </AnimatePresence>
 
+      {/* Voice Call Modal */}
+      {showCallModal && (
+        <CallModal
+          status={webrtc.status as any}
+          peerName={webrtc.peerName}
+          peerAvatar={webrtc.peerAvatar}
+          remoteStream={webrtc.remoteStream}
+          muted={webrtc.muted}
+          onToggleMute={webrtc.toggleMute}
+          onEnd={() => { webrtc.endCall(); setShowCallModal(false); }}
+        />
+      )}
     </main>
   );
 }

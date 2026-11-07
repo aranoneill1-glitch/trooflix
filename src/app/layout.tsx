@@ -1,4 +1,5 @@
 import PushNotificationManager from "@/components/PushNotificationManager";
+import GlobalIncomingCall from "@/components/GlobalIncomingCall";
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -64,7 +65,8 @@ export default function RootLayout({
       </head>
       <PushNotificationManager />
       <body className={inter.className}>
-      {typeof window !== "undefined" && (
+        
+        <GlobalIncomingCall />{typeof window !== "undefined" && (
         <script
           dangerouslySetInnerHTML={{
             __html: `
