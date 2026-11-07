@@ -83,12 +83,22 @@ export function useWebRTCCall(userId: string | null) {
 
     pc.onconnectionstatechange = () => {
       console.log("[WebRTC] 🔌 Connection state:", pc.connectionState, "| iceState:", pc.iceConnectionState, "| gatherState:", pc.iceGatheringState);
-      if (pc.connectionState === "connected") setStatus("connected");
+      // Accept BOTH "connected" AND ICE "connected/completed" as success
+      if (pc.connectionState === "connected" || pc.iceConnectionState === "connected" || pc.iceConnectionState === "completed") {
+        setStatus("connected");
+      }
       else if (pc.connectionState === "failed") setStatus("failed");
       else if (pc.connectionState === "disconnected") {
         setTimeout(() => {
           if (pc.connectionState === "disconnected") setStatus("failed");
         }, 5000);
+      }
+    };
+
+    pc.oniceconnectionstatechange = () => {
+      if (pc.iceConnectionState === "connected" || pc.iceConnectionState === "completed") {
+        console.log("[WebRTC] ✅ ICE connected - forcing status to connected");
+        setStatus("connected");
       }
     };
 
@@ -280,6 +290,8 @@ export function useWebRTCCall(userId: string | null) {
                 }
                 pendingIceCandidates.current = [];
                 console.log("[WebRTC] Drained pending ICE");
+                // Force status to connected once we have the answer
+                setStatus("connected");
               } catch (e) {
                 console.error("[WebRTC] ❌ setRemoteDescription(answer) failed:", e);
               }
