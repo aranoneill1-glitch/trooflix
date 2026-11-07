@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Video, Mic, Upload, Users, Eye, TrendingUp, Film, Mic2, Bell, Settings } from "lucide-react";
+import { Video, Mic, Upload, Users, Eye, TrendingUp, Film, Mic2, Bell, Settings, Ticket } from "lucide-react";
 
 export default function OverviewPage() {
   const [stats, setStats] = useState<{
@@ -103,6 +103,11 @@ export default function OverviewPage() {
             href="/admin/settings"
             icon={Settings}
             label="Settings"
+          />
+          <ActionTile
+            href="/admin/promo-codes"
+            icon={Ticket}
+            label="Promo Codes"
           />
         </div>
       </section>
