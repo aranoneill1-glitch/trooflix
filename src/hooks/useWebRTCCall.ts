@@ -101,6 +101,25 @@ export function useWebRTCCall(userId: string | null) {
       }
     };
 
+    
+    (window as any).__activePc = pc;
+    let lastInBytes = 0;
+    let lastOutBytes = 0;
+    setInterval(async () => {
+      if (pc.connectionState === "connected") {
+        const stats = await pc.getStats();
+        let inB = 0; let outB = 0;
+        stats.forEach((r) => {
+          if (r.type === "inbound-rtp" && r.kind === "audio") inB += r.bytesReceived;
+          if (r.type === "outbound-rtp" && r.kind === "audio") outB += r.bytesSent;
+        });
+        if (inB !== lastInBytes || outB !== lastOutBytes) {
+          console.log(`[WebRTC STATS] 🟢 In: ${inB} bytes | 🔵 Out: ${outB} bytes`);
+          lastInBytes = inB; lastOutBytes = outB;
+        }
+      }
+    }, 1500);
+
     pc.onconnectionstatechange = () => {
       console.log("[WebRTC] 🔌 Connection state:", pc.connectionState, "| iceState:", pc.iceConnectionState, "| gatherState:", pc.iceGatheringState);
       if (pc.connectionState === "connected") {

@@ -49,19 +49,7 @@ export default function CallModal({ status, peerName, peerAvatar, remoteStream, 
       .then(() => console.log("[CallModal] ✅ Video element playing"))
       .catch((e: any) => console.error("[CallModal] ❌ Video element failed:", e));
     
-    // Method 2: Web Audio API (backup - bypasses video element quirks)
-    try {
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-      const ctx = new AudioContextClass();
-      const source = ctx.createMediaStreamSource(stream);
-      source.connect(ctx.destination);
-      ctx.resume().then(() => {
-        console.log("[CallModal] ✅ Web Audio API connected. Context state:", ctx.state);
-        (window as any).__remoteAudioCtx = ctx;
-      }).catch((e: any) => console.error("[CallModal] Web Audio failed:", e));
-    } catch (e) {
-      console.error("[CallModal] Web Audio init failed:", e);
-    }
+    
     
     // Log track info
     const audioTracks = stream.getAudioTracks();
