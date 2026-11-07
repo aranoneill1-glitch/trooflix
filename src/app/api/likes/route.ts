@@ -16,22 +16,30 @@ async function findPostOwner(videoId: number): Promise<string | null> {
     // 1. Try KV first
     const videos = (await kv.get<any[]>(VIDEOS_KEY)) || [];
     const post = videos.find((v: any) => Number(v.id) === Number(videoId));
-    
-    if (post) {
-      if (post.uploaderUserId) return post.uploaderUserId;
-      if (post.creatorId) {
-        const creators = (await kv.get<any[]>(CREATORS_KEY)) || [];
-        const creator = creators.find((c: any) => Number(c.id) === Number(post.creatorId));
-        if (creator?.ownerUserId) return creator.ownerUserId;
-      }
+    if (!post) return null;
+
+    // 2. Direct uploader ID
+    if (post.uploaderUserId) return post.uploaderUserId;
+
+    // 3. Creator ID lookup
+    if (post.creatorId) {
+      // Try KV first (fast)
+      const creators = (await kv.get<any[]>(CREATORS_KEY)) || [];
+      const creator = creators.find((c: any) => Number(c.id) === Number(post.creatorId));
+      if (creator?.ownerUserId) return creator.ownerUserId;
+
+      // 4. Guaranteed DB fallback
+      const { data: profile } = await supabaseAdmin
+        .from("profiles")
+        .select("user_id")
+        .eq("creator_id", post.creatorId)
+        .maybeSingle();
+      if (profile?.user_id) return profile.user_id;
     }
 
-    // 2. Fallback to Supabase videos table if KV fails
-    const { data: dbVideo } = await supabaseAdmin.from("videos").select("uploader_user_id, creator_id").eq("id", videoId).maybeSingle();
-    if (dbVideo?.uploader_user_id) return dbVideo.uploader_user_id;
-
     return null;
-  } catch (err) {
+  } catch (e) {
+    console.error("[findPostOwner] Error:", e);
     return null;
   }
 }
