@@ -110,6 +110,19 @@ export async function POST(req: Request) {
           const creator = creators.find((c: any) => Number(c.id) === Number(lastCreatorId));
           
           if (creator && creator.ownerUserId) {
+            // Insert notification row for the seller
+            try {
+              await supabaseAdmin.from("notifications").insert({
+                user_id: creator.ownerUserId,
+                actor_id: userId,
+                type: "purchase",
+                title: "New order received",
+                message: `Order #${orderCode} — you made a sale!`,
+              });
+              console.log("[Webhook] Purchase notification inserted");
+            } catch (e) {
+              console.warn("[Webhook] Notification insert failed:", e);
+            }
             await fetch(`${process.env.NEXT_PUBLIC_URL || "https://www.trooflixtv.com"}/api/push/send`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },

@@ -92,7 +92,7 @@ export async function POST(req: Request) {
         
         if (ownerId && ownerId !== userId) {
           try {
-            await supabaseAdmin.from("notifications").insert({ user_id: ownerId, actor_id: userId, type: "like", post_id: vid });
+            await supabaseAdmin.from("notifications").insert({ user_id: ownerId, actor_id: userId, type: "like", post_id: vid, title: "New like", message: "Someone liked your post" });
             
             // Fetch liker's name for the push notification
             const { data: profile } = await supabaseAdmin.from("profiles").select("display_name, username").eq("user_id", userId).maybeSingle();

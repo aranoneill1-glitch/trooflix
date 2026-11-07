@@ -77,6 +77,21 @@ export async function POST(req: Request) {
         console.log(`[Follow] User ${userId} followed creator ${creatorId}. Target owner found: ${targetUserId}`);
 
         if (targetUserId && targetUserId !== userId) {
+        // Insert notification row
+        try {
+          const { data: followerProfile } = await supabaseAdmin.from("profiles").select("display_name, username").eq("user_id", userId).maybeSingle();
+          const followerDisplay = followerProfile?.display_name || followerProfile?.username || "Someone";
+          await supabaseAdmin.from("notifications").insert({
+            user_id: targetUserId,
+            actor_id: userId,
+            type: "follow",
+            title: "New follower",
+            message: `${followerDisplay} started following you`,
+          });
+          console.log("[Follow] Notification inserted");
+        } catch (e) {
+          console.warn("[Follow] Notification insert failed:", e);
+        }
           const { data: profile } = await supabaseAdmin.from("profiles").select("display_name, username").eq("user_id", userId).maybeSingle();
           const followerName = profile?.display_name || profile?.username || "Someone";
 

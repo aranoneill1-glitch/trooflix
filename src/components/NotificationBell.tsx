@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Bell, X, Trash2, CheckCircle2, Heart, MessageCircle, UserPlus, ShoppingBag, Plus, Minus } from "lucide-react";
+import { Bell, X, Trash2, CheckCircle2, Heart, MessageCircle, UserPlus, ShoppingBag, Plus, Minus, Settings, Repeat } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/utils/supabase/client";
 import { getCachedUser } from "@/lib/cache";
@@ -96,7 +96,23 @@ export default function NotificationBell({ hideTrigger = false }: { hideTrigger?
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
-      if (data) setNotifications(data);
+      if (data && data.length > 0) {
+        // Batch fetch actor profiles for avatars
+        const actorIds = [...new Set(data.map((n: any) => n.actor_id).filter(Boolean))];
+        if (actorIds.length > 0) {
+          const { data: profiles } = await supabase
+            .from("profiles")
+            .select("user_id, display_name, username, avatar_url")
+            .in("user_id", actorIds);
+          const profileMap = new Map(profiles?.map((pr: any) => [pr.user_id, pr]) || []);
+          data.forEach((n: any) => {
+            const actor = profileMap.get(n.actor_id);
+            n.sender_avatar = actor?.avatar_url || null;
+            n.actor_name = actor?.display_name || actor?.username || "Someone";
+          });
+        }
+        setNotifications(data);
+      }
       setLoading(false);
     }
     fetchNotifications();

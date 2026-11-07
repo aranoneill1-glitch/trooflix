@@ -78,7 +78,7 @@ export async function POST(req: Request) {
     const ownerId = await findPostOwner(Number(videoId));
     if (ownerId && ownerId !== userId) {
       try {
-        await supabaseAdmin.from("notifications").insert({ user_id: ownerId, actor_id: userId, type: "comment", post_id: Number(videoId) });
+        await supabaseAdmin.from("notifications").insert({ user_id: ownerId, actor_id: userId, type: "comment", post_id: Number(videoId), title: "New comment", message: "Someone commented on your post" });
         
         // Fetch commenter name for push
         const { data: profile } = await supabaseAdmin.from("profiles").select("display_name, username").eq("user_id", userId).maybeSingle();
