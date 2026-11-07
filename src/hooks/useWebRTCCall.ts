@@ -172,18 +172,25 @@ export function useWebRTCCall(userId: string | null) {
     setCallId(newCallId);
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
+      const localStream = await navigator.mediaDevices.getUserMedia({
         audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false,
         },
         video: false,
       });
-      localStreamRef.current = stream;
+      console.log("[WebRTC] 🎤 Local mic acquired:", localStream.getAudioTracks().map(t => ({
+        label: t.label,
+        enabled: t.enabled,
+        muted: t.muted,
+        state: t.readyState,
+        settings: t.getSettings()
+      })));
+      localStreamRef.current = localStream;
 
       const pc = createPeerConnection();
-      stream.getTracks().forEach((t) => pc.addTrack(t, stream));
+      localStream.getTracks().forEach((t) => pc.addTrack(t, localStream));
 
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
@@ -220,11 +227,20 @@ export function useWebRTCCall(userId: string | null) {
     setStatus("connected");
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-      localStreamRef.current = stream;
+      const localStream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
+        video: false,
+      });
+      console.log("[WebRTC] 🎤 Callee mic acquired:", localStream.getAudioTracks().map((t: MediaStreamTrack) => ({
+        label: t.label,
+        enabled: t.enabled,
+        muted: t.muted,
+        state: t.readyState,
+      })));
+      localStreamRef.current = localStream;
 
       const pc = createPeerConnection();
-      stream.getTracks().forEach((t) => pc.addTrack(t, stream));
+      localStream.getTracks().forEach((t) => pc.addTrack(t, localStream));
 
       await pc.setRemoteDescription(new RTCSessionDescription(offer));
 

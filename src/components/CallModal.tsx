@@ -40,6 +40,15 @@ export default function CallModal({ status, peerName, peerAvatar, remoteStream, 
     audioRef.current.muted = false;
     audioRef.current.volume = 1;
     
+    console.log("[CallModal] 🎤 About to play. Element:", {
+      tag: audioRef.current.tagName,
+      muted: audioRef.current.muted,
+      volume: audioRef.current.volume,
+      srcObject: !!audioRef.current.srcObject,
+      tracks: (audioRef.current.srcObject as MediaStream)?.getAudioTracks().map(t => ({
+        enabled: t.enabled, muted: t.muted, state: t.readyState
+      }))
+    });
     const playPromise = audioRef.current.play();
     if (playPromise !== undefined) {
       playPromise
@@ -57,6 +66,23 @@ export default function CallModal({ status, peerName, peerAvatar, remoteStream, 
       console.log("[CallModal] Track:", t.label, "| enabled:", t.enabled, "| muted:", t.muted, "| state:", t.readyState);
     });
   }, [remoteStream]);
+
+  const playTestTone = () => {
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = ctx.createOscillator();
+      const gain = ctx.createGain();
+      oscillator.connect(gain);
+      gain.connect(ctx.destination);
+      oscillator.frequency.value = 440;
+      gain.gain.value = 0.3;
+      oscillator.start();
+      oscillator.stop(ctx.currentTime + 2);
+      console.log("[TestTone] 🎵 Playing 440Hz for 2 seconds");
+    } catch (e) {
+      console.error("[TestTone] Failed:", e);
+    }
+  };
 
   const toggleSpeaker = () => {
     if (!audioRef.current) return;
@@ -111,10 +137,18 @@ export default function CallModal({ status, peerName, peerAvatar, remoteStream, 
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-[10010] bg-gradient-to-b from-[#1c1c1e] via-[#0a0303] to-black flex flex-col items-center justify-between p-6 pt-16 pb-10"
       >
-        <video ref={audioRef as any} autoPlay playsInline style={{ position: "absolute", left: "-9999px", top: "-9999px", width: "1px", height: "1px", opacity: 0.01 }} />
+        <video ref={audioRef as any} autoPlay playsInline style={{ position: "fixed", top: 0, left: 0, width: "10px", height: "10px", opacity: 0.01, pointerEvents: "none", zIndex: -1 }} />
 
         {/* Header */}
         <div className="w-full max-w-md flex justify-end">
+          <button
+            onClick={playTestTone}
+            className="p-3 bg-yellow-500/20 hover:bg-yellow-500/30 rounded-full text-yellow-500 transition mr-2"
+            aria-label="Test audio"
+            title="Play test tone"
+          >
+            🔊
+          </button>
           <button
             onClick={onEnd}
             className="p-3 bg-white/5 hover:bg-white/10 rounded-full text-white/60 transition"
