@@ -13,12 +13,18 @@ export async function POST(req: Request) {
     if (!callerId || !receiverId || !status) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
-    await supabaseAdmin.from("call_history").insert({
+    const { error } = await supabaseAdmin.from("call_history").insert({
       caller_id: callerId,
       receiver_id: receiverId,
       status,
       duration_seconds: duration || 0,
     });
+    
+    if (error) {
+      console.error("call_history insert error:", error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    
     return NextResponse.json({ ok: true });
   } catch (e: any) {
     return NextResponse.json({ error: String(e) }, { status: 500 });
