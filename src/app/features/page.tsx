@@ -84,7 +84,7 @@ export default function FeaturesPage() {
             <Store size={32} className="text-[#E53945] mb-6" />
             <h3 className="text-2xl font-bold mb-3">A Full Storefront</h3>
             <p className="text-white/60 leading-relaxed">
-              Sell merch, books, and digital goods directly on your profile. We handle the basket, Stripe checkout, and order management so you can focus on creating.
+              Sell merch, books, and digital goods directly on your profile. We handle the basket, checkout, and order management so you can focus on creating.
             </p>
           </div>
 
@@ -92,7 +92,7 @@ export default function FeaturesPage() {
             <Zap size={32} className="text-[#E53945] mb-6" />
             <h3 className="text-2xl font-bold mb-3">Multipart Video Uploads</h3>
             <p className="text-white/60 leading-relaxed">
-              Upload massive 4K documentaries straight from your phone. Our custom chunked uploader bypasses iOS memory limits and pushes directly to Cloudflare R2.
+              Upload massive 4K documentaries straight from your phone. Our custom chunked uploader bypasses mobile memory limits and pushes directly to our servers.
             </p>
           </div>
 
