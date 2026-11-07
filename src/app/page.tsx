@@ -337,9 +337,8 @@ export default function Home() {
 
                 {/* CINEMATIC HEADLINE */}
                 <div className="w-full text-center px-4 pt-10 pb-8 relative z-10">
-                  <h1 className="text-[40px] leading-[1.05] md:text-7xl font-black tracking-tighter mb-4">
-                    <span className="text-white drop-shadow-lg">STOP LETTING BIG TECH</span><br/>
-                    <span className="text-[#E53945] drop-shadow-[0_0_30px_rgba(229,57,69,0.5)]">EAT YOUR LUNCH.</span>
+                  <h1 className="text-4xl md:text-6xl font-black tracking-tight text-white mb-4">
+                    STOP LETTING BIG TECH <span className="text-[#E53945]">EAT YOUR LUNCH.</span>
                   </h1>
                   <p className="text-sm md:text-xl text-white/70 max-w-2xl mx-auto mb-8 font-medium leading-relaxed">
                     The home of independent voices. Uncensored, unscripted, and paid directly to the creators you love.
