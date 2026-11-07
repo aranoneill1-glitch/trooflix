@@ -38,7 +38,7 @@ export default function UpgradePage() {
   const [loading, setLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [creatorLoading, setCreatorLoading] = useState(false);
-  const [showPromo, setShowPromo] = useState(false);
+  const [showPromo, setShowPromo] = useState<false | "plus" | "creator">(false);
   const [promoCode, setPromoCode] = useState("");
   const [promoLoading, setPromoLoading] = useState(false);
   const [promoError, setPromoError] = useState("");
@@ -200,6 +200,14 @@ export default function UpgradePage() {
             onClick={handlePlusCheckout}
             ctaDisabled={currentTier !== "free" || checkoutLoading}
             highlight={true}
+            onPromoClick={currentTier === "free" ? () => setShowPromo(showPromo === "plus" ? false : "plus") : undefined}
+            showPromoInput={showPromo === "plus"}
+            promoCode={promoCode}
+            setPromoCode={setPromoCode}
+            onApplyPromo={handleRedeemPromo}
+            promoLoading={promoLoading}
+            promoError={promoError}
+            promoSuccess={promoSuccess}
           />
 
           <TierCard
@@ -228,52 +236,16 @@ export default function UpgradePage() {
             }
             onClick={handleCreatorCheckout}
             ctaDisabled={currentTier === "creator" || creatorLoading}
+            onPromoClick={currentTier === "free" ? () => setShowPromo(showPromo === "creator" ? false : "creator") : undefined}
+            showPromoInput={showPromo === "creator"}
+            promoCode={promoCode}
+            setPromoCode={setPromoCode}
+            onApplyPromo={handleRedeemPromo}
+            promoLoading={promoLoading}
+            promoError={promoError}
+            promoSuccess={promoSuccess}
           />
         </div>
-
-        {/* PROMO CODE SECTION */}
-        {currentTier === "free" && (
-          <div className="mb-10 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5">
-            {!showPromo ? (
-              <div className="text-center">
-                <button
-                  onClick={() => setShowPromo(true)}
-                  className="text-sm font-bold text-[#E53945] hover:text-[#d12e39] transition"
-                >
-                  Have a promo code? Skip payment →
-                </button>
-              </div>
-            ) : (
-              <div>
-                <label className="block text-xs font-bold text-white/60 mb-2 uppercase tracking-wider">Promo Code</label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={promoCode}
-                    onChange={(e) => { setPromoCode(e.target.value.toUpperCase()); setPromoError(""); }}
-                    placeholder="e.g. SSECREATOR"
-                    className="flex-1 bg-black/40 border border-white/10 rounded-xl p-3 text-sm text-white uppercase tracking-wider font-mono focus:outline-none focus:border-[#E53945] transition"
-                    disabled={promoLoading}
-                  />
-                  <button
-                    onClick={handleRedeemPromo}
-                    disabled={promoLoading || !promoCode.trim()}
-                    className="bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold text-sm px-5 rounded-xl transition"
-                  >
-                    {promoLoading ? "..." : "Apply"}
-                  </button>
-                </div>
-                {promoError && (
-                  <p className="text-xs text-red-400 mt-2">{promoError}</p>
-                )}
-                {promoSuccess && (
-                  <p className="text-xs text-green-400 mt-2">{promoSuccess}</p>
-                )}
-                <p className="text-[10px] text-white/40 mt-2">Redeem a code to unlock a tier without paying. One code per user.</p>
-              </div>
-            )}
-          </div>
-        )}
 
                 <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
           <div className="px-5 py-4 border-b border-white/10">
@@ -332,6 +304,14 @@ function TierCard({
   onClick,
   price,
   priceSub,
+  onPromoClick,
+  showPromoInput,
+  promoCode,
+  setPromoCode,
+  onApplyPromo,
+  promoLoading,
+  promoError,
+  promoSuccess,
 }: {
   name: string;
   tagline: string;
@@ -345,6 +325,14 @@ function TierCard({
   onClick?: () => void;
   price: string;
   priceSub: string;
+  onPromoClick?: () => void;
+  showPromoInput?: boolean;
+  promoCode?: string;
+  setPromoCode?: (v: string) => void;
+  onApplyPromo?: () => void;
+  promoLoading?: boolean;
+  promoError?: string;
+  promoSuccess?: string;
 }) {
   return (
     <div
@@ -401,6 +389,45 @@ function TierCard({
       >
         {ctaLabel}
       </button>
+
+      {onPromoClick && (
+        <div className="mt-3 pt-3 border-t border-white/10">
+          {!showPromoInput ? (
+            <button
+              onClick={onPromoClick}
+              className="w-full text-xs text-[#E53945] hover:text-[#d12e39] font-bold transition text-center"
+            >
+              Have a promo code? →
+            </button>
+          ) : (
+            <div>
+              <div className="flex gap-1.5">
+                <input
+                  type="text"
+                  value={promoCode || ""}
+                  onChange={(e) => setPromoCode && setPromoCode(e.target.value.toUpperCase())}
+                  placeholder="PROMO CODE"
+                  className="flex-1 bg-black/40 border border-white/10 rounded-lg px-2.5 py-2 text-xs text-white uppercase tracking-wider font-mono focus:outline-none focus:border-[#E53945] transition"
+                  disabled={promoLoading}
+                />
+                <button
+                  onClick={onApplyPromo}
+                  disabled={promoLoading || !promoCode?.trim()}
+                  className="bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold text-xs px-3 rounded-lg transition"
+                >
+                  {promoLoading ? "..." : "Apply"}
+                </button>
+              </div>
+              {promoError && (
+                <p className="text-[10px] text-red-400 mt-1.5">{promoError}</p>
+              )}
+              {promoSuccess && (
+                <p className="text-[10px] text-green-400 mt-1.5">{promoSuccess}</p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
