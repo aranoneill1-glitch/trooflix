@@ -76,8 +76,8 @@ export default function TopBar({ onMenu }: Props) {
           <Link href="/" className="text-xl md:text-2xl font-black tracking-tight shrink-0">
             {isMessagesPage ? (
               <>
-                <span className="text-white">Troo</span>
-                <span className="text-[#E53945]">Chat</span>
+                <span className="text-white">TROO</span>
+                <span className="text-red-600">CHAT</span>
               </>
             ) : (
               <>
