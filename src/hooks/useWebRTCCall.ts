@@ -50,6 +50,8 @@ export function useWebRTCCall(userId: string | null) {
   const remoteStreamRef = useRef<MediaStream | null>(null);
   const channelRef = useRef<any>(null);
   const pendingIceCandidates = useRef<RTCIceCandidateInit[]>([]);
+  const callStartTimeRef = useRef<number | null>(null);
+  const callRoleRef = useRef<"caller" | "receiver" | null>(null);
   const currentCallIdRef = useRef<string | null>(null);
 
   // ---- SEND SIGNAL ----
@@ -151,6 +153,7 @@ export function useWebRTCCall(userId: string | null) {
       }
       // Accept BOTH "connected" AND ICE "connected/completed" as success
       if (pc.connectionState === "connected" || pc.iceConnectionState === "connected" || pc.iceConnectionState === "completed") {
+        if (!callStartTimeRef.current) callStartTimeRef.current = Date.now();
         setStatus("connected");
       }
       else if (pc.connectionState === "failed") setStatus("failed");
@@ -324,16 +327,39 @@ export function useWebRTCCall(userId: string | null) {
   const rejectCall = useCallback(async () => {
     if (!incoming || !userId) return;
     await sendSignal(incoming.callId, userId, incoming.fromUserId, "reject", null);
+    await logCompletedCall('declined');
     setIncoming(null);
     cleanup();
     setStatus("idle");
   }, [incoming, userId, sendSignal, cleanup]);
 
   // ---- END CALL ----
+  const logCompletedCall = async (finalStatus: 'completed' | 'missed' | 'declined') => {
+    const role = callRoleRef.current;
+    if (!role || !userId || !peerUserId) return;
+    
+    const duration = callStartTimeRef.current 
+      ? Math.floor((Date.now() - callStartTimeRef.current) / 1000) 
+      : 0;
+
+    const callerId = role === "caller" ? userId : peerUserId;
+    const receiverId = role === "caller" ? peerUserId : userId;
+
+    try {
+      await fetch("/api/calls/log", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ callerId, receiverId, status: finalStatus, duration }),
+      });
+    } catch (e) {}
+  };
+
   const endCall = useCallback(async () => {
     if (callId && userId && peerUserId) {
       await sendSignal(callId, userId, peerUserId, "hangup", null);
     }
+    const duration = callStartTimeRef.current ? Math.floor((Date.now() - callStartTimeRef.current) / 1000) : 0;
+    await logCompletedCall(duration > 0 ? 'completed' : 'missed');
     cleanup();
     setStatus("idle");
   }, [callId, userId, peerUserId, sendSignal, cleanup]);

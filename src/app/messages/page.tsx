@@ -1,4 +1,5 @@
 "use client";
+import { PhoneMissed, ArrowDownLeft, ArrowUpRight } from "lucide-react";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -67,6 +68,9 @@ export default function MessagesInbox() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Profile[]>([]);
   const [searching, setSearching] = useState(false);
+  const [callFilter, setCallFilter] = useState<"all" | "missed">("all");
+  const [callHistory, setCallHistory] = useState<any[]>([]);
+  const [callsLoading, setCallsLoading] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -154,6 +158,19 @@ export default function MessagesInbox() {
   const requestsCount = conversations.filter((c) => !c.last_from_me && c.unread_count > 0).length;
 
     const [activeTab, setActiveTab] = useState<"messages" | "calls">("messages");
+
+  useEffect(() => {
+    if (activeTab === "calls" && userId) {
+      setCallsLoading(true);
+      fetch(`/api/calls/history?userId=${userId}`)
+        .then(r => r.json())
+        .then(d => setCallHistory(d.calls || []))
+        .catch(() => {})
+        .finally(() => setCallsLoading(false));
+    }
+  }, [activeTab, userId]);
+
+
   const [userTier, setUserTier] = useState<"free" | "plus" | "creator">("free");
 
   useEffect(() => {
@@ -228,16 +245,16 @@ export default function MessagesInbox() {
 
       {/* All / Unread / Requests sub-tabs */}
       <div className={`border-b border-white/5 flex-shrink-0 ${activeTab === "messages" ? "" : "hidden"}`} style={{ background: "#000000" }}>
-        <div className="max-w-3xl mx-auto flex gap-2 px-4 md:px-6 py-2.5 overflow-x-auto scrollbar-hide">
+        <div className="max-w-3xl mx-auto grid grid-cols-3 gap-2 px-4 md:px-6 py-2.5">
           <button
             onClick={() => setFilter("all")}
-            className={`px-4 py-1.5 rounded-full text-xs font-bold transition whitespace-nowrap ${filter === "all" ? "bg-white/10 text-white" : "text-white/50 hover:text-white/80"}`}
+            className={`w-full flex items-center justify-center py-2 rounded-full text-xs font-bold transition whitespace-nowrap ${filter === "all" ? "bg-white/10 text-white" : "text-white/50 hover:text-white/80"}`}
           >
             All
           </button>
           <button
             onClick={() => setFilter("unread")}
-            className={`px-4 py-1.5 rounded-full text-xs font-bold transition whitespace-nowrap flex items-center gap-1.5 ${filter === "unread" ? "bg-white/10 text-white" : "text-white/50 hover:text-white/80"}`}
+            className={`w-full flex items-center justify-center py-2 rounded-full text-xs font-bold transition whitespace-nowrap flex items-center gap-1.5 ${filter === "unread" ? "bg-white/10 text-white" : "text-white/50 hover:text-white/80"}`}
           >
             Unread
             {totalUnread > 0 && (
@@ -248,7 +265,7 @@ export default function MessagesInbox() {
           </button>
           <button
             onClick={() => setFilter("requests")}
-            className={`px-4 py-1.5 rounded-full text-xs font-bold transition whitespace-nowrap flex items-center gap-1.5 ${filter === "requests" ? "bg-white/10 text-white" : "text-white/50 hover:text-white/80"}`}
+            className={`w-full flex items-center justify-center py-2 rounded-full text-xs font-bold transition whitespace-nowrap flex items-center gap-1.5 ${filter === "requests" ? "bg-white/10 text-white" : "text-white/50 hover:text-white/80"}`}
           >
             Requests
             {requestsCount > 0 && (
@@ -410,63 +427,59 @@ export default function MessagesInbox() {
       {activeTab === "calls" && (
         <div className="flex-1 overflow-y-auto pb-24 lg:pb-4 bg-black">
           <div className="max-w-3xl mx-auto">
+            
+            {/* Calls Sub-tabs */}
+            <div className="grid grid-cols-2 gap-2 px-4 md:px-6 py-2.5 border-b border-white/5">
+              <button
+                onClick={() => setCallFilter("all")}
+                className={`w-full py-2 rounded-full text-xs font-bold transition text-center ${callFilter === "all" ? "bg-white/10 text-white" : "text-white/50 hover:text-white/80"}`}
+              >
+                All
+              </button>
+              <button
+                onClick={() => setCallFilter("missed")}
+                className={`w-full py-2 rounded-full text-xs font-bold transition text-center ${callFilter === "missed" ? "bg-white/10 text-white" : "text-white/50 hover:text-white/80"}`}
+              >
+                Missed
+              </button>
+            </div>
+
             {userTier === "free" ? (
+              <div className="text-center py-16 px-6">...</div>
+            ) : callsLoading ? (
+              <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" /></div>
+            ) : callHistory.length === 0 ? (
               <div className="text-center py-16 px-6">
-                <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-white/5 flex items-center justify-center">
-                  <PhoneIcon size={32} className="text-white/40" />
-                </div>
-                <h3 className="text-lg font-bold text-white mb-2">Upgrade to make calls</h3>
-                <p className="text-sm text-white/50 mb-6 max-w-xs mx-auto">
-                  Voice calls are available on Plus and Creator plans. Upgrade to start calling your TrooChat contacts.
-                </p>
-                <a
-                  href="/upgrade"
-                  className="inline-block bg-[#E53945] hover:bg-[#d12e39] text-white font-bold px-6 py-3 rounded-full transition"
-                >
-                  Upgrade to Plus
-                </a>
-              </div>
-            ) : visible.length === 0 ? (
-              <div className="text-center py-16 px-6">
-                <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-white/5 flex items-center justify-center">
-                  <PhoneIcon size={32} className="text-white/40" />
-                </div>
-                <p className="text-white/50 mb-2">No contacts yet.</p>
-                <button onClick={() => setSearchOpen(true)} className="text-red-500 hover:underline text-sm">
-                  Find someone to call →
-                </button>
+                <p className="text-white/50 mb-2">No calls yet.</p>
               </div>
             ) : (
               <div>
-                <div className="px-4 md:px-6 py-3 text-[11px] font-bold text-white/40 uppercase tracking-wider">
-                  Recent contacts — tap to call
-                </div>
-                {visible.map((c) => {
-                  const p = profiles[c.other_user_id];
-                  const name = p?.display_name || p?.username || "User";
-                  const avatar = p?.avatar_url || null;
+                {callHistory.filter(c => callFilter === "all" || c.status === "missed" || c.status === "declined").map((c) => {
+                  const isMissed = c.status === "missed" || c.status === "declined";
+                  const isIncoming = !c.isCaller;
                   return (
-                    <div
-                      key={c.other_user_id}
-                      className="flex items-center gap-4 px-4 md:px-6 py-3.5 hover:bg-white/[0.06] transition border-b border-white/5"
-                    >
+                    <div key={c.id} className="flex items-center gap-4 px-4 md:px-6 py-3.5 border-b border-white/5">
                       <div className="w-14 h-14 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center overflow-hidden flex-shrink-0">
-                        {avatar ? (
-                          <img src={avatar} alt="" className="w-full h-full object-cover" />
-                        ) : (
-                          <span className="text-white font-bold text-xl">
-                            {(name[0] || "?").toUpperCase()}
-                          </span>
-                        )}
+                        {c.otherAvatar ? <img src={c.otherAvatar} alt="" className="w-full h-full object-cover" /> : <span className="text-white font-bold text-xl">{(c.otherName[0] || "?").toUpperCase()}</span>}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[16px] font-medium text-white truncate">{name}</p>
-                        <p className="text-[13px] text-white/50">Tap to start a voice call</p>
+                        <p className={`text-[16px] font-medium truncate ${isMissed ? "text-red-400" : "text-white"}`}>{c.otherName}</p>
+                        <div className="flex items-center gap-1 text-[13px] text-white/50">
+                          {isMissed ? <PhoneMissed size={12} className="text-red-400" /> : isIncoming ? <ArrowDownLeft size={12} className="text-green-500" /> : <ArrowUpRight size={12} className="text-green-500" />}
+                          <span>{isMissed ? "Missed" : isIncoming ? "Incoming" : "Outgoing"}</span>
+                          <span className="mx-1">·</span>
+                          <span>{timeLabel(c.created_at)}</span>
+                          {c.duration_seconds > 0 && (
+                            <>
+                              <span className="mx-1">·</span>
+                              <span>{Math.floor(c.duration_seconds / 60)}m {c.duration_seconds % 60}s</span>
+                            </>
+                          )}
+                        </div>
                       </div>
                       <button
-                        onClick={() => startCallFromList(c.other_user_id, name, avatar)}
+                        onClick={() => startCallFromList(c.otherUserId, c.otherName, c.otherAvatar)}
                         className="w-11 h-11 rounded-full bg-[#E53945] hover:bg-[#d12e39] flex items-center justify-center transition shadow-lg"
-                        aria-label={`Call ${name}`}
                       >
                         <PhoneIcon size={20} className="text-white" />
                       </button>
@@ -478,7 +491,6 @@ export default function MessagesInbox() {
           </div>
         </div>
       )}
-
     </main>
   );
 }
