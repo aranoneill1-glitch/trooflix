@@ -195,8 +195,8 @@ export default function SignupPage() {
           });
           const promoData = await promoRes.json();
           if (promoRes.ok && promoData.success) {
-            // Promo applied! No Stripe needed.
-            router.push("/");
+            // Promo applied! No Stripe needed. Redirect to onboarding.
+            router.push("/creator-dashboard/settings?onboarding=1");
             router.refresh();
             return;
           }
@@ -213,7 +213,7 @@ export default function SignupPage() {
 
       // No promo code — normal flow
       if (selectedTier === "free") {
-        router.push("/");
+        router.push("/creator-dashboard/settings?onboarding=1");
         router.refresh();
       } else {
         const stripeType = selectedTier === "creator" ? "podcaster" : "pass";

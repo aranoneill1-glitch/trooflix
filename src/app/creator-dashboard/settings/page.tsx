@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, useRef, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, Camera, Save, User, AtSign, AlignLeft } from "lucide-react";
+import { ChevronLeft, Camera, Save, User, AtSign, AlignLeft, ArrowLeft } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { getCachedUser, clearUserCache } from "@/lib/cache";
 import TopBar from "@/components/TopBar";
@@ -17,8 +17,10 @@ const XIcon = ({ size = 16 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
 );
 
-export default function ProfileSettingsPage() {
+function ProfileSettingsContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isOnboarding = searchParams.get("onboarding") === "1";
   const supabase = createClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -126,13 +128,29 @@ export default function ProfileSettingsPage() {
     <main className="min-h-screen bg-[#09090B] text-white pb-32 font-sans selection:bg-[#E53945]/30">
       <TopBar />
       
-      <div className="max-w-2xl mx-auto pt-24">
+            {isOnboarding && (
+        <div className="max-w-2xl mx-auto mb-8 bg-gradient-to-r from-[#E53945]/20 via-[#E53945]/10 to-transparent border border-[#E53945]/30 rounded-2xl p-5 animate-in fade-in slide-in-from-top-4 duration-500">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-full bg-[#E53945]/30 flex items-center justify-center shrink-0">
+              <span className="text-xl">👋</span>
+            </div>
+            <div className="flex-1">
+              <h2 className="text-lg font-black text-white mb-1">Welcome to Trooflix!</h2>
+              <p className="text-sm text-white/70 leading-relaxed">
+                Let's set up your profile. Add a photo, bio, and social handles so people can find you.
+                Once you save, you'll be taken to your dashboard.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+<div className="max-w-2xl mx-auto pt-24">
         
         {/* Header */}
         <div className="flex items-center justify-between px-4 mb-2">
-            <Link href="/creator-dashboard" className="p-2 -ml-2 rounded-full hover:bg-white/10 transition">
-              <ChevronLeft size={24} />
-            </Link>
+            <Link href="/creator-dashboard" className="inline-flex items-center gap-2 text-white/50 hover:text-white mb-8 transition text-sm font-semibold">
+        <ArrowLeft size={16} /> Skip for now
+      </Link>
             <h1 className="text-base font-semibold">Edit profile</h1>
             <div className="w-8"></div>
         </div>
@@ -208,5 +226,13 @@ export default function ProfileSettingsPage() {
       
       <MobileBottomNav />
     </main>
+  );
+}
+
+export default function ProfileSettingsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#0a0303] flex items-center justify-center"><div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" /></div>}>
+      <ProfileSettingsContent />
+    </Suspense>
   );
 }
