@@ -207,10 +207,18 @@ export default function LikeButton({
         : [...currentIds, videoId]
     );
 
+    // OLD LOGIC FIX: Send real userId if logged in
+    const { getCachedUser } = await import("@/lib/cache");
+    const user = await getCachedUser();
+    
     const res = await fetch("/api/likes", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ anonId, videoId }),
+      body: JSON.stringify({ 
+        anonId, 
+        userId: user?.id || null, 
+        videoId 
+      }),
     });
 
     if (!res.ok) {
