@@ -12,12 +12,12 @@ import {
   Pencil,
   Trash2,
 } from "lucide-react";
+import { Phone, Video } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { useRealtimeDMs } from "@/hooks/useRealtimeDMs";
 import GifPicker from "@/components/GifPicker";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import { getCachedUser } from "@/lib/cache";
-import { Phone } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -481,22 +481,42 @@ export default function ThreadPage() {
         </Link>
         {/* Call button — Plus/Creator only */}
         {userTier !== "free" && other && (
-          <button
-            onClick={() => {
-              window.dispatchEvent(new CustomEvent("start-call", {
-                detail: {
-                  recipientId: other.user_id,
-                  recipientName: other.display_name || other.username || "User",
-                  recipientAvatar: other.avatar_url || null,
-                }
-              }));
-            }}
-            className="ml-auto p-2 bg-white/5 hover:bg-white/10 rounded-full text-white/70 hover:text-white transition"
-            aria-label="Start call"
-            title="Start voice call"
-          >
-            <Phone size={20} />
-          </button>
+          <div className="ml-auto flex items-center gap-1">
+            <button
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent("start-call", {
+                  detail: {
+                    recipientId: other.user_id,
+                    recipientName: other.display_name || other.username || "User",
+                    recipientAvatar: other.avatar_url || null,
+                    callType: "audio"
+                  }
+                }));
+              }}
+              className="p-2 bg-white/5 hover:bg-white/10 rounded-full text-white/70 hover:text-white transition"
+              aria-label="Audio call"
+              title="Audio call"
+            >
+              <Phone size={20} />
+            </button>
+            <button
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent("start-call", {
+                  detail: {
+                    recipientId: other.user_id,
+                    recipientName: other.display_name || other.username || "User",
+                    recipientAvatar: other.avatar_url || null,
+                    callType: "video"
+                  }
+                }));
+              }}
+              className="p-2 bg-white/5 hover:bg-white/10 rounded-full text-white/70 hover:text-white transition"
+              aria-label="Video call"
+              title="Video call"
+            >
+              <Video size={20} />
+            </button>
+          </div>
         )}
       </div>
       </header>
