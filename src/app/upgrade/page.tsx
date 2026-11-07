@@ -236,7 +236,7 @@ export default function UpgradePage() {
             }
             onClick={handleCreatorCheckout}
             ctaDisabled={currentTier === "creator" || creatorLoading}
-            onPromoClick={currentTier === "free" ? () => setShowPromo(showPromo === "creator" ? false : "creator") : undefined}
+            onPromoClick={currentTier !== "creator" ? () => setShowPromo(showPromo === "creator" ? false : "creator") : undefined}
             showPromoInput={showPromo === "creator"}
             promoCode={promoCode}
             setPromoCode={setPromoCode}

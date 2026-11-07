@@ -33,15 +33,34 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "This code has reached its usage limit" }, { status: 400 });
     }
 
-    // 3. Check if the user already redeemed ANY code
+    // 3. Check for existing redemptions + current tier
     const { data: existing } = await supabaseAdmin
       .from("promo_redemptions")
-      .select("id")
+      .select("granted_tier")
+      .eq("user_id", userId);
+
+    // Get current tier
+    const { data: currentProfile } = await supabaseAdmin
+      .from("profiles")
+      .select("tier")
       .eq("user_id", userId)
       .maybeSingle();
 
-    if (existing) {
-      return NextResponse.json({ error: "You've already redeemed a promo code" }, { status: 400 });
+    const tierRank: Record<string, number> = { free: 0, plus: 1, creator: 2 };
+    const currentRank = tierRank[String(currentProfile?.tier || "free").toLowerCase()] ?? 0;
+    const newRank = tierRank[promo.grants_tier] ?? 0;
+
+    // If they've already redeemed codes:
+    if (existing && existing.length > 0) {
+      // Allow only if it's a legitimate UPGRADE (new code grants a higher tier than current)
+      if (newRank <= currentRank) {
+        return NextResponse.json({ 
+          error: newRank === currentRank 
+            ? `You already have ${promo.grants_tier} access` 
+            : "You can only redeem upgrade codes" 
+        }, { status: 400 });
+      }
+      // Upgrade path — allow
     }
 
     // 4. Apply the tier to the user's profile
