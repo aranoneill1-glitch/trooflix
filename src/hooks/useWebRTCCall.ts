@@ -202,6 +202,7 @@ export function useWebRTCCall(userId: string | null) {
     setPeerAvatar(null);
     setIncoming(null);
     currentCallIdRef.current = null;
+    window.dispatchEvent(new CustomEvent("call-ended"));
   }, []);
 
   // ---- START CALL (caller) ----
