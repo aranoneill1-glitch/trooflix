@@ -215,6 +215,16 @@ export default function UserMenu() {
                 )}
               </div>
 
+              {/* My TrooFlix Hub */}
+              <Link 
+                href="/creator-dashboard"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition text-sm text-white/80 hover:text-white"
+              >
+                <LayoutDashboard size={16} />
+                My TrooFlix
+              </Link>
+
               {isCreator && (
                 <Link 
                   href="/creator-dashboard/settings"
