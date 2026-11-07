@@ -38,6 +38,11 @@ export default function UpgradePage() {
   const [loading, setLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [creatorLoading, setCreatorLoading] = useState(false);
+  const [showPromo, setShowPromo] = useState(false);
+  const [promoCode, setPromoCode] = useState("");
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [promoError, setPromoError] = useState("");
+  const [promoSuccess, setPromoSuccess] = useState("");
 
   useEffect(() => {
     getCachedUser().then(async (u) => {
@@ -97,6 +102,33 @@ export default function UpgradePage() {
       alert("Network error");
     } finally {
       setCreatorLoading(false);
+    }
+  };
+
+  const handleRedeemPromo = async () => {
+    if (!promoCode.trim()) return;
+    setPromoLoading(true);
+    setPromoError("");
+    setPromoSuccess("");
+    try {
+      const user = await getCachedUser();
+      if (!user) { router.push("/login"); return; }
+      const res = await fetch("/api/promo/redeem", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id, code: promoCode.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setPromoError(data.error || "Invalid promo code");
+        return;
+      }
+      setPromoSuccess(`Success! You now have ${data.tier === "creator" ? "Creator" : "Plus"} access.`);
+      setTimeout(() => { window.location.href = "/creator-dashboard"; }, 1500);
+    } catch {
+      setPromoError("Network error. Please try again.");
+    } finally {
+      setPromoLoading(false);
     }
   };
 
@@ -199,7 +231,51 @@ export default function UpgradePage() {
           />
         </div>
 
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+        {/* PROMO CODE SECTION */}
+        {currentTier === "free" && (
+          <div className="mb-10 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5">
+            {!showPromo ? (
+              <div className="text-center">
+                <button
+                  onClick={() => setShowPromo(true)}
+                  className="text-sm font-bold text-[#E53945] hover:text-[#d12e39] transition"
+                >
+                  Have a promo code? Skip payment →
+                </button>
+              </div>
+            ) : (
+              <div>
+                <label className="block text-xs font-bold text-white/60 mb-2 uppercase tracking-wider">Promo Code</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={promoCode}
+                    onChange={(e) => { setPromoCode(e.target.value.toUpperCase()); setPromoError(""); }}
+                    placeholder="e.g. SSECREATOR"
+                    className="flex-1 bg-black/40 border border-white/10 rounded-xl p-3 text-sm text-white uppercase tracking-wider font-mono focus:outline-none focus:border-[#E53945] transition"
+                    disabled={promoLoading}
+                  />
+                  <button
+                    onClick={handleRedeemPromo}
+                    disabled={promoLoading || !promoCode.trim()}
+                    className="bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold text-sm px-5 rounded-xl transition"
+                  >
+                    {promoLoading ? "..." : "Apply"}
+                  </button>
+                </div>
+                {promoError && (
+                  <p className="text-xs text-red-400 mt-2">{promoError}</p>
+                )}
+                {promoSuccess && (
+                  <p className="text-xs text-green-400 mt-2">{promoSuccess}</p>
+                )}
+                <p className="text-[10px] text-white/40 mt-2">Redeem a code to unlock a tier without paying. One code per user.</p>
+              </div>
+            )}
+          </div>
+        )}
+
+                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
           <div className="px-5 py-4 border-b border-white/10">
             <h2 className="text-lg font-bold">Compare all plans</h2>
           </div>

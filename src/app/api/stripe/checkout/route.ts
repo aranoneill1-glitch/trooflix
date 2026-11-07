@@ -76,8 +76,7 @@ export async function POST(req: Request) {
         subscription_data: {
           metadata: { userId, type: type === "pass" ? "trooflix_pass" : "podcaster" },
         },
-        allow_promotion_codes: true,
-      });
+        });
 
       return NextResponse.json({ url: session.url });
     }
@@ -181,8 +180,7 @@ export async function POST(req: Request) {
             creatorOwnerUserId: String(creatorId),
           },
         },
-        allow_promotion_codes: true,
-      });
+        });
 
       return NextResponse.json({ url: session.url, priceId });
     }
