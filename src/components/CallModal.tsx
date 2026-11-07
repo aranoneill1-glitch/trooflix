@@ -29,6 +29,7 @@ export default function CallModal({
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const [duration, setDuration] = useState(0);
   const [speakerOn, setSpeakerOn] = useState(true);
+  const [swapped, setSwapped] = useState(false);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -62,7 +63,10 @@ export default function CallModal({
     if (localVideoRef.current && localStream) {
       localVideoRef.current.srcObject = localStream;
       localVideoRef.current.muted = true;
-      localVideoRef.current.play().catch(() => {});
+      const playPromise = localVideoRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise.catch((e) => console.warn("Local video play blocked:", e));
+      }
     }
   }, [localStream]);
 
@@ -93,12 +97,38 @@ export default function CallModal({
         className="fixed inset-0 z-[10010] bg-[#0b141a] flex flex-col overflow-hidden"
       >
         {/* Remote video (full screen if available) */}
+        
+        {/* Remote Video */}
         <video
           ref={remoteVideoRef}
           autoPlay
           playsInline
-          className={showVideo ? "absolute inset-0 w-full h-full object-cover" : "absolute w-1 h-1 opacity-0 pointer-events-none"}
+          className={showVideo ? `absolute ${swapped ? "top-20 right-4 w-28 h-40 rounded-2xl z-20 shadow-2xl" : "inset-0 w-full h-full object-cover"}` : "absolute w-1 h-1 opacity-0 pointer-events-none"}
+          onClick={() => { if (swapped) setSwapped(false); }}
         />
+
+        {/* Local PiP or Full */}
+        {showVideo && localStream && (
+          <div 
+            onClick={() => setSwapped(!swapped)}
+            className={`absolute ${swapped ? "inset-0 w-full h-full z-10" : "top-20 right-4 w-28 h-40 rounded-2xl z-20 shadow-2xl"} overflow-hidden bg-black cursor-pointer`}
+          >
+            <video
+              ref={localVideoRef}
+              autoPlay
+              playsInline
+              muted
+              className="w-full h-full object-cover"
+              style={{ transform: facingMode === "user" ? "scaleX(-1)" : "none" }}
+            />
+            {!videoEnabled && (
+              <div className="absolute inset-0 bg-black/80 flex items-center justify-center">
+                <VideoOff size={24} className="text-white/60" />
+              </div>
+            )}
+          </div>
+        )}
+
 
         {/* Avatar view (only when no remote video) */}
         {!showVideo && (
