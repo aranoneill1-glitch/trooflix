@@ -54,6 +54,9 @@ export function useWebRTCCall(userId: string | null) {
   const createPeerConnection = useCallback(() => {
     if (pcRef.current) return pcRef.current;
     const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+    // Force audio m-line to be negotiated
+    pc.addTransceiver("audio", { direction: "sendrecv" });
+    (window as any).__webrtcPc = pc; // Expose for debugging stats
 
     // Forward remote tracks
     const remote = new MediaStream();
@@ -180,13 +183,12 @@ export function useWebRTCCall(userId: string | null) {
         },
         video: false,
       });
-      console.log("[WebRTC] 🎤 Local mic acquired:", localStream.getAudioTracks().map(t => ({
+      console.log("[WebRTC] 🎤 Local mic acquired:", JSON.stringify(localStream.getAudioTracks().map(t => ({
         label: t.label,
         enabled: t.enabled,
         muted: t.muted,
         state: t.readyState,
-        settings: t.getSettings()
-      })));
+      })), null, 2));
       localStreamRef.current = localStream;
 
       const pc = createPeerConnection();
@@ -224,25 +226,26 @@ export function useWebRTCCall(userId: string | null) {
     setPeerAvatar(fromAvatar);
     currentCallIdRef.current = incomingCallId;
     setCallId(incomingCallId);
-    setStatus("connected");
+    setStatus("ringing");
 
     try {
       const localStream = await navigator.mediaDevices.getUserMedia({
         audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
         video: false,
       });
-      console.log("[WebRTC] 🎤 Callee mic acquired:", localStream.getAudioTracks().map((t: MediaStreamTrack) => ({
+      console.log("[WebRTC] 🎤 Callee mic acquired:", JSON.stringify(localStream.getAudioTracks().map((t: MediaStreamTrack) => ({
         label: t.label,
         enabled: t.enabled,
         muted: t.muted,
         state: t.readyState,
-      })));
+      })), null, 2));
       localStreamRef.current = localStream;
 
       const pc = createPeerConnection();
       localStream.getTracks().forEach((t) => pc.addTrack(t, localStream));
 
       await pc.setRemoteDescription(new RTCSessionDescription(offer));
+      setStatus("connected");
 
       // Drain pending ICE
       for (const candidate of pendingIceCandidates.current) {

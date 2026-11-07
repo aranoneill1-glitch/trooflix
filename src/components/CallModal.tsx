@@ -232,7 +232,7 @@ export default function CallModal({ status, peerName, peerAvatar, remoteStream, 
         )}
 
         {/* AUDIO METERS */}
-        <div className="fixed top-4 left-4 right-4 z-10 flex flex-col gap-2 max-w-xs">
+        <div className="fixed top-24 left-4 z-[100] flex flex-col gap-2 w-48">
           <div className="bg-black/60 backdrop-blur rounded-lg p-2">
             <p className="text-[10px] text-white/60 mb-1 font-bold">LOCAL MIC</p>
             <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
