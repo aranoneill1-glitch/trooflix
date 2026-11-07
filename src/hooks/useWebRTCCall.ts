@@ -12,6 +12,8 @@ const ICE_SERVERS: RTCIceServer[] = [
 ];
 
 export type CallStatus = "idle" | "calling" | "ringing" | "connected" | "ended" | "rejected" | "failed";
+export type CallType = "audio" | "video";
+export type FacingMode = "user" | "environment";
 
 export type IncomingCall = {
   callId: string;
@@ -19,15 +21,20 @@ export type IncomingCall = {
   fromName: string;
   fromAvatar: string | null;
   offer: RTCSessionDescriptionInit;
+  callType: CallType;
 };
 
 export function useWebRTCCall(userId: string | null) {
   const [status, setStatus] = useState<CallStatus>("idle");
   const [incoming, setIncoming] = useState<IncomingCall | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
+  const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [muted, setMuted] = useState(false);
+  const [videoEnabled, setVideoEnabled] = useState(true);
+  const [hasRemoteVideo, setHasRemoteVideo] = useState(false);
+  const [facingMode, setFacingMode] = useState<FacingMode>("user");
+  const [callType, setCallType] = useState<CallType>("audio");
   const [callId, setCallId] = useState<string | null>(null);
-  const [peerUserId, setPeerUserId] = useState<string | null>(null);
   const [peerName, setPeerName] = useState<string>("");
   const [peerAvatar, setPeerAvatar] = useState<string | null>(null);
 
@@ -41,7 +48,6 @@ export function useWebRTCCall(userId: string | null) {
   const callStartTimeRef = useRef<number | null>(null);
   const callRoleRef = useRef<"caller" | "receiver" | null>(null);
 
-  // ---- SEND SIGNAL ----
   const sendSignal = useCallback(async (
     callId: string, senderId: string, recipientId: string, signalType: string, signalData: any
   ) => {
@@ -56,24 +62,20 @@ export function useWebRTCCall(userId: string | null) {
     }
   }, []);
 
-  // ---- LOG CALL ----
-  const logCompletedCall = useCallback(async (finalStatus: "completed" | "unanswered" | "declined", explicitCallerId?: string, explicitReceiverId?: string) => {
+  const logCompletedCall = useCallback(async (
+    finalStatus: "completed" | "unanswered",
+    explicitCallerId?: string,
+    explicitReceiverId?: string
+  ) => {
     let cId = explicitCallerId;
     let rId = explicitReceiverId;
-    
-    // Fallback to refs if IDs are missing
+
     if (!cId || !rId) {
       const role = callRoleRef.current;
       const currentPeer = peerUserIdRef.current;
-      if (userId && currentPeer) {
-        cId = role === "caller" ? userId : currentPeer;
-        rId = role === "caller" ? currentPeer : userId;
-      }
-    }
-
-    if (!cId || !rId) {
-      console.warn("[WebRTC] Cannot log call, missing IDs", { cId, rId, userId, peer: peerUserIdRef.current });
-      return;
+      if (!role || !userId || !currentPeer) return;
+      cId = role === "caller" ? userId : currentPeer;
+      rId = role === "caller" ? currentPeer : userId;
     }
 
     const duration = callStartTimeRef.current ? Math.floor((Date.now() - callStartTimeRef.current) / 1000) : 0;
@@ -86,13 +88,18 @@ export function useWebRTCCall(userId: string | null) {
         body: JSON.stringify({ callerId: cId, receiverId: rId, status: finalStatus, duration }),
       });
       if (!res.ok) throw new Error(await res.text());
-      console.log("[WebRTC] ✅ Call logged successfully");
+      console.log("[WebRTC] ✅ Call logged");
+      window.dispatchEvent(new CustomEvent("call-ended"));
     } catch (e) {
       console.error("[WebRTC] ❌ Failed to log call", e);
     }
   }, [userId]);
 
-  // ---- CREATE PEER CONNECTION ----
+  const setRemoteStreamAndDetectVideo = useCallback((stream: MediaStream) => {
+    setRemoteStream(stream);
+    setHasRemoteVideo(stream.getVideoTracks().length > 0);
+  }, []);
+
   const createPeerConnection = useCallback(() => {
     if (pcRef.current) return pcRef.current;
     const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
@@ -101,10 +108,11 @@ export function useWebRTCCall(userId: string | null) {
     remoteStreamRef.current = remote;
 
     pc.ontrack = (event) => {
+      console.log("[WebRTC] ontrack:", event.track.kind);
       if (event.streams && event.streams[0]) {
-        setRemoteStream(event.streams[0]);
+        setRemoteStreamAndDetectVideo(event.streams[0]);
       } else {
-        setRemoteStream(new MediaStream([event.track]));
+        setRemoteStreamAndDetectVideo(new MediaStream([event.track]));
       }
     };
 
@@ -115,39 +123,35 @@ export function useWebRTCCall(userId: string | null) {
     };
 
     pc.onconnectionstatechange = () => {
-      if (pc.connectionState === "connected" || pc.iceConnectionState === "connected" || pc.iceConnectionState === "completed") {
-        if (!callStartTimeRef.current) {
-          callStartTimeRef.current = Date.now();
-          console.log("[WebRTC] ⏱️ Start timer");
-        }
+      if (pc.connectionState === "connected") {
+        if (!callStartTimeRef.current) callStartTimeRef.current = Date.now();
         setStatus("connected");
       }
     };
 
     pc.oniceconnectionstatechange = () => {
       if (pc.iceConnectionState === "connected" || pc.iceConnectionState === "completed") {
-        if (!callStartTimeRef.current) {
-          callStartTimeRef.current = Date.now();
-          console.log("[WebRTC] ⏱️ Start timer (ICE)");
-        }
+        if (!callStartTimeRef.current) callStartTimeRef.current = Date.now();
         setStatus("connected");
       }
     };
 
     pcRef.current = pc;
     return pc;
-  }, [userId, sendSignal]);
+  }, [userId, sendSignal, setRemoteStreamAndDetectVideo]);
 
-  // ---- CLEANUP ----
   const cleanup = useCallback(() => {
     if (pcRef.current) { pcRef.current.close(); pcRef.current = null; }
     if (localStreamRef.current) { localStreamRef.current.getTracks().forEach((t) => t.stop()); localStreamRef.current = null; }
     if (remoteStreamRef.current) { remoteStreamRef.current.getTracks().forEach((t) => t.stop()); remoteStreamRef.current = null; }
-    
+
     setRemoteStream(null);
+    setLocalStream(null);
     setMuted(false);
+    setVideoEnabled(true);
+    setHasRemoteVideo(false);
+    setFacingMode("user");
     setCallId(null);
-    setPeerUserId(null);
     setPeerName("");
     setPeerAvatar(null);
     setIncoming(null);
@@ -157,35 +161,52 @@ export function useWebRTCCall(userId: string | null) {
     callStartTimeRef.current = null;
   }, []);
 
-  // ---- START CALL ----
   const startCall = useCallback(async (
-    recipientId: string, recipientName: string, recipientAvatar: string | null
+    recipientId: string,
+    recipientName: string,
+    recipientAvatar: string | null,
+    type: CallType = "video"
   ) => {
     if (!userId || status !== "idle") return;
 
-    setPeerUserId(recipientId);
-    peerUserIdRef.current = recipientId;
     setPeerName(recipientName);
     setPeerAvatar(recipientAvatar);
+    setCallType(type);
     setStatus("calling");
-    
     callRoleRef.current = "caller";
     callStartTimeRef.current = null;
+    peerUserIdRef.current = recipientId;
 
     const newCallId = `call_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     currentCallIdRef.current = newCallId;
     setCallId(newCallId);
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+          video: type === "video" ? { facingMode: "user" } : false,
+        });
+      } catch (e: any) {
+        if (type === "video") {
+          console.warn("[WebRTC] Video failed, falling back to audio:", e);
+          stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+          setCallType("audio");
+          setVideoEnabled(false);
+        } else {
+          throw e;
+        }
+      }
       localStreamRef.current = stream;
+      setLocalStream(stream);
+      setVideoEnabled(stream.getVideoTracks().length > 0);
 
       const pc = createPeerConnection();
       stream.getTracks().forEach((t) => pc.addTrack(t, stream));
 
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
-
       await sendSignal(newCallId, userId, recipientId, "offer", offer);
     } catch (e: any) {
       console.error("startCall error:", e);
@@ -194,41 +215,55 @@ export function useWebRTCCall(userId: string | null) {
     }
   }, [userId, status, createPeerConnection, sendSignal]);
 
-  // ---- ACCEPT CALL ----
   const acceptCall = useCallback(async () => {
     if (!incoming || !userId) return;
-    const { callId: incomingCallId, fromUserId, fromName, fromAvatar, offer } = incoming;
-    
-    setIncoming(null);
-    setPeerUserId(fromUserId);
-    peerUserIdRef.current = fromUserId;
+    const { callId: incomingCallId, fromUserId, fromName, fromAvatar, offer, callType: incomingType } = incoming;
+
     setPeerName(fromName);
     setPeerAvatar(fromAvatar);
+    setCallType(incomingType);
     currentCallIdRef.current = incomingCallId;
+    peerUserIdRef.current = fromUserId;
     setCallId(incomingCallId);
     setStatus("ringing");
-    
     callRoleRef.current = "receiver";
     callStartTimeRef.current = null;
+    setIncoming(null);
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+          video: incomingType === "video" ? { facingMode: "user" } : false,
+        });
+      } catch (e: any) {
+        if (incomingType === "video") {
+          console.warn("[WebRTC] Video failed, falling back to audio");
+          stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+          setCallType("audio");
+          setVideoEnabled(false);
+        } else {
+          throw e;
+        }
+      }
       localStreamRef.current = stream;
+      setLocalStream(stream);
+      setVideoEnabled(stream.getVideoTracks().length > 0);
 
       const pc = createPeerConnection();
       stream.getTracks().forEach((t) => pc.addTrack(t, stream));
 
       await pc.setRemoteDescription(new RTCSessionDescription(offer));
       setStatus("connected");
-      
-      for (const candidate of pendingIceCandidates.current) {
-        try { await pc.addIceCandidate(new RTCIceCandidate(candidate)); } catch {}
+
+      for (const c of pendingIceCandidates.current) {
+        try { await pc.addIceCandidate(new RTCIceCandidate(c)); } catch {}
       }
       pendingIceCandidates.current = [];
 
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
-
       await sendSignal(incomingCallId, userId, fromUserId, "answer", answer);
     } catch (e: any) {
       console.error("acceptCall error:", e);
@@ -237,29 +272,24 @@ export function useWebRTCCall(userId: string | null) {
     }
   }, [incoming, userId, createPeerConnection, sendSignal]);
 
-  // ---- END CALL ----
   const endCall = useCallback(async () => {
-    console.log("[WebRTC] 🛑 End call triggered");
+    console.log("[WebRTC] 🛑 End call");
     const currentCallId = currentCallIdRef.current;
     const currentPeer = peerUserIdRef.current;
-    const role = callRoleRef.current;
-    
     if (currentCallId && userId && currentPeer) {
       await sendSignal(currentCallId, userId, currentPeer, "hangup", null);
     }
-    
+    const role = callRoleRef.current;
     let cId, rId;
     if (userId && currentPeer) {
       cId = role === "caller" ? userId : currentPeer;
       rId = role === "caller" ? currentPeer : userId;
     }
-    
     await logCompletedCall(callStartTimeRef.current ? "completed" : "unanswered", cId, rId);
     cleanup();
     setStatus("idle");
   }, [userId, sendSignal, cleanup, logCompletedCall]);
 
-  // ---- REJECT CALL ----
   const rejectCall = useCallback(async () => {
     if (!incoming || !userId) return;
     await sendSignal(incoming.callId, userId, incoming.fromUserId, "reject", null);
@@ -268,17 +298,39 @@ export function useWebRTCCall(userId: string | null) {
     setStatus("idle");
   }, [incoming, userId, sendSignal, cleanup, logCompletedCall]);
 
-  // ---- TOGGLE MUTE ----
   const toggleMute = useCallback(() => {
     if (!localStreamRef.current) return;
-    const audioTrack = localStreamRef.current.getAudioTracks()[0];
-    if (audioTrack) {
-      audioTrack.enabled = !audioTrack.enabled;
-      setMuted(!audioTrack.enabled);
-    }
+    const track = localStreamRef.current.getAudioTracks()[0];
+    if (track) { track.enabled = !track.enabled; setMuted(!track.enabled); }
   }, []);
 
-  // ---- SUBSCRIBE TO REALTIME ----
+  const toggleCamera = useCallback(() => {
+    if (!localStreamRef.current) return;
+    const track = localStreamRef.current.getVideoTracks()[0];
+    if (track) { track.enabled = !track.enabled; setVideoEnabled(track.enabled); }
+  }, []);
+
+  const flipCamera = useCallback(async () => {
+    if (!localStreamRef.current || !pcRef.current) return;
+    const currentVideoTrack = localStreamRef.current.getVideoTracks()[0];
+    if (!currentVideoTrack) return;
+
+    const newFacing: FacingMode = facingMode === "user" ? "environment" : "user";
+    try {
+      const newStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: newFacing }, audio: false,
+      });
+      const newTrack = newStream.getVideoTracks()[0];
+      const sender = pcRef.current.getSenders().find((s) => s.track?.kind === "video");
+      if (sender) await sender.replaceTrack(newTrack);
+      currentVideoTrack.stop();
+      localStreamRef.current.removeTrack(currentVideoTrack);
+      localStreamRef.current.addTrack(newTrack);
+      setLocalStream(new MediaStream(localStreamRef.current.getTracks()));
+      setFacingMode(newFacing);
+    } catch (e) { console.error("Flip camera failed:", e); }
+  }, [facingMode]);
+
   useEffect(() => {
     if (!userId) return;
     const supabase = createClient();
@@ -295,10 +347,8 @@ export function useWebRTCCall(userId: string | null) {
           const { call_id, sender_id, signal_type, signal_data } = row;
 
           if (signal_type === "offer") {
-            if (status !== "idle") {
-              await sendSignal(call_id, userId, sender_id, "reject", null);
-              return;
-            }
+            if (status !== "idle") { await sendSignal(call_id, userId, sender_id, "reject", null); return; }
+            const offerHasVideo = (signal_data?.sdp || "").includes("m=video");
             try {
               const res = await fetch(`/api/profile?user_id=${sender_id}`);
               const d = await res.json();
@@ -306,10 +356,10 @@ export function useWebRTCCall(userId: string | null) {
                 callId: call_id, fromUserId: sender_id,
                 fromName: d.profile?.display_name || d.profile?.username || "Someone",
                 fromAvatar: d.profile?.avatar_url || null,
-                offer: signal_data
+                offer: signal_data, callType: offerHasVideo ? "video" : "audio",
               });
             } catch {
-              setIncoming({ callId: call_id, fromUserId: sender_id, fromName: "Someone", fromAvatar: null, offer: signal_data });
+              setIncoming({ callId: call_id, fromUserId: sender_id, fromName: "Someone", fromAvatar: null, offer: signal_data, callType: offerHasVideo ? "video" : "audio" });
             }
           } else if (signal_type === "answer") {
             const pc = pcRef.current;
@@ -323,14 +373,10 @@ export function useWebRTCCall(userId: string | null) {
             }
           } else if (signal_type === "ice") {
             const pc = pcRef.current;
-            if (pc && pc.remoteDescription) {
-              try { await pc.addIceCandidate(new RTCIceCandidate(signal_data)); } catch {}
-            } else {
-              pendingIceCandidates.current.push(signal_data);
-            }
+            if (pc && pc.remoteDescription) { try { await pc.addIceCandidate(new RTCIceCandidate(signal_data)); } catch {} }
+            else { pendingIceCandidates.current.push(signal_data); }
           } else if (signal_type === "hangup" || signal_type === "reject") {
-            console.log("[WebRTC] 📥 Received hangup/reject signal");
-            // Do NOT log here to prevent double logging. The person who clicked End/Decline already logged it.
+            // No logging here — the initiator already logged it
             if (signal_type === "reject") setStatus("rejected");
             else setStatus("ended");
             setTimeout(() => { cleanup(); setStatus("idle"); }, 1500);
@@ -340,15 +386,12 @@ export function useWebRTCCall(userId: string | null) {
       .subscribe();
 
     channelRef.current = channel;
-
-    return () => {
-      try { supabase.removeChannel(channel); } catch {}
-      channelRef.current = null;
-    };
-  }, [userId, status, sendSignal, cleanup, logCompletedCall]);
+    return () => { try { supabase.removeChannel(channel); } catch {} channelRef.current = null; };
+  }, [userId, status, sendSignal, cleanup]);
 
   return {
-    status, incoming, remoteStream, muted, peerName, peerAvatar, callId,
-    startCall, acceptCall, rejectCall, endCall, toggleMute,
+    status, incoming, remoteStream, localStream, muted, videoEnabled, hasRemoteVideo, facingMode, callType,
+    peerName, peerAvatar, callId,
+    startCall, acceptCall, rejectCall, endCall, toggleMute, toggleCamera, flipCamera,
   };
 }

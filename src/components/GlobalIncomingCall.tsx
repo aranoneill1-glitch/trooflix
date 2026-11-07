@@ -22,11 +22,10 @@ export default function GlobalIncomingCall() {
     }
   }, [webrtc.status]);
 
-  // Listen for "start-call" custom events from anywhere in the app
   useEffect(() => {
     const handleStartCall = (e: any) => {
-      const { recipientId, recipientName, recipientAvatar } = e.detail;
-      webrtc.startCall(recipientId, recipientName, recipientAvatar);
+      const { recipientId, recipientName, recipientAvatar, callType } = e.detail;
+      webrtc.startCall(recipientId, recipientName, recipientAvatar, callType || "video");
       setShowActive(true);
     };
     window.addEventListener("start-call", handleStartCall);
@@ -39,10 +38,7 @@ export default function GlobalIncomingCall() {
     <>
       <IncomingCallBanner
         incoming={webrtc.incoming}
-        onAccept={() => {
-          webrtc.acceptCall();
-          setShowActive(true);
-        }}
+        onAccept={() => { webrtc.acceptCall(); setShowActive(true); }}
         onReject={webrtc.rejectCall}
       />
       {showActive && webrtc.status !== "idle" && (
@@ -51,8 +47,14 @@ export default function GlobalIncomingCall() {
           peerName={webrtc.peerName}
           peerAvatar={webrtc.peerAvatar}
           remoteStream={webrtc.remoteStream}
+          localStream={webrtc.localStream}
           muted={webrtc.muted}
+          videoEnabled={webrtc.videoEnabled}
+          hasRemoteVideo={webrtc.hasRemoteVideo}
+          facingMode={webrtc.facingMode}
           onToggleMute={webrtc.toggleMute}
+          onToggleCamera={webrtc.toggleCamera}
+          onFlipCamera={webrtc.flipCamera}
           onEnd={() => { webrtc.endCall(); setShowActive(false); }}
         />
       )}
