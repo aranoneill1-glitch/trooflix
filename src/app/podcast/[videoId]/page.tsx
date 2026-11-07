@@ -306,6 +306,8 @@ export default function WatchPage() {
           onClose={() => setIsPlayerOpen(false)}
           textOverlays={video.textOverlays}
           chapters={video.chapters || []}
+          creatorId={(video as any).creatorId}
+          isPremium={(video as any).visibility === "premium"}
         />
       )}
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { getCachedUser } from "@/lib/cache";
+import PremiumLockModal from "@/components/PremiumLockModal";
 import { createPortal } from "react-dom";
 import VideoIntro from "@/components/VideoIntro";
 import CustomVideoPlayer from "@/components/CustomVideoPlayer";
@@ -18,15 +19,41 @@ interface AppleVideoPlayerProps {
   chapters?: { title: string; time: number }[];
   textOverlays?: any[];
   feedVideos?: any[];
+  creatorId?: number | null;
+  isPremium?: boolean;
 }
 
-export default function AppleVideoPlayer({ src, onClose, poster }: AppleVideoPlayerProps) {
+export default function AppleVideoPlayer({ src, onClose, poster, creatorId, isPremium }: AppleVideoPlayerProps) {
   const [mounted, setMounted] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
   const [userTier, setUserTier] = useState<"free" | "plus" | "creator">("free");
+  const [premiumLock, setPremiumLock] = useState<{ creatorName: string; priceCents: number | null } | null>(null);
+  const [premiumChecked, setPremiumChecked] = useState(!isPremium);
 
   useEffect(() => {
     setMounted(true);
+    if (isPremium && creatorId) {
+      // Check premium access before showing player
+      getCachedUser().then(async (u) => {
+        try {
+          const res = await fetch("/api/premium/check", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId: u?.id || null, creatorId }),
+          });
+          const data = await res.json();
+          if (!data.allowed) {
+            setPremiumLock({
+              creatorName: data.creatorName || "this creator",
+              priceCents: data.priceCents,
+            });
+          }
+          setPremiumChecked(true);
+        } catch {
+          setPremiumChecked(true);
+        }
+      });
+    }
     getCachedUser().then(async (u) => {
       if (!u) { setUserTier("free"); return; }
       try {
@@ -47,6 +74,27 @@ export default function AppleVideoPlayer({ src, onClose, poster }: AppleVideoPla
   }, []);
 
   if (!mounted) return null;
+
+  if (isPremium && !premiumChecked) {
+    return createPortal(
+      <div className="fixed inset-0 z-[9999] bg-black flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-[#D4AF37]/30 border-t-[#D4AF37] rounded-full animate-spin" />
+      </div>,
+      document.body
+    );
+  }
+
+  if (premiumLock && creatorId) {
+    return createPortal(
+      <PremiumLockModal
+        onClose={onClose}
+        creatorId={creatorId}
+        creatorName={premiumLock.creatorName}
+        priceCents={premiumLock.priceCents}
+      />,
+      document.body
+    );
+  }
 
   return createPortal(
     <div className="fixed inset-0 z-[9999] bg-black flex items-center justify-center">

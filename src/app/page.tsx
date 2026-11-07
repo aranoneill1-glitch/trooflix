@@ -598,14 +598,17 @@ export default function Home() {
 
       {gateVideo && <AuthPlaybackGate onClose={() => setGateVideo(null)} videoTitle={gateVideo.title} />}
         {playing && (
-        <AppleVideoPlayer
-          src={playing.videoUrl ?? playing.bitchuteUrl ?? ""}
-          title={playing.title}
-          textOverlays={playing?.textOverlays}
-          chapters={playing.chapters || []}
-          onClose={() => setPlaying(null)}
-        />
-      )}
+          <AppleVideoPlayer
+            src={playing.videoUrl ?? playing.bitchuteUrl ?? ""}
+            title={playing.title}
+            poster={playing.posterUrl}
+            textOverlays={playing.textOverlays}
+            chapters={playing.chapters || []}
+            onClose={() => setPlaying(null)}
+            creatorId={playing.creatorId}
+            isPremium={playing.visibility === "premium"}
+          />
+        )}
     </main>
         <MobileBottomNav />
     </>
