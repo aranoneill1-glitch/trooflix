@@ -16,8 +16,20 @@ type Props = {
 
 export default function CallModal({ status, peerName, peerAvatar, remoteStream, muted, onToggleMute, onEnd }: Props) {
   const audioRef = useRef<HTMLVideoElement>(null);
+  const localAudioContextRef = useRef<AudioContext | null>(null);
+  const remoteAudioContextRef = useRef<AudioContext | null>(null);
+  const [localMicLevel, setLocalMicLevel] = useState(0);
+  const [remoteAudioLevel, setRemoteAudioLevel] = useState(0);
+  const [localMicStream, setLocalMicStream] = useState<MediaStream | null>(null);
   const [needsTapToHear, setNeedsTapToHear] = useState(false);
   const [speakerOn, setSpeakerOn] = useState(true);
+
+  useEffect(() => {
+    if (status === "connected") {
+      startLocalMicAnalyzer();
+      startRemoteAnalyzer();
+    }
+  }, [status]);
 
   useEffect(() => {
     if (!audioRef.current) return;
@@ -66,6 +78,57 @@ export default function CallModal({ status, peerName, peerAvatar, remoteStream, 
       console.log("[CallModal] Track:", t.label, "| enabled:", t.enabled, "| muted:", t.muted, "| state:", t.readyState);
     });
   }, [remoteStream]);
+
+  const startLocalMicAnalyzer = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      setLocalMicStream(stream);
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      localAudioContextRef.current = ctx;
+      const source = ctx.createMediaStreamSource(stream);
+      const analyzer = ctx.createAnalyser();
+      analyzer.fftSize = 256;
+      source.connect(analyzer);
+      const data = new Uint8Array(analyzer.frequencyBinCount);
+      const loop = () => {
+        analyzer.getByteFrequencyData(data);
+        let sum = 0;
+        for (let i = 0; i < data.length; i++) sum += data[i];
+        const avg = sum / data.length;
+        setLocalMicLevel(Math.round((avg / 128) * 100));
+        requestAnimationFrame(loop);
+      };
+      loop();
+      console.log("[MicAnalyzer] 🎤 Started");
+    } catch (e) {
+      console.error("[MicAnalyzer] Failed:", e);
+    }
+  };
+
+  const startRemoteAnalyzer = () => {
+    if (!remoteStream || !audioRef.current) return;
+    try {
+      const ctx = remoteAudioContextRef.current || new (window.AudioContext || (window as any).webkitAudioContext)();
+      remoteAudioContextRef.current = ctx;
+      const source = ctx.createMediaStreamSource(remoteStream);
+      const analyzer = ctx.createAnalyser();
+      analyzer.fftSize = 256;
+      source.connect(analyzer);
+      const data = new Uint8Array(analyzer.frequencyBinCount);
+      const loop = () => {
+        analyzer.getByteFrequencyData(data);
+        let sum = 0;
+        for (let i = 0; i < data.length; i++) sum += data[i];
+        const avg = sum / data.length;
+        setRemoteAudioLevel(Math.round((avg / 128) * 100));
+        requestAnimationFrame(loop);
+      };
+      loop();
+      console.log("[RemoteAnalyzer] 🎤 Started");
+    } catch (e) {
+      console.error("[RemoteAnalyzer] Failed:", e);
+    }
+  };
 
   const playTestTone = () => {
     try {
@@ -167,6 +230,24 @@ export default function CallModal({ status, peerName, peerAvatar, remoteStream, 
             🔊 Tap to enable audio
           </button>
         )}
+
+        {/* AUDIO METERS */}
+        <div className="fixed top-4 left-4 right-4 z-10 flex flex-col gap-2 max-w-xs">
+          <div className="bg-black/60 backdrop-blur rounded-lg p-2">
+            <p className="text-[10px] text-white/60 mb-1 font-bold">LOCAL MIC</p>
+            <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+              <div className="h-full bg-green-500 transition-all duration-75" style={{ width: `${localMicLevel}%` }} />
+            </div>
+            <p className="text-[10px] text-white/40 mt-1">{localMicLevel}%</p>
+          </div>
+          <div className="bg-black/60 backdrop-blur rounded-lg p-2">
+            <p className="text-[10px] text-white/60 mb-1 font-bold">REMOTE AUDIO</p>
+            <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+              <div className="h-full bg-blue-500 transition-all duration-75" style={{ width: `${remoteAudioLevel}%` }} />
+            </div>
+            <p className="text-[10px] text-white/40 mt-1">{remoteAudioLevel}%</p>
+          </div>
+        </div>
 
         {/* Center: peer info */}
         <div className="flex flex-col items-center flex-1 justify-center -mt-20">
