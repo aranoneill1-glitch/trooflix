@@ -88,41 +88,18 @@ export default function NotificationBell({ hideTrigger = false }: { hideTrigger?
       const user = await getCachedUser();
       if (!user) return;
 
-      // Assuming you have a notifications table. 
-      // If not, this will just return empty and show the empty state.
-      console.log("[NotificationBell] Fetching for user:", user.id);
-      const { data, error: fetchError } = await supabase
-        .from("notifications")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("id", { ascending: false });
-      if (fetchError) console.error("[NotificationBell] Fetch error:", fetchError);
-
-      console.log("[NotificationBell] Fetched rows:", data?.length || 0);
-      if (data && data.length > 0) {
-        // Batch fetch actor profiles for avatars
-        const actorIds = [...new Set(data.map((n: any) => n.actor_id).filter(Boolean))];
-        if (actorIds.length > 0) {
-          const { data: profiles } = await supabase
-            .from("profiles")
-            .select("user_id, display_name, username, avatar_url")
-            .in("user_id", actorIds);
-          const profileMap = new Map(profiles?.map((pr: any) => [pr.user_id, pr]) || []);
-          data.forEach((n: any) => {
-            const actor = profileMap.get(n.actor_id);
-            n.sender_avatar = actor?.avatar_url || null;
-            n.actor_name = actor?.display_name || actor?.username || "Someone";
-          });
-        }
+      try {
+        const res = await fetch("/api/notifications?userId=" + user.id);
+        const json = await res.json();
+        const data = json.notifications || [];
         setNotifications(data);
+      } catch (e) {
+        console.error("[NotificationBell] Fetch failed:", e);
       }
       setLoading(false);
     }
     fetchNotifications();
   }, [supabase]);
-
-  const unreadCount = notifications.filter(n => !n.is_read).length;
-  const displayedNotifications = activeTab === "unread" ? notifications.filter(n => !n.is_read) : notifications;
 
   const markAllRead = async () => {
     const user = await getCachedUser();
