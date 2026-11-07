@@ -6,6 +6,22 @@ import { createClient } from "@/utils/supabase/client";
 const ICE_SERVERS: RTCIceServer[] = [
   { urls: "stun:stun.l.google.com:19302" },
   { urls: "stun:stun1.l.google.com:19302" },
+  // Free TURN servers from OpenRelay (100% free, no signup)
+  {
+    urls: "turn:openrelay.metered.ca:80",
+    username: "openrelayproject",
+    credential: "openrelayproject",
+  },
+  {
+    urls: "turn:openrelay.metered.ca:443",
+    username: "openrelayproject",
+    credential: "openrelayproject",
+  },
+  {
+    urls: "turn:openrelay.metered.ca:443?transport=tcp",
+    username: "openrelayproject",
+    credential: "openrelayproject",
+  },
 ];
 
 export type CallStatus = "idle" | "calling" | "ringing" | "connected" | "ended" | "rejected" | "failed";
@@ -87,6 +103,32 @@ export function useWebRTCCall(userId: string | null) {
 
     pc.onconnectionstatechange = () => {
       console.log("[WebRTC] 🔌 Connection state:", pc.connectionState, "| iceState:", pc.iceConnectionState, "| gatherState:", pc.iceGatheringState);
+      if (pc.connectionState === "connected") {
+        // Sample stats 3 times to see if bytes are flowing
+        let sampleCount = 0;
+        const statsInterval = setInterval(async () => {
+          try {
+            const stats = await pc.getStats();
+            let outboundBytes = 0;
+            let inboundBytes = 0;
+            let packetsSent = 0;
+            let packetsReceived = 0;
+            stats.forEach((report) => {
+              if (report.type === "outbound-rtp" && report.kind === "audio") {
+                outboundBytes = report.bytesSent || 0;
+                packetsSent = report.packetsSent || 0;
+              }
+              if (report.type === "inbound-rtp" && report.kind === "audio") {
+                inboundBytes = report.bytesReceived || 0;
+                packetsReceived = report.packetsReceived || 0;
+              }
+            });
+            console.log(`[WebRTC STATS] 🔵 Out audio: ${outboundBytes} bytes (${packetsSent} pkts) | 🟢 In audio: ${inboundBytes} bytes (${packetsReceived} pkts)`);
+            sampleCount++;
+            if (sampleCount >= 6) clearInterval(statsInterval);
+          } catch (e) {}
+        }, 1000);
+      }
       // Accept BOTH "connected" AND ICE "connected/completed" as success
       if (pc.connectionState === "connected" || pc.iceConnectionState === "connected" || pc.iceConnectionState === "completed") {
         setStatus("connected");
