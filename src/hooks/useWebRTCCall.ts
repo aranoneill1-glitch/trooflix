@@ -225,8 +225,9 @@ export function useWebRTCCall(userId: string | null) {
     if (!userId) return;
     const supabase = createClient();
 
+    const channelSuffix = Math.random().toString(36).slice(2, 8);
     const channel = supabase
-      .channel(`webrtc:${userId}`)
+      .channel(`webrtc:${userId}:${channelSuffix}`)
       .on(
         "postgres_changes",
         {
