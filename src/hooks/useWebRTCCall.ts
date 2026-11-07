@@ -41,6 +41,7 @@ export function useWebRTCCall(userId: string | null) {
   const [muted, setMuted] = useState(false);
   const [callId, setCallId] = useState<string | null>(null);
   const [peerUserId, setPeerUserId] = useState<string | null>(null);
+  const peerUserIdRef = useRef<string | null>(null);
   const [peerName, setPeerName] = useState<string>("");
   const [peerAvatar, setPeerAvatar] = useState<string | null>(null);
 
@@ -92,7 +93,7 @@ export function useWebRTCCall(userId: string | null) {
     pc.onicecandidate = (event) => {
       if (event.candidate) console.log("[WebRTC] Local ICE candidate:", event.candidate.candidate.slice(0, 40) + "...");
       if (event.candidate && currentCallIdRef.current && userId) {
-        const peer = peerUserId;
+        const peer = peerUserIdRef.current;
         if (peer) {
           sendSignal(
             currentCallIdRef.current, userId, peer, "ice", event.candidate.toJSON()
@@ -193,6 +194,7 @@ export function useWebRTCCall(userId: string | null) {
     setMuted(false);
     setCallId(null);
     setPeerUserId(null);
+    peerUserIdRef.current = null;
     setPeerName("");
     setPeerAvatar(null);
     setIncoming(null);
@@ -218,6 +220,7 @@ export function useWebRTCCall(userId: string | null) {
     }
 
     setPeerUserId(recipientId);
+    peerUserIdRef.current = recipientId;
     setPeerName(recipientName);
     setPeerAvatar(recipientAvatar);
     setStatus("calling");
@@ -274,6 +277,7 @@ export function useWebRTCCall(userId: string | null) {
     const { callId: incomingCallId, fromUserId, fromName, fromAvatar, offer } = incoming;
     setIncoming(null);
     setPeerUserId(fromUserId);
+    peerUserIdRef.current = fromUserId;
     setPeerName(fromName);
     setPeerAvatar(fromAvatar);
     currentCallIdRef.current = incomingCallId;
