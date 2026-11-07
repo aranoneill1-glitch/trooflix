@@ -435,7 +435,9 @@ export default function SignupPage() {
                       tier.cta
                     )}
                   </button>
-                  <p className="text-center text-[10px] text-white/40 mt-2">{tier.ctaSub}</p>
+                  <p className="text-center text-[10px] text-white/40 mt-2">
+                    {promoCode.trim() ? "No payment required — promo applies instantly" : tier.ctaSub}
+                  </p>
                 </>
               );
             })()}
