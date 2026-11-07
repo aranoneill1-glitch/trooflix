@@ -330,13 +330,7 @@ export function useWebRTCCall(userId: string | null) {
             }
           } else if (signal_type === "hangup" || signal_type === "reject") {
             console.log("[WebRTC] 📥 Received hangup/reject signal");
-            const role = callRoleRef.current;
-            let cId, rId;
-            if (userId && peerUserIdRef.current) {
-              cId = role === "caller" ? userId : peerUserIdRef.current;
-              rId = role === "caller" ? peerUserIdRef.current : userId;
-            }
-            await logCompletedCall(signal_type === "reject" ? "unanswered" : (callStartTimeRef.current ? "completed" : "unanswered"), cId, rId);
+            // Do NOT log here to prevent double logging. The person who clicked End/Decline already logged it.
             if (signal_type === "reject") setStatus("rejected");
             else setStatus("ended");
             setTimeout(() => { cleanup(); setStatus("idle"); }, 1500);
