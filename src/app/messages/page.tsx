@@ -187,8 +187,7 @@ export default function MessagesInbox() {
         className="pt-16 md:pt-20 flex-shrink-0 border-b border-white/5"
         style={{ background: "#000000" }}
       >
-        <div className="max-w-3xl mx-auto flex items-center justify-between px-4 md:px-6 py-3">
-          <h1 className="text-2xl md:text-3xl font-black">Troo<span className="text-[#E53945]">Chat</span></h1>
+        <div className="max-w-3xl mx-auto flex items-center justify-end px-4 md:px-6 py-3">
           <button
             onClick={() => setSearchOpen(true)}
             className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition"

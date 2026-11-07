@@ -23,6 +23,7 @@ export default function TopBar({ onMenu }: Props) {
 
   // Check if we are on the search page
   const isSearchPage = pathname === "/search";
+  const isMessagesPage = pathname === "/messages";
 
   const handleRefresh = () => {
     setIsRefreshing(true);
@@ -73,8 +74,17 @@ export default function TopBar({ onMenu }: Props) {
         {/* LOGO: Hidden on search page, visible everywhere else */}
         {!isSearchPage && (
           <Link href="/" className="text-xl md:text-2xl font-black tracking-tight shrink-0">
-            <span className="text-white">TROO</span>
-            <span className="text-red-600">FLIX</span>
+            {isMessagesPage ? (
+              <>
+                <span className="text-white">Troo</span>
+                <span className="text-[#E53945]">Chat</span>
+              </>
+            ) : (
+              <>
+                <span className="text-white">TROO</span>
+                <span className="text-red-600">FLIX</span>
+              </>
+            )}
           </Link>
         )}
 
