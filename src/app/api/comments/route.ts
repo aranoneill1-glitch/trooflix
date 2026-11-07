@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { createClient as createServerClient } from "@supabase/supabase-js";
-import { kv } from "@vercel/kv";
 
 const supabaseAdmin = createServerClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -8,25 +7,55 @@ const supabaseAdmin = createServerClient(
   { auth: { autoRefreshToken: false, persistSession: false } }
 );
 
+
+const KV_URL = "https://neat-monster-216395.upstash.io";
+const KV_TOKEN = "gQAAAAAAA01LAAIgcDE3ZTRiZTkyZGNmNjI0M2ZmODg0ZDRmMTNmMDhkYzhhMQ";
 const VIDEOS_KEY = "trooflix:videos";
 const CREATORS_KEY = "trooflix:creators";
 
 async function findPostOwner(videoId: number): Promise<string | null> {
   try {
-    const videos = (await kv.get<any[]>(VIDEOS_KEY)) || [];
+    // 1. Direct fetch to Upstash (bypassing broken SDK)
+    const getRes = await fetch(`${KV_URL}/get/${VIDEOS_KEY}`, {
+      headers: { Authorization: `Bearer ${KV_TOKEN}` }
+    });
+    const getData = await getRes.json();
+    
+    let videos = [];
+    if (getData.result) {
+      let parsed = JSON.parse(getData.result);
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && parsed.value) {
+        parsed = typeof parsed.value === 'string' ? JSON.parse(parsed.value) : parsed.value;
+      }
+      if (Array.isArray(parsed)) videos = parsed;
+    }
+
     const post = videos.find((v: any) => Number(v.id) === Number(videoId));
     if (!post) return null;
-    
-    // 1. Uploader ID (Shorts and long videos uploaded by normal users)
+
+    // 2. Uploader ID
     if (post.uploaderUserId) return post.uploaderUserId;
-    
-    // 2. Creator ID lookup
+
+    // 3. Creator ID lookup
     if (post.creatorId) {
-      const creators = (await kv.get<any[]>(CREATORS_KEY)) || [];
+      const cRes = await fetch(`${KV_URL}/get/${CREATORS_KEY}`, {
+        headers: { Authorization: `Bearer ${KV_TOKEN}` }
+      });
+      const cData = await cRes.json();
+      
+      let creators = [];
+      if (cData.result) {
+        let parsed = JSON.parse(cData.result);
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && parsed.value) {
+          parsed = typeof parsed.value === 'string' ? JSON.parse(parsed.value) : parsed.value;
+        }
+        if (Array.isArray(parsed)) creators = parsed;
+      }
+      
       const creator = creators.find((c: any) => Number(c.id) === Number(post.creatorId));
       if (creator?.ownerUserId) return creator.ownerUserId;
-      
-      // 3. Guaranteed DB fallback
+
+      // 4. Guaranteed DB fallback
       const { data: profile } = await supabaseAdmin
         .from("profiles")
         .select("user_id")
@@ -40,6 +69,7 @@ async function findPostOwner(videoId: number): Promise<string | null> {
     return null;
   }
 }
+
 
 export async function GET(req: Request) {
   try {
