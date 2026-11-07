@@ -454,8 +454,8 @@ export default function MessagesInbox() {
               </div>
             ) : (
               <div>
-                {callHistory.filter(c => callFilter === "all" || c.status === "missed" || c.status === "declined").map((c) => {
-                  const isMissed = c.status === "missed" || c.status === "declined";
+                {callHistory.filter(c => callFilter === "all" || c.status === "missed" || c.status === "declined" || c.status === "unanswered").map((c) => {
+                  const isUnanswered = c.status === "missed" || c.status === "declined" || c.status === "unanswered";
                   const isIncoming = !c.isCaller;
                   return (
                     <div key={c.id} className="flex items-center gap-4 px-4 md:px-6 py-3.5 border-b border-white/5">
@@ -463,10 +463,10 @@ export default function MessagesInbox() {
                         {c.otherAvatar ? <img src={c.otherAvatar} alt="" className="w-full h-full object-cover" /> : <span className="text-white font-bold text-xl">{(c.otherName[0] || "?").toUpperCase()}</span>}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className={`text-[16px] font-medium truncate ${isMissed ? "text-red-400" : "text-white"}`}>{c.otherName}</p>
+                        <p className={`text-[16px] font-medium truncate ${isUnanswered ? "text-red-400" : "text-white"}`}>{c.otherName}</p>
                         <div className="flex items-center gap-1 text-[13px] text-white/50">
-                          {isMissed ? <PhoneMissed size={12} className="text-red-400" /> : isIncoming ? <ArrowDownLeft size={12} className="text-green-500" /> : <ArrowUpRight size={12} className="text-green-500" />}
-                          <span>{isMissed ? "Missed" : isIncoming ? "Incoming" : "Outgoing"}</span>
+                          {isUnanswered ? <PhoneMissed size={12} className="text-red-400" /> : isIncoming ? <ArrowDownLeft size={12} className="text-green-500" /> : <ArrowUpRight size={12} className="text-green-500" />}
+                          <span>{isUnanswered ? "Unanswered" : isIncoming ? "Incoming" : "Outgoing"}</span>
                           <span className="mx-1">·</span>
                           <span>{timeLabel(c.created_at)}</span>
                           {c.duration_seconds > 0 && (
