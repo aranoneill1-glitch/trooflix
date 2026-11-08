@@ -37,17 +37,23 @@ export default function FixPostersPage() {
 
   const generatePoster = async (video: any) => {
     return new Promise<void>(async (resolve, reject) => {
-      const vid = document.createElement("video");
-      vid.src = video.videoUrl || video.bitchuteUrl;
-      vid.muted = true;
-      vid.crossOrigin = "anonymous";
-      vid.preload = "metadata";
+      try {
+        // 1. Fetch the video as a blob to bypass video tag CORS restrictions
+        const res = await fetch(video.videoUrl || video.bitchuteUrl);
+        if (!res.ok) throw new Error("Failed to fetch video file");
+        const blob = await res.blob();
+        const blobUrl = URL.createObjectURL(blob);
 
-      // Add a 15-second timeout so it never gets stuck forever
-      const timeout = setTimeout(() => {
-        URL.revokeObjectURL(vid.src);
-        reject(new Error("Timeout: Video took too long to load or seek. Likely a CORS issue."));
-      }, 15000);
+        const vid = document.createElement("video");
+        vid.src = blobUrl;
+        vid.muted = true;
+        vid.preload = "auto";
+
+        // 15-second timeout
+        const timeout = setTimeout(() => {
+          URL.revokeObjectURL(blobUrl);
+          reject(new Error("Timeout: Video took too long to load or seek."));
+        }, 15000);
 
       vid.onloadedmetadata = () => {
         const seekTime = Math.min(90, vid.duration / 2) || 1;
@@ -84,15 +90,18 @@ export default function FixPostersPage() {
         } catch (e: any) {
           reject(new Error(e.message || "Unknown canvas error"));
         } finally {
-          URL.revokeObjectURL(vid.src);
+          URL.revokeObjectURL(blobUrl);
         }
       };
 
       vid.onerror = () => {
         clearTimeout(timeout);
-        URL.revokeObjectURL(vid.src);
-        reject(new Error("Video failed to load. Check CORS settings on Cloudflare R2."));
+        URL.revokeObjectURL(blobUrl);
+        reject(new Error("Video failed to load from blob."));
       };
+      } catch (err: any) {
+        reject(err);
+      }
     });
   };
 
