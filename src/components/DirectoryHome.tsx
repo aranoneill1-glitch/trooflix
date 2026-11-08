@@ -88,11 +88,15 @@ export default function DirectoryHome({ videos, creators }: { videos: any[], cre
         <div className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide">
           {videos.filter((v: any) => {
             const t = v.type?.toLowerCase();
-            return t !== "short" && t !== "tweet" && v.visibility !== "premium" && v.feed_visible !== false;
+            const hasVideo = !!(v.videoUrl || v.bitchuteUrl);
+            return hasVideo && t !== "short" && t !== "tweet" && v.visibility !== "premium" && v.feed_visible !== false;
           }).slice(0, 8).map((v: any) => (
             <Link key={v.id} href="/latest" className="flex flex-col w-64 md:w-72 shrink-0 group">
               <div className="relative aspect-video rounded-xl overflow-hidden mb-2 border border-white/5 bg-[#1c1c1e]">
-                <img src={v.backdropUrl || v.posterUrl} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                <VideoPreview 
+                  src={v.videoUrl || v.bitchuteUrl} 
+                  className="w-full h-full object-cover group-hover:scale-105 transition duration-500" 
+                />
                 <div className="absolute bottom-2 right-2 bg-black/80 text-[10px] font-bold px-1.5 py-0.5 rounded">{v.duration || "0:00"}</div>
               </div>
               <h3 className="text-sm font-bold text-white line-clamp-2 leading-tight group-hover:text-[#E53945] transition">{v.title}</h3>
