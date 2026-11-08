@@ -39,7 +39,8 @@ export default function FixPostersPage() {
     return new Promise<void>(async (resolve, reject) => {
       try {
         // 1. Fetch the video as a blob to bypass video tag CORS restrictions
-        const res = await fetch(video.videoUrl || video.bitchuteUrl);
+        const proxyUrl = "/api/proxy-video?url=" + encodeURIComponent(video.videoUrl || video.bitchuteUrl);
+        const res = await fetch(proxyUrl);
         if (!res.ok) throw new Error("Failed to fetch video file");
         const blob = await res.blob();
         const blobUrl = URL.createObjectURL(blob);
