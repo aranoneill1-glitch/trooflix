@@ -620,22 +620,22 @@ function HeroVideoCard({ video, onMore, isMobile }: { video: Video, onMore: (v: 
         onClick={() => onMore(video)}
         className={`relative w-full ${isMobile ? "aspect-video min-h-[220px]" : "h-[45vh] min-h-[420px]"} rounded-2xl overflow-hidden bg-[#1c1c1e] shadow-2xl cursor-pointer group`}
       >
-        {(video.videoUrl || video.bitchuteUrl) ? (
+        {/* Always show the image fallback behind the video */}
+        <img 
+          src={video.posterUrl || video.backdropUrl} 
+          alt={video.title} 
+          className="absolute inset-0 w-full h-full object-cover" 
+        />
+        
+        {(video.videoUrl || video.bitchuteUrl) && (
           <video
             ref={videoRef}
             src={video.videoUrl || video.bitchuteUrl || ""}
-            poster={video.posterUrl || video.backdropUrl}
             autoPlay
             muted={muted}
             loop
             playsInline
             className="absolute inset-0 w-full h-full object-cover"
-          />
-        ) : (
-          <img 
-            src={video.backdropUrl || video.posterUrl} 
-            alt={video.title} 
-            className="absolute inset-0 w-full h-full object-cover" 
           />
         )}
         
