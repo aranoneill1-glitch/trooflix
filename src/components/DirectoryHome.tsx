@@ -94,7 +94,7 @@ export default function DirectoryHome({ videos, creators }: { videos: any[], cre
               <div className="relative aspect-video rounded-xl overflow-hidden mb-2 border border-white/5 bg-[#1c1c1e]">
                 <VideoPreview 
                   src={v.videoUrl || v.bitchuteUrl} 
-                  poster={v.backdropUrl || v.posterUrl}
+                  poster={v.posterUrl || v.backdropUrl}
                   className="w-full h-full object-cover group-hover:scale-105 transition duration-500" 
                 />
                 <div className="absolute bottom-2 right-2 bg-black/80 text-[10px] font-bold px-1.5 py-0.5 rounded">{v.duration || "0:00"}</div>
