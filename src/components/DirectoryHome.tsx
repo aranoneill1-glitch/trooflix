@@ -78,34 +78,7 @@ export default function DirectoryHome({ videos, creators }: { videos: any[], cre
         </div>
       </section>
 
-      {/* 2. DON'T MISS A THING */}
-      <section>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl md:text-2xl font-black tracking-tight text-white">Don't Miss A <span className="text-[#E53945]">Thing</span></h2>
-          <Link href="/latest" className="text-xs font-bold text-white/50 hover:text-white transition">View All</Link>
-        </div>
-        <div className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide">
-          {videos.filter((v: any) => {
-            const t = v.type?.toLowerCase();
-            const hasVideo = !!(v.videoUrl || v.bitchuteUrl);
-            return hasVideo && t !== "short" && t !== "tweet" && v.visibility !== "premium" && v.feed_visible !== false;
-          }).slice(0, 8).map((v: any) => (
-            <Link key={v.id} href="/latest" className="flex flex-col w-64 md:w-72 shrink-0 group">
-              <div className="relative aspect-video rounded-xl overflow-hidden mb-2 border border-white/5 bg-[#1c1c1e]">
-                <VideoPreview 
-                  src={v.videoUrl || v.bitchuteUrl} 
-                  poster={v.posterUrl || v.backdropUrl}
-                  className="w-full h-full object-cover group-hover:scale-105 transition duration-500" 
-                />
-                <div className="absolute bottom-2 right-2 bg-black/80 text-[10px] font-bold px-1.5 py-0.5 rounded">{v.duration || "0:00"}</div>
-              </div>
-              <h3 className="text-sm font-bold text-white line-clamp-2 leading-tight group-hover:text-[#E53945] transition">{v.title}</h3>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* 3. SHORTS */}
+      {/* 2. SHORTS */}
       <section>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl md:text-2xl font-black tracking-tight text-white flex items-center gap-2">
@@ -131,6 +104,33 @@ export default function DirectoryHome({ videos, creators }: { videos: any[], cre
                 <h3 className="text-white text-[11px] font-bold leading-tight line-clamp-2 mb-1">{v.title}</h3>
                 <p className="text-white/60 text-[10px] font-semibold">{v.views || 0} views</p>
               </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* 3. DON'T MISS A THING */}
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl md:text-2xl font-black tracking-tight text-white">Don't Miss A <span className="text-[#E53945]">Thing</span></h2>
+          <Link href="/latest" className="text-xs font-bold text-white/50 hover:text-white transition">View All</Link>
+        </div>
+        <div className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide">
+          {videos.filter((v: any) => {
+            const t = v.type?.toLowerCase();
+            const hasVideo = !!(v.videoUrl || v.bitchuteUrl);
+            return hasVideo && t !== "short" && t !== "tweet" && v.visibility !== "premium" && v.feed_visible !== false;
+          }).slice(0, 8).map((v: any) => (
+            <Link key={v.id} href="/latest" className="flex flex-col w-64 md:w-72 shrink-0 group">
+              <div className="relative aspect-video rounded-xl overflow-hidden mb-2 border border-white/5 bg-[#1c1c1e]">
+                <VideoPreview 
+                  src={v.videoUrl || v.bitchuteUrl} 
+                  poster={v.posterUrl || v.backdropUrl}
+                  className="w-full h-full object-cover group-hover:scale-105 transition duration-500" 
+                />
+                <div className="absolute bottom-2 right-2 bg-black/80 text-[10px] font-bold px-1.5 py-0.5 rounded">{v.duration || "0:00"}</div>
+              </div>
+              <h3 className="text-sm font-bold text-white line-clamp-2 leading-tight group-hover:text-[#E53945] transition">{v.title}</h3>
             </Link>
           ))}
         </div>
