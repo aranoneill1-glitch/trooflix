@@ -227,7 +227,7 @@ export default function Home() {
       setHeroIndex(0);
       return;
     }
-    const interval = setInterval(() => setHeroIndex((prev) => (prev + 1) % heroPool.length), 7000);
+    const interval = setInterval(() => setHeroIndex((prev) => (prev + 1) % heroPool.length), 6000);
     return () => clearInterval(interval);
   }, [heroPool.length]);
 
@@ -365,7 +365,6 @@ export default function Home() {
                   <AppReelHero 
                     videos={heroPool} 
                     activeIndex={heroIndex} 
-                    setActiveIndex={setHeroIndex} 
                     onPlay={handleInstantPlay}
                     onMore={(v) => setSelected(v)}
                   />
@@ -647,159 +646,109 @@ function DesktopHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[],
   const activeVideo = videos[activeIndex];
 
   return (
-    <section className="relative w-full lg:h-[45vh] min-h-[350px] flex items-center justify-start overflow-hidden bg-black">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeVideo.id}
-          initial={{ opacity: 0, scale: 1.05 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.8 }}
-          className="absolute inset-0 z-0"
-        >
-          <img src={activeVideo.posterUrl || activeVideo.backdropUrl} alt={activeVideo.title} className="w-full h-full object-cover object-center" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#09090B] via-[#09090B]/60 to-transparent w-full" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#09090B] via-transparent to-transparent w-full" />
-        </motion.div>
-      </AnimatePresence>
+    <div className="w-full max-w-[1600px] mx-auto px-4 md:px-12 mt-4 mb-8">
+      <section className="relative w-full h-[45vh] min-h-[420px] rounded-2xl overflow-hidden bg-[#1c1c1e] shadow-2xl flex items-center justify-start">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeVideo.id}
+            initial={{ opacity: 0, scale: 1.02 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8 }}
+            className="absolute inset-0 z-0"
+          >
+            <img src={activeVideo.backdropUrl || activeVideo.posterUrl} alt={activeVideo.title} className="w-full h-full object-cover object-center" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0a0303] via-[#0a0303]/70 to-transparent w-full" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0303] via-transparent to-transparent w-full" />
+          </motion.div>
+        </AnimatePresence>
 
-      <div className="relative z-10 px-8 md:px-12 lg:px-16 max-w-2xl flex flex-col items-start pt-10">
-        <motion.div
-           key={`text-${activeVideo.id}`}
-           initial={{ opacity: 0, y: 20 }}
-           animate={{ opacity: 1, y: 0 }}
-           transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <h1 className="text-2xl lg:text-4xl font-black text-white leading-[1.1] mb-4 drop-shadow-2xl">
-            {activeVideo.title}
-          </h1>
-          
-          <div className="flex items-center gap-3 text-xs font-semibold mb-4">
-            <span className="text-white/80">{activeVideo.year}</span>
-            <span className="border border-white/30 px-2 py-0.5 rounded text-xs">{activeVideo.rating || "TV-MA"}</span>
-            <span className="text-white/80">{activeVideo.duration}</span>
-            <span className="text-[#1ed760] font-bold">{activeVideo.match}% Match</span>
-          </div>
-
-          <p className="text-sm text-white/80 leading-relaxed mb-6 line-clamp-3 drop-shadow-md max-w-2xl">
-            {activeVideo.description || "No description available."}
-          </p>
-          
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={() => onPlay(activeVideo)}
-              className="flex items-center gap-2 bg-[#E53945] hover:bg-[#d12e39] text-white px-5 py-2.5 rounded-full font-bold text-sm transition-transform hover:scale-105 shadow-xl"
-            >
-              <Play size={18} fill="currentColor" /> Play
-            </button>
-            <button 
-              onClick={() => onMore(activeVideo)}
-              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white px-8 py-3.5 rounded-full font-bold text-lg transition-transform hover:scale-105 border border-white/10"
-            >
-              <Info size={18} /> More Info
-            </button>
-          </div>
-        </motion.div>
-      </div>
-    </section>
-  );
-}
-
-/* ============ MOBILE APP REEL HERO ============ */
-function AppReelHero({ videos, activeIndex, setActiveIndex, onPlay, onMore }: { videos: Video[], activeIndex: number, setActiveIndex: (i: number) => void, onPlay: (v: Video) => void, onMore: (v: Video) => void }) {
-  const dragX = useMotionValue(0);
-  const currentIndex = useMotionValue(activeIndex);
-  const pointerStartX = useRef(0);
-
-  useEffect(() => {
-    animate(currentIndex, activeIndex, { type: "spring", stiffness: 300, damping: 30 });
-  }, [activeIndex, currentIndex]);
-
-  const handlePointerDown = (e: React.PointerEvent, index: number) => {
-    if (index !== activeIndex) return;
-    if ((e.target as HTMLElement).closest("button")) return;
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    pointerStartX.current = e.clientX;
-    dragX.set(0);
-  };
-
-  const handlePointerMove = (e: React.PointerEvent, index: number) => {
-    if (index !== activeIndex) return;
-    if (!(e.currentTarget as HTMLElement).hasPointerCapture(e.pointerId)) return;
-    dragX.set(e.clientX - pointerStartX.current);
-  };
-
-  const handlePointerUp = (e: React.PointerEvent, index: number) => {
-    if (index !== activeIndex) return;
-    if (!(e.currentTarget as HTMLElement).hasPointerCapture(e.pointerId)) return;
-    (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
-    const swipe = dragX.get();
-    if (swipe < -40) setActiveIndex((activeIndex + 1) % videos.length);
-    else if (swipe > 40) setActiveIndex((activeIndex - 1 + videos.length) % videos.length);
-    animate(dragX, 0, { type: "spring", stiffness: 300, damping: 30 });
-  };
-
-  return (
-    <div className="relative w-full pt-[60px] h-[48vh] min-h-[360px] flex items-center justify-center mb-0 overflow-hidden bg-[#0a0303]" style={{ perspective: "1200px" }}>
-      <div className="relative z-10 w-full h-full flex items-center justify-center">
-        {videos.map((video, i) => (
-          <AppReelCard
-            key={video.id}
-            video={video}
-            i={i}
-            activeIndex={activeIndex}
-            currentIndex={currentIndex}
-            dragX={dragX}
-            onPlay={onPlay}
-            onMore={onMore}
-            isActive={i === activeIndex}
-            onPointerDown={(e: React.PointerEvent) => handlePointerDown(e, i)}
-            onPointerMove={(e: React.PointerEvent) => handlePointerMove(e, i)}
-            onPointerUp={(e: React.PointerEvent) => handlePointerUp(e, i)}
-          />
-        ))}
-      </div>
+        <div className="relative z-10 px-8 md:px-12 lg:px-16 max-w-2xl flex flex-col items-start">
+          <motion.div
+            key={`text-${activeVideo.id}`}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <h1 className="text-3xl md:text-5xl font-black text-white leading-[1.1] mb-4 drop-shadow-2xl">
+              {activeVideo.title}
+            </h1>
+            <div className="flex items-center gap-3 text-xs md:text-sm font-semibold mb-4">
+              <span className="text-white/80">{activeVideo.year}</span>
+              <span className="border border-white/30 px-2 py-0.5 rounded">{activeVideo.rating || "TV-MA"}</span>
+              <span className="text-white/80">{activeVideo.duration}</span>
+              <span className="text-[#1ed760] font-bold">{activeVideo.match}% Match</span>
+            </div>
+            <p className="text-sm md:text-base text-white/80 leading-relaxed mb-6 line-clamp-3 drop-shadow-md max-w-xl">
+              {activeVideo.description || "No description available."}
+            </p>
+            <div className="flex items-center gap-3 md:gap-4">
+              <button onClick={() => onPlay(activeVideo)} className="flex items-center gap-2 bg-[#E53945] hover:bg-[#d12e39] text-white px-6 py-3 rounded-xl font-bold text-sm md:text-base transition-transform hover:scale-105 shadow-xl">
+                <Play size={20} fill="currentColor" /> Play
+              </button>
+              <button onClick={() => onMore(activeVideo)} className="flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white px-6 py-3 rounded-xl font-bold text-sm md:text-base transition-transform hover:scale-105 border border-white/10">
+                <Info size={20} /> More Info
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      </section>
     </div>
   );
 }
 
-function AppReelCard({ video, i, activeIndex, currentIndex, dragX, onPlay, onMore, isActive, onPointerDown, onPointerMove, onPointerUp }: any) {
-  const offset = useTransform([currentIndex, dragX], ([c, d]: any[]) => {
-    return i - c + (d / 300);
-  });
-
-  const x = useTransform(offset, (o) => `${o * 45}%`); 
-  const scale = useTransform(offset, (o) => Math.max(0.8, 1 - Math.abs(o) * 0.15)); 
-  const rotateY = useTransform(offset, (o) => Math.max(-45, Math.min(45, o * -40)));
-  const opacity = useTransform(offset, (o) => Math.abs(o) > 1.5 ? 0 : 1 - Math.abs(o) * 0.15); 
-  const zIndex = useTransform(offset, (o) => Math.round(100 - Math.abs(o) * 10)); 
+/* ============ MOBILE HORIZONTAL CARD ============ */
+function AppReelHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[], activeIndex: number, onPlay: (v: Video) => void, onMore: (v: Video) => void }) {
+  if (!videos || videos.length === 0) return null;
+  const activeVideo = videos[activeIndex];
 
   return (
-    <motion.div
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
-      onClick={() => { if (isActive) onMore(video); }}
-      style={{ x, scale, rotateY, opacity, zIndex, touchAction: "pan-y", transformStyle: "preserve-3d" }}
-      className="absolute w-[48vw] max-w-[195px] aspect-[2/3] rounded-[16px] cursor-pointer shadow-2xl select-none overflow-hidden"
-    >
-      <div className="relative w-full h-full overflow-hidden pointer-events-none">
-        <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover" draggable={false} />
-        
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent opacity-90" />
+    <div className="w-full px-4 pb-6 mt-2">
+      <section className="relative w-full aspect-video min-h-[220px] rounded-2xl overflow-hidden bg-[#1c1c1e] shadow-2xl flex items-end justify-start">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeVideo.id}
+            initial={{ opacity: 0, scale: 1.02 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8 }}
+            className="absolute inset-0 z-0"
+          >
+            <img src={activeVideo.backdropUrl || activeVideo.posterUrl} alt={activeVideo.title} className="w-full h-full object-cover object-center" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0303] via-[#0a0303]/60 to-transparent w-full" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0a0303]/80 via-transparent to-transparent w-full" />
+          </motion.div>
+        </AnimatePresence>
 
-        <div className="absolute bottom-0 inset-x-0 p-3 flex flex-col items-center gap-2 pointer-events-auto">
-          <h3 className="text-sm font-black tracking-tight text-white drop-shadow-lg text-center leading-tight line-clamp-2 w-full">
-            {video.title}
-          </h3>
-          
-          
+        <div className="relative z-10 p-5 w-full">
+          <motion.div
+            key={`text-${activeVideo.id}`}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <h1 className="text-xl font-black text-white leading-[1.1] mb-2 drop-shadow-2xl line-clamp-2">
+              {activeVideo.title}
+            </h1>
+            <div className="flex items-center gap-2 text-[10px] font-semibold mb-3">
+              <span className="text-white/80">{activeVideo.year}</span>
+              <span className="border border-white/30 px-1.5 py-0.5 rounded">{activeVideo.rating || "TV-MA"}</span>
+              <span className="text-[#1ed760] font-bold">{activeVideo.match}% Match</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button onClick={() => onPlay(activeVideo)} className="flex items-center justify-center gap-1.5 bg-[#E53945] text-white px-5 py-2 rounded-full font-bold text-xs shadow-lg">
+                <Play size={14} fill="currentColor" /> Play
+              </button>
+              <button onClick={() => onMore(activeVideo)} className="flex items-center justify-center gap-1.5 bg-white/20 backdrop-blur-md text-white px-5 py-2 rounded-full font-bold text-xs border border-white/10">
+                <Info size={14} /> More Info
+              </button>
+            </div>
+          </motion.div>
         </div>
-      </div>
-    </motion.div>
+      </section>
+    </div>
   );
 }
-
 
 function Grid({ items, onSelect, onPlay }: { items: Video[]; onSelect: (v: Video) => void; onPlay: (v: Video) => void }) {
   const [hovered, setHovered] = useState<number | null>(null);
