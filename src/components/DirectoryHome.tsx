@@ -1,8 +1,31 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Play } from "lucide-react";
+
+
+function VideoPreview({ src, className }: { src: string, className?: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const handleTimeUpdate = () => {
+    if (videoRef.current && videoRef.current.currentTime > 7) {
+      videoRef.current.currentTime = 0;
+    }
+  };
+
+  return (
+    <video
+      ref={videoRef}
+      src={src}
+      autoPlay
+      muted
+      playsInline
+      onTimeUpdate={handleTimeUpdate}
+      className={className}
+    />
+  );
+}
 
 export default function DirectoryHome({ videos, creators }: { videos: any[], creators: any[] }) {
   const [shopProducts, setShopProducts] = useState<any[]>([]);
@@ -70,12 +93,8 @@ export default function DirectoryHome({ videos, creators }: { videos: any[], cre
           {videos.filter((v: any) => v.type?.toLowerCase() === "short").slice(0, 10).map((v: any) => (
             <Link key={v.id} href="/feed" className="relative w-[120px] md:w-[150px] aspect-[9/16] shrink-0 rounded-xl overflow-hidden group">
               {(v.videoUrl || v.bitchuteUrl) ? (
-                  <video 
+                  <VideoPreview 
                     src={v.videoUrl || v.bitchuteUrl} 
-                    autoPlay 
-                    muted 
-                    loop 
-                    playsInline 
                     className="w-full h-full object-cover" 
                   />
                 ) : (
