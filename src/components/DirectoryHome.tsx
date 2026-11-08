@@ -7,10 +7,30 @@ import { Play } from "lucide-react";
 
 function VideoPreview({ src, className }: { src: string, className?: string }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const startTimeRef = useRef<number>(0);
+
+  const handleLoadedMetadata = () => {
+    if (videoRef.current) {
+      const duration = videoRef.current.duration || 0;
+      // Skip the dark intro: start at 10% in, or 30 seconds max.
+      // If the video is super short (<15s), just start at 0.
+      let seekTime = Math.min(30, duration * 0.1);
+      if (duration < 15) seekTime = 0;
+      
+      startTimeRef.current = seekTime;
+      videoRef.current.currentTime = seekTime;
+    }
+  };
 
   const handleTimeUpdate = () => {
-    if (videoRef.current && videoRef.current.currentTime > 7) {
-      videoRef.current.currentTime = 0;
+    if (videoRef.current) {
+      const current = videoRef.current.currentTime;
+      const start = startTimeRef.current;
+      
+      // Loop after 7 seconds of playback from the start point
+      if (current > start + 7) {
+        videoRef.current.currentTime = start;
+      }
     }
   };
 
@@ -21,6 +41,7 @@ function VideoPreview({ src, className }: { src: string, className?: string }) {
       autoPlay
       muted
       playsInline
+      onLoadedMetadata={handleLoadedMetadata}
       onTimeUpdate={handleTimeUpdate}
       className={className}
     />
