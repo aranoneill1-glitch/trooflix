@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
-const KV_URL = process.env.UPSTASH_REDIS_REST_URL!;
-const KV_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN!;
+const KV_URL = (process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL)!;
+const KV_TOKEN = (process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN)!;
 const KEY = "trooflix:videos";
 
 export async function POST(req: Request) {
