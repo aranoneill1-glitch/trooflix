@@ -44,8 +44,12 @@ function UploadContent() {
       try {
         const r = await fetch("/api/profile?user_id=" + u.id);
         const d = await r.json();
-        const tier = d.profile?.tier || "free";
-        setUserTier(tier === "creator" || tier === "plus" ? tier : "free");
+        const rawTier = String(d.profile?.tier || "free").toLowerCase();
+        const normalized: "free" | "plus" | "creator" =
+          (rawTier === "creator" || rawTier === "podcaster" || rawTier === "pro") ? "creator" :
+          (rawTier === "plus" || rawTier === "pass" || rawTier === "troopass") ? "plus" :
+          "free";
+        setUserTier(normalized);
       } catch { setUserTier("free"); }
       setCheckingTier(false);
     });

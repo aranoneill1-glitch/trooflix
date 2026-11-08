@@ -29,6 +29,9 @@ export async function POST(req: Request) {
       .maybeSingle();
 
     let userTier = profile?.tier || "free";
+    const _rawTier = String(userTier).toLowerCase();
+    if (_rawTier === "podcaster" || _rawTier === "pro") userTier = "creator";
+    else if (_rawTier === "pass" || _rawTier === "troopass") userTier = "plus";
     if (userTier === "podcaster" || userTier === "pro") userTier = "creator";
     if ((userTier === "plus" || userTier === "creator") && profile?.plus_expires_at) {
       if (new Date(profile.plus_expires_at) < new Date()) userTier = "free";
