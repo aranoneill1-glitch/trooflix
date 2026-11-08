@@ -588,10 +588,11 @@ function HeroVideoCard({ video, onMore, isMobile }: { video: Video, onMore: (v: 
     const onMeta = () => {
       const dur = v.duration || 0;
       setDuration(dur);
-      // Seek to 5 min or middle
       try {
+        // Seek to 5 min or middle
         const seekTime = Math.min(300, dur / 2);
         if (seekTime > 0) v.currentTime = seekTime;
+        v.play().catch(() => {});
       } catch {}
     };
     v.addEventListener("loadedmetadata", onMeta);
@@ -619,29 +620,31 @@ function HeroVideoCard({ video, onMore, isMobile }: { video: Video, onMore: (v: 
         onClick={() => onMore(video)}
         className={`relative w-full ${isMobile ? "aspect-video min-h-[220px]" : "h-[45vh] min-h-[420px]"} rounded-2xl overflow-hidden bg-[#1c1c1e] shadow-2xl cursor-pointer group`}
       >
-        <video
-          ref={videoRef}
-          src={video.videoUrl || video.bitchuteUrl || ""}
-          autoPlay
-          muted={muted}
-          loop
-          playsInline
-          poster={video.backdropUrl || video.posterUrl}
-          className="absolute inset-0 w-full h-full object-cover"
-        />
+        {(video.videoUrl || video.bitchuteUrl) ? (
+          <video
+            ref={videoRef}
+            src={video.videoUrl || video.bitchuteUrl || ""}
+            autoPlay
+            muted={muted}
+            loop
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        ) : (
+          <img 
+            src={video.backdropUrl || video.posterUrl} 
+            alt={video.title} 
+            className="absolute inset-0 w-full h-full object-cover" 
+          />
+        )}
         
-        {/* Overlay for better control visibility */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-        {/* Minimal Controls */}
         <div className="absolute bottom-0 left-0 right-0 p-4 flex items-center justify-between z-20">
-          
-          {/* Full Episode Time */}
           <span className="text-white text-xs font-semibold tabular-nums drop-shadow-md">
             {formatTime(duration)}
           </span>
 
-          {/* Mute Button */}
           <button onClick={toggleMute} className="p-1.5 text-white/90 hover:text-white drop-shadow-md">
             {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
           </button>
