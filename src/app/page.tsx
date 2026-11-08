@@ -641,9 +641,11 @@ export default function Home() {
 function HeroVideoCard({ video, onMore, isMobile }: { video: Video, onMore: (v: Video) => void, isMobile: boolean }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = useState(true);
+  const [isReady, setIsReady] = useState(false);
   const [duration, setDuration] = useState(0);
 
   useEffect(() => {
+    setIsReady(false);
     const v = videoRef.current;
     if (!v) return;
     const onMeta = () => {
@@ -680,6 +682,13 @@ function HeroVideoCard({ video, onMore, isMobile }: { video: Video, onMore: (v: 
         onClick={() => onMore(video)}
         className={`relative w-full ${isMobile ? "aspect-video min-h-[220px]" : "h-[45vh] min-h-[420px]"} rounded-2xl overflow-hidden bg-[#1c1c1e] shadow-2xl cursor-pointer group`}
       >
+        {/* High-quality image shown instantly while the video loads */}
+        <img 
+          src={video.backdropUrl || video.posterUrl} 
+          alt={video.title} 
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${isReady ? "opacity-0" : "opacity-100"}`} 
+        />
+        
         <video
           ref={videoRef}
           src={video.videoUrl || video.bitchuteUrl || ""}
@@ -687,7 +696,9 @@ function HeroVideoCard({ video, onMore, isMobile }: { video: Video, onMore: (v: 
           muted={muted}
           loop
           playsInline
-          className="absolute inset-0 w-full h-full object-cover"
+          poster={video.backdropUrl || video.posterUrl}
+          onSeeked={() => setIsReady(true)}
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${isReady ? "opacity-100" : "opacity-0"}`}
         />
         
         {/* Overlay for better control visibility */}
