@@ -13,8 +13,8 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   icons: {
-    icon: "/icon.jpg",
-    apple: "/icon.jpg",
+    icon: "/icon.png",
+    apple: "/icon.png",
   },
   title: "Trooflix",
   description: "Documentaries, films, and podcasts. Uncensored.",
@@ -40,8 +40,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="icon" href="/favicon.png" />
-        <link rel="apple-touch-icon" href="/favicon.png" />
+        <link rel="icon" href="/icon.png" />
+        <link rel="apple-touch-icon" href="/icon.png" />
         
         <script
           dangerouslySetInnerHTML={{
