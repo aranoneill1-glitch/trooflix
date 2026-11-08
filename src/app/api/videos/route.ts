@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 
 export const dynamic = 'force-dynamic';
 
-const KV_URL = "https://neat-monster-216395.upstash.io";
-const KV_TOKEN = "gQAAAAAAA01LAAIgcDE3ZTRiZTkyZGNmNjI0M2ZmODg0ZDRmMTNmMDhkYzhhMQ";
+const KV_URL = process.env.UPSTASH_REDIS_REST_URL!;
+const KV_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN!;
 
 export async function GET() {
   try {

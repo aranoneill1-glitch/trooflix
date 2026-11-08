@@ -483,15 +483,27 @@ export default function Home() {
               </div>
 
               {/* DESKTOP SECTION: Hero + Avatars */}
-              <div className="hidden lg:block w-full">
-                {/* Hero */}
+              <div className="hidden lg:block w-full max-w-[1600px] mx-auto px-4 md:px-12 pt-24 md:pt-28">
+                <div className="flex items-center gap-8">
+                  <div className="w-1/2 relative">
                 {heroPool.length > 0 && (
                   <DesktopHero 
                     videos={heroPool}
                     activeIndex={heroIndex}
                     onMore={(v) => setSelected(v)}
+                    inColumn
                   />
                 )}
+                  </div>
+                  <div className="w-1/2 flex flex-col justify-center">
+                    <h1 className="text-[52px] xl:text-[68px] 2xl:text-[80px] font-black tracking-tighter text-white leading-[1.02] mb-6">Stop letting Big Tech <span className="text-[#E53945]">eat your lunch.</span></h1>
+                    <p className="text-base xl:text-lg text-white/50 mb-10 leading-relaxed font-medium">We didn&apos;t build Trooflix to be another YouTube clone. We built it to be the ultimate weapon for independent creators and free thinkers.</p>
+                    <div className="flex flex-wrap gap-3">
+                      <a href="/features" className="flex items-center justify-center gap-2 bg-white text-black font-bold text-base px-8 py-4 rounded-full hover:bg-gray-200 transition">Why Trooflix &rarr;</a>
+                      <a href="/signup" className="flex items-center justify-center gap-2 bg-[#1c1c1e] border border-white/10 text-white font-bold text-base px-8 py-4 rounded-full hover:bg-[#2c2c2e] transition">Join Today</a>
+                    </div>
+                  </div>
+                </div>
                 
                 {/* Header */}
                 
@@ -577,7 +589,7 @@ export default function Home() {
   );
 }
 
-function HeroVideoCard({ video, onMore, isMobile }: { video: Video, onMore: (v: Video) => void, isMobile: boolean }) {
+function HeroVideoCard({ video, onMore, isMobile, inColumn }: { video: Video, onMore: (v: Video) => void, isMobile: boolean, inColumn?: boolean }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = useState(true);
   const [duration, setDuration] = useState(0);
@@ -615,10 +627,10 @@ function HeroVideoCard({ video, onMore, isMobile }: { video: Video, onMore: (v: 
   };
 
   return (
-    <div className={`w-full mx-auto ${isMobile ? "px-4 pb-6 mt-2" : "max-w-[1600px] px-4 md:px-12 mt-4 mb-8"}`}>
+    <div className={`w-full mx-auto ${inColumn ? "" : isMobile ? "px-4 pb-6 mt-2" : "max-w-[1600px] px-4 md:px-12 mt-4 mb-8"}`}>
       <section 
         onClick={() => onMore(video)}
-        className={`relative w-full ${isMobile ? "aspect-video min-h-[220px]" : "h-[45vh] min-h-[420px]"} rounded-2xl overflow-hidden bg-[#1c1c1e] shadow-2xl cursor-pointer group`}
+        className={`relative w-full ${inColumn ? "aspect-video min-h-[420px]" : isMobile ? "aspect-video min-h-[220px]" : "h-[45vh] min-h-[420px]"} rounded-2xl overflow-hidden bg-[#1c1c1e] shadow-2xl cursor-pointer group`}
       >
         {/* Always show the image fallback behind the video */}
         <img 
@@ -656,7 +668,7 @@ function HeroVideoCard({ video, onMore, isMobile }: { video: Video, onMore: (v: 
   );
 }
 
-function DesktopHero({ videos, activeIndex, onMore }: { videos: Video[], activeIndex: number, onMore: (v: Video) => void }) {
+function DesktopHero({ videos, activeIndex, onMore, inColumn }: { videos: Video[], activeIndex: number, onMore: (v: Video) => void, inColumn?: boolean }) {
   if (!videos || videos.length === 0) return null;
   const activeVideo = videos[activeIndex];
 
@@ -670,7 +682,7 @@ function DesktopHero({ videos, activeIndex, onMore }: { videos: Video[], activeI
         transition={{ duration: 1 }}
         className="w-full"
       >
-        <HeroVideoCard video={activeVideo} onMore={onMore} isMobile={false} />
+        <HeroVideoCard video={activeVideo} onMore={onMore} isMobile={false} inColumn={inColumn} />
       </motion.div>
     </AnimatePresence>
   );

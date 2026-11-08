@@ -25,13 +25,7 @@ async function getCreatorForUser(userId: string) {
     creator = creators.find((c: any) => String(c.slug).toLowerCase() === String(profile.username).toLowerCase());
   }
   
-  if (!creator && userId === "ed865789-f0d3-4d20-b9ce-daabb9b74825") {
-    creator = creators.find((c: any) => String(c.id) === "261161250058451") || {
-      id: 261161250058451,
-      name: "SSECA",
-      slug: "ssecommodityacadem"
-    };
-  }
+  
 
   return creator;
 }

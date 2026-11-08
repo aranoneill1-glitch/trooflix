@@ -7,8 +7,8 @@ const supabaseAdmin = createClient(
   { auth: { persistSession: false } }
 );
 
-const KV_URL = "https://neat-monster-216395.upstash.io";
-const KV_TOKEN = "gQAAAAAAA01LAAIgcDE3ZTRiZTkyZGNmNjI0M2ZmODg0ZDRmMTNmMDhkYzhhMQ";
+const KV_URL = process.env.UPSTASH_REDIS_REST_URL!;
+const KV_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN!;
 const KEY = "trooflix:videos";
 
 export const dynamic = "force-dynamic";
