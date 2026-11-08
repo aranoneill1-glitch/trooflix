@@ -641,8 +641,6 @@ export default function Home() {
 function HeroVideoCard({ video, onMore, isMobile }: { video: Video, onMore: (v: Video) => void, isMobile: boolean }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = useState(true);
-  const [progress, setProgress] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
 
   useEffect(() => {
@@ -661,27 +659,11 @@ function HeroVideoCard({ video, onMore, isMobile }: { video: Video, onMore: (v: 
     return () => v.removeEventListener("loadedmetadata", onMeta);
   }, [video.id]);
 
-  const handleTimeUpdate = () => {
-    const v = videoRef.current;
-    if (!v || !v.duration) return;
-    setCurrentTime(v.currentTime);
-    setProgress((v.currentTime / v.duration) * 100);
-  };
-
   const toggleMute = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (videoRef.current) {
       videoRef.current.muted = !videoRef.current.muted;
       setMuted(videoRef.current.muted);
-    }
-  };
-
-  const toggleFullscreen = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (videoRef.current) {
-      if (videoRef.current.requestFullscreen) {
-        videoRef.current.requestFullscreen();
-      }
     }
   };
 
@@ -705,34 +687,23 @@ function HeroVideoCard({ video, onMore, isMobile }: { video: Video, onMore: (v: 
           muted={muted}
           loop
           playsInline
-          onTimeUpdate={handleTimeUpdate}
           className="absolute inset-0 w-full h-full object-cover"
         />
         
         {/* Overlay for better control visibility */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-        {/* Custom Controls */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 flex items-center gap-4 z-20">
+        {/* Minimal Controls */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 flex items-center justify-between z-20">
           
-          {/* Timestamp */}
+          {/* Full Episode Time */}
           <span className="text-white text-xs font-semibold tabular-nums drop-shadow-md">
-            {formatTime(currentTime)} / {formatTime(duration)}
+            {formatTime(duration)}
           </span>
-
-          {/* Progress Bar */}
-          <div className="flex-1 h-1 bg-white/30 rounded-full relative overflow-hidden">
-            <div className="absolute top-0 left-0 h-full bg-[#E53945]" style={{ width: `${progress}%` }} />
-          </div>
 
           {/* Mute Button */}
           <button onClick={toggleMute} className="p-1.5 text-white/90 hover:text-white drop-shadow-md">
             {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
-          </button>
-
-          {/* Fullscreen Button */}
-          <button onClick={toggleFullscreen} className="p-1.5 text-white/90 hover:text-white drop-shadow-md">
-            <Maximize size={18} />
           </button>
         </div>
       </section>
