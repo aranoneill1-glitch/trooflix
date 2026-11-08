@@ -37,6 +37,7 @@ import MerchRow from "@/components/MerchRow";
 import SaveButton from "@/components/SaveButton";
 import LikeButton from "@/components/LikeButton";
 import SearchResults from "@/components/SearchResults";
+import DirectoryHome from "@/components/DirectoryHome";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import TextOverlayRenderer from "@/components/TextOverlay";
 import CommentSheet from "@/components/CommentSheet";
@@ -563,7 +564,8 @@ export default function Home() {
 
           {showingFiltered && <div className="h-20 md:h-24" />}
 
-          <div className="relative z-10 pt-0 md:pt-2 pb-32 md:pb-20 space-y-2 md:space-y-6">
+          <DirectoryHome videos={videos} creators={creators} />
+        <div className="hidden relative z-10 pt-0 md:pt-2 pb-32 md:pb-20 space-y-2 md:space-y-6">
             {filtered && <SearchResults search={search} videos={videos} creators={creators} onVideoClick={setSelected} />}
 
             {!filtered && showingFiltered && (
