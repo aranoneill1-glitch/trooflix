@@ -25,6 +25,7 @@ function UploadContent() {
   const [visibility, setVisibility] = useState<"public" | "premium">("public");
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [autoThumbnailPreview, setAutoThumbnailPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [showSharePrompt, setShowSharePrompt] = useState(false);
@@ -177,6 +178,43 @@ function UploadContent() {
     );
   }
 
+  const generateThumbnail = (file: File) => {
+    const video = document.createElement("video");
+    video.src = URL.createObjectURL(file);
+    video.muted = true;
+    video.playsInline = true;
+    video.crossOrigin = "anonymous";
+    video.preload = "metadata";
+
+    video.onloadedmetadata = () => {
+      // Seek to 90 seconds, or halfway if the video is shorter
+      const dur = video.duration || 0;
+      const seekTime = Math.min(90, dur / 2) || 1;
+      try { video.currentTime = seekTime; } catch {}
+    };
+
+    video.onseeked = () => {
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth || 1280;
+        canvas.height = video.videoHeight || 720;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const generatedFile = new File([blob], "auto-poster.jpg", { type: "image/jpeg" });
+            setThumbnailFile(generatedFile);
+            setAutoThumbnailPreview(URL.createObjectURL(blob));
+          }
+          URL.revokeObjectURL(video.src);
+        }, "image/jpeg", 0.85);
+      } catch (e) {
+        console.error("Auto-thumbnail generation failed:", e);
+      }
+    };
+  };
+
   return (
     <main className="min-h-screen bg-[#0a0303] text-white pb-32 font-sans">
       <TopBar />
@@ -191,9 +229,27 @@ function UploadContent() {
         </div>
         <div className="space-y-6">
           <div className="space-y-4">
-            {step === 1 && !isTweet && (<div><label className="block text-xs font-bold text-white/60 mb-1">Video File *</label><div onClick={() => document.getElementById("media-upload")?.click()} className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] transition min-h-[200px]"><UploadCloud size={32} className="text-white/50 mb-3" /><span className="text-sm font-bold text-white text-center">{mediaFile ? mediaFile.name : "Tap to select video"}</span></div><input id="media-upload" type="file" accept="video/*" onChange={(e) => setMediaFile(e.target.files?.[0] || null)} className="hidden" /></div>)}
+            {step === 1 && !isTweet && (<div><label className="block text-xs font-bold text-white/60 mb-1">Video File *</label><div onClick={() => document.getElementById("media-upload")?.click()} className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] transition min-h-[200px]"><UploadCloud size={32} className="text-white/50 mb-3" /><span className="text-sm font-bold text-white text-center">{mediaFile ? mediaFile.name : "Tap to select video"}</span></div><input id="media-upload" type="file" accept="video/*" onChange={(e) => { const f = e.target.files?.[0] || null; setMediaFile(f); if (f) generateThumbnail(f); }} className="hidden" /></div>)}
             
-            {step === 2 && !isShort && !isTweet && (<div><label className="block text-xs font-bold text-white/60 mb-1">Thumbnail *</label><div onClick={() => document.getElementById("thumb-upload")?.click()} className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] transition min-h-[200px]"><ImageIcon size={32} className="text-white/50 mb-3" /><span className="text-sm font-bold text-white text-center">{thumbnailFile ? thumbnailFile.name : "Tap to select thumbnail"}</span></div><input id="thumb-upload" type="file" accept="image/*" onChange={(e) => setThumbnailFile(e.target.files?.[0] || null)} className="hidden" /></div>)}
+            {step === 2 && !isShort && !isTweet && (
+              <div>
+                <label className="block text-xs font-bold text-white/60 mb-1 flex items-center gap-2">
+                  Thumbnail {autoThumbnailPreview && <span className="bg-green-500/20 text-green-400 text-[9px] px-1.5 py-0.5 rounded">AUTO</span>}
+                </label>
+                {autoThumbnailPreview ? (
+                  <div className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-4 flex flex-col items-center justify-center">
+                    <img src={autoThumbnailPreview} alt="Auto thumbnail" className="w-full max-w-[280px] aspect-video object-cover rounded-lg shadow-md mb-3" />
+                    <button type="button" onClick={() => document.getElementById("thumb-upload")?.click()} className="text-xs text-[#E53945] hover:underline font-semibold">Upload Custom Instead</button>
+                  </div>
+                ) : (
+                  <div onClick={() => document.getElementById("thumb-upload")?.click()} className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] transition min-h-[200px]">
+                    <ImageIcon size={32} className="text-white/50 mb-3" />
+                    <span className="text-sm font-bold text-white text-center">{thumbnailFile ? thumbnailFile.name : "Tap to select thumbnail"}</span>
+                  </div>
+                )}
+                <input id="thumb-upload" type="file" accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) { setThumbnailFile(f); setAutoThumbnailPreview(null); } }} className="hidden" />
+              </div>
+            )}
 
             {((isShort && step === 2) || (!isShort && !isTweet && step === 3)) && (<div><label className="block text-xs font-bold text-white/60 mb-1">Title *</label><input required type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#E53945]" placeholder="Name your video..." /></div>)}
 
