@@ -21,7 +21,7 @@ export default function FeaturesPage() {
             The Unfair <span className="text-[#E53945]">Advantage.</span>
           </h1>
           <p className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto leading-relaxed">
-            We didn't build Trooflix to be another YouTube clone. We built it to be the ultimate weapon for independent creators and free thinkers.
+            Traditional platforms take massive cuts and hide your content behind algorithms. Trooflix was built for creators who are tired of sharing their revenue with billionaires and being censored in the process. And for viewers who want an ad-free home for their favorite content.
           </p>
         </div>
 

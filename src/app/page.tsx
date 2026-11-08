@@ -341,7 +341,7 @@ export default function Home() {
                     Stop letting Big Tech <span className="text-[#E53945]">eat your lunch.</span>
                   </h1>
                   <p className="text-[15px] md:text-xl text-white/50 max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
-                    Traditional platforms take massive cuts and hide your content behind algorithms. Trooflix was built for creators who are tired of sharing their revenue with billionaires and being censored in the process. And for viewers who want an ad-free home for their favorite content.
+                    We didn't build Trooflix to be another YouTube clone. We built it to be the ultimate weapon for independent creators and free thinkers.
                   </p>
                   <div className="flex flex-col w-full max-w-sm gap-3">
                     <a 
