@@ -38,26 +38,27 @@ export default function FixPostersPage() {
     return new Promise<void>((resolve, reject) => {
       let isFinished = false;
       
-      // Hit Cloudflare directly (No Vercel proxy)
+      const proxyUrl = "/api/proxy-video?url=" + encodeURIComponent(video.videoUrl || video.bitchuteUrl);
+      
       const vid = document.createElement("video");
-      vid.src = video.videoUrl || video.bitchuteUrl;
+      vid.src = proxyUrl;
       vid.crossOrigin = "anonymous"; 
       vid.muted = true;
       vid.playsInline = true;
-      vid.preload = "metadata";
+      vid.preload = "auto"; // Force the browser to fetch metadata
 
+      // 120 second timeout for large files
       const timeout = setTimeout(() => {
-        if (!isFinished) { isFinished = true; reject(new Error("Timeout (15s) - Could not load video metadata.")); }
-      }, 15000);
+        if (!isFinished) { isFinished = true; reject(new Error("Timeout (120s) - Video file is too large to process.")); }
+      }, 120000);
 
       vid.onloadedmetadata = () => {
-        // Seek to 90 seconds
+        clearTimeout(timeout);
         const seekTime = Math.min(90, vid.duration / 2) || 1;
         try { vid.currentTime = seekTime; } catch {}
       };
 
       vid.onseeked = async () => {
-        clearTimeout(timeout);
         try {
           const canvas = document.createElement("canvas");
           canvas.width = vid.videoWidth || 1280;
@@ -69,7 +70,7 @@ export default function FixPostersPage() {
 
           canvas.toBlob(async (blob) => {
             if (!blob) {
-              if (!isFinished) { isFinished = true; reject(new Error("Canvas toBlob failed. Cloudflare CORS might be blocking the read.")); }
+              if (!isFinished) { isFinished = true; reject(new Error("Canvas toBlob failed.")); }
               return;
             }
 
@@ -109,7 +110,7 @@ export default function FixPostersPage() {
 
       vid.onerror = () => {
         clearTimeout(timeout);
-        if (!isFinished) { isFinished = true; reject(new Error("Video failed to load. Check Cloudflare CORS.")); }
+        if (!isFinished) { isFinished = true; reject(new Error("Video failed to load via proxy.")); }
       };
     });
   };

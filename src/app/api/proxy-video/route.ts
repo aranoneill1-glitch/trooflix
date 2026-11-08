@@ -5,16 +5,25 @@ export async function GET(req: Request) {
   const url = searchParams.get("url");
   if (!url) return NextResponse.json({ error: "Missing url" }, { status: 400 });
 
+  const range = req.headers.get("range");
+
   try {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("Failed to fetch video from R2");
+    const res = await fetch(url, {
+      headers: range ? { Range: range } : {},
+    });
+
+    // Forward all important headers back to the browser
+    const headers = new Headers();
+    res.headers.forEach((value, key) => {
+      headers.set(key, value);
+    });
     
-    // Stream the video back to the browser
+    headers.set("Access-Control-Allow-Origin", "*");
+    headers.set("Access-Control-Allow-Headers", "Range");
+
     return new NextResponse(res.body, {
-      headers: {
-        "Content-Type": res.headers.get("Content-Type") || "video/mp4",
-        "Access-Control-Allow-Origin": "*",
-      },
+      status: res.status,
+      headers: headers,
     });
   } catch (e) {
     return NextResponse.json({ error: String(e) }, { status: 500 });
