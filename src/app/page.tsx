@@ -193,11 +193,19 @@ export default function Home() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const heroPool = videos.filter((v) => {
+  let heroPool = videos.filter((v) => {
+  const t = v.type?.toLowerCase();
+  return t !== "short" && t !== "tweet" && v.visibility !== "premium" && v.feed_visible !== false;
+});
+if (heroPool.length === 0 && videos.length > 0) {
+  heroPool = videos.filter((v) => {
     const t = v.type?.toLowerCase();
-    // Only include public, feed-visible long-form videos (exclude shorts, tweets, and premium)
-    return t !== "short" && t !== "tweet" && v.visibility !== "premium" && v.feed_visible !== false;
+    return t !== "short" && t !== "tweet";
   });
+}
+if (heroPool.length === 0 && videos.length > 0) {
+  heroPool = videos;
+}
   const [heroIndex, setHeroIndex] = useState(0);
 
   const isDocOrPodcast = (v: Video) => !v.uploaderUserId && (v.type === "Documentary" || v.type === "Podcast");
@@ -485,15 +493,20 @@ export default function Home() {
               {/* DESKTOP SECTION: Hero + Avatars */}
               <div className="hidden lg:block w-full max-w-[1600px] mx-auto px-4 md:px-12 pt-24 md:pt-28">
                 <div className="flex items-center gap-8">
-                  <div className="w-1/2 relative">
-                {heroPool.length > 0 && (
-                  <DesktopHero 
-                    videos={heroPool}
-                    activeIndex={heroIndex}
-                    onMore={(v) => setSelected(v)}
-                    inColumn
-                  />
-                )}
+                                    <div className="w-1/2 relative">
+                    {heroPool.length > 0 ? (
+                      <DesktopHero
+                        videos={heroPool}
+                        activeIndex={heroIndex}
+                        onMore={(v) => setSelected(v)}
+                        inColumn
+                      />
+                    ) : (
+                      <div className="w-full aspect-video min-h-[420px] bg-[#1c1c1e] rounded-2xl flex flex-col items-center justify-center text-white/50 border border-white/10">
+                        <Play size={48} className="mb-4 opacity-20" />
+                        <p>No videos found.</p>
+                      </div>
+                    )}
                   </div>
                   <div className="w-1/2 flex flex-col justify-center">
                     <h1 className="text-[52px] xl:text-[68px] 2xl:text-[80px] font-black tracking-tighter text-white leading-[1.02] mb-6">Stop letting Big Tech <span className="text-[#E53945]">eat your lunch.</span></h1>

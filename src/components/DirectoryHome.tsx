@@ -111,7 +111,7 @@ export default function DirectoryHome({ videos, creators }: { videos: any[], cre
           <Link href="/feed" className="text-xs font-bold text-white/50 hover:text-white transition">View All</Link>
         </div>
         <div className="flex overflow-x-auto gap-3 pb-4 scrollbar-hide">
-          {videos.filter((v: any) => v.type?.toLowerCase() === "short").slice(0, 10).map((v: any) => (
+          {videos.filter((v: any) => v.type?.toLowerCase() === "short" || v.type?.toLowerCase() === "reel").slice(0, 10).map((v: any) => (
             <Link key={v.id} href="/feed" className="relative w-[120px] md:w-[150px] aspect-[9/16] shrink-0 rounded-xl overflow-hidden group">
               {(v.videoUrl || v.bitchuteUrl) ? (
                   <VideoPreview 
@@ -140,10 +140,10 @@ export default function DirectoryHome({ videos, creators }: { videos: any[], cre
         </div>
         <div className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide">
           {videos.filter((v: any) => {
-            const t = v.type?.toLowerCase();
-            const hasVideo = !!(v.videoUrl || v.bitchuteUrl);
-            return hasVideo && t !== "short" && t !== "tweet" && v.visibility !== "premium" && v.feed_visible !== false;
-          }).slice(0, 8).map((v: any) => (
+  const t = v.type?.toLowerCase();
+  const hasVideo = !!(v.videoUrl || v.bitchuteUrl);
+  return hasVideo && t !== "short" && t !== "tweet" && t !== "reel";
+}).slice(0, 8).map((v: any) => (
             <Link key={v.id} href="/latest" className="flex flex-col w-64 md:w-72 shrink-0 group">
               <div className="relative aspect-video rounded-xl bg-black overflow-hidden mb-2 border border-white/5 bg-[#1c1c1e]">
                 <VideoPreview 
