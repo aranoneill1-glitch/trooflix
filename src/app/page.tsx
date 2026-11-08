@@ -657,7 +657,30 @@ function DesktopHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[],
             transition={{ duration: 0.8 }}
             className="absolute inset-0 z-0"
           >
-            <img src={activeVideo.backdropUrl || activeVideo.posterUrl} alt={activeVideo.title} className="w-full h-full object-cover object-center" />
+            
+            {/* Fallback Backdrop Image */}
+            <img src={activeVideo.backdropUrl || activeVideo.posterUrl} alt={activeVideo.title} className="absolute inset-0 w-full h-full object-cover object-center" />
+            
+            {/* Live Video Preview */}
+            {(activeVideo.videoUrl || activeVideo.bitchuteUrl) && (
+              <video
+                src={activeVideo.videoUrl || activeVideo.bitchuteUrl}
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="absolute inset-0 w-full h-full object-cover object-center opacity-80"
+                onLoadedMetadata={(e) => {
+                  const video = e.currentTarget;
+                  try {
+                    // Seek to 5 minutes (300s) in, or halfway if the video is shorter
+                    const seekTime = Math.min(300, video.duration ? video.duration / 2 : 0);
+                    if (seekTime > 0) video.currentTime = seekTime;
+                  } catch (err) {}
+                }}
+              />
+            )}
+
             <div className="absolute inset-0 bg-gradient-to-r from-[#0a0303] via-[#0a0303]/70 to-transparent w-full" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#0a0303] via-transparent to-transparent w-full" />
           </motion.div>
@@ -714,7 +737,30 @@ function AppReelHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[],
             transition={{ duration: 0.8 }}
             className="absolute inset-0 z-0"
           >
-            <img src={activeVideo.backdropUrl || activeVideo.posterUrl} alt={activeVideo.title} className="w-full h-full object-cover object-center" />
+            
+            {/* Fallback Backdrop Image */}
+            <img src={activeVideo.backdropUrl || activeVideo.posterUrl} alt={activeVideo.title} className="absolute inset-0 w-full h-full object-cover object-center" />
+            
+            {/* Live Video Preview */}
+            {(activeVideo.videoUrl || activeVideo.bitchuteUrl) && (
+              <video
+                src={activeVideo.videoUrl || activeVideo.bitchuteUrl}
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="absolute inset-0 w-full h-full object-cover object-center opacity-80"
+                onLoadedMetadata={(e) => {
+                  const video = e.currentTarget;
+                  try {
+                    // Seek to 5 minutes (300s) in, or halfway if the video is shorter
+                    const seekTime = Math.min(300, video.duration ? video.duration / 2 : 0);
+                    if (seekTime > 0) video.currentTime = seekTime;
+                  } catch (err) {}
+                }}
+              />
+            )}
+
             <div className="absolute inset-0 bg-gradient-to-t from-[#0a0303] via-[#0a0303]/60 to-transparent w-full" />
             <div className="absolute inset-0 bg-gradient-to-r from-[#0a0303]/80 via-transparent to-transparent w-full" />
           </motion.div>
