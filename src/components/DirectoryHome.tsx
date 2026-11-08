@@ -35,7 +35,11 @@ function VideoPreview({ src, poster, className }: { src: string, poster?: string
 
   return (
     <>
-      <img src={poster} className="absolute inset-0 w-full h-full object-cover" />
+      {poster ? (
+        <img src={poster} alt="" className="absolute inset-0 w-full h-full object-cover" />
+      ) : (
+        <div className="absolute inset-0 bg-white/5" />
+      )}
       <video
         ref={videoRef}
         src={src}
@@ -50,6 +54,20 @@ function VideoPreview({ src, poster, className }: { src: string, poster?: string
       />
     </>
   );
+}
+
+
+function timeAgo(dateString: string) {
+  if (!dateString) return "Recently";
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  
+  if (diffDays === 0) return "Today";
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) return `${diffDays} days ago`;
+  return date.toLocaleDateString();
 }
 
 export default function DirectoryHome({ videos, creators }: { videos: any[], creators: any[] }) {
@@ -133,7 +151,7 @@ export default function DirectoryHome({ videos, creators }: { videos: any[], cre
                   poster={v.posterUrl || v.backdropUrl}
                   className="w-full h-full object-cover group-hover:scale-105 transition duration-500" 
                 />
-                <div className="absolute bottom-2 right-2 bg-black/80 text-[10px] font-bold px-1.5 py-0.5 rounded">{v.duration || "0:00"}</div>
+                <div className="absolute bottom-2 right-2 bg-black/80 text-[10px] font-bold px-1.5 py-0.5 rounded text-white/90">{timeAgo(v.createdAt)}</div>
               </div>
               <h3 className="text-sm font-bold text-white line-clamp-2 leading-tight group-hover:text-[#E53945] transition">{v.title}</h3>
             </Link>
