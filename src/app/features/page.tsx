@@ -41,7 +41,7 @@ export default function FeaturesPage() {
             </ul>
           </div>
           <div className="flex-1 w-full relative h-64 md:h-auto md:self-stretch bg-black/40 rounded-2xl border border-white/10 overflow-hidden flex items-center justify-center">
-            <span className="text-6xl md:text-8xl font-black text-[#E53945]">99%</span>
+            <span className="text-6xl md:text-8xl font-black text-green-500">99%</span>
           </div>
         </div>
 
