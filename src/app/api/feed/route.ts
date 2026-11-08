@@ -1,6 +1,27 @@
 import { NextResponse } from "next/server";
-import { kv } from "@vercel/kv";
 import { createClient as createServerClient } from "@supabase/supabase-js";
+
+const KV_URL = process.env.UPSTASH_REDIS_REST_URL!;
+const KV_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN!;
+
+async function readVideos(): Promise<any[]> {
+  try {
+    const res = await fetch(`${KV_URL}/get/trooflix:videos`, {
+      headers: { Authorization: `Bearer ${KV_TOKEN}` },
+      cache: "no-store",
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (!data.result) return [];
+    let parsed = JSON.parse(data.result);
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed) && (parsed as any).value) {
+      parsed = typeof (parsed as any).value === "string" ? JSON.parse((parsed as any).value) : (parsed as any).value;
+    }
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
 
 const supabaseAdmin = createServerClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -16,9 +37,7 @@ export async function GET(req: Request) {
     const filter = searchParams.get("filter") || "all";
     const userId = searchParams.get("userId");
 
-    const all = ((await kv.get<any[]>(VIDEOS_KEY)) || []).filter(
-      (v: any) => !v.hidden
-    );
+    const all = (await readVideos()).filter((v: any) => !v.hidden);
 
     all.sort((a: any, b: any) => {
       const at = a.createdAt ? new Date(a.createdAt).getTime() : a.id;
