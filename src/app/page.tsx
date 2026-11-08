@@ -227,7 +227,7 @@ export default function Home() {
       setHeroIndex(0);
       return;
     }
-    const interval = setInterval(() => setHeroIndex((prev) => (prev + 1) % heroPool.length), 6000);
+    const interval = setInterval(() => setHeroIndex((prev) => (prev + 1) % heroPool.length), 10000);
     return () => clearInterval(interval);
   }, [heroPool.length]);
 
@@ -669,7 +669,7 @@ function DesktopHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[],
                 muted
                 loop
                 playsInline
-                className="absolute inset-0 w-full h-full object-cover object-center opacity-80"
+                className="absolute inset-0 w-full h-full object-cover object-center"
                 onLoadedMetadata={(e) => {
                   const video = e.currentTarget;
                   try {
@@ -749,7 +749,7 @@ function AppReelHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[],
                 muted
                 loop
                 playsInline
-                className="absolute inset-0 w-full h-full object-cover object-center opacity-80"
+                className="absolute inset-0 w-full h-full object-cover object-center"
                 onLoadedMetadata={(e) => {
                   const video = e.currentTarget;
                   try {
