@@ -29,6 +29,7 @@ export async function POST(req: Request) {
       .maybeSingle();
 
     let userTier = profile?.tier || "free";
+    if (userTier === "podcaster" || userTier === "pro") userTier = "creator";
     if ((userTier === "plus" || userTier === "creator") && profile?.plus_expires_at) {
       if (new Date(profile.plus_expires_at) < new Date()) userTier = "free";
     }
@@ -102,7 +103,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(newVideo);
   } catch (e: any) {
-    console.error("POST error:", e);
-    return NextResponse.json({ error: String(e) }, { status: 500 });
+    console.error("POST /api/save-video error:", e.message || e);
+    return NextResponse.json({ error: e.message || String(e) }, { status: 500 });
   }
 }
