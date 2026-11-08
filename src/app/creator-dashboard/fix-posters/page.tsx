@@ -43,48 +43,56 @@ export default function FixPostersPage() {
       vid.crossOrigin = "anonymous";
       vid.preload = "metadata";
 
+      // Add a 15-second timeout so it never gets stuck forever
+      const timeout = setTimeout(() => {
+        URL.revokeObjectURL(vid.src);
+        reject(new Error("Timeout: Video took too long to load or seek. Likely a CORS issue."));
+      }, 15000);
+
       vid.onloadedmetadata = () => {
         const seekTime = Math.min(90, vid.duration / 2) || 1;
-        vid.currentTime = seekTime;
+        try { vid.currentTime = seekTime; } catch {}
       };
 
       vid.onseeked = async () => {
+        clearTimeout(timeout);
         try {
           const canvas = document.createElement("canvas");
           canvas.width = vid.videoWidth;
           canvas.height = vid.videoHeight;
           const ctx = canvas.getContext("2d");
-          if (!ctx) throw new Error("No ctx");
+          if (!ctx) throw new Error("Canvas context failed");
           
           ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
           
           canvas.toBlob(async (blob) => {
-            if (!blob) return reject("No blob");
+            if (!blob) return reject(new Error("Canvas toBlob failed (Tainted canvas from CORS?)"));
             
             const file = new File([blob], "auto-poster.jpg", { type: "image/jpeg" });
-            
-            // Upload image to R2
             const { publicUrl } = await r2MultipartUpload(file, { folder: "thumbnails" });
             
-            // Update video record
             const updateRes = await fetch("/api/videos/update", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ id: video.id, posterUrl: publicUrl })
             });
 
-            if (!updateRes.ok) throw new Error("Update failed");
+            if (!updateRes.ok) throw new Error("Database update failed");
             resolve();
           }, "image/jpeg", 0.85);
           
+        } catch (e: any) {
+          reject(new Error(e.message || "Unknown canvas error"));
+        } finally {
           URL.revokeObjectURL(vid.src);
-        } catch (e) {
-          URL.revokeObjectURL(vid.src);
-          reject(e);
         }
       };
 
-      vid.onerror = () => reject("Video load error");
+      vid.onerror = () => {
+        clearTimeout(timeout);
+        URL.revokeObjectURL(vid.src);
+        reject(new Error("Video failed to load. Check CORS settings on Cloudflare R2."));
+      };
     });
   };
 
@@ -102,8 +110,9 @@ export default function FixPostersPage() {
       try {
         await generatePoster(v);
         newResults.push({ id: v.id, success: true });
-      } catch (e) {
+      } catch (e: any) {
         console.error("Failed for", v.title, e);
+        alert(`Failed on "${v.title}": ${e.message}`);
         newResults.push({ id: v.id, success: false });
       }
     }
