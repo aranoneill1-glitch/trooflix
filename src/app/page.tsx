@@ -193,19 +193,12 @@ export default function Home() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  let heroPool = videos.filter((v) => {
-  const t = v.type?.toLowerCase();
-  return t !== "short" && t !== "tweet" && v.visibility !== "premium" && v.feed_visible !== false;
-});
-if (heroPool.length === 0 && videos.length > 0) {
-  heroPool = videos.filter((v) => {
-    const t = v.type?.toLowerCase();
-    return t !== "short" && t !== "tweet";
+  const heroPool = videos.filter((v) => {
+    const t = String(v.type || "").toLowerCase().trim();
+    // Strictly exclude Shorts, Reels, Tweets, Premium, and hidden videos from the Hero carousel
+    return t !== "short" && t !== "reel" && t !== "tweet" && v.visibility !== "premium" && v.feed_visible !== false;
   });
-}
-if (heroPool.length === 0 && videos.length > 0) {
-  heroPool = videos;
-}
+
   const [heroIndex, setHeroIndex] = useState(0);
 
   const isDocOrPodcast = (v: Video) => !v.uploaderUserId && (v.type === "Documentary" || v.type === "Podcast");
@@ -240,7 +233,7 @@ if (heroPool.length === 0 && videos.length > 0) {
     return () => clearInterval(interval);
   }, [heroPool.length]);
 
-  const hero = heroPool[heroIndex] || videos[0];
+  const hero = heroPool[heroIndex] || null;
   const showingFiltered = activeCategory || activeTab !== "Home" || filtered;
 
   const handleCardSelect = (item: Video) => {
