@@ -476,41 +476,7 @@ export default function Home() {
                 </div>
 
                 {/* Header */}
-                <div className="px-4 pb-2 relative z-30">
-                  <p className="text-[10px] tracking-[0.4em] text-white/50 font-semibold mb-1 uppercase">
-                    The Home of Independent Voices
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-2xl font-black tracking-tight text-white">
-                      Discover <span className="text-[#E53945]">Creators</span>
-                    </h2>
-                    <Link href="/creators" className="text-xs font-bold text-white/50 hover:text-white transition flex items-center gap-1">
-                      View All <ChevronRight size={14} />
-                    </Link>
-                  </div>
-                </div>
                 
-                {/* Avatars with Follow (Moved up) */}
-                {creators && creators.length > 0 && (
-                  <div className="flex gap-4 overflow-x-auto scrollbar-hide px-4 pb-4 relative z-10 mt-2 mb-3">
-                    {[...creators].slice(0, 15).map((c: any) => (
-                      <Link key={c.id} href={`/profile/${c.slug}`} className="flex flex-col items-center text-center flex-shrink-0 group w-[96px]">
-                        <div className="w-20 h-20 rounded-full p-[2px] bg-gradient-to-b from-white/40 to-white/10 shadow-[0_0_15px_rgba(255,255,255,0.1)] group-hover:scale-105 transition-transform mb-2 relative">
-                          <div className="w-full h-full rounded-full border-2 border-[#09090B] overflow-hidden bg-[#1c1c1e]">
-                            {c.photoUrl ? <img src={c.photoUrl} alt={c.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xl font-bold text-white">{c.name?.[0]?.toUpperCase() || "?"}</div>}
-                          </div>
-                        </div>
-                        <span className="text-xs font-semibold text-white/80 group-hover:text-white transition truncate w-full mb-2">{c.name || "Creator"}</span>
-                        <button 
-                          onClick={(e) => toggleFollow(e, c.id)}
-                          className={`px-4 py-1 rounded-full border text-[10px] font-bold transition ${followedCreatorIds.includes(c.id) ? "bg-white/10 border-white/20 text-white" : "border-white/20 hover:bg-white hover:text-black"}`}
-                        >
-                          {followedCreatorIds.includes(c.id) ? "Following" : "Follow"}
-                        </button>
-                      </Link>
-                    ))}
-                  </div>
-                )}
 
                 
 
@@ -528,36 +494,7 @@ export default function Home() {
                 )}
                 
                 {/* Header */}
-                <div className="max-w-[1600px] mx-auto px-12 pt-10 pb-4">
-                  <p className="text-[10px] md:text-xs tracking-[0.4em] text-white/50 font-semibold mb-1 uppercase">
-                    The Home of Independent Voices
-                  </p>
-                  <h2 className="text-2xl md:text-4xl font-black tracking-tight text-white">
-                    Discover <span className="text-[#E53945]">Creators</span>
-                  </h2>
-                </div>
                 
-                {/* Avatars with Follow */}
-                {creators && creators.length > 0 && (
-                  <div className="max-w-[1600px] mx-auto px-12 pb-6 grid grid-cols-6 xl:grid-cols-8 gap-4">
-                    {[...creators].slice(0, 8).map((c: any) => (
-                      <Link key={c.id} href={`/profile/${c.slug}`} className="flex flex-col items-center text-center group cursor-pointer">
-                        <div className="w-24 h-24 rounded-full p-[2px] bg-gradient-to-b from-white/40 to-white/10 shadow-[0_0_20px_rgba(255,255,255,0.1)] group-hover:scale-105 transition-transform mb-3 relative">
-                          <div className="w-full h-full rounded-full border-2 border-[#09090B] overflow-hidden bg-[#1c1c1e]">
-                            {c.photoUrl ? <img src={c.photoUrl} alt={c.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xl font-bold text-white">{c.name?.[0]?.toUpperCase() || "?"}</div>}
-                          </div>
-                        </div>
-                        <span className="text-sm font-bold text-white group-hover:text-[#E53945] transition truncate w-full mb-2">{c.name || "Creator"}</span>
-                        <button 
-                          onClick={(e) => toggleFollow(e, c.id)}
-                          className={`px-4 py-1.5 rounded-full border text-xs font-bold transition ${followedCreatorIds.includes(c.id) ? "bg-white/10 border-white/20 text-white" : "border-white/20 hover:bg-white hover:text-black"}`}
-                        >
-                          {followedCreatorIds.includes(c.id) ? "Following" : "Follow"}
-                        </button>
-                      </Link>
-                    ))}
-                  </div>
-                )}
               </div>
             </>
           )}

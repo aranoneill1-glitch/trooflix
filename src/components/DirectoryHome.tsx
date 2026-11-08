@@ -69,7 +69,18 @@ export default function DirectoryHome({ videos, creators }: { videos: any[], cre
         <div className="flex overflow-x-auto gap-3 pb-4 scrollbar-hide">
           {videos.filter((v: any) => v.type?.toLowerCase() === "short").slice(0, 10).map((v: any) => (
             <Link key={v.id} href="/feed" className="relative w-[120px] md:w-[150px] aspect-[9/16] shrink-0 rounded-xl overflow-hidden group">
-              <img src={v.posterUrl || v.backdropUrl} className="w-full h-full object-cover" />
+              {(v.videoUrl || v.bitchuteUrl) ? (
+                  <video 
+                    src={v.videoUrl || v.bitchuteUrl} 
+                    autoPlay 
+                    muted 
+                    loop 
+                    playsInline 
+                    className="w-full h-full object-cover" 
+                  />
+                ) : (
+                  <img src={v.posterUrl || v.backdropUrl} className="w-full h-full object-cover" />
+                )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 p-3">
                 <h3 className="text-white text-[11px] font-bold leading-tight line-clamp-2 mb-1">{v.title}</h3>
