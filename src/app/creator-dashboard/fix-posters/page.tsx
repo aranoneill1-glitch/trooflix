@@ -55,7 +55,7 @@ export default function FixPostersPage() {
         }, 15000);
 
         vid.onloadedmetadata = () => {
-          const seekTime = Math.min(90, vid.duration / 2) || 1;
+          const seekTime = Math.min(45, vid.duration / 2) || 1;
           try { vid.currentTime = seekTime; } catch {}
         };
 
