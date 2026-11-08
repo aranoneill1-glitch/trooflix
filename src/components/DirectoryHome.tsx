@@ -31,19 +31,24 @@ function VideoPreview({ src, poster, className }: { src: string, poster?: string
     }
   };
 
+  const [isPlaying, setIsPlaying] = useState(false);
+
   return (
-    <video
-      ref={videoRef}
-      src={src}
-      poster={poster}
-      autoPlay
-      muted
-      playsInline
-      preload="metadata"
-      onLoadedMetadata={handleLoadedMetadata}
-      onTimeUpdate={handleTimeUpdate}
-      className={className}
-    />
+    <>
+      <img src={poster} className="absolute inset-0 w-full h-full object-cover" />
+      <video
+        ref={videoRef}
+        src={src}
+        autoPlay
+        muted
+        playsInline
+        preload="metadata"
+        onLoadedMetadata={handleLoadedMetadata}
+        onTimeUpdate={handleTimeUpdate}
+        onPlaying={() => setIsPlaying(true)}
+        className={`${className} absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${isPlaying ? "opacity-100" : "opacity-0"}`}
+      />
+    </>
   );
 }
 
@@ -122,7 +127,7 @@ export default function DirectoryHome({ videos, creators }: { videos: any[], cre
             return hasVideo && t !== "short" && t !== "tweet" && v.visibility !== "premium" && v.feed_visible !== false;
           }).slice(0, 8).map((v: any) => (
             <Link key={v.id} href="/latest" className="flex flex-col w-64 md:w-72 shrink-0 group">
-              <div className="relative aspect-video rounded-xl overflow-hidden mb-2 border border-white/5 bg-[#1c1c1e]">
+              <div className="relative aspect-video rounded-xl bg-black overflow-hidden mb-2 border border-white/5 bg-[#1c1c1e]">
                 <VideoPreview 
                   src={v.videoUrl || v.bitchuteUrl} 
                   poster={v.posterUrl || v.backdropUrl}

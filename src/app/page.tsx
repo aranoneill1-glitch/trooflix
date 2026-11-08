@@ -635,7 +635,8 @@ function HeroVideoCard({ video, onMore, isMobile }: { video: Video, onMore: (v: 
             muted={muted}
             loop
             playsInline
-            className="absolute inset-0 w-full h-full object-cover"
+            onPlaying={(e) => e.currentTarget.classList.remove("opacity-0")}
+            className="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-700"
           />
         )}
         
