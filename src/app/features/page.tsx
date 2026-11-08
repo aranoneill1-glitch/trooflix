@@ -105,7 +105,7 @@ export default function FeaturesPage() {
             Join the platform built for the creators, not the billionaires. 
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link href="/apply" className="bg-[#E53945] text-white font-bold px-8 py-3.5 rounded-full hover:bg-[#d12e39] transition text-lg shadow-lg shadow-[#E53945]/30">
+            <Link href="/signup" className="bg-[#E53945] text-white font-bold px-8 py-3.5 rounded-full hover:bg-[#d12e39] transition text-lg shadow-lg shadow-[#E53945]/30">
               Apply as a Creator
             </Link>
             <Link href="/upgrade" className="bg-white/10 border border-white/20 text-white font-bold px-8 py-3.5 rounded-full hover:bg-white/20 transition text-lg">
