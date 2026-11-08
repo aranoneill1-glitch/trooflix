@@ -35,103 +35,82 @@ export default function FixPostersPage() {
   }, []);
 
   const generatePoster = async (video: any) => {
-    return new Promise<void>(async (resolve, reject) => {
-      try {
-        // 1. Fetch video via proxy (bypasses CORS)
-        const proxyUrl = "/api/proxy-video?url=" + encodeURIComponent(video.videoUrl || video.bitchuteUrl);
-        const res = await fetch(proxyUrl);
-        if (!res.ok) throw new Error(`Failed to fetch video (HTTP ${res.status})`);
-        const blob = await res.blob();
-        const blobUrl = URL.createObjectURL(blob);
+    return new Promise<void>((resolve, reject) => {
+      let isFinished = false;
+      
+      // Hit Cloudflare directly (No Vercel proxy)
+      const vid = document.createElement("video");
+      vid.src = video.videoUrl || video.bitchuteUrl;
+      vid.crossOrigin = "anonymous"; 
+      vid.muted = true;
+      vid.playsInline = true;
+      vid.preload = "metadata";
 
-        const vid = document.createElement("video");
-        vid.src = blobUrl;
-        vid.muted = true;
-        vid.preload = "auto";
+      const timeout = setTimeout(() => {
+        if (!isFinished) { isFinished = true; reject(new Error("Timeout (15s) - Could not load video metadata.")); }
+      }, 15000);
 
-        const timeout = setTimeout(() => {
-          URL.revokeObjectURL(blobUrl);
-          reject(new Error("Timeout: Video took too long to load or seek."));
-        }, 15000);
+      vid.onloadedmetadata = () => {
+        // Seek to 90 seconds
+        const seekTime = Math.min(90, vid.duration / 2) || 1;
+        try { vid.currentTime = seekTime; } catch {}
+      };
 
-        vid.onloadedmetadata = () => {
-          const seekTime = Math.min(45, vid.duration / 2) || 1;
-          try { vid.currentTime = seekTime; } catch {}
-        };
+      vid.onseeked = async () => {
+        clearTimeout(timeout);
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = vid.videoWidth || 1280;
+          canvas.height = vid.videoHeight || 720;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) throw new Error("Canvas context failed");
 
-        vid.onseeked = async () => {
-          clearTimeout(timeout);
-          try {
-            const canvas = document.createElement("canvas");
-            canvas.width = vid.videoWidth || 1280;
-            canvas.height = vid.videoHeight || 720;
-            const ctx = canvas.getContext("2d");
-            if (!ctx) throw new Error("Canvas context failed");
+          ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
 
-            ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob(async (blob) => {
+            if (!blob) {
+              if (!isFinished) { isFinished = true; reject(new Error("Canvas toBlob failed. Cloudflare CORS might be blocking the read.")); }
+              return;
+            }
 
-            canvas.toBlob(async (blob) => {
-              if (!blob) {
-                URL.revokeObjectURL(blobUrl);
-                return reject(new Error("Canvas toBlob failed"));
-              }
+            try {
+              const file = new File([blob], "auto-poster.jpg", { type: "image/jpeg" });
+              const formData = new FormData();
+              formData.append("file", file);
 
-              try {
-                // 2. Upload image to R2 via simple form data (bypasses multipart CORS issues)
-                const file = new File([blob], "auto-poster.jpg", { type: "image/jpeg" });
-                const formData = new FormData();
-                formData.append("file", file);
+              const uploadRes = await fetch("/api/upload-image", {
+                method: "POST",
+                body: formData,
+              });
 
-                const uploadRes = await fetch("/api/upload-image", {
-                  method: "POST",
-                  body: formData,
-                });
+              if (!uploadRes.ok) throw new Error(`Upload failed (${uploadRes.status})`);
+              const uploadData = await uploadRes.json();
+              const publicUrl = uploadData.publicUrl;
 
-                if (!uploadRes.ok) {
-                  const errBody = await uploadRes.text();
-                  throw new Error(`Upload failed (${uploadRes.status}): ${errBody.slice(0, 100)}`);
-                }
+              if (!publicUrl) throw new Error("Upload returned no publicUrl");
 
-                const uploadData = await uploadRes.json();
-                const publicUrl = uploadData.publicUrl;
+              const updateRes = await fetch("/api/videos/update", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id: video.id, posterUrl: publicUrl }),
+              });
 
-                if (!publicUrl) throw new Error("Upload returned no publicUrl");
-                console.log(`[Poster] Uploaded for "${video.title}" -> ${publicUrl}`);
+              if (!updateRes.ok) throw new Error(`DB update failed (${updateRes.status})`);
 
-                // 3. Update the video record
-                const updateRes = await fetch("/api/videos/update", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ id: video.id, posterUrl: publicUrl }),
-                });
+              if (!isFinished) { isFinished = true; resolve(); }
+            } catch (err: any) {
+              if (!isFinished) { isFinished = true; reject(err); }
+            }
+          }, "image/jpeg", 0.85);
+        } catch (e: any) {
+          if (!isFinished) { isFinished = true; reject(e); }
+        }
+      };
 
-                if (!updateRes.ok) {
-                  const errBody = await updateRes.text();
-                  throw new Error(`DB update failed (${updateRes.status}): ${errBody.slice(0, 100)}`);
-                }
-
-                console.log(`[Poster] DB updated for "${video.title}"`);
-                URL.revokeObjectURL(blobUrl);
-                resolve();
-              } catch (err: any) {
-                URL.revokeObjectURL(blobUrl);
-                reject(err);
-              }
-            }, "image/jpeg", 0.85);
-          } catch (e: any) {
-            URL.revokeObjectURL(blobUrl);
-            reject(e);
-          }
-        };
-
-        vid.onerror = () => {
-          clearTimeout(timeout);
-          URL.revokeObjectURL(blobUrl);
-          reject(new Error("Video failed to load from blob."));
-        };
-      } catch (err: any) {
-        reject(err);
-      }
+      vid.onerror = () => {
+        clearTimeout(timeout);
+        if (!isFinished) { isFinished = true; reject(new Error("Video failed to load. Check Cloudflare CORS.")); }
+      };
     });
   };
 
