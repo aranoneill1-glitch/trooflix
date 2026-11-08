@@ -26,7 +26,7 @@ export default function DesktopSidebar() {
   const navItems = [
     { name: "Search", icon: Search, href: "/search" },
     { name: "Home", icon: Home, href: "/" },
-    { name: "Trooflix Plus", icon: Star, href: "/plus" },
+    { name: "My TrooFlix", icon: Star, href: "/creator-dashboard" },
     { name: "Podcasters", icon: Mic, href: "/podcasts" }, // Replaced Categories with Podcasters
     { name: "Shorts / Feed", icon: Play, href: "/feed" },
     { name: "Marketplace", icon: ShoppingBag, href: "/merchandise" },
