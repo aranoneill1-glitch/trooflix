@@ -624,6 +624,7 @@ function HeroVideoCard({ video, onMore, isMobile }: { video: Video, onMore: (v: 
           <video
             ref={videoRef}
             src={video.videoUrl || video.bitchuteUrl || ""}
+            poster={video.backdropUrl || video.posterUrl}
             autoPlay
             muted={muted}
             loop
