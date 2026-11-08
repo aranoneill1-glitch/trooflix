@@ -1,5 +1,5 @@
 "use client";
-import { ChevronRight , Tag, MoreVertical , Download} from "lucide-react";
+import { ChevronRight , Tag, MoreVertical , Download, Sparkles} from "lucide-react";
 
 import { useEffect, useState, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
@@ -550,6 +550,14 @@ function CreatorDashboardContent() {
                     </div>
                     <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
                   </Link>
+                  <Link href="/creator-dashboard/fix-posters" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-lg">
+                    <div className="flex items-center gap-4">
+                      <Sparkles className="text-[#E53945]" size={20} />
+                      <span className="text-sm font-bold text-white group-hover:text-white/90">Auto-Fix Missing Posters</span>
+                    </div>
+                    <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
+                  </Link>
+                  
                   <button onClick={() => setShowAddContentMenu(true)} className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-lg w-full text-left">
                     <div className="flex items-center gap-4">
                       <Plus className="text-[#E53945]" size={20} />
