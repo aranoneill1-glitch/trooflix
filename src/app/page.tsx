@@ -365,7 +365,6 @@ export default function Home() {
                   <AppReelHero 
                     videos={heroPool} 
                     activeIndex={heroIndex} 
-                    onPlay={handleInstantPlay}
                     onMore={(v) => setSelected(v)}
                   />
                 )}
@@ -523,7 +522,6 @@ export default function Home() {
                   <DesktopHero 
                     videos={heroPool}
                     activeIndex={heroIndex}
-                    onPlay={handleInstantPlay}
                     onMore={(v) => setSelected(v)}
                   />
                 )}
@@ -640,159 +638,145 @@ export default function Home() {
   );
 }
 
-/* ============ DESKTOP NETFLIX HERO ============ */
-function DesktopHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[], activeIndex: number, onPlay: (v: Video) => void, onMore: (v: Video) => void }) {
-  if (!videos || videos.length === 0) return null;
-  const activeVideo = videos[activeIndex];
+function HeroVideoCard({ video, onMore, isMobile }: { video: Video, onMore: (v: Video) => void, isMobile: boolean }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [muted, setMuted] = useState(true);
+  const [progress, setProgress] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    const onMeta = () => {
+      const dur = v.duration || 0;
+      setDuration(dur);
+      // Seek to 5 min or middle
+      try {
+        const seekTime = Math.min(300, dur / 2);
+        if (seekTime > 0) v.currentTime = seekTime;
+      } catch {}
+    };
+    v.addEventListener("loadedmetadata", onMeta);
+    return () => v.removeEventListener("loadedmetadata", onMeta);
+  }, [video.id]);
+
+  const handleTimeUpdate = () => {
+    const v = videoRef.current;
+    if (!v || !v.duration) return;
+    setCurrentTime(v.currentTime);
+    setProgress((v.currentTime / v.duration) * 100);
+  };
+
+  const toggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (videoRef.current) {
+      videoRef.current.muted = !videoRef.current.muted;
+      setMuted(videoRef.current.muted);
+    }
+  };
+
+  const toggleFullscreen = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (videoRef.current) {
+      if (videoRef.current.requestFullscreen) {
+        videoRef.current.requestFullscreen();
+      }
+    }
+  };
+
+  const formatTime = (secs: number) => {
+    if (!secs || isNaN(secs)) return "0:00";
+    const m = Math.floor(secs / 60);
+    const s = Math.floor(secs % 60);
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  };
 
   return (
-    <div className="w-full max-w-[1600px] mx-auto px-4 md:px-12 mt-4 mb-8">
-      <section className="relative w-full h-[45vh] min-h-[420px] rounded-2xl overflow-hidden bg-[#1c1c1e] shadow-2xl flex items-center justify-start">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeVideo.id}
-            initial={{ opacity: 0, scale: 1.02 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.8 }}
-            className="absolute inset-0 z-0"
-          >
-            
-            {/* Fallback Backdrop Image */}
-            <img src={activeVideo.backdropUrl || activeVideo.posterUrl} alt={activeVideo.title} className="absolute inset-0 w-full h-full object-cover object-center" />
-            
-            {/* Live Video Preview */}
-            {(activeVideo.videoUrl || activeVideo.bitchuteUrl) && (
-              <video
-                src={activeVideo.videoUrl || activeVideo.bitchuteUrl}
-                autoPlay
-                muted
-                loop
-                playsInline
-                className="absolute inset-0 w-full h-full object-cover object-center"
-                onLoadedMetadata={(e) => {
-                  const video = e.currentTarget;
-                  try {
-                    // Seek to 5 minutes (300s) in, or halfway if the video is shorter
-                    const seekTime = Math.min(300, video.duration ? video.duration / 2 : 0);
-                    if (seekTime > 0) video.currentTime = seekTime;
-                  } catch (err) {}
-                }}
-              />
-            )}
+    <div className={`w-full mx-auto ${isMobile ? "px-4 pb-6 mt-2" : "max-w-[1600px] px-4 md:px-12 mt-4 mb-8"}`}>
+      <section 
+        onClick={() => onMore(video)}
+        className={`relative w-full ${isMobile ? "aspect-video min-h-[220px]" : "h-[45vh] min-h-[420px]"} rounded-2xl overflow-hidden bg-[#1c1c1e] shadow-2xl cursor-pointer group`}
+      >
+        <video
+          ref={videoRef}
+          src={video.videoUrl || video.bitchuteUrl || ""}
+          autoPlay
+          muted={muted}
+          loop
+          playsInline
+          onTimeUpdate={handleTimeUpdate}
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        
+        {/* Overlay for better control visibility */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-            <div className="absolute inset-0 bg-gradient-to-r from-[#0a0303] via-[#0a0303]/70 to-transparent w-full" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0303] via-transparent to-transparent w-full" />
-          </motion.div>
-        </AnimatePresence>
+        {/* Custom Controls */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 flex items-center gap-4 z-20">
+          
+          {/* Timestamp */}
+          <span className="text-white text-xs font-semibold tabular-nums drop-shadow-md">
+            {formatTime(currentTime)} / {formatTime(duration)}
+          </span>
 
-        <div className="relative z-10 px-8 md:px-12 lg:px-16 max-w-2xl flex flex-col items-start">
-          <motion.div
-            key={`text-${activeVideo.id}`}
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <h1 className="text-3xl md:text-5xl font-black text-white leading-[1.1] mb-4 drop-shadow-2xl">
-              {activeVideo.title}
-            </h1>
-            <div className="flex items-center gap-3 text-xs md:text-sm font-semibold mb-4">
-              <span className="text-white/80">{activeVideo.year}</span>
-              <span className="border border-white/30 px-2 py-0.5 rounded">{activeVideo.rating || "TV-MA"}</span>
-              <span className="text-white/80">{activeVideo.duration}</span>
-              <span className="text-[#1ed760] font-bold">{activeVideo.match}% Match</span>
-            </div>
-            <p className="text-sm md:text-base text-white/80 leading-relaxed mb-6 line-clamp-3 drop-shadow-md max-w-xl">
-              {activeVideo.description || "No description available."}
-            </p>
-            <div className="flex items-center gap-3 md:gap-4">
-              <button onClick={() => onPlay(activeVideo)} className="flex items-center gap-2 bg-[#E53945] hover:bg-[#d12e39] text-white px-6 py-3 rounded-xl font-bold text-sm md:text-base transition-transform hover:scale-105 shadow-xl">
-                <Play size={20} fill="currentColor" /> Play
-              </button>
-              <button onClick={() => onMore(activeVideo)} className="flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white px-6 py-3 rounded-xl font-bold text-sm md:text-base transition-transform hover:scale-105 border border-white/10">
-                <Info size={20} /> More Info
-              </button>
-            </div>
-          </motion.div>
+          {/* Progress Bar */}
+          <div className="flex-1 h-1 bg-white/30 rounded-full relative overflow-hidden">
+            <div className="absolute top-0 left-0 h-full bg-[#E53945]" style={{ width: `${progress}%` }} />
+          </div>
+
+          {/* Mute Button */}
+          <button onClick={toggleMute} className="p-1.5 text-white/90 hover:text-white drop-shadow-md">
+            {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+          </button>
+
+          {/* Fullscreen Button */}
+          <button onClick={toggleFullscreen} className="p-1.5 text-white/90 hover:text-white drop-shadow-md">
+            <Maximize size={18} />
+          </button>
         </div>
       </section>
     </div>
   );
 }
 
-/* ============ MOBILE HORIZONTAL CARD ============ */
-function AppReelHero({ videos, activeIndex, onPlay, onMore }: { videos: Video[], activeIndex: number, onPlay: (v: Video) => void, onMore: (v: Video) => void }) {
+function DesktopHero({ videos, activeIndex, onMore }: { videos: Video[], activeIndex: number, onMore: (v: Video) => void }) {
   if (!videos || videos.length === 0) return null;
   const activeVideo = videos[activeIndex];
 
   return (
-    <div className="w-full px-4 pb-6 mt-2">
-      <section className="relative w-full aspect-video min-h-[220px] rounded-2xl overflow-hidden bg-[#1c1c1e] shadow-2xl flex items-end justify-start">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeVideo.id}
-            initial={{ opacity: 0, scale: 1.02 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.8 }}
-            className="absolute inset-0 z-0"
-          >
-            
-            {/* Fallback Backdrop Image */}
-            <img src={activeVideo.backdropUrl || activeVideo.posterUrl} alt={activeVideo.title} className="absolute inset-0 w-full h-full object-cover object-center" />
-            
-            {/* Live Video Preview */}
-            {(activeVideo.videoUrl || activeVideo.bitchuteUrl) && (
-              <video
-                src={activeVideo.videoUrl || activeVideo.bitchuteUrl}
-                autoPlay
-                muted
-                loop
-                playsInline
-                className="absolute inset-0 w-full h-full object-cover object-center"
-                onLoadedMetadata={(e) => {
-                  const video = e.currentTarget;
-                  try {
-                    // Seek to 5 minutes (300s) in, or halfway if the video is shorter
-                    const seekTime = Math.min(300, video.duration ? video.duration / 2 : 0);
-                    if (seekTime > 0) video.currentTime = seekTime;
-                  } catch (err) {}
-                }}
-              />
-            )}
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={activeVideo.id}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 1 }}
+        className="w-full"
+      >
+        <HeroVideoCard video={activeVideo} onMore={onMore} isMobile={false} />
+      </motion.div>
+    </AnimatePresence>
+  );
+}
 
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0303] via-[#0a0303]/60 to-transparent w-full" />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#0a0303]/80 via-transparent to-transparent w-full" />
-          </motion.div>
-        </AnimatePresence>
+function AppReelHero({ videos, activeIndex, onMore }: { videos: Video[], activeIndex: number, onMore: (v: Video) => void }) {
+  if (!videos || videos.length === 0) return null;
+  const activeVideo = videos[activeIndex];
 
-        <div className="relative z-10 p-5 w-full">
-          <motion.div
-            key={`text-${activeVideo.id}`}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <h1 className="text-xl font-black text-white leading-[1.1] mb-2 drop-shadow-2xl line-clamp-2">
-              {activeVideo.title}
-            </h1>
-            <div className="flex items-center gap-2 text-[10px] font-semibold mb-3">
-              <span className="text-white/80">{activeVideo.year}</span>
-              <span className="border border-white/30 px-1.5 py-0.5 rounded">{activeVideo.rating || "TV-MA"}</span>
-              <span className="text-[#1ed760] font-bold">{activeVideo.match}% Match</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <button onClick={() => onPlay(activeVideo)} className="flex items-center justify-center gap-1.5 bg-[#E53945] text-white px-5 py-2 rounded-full font-bold text-xs shadow-lg">
-                <Play size={14} fill="currentColor" /> Play
-              </button>
-              <button onClick={() => onMore(activeVideo)} className="flex items-center justify-center gap-1.5 bg-white/20 backdrop-blur-md text-white px-5 py-2 rounded-full font-bold text-xs border border-white/10">
-                <Info size={14} /> More Info
-              </button>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-    </div>
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={activeVideo.id}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 1 }}
+        className="w-full"
+      >
+        <HeroVideoCard video={activeVideo} onMore={onMore} isMobile={true} />
+      </motion.div>
+    </AnimatePresence>
   );
 }
 
