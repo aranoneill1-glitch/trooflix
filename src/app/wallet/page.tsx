@@ -12,16 +12,28 @@ export default function WalletPage() {
   const [showModal, setShowModal] = useState(false);
   const [buying, setBuying] = useState(false);
 
-  useEffect(() => {
+  const fetchWallet = () => {
     getCachedUser().then(u => {
       if (u) {
-        fetch(`/api/wallet?userId=${u.id}`).then(r => r.json()).then(d => {
+        fetch(`/api/wallet?userId=${u.id}&t=${Date.now()}`).then(r => r.json()).then(d => {
           setBalance(d.balance || 0);
           setTransactions(d.transactions || []);
           setLoading(false);
         });
       }
     });
+  };
+
+  useEffect(() => {
+    fetchWallet();
+    document.addEventListener("visibilitychange", fetchWallet);
+    window.addEventListener("focus", fetchWallet);
+    window.addEventListener("tip-sent", fetchWallet);
+    return () => {
+      document.removeEventListener("visibilitychange", fetchWallet);
+      window.removeEventListener("focus", fetchWallet);
+      window.removeEventListener("tip-sent", fetchWallet);
+    };
   }, []);
 
   const buyCoins = async (coins: number, priceCents: number) => {
