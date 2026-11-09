@@ -61,6 +61,29 @@ export async function PATCH(req: Request) {
       .eq("id", orderId);
 
     if (error) throw error;
+
+    // Release Escrow
+    const { data: escrowTx } = await supabaseAdmin
+      .from("transactions")
+      .select("*")
+      .eq("order_id", orderId)
+      .eq("type", "merch_sale")
+      .eq("status", "pending")
+      .maybeSingle();
+
+    if (escrowTx) {
+      // Mark as completed
+      await supabaseAdmin.from("transactions").update({ status: "completed" }).eq("id", escrowTx.id);
+      
+      // Credit creator wallet
+      const { data: wallet } = await supabaseAdmin.from("wallets").select("balance").eq("user_id", escrowTx.receiver_id).maybeSingle();
+      if (wallet) {
+        await supabaseAdmin.from("wallets").update({ balance: Number(wallet.balance) + Number(escrowTx.amount) }).eq("user_id", escrowTx.receiver_id);
+      } else {
+        await supabaseAdmin.from("wallets").insert({ user_id: escrowTx.receiver_id, balance: escrowTx.amount });
+      }
+    }
+
     return NextResponse.json({ success: true });
   } catch (e: any) {
     return NextResponse.json({ error: String(e) }, { status: 500 });

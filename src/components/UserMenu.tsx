@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Wallet, User, LogOut, Settings, CreditCard, LayoutDashboard, MessageCircle, Bell } from "lucide-react";
+import { User, LogOut, Settings, CreditCard, LayoutDashboard, MessageCircle, Bell, ShoppingBag, Wallet } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { getCachedUser, clearUserCache } from "@/lib/cache";
 import { motion, AnimatePresence } from "framer-motion";
@@ -179,6 +179,14 @@ export default function UserMenu() {
                 <p className="text-sm font-bold text-white truncate">{profile?.display_name || profile?.username}</p>
                 <p className="text-xs text-white/50 truncate">@{profile?.username}</p>
                 
+              <Link 
+                href="/orders"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition text-sm text-white/80 hover:text-white"
+              >
+                <ShoppingBag size={16} />
+                My Orders
+              </Link>
               <Link 
                 href="/wallet"
                 onClick={() => setIsOpen(false)}
