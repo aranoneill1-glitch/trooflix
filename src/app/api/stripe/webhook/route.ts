@@ -62,6 +62,20 @@ export async function POST(req: Request) {
   try {
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
+
+      if (session.metadata?.type === "coin_topup") {
+        const userId = session.metadata.userId;
+        const coins = Number(session.metadata.coins);
+        if (userId && coins) {
+          const { data: wallet } = await supabaseAdmin.from("wallets").select("balance").eq("user_id", userId).single();
+          if (wallet) {
+            await supabaseAdmin.from("wallets").update({ balance: wallet.balance + coins }).eq("user_id", userId);
+          } else {
+            await supabaseAdmin.from("wallets").insert({ user_id: userId, balance: coins });
+          }
+          await supabaseAdmin.from("transactions").insert({ sender_id: null, receiver_id: userId, amount: coins, type: "topup", description: `Purchased ${coins} TrooCoins` });
+        }
+      }
       
       if (session.metadata?.type === "merch_cart") {
         const sessionDetails = session as any;
