@@ -115,12 +115,12 @@ export default function ShortsFeedPage() {
       </div>
 
       {/* DESKTOP VIEW (Video | Controls | Comments) */}
-      <div className="hidden lg:flex w-full h-full p-6 gap-6 items-center justify-center">
+      <div className="hidden lg:flex w-full h-full p-6 gap-3 items-center justify-center">
         
         {/* 1. Left: Video Scroller */}
         <div 
           ref={videoContainerRef}
-          className="flex-1 h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide flex flex-col items-center bg-transparent"
+          className="flex-1 h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide flex flex-col items-end pr-2 bg-transparent"
         >
           {videos.map((video) => (
             <DesktopVideoShort
@@ -173,7 +173,7 @@ export default function ShortsFeedPage() {
         </div>
 
         {/* 3. Right: Chat Panel */}
-        <div className="w-[45%] xl:w-[500px] h-[85vh] max-h-[850px] shrink-0 bg-[#0a0a0a] border border-white/10 rounded-3xl flex flex-col overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+        <div className="w-[55%] xl:w-[650px] h-[85vh] max-h-[850px] shrink-0 bg-[#0a0a0a] border border-white/10 rounded-3xl flex flex-col overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
           {activeVideo && (
             <>
               <div className="p-4 flex items-center justify-between shrink-0 bg-[#0a0a0a] border-b border-white/5">
