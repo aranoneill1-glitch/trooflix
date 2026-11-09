@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import { Wallet, ArrowDownRight, ArrowUpRight, X, CheckCircle2, Building2, Bitcoin } from "lucide-react";
+import { Wallet, ArrowDownRight, ArrowUpRight, X, CheckCircle2, Building2, Bitcoin, AlertTriangle } from "lucide-react";
 import { getCachedUser } from "@/lib/cache";
 
 export default function WalletPage() {
@@ -300,7 +300,13 @@ export default function WalletPage() {
                   </div>
                 )}
 
-                <button onClick={saveDetails} disabled={detailsStatus === "loading" || (detailsType === "bank" && (!form.accountName || !form.bankName)) || (detailsType === "crypto" && !form.cryptoAddress)} className="w-full mt-4 bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold py-3.5 rounded-xl transition">
+                <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 flex gap-2 items-start mb-4 mt-4">
+                    <AlertTriangle size={16} className="text-red-500 mt-0.5 shrink-0" />
+                    <p className="text-[11px] text-red-400 leading-tight">
+                      <strong>WARNING:</strong> Please double-check all your payout details. Once a payout is processed, it is sent to the destination on file and <strong>cannot be reversed or refunded</strong>.
+                    </p>
+                  </div>
+                  <button onClick={saveDetails} disabled={detailsStatus === "loading" || (detailsType === "bank" && (!form.accountName || !form.bankName)) || (detailsType === "crypto" && !form.cryptoAddress)} className="w-full mt-4 bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold py-3.5 rounded-xl transition">
                   {detailsStatus === "loading" ? "Saving..." : "Save Details"}
                 </button>
               </>
