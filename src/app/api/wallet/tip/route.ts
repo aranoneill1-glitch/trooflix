@@ -11,6 +11,7 @@ export async function POST(req: Request) {
     const { senderId, receiverId, amount, description } = await req.json();
     if (!senderId || !receiverId || !amount) return NextResponse.json({ error: "Missing data" }, { status: 400 });
     if (senderId === receiverId) return NextResponse.json({ error: "You cannot tip yourself." }, { status: 400 });
+    if (amount <= 0 || (amount * 2) % 1 !== 0) return NextResponse.json({ error: "Invalid amount. Must be a multiple of 0.50." }, { status: 400 });
 
     // Fix: Translate KV numeric creator ID to Supabase UUID if needed
     let validReceiverId = receiverId;
