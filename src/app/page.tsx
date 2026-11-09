@@ -503,7 +503,7 @@ export default function Home() {
                   </div>
                   <div className="w-1/2 flex flex-col justify-center">
                     <h1 className="text-[52px] xl:text-[68px] 2xl:text-[80px] font-black tracking-tighter text-white leading-[1.02] mb-6">Stop letting Big Tech <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#E53945] to-orange-500">eat your lunch.</span></h1>
-                    <p className="text-base xl:text-lg text-white/50 mb-10 leading-relaxed font-medium">Tired of working countless hours making awesome content just to give half your earnings away and being censored in the process? We built Trooflix to put food on your table, not theirs.</p>
+                    <p className="text-base xl:text-lg text-white/50 mb-10 leading-relaxed font-medium">Tired of working countless hours making great content just to give half your earnings away to billionaires and get censored in the process? It&apos;s time to take your power back.</p>
                     <div className="flex flex-wrap gap-3">
                       <a href="/features" className="flex items-center justify-center gap-2 bg-white text-black font-bold text-base px-8 py-4 rounded-full hover:bg-gray-200 transition">Why Trooflix &rarr;</a>
                       <a href="/signup" className="flex items-center justify-center gap-2 bg-[#1c1c1e] border border-white/10 text-white font-bold text-base px-8 py-4 rounded-full hover:bg-[#2c2c2e] transition">Join Today</a>
