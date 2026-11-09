@@ -21,11 +21,11 @@ import Link from "next/link";
 import { motion, AnimatePresence, useMotionValue, useTransform, animate } from "framer-motion";
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Play, Info, ChevronLeft, ChevronRight, X,
+import {  Play, Info, ChevronLeft, ChevronRight, X,
   Search, Bell, HomeIcon, Menu,
   Compass, LogOut, LogIn, Users, ShoppingBag, Sparkles, BookOpen, Flame, List,
   CheckCircle2, Pause, VolumeX, Volume2, MoreVertical, Plus, Maximize,
-  ThumbsUp, MessageCircle, Share2, Bookmark } from "lucide-react";
+  ThumbsUp, MessageCircle, Share2, Bookmark , DollarSign, ShieldOff, Radio, MessageSquare, Download } from "lucide-react";
 import AuthPlaybackGate from "@/components/AuthPlaybackGate";
 import AppleVideoPlayer from "@/components/AppleVideoPlayer";
 import UserMenu from "@/components/UserMenu";
@@ -519,7 +519,72 @@ export default function Home() {
 
           {showingFiltered && <div className="h-20 md:h-24" />}
 
-          <DirectoryHome videos={videos} creators={creators} />
+          
+      {/* FEATURES ROW (DESKTOP) */}
+      <div className="hidden lg:block w-full max-w-[1600px] mx-auto px-12 py-16">
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl md:text-4xl font-black tracking-tight">
+            Why Creators Are <span className="text-[#E53945]">Switching</span>
+          </h2>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Feature 1 */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-colors group">
+            <div className="w-12 h-12 rounded-xl bg-[#E53945]/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <DollarSign size={24} className="text-[#E53945]" />
+            </div>
+            <h3 className="text-lg font-bold text-white mb-2">Keep 99% of Revenue</h3>
+            <p className="text-sm text-white/50 leading-relaxed">A flat 1% fee. That&apos;s it. No hidden cuts, no demonetization.</p>
+          </div>
+
+          {/* Feature 2 */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-colors group">
+            <div className="w-12 h-12 rounded-xl bg-[#E53945]/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <ShieldOff size={24} className="text-[#E53945]" />
+            </div>
+            <h3 className="text-lg font-bold text-white mb-2">Zero Censorship</h3>
+            <p className="text-sm text-white/50 leading-relaxed">No shadowbans. No algorithmic suppression. Your audience gets your content.</p>
+          </div>
+
+          {/* Feature 3 */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-colors group">
+            <div className="w-12 h-12 rounded-xl bg-[#E53945]/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <Radio size={24} className="text-[#E53945]" />
+            </div>
+            <h3 className="text-lg font-bold text-white mb-2">Live Streaming</h3>
+            <p className="text-sm text-white/50 leading-relaxed">Broadcast-quality WebRTC live streams with multi-guest support.</p>
+          </div>
+
+          {/* Feature 4 */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-colors group">
+            <div className="w-12 h-12 rounded-xl bg-[#E53945]/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <MessageSquare size={24} className="text-[#E53945]" />
+            </div>
+            <h3 className="text-lg font-bold text-white mb-2">DMs & Video Calls</h3>
+            <p className="text-sm text-white/50 leading-relaxed">Connect directly with your audience using built-in messaging and WebRTC calls.</p>
+          </div>
+
+          {/* Feature 5 */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-colors group">
+            <div className="w-12 h-12 rounded-xl bg-[#E53945]/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <Download size={24} className="text-[#E53945]" />
+            </div>
+            <h3 className="text-lg font-bold text-white mb-2">1-Click YouTube Import</h3>
+            <p className="text-sm text-white/50 leading-relaxed">Migrate your entire back-catalog instantly using Google Takeout.</p>
+          </div>
+
+          {/* Feature 6 */}
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-colors group">
+            <div className="w-12 h-12 rounded-xl bg-[#E53945]/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <ShoppingBag size={24} className="text-[#E53945]" />
+            </div>
+            <h3 className="text-lg font-bold text-white mb-2">Built-in Storefront</h3>
+            <p className="text-sm text-white/50 leading-relaxed">Sell merch, books, and digital goods directly on your profile.</p>
+          </div>
+        </div>
+      </div>
+      
+      <DirectoryHome videos={videos} creators={creators} />
         <div className="hidden relative z-10 pt-0 md:pt-2 pb-32 md:pb-20 space-y-2 md:space-y-6">
             {filtered && <SearchResults search={search} videos={videos} creators={creators} onVideoClick={setSelected} />}
 
