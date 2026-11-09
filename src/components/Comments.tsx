@@ -546,7 +546,7 @@ export default function Comments({ videoId, onMetaChange, variant = "default" }:
           );
         })}
       </div>
-      <div className={variant === "chat" ? "order-2 p-4 border-t border-white/10 shrink-0 bg-[#0a0a0a]" : ""}>
+      <div className={variant === "chat" ? "order-2 p-4 shrink-0 bg-[#0a0a0a]" : ""}>
         
       </div>
       <div className={variant === "chat" ? "order-2 p-4 border-t border-white/10 shrink-0 bg-[#0a0a0a]" : ""}>

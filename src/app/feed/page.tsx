@@ -116,7 +116,7 @@ export default function ShortsFeedPage() {
         </div>
 
         {/* Right Side: Chat & Controls Panel */}
-        <div className="w-[60%] h-full flex items-center justify-center p-6 bg-[#050505] border-l border-white/10">
+        <div className="w-[60%] h-full flex items-center justify-center p-6 bg-[#050505]">
           <div className="w-full h-[85vh] max-h-[850px] bg-[#0a0a0a] border border-white/10 rounded-3xl flex flex-col overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
             {activeVideo && (
               <>
