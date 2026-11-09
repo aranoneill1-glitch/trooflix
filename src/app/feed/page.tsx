@@ -114,28 +114,29 @@ export default function ShortsFeedPage() {
         <MobileBottomNav />
       </div>
 
-      {/* DESKTOP VIEW (Perfectly Symmetrical) */}
-      <div className="hidden lg:flex w-full h-full items-center justify-center bg-[#050505] overflow-hidden gap-6 px-6">
+      {/* DESKTOP VIEW */}
+      <div className="hidden lg:flex w-full h-full items-center bg-[#050505] overflow-hidden">
         
-        {/* 1. Left: Video Scroller */}
-        <div className="flex-1 h-full flex items-center justify-end">
-          <div 
-            ref={videoContainerRef}
-            className="h-[85vh] max-h-[850px] aspect-[9/16] overflow-y-scroll snap-y snap-mandatory scrollbar-hide flex flex-col items-center rounded-3xl border border-white/10 bg-black shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
-          >
-            {videos.map((video) => (
-              <DesktopVideoShort
-                key={video.id}
-                video={video}
-                isMuted={isMuted}
-                onSetActive={() => setActiveVideo(video)}
-              />
-            ))}
-          </div>
+        {/* 1. Left: Video (30%) */}
+        <div 
+          ref={videoContainerRef}
+          className="w-[30%] h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide flex flex-col items-end shrink-0"
+        >
+          {videos.map((video) => (
+            <DesktopVideoShort
+              key={video.id}
+              video={video}
+              isMuted={isMuted}
+              onSetActive={() => setActiveVideo(video)}
+            />
+          ))}
         </div>
 
-        {/* 2. Middle: Control Dock */}
-        <div className="w-20 h-[85vh] max-h-[850px] flex items-center justify-center shrink-0">
+        {/* 2. Gap (1.5%) */}
+        <div className="w-[1.5%] h-full shrink-0" />
+
+        {/* 3. Middle: Control Dock (10%) */}
+        <div className="w-[10%] h-full flex items-center justify-center shrink-0">
           <div className="bg-[#1c1c1e]/80 backdrop-blur-xl border border-white/10 rounded-full py-6 px-3 flex flex-col items-center gap-6 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
             <button onClick={scrollUp} className="w-12 h-12 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 rounded-full transition">
               <ChevronUp size={28} />
@@ -164,9 +165,12 @@ export default function ShortsFeedPage() {
           </div>
         </div>
 
-        {/* 3. Right: Comments */}
-        <div className="flex-1 h-full flex items-center justify-start">
-          <div className="h-[85vh] max-h-[850px] aspect-[9/16] bg-[#0a0a0a] border border-white/10 rounded-3xl flex flex-col overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+        {/* 4. Gap (1.5%) */}
+        <div className="w-[1.5%] h-full shrink-0" />
+
+        {/* 5. Right: Comments (57%) */}
+        <div className="w-[57%] h-full flex items-center pr-6">
+          <div className="w-full h-[85vh] max-h-[850px] bg-[#0a0a0a] border border-white/10 rounded-3xl flex flex-col overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
             {activeVideo && (
               <>
                 <div className="p-4 flex items-center justify-between shrink-0 bg-[#0a0a0a] border-b border-white/5">
@@ -220,33 +224,34 @@ function DesktopVideoShort({ video, isMuted, onSetActive }: { video: Video, isMu
   }, [onSetActive]);
 
   return (
-    <div ref={containerRef} className="w-full h-full snap-start shrink-0 relative bg-black">
-      {(!video.videoUrl && !video.bitchuteUrl) ? (
-        <div className="flex items-center justify-center h-full text-white/30 text-sm">No video source</div>
-      ) : (
-        <video
-          ref={videoRef}
-          src={video.videoUrl || video.bitchuteUrl}
-          poster={video.posterUrl}
-          loop
-          playsInline
-          muted={isMuted}
-          preload="auto"
-          autoPlay
-          onLoadedData={(e) => {
-             e.currentTarget.play().catch(() => {});
-          }}
-          className="w-full h-full object-cover cursor-pointer"
-          onClick={(e) => {
-            if (e.currentTarget.paused) e.currentTarget.play();
-            else e.currentTarget.pause();
-          }}
-        />
-      )}
+    <div ref={containerRef} className="w-full h-full snap-start flex items-center justify-end pr-2 shrink-0">
+      <div className="relative w-full max-w-[500px] aspect-[9/16] max-h-[85vh] rounded-3xl overflow-hidden border border-white/10 bg-black shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+        {(!video.videoUrl && !video.bitchuteUrl) ? (
+          <div className="flex items-center justify-center h-full text-white/30 text-sm">No video source</div>
+        ) : (
+          <video
+            ref={videoRef}
+            src={video.videoUrl || video.bitchuteUrl}
+            poster={video.posterUrl}
+            loop
+            playsInline
+            muted={isMuted}
+            preload="auto"
+            autoPlay
+            onLoadedData={(e) => {
+               e.currentTarget.play().catch(() => {});
+            }}
+            className="w-full h-full object-cover cursor-pointer"
+            onClick={(e) => {
+              if (e.currentTarget.paused) e.currentTarget.play();
+              else e.currentTarget.pause();
+            }}
+          />
+        )}
+      </div>
     </div>
   );
 }
-
 
 function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComments, onSetActive }: { video: Video, creator: Creator | null, isMuted: boolean, onToggleMute: () => void, onOpenComments: () => void, onSetActive: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -557,4 +562,3 @@ function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComment
     </div>
   );
 }
-
