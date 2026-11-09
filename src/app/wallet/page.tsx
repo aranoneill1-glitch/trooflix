@@ -239,7 +239,7 @@ export default function WalletPage() {
                               {t.type === "topup" ? "Top Up" : t.type === "tip" ? "Tip Sent" : t.type === "send" ? "Sent Coins" : isPayout ? `Payout ${isPaid ? "Paid" : isCancelled ? "Cancelled" : "Pending"}` : "Subscription"}
                             </p>
                             <div className="flex items-center gap-1.5 mt-0.5">
-                              <span className="text-[9px] font-mono font-bold text-white/30 tracking-wide">UTR-{t.id ? t.id.split("-")[0].toUpperCase() : "N/A"}</span>
+                              <span className="text-[9px] font-mono font-bold text-white/30 tracking-wide">TRX-{t.id ? t.id.split("-")[0].toUpperCase() : "N/A"}</span>
                               <span className="text-[10px] text-white/20">•</span>
                               <span className="text-[11px] text-white/40">{new Date(t.created_at).toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</span>
                             </div>
@@ -270,7 +270,7 @@ export default function WalletPage() {
               <div className="p-6">
                 <div className="flex flex-col gap-1.5 mb-6">
                   <p className="text-[10px] font-mono font-bold text-white/60 bg-white/10 px-2 py-1 rounded-md w-fit tracking-widest">
-                    UTR: {selectedTx.id ? selectedTx.id.split("-")[0].toUpperCase() : "N/A"}
+                    TRX-{selectedTx.id ? selectedTx.id.split("-")[0].toUpperCase() : "N/A"}
                   </p>
                   <p className="text-xs text-white/50">{new Date(selectedTx.created_at).toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" })}</p>
                 </div>
