@@ -40,7 +40,7 @@ const TIERS = [
       { text: "Upload Shorts (any length)", included: true },
       { text: "Watch live streams (public)", included: true },
       { text: "Upload merch / open shop", included: true },
-      { text: "Red glass tick", included: true },
+      { text: "Red tick", included: true },
       { text: "Watch Premium (must pay creator)", included: false },
       { text: "Upload long-form videos", included: false },
       { text: "Go Live (broadcast)", included: false },
@@ -63,7 +63,7 @@ const TIERS = [
       { text: "Post Tweets", included: true },
       { text: "Full Creator Dashboard", included: true },
       { text: "Custom profile theme", included: true },
-      { text: "90% revenue share", included: true },
+      { text: "99% revenue share", included: true },
       { text: "Watch Premium (must pay creator)", included: false },
     ],
     color: "text-[#D4AF37]",
@@ -102,7 +102,7 @@ export default function SignupPage() {
                   ) : (
                     <div className="flex items-center gap-1.5">
                       <div className={`w-5 h-5 rounded-full ${tier.id === "creator" ? "bg-[#D4AF37]" : "bg-[#E53945]"}`} />
-                      <span className="text-[10px] text-white/50 font-bold uppercase tracking-wider">{tier.id === "creator" ? "Gold tick" : "Red glass tick"}</span>
+                      <span className="text-[10px] text-white/50 font-bold uppercase tracking-wider">{tier.id === "creator" ? "Gold tick" : "Red tick"}</span>
                     </div>
                   )}
                 </div>
