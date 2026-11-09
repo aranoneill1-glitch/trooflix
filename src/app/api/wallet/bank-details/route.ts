@@ -23,8 +23,11 @@ export async function POST(req: Request) {
       account_name: body.accountName || null,
       bank_name: body.bankName || null,
       account_number: body.accountNumber || null,
+      iban: body.iban || null,
+      swift_bic: body.swiftBic || null,
       sort_code: body.sortCode || null,
       crypto_address: body.cryptoAddress || null,
+      crypto_network: body.cryptoNetwork || null,
       updated_at: new Date().toISOString()
     });
 

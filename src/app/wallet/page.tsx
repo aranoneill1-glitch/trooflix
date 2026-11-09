@@ -24,7 +24,7 @@ export default function WalletPage() {
   const [payoutError, setPayoutError] = useState("");
 
   const [detailsType, setDetailsType] = useState<"bank" | "crypto">("bank");
-  const [form, setForm] = useState({ accountName: "", bankName: "", accountNumber: "", sortCode: "", cryptoAddress: "" });
+  const [form, setForm] = useState({ accountName: "", bankName: "", accountNumber: "", iban: "", swiftBic: "", sortCode: "", cryptoAddress: "", cryptoNetwork: "USDT (TRC20)" });
   const [detailsStatus, setDetailsStatus] = useState<"idle"|"loading"|"success">("idle");
 
   const fetchWallet = () => {
@@ -43,8 +43,11 @@ export default function WalletPage() {
               accountName: d.bankDetails.account_name || "",
               bankName: d.bankDetails.bank_name || "",
               accountNumber: d.bankDetails.account_number || "",
+              iban: d.bankDetails.iban || "",
+              swiftBic: d.bankDetails.swift_bic || "",
               sortCode: d.bankDetails.sort_code || "",
-              cryptoAddress: d.bankDetails.crypto_address || ""
+              cryptoAddress: d.bankDetails.crypto_address || "",
+              cryptoNetwork: d.bankDetails.crypto_network || "USDT (TRC20)"
             });
           }
         });
@@ -129,7 +132,7 @@ export default function WalletPage() {
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-500"><Bitcoin size={20} /></div>
                   <div>
-                    <p className="text-xs font-bold text-yellow-500 uppercase tracking-wider mb-0.5">Crypto (15% Fee)</p>
+                    <p className="text-xs font-bold text-yellow-500 uppercase tracking-wider mb-0.5">{bankDetails.crypto_network} (15% Fee)</p>
                     <p className="font-mono text-sm text-white/80 break-all">{bankDetails.crypto_address.slice(0, 10)}...{bankDetails.crypto_address.slice(-6)}</p>
                   </div>
                 </div>
@@ -257,7 +260,7 @@ export default function WalletPage() {
       {/* Payout Settings Modal */}
       {showDetailsModal && (
         <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowDetailsModal(false)}>
-          <div className="bg-[#1c1c1e] border border-white/10 rounded-3xl w-full max-w-sm p-6 relative" onClick={e => e.stopPropagation()}>
+          <div className="bg-[#1c1c1e] border border-white/10 rounded-3xl w-full max-w-sm p-6 relative overflow-y-auto max-h-[90vh]" onClick={e => e.stopPropagation()}>
             <button onClick={() => setShowDetailsModal(false)} className="absolute top-4 right-4 p-2 bg-white/5 rounded-full hover:bg-white/10 transition"><X size={18} /></button>
             <h2 className="text-2xl font-black mb-1">Payout Settings</h2>
             <p className="text-sm text-white/50 mb-6">Where should we send your money?</p>
@@ -276,19 +279,28 @@ export default function WalletPage() {
 
                 {detailsType === "bank" ? (
                   <div className="space-y-3">
-                    <input type="text" value={form.accountName} onChange={e => setForm({...form, accountName: e.target.value})} placeholder="Account Name" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-[#E53945]" />
+                    <input type="text" value={form.accountName} onChange={e => setForm({...form, accountName: e.target.value})} placeholder="Account Holder Name" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-[#E53945]" />
                     <input type="text" value={form.bankName} onChange={e => setForm({...form, bankName: e.target.value})} placeholder="Bank Name" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-[#E53945]" />
-                    <input type="text" value={form.accountNumber} onChange={e => setForm({...form, accountNumber: e.target.value})} placeholder="Account Number / IBAN" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-[#E53945]" />
+                    <input type="text" value={form.accountNumber} onChange={e => setForm({...form, accountNumber: e.target.value})} placeholder="Account Number (US/UK)" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-[#E53945]" />
                     <input type="text" value={form.sortCode} onChange={e => setForm({...form, sortCode: e.target.value})} placeholder="Sort Code / Routing Number" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-[#E53945]" />
+                    <div className="h-px bg-white/10 my-1"></div>
+                    <input type="text" value={form.iban} onChange={e => setForm({...form, iban: e.target.value})} placeholder="IBAN (Europe)" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-[#E53945]" />
+                    <input type="text" value={form.swiftBic} onChange={e => setForm({...form, swiftBic: e.target.value})} placeholder="SWIFT / BIC Code (International)" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-[#E53945]" />
                   </div>
                 ) : (
-                  <div>
-                    <input type="text" value={form.cryptoAddress} onChange={e => setForm({...form, cryptoAddress: e.target.value})} placeholder="USDT/BTC Wallet Address" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm font-mono text-white outline-none focus:border-yellow-500" />
-                    <p className="text-[10px] text-yellow-500/70 mt-2">Note: A 15% fee will be deducted from all crypto payouts.</p>
+                  <div className="space-y-3">
+                    <select value={form.cryptoNetwork} onChange={e => setForm({...form, cryptoNetwork: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-yellow-500 appearance-none">
+                      <option value="USDT (TRC20)">USDT (TRC20)</option>
+                      <option value="USDT (ERC20)">USDT (ERC20)</option>
+                      <option value="Bitcoin (BTC)">Bitcoin (BTC)</option>
+                      <option value="Ethereum (ETH)">Ethereum (ETH)</option>
+                    </select>
+                    <input type="text" value={form.cryptoAddress} onChange={e => setForm({...form, cryptoAddress: e.target.value})} placeholder="Wallet Address" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm font-mono text-white outline-none focus:border-yellow-500" />
+                    <p className="text-[10px] text-yellow-500/70 mt-1">Note: A 15% fee is deducted from crypto payouts to cover network fees.</p>
                   </div>
                 )}
 
-                <button onClick={saveDetails} disabled={detailsStatus === "loading" || (detailsType === "bank" && (!form.accountName || !form.bankName || !form.accountNumber)) || (detailsType === "crypto" && !form.cryptoAddress)} className="w-full mt-4 bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold py-3.5 rounded-xl transition">
+                <button onClick={saveDetails} disabled={detailsStatus === "loading" || (detailsType === "bank" && (!form.accountName || !form.bankName)) || (detailsType === "crypto" && !form.cryptoAddress)} className="w-full mt-4 bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold py-3.5 rounded-xl transition">
                   {detailsStatus === "loading" ? "Saving..." : "Save Details"}
                 </button>
               </>

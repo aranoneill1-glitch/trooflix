@@ -43,9 +43,19 @@ export default function AdminCoinPayouts() {
                 <p className="text-xs text-white/40 flex items-center gap-1 mb-1"><Clock size={12}/> {formatDate(p.created_at)}</p>
                 {p.bank_details ? (
                   p.bank_details.payout_type === "crypto" ? (
-                    <p className="text-xs text-yellow-500 font-mono bg-yellow-500/10 px-2 py-1 rounded inline-block">Crypto: {p.bank_details.crypto_address}</p>
+                    <div className="bg-yellow-500/10 border border-yellow-500/20 p-2 rounded-lg inline-block">
+                      <p className="text-xs font-bold text-yellow-500">{p.bank_details.crypto_network}</p>
+                      <p className="text-xs font-mono text-white/80 break-all">{p.bank_details.crypto_address}</p>
+                    </div>
                   ) : (
-                    <p className="text-xs text-white/60 bg-white/5 px-2 py-1 rounded inline-block">Bank: {p.bank_details.bank_name} | Acc: {p.bank_details.account_number} | Name: {p.bank_details.account_name}</p>
+                    <div className="bg-white/5 border border-white/10 p-2 rounded-lg inline-block text-xs text-white/70 space-y-0.5">
+                      <p><strong className="text-white/50">Name:</strong> {p.bank_details.account_name}</p>
+                      <p><strong className="text-white/50">Bank:</strong> {p.bank_details.bank_name}</p>
+                      {p.bank_details.account_number && <p><strong className="text-white/50">Acc No:</strong> {p.bank_details.account_number}</p>}
+                      {p.bank_details.sort_code && <p><strong className="text-white/50">Sort/Routing:</strong> {p.bank_details.sort_code}</p>}
+                      {p.bank_details.iban && <p><strong className="text-white/50">IBAN:</strong> {p.bank_details.iban}</p>}
+                      {p.bank_details.swift_bic && <p><strong className="text-white/50">SWIFT/BIC:</strong> {p.bank_details.swift_bic}</p>}
+                    </div>
                   )
                 ) : (
                   <p className="text-xs text-red-400">No payout details provided.</p>
