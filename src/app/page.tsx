@@ -520,70 +520,37 @@ export default function Home() {
           {showingFiltered && <div className="h-20 md:h-24" />}
 
           
-      {/* FEATURES ROW (DESKTOP) */}
-      <div className="hidden lg:block w-full max-w-[1600px] mx-auto px-12 py-16">
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl md:text-4xl font-black tracking-tight">
+            {/* FEATURES ROW (DESKTOP) */}
+      <div className="hidden lg:block w-full max-w-[1600px] mx-auto px-12 py-20">
+        <div className="flex items-center justify-between mb-10">
+          <h2 className="text-3xl md:text-5xl font-black tracking-tight">
             Why Creators Are <span className="text-[#E53945]">Switching</span>
           </h2>
         </div>
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* Feature 1 */}
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-colors group">
-            <div className="w-12 h-12 rounded-xl bg-[#E53945]/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-              <DollarSign size={24} className="text-[#E53945]" />
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+          {[
+            { icon: DollarSign, title: "Keep 99% of Revenue", desc: "A flat 1% fee. No hidden cuts, no demonetization." },
+            { icon: ShieldOff, title: "Zero Censorship", desc: "No shadowbans. No algorithmic suppression. Your audience gets your content." },
+            { icon: Radio, title: "Live Streaming", desc: "Broadcast-quality WebRTC live streams with multi-guest support." },
+            { icon: MessageSquare, title: "DMs & Video Calls", desc: "Connect directly with your audience using built-in messaging and WebRTC calls." },
+            { icon: Download, title: "1-Click YouTube Import", desc: "Migrate your entire back-catalog instantly using Google Takeout." },
+            { icon: ShoppingBag, title: "Built-in Storefront", desc: "Sell merch, books, and digital goods directly on your profile." }
+          ].map((feat, i) => (
+            <div key={i} className="relative bg-[#0f0f12] border border-white/5 rounded-3xl p-8 hover:border-[#E53945]/40 hover:bg-[#141418] transition-all duration-300 group overflow-hidden shadow-2xl">
+              <div className="absolute inset-0 bg-gradient-to-br from-[#E53945]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+              
+              <div className="relative z-10">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#E53945] to-[#b91c1c] shadow-lg shadow-[#E53945]/30 flex items-center justify-center mb-6 group-hover:-translate-y-1 transition-transform duration-300">
+                  <feat.icon size={28} className="text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-3">{feat.title}</h3>
+                <p className="text-[15px] text-white/50 leading-relaxed group-hover:text-white/70 transition-colors">{feat.desc}</p>
+              </div>
             </div>
-            <h3 className="text-lg font-bold text-white mb-2">Keep 99% of Revenue</h3>
-            <p className="text-sm text-white/50 leading-relaxed">A flat 1% fee. That&apos;s it. No hidden cuts, no demonetization.</p>
-          </div>
-
-          {/* Feature 2 */}
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-colors group">
-            <div className="w-12 h-12 rounded-xl bg-[#E53945]/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-              <ShieldOff size={24} className="text-[#E53945]" />
-            </div>
-            <h3 className="text-lg font-bold text-white mb-2">Zero Censorship</h3>
-            <p className="text-sm text-white/50 leading-relaxed">No shadowbans. No algorithmic suppression. Your audience gets your content.</p>
-          </div>
-
-          {/* Feature 3 */}
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-colors group">
-            <div className="w-12 h-12 rounded-xl bg-[#E53945]/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-              <Radio size={24} className="text-[#E53945]" />
-            </div>
-            <h3 className="text-lg font-bold text-white mb-2">Live Streaming</h3>
-            <p className="text-sm text-white/50 leading-relaxed">Broadcast-quality WebRTC live streams with multi-guest support.</p>
-          </div>
-
-          {/* Feature 4 */}
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-colors group">
-            <div className="w-12 h-12 rounded-xl bg-[#E53945]/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-              <MessageSquare size={24} className="text-[#E53945]" />
-            </div>
-            <h3 className="text-lg font-bold text-white mb-2">DMs & Video Calls</h3>
-            <p className="text-sm text-white/50 leading-relaxed">Connect directly with your audience using built-in messaging and WebRTC calls.</p>
-          </div>
-
-          {/* Feature 5 */}
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-colors group">
-            <div className="w-12 h-12 rounded-xl bg-[#E53945]/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-              <Download size={24} className="text-[#E53945]" />
-            </div>
-            <h3 className="text-lg font-bold text-white mb-2">1-Click YouTube Import</h3>
-            <p className="text-sm text-white/50 leading-relaxed">Migrate your entire back-catalog instantly using Google Takeout.</p>
-          </div>
-
-          {/* Feature 6 */}
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-colors group">
-            <div className="w-12 h-12 rounded-xl bg-[#E53945]/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-              <ShoppingBag size={24} className="text-[#E53945]" />
-            </div>
-            <h3 className="text-lg font-bold text-white mb-2">Built-in Storefront</h3>
-            <p className="text-sm text-white/50 leading-relaxed">Sell merch, books, and digital goods directly on your profile.</p>
-          </div>
+          ))}
         </div>
       </div>
-      
+
       <DirectoryHome videos={videos} creators={creators} />
         <div className="hidden relative z-10 pt-0 md:pt-2 pb-32 md:pb-20 space-y-2 md:space-y-6">
             {filtered && <SearchResults search={search} videos={videos} creators={creators} onVideoClick={setSelected} />}
