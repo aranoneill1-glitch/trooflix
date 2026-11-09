@@ -66,7 +66,7 @@ function isMediaUrl(text: string): boolean {
   return MEDIA_EXT.test(t);
 }
 
-export default function Comments({ videoId, onMetaChange }: { videoId: number, onMetaChange?: (count: number, sort: string, setSort: (s: any) => void) => void }) {
+export default function Comments({ videoId, onMetaChange, variant = "default" }: { videoId: number, onMetaChange?: (count: number, sort: string, setSort: (s: any) => void) => void, variant?: "default" | "chat" }) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [likedCommentIds, setLikedCommentIds] = useState<number[]>([]);
   const [text, setText] = useState("");
@@ -291,98 +291,10 @@ export default function Comments({ videoId, onMetaChange }: { videoId: number, o
       .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
   return (
-    <div className="pb-8">
+    <div className={variant === "chat" ? "flex flex-col h-full bg-[#0a0a0a]" : "pb-8"}>
 
       {/* New comment form */}
-      {user ? (
-        <form
-          onSubmit={(e) => submit(e)}
-          className="bg-transparent pb-4"
-        >
-          <div className="flex items-end gap-2.5">
-            <div
-              className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 overflow-hidden bg-white/10"
-            >
-              {userAvatar ? (
-                <img src={userAvatar} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <User size={18} className="text-white/50" />
-              )}
-            </div>
-            <div className="flex-1 flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full pl-3 md:pl-4 pr-2 py-1.5 md:py-2 focus-within:border-white/40 transition shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
-              <textarea
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                placeholder="Add a comment…"
-                rows={1}
-                maxLength={500}
-                className="flex-1 bg-transparent outline-none text-sm resize-none max-h-24 placeholder:text-white/40 py-0.5"
-                onInput={(e) => {
-                  const target = e.target as HTMLTextAreaElement;
-                  target.style.height = "auto";
-                  target.style.height = Math.min(target.scrollHeight, 96) + "px";
-                }}
-              />
-
-              {/* Image upload icon */}
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-                className="w-7 h-7 flex items-center justify-center text-white/70 hover:text-white transition flex-shrink-0 disabled:opacity-50"
-                aria-label="Add image"
-              >
-                {uploading ? (
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : (
-                  <ImageIcon size={20} />
-                )}
-              </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) uploadCommentImage(f);
-                }}
-              />
-
-              {/* GIF button */}
-              <button
-                type="button"
-                onClick={() => setGifOpen(true)}
-                className="flex-shrink-0 border border-white/40 rounded-md px-1.5 py-0.5 text-[10px] font-black tracking-tight text-white/80 hover:text-white hover:border-white transition"
-                aria-label="Add GIF"
-              >
-                GIF
-              </button>
-
-              {/* Post button — only shows when text is present */}
-              {text.trim() && (
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="flex-shrink-0 text-sm font-bold text-red-500 hover:text-red-400 disabled:opacity-30 transition px-1"
-                >
-                  {submitting ? "…" : "Post"}
-                </button>
-              )}
-            </div>
-          </div>
-        </form>
-      ) : (
-        <div className="mb-5 md:mb-8 p-3 md:p-4 bg-white/5 rounded-lg flex items-center justify-between gap-3 md:gap-4">
-          <p className="text-sm text-white/70">Sign in to join the conversation</p>
-          <Link
-            href="/login"
-            className="flex-shrink-0 bg-red-600 hover:bg-red-500 text-white font-semibold px-4 py-1.5 rounded-full text-sm transition"
-          >
-            Sign In
-          </Link>
-        </div>
-      )}
+      
 
       <GifPicker
         open={gifOpen}
@@ -398,7 +310,7 @@ export default function Comments({ videoId, onMetaChange }: { videoId: number, o
         </p>
       )}
 
-      <div className="space-y-6">
+      <div className={variant === "chat" ? "order-1 flex-1 overflow-y-auto p-4 space-y-4" : "space-y-6"}>
         {topLevel.map((c) => {
           const replies = repliesFor(c.id);
           const isOwn = user?.id === c.user_id;
@@ -407,7 +319,7 @@ export default function Comments({ videoId, onMetaChange }: { videoId: number, o
           return (
             <div key={c.id}>
               {/* Top-level comment */}
-              <div className="flex gap-3">
+              <div className={`flex gap-3 ${variant === "chat" ? "bg-[#1c1c1e] p-3 rounded-2xl border border-white/5" : ""}`}>
                 <div
                   className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 overflow-hidden bg-white/10"
                 >
@@ -633,6 +545,97 @@ export default function Comments({ videoId, onMetaChange }: { videoId: number, o
             </div>
           );
         })}
+      </div>
+      <div className={variant === "chat" ? "order-2 p-4 border-t border-white/10 shrink-0 bg-[#0a0a0a]" : ""}>
+        {user ? (
+        <form
+          onSubmit={(e) => submit(e)}
+          className="bg-transparent pb-4"
+        >
+          <div className="flex items-end gap-2.5">
+            <div
+              className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 overflow-hidden bg-white/10"
+            >
+              {userAvatar ? (
+                <img src={userAvatar} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <User size={18} className="text-white/50" />
+              )}
+            </div>
+            <div className={`flex-1 flex items-center gap-2 ${variant === "chat" ? "bg-[#1c1c1e] border border-white/10 rounded-full pl-4 pr-2 py-2" : "bg-white/10 backdrop-blur-md border border-white/20 rounded-full pl-3 md:pl-4 pr-2 py-1.5 md:py-2 focus-within:border-white/40 transition shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]"}`}>
+              <textarea
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                placeholder="Add a comment…"
+                rows={1}
+                maxLength={500}
+                className="flex-1 bg-transparent outline-none text-sm resize-none max-h-24 placeholder:text-white/40 py-0.5"
+                onInput={(e) => {
+                  const target = e.target as HTMLTextAreaElement;
+                  target.style.height = "auto";
+                  target.style.height = Math.min(target.scrollHeight, 96) + "px";
+                }}
+              />
+
+              {/* Image upload icon */}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="w-7 h-7 flex items-center justify-center text-white/70 hover:text-white transition flex-shrink-0 disabled:opacity-50"
+                aria-label="Add image"
+              >
+                {uploading ? (
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <ImageIcon size={20} />
+                )}
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) uploadCommentImage(f);
+                }}
+              />
+
+              {/* GIF button */}
+              <button
+                type="button"
+                onClick={() => setGifOpen(true)}
+                className="flex-shrink-0 border border-white/40 rounded-md px-1.5 py-0.5 text-[10px] font-black tracking-tight text-white/80 hover:text-white hover:border-white transition"
+                aria-label="Add GIF"
+              >
+                GIF
+              </button>
+
+              {/* Post button — only shows when text is present */}
+              {text.trim() && (
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="flex-shrink-0 text-sm font-bold text-red-500 hover:text-red-400 disabled:opacity-30 transition px-1"
+                >
+                  {submitting ? "…" : "Post"}
+                </button>
+              )}
+            </div>
+          </div>
+        </form>
+      ) : (
+        <div className="mb-5 md:mb-8 p-3 md:p-4 bg-white/5 rounded-lg flex items-center justify-between gap-3 md:gap-4">
+          <p className="text-sm text-white/70">Sign in to join the conversation</p>
+          <Link
+            href="/login"
+            className="flex-shrink-0 bg-red-600 hover:bg-red-500 text-white font-semibold px-4 py-1.5 rounded-full text-sm transition"
+          >
+            Sign In
+          </Link>
+        </div>
+      )}
       </div>
     </div>
   );

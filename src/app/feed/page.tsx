@@ -36,6 +36,7 @@ export default function ShortsFeedPage() {
   const [loading, setLoading] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const [commentSheetVideoId, setCommentSheetVideoId] = useState<number | null>(null);
+  const [activeVideo, setActiveVideo] = useState<Video | null>(null);
   const [activeVideoId, setActiveVideoId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -48,6 +49,10 @@ export default function ShortsFeedPage() {
       const sortedShorts = shortsOnly.sort((a: any, b: any) => b.id - a.id);
       setVideos(sortedShorts);
       setCreators(Array.isArray(cData) ? cData : []);
+      if (sortedShorts.length > 0) {
+        setActiveVideo(sortedShorts[0]);
+        setActiveVideoId(sortedShorts[0].id);
+      }
       setLoading(false);
     }).catch(() => setLoading(false));
   }, []);
@@ -62,54 +67,33 @@ export default function ShortsFeedPage() {
     );
   }
 
+  const activeCreator = activeVideo ? creators.find(c => String(c.id) === String(activeVideo.creatorId)) : null;
+
   return (
-    <main className="h-[100dvh] w-full bg-black flex overflow-hidden">
-      {/* Left Side: Video Feed */}
-      <div className="flex-1 h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide relative flex flex-col items-center bg-[#050505]">
+    <main className="h-[100dvh] w-full bg-black overflow-hidden flex">
+      
+      {/* MOBILE VIEW (Unchanged) */}
+      <div className="lg:hidden w-full h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide relative bg-black">
         {videos.map((video) => {
           const creator = creators.find((c) => String(c.id) === String(video.creatorId)) || null;
           return (
-            <VideoShort
+            <MobileVideoShort
               key={video.id}
               video={video}
               creator={creator}
               isMuted={isMuted}
               onToggleMute={toggleMute}
               onOpenComments={() => setCommentSheetVideoId(video.id)}
-              onSetActive={() => setActiveVideoId(video.id)}
+              onSetActive={() => setActiveVideo(video)}
             />
           );
         })}
-
         {videos.length === 0 && (
           <div className="h-full flex flex-col items-center justify-center text-white/50">
             <Play size={48} className="mb-4 opacity-50" />
             <p>No shorts available yet.</p>
           </div>
         )}
-      </div>
-
-      {/* Right Side: Comments (Desktop Only) */}
-      <div className="hidden lg:flex flex-col w-[400px] xl:w-[450px] h-[100dvh] bg-[#0f0f12] border-l border-white/10 shadow-2xl z-20">
-        <div className="p-4 border-b border-white/10 bg-[#1c1c1e] flex items-center justify-between shrink-0">
-          <h2 className="text-sm font-bold text-white flex items-center gap-2">
-            <MessageCircle size={16} /> Comments
-          </h2>
-        </div>
-        <div className="flex-1 overflow-y-auto">
-          {activeVideoId ? (
-            <Comments videoId={activeVideoId} />
-          ) : (
-            <div className="flex flex-col items-center justify-center h-full text-white/30 text-sm gap-3">
-              <MessageCircle size={32} opacity={0.5} />
-              <p>Scroll to a short to see comments</p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Mobile Overlays */}
-      <div className="lg:hidden">
         <CommentSheet
           videoId={commentSheetVideoId}
           open={commentSheetVideoId !== null}
@@ -117,11 +101,91 @@ export default function ShortsFeedPage() {
         />
         <MobileBottomNav />
       </div>
+
+      {/* DESKTOP VIEW (1 Video per screen, split layout) */}
+      <div className="hidden lg:flex w-full h-full">
+        {/* Left Side: Video Scroller */}
+        <div className="flex-1 h-[100dvh] overflow-y-scroll snap-y snap-mandatory scrollbar-hide flex flex-col items-center bg-[#050505]">
+          {videos.map((video) => (
+            <div key={video.id} className="w-full h-[100dvh] snap-start flex items-center justify-center p-6 shrink-0">
+              <div className="relative h-[85vh] max-h-[850px] aspect-[9/16] rounded-3xl overflow-hidden border border-white/10 bg-[#0a0a0a] shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+                <video
+                  src={video.videoUrl || video.bitchuteUrl}
+                  loop
+                  playsInline
+                  muted={isMuted}
+                  preload="metadata"
+                  onLoadedData={(e) => {
+                     e.currentTarget.play().catch(() => {});
+                     setActiveVideo(video);
+                     setActiveVideoId(video.id);
+                  }}
+                  className="w-full h-full object-cover"
+                  onClick={(e) => {
+                    if (e.currentTarget.paused) e.currentTarget.play();
+                    else e.currentTarget.pause();
+                  }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Right Side: Chat & Controls Panel */}
+        <div className="w-[400px] xl:w-[450px] h-full border-l border-white/10 flex flex-col bg-black shrink-0">
+          {activeVideo && (
+            <>
+              {/* Creator Header */}
+              <div className="p-4 border-b border-white/10 flex items-center justify-between shrink-0 bg-[#0a0a0a] z-10">
+                <div className="flex items-center gap-3">
+                  {activeCreator?.photoUrl ? (
+                    <img src={activeCreator.photoUrl} className="w-10 h-10 rounded-full border border-white/20 object-cover" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center font-bold text-white">
+                      {activeCreator?.name?.charAt(0) || "C"}
+                    </div>
+                  )}
+                  <Link href={activeCreator?.slug ? `/profile/${activeCreator.slug}` : "#"} className="font-bold text-white hover:text-white/80 transition">
+                    {activeCreator?.name || "Creator"}
+                  </Link>
+                </div>
+                <button className="bg-[#E53945] hover:bg-[#d12e39] text-white text-xs font-bold px-4 py-1.5 rounded-full transition">
+                  Follow
+                </button>
+              </div>
+              
+              {/* Action Buttons */}
+              <div className="p-3 border-b border-white/10 flex items-center gap-5 text-white shrink-0 bg-[#0a0a0a] z-10">
+                <button onClick={toggleMute} className="hover:scale-110 transition">
+                  {isMuted ? <VolumeX size={20}/> : <Volume2 size={20}/>}
+                </button>
+                <div className="flex items-center gap-1.5 text-white/70">
+                  <Eye size={18}/>
+                  <span className="text-xs font-bold">{activeVideo.views || 0}</span>
+                </div>
+                <button className="hover:scale-110 transition text-white">
+                  <MessageCircle size={20}/>
+                </button>
+                <button onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: activeVideo.creatorId, videoId: activeVideo.id } }))} className="hover:scale-110 transition text-yellow-500">
+                  <Gift size={20}/>
+                </button>
+                <LikeButton videoId={activeVideo.id} size={20} showCount={true} />
+              </div>
+
+              {/* Live Chat Comments */}
+              <div className="flex-1 overflow-hidden bg-[#0a0a0a]">
+                <Comments videoId={activeVideo.id} variant="chat" />
+              </div>
+            </>
+          )}
+        </div>
+      </div>
     </main>
   );
 }
 
-function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments, onSetActive }: { video: Video, creator: Creator | null, isMuted: boolean, onToggleMute: () => void, onOpenComments: () => void, onSetActive: () => void }) {
+// Mobile Video Short Component (Unchanged)
+function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComments, onSetActive }: { video: Video, creator: Creator | null, isMuted: boolean, onToggleMute: () => void, onOpenComments: () => void, onSetActive: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -326,118 +390,112 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments, onS
   };
 
   return (
-    <div className="w-full h-full snap-start snap-always flex items-center justify-center p-4">
-      <div
-        data-index={video.id}
-        data-video-id={video.id}
-        className="relative h-[80dvh] max-h-[800px] aspect-[9/16] rounded-2xl overflow-hidden shadow-[0_0_40px_rgba(0,0,0,0.8)] border border-white/10 bg-black group"
+    <div className="relative w-full h-[100dvh] snap-start snap-always bg-black flex items-center justify-center overflow-hidden">
+      <video
+        ref={videoRef}
+        src={videoSrc}
+        loop
+        playsInline
+        muted={isMuted}
+        preload="auto"
+        onLoadedData={() => {
+          if (videoRef.current) videoRef.current.play().catch(() => {});
+          fetch("/api/views", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ videoId: video.id })
+          }).catch(() => {});
+        }}
+        onError={() => setHasError(true)}
+        className="w-full h-full object-cover cursor-pointer"
         onClick={handleScreenClick}
-      >
-        <video
-          ref={videoRef}
-          src={videoSrc}
-          loop
-          playsInline
-          muted={isMuted}
-          preload="auto"
-          onLoadedData={() => {
-            if (videoRef.current) videoRef.current.play().catch(() => {});
-            fetch("/api/views", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ videoId: video.id })
-            }).catch(() => {});
-          }}
-          onError={() => setHasError(true)}
-          className="w-full h-full object-cover cursor-pointer"
-        />
+      />
 
-        {hasError && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 z-10 px-6 text-center pointer-events-none">
-            <p className="text-white font-bold mb-2">Video Unavailable</p>
-            <p className="text-white/50 text-sm">Please upload an .mp4 file.</p>
-          </div>
-        )}
+      {hasError && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 z-10 px-6 text-center pointer-events-none">
+          <p className="text-white font-bold mb-2">Video Unavailable</p>
+          <p className="text-white/50 text-sm">Please upload an .mp4 file.</p>
+        </div>
+      )}
 
-        {showPlayIcon && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-            <div className="w-20 h-20 bg-black/50 backdrop-blur-md rounded-full flex items-center justify-center">
-              {isPlaying ? <Pause size={40} className="text-white" fill="currentColor" /> : <Play size={40} className="text-white ml-2" fill="currentColor" />}
-            </div>
-          </div>
-        )}
-
-        <div className="absolute inset-x-0 bottom-0 h-[35%] bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none" />
-        <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/60 to-transparent pointer-events-none" />
-
-        <div className="absolute left-4 right-[80px] bottom-[105px] z-30 flex flex-col items-start gap-3 pointer-events-none">
-          <div 
-            className="text-white text-[14px] drop-shadow-md leading-snug cursor-pointer pointer-events-auto"
-            onClick={toggleExpand}
-          >
-            <span className={isExpanded ? "" : "line-clamp-2"}>
-              {video.description || "Watch this exclusive clip on Trooflix."}
-            </span>
-            {!isExpanded && hasLongDescription && (
-              <span className="text-white/60 font-bold ml-1.5 hover:text-white">... more</span>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2 pointer-events-auto">
-            <Link href={finalSlug ? `/profile/${finalSlug}` : "#"} className="flex items-center gap-2 group">
-              <div className="w-8 h-8 rounded-full overflow-hidden border border-white/20 bg-[#1c1c1e]">
-                {finalPhoto ? (
-                  <img src={finalPhoto} alt={finalName} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-xs font-black text-white bg-gradient-to-br from-[#E53945] to-[#8a1e26]">
-                    {finalName.charAt(0).toUpperCase()}
-                  </div>
-                )}
-              </div>
-              <span className="text-white text-[14px] font-semibold drop-shadow-md group-hover:text-white/80 transition-colors">
-                {finalName}
-              </span>
-            </Link>
-            <button 
-              onClick={handleFollow} 
-              disabled={isSubmittingFollow}
-              className={`ml-1 px-3 py-1 text-xs font-bold rounded-md transition backdrop-blur-sm border ${isFollowing ? "bg-white/10 border-white/20 text-white" : "bg-white/20 border-white/30 text-white hover:bg-white/30"} ${isSubmittingFollow ? "opacity-50 cursor-wait" : ""}`}
-            >
-              {isFollowing ? "Following" : "Follow"}
-            </button>
-          </div>
-
-          <div className="flex items-center gap-5 pointer-events-auto">
-            <button onClick={onToggleMute} className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
-              {isMuted ? <VolumeX size={26} strokeWidth={1.5} /> : <Volume2 size={26} strokeWidth={1.5} />}
-            </button>
-            <button onClick={onOpenComments} className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
-              <MessageCircle size={26} strokeWidth={1.5} />
-            </button>
-            <button onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: video.creatorId, videoId: video.id } }))} className="text-yellow-500 drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
-              <Gift size={26} strokeWidth={1.5} />
-            </button>
-            <div className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
-              <LikeButton videoId={video.id} size={26} stacked={false} />
-            </div>
-            <div className="flex items-center gap-1.5 text-white drop-shadow-lg">
-              <Eye size={26} strokeWidth={1.5} />
-              <span className="text-[13px] font-bold">{(video as any).views || 0}</span>
-            </div>
+      {showPlayIcon && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+          <div className="w-20 h-20 bg-black/50 backdrop-blur-md rounded-full flex items-center justify-center">
+            {isPlaying ? <Pause size={40} className="text-white" fill="currentColor" /> : <Play size={40} className="text-white ml-2" fill="currentColor" />}
           </div>
         </div>
+      )}
 
-        <div className="absolute left-0 right-0 bottom-[85px] z-40 pointer-events-none px-4">
-          <div 
-            ref={progressBarRef}
-            className="relative w-full h-[3px] bg-transparent cursor-pointer touch-none py-3 -my-3 pointer-events-auto"
-            onPointerDown={handleDragStart}
-            onPointerMove={handleDragMove}
-            onPointerUp={handleDragEnd}
-            onPointerCancel={handleDragEnd}
+      <div className="absolute inset-x-0 bottom-0 h-[35%] bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none" />
+      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/60 to-transparent pointer-events-none" />
+
+      <div className="absolute left-4 right-[80px] bottom-[105px] z-30 flex flex-col items-start gap-3 pointer-events-none">
+        <div 
+          className="text-white text-[14px] drop-shadow-md leading-snug cursor-pointer pointer-events-auto"
+          onClick={toggleExpand}
+        >
+          <span className={isExpanded ? "" : "line-clamp-2"}>
+            {video.description || "Watch this exclusive clip on Trooflix."}
+          </span>
+          {!isExpanded && hasLongDescription && (
+            <span className="text-white/60 font-bold ml-1.5 hover:text-white">... more</span>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2 pointer-events-auto">
+          <Link href={finalSlug ? `/profile/${finalSlug}` : "#"} className="flex items-center gap-2 group">
+            <div className="w-8 h-8 rounded-full overflow-hidden border border-white/20 bg-[#1c1c1e]">
+              {finalPhoto ? (
+                <img src={finalPhoto} alt={finalName} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-xs font-black text-white bg-gradient-to-br from-[#E53945] to-[#8a1e26]">
+                  {finalName.charAt(0).toUpperCase()}
+                </div>
+              )}
+            </div>
+            <span className="text-white text-[14px] font-semibold drop-shadow-md group-hover:text-white/80 transition-colors">
+              {finalName}
+            </span>
+          </Link>
+          <button 
+            onClick={handleFollow} 
+            disabled={isSubmittingFollow}
+            className={`ml-1 px-3 py-1 text-xs font-bold rounded-md transition backdrop-blur-sm border ${isFollowing ? "bg-white/10 border-white/20 text-white" : "bg-white/20 border-white/30 text-white hover:bg-white/30"} ${isSubmittingFollow ? "opacity-50 cursor-wait" : ""}`}
           >
-            <div className="absolute top-1/2 -translate-y-1/2 left-0 h-[2px] bg-white pointer-events-none" style={{ width: `${progress}%` }} />
+            {isFollowing ? "Following" : "Follow"}
+          </button>
+        </div>
+
+        <div className="flex items-center gap-5 pointer-events-auto">
+          <button onClick={onToggleMute} className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
+            {isMuted ? <VolumeX size={26} strokeWidth={1.5} /> : <Volume2 size={26} strokeWidth={1.5} />}
+          </button>
+          <button onClick={onOpenComments} className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
+            <MessageCircle size={26} strokeWidth={1.5} />
+          </button>
+          <button onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: video.creatorId, videoId: video.id } }))} className="text-yellow-500 drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
+            <Gift size={26} strokeWidth={1.5} />
+          </button>
+          <div className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
+            <LikeButton videoId={video.id} size={26} stacked={false} />
           </div>
+          <div className="flex items-center gap-1.5 text-white drop-shadow-lg">
+            <Eye size={26} strokeWidth={1.5} />
+            <span className="text-[13px] font-bold">{(video as any).views || 0}</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="absolute left-0 right-0 bottom-[85px] z-40 pointer-events-none px-4">
+        <div 
+          ref={progressBarRef}
+          className="relative w-full h-[3px] bg-transparent cursor-pointer touch-none py-3 -my-3 pointer-events-auto"
+          onPointerDown={handleDragStart}
+          onPointerMove={handleDragMove}
+          onPointerUp={handleDragEnd}
+          onPointerCancel={handleDragEnd}
+        >
+          <div className="absolute top-1/2 -translate-y-1/2 left-0 h-[2px] bg-white pointer-events-none" style={{ width: `${progress}%` }} />
         </div>
       </div>
     </div>
