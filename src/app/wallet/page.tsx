@@ -14,6 +14,10 @@ export default function WalletPage() {
   const [buying, setBuying] = useState(false);
   
   const [showPayout, setShowPayout] = useState(false);
+  const [showBankDetails, setShowBankDetails] = useState(false);
+  const [bankDetails, setBankDetails] = useState<any>(null);
+  const [bankForm, setBankForm] = useState({ accountName: "", bankName: "", accountNumber: "", sortCode: "" });
+  const [bankStatus, setBankStatus] = useState<"idle"|"loading"|"success">("idle");
   const [payoutAmount, setPayoutAmount] = useState("");
   const [payoutStatus, setPayoutStatus] = useState<"idle"|"loading"|"success"|"error">("idle");
   const [payoutError, setPayoutError] = useState("");
@@ -25,6 +29,7 @@ export default function WalletPage() {
           setBalance(d.balance || 0);
           setTransactions(d.transactions || []);
           setLoading(false);
+          fetch(`/api/wallet/bank-details?userId=${u.id}`).then(r => r.json()).then(d => { if (d.bankDetails) { setBankDetails(d.bankDetails); setBankForm({ accountName: d.bankDetails.account_name, bankName: d.bankDetails.bank_name, accountNumber: d.bankDetails.account_number, sortCode: d.bankDetails.sort_code || "" }); } });
         });
       }
     });
@@ -84,9 +89,14 @@ export default function WalletPage() {
             <button onClick={() => setShowModal(true)} className="w-full bg-[#E53945] hover:bg-[#d12e39] text-white font-bold py-3.5 rounded-xl transition shadow-lg shadow-[#E53945]/20">
               Top Up Coins
             </button>
-            <button onClick={() => setShowPayout(true)} className="w-full mt-3 bg-white/10 hover:bg-white/20 border border-white/10 text-white font-bold py-3.5 rounded-xl transition">
-              Request Payout (Creators Only)
-            </button>
+            <div className="flex gap-2 mt-3">
+              <button onClick={() => setShowPayout(true)} className="flex-1 bg-white/10 hover:bg-white/20 border border-white/10 text-white font-bold py-3.5 rounded-xl transition">
+                Request Payout
+              </button>
+              <button onClick={() => setShowBankDetails(true)} className="flex-1 bg-white/10 hover:bg-white/20 border border-white/10 text-white font-bold py-3.5 rounded-xl transition">
+                Bank Details
+              </button>
+            </div>
           </div>
         </div>
 
@@ -193,6 +203,56 @@ export default function WalletPage() {
           </div>
         </div>
       )}
+
+      {showBankDetails && (
+        <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowBankDetails(false)}>
+          <div className="bg-[#1c1c1e] border border-white/10 rounded-3xl w-full max-w-sm p-6 relative" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setShowBankDetails(false)} className="absolute top-4 right-4 p-2 bg-white/5 rounded-full hover:bg-white/10 transition"><X size={18} /></button>
+            <h2 className="text-2xl font-black mb-1">Bank Details</h2>
+            <p className="text-sm text-white/50 mb-6">Required for manual payouts.</p>
+            
+            {bankStatus === "success" ? (
+              <div className="text-center py-6">
+                <CheckCircle2 size={48} className="text-green-500 mx-auto mb-4" />
+                <h4 className="text-xl font-bold mb-1">Saved!</h4>
+                <p className="text-sm text-white/50">Your payout details have been securely saved.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs font-bold text-white/50 mb-1 block">Account Holder Name</label>
+                  <input type="text" value={bankForm.accountName} onChange={e => setBankForm({ ...bankForm, accountName: e.target.value })} placeholder="John Doe" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none focus:border-[#E53945]" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-white/50 mb-1 block">Bank Name</label>
+                  <input type="text" value={bankForm.bankName} onChange={e => setBankForm({ ...bankForm, bankName: e.target.value })} placeholder="Chase Bank" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none focus:border-[#E53945]" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-white/50 mb-1 block">Account Number / IBAN</label>
+                  <input type="text" value={bankForm.accountNumber} onChange={e => setBankForm({ ...bankForm, accountNumber: e.target.value })} placeholder="12345678" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none focus:border-[#E53945]" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-white/50 mb-1 block">Sort Code / Routing Number (Optional)</label>
+                  <input type="text" value={bankForm.sortCode} onChange={e => setBankForm({ ...bankForm, sortCode: e.target.value })} placeholder="00-00-00" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-white outline-none focus:border-[#E53945]" />
+                </div>
+                <button 
+                  onClick={async () => {
+                    setBankStatus("loading");
+                    const u = await getCachedUser();
+                    const res = await fetch("/api/wallet/bank-details", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: u?.id, ...bankForm }) });
+                    if (res.ok) setBankStatus("success");
+                  }}
+                  disabled={!bankForm.accountName || !bankForm.bankName || !bankForm.accountNumber || bankStatus === "loading"}
+                  className="w-full mt-2 bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold py-3.5 rounded-xl transition"
+                >
+                  {bankStatus === "loading" ? "Saving..." : "Save Details"}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <MobileBottomNav />
     </main>
   );

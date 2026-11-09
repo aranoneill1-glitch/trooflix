@@ -40,7 +40,12 @@ export default function AdminCoinPayouts() {
                   <span className="text-xs font-mono font-bold text-white/40 bg-white/5 px-2 py-0.5 rounded">PAY-{p.id.split("-")[0].toUpperCase()}</span>
                   <span className="font-bold text-white truncate">{p.username}</span>
                 </div>
-                <p className="text-xs text-white/40 flex items-center gap-1"><Clock size={12}/> {formatDate(p.created_at)}</p>
+                <p className="text-xs text-white/40 flex items-center gap-1 mb-1"><Clock size={12}/> {formatDate(p.created_at)}</p>
+                {p.bank_details ? (
+                  <p className="text-xs text-white/60 bg-white/5 inline-block px-2 py-1 rounded">Bank: {p.bank_details.bank_name} | Acc: {p.bank_details.account_number} | Name: {p.bank_details.account_name}</p>
+                ) : (
+                  <p className="text-xs text-red-400">No bank details provided yet.</p>
+                )}
               </div>
 
               <div className="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end">

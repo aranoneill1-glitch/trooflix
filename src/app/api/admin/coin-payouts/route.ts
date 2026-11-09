@@ -16,6 +16,7 @@ export async function GET() {
   try {
     if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     
+    // 1. Fetch all payouts (pending, completed, cancelled)
     const { data: txs, error } = await supabaseAdmin
       .from("transactions")
       .select("*")
@@ -25,24 +26,35 @@ export async function GET() {
     if (error) throw error;
     if (!txs || txs.length === 0) return NextResponse.json({ payouts: [] });
 
+    // 2. Fetch profiles for usernames
     const userIds = [...new Set(txs.map(t => t.sender_id).filter(Boolean))];
     const { data: profiles } = await supabaseAdmin
       .from("profiles")
       .select("user_id, username, display_name")
       .in("user_id", userIds);
-
     const profileMap = new Map((profiles || []).map(p => [p.user_id, p]));
 
+    // 3. Fetch bank details
+    const { data: banks } = await supabaseAdmin
+      .from("payout_methods")
+      .select("*")
+      .in("user_id", userIds);
+    const bankMap = new Map((banks || []).map(b => [b.user_id, b]));
+
+    // 4. Merge everything together
     const formatted = txs.map(t => {
       const profile = profileMap.get(t.sender_id);
+      const bank = bankMap.get(t.sender_id);
       return {
         ...t,
-        username: profile?.username || profile?.display_name || t.sender_id
+        username: profile?.username || profile?.display_name || t.sender_id,
+        bank_details: bank || null
       };
     });
 
     return NextResponse.json({ payouts: formatted });
   } catch (e: any) {
+    console.error("Admin Payout GET Error:", e);
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
 }
@@ -58,9 +70,9 @@ export async function PATCH(req: Request) {
     if (action === "paid") {
       await supabaseAdmin.from("transactions").update({ status: "completed" }).eq("id", id);
     } else if (action === "cancel") {
-      // Cancel and refund the coins to the creator
       await supabaseAdmin.from("transactions").update({ status: "cancelled" }).eq("id", id);
       
+      // Refund the coins
       const { data: wallet } = await supabaseAdmin.from("wallets").select("balance").eq("user_id", tx.sender_id).single();
       if (wallet) {
         await supabaseAdmin.from("wallets").update({ balance: wallet.balance + tx.amount }).eq("user_id", tx.sender_id);
