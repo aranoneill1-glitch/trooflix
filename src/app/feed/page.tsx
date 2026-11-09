@@ -114,13 +114,13 @@ export default function ShortsFeedPage() {
         <MobileBottomNav />
       </div>
 
-      {/* DESKTOP VIEW (Video | Controls | Comments) */}
-      <div className="hidden lg:flex w-full h-full p-6 gap-6 items-center justify-center">
+      {/* DESKTOP VIEW (25% / 2.5% / 10% / 2.5% / 60%) */}
+      <div className="hidden lg:flex w-full h-full items-center bg-[#050505] overflow-hidden">
         
-        {/* 1. Left: Video Scroller */}
+        {/* 1. Left: Video (25%) */}
         <div 
           ref={videoContainerRef}
-          className="flex-1 h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide flex flex-col items-end bg-transparent"
+          className="w-[25%] h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide flex flex-col items-center"
         >
           {videos.map((video) => (
             <DesktopVideoShort
@@ -132,74 +132,69 @@ export default function ShortsFeedPage() {
           ))}
         </div>
 
-        {/* 2. Middle: Floating Control Dock */}
-        <div className="h-[85vh] max-h-[850px] w-20 flex flex-col items-center justify-center shrink-0">
+        {/* 2. Gap (2.5%) */}
+        <div className="w-[2.5%] h-full shrink-0" />
+
+        {/* 3. Middle: Control Dock (10%) */}
+        <div className="w-[10%] h-full flex items-center justify-center shrink-0">
           <div className="bg-[#1c1c1e]/80 backdrop-blur-xl border border-white/10 rounded-full py-6 px-3 flex flex-col items-center gap-6 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-            
             <button onClick={scrollUp} className="w-12 h-12 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 rounded-full transition">
               <ChevronUp size={28} />
             </button>
-
             <div className="w-8 h-px bg-white/10" />
-
             <button onClick={toggleMute} className="w-12 h-12 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition">
               {isMuted ? <VolumeX size={24}/> : <Volume2 size={24}/>}
             </button>
-
             <div className="flex flex-col items-center gap-1 text-white/70">
               <Eye size={24}/>
               <span className="text-[11px] font-bold">{activeVideo?.views || 0}</span>
             </div>
-
             <button className="w-12 h-12 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition">
               <MessageCircle size={24}/>
             </button>
-
             <button onClick={() => activeVideo && window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: activeVideo.creatorId, videoId: activeVideo.id } }))} className="w-12 h-12 flex items-center justify-center text-yellow-500 hover:bg-white/10 rounded-full transition">
               <Gift size={24}/>
             </button>
-
             <div className="flex flex-col items-center gap-1">
               {activeVideo && <LikeButton videoId={activeVideo.id} size={24} showCount={true} stacked={true} />}
             </div>
-
             <div className="w-8 h-px bg-white/10" />
-
             <button onClick={scrollDown} className="w-12 h-12 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 rounded-full transition">
               <ChevronDown size={28} />
             </button>
-
           </div>
         </div>
 
-        {/* 3. Right: Chat Panel */}
-        <div className="flex-1 h-full flex items-center justify-start">
-          <div className="w-full max-w-[650px] h-[85vh] max-h-[850px] bg-[#0a0a0a] border border-white/10 rounded-3xl flex flex-col overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-          {activeVideo && (
-            <>
-              <div className="p-4 flex items-center justify-between shrink-0 bg-[#0a0a0a] border-b border-white/5">
-                <div className="flex items-center gap-3">
-                  {activeCreator?.photoUrl ? (
-                    <img src={activeCreator.photoUrl} className="w-10 h-10 rounded-full border border-white/20 object-cover" />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center font-bold text-white">
-                      {activeCreator?.name?.charAt(0) || "C"}
-                    </div>
-                  )}
-                  <Link href={activeCreator?.slug ? `/profile/${activeCreator.slug}` : "#"} className="font-bold text-white hover:text-white/80 transition text-lg">
-                    {activeCreator?.name || "Creator"}
-                  </Link>
+        {/* 4. Gap (2.5%) */}
+        <div className="w-[2.5%] h-full shrink-0" />
+
+        {/* 5. Right: Comments (60%) */}
+        <div className="w-[60%] h-full flex items-center pr-6">
+          <div className="w-full h-[85vh] max-h-[850px] bg-[#0a0a0a] border border-white/10 rounded-3xl flex flex-col overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+            {activeVideo && (
+              <>
+                <div className="p-4 flex items-center justify-between shrink-0 bg-[#0a0a0a] border-b border-white/5">
+                  <div className="flex items-center gap-3">
+                    {activeCreator?.photoUrl ? (
+                      <img src={activeCreator.photoUrl} className="w-10 h-10 rounded-full border border-white/20 object-cover" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center font-bold text-white">
+                        {activeCreator?.name?.charAt(0) || "C"}
+                      </div>
+                    )}
+                    <Link href={activeCreator?.slug ? `/profile/${activeCreator.slug}` : "#"} className="font-bold text-white hover:text-white/80 transition text-lg">
+                      {activeCreator?.name || "Creator"}
+                    </Link>
+                  </div>
+                  <button className="bg-[#E53945] hover:bg-[#d12e39] text-white text-sm font-bold px-5 py-1.5 rounded-full transition">
+                    Follow
+                  </button>
                 </div>
-                <button className="bg-[#E53945] hover:bg-[#d12e39] text-white text-sm font-bold px-5 py-1.5 rounded-full transition">
-                  Follow
-                </button>
-              </div>
-              
-              <div className="flex-1 overflow-hidden bg-[#0a0a0a]">
-                <Comments videoId={activeVideo.id} variant="chat" />
-              </div>
-            </>
-          )}
+                <div className="flex-1 overflow-hidden bg-[#0a0a0a]">
+                  <Comments videoId={activeVideo.id} variant="chat" />
+                </div>
+              </>
+            )}
           </div>
         </div>
 
@@ -229,8 +224,8 @@ function DesktopVideoShort({ video, isMuted, onSetActive }: { video: Video, isMu
   }, [onSetActive]);
 
   return (
-    <div ref={containerRef} className="w-full h-full snap-start flex items-center justify-center shrink-0">
-      <div className="relative w-full max-w-[400px] h-[85vh] max-h-[850px] rounded-3xl overflow-hidden border border-white/10 bg-black shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+    <div ref={containerRef} className="w-full h-full snap-start flex items-center justify-center p-4 shrink-0">
+      <div className="relative w-full h-[85vh] max-h-[850px] rounded-3xl overflow-hidden border border-white/10 bg-black shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
         {(!video.videoUrl && !video.bitchuteUrl) ? (
           <div className="flex items-center justify-center h-full text-white/30 text-sm">No video source</div>
         ) : (
@@ -257,7 +252,6 @@ function DesktopVideoShort({ video, isMuted, onSetActive }: { video: Video, isMu
     </div>
   );
 }
-
 
 function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComments, onSetActive }: { video: Video, creator: Creator | null, isMuted: boolean, onToggleMute: () => void, onOpenComments: () => void, onSetActive: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -568,4 +562,3 @@ function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComment
     </div>
   );
 }
-
