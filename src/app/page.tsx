@@ -25,7 +25,7 @@ import {  Play, Info, ChevronLeft, ChevronRight, X,
   Search, Bell, HomeIcon, Menu,
   Compass, LogOut, LogIn, Users, ShoppingBag, Sparkles, BookOpen, Flame, List,
   CheckCircle2, Pause, VolumeX, Volume2, MoreVertical, Plus, Maximize,
-  ThumbsUp, MessageCircle, Share2, Bookmark , DollarSign, ShieldOff, Radio, MessageSquare, Download , Wallet , ArrowRight , Tv } from "lucide-react";
+  ThumbsUp, MessageCircle, Share2, Bookmark , DollarSign, ShieldOff, Radio, MessageSquare, Download , Wallet , ArrowRight , Tv , Landmark } from "lucide-react";
 import AuthPlaybackGate from "@/components/AuthPlaybackGate";
 import AppleVideoPlayer from "@/components/AppleVideoPlayer";
 import UserMenu from "@/components/UserMenu";
@@ -529,7 +529,7 @@ export default function Home() {
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
           {[
-            { icon: DollarSign, title: "Keep 99% of Revenue", desc: "A flat 1% fee. No hidden cuts, no demonetization.", img: "https://images.unsplash.com/photo-1621761191319-c6fb62004040?q=80&w=600&auto=format&fit=crop" },
+            { icon: Landmark, title: "Keep 99% of Revenue", desc: "A flat 1% fee. No hidden cuts, no demonetization.", img: "https://images.unsplash.com/photo-1621761191319-c6fb62004040?q=80&w=600&auto=format&fit=crop" },
             { icon: ShieldOff, title: "Zero Censorship", desc: "No shadowbans. No algorithmic suppression. Your audience gets your content.", img: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=600&auto=format&fit=crop" },
             { icon: Radio, title: "Live Streaming", desc: "Broadcast-quality WebRTC live streams with multi-guest support.", img: "https://images.unsplash.com/photo-1470229722913-7ea0a4e88db9?q=80&w=600&auto=format&fit=crop" },
             { icon: Tv, title: "Watch on TV", desc: "Stream your favourite podcasts and documentaries directly on your Smart TV or Fire Stick for a cinematic experience.", img: "https://images.unsplash.com/photo-1593784991095-a205069470b6?q=80&w=600&auto=format&fit=crop" },
