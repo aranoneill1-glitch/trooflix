@@ -340,7 +340,7 @@ export default function Home() {
                 {/* CINEMATIC HEADLINE */}
                 <div className="w-full text-center px-6 pt-24 md:pt-32 pb-6 relative z-10 flex flex-col items-center justify-center">
                   <h1 className="text-[44px] md:text-[80px] font-black tracking-tighter text-white leading-[1.05] mb-6">
-                    Stop letting Big Tech <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#E53945] to-[#ff007f]">eat your lunch.</span>
+                    Stop letting Big Tech <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#E53945] to-orange-500">eat your lunch.</span>
                   </h1>
                   <p className="text-[15px] md:text-xl text-white/50 max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
                     We didn't build Trooflix to be another YouTube clone. We built it to be the ultimate weapon for independent creators and free thinkers.
@@ -502,7 +502,7 @@ export default function Home() {
                     )}
                   </div>
                   <div className="w-1/2 flex flex-col justify-center">
-                    <h1 className="text-[52px] xl:text-[68px] 2xl:text-[80px] font-black tracking-tighter text-white leading-[1.02] mb-6">Stop letting Big Tech <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#E53945] to-[#ff007f]">eat your lunch.</span></h1>
+                    <h1 className="text-[52px] xl:text-[68px] 2xl:text-[80px] font-black tracking-tighter text-white leading-[1.02] mb-6">Stop letting Big Tech <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#E53945] to-orange-500">eat your lunch.</span></h1>
                     <p className="text-base xl:text-lg text-white/50 mb-10 leading-relaxed font-medium">We didn&apos;t build Trooflix to be another YouTube clone. We built it to be the ultimate weapon for independent creators and free thinkers.</p>
                     <div className="flex flex-wrap gap-3">
                       <a href="/features" className="flex items-center justify-center gap-2 bg-white text-black font-bold text-base px-8 py-4 rounded-full hover:bg-gray-200 transition">Why Trooflix &rarr;</a>
