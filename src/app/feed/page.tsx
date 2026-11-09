@@ -120,7 +120,7 @@ export default function ShortsFeedPage() {
         {/* 1. Left: Video (25%) */}
         <div 
           ref={videoContainerRef}
-          className="w-[35%] h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide flex flex-col items-end pr-2"
+          className="w-[30%] h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide flex flex-col items-end"
         >
           {videos.map((video) => (
             <DesktopVideoShort
@@ -133,7 +133,7 @@ export default function ShortsFeedPage() {
         </div>
 
         {/* 2. Gap (2.5%) */}
-        <div className="w-[1.25%] h-full shrink-0" />
+        <div className="w-[1.5%] h-full shrink-0" />
 
         {/* 3. Middle: Control Dock (10%) */}
         <div className="w-[10%] h-full flex items-center justify-center shrink-0">
@@ -166,10 +166,10 @@ export default function ShortsFeedPage() {
         </div>
 
         {/* 4. Gap (2.5%) */}
-        <div className="w-[1.25%] h-full shrink-0" />
+        <div className="w-[1.5%] h-full shrink-0" />
 
         {/* 5. Right: Comments (60%) */}
-        <div className="w-[52.5%] h-full flex items-center pr-6">
+        <div className="w-[57%] h-full flex items-center pr-6">
           <div className="w-full h-[85vh] max-h-[850px] bg-[#0a0a0a] border border-white/10 rounded-3xl flex flex-col overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
             {activeVideo && (
               <>
@@ -224,7 +224,7 @@ function DesktopVideoShort({ video, isMuted, onSetActive }: { video: Video, isMu
   }, [onSetActive]);
 
   return (
-    <div ref={containerRef} className="w-full h-full snap-start flex items-center justify-center p-4 shrink-0">
+    <div ref={containerRef} className="w-full h-full snap-start flex items-center justify-end pr-2 shrink-0">
       <div className="relative w-full max-w-[500px] aspect-[9/16] max-h-[85vh] rounded-3xl overflow-hidden border border-white/10 bg-black shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
         {(!video.videoUrl && !video.bitchuteUrl) ? (
           <div className="flex items-center justify-center h-full text-white/30 text-sm">No video source</div>
