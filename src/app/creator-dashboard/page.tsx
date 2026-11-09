@@ -357,13 +357,13 @@ function CreatorDashboardContent() {
               </div>
 
               <div className="flex gap-3 mb-8 w-full">
-                <button onClick={() => setShowAddContentMenu(true)} className="flex-1 flex items-center justify-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-white font-bold py-2.5 rounded-full hover:bg-white/20 transition shadow-lg"><Plus size={16} /> Add Content</button>
+                <button onClick={() => setShowAddContentMenu(true)} className="flex-1 flex items-center justify-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-white font-bold py-2.5 rounded-full hover:bg-white/20 transition shadow-[0_8px_32px_rgba(0,0,0,0.4)]"><Plus size={16} /> Add Content</button>
                 {userTier === "creator" ? (
-                  <Link href="/creator-dashboard/live" className="flex-1 flex items-center justify-center gap-2 bg-white/10 backdrop-blur-md border border-[#E53945] text-[#E53945] font-bold py-2.5 rounded-full hover:bg-[#E53945]/10 transition shadow-lg">
+                  <Link href="/creator-dashboard/live" className="flex-1 flex items-center justify-center gap-2 bg-white/10 backdrop-blur-md border border-[#E53945] text-[#E53945] font-bold py-2.5 rounded-full hover:bg-[#E53945]/10 transition shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
                     <Radio size={16} /> Go Live
                   </Link>
                 ) : (
-                  <button onClick={() => { window.location.href = "/upgrade?feature=go_live"; }} className="flex-1 flex items-center justify-center gap-2 bg-white/5 backdrop-blur-md border border-white/20 text-white/50 font-bold py-2.5 rounded-full hover:bg-white/10 transition shadow-lg">
+                  <button onClick={() => { window.location.href = "/upgrade?feature=go_live"; }} className="flex-1 flex items-center justify-center gap-2 bg-white/5 backdrop-blur-md border border-white/20 text-white/50 font-bold py-2.5 rounded-full hover:bg-white/10 transition shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
                     <Radio size={16} /> Go Live <Lock size={11} />
                   </button>
                 )}
@@ -375,7 +375,7 @@ function CreatorDashboardContent() {
                     <button key={tab} onClick={() => setActiveContentTab(tab)} className={`pb-3 text-sm font-bold transition-colors ${activeContentTab === tab ? "text-white border-b-2 border-[#E53945]" : "text-white/50 hover:text-white"}`}>{tab}</button>
                   ))}
                 </div>
-                <div className="flex items-center gap-1 bg-white/10 backdrop-blur-xl p-1 rounded-full border border-white/20 shadow-lg mb-2">
+                <div className="flex items-center gap-1 bg-white/10 backdrop-blur-xl p-1 rounded-full border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.4)] mb-2">
                   <button onClick={() => setContentView("grid")} className={`p-1.5 rounded-full transition ${contentView === "grid" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}><LayoutGrid size={16} /></button>
                   <button onClick={() => setContentView("list")} className={`p-1.5 rounded-full transition ${contentView === "list" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}><List size={16} /></button>
                 </div>
@@ -416,7 +416,7 @@ function CreatorDashboardContent() {
                   ) : (
                     <div className="grid grid-cols-3 gap-4">
                       {filteredVideos.map((video) => (
-                        <div key={video.id} className="bg-[#1c1c1e] border border-white/5 rounded-2xl overflow-hidden group cursor-pointer relative shadow-lg">
+                        <div key={video.id} className="bg-[#1c1c1e] border border-white/5 rounded-2xl overflow-hidden group cursor-pointer relative shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
                           <div className="relative aspect-[3/4] md:aspect-square">
                             <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-60" />
                             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/30 backdrop-blur-md border border-white/10 m-2 rounded-xl">
@@ -449,7 +449,7 @@ function CreatorDashboardContent() {
               onPointerUp={cancelPress}
               onPointerLeave={cancelPress}
               onContextMenu={(e) => { e.preventDefault(); setSelectedMerchItem(item); }}
-              className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden group cursor-pointer flex flex-col relative shadow-lg" 
+              className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden group cursor-pointer flex flex-col relative shadow-[0_8px_32px_rgba(0,0,0,0.4)]" 
               style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none" }}
             >
               <div className="relative aspect-square pointer-events-none">
@@ -474,7 +474,7 @@ function CreatorDashboardContent() {
               onPointerUp={cancelPress}
               onPointerLeave={cancelPress}
               onContextMenu={(e) => { e.preventDefault(); setSelectedMerchItem(item); }}
-              className="flex items-center gap-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-3 relative shadow-lg" 
+              className="flex items-center gap-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-3 relative shadow-[0_8px_32px_rgba(0,0,0,0.4)]" 
               style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none" }}
             >
               <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0 relative pointer-events-none">
@@ -504,7 +504,7 @@ function CreatorDashboardContent() {
                   ) : contentView === "grid" ? (
                     <div className="grid grid-cols-3 gap-4">
                       {filteredVideos.map((video) => (
-                        <div key={video.id} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden group cursor-pointer shadow-lg">
+                        <div key={video.id} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden group cursor-pointer shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
                           <div className="relative aspect-square">
                             <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                             <div className={`absolute top-2 left-2 text-white text-[10px] font-bold px-2 py-0.5 rounded-sm ${video.type?.toLowerCase() === 'podcast' ? 'bg-blue-500' : 'bg-[#E53945]'}`}>{video.type || "VIDEO"}</div>
@@ -516,7 +516,7 @@ function CreatorDashboardContent() {
                   ) : (
                     <div className="flex flex-col gap-3">
                       {filteredVideos.map((video) => (
-                        <div key={video.id} className="flex items-center gap-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-3 cursor-pointer hover:bg-white/10 transition-colors shadow-lg">
+                        <div key={video.id} className="flex items-center gap-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-3 cursor-pointer hover:bg-white/10 transition-colors shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
                           <div className="w-24 h-16 rounded-lg overflow-hidden shrink-0 relative"><img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover" /></div>
                           <div className="flex-1 min-w-0 text-left"><h3 className="text-sm font-bold text-white truncate">{video.title}</h3></div>
                         </div>
@@ -534,7 +534,7 @@ function CreatorDashboardContent() {
         <div className="hidden lg:block animate-in fade-in duration-300 max-w-6xl mx-auto">
           <div className="grid grid-cols-3 gap-6">
             
-            <Link href="/creator-dashboard/import" className="bg-[#1c1c1e] border border-white/10 rounded-3xl p-6 group hover:border-[#E53945]/50 transition-all duration-300 relative overflow-hidden shadow-lg">
+            <Link href="/creator-dashboard/import" className="bg-white/[0.03] backdrop-blur-2xl border border-white/10 rounded-3xl hover:bg-white/[0.08] p-6 group hover:border-[#E53945]/50 transition-all duration-300 relative overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
               <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53945]/10 rounded-full blur-3xl -mr-10 -mt-10 group-hover:bg-[#E53945]/20 transition-colors" />
               <div className="w-12 h-12 rounded-2xl bg-[#E53945]/20 flex items-center justify-center mb-6">
                 <Download className="text-[#E53945]" size={24} />
@@ -544,7 +544,7 @@ function CreatorDashboardContent() {
               <div className="flex items-center text-sm font-bold text-[#E53945]">Open Tool <ChevronRight size={16} className="ml-1" /></div>
             </Link>
 
-            <Link href="/creator-dashboard/manage-content" className="col-span-2 bg-[#1c1c1e] border border-white/10 rounded-3xl p-6 group hover:border-[#E53945]/50 transition-all duration-300 relative overflow-hidden flex flex-col justify-between shadow-lg">
+            <Link href="/creator-dashboard/manage-content" className="col-span-2 bg-white/[0.03] backdrop-blur-2xl border border-white/10 rounded-3xl hover:bg-white/[0.08] p-6 group hover:border-[#E53945]/50 transition-all duration-300 relative overflow-hidden flex flex-col justify-between shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
               <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full blur-3xl -mr-10 -mt-10" />
               <div>
                 <div className="flex items-center justify-between mb-6">
@@ -559,7 +559,7 @@ function CreatorDashboardContent() {
               <div className="flex items-center text-sm font-bold text-white group-hover:text-[#E53945] transition-colors mt-6">Open Dashboard <ChevronRight size={16} className="ml-1" /></div>
             </Link>
 
-            <button onClick={() => setShowAddContentMenu(true)} className="bg-[#1c1c1e] border border-white/10 rounded-3xl p-6 group hover:border-green-500/50 transition-all duration-300 text-left relative overflow-hidden shadow-lg">
+            <button onClick={() => setShowAddContentMenu(true)} className="bg-white/[0.03] backdrop-blur-2xl border border-white/10 rounded-3xl hover:bg-white/[0.08] p-6 group hover:border-green-500/50 transition-all duration-300 text-left relative overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
               <div className="w-12 h-12 rounded-2xl bg-green-500/20 flex items-center justify-center mb-6">
                 <Plus className="text-green-400" size={24} />
               </div>
@@ -567,7 +567,7 @@ function CreatorDashboardContent() {
               <p className="text-sm text-white/50">Upload a new video, short, or tweet.</p>
             </button>
 
-            <Link href="/creator-dashboard/fix-posters" className="bg-[#1c1c1e] border border-white/10 rounded-3xl p-6 group hover:border-orange-500/50 transition-all duration-300 shadow-lg">
+            <Link href="/creator-dashboard/fix-posters" className="bg-white/[0.03] backdrop-blur-2xl border border-white/10 rounded-3xl hover:bg-white/[0.08] p-6 group hover:border-orange-500/50 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
               <div className="w-12 h-12 rounded-2xl bg-orange-500/20 flex items-center justify-center mb-6">
                 <Sparkles className="text-orange-400" size={24} />
               </div>
@@ -575,7 +575,7 @@ function CreatorDashboardContent() {
               <p className="text-sm text-white/50">Grab frames from your videos to use as posters.</p>
             </Link>
 
-            <Link href="/creator-dashboard/settings" className="bg-[#1c1c1e] border border-white/10 rounded-3xl p-6 group hover:border-blue-500/50 transition-all duration-300 shadow-lg">
+            <Link href="/creator-dashboard/settings" className="bg-white/[0.03] backdrop-blur-2xl border border-white/10 rounded-3xl hover:bg-white/[0.08] p-6 group hover:border-blue-500/50 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
               <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center mb-6">
                 <Pencil className="text-blue-400" size={24} />
               </div>
@@ -583,7 +583,7 @@ function CreatorDashboardContent() {
               <p className="text-sm text-white/50">Update your bio, links, and profile picture.</p>
             </Link>
 
-            <Link href="/creator-dashboard/theme" className="bg-[#1c1c1e] border border-white/10 rounded-3xl p-6 group hover:border-purple-500/50 transition-all duration-300 shadow-lg">
+            <Link href="/creator-dashboard/theme" className="bg-white/[0.03] backdrop-blur-2xl border border-white/10 rounded-3xl hover:bg-white/[0.08] p-6 group hover:border-purple-500/50 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
               <div className="w-12 h-12 rounded-2xl bg-purple-500/20 flex items-center justify-center mb-6">
                 <Palette className="text-purple-400" size={24} />
               </div>
@@ -591,7 +591,7 @@ function CreatorDashboardContent() {
               <p className="text-sm text-white/50">Customize your page with colors and gradients.</p>
             </Link>
 
-            <Link href="/creator-dashboard/shop" className="bg-[#1c1c1e] border border-white/10 rounded-3xl p-6 group hover:border-yellow-500/50 transition-all duration-300 shadow-lg">
+            <Link href="/creator-dashboard/shop" className="bg-white/[0.03] backdrop-blur-2xl border border-white/10 rounded-3xl hover:bg-white/[0.08] p-6 group hover:border-yellow-500/50 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
               <div className="w-12 h-12 rounded-2xl bg-yellow-500/20 flex items-center justify-center mb-6">
                 <ShoppingBag className="text-yellow-400" size={24} />
               </div>
@@ -599,7 +599,7 @@ function CreatorDashboardContent() {
               <p className="text-sm text-white/50">Add merch, books, and manage your inventory.</p>
             </Link>
 
-            <Link href="/creator-dashboard/orders" className="bg-[#1c1c1e] border border-white/10 rounded-3xl p-6 group hover:border-blue-500/50 transition-all duration-300 shadow-lg">
+            <Link href="/creator-dashboard/orders" className="bg-white/[0.03] backdrop-blur-2xl border border-white/10 rounded-3xl hover:bg-white/[0.08] p-6 group hover:border-blue-500/50 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
               <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center mb-6">
                 <Package className="text-blue-400" size={24} />
               </div>
@@ -607,7 +607,7 @@ function CreatorDashboardContent() {
               <p className="text-sm text-white/50">Track shipments and update tracking numbers.</p>
             </Link>
 
-            <Link href="/creator-dashboard/subscriptions" className="bg-[#1c1c1e] border border-white/10 rounded-3xl p-6 group hover:border-[#D4AF37]/50 transition-all duration-300 shadow-lg">
+            <Link href="/creator-dashboard/subscriptions" className="bg-white/[0.03] backdrop-blur-2xl border border-white/10 rounded-3xl hover:bg-white/[0.08] p-6 group hover:border-[#D4AF37]/50 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
               <div className="w-12 h-12 rounded-2xl bg-[#D4AF37]/20 flex items-center justify-center mb-6">
                 <Star className="text-[#D4AF37]" size={24} />
               </div>
@@ -615,7 +615,7 @@ function CreatorDashboardContent() {
               <p className="text-sm text-white/50">Manage your premium tiers and pricing.</p>
             </Link>
 
-            <Link href="/creator-dashboard/security-billing" className="col-span-full bg-[#1c1c1e] border border-white/10 rounded-3xl p-6 group hover:border-white/30 transition-all duration-300 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-lg">
+            <Link href="/creator-dashboard/security-billing" className="col-span-full bg-white/[0.03] backdrop-blur-2xl border border-white/10 rounded-3xl hover:bg-white/[0.08] p-6 group hover:border-white/30 transition-all duration-300 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center shrink-0">
                   <Shield className="text-white/70" size={24} />
@@ -635,19 +635,19 @@ function CreatorDashboardContent() {
           <section>
             <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">Content</h2>
             <div className="flex flex-col gap-2 w-full max-w-2xl">
-              <Link href="/creator-dashboard/import" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-lg">
+              <Link href="/creator-dashboard/import" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
                 <div className="flex items-center gap-4"><Download className="text-[#E53945]" size={20} /><span className="text-sm font-bold text-white group-hover:text-white/90">Import from YouTube</span></div>
                 <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
               </Link>
-              <Link href="/creator-dashboard/manage-content" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-lg">
+              <Link href="/creator-dashboard/manage-content" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
                 <div className="flex items-center gap-4"><Video className="text-[#E53945]" size={20} /><span className="text-sm font-bold text-white group-hover:text-white/90">Manage Content</span></div>
                 <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
               </Link>
-              <Link href="/creator-dashboard/fix-posters" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-lg">
+              <Link href="/creator-dashboard/fix-posters" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
                 <div className="flex items-center gap-4"><Sparkles className="text-[#E53945]" size={20} /><span className="text-sm font-bold text-white group-hover:text-white/90">Auto-Fix Missing Posters</span></div>
                 <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
               </Link>
-              <button onClick={() => setShowAddContentMenu(true)} className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-lg w-full text-left">
+              <button onClick={() => setShowAddContentMenu(true)} className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)] w-full text-left">
                 <div className="flex items-center gap-4"><Plus className="text-[#E53945]" size={20} /><span className="text-sm font-bold text-white group-hover:text-white/90">Add Content</span></div>
                 <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
               </button>
@@ -657,11 +657,11 @@ function CreatorDashboardContent() {
           <section>
             <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">Profile</h2>
             <div className="flex flex-col gap-2 w-full max-w-2xl">
-              <Link href="/creator-dashboard/settings" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-lg">
+              <Link href="/creator-dashboard/settings" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
                 <div className="flex items-center gap-4"><Pencil className="text-white/70" size={20} /><span className="text-sm font-bold text-white group-hover:text-white/90">Manage Profile</span></div>
                 <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
               </Link>
-              <Link href="/creator-dashboard/theme" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-lg">
+              <Link href="/creator-dashboard/theme" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
                 <div className="flex items-center gap-4"><Palette className="text-white/70" size={20} /><span className="text-sm font-bold text-white group-hover:text-white/90">Profile Theme</span></div>
                 <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
               </Link>
@@ -671,11 +671,11 @@ function CreatorDashboardContent() {
           <section>
             <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">Marketplace</h2>
             <div className="flex flex-col gap-2 w-full max-w-2xl">
-              <Link href="/creator-dashboard/shop" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-lg">
+              <Link href="/creator-dashboard/shop" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
                 <div className="flex items-center gap-4"><ShoppingBag className="text-white/70" size={20} /><span className="text-sm font-bold text-white group-hover:text-white/90">Manage Shop</span></div>
                 <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
               </Link>
-              <Link href="/creator-dashboard/orders" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-lg">
+              <Link href="/creator-dashboard/orders" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
                 <div className="flex items-center gap-4"><Package className="text-white/70" size={20} /><span className="text-sm font-bold text-white group-hover:text-white/90">Manage Orders</span></div>
                 <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
               </Link>
@@ -685,7 +685,7 @@ function CreatorDashboardContent() {
           <section>
             <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">Subscriptions</h2>
             <div className="flex flex-col gap-2 w-full max-w-2xl">
-              <Link href="/creator-dashboard/subscriptions" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-lg">
+              <Link href="/creator-dashboard/subscriptions" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
                 <div className="flex items-center gap-4"><Star className="text-[#E53945]" size={20} /><span className="text-sm font-bold text-white group-hover:text-white/90">Manage Subscription</span></div>
                 <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
               </Link>
@@ -695,11 +695,11 @@ function CreatorDashboardContent() {
           <section>
             <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">Security & Billing</h2>
             <div className="flex flex-col gap-2 w-full max-w-2xl">
-              <Link href="/creator-dashboard/security-billing" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-lg">
+              <Link href="/creator-dashboard/security-billing" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
                 <div className="flex items-center gap-4"><Shield className="text-[#E53945]" size={20} /><span className="text-sm font-bold text-white group-hover:text-white/90">Change Password</span></div>
                 <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
               </Link>
-              <Link href="/creator-dashboard/security-billing" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-lg">
+              <Link href="/creator-dashboard/security-billing" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
                 <div className="flex items-center gap-4"><CreditCard className="text-[#D4AF37]" size={20} /><span className="text-sm font-bold text-white group-hover:text-white/90">Billing</span></div>
                 <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
               </Link>
