@@ -8,6 +8,7 @@ import { getCachedUser } from "@/lib/cache";
 export default function WalletPage() {
   const [balance, setBalance] = useState(0);
   const [transactions, setTransactions] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<"history" | "payouts">("history");
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [buying, setBuying] = useState(false);
@@ -89,29 +90,42 @@ export default function WalletPage() {
           </div>
         </div>
 
-        <h2 className="text-lg font-bold mb-4">Transaction History</h2>
-        {transactions.length === 0 ? (
+        <div className="flex items-center gap-6 border-b border-white/10 mb-6">
+          <button onClick={() => setActiveTab("history")} className={`pb-3 text-sm font-bold transition-colors ${activeTab === "history" ? "text-white border-b-2 border-[#E53945]" : "text-white/50 hover:text-white"}`}>History</button>
+          <button onClick={() => setActiveTab("payouts")} className={`pb-3 text-sm font-bold transition-colors ${activeTab === "payouts" ? "text-white border-b-2 border-[#E53945]" : "text-white/50 hover:text-white"}`}>Payouts</button>
+        </div>
+
+        {transactions.filter(t => activeTab === "history" ? true : t.type === "payout").length === 0 ? (
           <div className="bg-[#1c1c1e] border border-white/5 rounded-2xl p-8 text-center">
-            <p className="text-white/40">No transactions yet.</p>
+            <p className="text-white/40">No {activeTab} found.</p>
           </div>
         ) : (
           <div className="bg-[#1c1c1e] border border-white/5 rounded-2xl overflow-hidden">
-            {transactions.map(t => (
-              <div key={t.id} className="flex items-center justify-between p-4 border-b border-white/5 last:border-0">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${t.type === "topup" ? "bg-green-500/20 text-green-500" : t.type === "payout" ? "bg-yellow-500/20 text-yellow-500" : "bg-red-500/20 text-red-500"}`}>
-                    {t.type === "topup" ? <ArrowDownRight size={18} /> : <ArrowUpRight size={18} />}
+            {transactions.filter(t => activeTab === "history" ? true : t.type === "payout").map(t => {
+              const isPayout = t.type === "payout";
+              const isPaid = isPayout && t.status === "completed";
+              const isCancelled = isPayout && t.status === "cancelled";
+              
+              return (
+                <div key={t.id} className="flex items-center justify-between p-4 border-b border-white/5 last:border-0">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${t.type === "topup" ? "bg-green-500/20 text-green-500" : isPayout ? (isPaid ? "bg-green-500/20 text-green-500" : isCancelled ? "bg-red-500/20 text-red-500" : "bg-yellow-500/20 text-yellow-500") : "bg-red-500/20 text-red-500"}`}>
+                      {t.type === "topup" ? <ArrowDownRight size={18} /> : <ArrowUpRight size={18} />}
+                    </div>
+                    <div>
+                      <p className="font-bold text-sm flex items-center gap-2">
+                        {t.type === "topup" ? "Top Up" : t.type === "tip" ? "Tip Sent" : isPayout ? `Payout ${isPaid ? "Paid" : isCancelled ? "Cancelled" : "Pending"}` : "Subscription"}
+                        {isPayout && <span className="text-[9px] font-mono bg-white/5 text-white/40 px-1.5 py-0.5 rounded">PAY-{t.id.split("-")[0].toUpperCase()}</span>}
+                      </p>
+                      <p className="text-xs text-white/50">{new Date(t.created_at).toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" })}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-bold text-sm">{t.type === "topup" ? "Top Up" : t.type === "tip" ? "Tip Sent" : t.type === "payout" ? "Payout Requested" : "Subscription"}</p>
-                    <p className="text-xs text-white/50">{new Date(t.created_at).toLocaleDateString()}</p>
-                  </div>
+                  <span className={`font-bold ${t.type === "topup" ? "text-green-500" : isCancelled ? "text-white/40 line-through" : "text-white"}`}>
+                    {t.type === "topup" ? "+" : "-"}{Number(t.amount).toFixed(2)}
+                  </span>
                 </div>
-                <span className={`font-bold ${t.type === "topup" ? "text-green-500" : "text-white"}`}>
-                  {t.type === "topup" ? "+" : "-"}{Number(t.amount).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

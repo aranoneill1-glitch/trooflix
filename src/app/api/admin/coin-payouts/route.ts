@@ -16,24 +16,15 @@ export async function GET() {
   try {
     if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     
-    // 1. Fetch pending payouts
     const { data: txs, error } = await supabaseAdmin
       .from("transactions")
       .select("*")
       .eq("type", "payout")
-      .eq("status", "pending")
       .order("created_at", { ascending: false });
 
-    if (error) {
-      console.error("Admin Payouts GET Error:", error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+    if (error) throw error;
+    if (!txs || txs.length === 0) return NextResponse.json({ payouts: [] });
 
-    if (!txs || txs.length === 0) {
-      return NextResponse.json({ payouts: [] });
-    }
-
-    // 2. Fetch the profiles for these user IDs separately
     const userIds = [...new Set(txs.map(t => t.sender_id).filter(Boolean))];
     const { data: profiles } = await supabaseAdmin
       .from("profiles")
@@ -42,7 +33,6 @@ export async function GET() {
 
     const profileMap = new Map((profiles || []).map(p => [p.user_id, p]));
 
-    // 3. Merge them together
     const formatted = txs.map(t => {
       const profile = profileMap.get(t.sender_id);
       return {
@@ -60,9 +50,25 @@ export async function GET() {
 export async function PATCH(req: Request) {
   if (!(await isAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
-    const { id } = await req.json();
-    const { error } = await supabaseAdmin.from("transactions").update({ status: "completed" }).eq("id", id);
-    if (error) throw error;
+    const { id, action } = await req.json(); // action: "paid" or "cancel"
+    
+    const { data: tx } = await supabaseAdmin.from("transactions").select("*").eq("id", id).single();
+    if (!tx || tx.status !== "pending") throw new Error("Payout not found or already processed.");
+
+    if (action === "paid") {
+      await supabaseAdmin.from("transactions").update({ status: "completed" }).eq("id", id);
+    } else if (action === "cancel") {
+      // Cancel and refund the coins to the creator
+      await supabaseAdmin.from("transactions").update({ status: "cancelled" }).eq("id", id);
+      
+      const { data: wallet } = await supabaseAdmin.from("wallets").select("balance").eq("user_id", tx.sender_id).single();
+      if (wallet) {
+        await supabaseAdmin.from("wallets").update({ balance: wallet.balance + tx.amount }).eq("user_id", tx.sender_id);
+      }
+    } else {
+      throw new Error("Invalid action.");
+    }
+
     return NextResponse.json({ success: true });
   } catch (e: any) {
     return NextResponse.json({ error: e.message }, { status: 500 });
