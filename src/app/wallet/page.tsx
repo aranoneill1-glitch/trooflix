@@ -238,7 +238,11 @@ export default function WalletPage() {
                             <p className="font-bold text-sm flex items-center gap-2 text-white">
                               {t.type === "topup" ? "Top Up" : t.type === "tip" ? "Tip Sent" : t.type === "send" ? "Sent Coins" : isPayout ? `Payout ${isPaid ? "Paid" : isCancelled ? "Cancelled" : "Pending"}` : "Subscription"}
                             </p>
-                            <p className="text-[11px] text-white/40">{new Date(t.created_at).toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</p>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <span className="text-[9px] font-mono font-bold text-white/30 tracking-wide">UTR-{t.id ? t.id.split("-")[0].toUpperCase() : "N/A"}</span>
+                              <span className="text-[10px] text-white/20">•</span>
+                              <span className="text-[11px] text-white/40">{new Date(t.created_at).toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</span>
+                            </div>
                           </div>
                         </div>
                         <span className={`font-bold text-sm ${t.type === "topup" ? "text-green-500" : isCancelled ? "text-white/30 line-through" : "text-white"}`}>
@@ -264,7 +268,12 @@ export default function WalletPage() {
                 <button onClick={() => setSelectedTx(null)} className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition"><X size={16} /></button>
               </div>
               <div className="p-6">
-                <p className="text-xs text-white/50 mb-6">{new Date(selectedTx.created_at).toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" })}</p>
+                <div className="flex flex-col gap-1.5 mb-6">
+                  <p className="text-[10px] font-mono font-bold text-white/60 bg-white/10 px-2 py-1 rounded-md w-fit tracking-widest">
+                    UTR: {selectedTx.id ? selectedTx.id.split("-")[0].toUpperCase() : "N/A"}
+                  </p>
+                  <p className="text-xs text-white/50">{new Date(selectedTx.created_at).toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" })}</p>
+                </div>
                 <div className="flex justify-between items-center py-3 border-b border-white/5 mb-4">
                   <span className="text-sm text-white/50">Amount</span>
                   <span className="font-black text-2xl text-white">${Number(selectedTx.amount).toFixed(2)}</span>
