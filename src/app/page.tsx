@@ -25,7 +25,7 @@ import {  Play, Info, ChevronLeft, ChevronRight, X,
   Search, Bell, HomeIcon, Menu,
   Compass, LogOut, LogIn, Users, ShoppingBag, Sparkles, BookOpen, Flame, List,
   CheckCircle2, Pause, VolumeX, Volume2, MoreVertical, Plus, Maximize,
-  ThumbsUp, MessageCircle, Share2, Bookmark , DollarSign, ShieldOff, Radio, MessageSquare, Download } from "lucide-react";
+  ThumbsUp, MessageCircle, Share2, Bookmark , DollarSign, ShieldOff, Radio, MessageSquare, Download , Wallet } from "lucide-react";
 import AuthPlaybackGate from "@/components/AuthPlaybackGate";
 import AppleVideoPlayer from "@/components/AppleVideoPlayer";
 import UserMenu from "@/components/UserMenu";
@@ -533,7 +533,7 @@ export default function Home() {
             { icon: ShieldOff, title: "Zero Censorship", desc: "No shadowbans. No algorithmic suppression. Your audience gets your content." },
             { icon: Radio, title: "Live Streaming", desc: "Broadcast-quality WebRTC live streams with multi-guest support." },
             { icon: MessageSquare, title: "DMs & Video Calls", desc: "Connect directly with your audience using built-in messaging and WebRTC calls." },
-            { icon: Download, title: "1-Click YouTube Import", desc: "Migrate your entire back-catalog instantly using Google Takeout." },
+            { icon: Wallet, title: "TrooCoins Economy", desc: "Tip creators, buy merch, and manage your funds with our built-in wallet." },
             { icon: ShoppingBag, title: "Built-in Storefront", desc: "Sell merch, books, and digital goods directly on your profile." }
           ].map((feat, i) => (
             <div key={i} className="relative bg-[#0f0f12] border border-white/5 rounded-3xl p-8 hover:border-[#E53945]/40 hover:bg-[#141418] transition-all duration-300 group overflow-hidden shadow-2xl">
