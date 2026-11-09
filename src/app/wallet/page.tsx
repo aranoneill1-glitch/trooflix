@@ -60,7 +60,7 @@ export default function WalletPage() {
               <span className="text-[10px] bg-[#E53945]/20 text-[#E53945] px-2 py-0.5 rounded-full font-bold">1 Coin = $1.00 USD</span>
             </div>
             <div className="flex items-baseline gap-2 mb-8">
-              <span className="text-5xl font-black">{loading ? "..." : balance.toLocaleString()}</span>
+              <span className="text-5xl font-black">{loading ? "..." : Number(balance).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
               <span className="text-lg text-white/50 font-bold">TrooCoins</span>
             </div>
             <button onClick={() => setShowModal(true)} className="w-full bg-[#E53945] hover:bg-[#d12e39] text-white font-bold py-3.5 rounded-xl transition shadow-lg shadow-[#E53945]/20">
@@ -88,7 +88,7 @@ export default function WalletPage() {
                   </div>
                 </div>
                 <span className={`font-bold ${t.type === "topup" ? "text-green-500" : "text-white"}`}>
-                  {t.type === "topup" ? "+" : "-"}{t.amount}
+                  {t.type === "topup" ? "+" : "-"}{Number(t.amount).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
                 </span>
               </div>
             ))}

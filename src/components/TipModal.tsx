@@ -9,6 +9,7 @@ export default function TipModal() {
   const [creatorId, setCreatorId] = useState<string | null>(null);
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const [customAmount, setCustomAmount] = useState("");
 
   useEffect(() => {
     const handleOpen = (e: any) => {
@@ -18,6 +19,7 @@ export default function TipModal() {
       setIsOpen(true);
       setStatus("idle");
       setErrorMsg("");
+      setCustomAmount("");
     };
     window.addEventListener("open-tip-modal", handleOpen);
     return () => window.removeEventListener("open-tip-modal", handleOpen);
@@ -25,6 +27,7 @@ export default function TipModal() {
 
   const sendTip = async (amount: number) => {
     setStatus("loading");
+    setErrorMsg("");
     try {
       const user = await getCachedUser();
       if (!user) throw new Error("Please log in to send a tip.");
@@ -43,6 +46,13 @@ export default function TipModal() {
       setStatus("error");
       setErrorMsg(e.message);
     }
+  };
+
+  const handleCustomTip = () => {
+    const val = parseFloat(customAmount);
+    if (isNaN(val) || val < 0.5) return setErrorMsg("Minimum tip is $0.50");
+    if ((val * 2) % 1 !== 0) return setErrorMsg("Amount must be a multiple of $0.50");
+    sendTip(val);
   };
 
   return (
@@ -66,13 +76,36 @@ export default function TipModal() {
               <>
                 <p className="text-sm text-white/50 mb-6">1 Coin = $1.00. Your support goes directly to the creator.</p>
                 <div className="grid grid-cols-2 gap-3 mb-4">
-                  {[5, 10, 25, 50].map(amt => (
+                  {[0.5, 1, 2.5, 5].map(amt => (
                     <button key={amt} disabled={status === "loading"} onClick={() => sendTip(amt)} className="flex flex-col items-center justify-center p-4 rounded-xl border border-white/10 hover:border-[#D4AF37] hover:bg-[#D4AF37]/10 transition group disabled:opacity-50">
-                      <span className="text-2xl font-black text-white group-hover:text-[#D4AF37]">{amt}</span>
-                      <span className="text-xs text-white/50 group-hover:text-[#D4AF37]/70">Coins</span>
+                      <span className="text-2xl font-black text-white group-hover:text-[#D4AF37]">${amt.toFixed(2)}</span>
+                      <span className="text-xs text-white/50 group-hover:text-[#D4AF37]/70">Tip</span>
                     </button>
                   ))}
                 </div>
+                
+                <div className="mb-4">
+                  <label className="text-xs font-bold text-white/50 mb-2 block">Custom Amount ($)</label>
+                  <div className="flex gap-2">
+                    <input 
+                      type="number" 
+                      step="0.5" 
+                      min="0.5" 
+                      value={customAmount} 
+                      onChange={e => setCustomAmount(e.target.value)} 
+                      placeholder="e.g. 1.50"
+                      className="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#D4AF37]"
+                    />
+                    <button 
+                      onClick={handleCustomTip}
+                      disabled={status === "loading" || !customAmount}
+                      className="bg-[#D4AF37] hover:bg-[#b8952b] disabled:opacity-50 text-black font-bold px-6 rounded-xl transition"
+                    >
+                      Send
+                    </button>
+                  </div>
+                </div>
+
                 {status === "loading" && <p className="text-center text-sm text-white/50 flex justify-center items-center gap-2"><Loader2 size={14} className="animate-spin" /> Processing...</p>}
                 {status === "error" && <p className="text-center text-sm text-red-400 mt-2">{errorMsg}</p>}
               </>
