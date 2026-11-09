@@ -3,7 +3,7 @@ import { getCachedUser } from "@/lib/cache";
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
-import { Volume2, VolumeX, Heart, Eye, MessageCircle, Play, Pause } from "lucide-react";
+import { Gift, Volume2, VolumeX, Heart, Eye, MessageCircle, Play, Pause } from "lucide-react";
 import LikeButton from "@/components/LikeButton";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import CommentSheet from "@/components/CommentSheet";

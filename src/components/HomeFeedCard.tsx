@@ -2,7 +2,7 @@
 
 import type { JSX } from "react";
 import { useEffect, useRef, useState } from "react";
-import { Play, VolumeX, Volume2, MoreVertical, Maximize, ThumbsUp, MessageCircle, Eye, Share2, Bookmark } from "lucide-react";
+import { Gift, Play, VolumeX, Volume2, MoreVertical, Maximize, ThumbsUp, MessageCircle, Eye, Share2, Bookmark } from "lucide-react";
 import { getCachedUser } from "@/lib/cache";
 
 export default function HomeFeedCard({ video, creator, onMore, onPlay, isActive, onSetActive, onOpenComments, isLiked, onToggleLike, hideCreatorInfo, isVertical }: { video: any, creator: any, onMore: () => void, onPlay: () => void, isActive: boolean, onSetActive: () => void, onOpenComments: () => void, isLiked: boolean, onToggleLike: () => void, hideCreatorInfo?: boolean, isVertical?: boolean }): JSX.Element | null {
@@ -187,7 +187,8 @@ export default function HomeFeedCard({ video, creator, onMore, onPlay, isActive,
               <ThumbsUp size={20} fill={liked ? "#E53945" : "none"} className={liked ? "text-[#E53945]" : "text-white"} />
               <span className="text-[13px] font-bold">{likeCount}</span>
             </button>
-            <button onClick={onOpenComments} className="flex items-center gap-1.5 text-white/90 hover:text-white transition">
+            <button onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: video.creatorId || video.uploaderUserId } }))} className="flex items-center gap-1.5 text-white/90 hover:text-white transition text-yellow-500"><Gift size={20} /></button>
+              <button onClick={onOpenComments} className="flex items-center gap-1.5 text-white/90 hover:text-white transition">
               <MessageCircle size={20} />
               <span className="text-[13px] font-bold">{commentCount}</span>
             </button>
