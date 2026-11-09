@@ -41,6 +41,7 @@ export default function TipModal() {
       if (!res.ok) throw new Error(data.error || "Tip failed");
       
       setStatus("success");
+      window.dispatchEvent(new Event("tip-sent"));
       setTimeout(() => setIsOpen(false), 2000);
     } catch (e: any) {
       setStatus("error");
