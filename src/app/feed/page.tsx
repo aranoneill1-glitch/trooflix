@@ -7,6 +7,7 @@ import { Gift, Volume2, VolumeX, Heart, Eye, MessageCircle, Play, Pause } from "
 import LikeButton from "@/components/LikeButton";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import CommentSheet from "@/components/CommentSheet";
+import Comments from "@/components/Comments";
 
 type Video = {
   id: number;
@@ -35,6 +36,7 @@ export default function ShortsFeedPage() {
   const [loading, setLoading] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const [commentSheetVideoId, setCommentSheetVideoId] = useState<number | null>(null);
+  const [activeVideoId, setActiveVideoId] = useState<number | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -65,40 +67,62 @@ export default function ShortsFeedPage() {
   }
 
   return (
-    <main className="h-[100dvh] w-full bg-black overflow-y-scroll snap-y snap-mandatory scrollbar-hide">
-      {videos.map((video) => {
-        const creator = creators.find((c) => String(c.id) === String(video.creatorId)) || null;
-        return (
-          <VideoShort
-            key={video.id}
-            video={video}
-            creator={creator}
-            isMuted={isMuted}
-            onToggleMute={toggleMute}
-            onOpenComments={() => setCommentSheetVideoId(video.id)}
-          />
-        );
-      })}
+    <main className="h-[100dvh] w-full bg-black flex overflow-hidden">
+      <div className="flex-1 h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide relative">
+        {videos.map((video) => {
+          const creator = creators.find((c) => String(c.id) === String(video.creatorId)) || null;
+          return (
+            <VideoShort
+              key={video.id}
+              video={video}
+              creator={creator}
+              isMuted={isMuted}
+              onToggleMute={toggleMute}
+              onOpenComments={() => setCommentSheetVideoId(video.id)}
+              onSetActive={() => setActiveVideoId(video.id)}
+            />
+          );
+        })}
 
-      {videos.length === 0 && (
-        <div className="h-full flex flex-col items-center justify-center text-white/50">
-          <Play size={48} className="mb-4 opacity-50" />
-          <p>No shorts available yet.</p>
+        {videos.length === 0 && (
+          <div className="h-full flex flex-col items-center justify-center text-white/50">
+            <Play size={48} className="mb-4 opacity-50" />
+            <p>No shorts available yet.</p>
+          </div>
+        )}
+      </div>
+
+      <div className="hidden lg:flex flex-col w-[400px] xl:w-[450px] h-full bg-[#0f0f12] border-l border-white/10 shadow-2xl z-20">
+        <div className="p-4 border-b border-white/10 bg-black/40 flex items-center justify-between">
+          <h2 className="text-sm font-bold text-white flex items-center gap-2">
+            <MessageCircle size={16} /> Comments
+          </h2>
         </div>
-      )}
+        <div className="flex-1 overflow-y-auto">
+          {activeVideoId ? (
+            <Comments videoId={activeVideoId} />
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full text-white/30 text-sm gap-3">
+              <MessageCircle size={32} opacity={0.5} />
+              <p>Scroll to a short to see comments</p>
+            </div>
+          )}
+        </div>
+      </div>
 
-      <CommentSheet
-        videoId={commentSheetVideoId}
-        open={commentSheetVideoId !== null}
-        onClose={() => setCommentSheetVideoId(null)}
-      />
-
-      <MobileBottomNav />
+      <div className="lg:hidden">
+        <CommentSheet
+          videoId={commentSheetVideoId}
+          open={commentSheetVideoId !== null}
+          onClose={() => setCommentSheetVideoId(null)}
+        />
+        <MobileBottomNav />
+      </div>
     </main>
   );
 }
 
-function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: { video: Video, creator: Creator | null, isMuted: boolean, onToggleMute: () => void, onOpenComments: () => void }) {
+function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments, onSetActive }: { video: Video, creator: Creator | null, isMuted: boolean, onToggleMute: () => void, onOpenComments: () => void, onSetActive: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -245,8 +269,9 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          videoRef.current?.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
-        } else {
+                  videoRef.current?.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+                  if (onSetActive) onSetActive();
+                } else {
           videoRef.current?.pause();
           setIsPlaying(false);
           setIsExpanded(false);
@@ -335,7 +360,7 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
   };
 
   return (
-    <div className="relative w-full h-[100dvh] snap-start snap-always bg-black flex items-center justify-center overflow-hidden">
+    <div className="relative w-full h-full snap-start snap-always bg-black flex items-center justify-center overflow-hidden">
       
       <video
         ref={videoRef}
@@ -357,7 +382,7 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
           }).catch(() => {});
         }}
         onError={() => setHasError(true)}
-        className="w-full h-full object-cover cursor-pointer"
+        className="w-full h-full object-cover lg:object-contain cursor-pointer"
         onClick={handleScreenClick}
       />
 
