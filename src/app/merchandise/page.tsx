@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import { ShoppingBag, Search, Star, Wallet, CreditCard, CheckCircle2, ShieldCheck, X, Plus, ArrowRight } from "lucide-react";
+import { ShoppingBag, Search, Star, Wallet, CreditCard, CheckCircle2, ArrowRight, Plus, X, ShieldCheck } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { getCachedUser } from "@/lib/cache";
 
@@ -255,108 +255,117 @@ export default function MerchandisePage() {
       </div>
 
       {/* SMALLER ITEM MODAL */}
-      {selectedProduct && (
-        <div className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setSelectedProduct(null)}>
-          
-          {/* Reduced max-width from lg to sm */}
-          <div className="bg-[#1c1c1e] border border-white/10 rounded-3xl w-full max-w-sm max-h-[90vh] overflow-y-auto flex flex-col relative shadow-2xl animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+            {selectedProduct && (
+        <div className="fixed inset-0 z-[9999] bg-black/80 flex items-end sm:items-center justify-center sm:p-4 backdrop-blur-md" onClick={() => setSelectedProduct(null)}>
+          <div className="bg-[#1c1c1e] border border-white/10 rounded-t-3xl sm:rounded-3xl w-full max-w-md max-h-[90dvh] flex flex-col relative shadow-2xl animate-in slide-in-from-bottom-10 sm:zoom-in-95 duration-300 overflow-hidden" onClick={e => e.stopPropagation()}>
             
-            <button onClick={() => setSelectedProduct(null)} className="absolute top-3 right-3 z-10 p-1.5 bg-black/50 hover:bg-black/80 rounded-full text-white transition">
-              <X size={18} />
-            </button>
-            
-            <div className="w-full aspect-square bg-black relative">
+            {/* Header Image */}
+            <div className="relative w-full h-[30dvh] sm:h-64 bg-black shrink-0">
               <img src={selectedProduct.image_url} alt={selectedProduct.name} className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#1c1c1e] via-[#1c1c1e]/20 to-transparent" />
+              <button onClick={() => setSelectedProduct(null)} className="absolute top-4 right-4 z-10 p-2 bg-black/50 hover:bg-black/80 rounded-full text-white transition backdrop-blur-md">
+                <X size={20} />
+              </button>
             </div>
-            
-            <div className="p-5">
-              <p className="text-2xl font-black text-[#1DB954] mb-1">${(selectedProduct.price_cents / 100).toFixed(2)}</p>
-              <h2 className="text-base font-bold text-white mb-2 leading-tight line-clamp-2">{selectedProduct.name}</h2>
-              <p className="text-xs text-white/60 mb-4">Stock: {selectedProduct.stock} available</p>
+
+            {/* Scrollable Body */}
+            <div className="flex-1 overflow-y-auto p-6 scrollbar-hide relative">
+              <p className="text-3xl font-black text-[#1DB954] mb-1">${(selectedProduct.price_cents / 100).toFixed(2)}</p>
+              <h2 className="text-xl font-bold text-white mb-1 leading-tight">{selectedProduct.name}</h2>
+              <p className="text-xs text-white/50 mb-6">Stock: {selectedProduct.stock} available</p>
               
-              {/* Clickable Seller Link */}
-              <Link href={`/profile/${selectedProduct.creatorSlug}`} className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition group">
-                <div className="flex items-center gap-2.5">
+              <Link href={`/profile/${selectedProduct.creatorSlug}`} className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition group mb-6">
+                <div className="flex items-center gap-3">
                   {selectedProduct.creatorPhoto ? (
-                    <img src={selectedProduct.creatorPhoto} className="w-8 h-8 rounded-full object-cover border border-white/10" />
+                    <img src={selectedProduct.creatorPhoto} className="w-10 h-10 rounded-full object-cover border border-white/10" />
                   ) : (
-                    <div className="w-8 h-8 rounded-full bg-[#E53945] flex items-center justify-center font-bold text-white text-xs">
+                    <div className="w-10 h-10 rounded-full bg-[#E53945] flex items-center justify-center font-bold text-white">
                       {selectedProduct.creatorName?.charAt(0) || "C"}
                     </div>
                   )}
                   <div className="flex flex-col">
-                    <p className="text-xs font-bold text-white group-hover:text-[#E53945] transition-colors">{selectedProduct.creatorName}</p>
-                    <p className="text-[10px] text-white/50">Visit Store</p>
+                    <p className="text-sm font-bold text-white group-hover:text-[#E53945] transition-colors">{selectedProduct.creatorName}</p>
+                    <p className="text-[11px] text-white/50">Visit Store</p>
                   </div>
                 </div>
-                <ArrowRight size={14} className="text-white/30 group-hover:text-white transition" />
+                <ArrowRight size={16} className="text-white/30 group-hover:text-white transition" />
               </Link>
 
-              {/* Action Buttons */}
-              <div className="mt-5">
-                {coinStatus === "success" ? (
-                  <div className="text-center py-4 bg-green-500/10 border border-green-500/20 rounded-xl">
-                    <CheckCircle2 size={32} className="text-green-500 mx-auto mb-2" />
-                    <p className="font-bold text-green-400">Order Successful!</p>
-                    <p className="text-xs text-white/50 mt-1">Paid with TrooCoins.</p>
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex gap-2 mb-4 bg-black/40 p-1 rounded-xl">
-                      <button onClick={() => setPayMethod("card")} className={`flex-1 py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition ${payMethod === "card" ? "bg-white/10 text-white" : "text-white/50"}`}><CreditCard size={14}/> Card</button>
-                      <button onClick={() => setPayMethod("coins")} className={`flex-1 py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition ${payMethod === "coins" ? "bg-[#D4AF37]/20 text-[#D4AF37]" : "text-white/50"}`}><Wallet size={14}/> TrooCoins</button>
-                    </div>
-
-                    {payMethod === "card" ? (
-                      <div className="flex gap-2">
-                        <button onClick={() => addToBasket(selectedProduct)} className="flex-1 flex items-center justify-center gap-1.5 py-3 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl transition border border-white/10">
-                          <Plus size={16} /> Add to Basket
-                        </button>
-                        <button onClick={() => addToBasket(selectedProduct)} className="flex-1 py-3 bg-[#E53945] hover:bg-[#d12e39] text-white text-xs font-bold rounded-xl transition shadow-[0_0_15px_rgba(229,57,69,0.3)]">
-                          Buy Now
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-center text-xs px-1">
-                          <span className="text-white/50">Your Balance:</span>
-                          <span className="font-bold text-[#D4AF37]">{Number(coinBalance).toFixed(2)} Coins</span>
-                        </div>
-                        <input type="text" placeholder="Full Name" value={shipping.name} onChange={e => setShipping({...shipping, name: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-[#D4AF37]" />
-                        <input type="text" placeholder="Address" value={shipping.address} onChange={e => setShipping({...shipping, address: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-[#D4AF37]" />
-                        <div className="flex gap-2">
-                          <input type="text" placeholder="City" value={shipping.city} onChange={e => setShipping({...shipping, city: e.target.value})} className="flex-1 bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-[#D4AF37]" />
-                          <input type="text" placeholder="Postal Code" value={shipping.postalCode} onChange={e => setShipping({...shipping, postalCode: e.target.value})} className="w-32 bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-[#D4AF37]" />
-                        </div>
-                        <input type="text" placeholder="Country" value={shipping.country} onChange={e => setShipping({...shipping, country: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-[#D4AF37]" />
-                        
-                        {coinError && <p className="text-red-400 text-xs">{coinError}</p>}
-                        
-                        <button 
-                          onClick={async () => {
-                            if (!shipping.name || !shipping.address || !shipping.city || !shipping.postalCode || !shipping.country) return setCoinError("Please fill in all shipping details.");
-                            setCoinStatus("loading"); setCoinError("");
-                            const u = await getCachedUser();
-                            const res = await fetch("/api/wallet/buy-merch", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: u?.id, productId: selectedProduct.id, shipping }) });
-                            const d = await res.json();
-                            if (res.ok) setCoinStatus("success");
-                            else { setCoinStatus("error"); setCoinError(d.error); }
-                          }}
-                          disabled={coinStatus === "loading"}
-                          className="w-full py-3 bg-[#D4AF37] hover:bg-[#b8952b] disabled:opacity-50 text-black text-xs font-bold rounded-xl transition shadow-[0_0_15px_rgba(212,175,55,0.3)]"
-                        >
-                          {coinStatus === "loading" ? "Processing..." : `Pay ${(selectedProduct.price_cents / 100).toFixed(2)} Coins`}
-                        </button>
-                      </div>
-                    )}
-                  </>
-                )}
+              {/* Payment Selector */}
+              <div className="flex bg-black/40 p-1 rounded-xl mb-6">
+                <button onClick={() => setPayMethod("card")} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg font-bold text-sm transition ${payMethod === "card" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}>
+                  <CreditCard size={16} /> Card
+                </button>
+                <button onClick={() => setPayMethod("coins")} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg font-bold text-sm transition ${payMethod === "coins" ? "bg-[#D4AF37]/20 text-[#D4AF37] shadow-sm" : "text-white/50 hover:text-white"}`}>
+                  <Wallet size={16} /> TrooCoins
+                </button>
               </div>
+
+              {payMethod === "card" ? (
+                <div className="flex gap-3 pb-4">
+                  <button onClick={() => addToBasket(selectedProduct)} className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-white/5 hover:bg-white/10 text-white text-sm font-bold rounded-xl transition border border-white/10">
+                    <Plus size={18} /> Add to Basket
+                  </button>
+                  <button onClick={() => addToBasket(selectedProduct)} className="flex-1 py-3.5 bg-[#E53945] hover:bg-[#d12e39] text-white text-sm font-bold rounded-xl transition shadow-lg shadow-[#E53945]/20">
+                    Buy Now
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4 pb-4">
+                  <div className="flex justify-between items-center bg-[#D4AF37]/10 border border-[#D4AF37]/20 rounded-xl p-3">
+                    <span className="text-sm text-[#D4AF37]/70 font-semibold">Your Balance:</span>
+                    <span className="font-black text-[#D4AF37]">{Number(coinBalance).toFixed(2)} Coins</span>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <input type="text" placeholder="Full Name" value={shipping.name} onChange={e => setShipping({...shipping, name: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-[#D4AF37] transition" />
+                    <input type="text" placeholder="Address" value={shipping.address} onChange={e => setShipping({...shipping, address: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-[#D4AF37] transition" />
+                    <div className="flex gap-3">
+                      <input type="text" placeholder="City" value={shipping.city} onChange={e => setShipping({...shipping, city: e.target.value})} className="flex-1 min-w-0 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-[#D4AF37] transition" />
+                      <input type="text" placeholder="Postal Code" value={shipping.postalCode} onChange={e => setShipping({...shipping, postalCode: e.target.value})} className="w-1/2 min-w-0 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-[#D4AF37] transition" />
+                    </div>
+                    <input type="text" placeholder="Country" value={shipping.country} onChange={e => setShipping({...shipping, country: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-[#D4AF37] transition" />
+                  </div>
+
+                  {coinError && <p className="text-red-400 text-xs font-semibold px-1">{coinError}</p>}
+                  
+                  <button 
+                    onClick={async () => {
+                      if (!shipping.name || !shipping.address || !shipping.city || !shipping.postalCode || !shipping.country) return setCoinError("Please fill in all shipping details.");
+                      setCoinStatus("loading"); setCoinError("");
+                      const u = await getCachedUser();
+                      const res = await fetch("/api/wallet/buy-merch", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: u?.id, productId: selectedProduct.id, shipping }) });
+                      const d = await res.json();
+                      if (res.ok) setCoinStatus("success");
+                      else { setCoinStatus("error"); setCoinError(d.error); }
+                    }}
+                    disabled={coinStatus === "loading"}
+                    className="w-full py-3.5 bg-[#D4AF37] hover:bg-[#b8952b] disabled:opacity-50 text-black text-sm font-black rounded-xl transition shadow-lg shadow-[#D4AF37]/20"
+                  >
+                    {coinStatus === "loading" ? "Processing..." : `Pay ${(selectedProduct.price_cents / 100).toFixed(2)} Coins`}
+                  </button>
+                </div>
+              )}
+              
+              {/* Success Overlay */}
+              {coinStatus === "success" && (
+                <div className="absolute inset-0 z-20 bg-[#1c1c1e] flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-300">
+                  <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mb-6">
+                    <CheckCircle2 size={40} className="text-green-500" />
+                  </div>
+                  <h3 className="text-2xl font-black text-white mb-2">Order Successful!</h3>
+                  <p className="text-sm text-white/60 mb-8 max-w-[250px]">You have successfully purchased {selectedProduct.name} using TrooCoins.</p>
+                  <button onClick={() => setSelectedProduct(null)} className="w-full py-3.5 bg-white text-black font-bold rounded-xl transition">
+                    Continue Shopping
+                  </button>
+                </div>
+              )}
+
             </div>
-            
           </div>
         </div>
       )}
+
 
       <MobileBottomNav />
     </main>
