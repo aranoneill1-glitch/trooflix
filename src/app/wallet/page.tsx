@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import { Wallet, ArrowDownRight, ArrowUpRight, X } from "lucide-react";
+import { Wallet, ArrowDownRight, ArrowUpRight, X, CheckCircle2 } from "lucide-react";
 import { getCachedUser } from "@/lib/cache";
 
 export default function WalletPage() {
@@ -11,6 +11,11 @@ export default function WalletPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [buying, setBuying] = useState(false);
+  
+  const [showPayout, setShowPayout] = useState(false);
+  const [payoutAmount, setPayoutAmount] = useState("");
+  const [payoutStatus, setPayoutStatus] = useState<"idle"|"loading"|"success"|"error">("idle");
+  const [payoutError, setPayoutError] = useState("");
 
   const fetchWallet = () => {
     getCachedUser().then(u => {
@@ -78,6 +83,9 @@ export default function WalletPage() {
             <button onClick={() => setShowModal(true)} className="w-full bg-[#E53945] hover:bg-[#d12e39] text-white font-bold py-3.5 rounded-xl transition shadow-lg shadow-[#E53945]/20">
               Top Up Coins
             </button>
+            <button onClick={() => setShowPayout(true)} className="w-full mt-3 bg-white/10 hover:bg-white/20 border border-white/10 text-white font-bold py-3.5 rounded-xl transition">
+              Request Payout (Creators Only)
+            </button>
           </div>
         </div>
 
@@ -91,11 +99,11 @@ export default function WalletPage() {
             {transactions.map(t => (
               <div key={t.id} className="flex items-center justify-between p-4 border-b border-white/5 last:border-0">
                 <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${t.type === "topup" ? "bg-green-500/20 text-green-500" : "bg-red-500/20 text-red-500"}`}>
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${t.type === "topup" ? "bg-green-500/20 text-green-500" : t.type === "payout" ? "bg-yellow-500/20 text-yellow-500" : "bg-red-500/20 text-red-500"}`}>
                     {t.type === "topup" ? <ArrowDownRight size={18} /> : <ArrowUpRight size={18} />}
                   </div>
                   <div>
-                    <p className="font-bold text-sm">{t.type === "topup" ? "Top Up" : t.type === "tip" ? "Tip Sent" : "Subscription"}</p>
+                    <p className="font-bold text-sm">{t.type === "topup" ? "Top Up" : t.type === "tip" ? "Tip Sent" : t.type === "payout" ? "Payout Requested" : "Subscription"}</p>
                     <p className="text-xs text-white/50">{new Date(t.created_at).toLocaleDateString()}</p>
                   </div>
                 </div>
@@ -130,6 +138,44 @@ export default function WalletPage() {
                 </button>
               ))}
             </div>
+          </div>
+        </div>
+      )}
+
+      {showPayout && (
+        <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowPayout(false)}>
+          <div className="bg-[#1c1c1e] border border-white/10 rounded-3xl w-full max-w-sm p-6 relative" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setShowPayout(false)} className="absolute top-4 right-4 p-2 bg-white/5 rounded-full hover:bg-white/10 transition"><X size={18} /></button>
+            <h2 className="text-2xl font-black mb-1">Withdraw</h2>
+            <p className="text-sm text-white/50 mb-6">Request a manual payout to your bank.</p>
+            
+            {payoutStatus === "success" ? (
+              <div className="text-center py-6">
+                <CheckCircle2 size={48} className="text-green-500 mx-auto mb-4" />
+                <h4 className="text-xl font-bold mb-1">Request Sent!</h4>
+                <p className="text-sm text-white/50">The admin will process your payment shortly.</p>
+              </div>
+            ) : (
+              <>
+                <label className="text-xs font-bold text-white/50 mb-2 block">Amount to Withdraw ($)</label>
+                <input type="number" step="1" min="1" value={payoutAmount} onChange={e => setPayoutAmount(e.target.value)} placeholder="e.g. 50" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#E53945] mb-4" />
+                {payoutStatus === "error" && <p className="text-red-400 text-sm mb-4">{payoutError}</p>}
+                <button 
+                  onClick={async () => {
+                    setPayoutStatus("loading");
+                    const u = await getCachedUser();
+                    const res = await fetch("/api/wallet/request-payout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: u?.id, amount: Number(payoutAmount) }) });
+                    const d = await res.json();
+                    if (res.ok) { setPayoutStatus("success"); fetchWallet(); }
+                    else { setPayoutStatus("error"); setPayoutError(d.error); }
+                  }}
+                  disabled={!payoutAmount || payoutStatus === "loading"}
+                  className="w-full bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold py-3.5 rounded-xl transition"
+                >
+                  {payoutStatus === "loading" ? "Requesting..." : "Request Payout"}
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
