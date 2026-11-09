@@ -25,7 +25,7 @@ import {  Play, Info, ChevronLeft, ChevronRight, X,
   Search, Bell, HomeIcon, Menu,
   Compass, LogOut, LogIn, Users, ShoppingBag, Sparkles, BookOpen, Flame, List,
   CheckCircle2, Pause, VolumeX, Volume2, MoreVertical, Plus, Maximize,
-  ThumbsUp, MessageCircle, Share2, Bookmark , DollarSign, ShieldOff, Radio, MessageSquare, Download , Wallet } from "lucide-react";
+  ThumbsUp, MessageCircle, Share2, Bookmark , DollarSign, ShieldOff, Radio, MessageSquare, Download , Wallet , ArrowRight } from "lucide-react";
 import AuthPlaybackGate from "@/components/AuthPlaybackGate";
 import AppleVideoPlayer from "@/components/AppleVideoPlayer";
 import UserMenu from "@/components/UserMenu";
@@ -520,31 +520,52 @@ export default function Home() {
           {showingFiltered && <div className="h-20 md:h-24" />}
 
           
-            {/* FEATURES ROW (DESKTOP) */}
+                  {/* FEATURES ROW (DESKTOP) */}
       <div className="hidden lg:block w-full max-w-[1600px] mx-auto px-12 py-20">
-        <div className="flex items-center justify-between mb-10">
-          <h2 className="text-3xl md:text-5xl font-black tracking-tight">
-            Why Creators Are <span className="text-[#E53945]">Switching</span>
+        <div className="flex flex-col items-center justify-center text-center mb-12">
+          <div className="inline-flex items-center gap-3 mb-4">
+            <span className="w-12 h-px bg-[#E53945]/50" />
+            <span className="text-xs font-bold tracking-[0.2em] text-[#E53945] uppercase">The Trooflix Difference</span>
+            <span className="w-12 h-px bg-[#E53945]/50" />
+          </div>
+          <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-4">
+            A Better Deal for <span className="text-[#E53945]">Creators.</span>
           </h2>
+          <p className="text-lg text-white/50 max-w-2xl">
+            Everything you need to create, share and earn — without the restrictions.
+          </p>
         </div>
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[
-            { icon: DollarSign, title: "Keep 99% of Revenue", desc: "A flat 1% fee. No hidden cuts, no demonetization." },
-            { icon: ShieldOff, title: "Zero Censorship", desc: "No shadowbans. No algorithmic suppression. Your audience gets your content." },
-            { icon: Radio, title: "Live Streaming", desc: "Broadcast-quality WebRTC live streams with multi-guest support." },
-            { icon: MessageSquare, title: "DMs & Video Calls", desc: "Connect directly with your audience using built-in messaging and WebRTC calls." },
-            { icon: Wallet, title: "TrooCoins Economy", desc: "Tip creators, buy merch, and manage your funds with our built-in wallet." },
-            { icon: ShoppingBag, title: "Built-in Storefront", desc: "Sell merch, books, and digital goods directly on your profile." }
+            { icon: DollarSign, t1: "Keep", t2: "99%", desc: "Just 1% platform fee. Your content, your earnings.", img: "https://images.unsplash.com/photo-1621761191319-c6fb62004040?q=80&w=600&auto=format&fit=crop" },
+            { icon: ShieldOff, t1: "Creative", t2: "Freedom", desc: "No shadowbans. No censorship. Your voice matters.", img: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=600&auto=format&fit=crop" },
+            { icon: Radio, t1: "Connect", t2: "Directly", desc: "Build genuine relationships with your audience.", img: "https://images.unsplash.com/photo-1470229722913-7ea0a4e88db9?q=80&w=600&auto=format&fit=crop" },
+            { icon: MessageSquare, t1: "Private", t2: "Connections", desc: "Messaging and video calls, all in one place.", img: "https://images.unsplash.com/photo-1512428559087-560fa5ceab42?q=80&w=600&auto=format&fit=crop" },
+            { icon: Wallet, t1: "Troo", t2: "Coins", desc: "A creator-powered economy for tips, rewards and payments.", img: "https://images.unsplash.com/photo-1621504450181-5d356f61d307?q=80&w=600&auto=format&fit=crop" },
+            { icon: ShoppingBag, t1: "Your Own", t2: "Storefront", desc: "Sell merchandise, books and digital products directly.", img: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=600&auto=format&fit=crop" }
           ].map((feat, i) => (
-            <div key={i} className="relative bg-[#0f0f12] border border-white/5 rounded-3xl p-8 hover:border-[#E53945]/40 hover:bg-[#141418] transition-all duration-300 group overflow-hidden shadow-2xl">
-              <div className="absolute inset-0 bg-gradient-to-br from-[#E53945]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+            <div key={i} className="relative bg-[#0a0a0a] border border-white/[0.06] rounded-3xl p-8 hover:border-[#E53945]/40 transition-all duration-500 group overflow-hidden shadow-2xl flex flex-col justify-between min-h-[280px]">
+              {/* Background Image */}
+              <div className="absolute inset-0 z-0">
+                <img src={feat.img} alt="" className="w-full h-full object-cover opacity-20 group-hover:opacity-40 transition-opacity duration-700 mix-blend-luminosity" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a] via-[#0a0a0a]/90 to-transparent" />
+              </div>
               
               <div className="relative z-10">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#E53945] to-[#b91c1c] shadow-lg shadow-[#E53945]/30 flex items-center justify-center mb-6 group-hover:-translate-y-1 transition-transform duration-300">
-                  <feat.icon size={28} className="text-white" />
+                <feat.icon size={32} className="text-[#E53945] mb-6 drop-shadow-[0_0_15px_rgba(229,57,69,0.4)] group-hover:scale-110 group-hover:drop-shadow-[0_0_20px_rgba(229,57,69,0.7)] transition-all duration-300 origin-left" />
+                <h3 className="text-2xl font-black text-white mb-2 leading-tight">
+                  {feat.t1} <span className="text-[#E53945]">{feat.t2}</span>
+                </h3>
+                <p className="text-sm text-white/50 leading-relaxed max-w-[85%] group-hover:text-white/70 transition-colors">
+                  {feat.desc}
+                </p>
+              </div>
+
+              <div className="relative z-10 mt-8">
+                <div className="w-9 h-9 rounded-full border border-white/20 flex items-center justify-center group-hover:bg-[#E53945] group-hover:border-[#E53945] transition-colors cursor-pointer">
+                  <ArrowRight size={16} className="text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-3">{feat.title}</h3>
-                <p className="text-[15px] text-white/50 leading-relaxed group-hover:text-white/70 transition-colors">{feat.desc}</p>
               </div>
             </div>
           ))}
