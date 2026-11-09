@@ -529,104 +529,184 @@ function CreatorDashboardContent() {
           )}
 
           {isDashboardView && !showMyTrooFlix && !isFreeTier && (
-      <div className="animate-in fade-in duration-300 max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          
-          <Link href="/creator-dashboard/import" className="bg-[#1c1c1e] border border-white/10 rounded-3xl p-6 group hover:border-[#E53945]/50 transition-all duration-300 relative overflow-hidden shadow-lg">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53945]/10 rounded-full blur-3xl -mr-10 -mt-10 group-hover:bg-[#E53945]/20 transition-colors" />
-            <div className="w-12 h-12 rounded-2xl bg-[#E53945]/20 flex items-center justify-center mb-6">
-              <Download className="text-[#E53945]" size={24} />
-            </div>
-            <h3 className="text-xl font-bold text-white mb-2">Import from YouTube</h3>
-            <p className="text-sm text-white/50 mb-6">Bring your entire back-catalog to Trooflix seamlessly.</p>
-            <div className="flex items-center text-sm font-bold text-[#E53945]">Open Tool <ChevronRight size={16} className="ml-1" /></div>
-          </Link>
-
-          <Link href="/creator-dashboard/manage-content" className="lg:col-span-2 bg-[#1c1c1e] border border-white/10 rounded-3xl p-6 group hover:border-[#E53945]/50 transition-all duration-300 relative overflow-hidden flex flex-col justify-between shadow-lg">
-            <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full blur-3xl -mr-10 -mt-10" />
-            <div>
-              <div className="flex items-center justify-between mb-6">
-                <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center">
-                  <Video className="text-white" size={24} />
-                </div>
-                <span className="bg-white/10 text-white text-xs font-bold px-3 py-1 rounded-full">{creatorVideos.length} Posts</span>
+      <>
+        {/* DESKTOP BENTO BOX */}
+        <div className="hidden lg:block animate-in fade-in duration-300 max-w-6xl mx-auto">
+          <div className="grid grid-cols-3 gap-6">
+            
+            <Link href="/creator-dashboard/import" className="bg-[#1c1c1e] border border-white/10 rounded-3xl p-6 group hover:border-[#E53945]/50 transition-all duration-300 relative overflow-hidden shadow-lg">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53945]/10 rounded-full blur-3xl -mr-10 -mt-10 group-hover:bg-[#E53945]/20 transition-colors" />
+              <div className="w-12 h-12 rounded-2xl bg-[#E53945]/20 flex items-center justify-center mb-6">
+                <Download className="text-[#E53945]" size={24} />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">Manage Content</h3>
-              <p className="text-sm text-white/50">Edit, delete, or reorder your videos and podcasts.</p>
-            </div>
-            <div className="flex items-center text-sm font-bold text-white group-hover:text-[#E53945] transition-colors mt-6">Open Dashboard <ChevronRight size={16} className="ml-1" /></div>
-          </Link>
+              <h3 className="text-xl font-bold text-white mb-2">Import from YouTube</h3>
+              <p className="text-sm text-white/50 mb-6">Bring your entire back-catalog to Trooflix seamlessly.</p>
+              <div className="flex items-center text-sm font-bold text-[#E53945]">Open Tool <ChevronRight size={16} className="ml-1" /></div>
+            </Link>
 
-          <button onClick={() => setShowAddContentMenu(true)} className="bg-[#1c1c1e] border border-white/10 rounded-3xl p-6 group hover:border-[#E53945]/50 transition-all duration-300 text-left relative overflow-hidden shadow-lg">
-            <div className="w-12 h-12 rounded-2xl bg-green-500/20 flex items-center justify-center mb-6">
-              <Plus className="text-green-400" size={24} />
-            </div>
-            <h3 className="text-xl font-bold text-white mb-2">Add Content</h3>
-            <p className="text-sm text-white/50">Upload a new video, short, or tweet.</p>
-          </button>
-
-          <Link href="/creator-dashboard/fix-posters" className="bg-[#1c1c1e] border border-white/10 rounded-3xl p-6 group hover:border-orange-500/50 transition-all duration-300 shadow-lg">
-            <div className="w-12 h-12 rounded-2xl bg-orange-500/20 flex items-center justify-center mb-6">
-              <Sparkles className="text-orange-400" size={24} />
-            </div>
-            <h3 className="text-xl font-bold text-white mb-2">Auto-Fix Posters</h3>
-            <p className="text-sm text-white/50">Grab frames from your videos to use as posters.</p>
-          </Link>
-
-          <Link href="/creator-dashboard/settings" className="bg-[#1c1c1e] border border-white/10 rounded-3xl p-6 group hover:border-blue-500/50 transition-all duration-300 shadow-lg">
-            <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center mb-6">
-              <Pencil className="text-blue-400" size={24} />
-            </div>
-            <h3 className="text-xl font-bold text-white mb-2">Manage Profile</h3>
-            <p className="text-sm text-white/50">Update your bio, links, and profile picture.</p>
-          </Link>
-
-          <Link href="/creator-dashboard/theme" className="bg-[#1c1c1e] border border-white/10 rounded-3xl p-6 group hover:border-purple-500/50 transition-all duration-300 shadow-lg">
-            <div className="w-12 h-12 rounded-2xl bg-purple-500/20 flex items-center justify-center mb-6">
-              <Palette className="text-purple-400" size={24} />
-            </div>
-            <h3 className="text-xl font-bold text-white mb-2">Profile Theme</h3>
-            <p className="text-sm text-white/50">Customize your page with colors and gradients.</p>
-          </Link>
-
-          <Link href="/creator-dashboard/shop" className="bg-[#1c1c1e] border border-white/10 rounded-3xl p-6 group hover:border-yellow-500/50 transition-all duration-300 shadow-lg">
-            <div className="w-12 h-12 rounded-2xl bg-yellow-500/20 flex items-center justify-center mb-6">
-              <ShoppingBag className="text-yellow-400" size={24} />
-            </div>
-            <h3 className="text-xl font-bold text-white mb-2">Manage Shop</h3>
-            <p className="text-sm text-white/50">Add merch, books, and manage your inventory.</p>
-          </Link>
-
-          <Link href="/creator-dashboard/orders" className="bg-[#1c1c1e] border border-white/10 rounded-3xl p-6 group hover:border-blue-500/50 transition-all duration-300 shadow-lg">
-            <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center mb-6">
-              <Package className="text-blue-400" size={24} />
-            </div>
-            <h3 className="text-xl font-bold text-white mb-2">Manage Orders</h3>
-            <p className="text-sm text-white/50">Track shipments and update tracking numbers.</p>
-          </Link>
-
-          <Link href="/creator-dashboard/subscriptions" className="bg-[#1c1c1e] border border-white/10 rounded-3xl p-6 group hover:border-[#D4AF37]/50 transition-all duration-300 shadow-lg">
-            <div className="w-12 h-12 rounded-2xl bg-[#D4AF37]/20 flex items-center justify-center mb-6">
-              <Star className="text-[#D4AF37]" size={24} />
-            </div>
-            <h3 className="text-xl font-bold text-white mb-2">Subscriptions</h3>
-            <p className="text-sm text-white/50">Manage your premium tiers and pricing.</p>
-          </Link>
-
-          <Link href="/creator-dashboard/security-billing" className="col-span-full bg-[#1c1c1e] border border-white/10 rounded-3xl p-6 group hover:border-white/30 transition-all duration-300 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-lg">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center shrink-0">
-                <Shield className="text-white/70" size={24} />
-              </div>
+            <Link href="/creator-dashboard/manage-content" className="col-span-2 bg-[#1c1c1e] border border-white/10 rounded-3xl p-6 group hover:border-[#E53945]/50 transition-all duration-300 relative overflow-hidden flex flex-col justify-between shadow-lg">
+              <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full blur-3xl -mr-10 -mt-10" />
               <div>
-                <h3 className="text-lg font-bold text-white">Security & Billing</h3>
-                <p className="text-sm text-white/50">Update password, manage subscription and payouts.</p>
+                <div className="flex items-center justify-between mb-6">
+                  <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center">
+                    <Video className="text-white" size={24} />
+                  </div>
+                  <span className="bg-white/10 text-white text-xs font-bold px-3 py-1 rounded-full">{creatorVideos.length} Posts</span>
+                </div>
+                <h3 className="text-xl font-bold text-white mb-2">Manage Content</h3>
+                <p className="text-sm text-white/50">Edit, delete, or reorder your videos and podcasts.</p>
               </div>
-            </div>
-            <ChevronRight className="text-white/30 group-hover:text-white transition-colors shrink-0 hidden md:block" />
-          </Link>
+              <div className="flex items-center text-sm font-bold text-white group-hover:text-[#E53945] transition-colors mt-6">Open Dashboard <ChevronRight size={16} className="ml-1" /></div>
+            </Link>
+
+            <button onClick={() => setShowAddContentMenu(true)} className="bg-[#1c1c1e] border border-white/10 rounded-3xl p-6 group hover:border-green-500/50 transition-all duration-300 text-left relative overflow-hidden shadow-lg">
+              <div className="w-12 h-12 rounded-2xl bg-green-500/20 flex items-center justify-center mb-6">
+                <Plus className="text-green-400" size={24} />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Add Content</h3>
+              <p className="text-sm text-white/50">Upload a new video, short, or tweet.</p>
+            </button>
+
+            <Link href="/creator-dashboard/fix-posters" className="bg-[#1c1c1e] border border-white/10 rounded-3xl p-6 group hover:border-orange-500/50 transition-all duration-300 shadow-lg">
+              <div className="w-12 h-12 rounded-2xl bg-orange-500/20 flex items-center justify-center mb-6">
+                <Sparkles className="text-orange-400" size={24} />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Auto-Fix Posters</h3>
+              <p className="text-sm text-white/50">Grab frames from your videos to use as posters.</p>
+            </Link>
+
+            <Link href="/creator-dashboard/settings" className="bg-[#1c1c1e] border border-white/10 rounded-3xl p-6 group hover:border-blue-500/50 transition-all duration-300 shadow-lg">
+              <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center mb-6">
+                <Pencil className="text-blue-400" size={24} />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Manage Profile</h3>
+              <p className="text-sm text-white/50">Update your bio, links, and profile picture.</p>
+            </Link>
+
+            <Link href="/creator-dashboard/theme" className="bg-[#1c1c1e] border border-white/10 rounded-3xl p-6 group hover:border-purple-500/50 transition-all duration-300 shadow-lg">
+              <div className="w-12 h-12 rounded-2xl bg-purple-500/20 flex items-center justify-center mb-6">
+                <Palette className="text-purple-400" size={24} />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Profile Theme</h3>
+              <p className="text-sm text-white/50">Customize your page with colors and gradients.</p>
+            </Link>
+
+            <Link href="/creator-dashboard/shop" className="bg-[#1c1c1e] border border-white/10 rounded-3xl p-6 group hover:border-yellow-500/50 transition-all duration-300 shadow-lg">
+              <div className="w-12 h-12 rounded-2xl bg-yellow-500/20 flex items-center justify-center mb-6">
+                <ShoppingBag className="text-yellow-400" size={24} />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Manage Shop</h3>
+              <p className="text-sm text-white/50">Add merch, books, and manage your inventory.</p>
+            </Link>
+
+            <Link href="/creator-dashboard/orders" className="bg-[#1c1c1e] border border-white/10 rounded-3xl p-6 group hover:border-blue-500/50 transition-all duration-300 shadow-lg">
+              <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center mb-6">
+                <Package className="text-blue-400" size={24} />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Manage Orders</h3>
+              <p className="text-sm text-white/50">Track shipments and update tracking numbers.</p>
+            </Link>
+
+            <Link href="/creator-dashboard/subscriptions" className="bg-[#1c1c1e] border border-white/10 rounded-3xl p-6 group hover:border-[#D4AF37]/50 transition-all duration-300 shadow-lg">
+              <div className="w-12 h-12 rounded-2xl bg-[#D4AF37]/20 flex items-center justify-center mb-6">
+                <Star className="text-[#D4AF37]" size={24} />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Subscriptions</h3>
+              <p className="text-sm text-white/50">Manage your premium tiers and pricing.</p>
+            </Link>
+
+            <Link href="/creator-dashboard/security-billing" className="col-span-full bg-[#1c1c1e] border border-white/10 rounded-3xl p-6 group hover:border-white/30 transition-all duration-300 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-lg">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center shrink-0">
+                  <Shield className="text-white/70" size={24} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white">Security & Billing</h3>
+                  <p className="text-sm text-white/50">Update password, manage subscription and payouts.</p>
+                </div>
+              </div>
+              <ChevronRight className="text-white/30 group-hover:text-white transition-colors shrink-0 hidden md:block" />
+            </Link>
+          </div>
         </div>
-      </div>
+
+        {/* MOBILE OLD LIST */}
+        <div className="lg:hidden animate-in fade-in duration-300 space-y-8 max-w-4xl mx-auto">
+          <section>
+            <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">Content</h2>
+            <div className="flex flex-col gap-2 w-full max-w-2xl">
+              <Link href="/creator-dashboard/import" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-lg">
+                <div className="flex items-center gap-4"><Download className="text-[#E53945]" size={20} /><span className="text-sm font-bold text-white group-hover:text-white/90">Import from YouTube</span></div>
+                <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
+              </Link>
+              <Link href="/creator-dashboard/manage-content" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-lg">
+                <div className="flex items-center gap-4"><Video className="text-[#E53945]" size={20} /><span className="text-sm font-bold text-white group-hover:text-white/90">Manage Content</span></div>
+                <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
+              </Link>
+              <Link href="/creator-dashboard/fix-posters" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-lg">
+                <div className="flex items-center gap-4"><Sparkles className="text-[#E53945]" size={20} /><span className="text-sm font-bold text-white group-hover:text-white/90">Auto-Fix Missing Posters</span></div>
+                <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
+              </Link>
+              <button onClick={() => setShowAddContentMenu(true)} className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-lg w-full text-left">
+                <div className="flex items-center gap-4"><Plus className="text-[#E53945]" size={20} /><span className="text-sm font-bold text-white group-hover:text-white/90">Add Content</span></div>
+                <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
+              </button>
+            </div>
+          </section>
+
+          <section>
+            <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">Profile</h2>
+            <div className="flex flex-col gap-2 w-full max-w-2xl">
+              <Link href="/creator-dashboard/settings" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-lg">
+                <div className="flex items-center gap-4"><Pencil className="text-white/70" size={20} /><span className="text-sm font-bold text-white group-hover:text-white/90">Manage Profile</span></div>
+                <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
+              </Link>
+              <Link href="/creator-dashboard/theme" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-lg">
+                <div className="flex items-center gap-4"><Palette className="text-white/70" size={20} /><span className="text-sm font-bold text-white group-hover:text-white/90">Profile Theme</span></div>
+                <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
+              </Link>
+            </div>
+          </section>
+
+          <section>
+            <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">Marketplace</h2>
+            <div className="flex flex-col gap-2 w-full max-w-2xl">
+              <Link href="/creator-dashboard/shop" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-lg">
+                <div className="flex items-center gap-4"><ShoppingBag className="text-white/70" size={20} /><span className="text-sm font-bold text-white group-hover:text-white/90">Manage Shop</span></div>
+                <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
+              </Link>
+              <Link href="/creator-dashboard/orders" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-lg">
+                <div className="flex items-center gap-4"><Package className="text-white/70" size={20} /><span className="text-sm font-bold text-white group-hover:text-white/90">Manage Orders</span></div>
+                <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
+              </Link>
+            </div>
+          </section>
+
+          <section>
+            <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">Subscriptions</h2>
+            <div className="flex flex-col gap-2 w-full max-w-2xl">
+              <Link href="/creator-dashboard/subscriptions" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-lg">
+                <div className="flex items-center gap-4"><Star className="text-[#E53945]" size={20} /><span className="text-sm font-bold text-white group-hover:text-white/90">Manage Subscription</span></div>
+                <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
+              </Link>
+            </div>
+          </section>
+
+          <section>
+            <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">Security & Billing</h2>
+            <div className="flex flex-col gap-2 w-full max-w-2xl">
+              <Link href="/creator-dashboard/security-billing" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-lg">
+                <div className="flex items-center gap-4"><Shield className="text-[#E53945]" size={20} /><span className="text-sm font-bold text-white group-hover:text-white/90">Change Password</span></div>
+                <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
+              </Link>
+              <Link href="/creator-dashboard/security-billing" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-lg">
+                <div className="flex items-center gap-4"><CreditCard className="text-[#D4AF37]" size={20} /><span className="text-sm font-bold text-white group-hover:text-white/90">Billing</span></div>
+                <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
+              </Link>
+            </div>
+          </section>
+        </div>
+      </>
     )}
 
         </div>
