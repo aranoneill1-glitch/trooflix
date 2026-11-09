@@ -527,6 +527,18 @@ export default function GoLivePage() {
               </button>
               <div className="w-px h-8 bg-white/20 mx-1" />
               
+              {/* Visibility Toggle */}
+              <div className="flex bg-black/50 border border-white/10 rounded-full p-1 shadow-inner">
+                <button onClick={() => setLiveVisibility("public")} className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-full transition ${liveVisibility === "public" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}>
+                  <Globe size={14} /> <span className="hidden sm:inline">Everyone</span>
+                </button>
+                <button onClick={() => setLiveVisibility("subscribers")} className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-full transition ${liveVisibility === "subscribers" ? "bg-[#D4AF37]/20 text-[#D4AF37] shadow-sm" : "text-white/50 hover:text-white"}`}>
+                  <Lock size={14} /> <span className="hidden sm:inline">Subs Only</span>
+                </button>
+              </div>
+
+              <div className="w-px h-8 bg-white/20 mx-1" />
+
               {!isLive ? (
                 <button onClick={startStream} disabled={loading} className="bg-[#E53945] hover:bg-[#d12e39] text-white font-bold px-6 py-2.5 rounded-full transition flex items-center gap-2">
                   <Radio size={18} /> {loading ? "Starting..." : "Go Live"}
