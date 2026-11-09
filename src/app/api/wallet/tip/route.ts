@@ -14,15 +14,28 @@ export async function POST(req: Request) {
     console.log("💰 TIP REQUEST:", { senderId, receiverId, amount });
 
     if (!senderId || !receiverId || !amount) return NextResponse.json({ error: "Missing data" }, { status: 400 });
-    if (senderId === receiverId) return NextResponse.json({ error: "You cannot tip yourself." }, { status: 400 });
     if (amount <= 0 || (amount * 2) % 1 !== 0) return NextResponse.json({ error: "Invalid amount. Must be a multiple of 0.50." }, { status: 400 });
 
     let validReceiverId = receiverId;
+    
+    // Resolve numeric creator ID to Supabase UUID if needed
     if (!String(receiverId).includes("-")) {
-      const { data: profile, error: pErr } = await supabaseAdmin.from("profiles").select("user_id").eq("creator_id", Number(receiverId)).maybeSingle();
-      console.log("🔍 Lookup:", receiverId, "->", profile?.user_id, pErr?.message);
-      if (profile?.user_id) validReceiverId = profile.user_id;
-      else return NextResponse.json({ error: "Creator profile not found." }, { status: 404 });
+      const { data: profile } = await supabaseAdmin
+        .from("profiles")
+        .select("user_id")
+        .eq("creator_id", Number(receiverId))
+        .maybeSingle();
+        
+      if (profile?.user_id) {
+        validReceiverId = profile.user_id;
+      } else {
+        return NextResponse.json({ error: "Creator profile not found." }, { status: 404 });
+      }
+    }
+
+    // Block self-tipping AFTER translating to UUID
+    if (String(senderId) === String(validReceiverId)) {
+      return NextResponse.json({ error: "You cannot tip your own video." }, { status: 400 });
     }
 
     const { data: before } = await supabaseAdmin.from("wallets").select("balance").eq("user_id", senderId).maybeSingle();
@@ -43,6 +56,7 @@ export async function POST(req: Request) {
 
     const { data: after } = await supabaseAdmin.from("wallets").select("balance").eq("user_id", senderId).maybeSingle();
     console.log("💵 Balance AFTER:", after?.balance);
+    
     return NextResponse.json({ success: true, new_balance: after?.balance });
   } catch (e: any) {
     console.error("❌ TIP FAILED:", e.message);
