@@ -37,7 +37,6 @@ export default function ShortsFeedPage() {
   const [isMuted, setIsMuted] = useState(true);
   const [commentSheetVideoId, setCommentSheetVideoId] = useState<number | null>(null);
   const [activeVideo, setActiveVideo] = useState<Video | null>(null);
-  const [activeVideoId, setActiveVideoId] = useState<number | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -51,7 +50,6 @@ export default function ShortsFeedPage() {
       setCreators(Array.isArray(cData) ? cData : []);
       if (sortedShorts.length > 0) {
         setActiveVideo(sortedShorts[0]);
-        setActiveVideoId(sortedShorts[0].id);
       }
       setLoading(false);
     }).catch(() => setLoading(false));
@@ -70,9 +68,9 @@ export default function ShortsFeedPage() {
   const activeCreator = activeVideo ? creators.find(c => String(c.id) === String(activeVideo.creatorId)) : null;
 
   return (
-    <main className="h-[100dvh] w-full bg-black overflow-hidden flex">
+    <main className="h-[100dvh] w-full bg-[#050505] overflow-hidden flex flex-col lg:flex-row">
       
-      {/* MOBILE VIEW (Unchanged) */}
+      {/* MOBILE VIEW */}
       <div className="lg:hidden w-full h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide relative bg-black">
         {videos.map((video) => {
           const creator = creators.find((c) => String(c.id) === String(video.creatorId)) || null;
@@ -102,89 +100,125 @@ export default function ShortsFeedPage() {
         <MobileBottomNav />
       </div>
 
-      {/* DESKTOP VIEW (1 Video per screen, split layout) */}
+      {/* DESKTOP VIEW (40% Video, 60% Comments) */}
       <div className="hidden lg:flex w-full h-full">
+        
         {/* Left Side: Video Scroller */}
-        <div className="flex-1 h-[100dvh] overflow-y-scroll snap-y snap-mandatory scrollbar-hide flex flex-col items-center bg-[#050505]">
+        <div className="w-[40%] h-[100dvh] overflow-y-scroll snap-y snap-mandatory scrollbar-hide flex flex-col items-center bg-[#050505]">
           {videos.map((video) => (
-            <div key={video.id} className="w-full h-[100dvh] snap-start flex items-center justify-center p-6 shrink-0">
-              <div className="relative h-[85vh] max-h-[850px] aspect-[9/16] rounded-3xl overflow-hidden border border-white/10 bg-[#0a0a0a] shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-                <video
-                  src={video.videoUrl || video.bitchuteUrl}
-                  loop
-                  playsInline
-                  muted={isMuted}
-                  preload="metadata"
-                  onLoadedData={(e) => {
-                     e.currentTarget.play().catch(() => {});
-                     setActiveVideo(video);
-                     setActiveVideoId(video.id);
-                  }}
-                  className="w-full h-full object-cover"
-                  onClick={(e) => {
-                    if (e.currentTarget.paused) e.currentTarget.play();
-                    else e.currentTarget.pause();
-                  }}
-                />
-              </div>
-            </div>
+            <DesktopVideoShort
+              key={video.id}
+              video={video}
+              isMuted={isMuted}
+              onSetActive={() => setActiveVideo(video)}
+            />
           ))}
         </div>
 
         {/* Right Side: Chat & Controls Panel */}
-        <div className="w-[400px] xl:w-[450px] h-full border-l border-white/10 flex flex-col bg-black shrink-0">
-          {activeVideo && (
-            <>
-              {/* Creator Header */}
-              <div className="p-4 border-b border-white/10 flex items-center justify-between shrink-0 bg-[#0a0a0a] z-10">
-                <div className="flex items-center gap-3">
-                  {activeCreator?.photoUrl ? (
-                    <img src={activeCreator.photoUrl} className="w-10 h-10 rounded-full border border-white/20 object-cover" />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center font-bold text-white">
-                      {activeCreator?.name?.charAt(0) || "C"}
+        <div className="w-[60%] h-full flex items-center justify-center p-6 bg-[#050505] border-l border-white/10">
+          <div className="w-full h-[85vh] max-h-[850px] bg-[#0a0a0a] border border-white/10 rounded-3xl flex flex-col overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+            {activeVideo && (
+              <>
+                <div className="p-4 border-b border-white/10 flex items-center justify-between shrink-0 bg-[#0a0a0a]">
+                  <div className="flex items-center gap-3">
+                    {activeCreator?.photoUrl ? (
+                      <img src={activeCreator.photoUrl} className="w-10 h-10 rounded-full border border-white/20 object-cover" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center font-bold text-white">
+                        {activeCreator?.name?.charAt(0) || "C"}
+                      </div>
+                    )}
+                    <Link href={activeCreator?.slug ? `/profile/${activeCreator.slug}` : "#"} className="font-bold text-white hover:text-white/80 transition text-lg">
+                      {activeCreator?.name || "Creator"}
+                    </Link>
+                  </div>
+                  <button className="bg-[#E53945] hover:bg-[#d12e39] text-white text-sm font-bold px-5 py-1.5 rounded-full transition">
+                    Follow
+                  </button>
+                </div>
+                
+                <div className="p-3 border-b border-white/10 flex items-center justify-between px-6 text-white shrink-0 bg-[#0a0a0a]">
+                  <div className="flex items-center gap-6">
+                    <button onClick={toggleMute} className="hover:scale-110 transition text-white/70 hover:text-white">
+                      {isMuted ? <VolumeX size={22}/> : <Volume2 size={22}/>}
+                    </button>
+                    <div className="flex items-center gap-1.5 text-white/70">
+                      <Eye size={20}/>
+                      <span className="text-sm font-bold">{activeVideo.views || 0}</span>
                     </div>
-                  )}
-                  <Link href={activeCreator?.slug ? `/profile/${activeCreator.slug}` : "#"} className="font-bold text-white hover:text-white/80 transition">
-                    {activeCreator?.name || "Creator"}
-                  </Link>
+                    <button className="hover:scale-110 transition text-white/70 hover:text-white">
+                      <MessageCircle size={22}/>
+                    </button>
+                    <button onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: activeVideo.creatorId, videoId: activeVideo.id } }))} className="hover:scale-110 transition text-yellow-500">
+                      <Gift size={22}/>
+                    </button>
+                  </div>
+                  <LikeButton videoId={activeVideo.id} size={22} showCount={true} />
                 </div>
-                <button className="bg-[#E53945] hover:bg-[#d12e39] text-white text-xs font-bold px-4 py-1.5 rounded-full transition">
-                  Follow
-                </button>
-              </div>
-              
-              {/* Action Buttons */}
-              <div className="p-3 border-b border-white/10 flex items-center gap-5 text-white shrink-0 bg-[#0a0a0a] z-10">
-                <button onClick={toggleMute} className="hover:scale-110 transition">
-                  {isMuted ? <VolumeX size={20}/> : <Volume2 size={20}/>}
-                </button>
-                <div className="flex items-center gap-1.5 text-white/70">
-                  <Eye size={18}/>
-                  <span className="text-xs font-bold">{activeVideo.views || 0}</span>
-                </div>
-                <button className="hover:scale-110 transition text-white">
-                  <MessageCircle size={20}/>
-                </button>
-                <button onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: activeVideo.creatorId, videoId: activeVideo.id } }))} className="hover:scale-110 transition text-yellow-500">
-                  <Gift size={20}/>
-                </button>
-                <LikeButton videoId={activeVideo.id} size={20} showCount={true} />
-              </div>
 
-              {/* Live Chat Comments */}
-              <div className="flex-1 overflow-hidden bg-[#0a0a0a]">
-                <Comments videoId={activeVideo.id} variant="chat" />
-              </div>
-            </>
-          )}
+                <div className="flex-1 overflow-hidden bg-[#0a0a0a]">
+                  <Comments videoId={activeVideo.id} variant="chat" />
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </main>
   );
 }
 
-// Mobile Video Short Component (Unchanged)
+function DesktopVideoShort({ video, isMuted, onSetActive }: { video: Video, isMuted: boolean, onSetActive: () => void }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          videoRef.current?.play().catch(() => {});
+          onSetActive();
+        } else {
+          videoRef.current?.pause();
+        }
+      },
+      { threshold: 0.6 }
+    );
+    if (containerRef.current) observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [onSetActive]);
+
+  return (
+    <div ref={containerRef} className="w-full h-[100dvh] snap-start flex items-center justify-center p-6 shrink-0">
+      <div className="relative w-full max-w-[400px] h-[85vh] max-h-[850px] rounded-3xl overflow-hidden border border-white/10 bg-black shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+        {(!video.videoUrl && !video.bitchuteUrl) ? (
+          <div className="flex items-center justify-center h-full text-white/30 text-sm">No video source</div>
+        ) : (
+          <video
+            ref={videoRef}
+            src={video.videoUrl || video.bitchuteUrl}
+            poster={video.posterUrl}
+            loop
+            playsInline
+            muted={isMuted}
+            preload="auto"
+            autoPlay
+            onLoadedData={(e) => {
+               e.currentTarget.play().catch(() => {});
+            }}
+            className="w-full h-full object-cover cursor-pointer"
+            onClick={(e) => {
+              if (e.currentTarget.paused) e.currentTarget.play();
+              else e.currentTarget.pause();
+            }}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
 function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComments, onSetActive }: { video: Video, creator: Creator | null, isMuted: boolean, onToggleMute: () => void, onOpenComments: () => void, onSetActive: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -342,13 +376,6 @@ function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComment
       }
       setShowPlayIcon(true);
       setTimeout(() => setShowPlayIcon(false), 800);
-    }
-  };
-
-  const handleTimeUpdate = () => {
-    if (videoRef.current && videoRef.current.duration) {
-      const p = (videoRef.current.currentTime / videoRef.current.duration) * 100;
-      setProgress(p || 0);
     }
   };
 
