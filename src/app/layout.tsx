@@ -1,3 +1,4 @@
+import TipModal from "@/components/TipModal";
 import PushNotificationManager from "@/components/PushNotificationManager";
 import GlobalIncomingCall from "@/components/GlobalIncomingCall";
 import type { Metadata, Viewport } from "next";
@@ -66,7 +67,8 @@ export default function RootLayout({
       <PushNotificationManager />
       <body className={inter.className}>
         
-        <GlobalIncomingCall />{typeof window !== "undefined" && (
+        <GlobalIncomingCall />
+        <TipModal />{typeof window !== "undefined" && (
         <script
           dangerouslySetInnerHTML={{
             __html: `
