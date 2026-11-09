@@ -102,17 +102,34 @@ export default function WalletPage() {
 
   const cancelPayout = async (id: string) => {
     if (!confirm("Are you sure? The funds will be returned to your wallet.")) return;
-    const res = await fetch("/api/wallet/cancel-payout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ payoutId: id, userId }) });
-    if (res.ok) { setSelectedTx(null); fetchWallet(); }
+    try {
+      const res = await fetch("/api/wallet/cancel-payout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ payoutId: id, userId }) });
+      const d = await res.json();
+      if (res.ok) { setSelectedTx(null); fetchWallet(); }
+      else { alert(d.error || "Failed to cancel payout."); }
+    } catch (e) {
+      alert("Network error.");
+    }
   };
 
   const submitSend = async () => {
     setSendStatus("loading");
     setSendError("");
-    const res = await fetch("/api/wallet/send", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ senderId: userId, recipientUsername: sendUsername, amount: Number(sendAmount) }) });
-    const d = await res.json();
-    if (res.ok) { setSendStatus("success"); fetchWallet(); setTimeout(() => { setShowSendModal(false); setSendStatus("idle"); setSendUsername(""); setSendAmount(""); }, 2000); }
-    else { setSendStatus("error"); setSendError(d.error); }
+    try {
+      const res = await fetch("/api/wallet/send", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ senderId: userId, recipientUsername: sendUsername, amount: Number(sendAmount) }) });
+      const d = await res.json();
+      if (res.ok) { 
+        setSendStatus("success"); 
+        fetchWallet(); 
+        setTimeout(() => { setShowSendModal(false); setSendStatus("idle"); setSendUsername(""); setSendAmount(""); }, 2000); 
+      } else { 
+        setSendStatus("error"); 
+        setSendError(d.error || "Transfer failed."); 
+      }
+    } catch (e) {
+      setSendStatus("error"); 
+      setSendError("Network error.");
+    }
   };
 
   return (
