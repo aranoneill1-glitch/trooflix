@@ -1,9 +1,8 @@
 "use client";
 import { getCachedUser } from "@/lib/cache";
-
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Gift, Volume2, VolumeX, Heart, Eye, MessageCircle, Play, Pause } from "lucide-react";
+import { Volume2, VolumeX, Heart, Eye, MessageCircle, Play, Pause, Gift } from "lucide-react";
 import LikeButton from "@/components/LikeButton";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import CommentSheet from "@/components/CommentSheet";
@@ -21,6 +20,7 @@ type Video = {
   backdropUrl: string;
   creatorId?: number | null;
   uploaderUserId?: string | null;
+  views?: number;
 };
 
 type Creator = {
@@ -44,19 +44,15 @@ export default function ShortsFeedPage() {
       fetch("/api/creators", { cache: "no-store" }).then((r) => r.json()).catch(() => []),
     ]).then(([vData, cData]) => {
       const all = Array.isArray(vData) ? vData : [];
-      // Only show videos uploaded as Shorts, sorted newest first
       const shortsOnly = all.filter((v: any) => v.type?.toLowerCase() === "short");
       const sortedShorts = shortsOnly.sort((a: any, b: any) => b.id - a.id);
-      
       setVideos(sortedShorts);
       setCreators(Array.isArray(cData) ? cData : []);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, []);
 
-  const toggleMute = () => {
-    setIsMuted(prev => !prev);
-  };
+  const toggleMute = () => setIsMuted(prev => !prev);
 
   if (loading) {
     return (
@@ -68,7 +64,8 @@ export default function ShortsFeedPage() {
 
   return (
     <main className="h-[100dvh] w-full bg-black flex overflow-hidden">
-      <div className="flex-1 h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide relative">
+      {/* Left Side: Video Feed */}
+      <div className="flex-1 h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide relative flex flex-col items-center bg-[#050505]">
         {videos.map((video) => {
           const creator = creators.find((c) => String(c.id) === String(video.creatorId)) || null;
           return (
@@ -92,8 +89,9 @@ export default function ShortsFeedPage() {
         )}
       </div>
 
-      <div className="hidden lg:flex flex-col w-[400px] xl:w-[450px] h-full bg-[#0f0f12] border-l border-white/10 shadow-2xl z-20">
-        <div className="p-4 border-b border-white/10 bg-black/40 flex items-center justify-between">
+      {/* Right Side: Comments (Desktop Only) */}
+      <div className="hidden lg:flex flex-col w-[400px] xl:w-[450px] h-[100dvh] bg-[#0f0f12] border-l border-white/10 shadow-2xl z-20">
+        <div className="p-4 border-b border-white/10 bg-[#1c1c1e] flex items-center justify-between shrink-0">
           <h2 className="text-sm font-bold text-white flex items-center gap-2">
             <MessageCircle size={16} /> Comments
           </h2>
@@ -110,6 +108,7 @@ export default function ShortsFeedPage() {
         </div>
       </div>
 
+      {/* Mobile Overlays */}
       <div className="lg:hidden">
         <CommentSheet
           videoId={commentSheetVideoId}
@@ -136,7 +135,6 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments, onS
   const [isSubmittingFollow, setIsSubmittingFollow] = useState(false);
   const [user, setUser] = useState<any>(null);
 
-  // Check if user is following this creator
   useEffect(() => {
     getCachedUser().then((u: any) => {
       if (u) {
@@ -170,17 +168,11 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments, onS
   }, [creator?.id]);
 
   const resolveCreatorId = async (): Promise<number | null> => {
-    // 1. If we already have the numeric creator from the creators list, use it
     if (creator?.id) return Number(creator.id);
-
-    // 2. If video.creatorId is a real number, use it
     const vidCreator = Number((video as any).creatorId);
     if (video.creatorId && !isNaN(vidCreator)) return vidCreator;
-
-    // 3. Otherwise, look up the creator by their UUID (uploaderUserId)
     const uploaderUuid = (video as any).uploaderUserId;
     if (!uploaderUuid) return null;
-
     try {
       const res = await fetch("/api/creators");
       const list = await res.json();
@@ -188,9 +180,7 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments, onS
         (c: any) => String(c.user_id) === String(uploaderUuid) || String(c.ownerUserId) === String(uploaderUuid)
       );
       if (match?.id) return Number(match.id);
-    } catch (err) {
-      console.error("Creator lookup failed:", err);
-    }
+    } catch (err) {}
     return null;
   };
 
@@ -199,33 +189,20 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments, onS
     e.stopPropagation();
     if (!user) return alert("Please log in to follow creators.");
     if (isSubmittingFollow) return;
-
     setIsSubmittingFollow(true);
     try {
       const targetId = await resolveCreatorId();
-      console.log("DEBUG Shorts Follow: resolved creatorId =", targetId);
-
-      if (!targetId || isNaN(targetId)) {
-        alert("This creator doesn't have a followable profile yet.");
-        return;
-      }
-
+      if (!targetId || isNaN(targetId)) return alert("This creator doesn't have a followable profile yet.");
       const newIsFollowing = !isFollowing;
       setIsFollowing(newIsFollowing);
-
       const res = await fetch("/api/follows", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: user.id, creatorId: targetId })
       });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || "Follow failed");
-      }
-      console.log("DEBUG Shorts Follow: success, following =", newIsFollowing);
+      if (!res.ok) throw new Error("Follow failed");
     } catch (err: any) {
-      console.error("DEBUG Shorts Follow: error =", err);
-      setIsFollowing(!isFollowing); // rollback
+      setIsFollowing(!isFollowing);
       alert("Follow failed: " + (err.message || "Unknown error"));
     } finally {
       setIsSubmittingFollow(false);
@@ -235,18 +212,12 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments, onS
   const videoSrc = video.videoUrl || video.bitchuteUrl || "";
   const hasLongDescription = (video.description || "").length > 65;
 
-  const creatorName = creator?.name || "Creator";
-  const creatorPhoto = creator?.photoUrl || "";
-  const creatorSlug = creator?.slug || "";
-  const creatorInitial = creatorName.charAt(0).toUpperCase();
-
-  // Fallback: If KV doesn't have this creator, fetch from Supabase profiles
   const [fallbackPhoto, setFallbackPhoto] = useState("");
   const [fallbackName, setFallbackName] = useState("");
   const [fallbackSlug, setFallbackSlug] = useState("");
 
   useEffect(() => {
-    if (creatorPhoto) return;
+    if (creator?.photoUrl) return;
     const userId = (video as any).uploaderUserId || (video as any).creatorId;
     if (!userId) return;
     fetch(`/api/profile?user_id=${userId}`)
@@ -257,21 +228,20 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments, onS
           if (d.profile.display_name || d.profile.username) setFallbackName(d.profile.display_name || d.profile.username);
           if (d.profile.username) setFallbackSlug(d.profile.username);
         }
-      })
-      .catch(() => {});
-  }, [creatorPhoto, video]);
+      }).catch(() => {});
+  }, [creator?.photoUrl, video]);
 
-  const finalPhoto = creatorPhoto || fallbackPhoto;
+  const finalPhoto = creator?.photoUrl || fallbackPhoto;
   const finalName = creator?.name || fallbackName || "Creator";
-  const finalSlug = creatorSlug || fallbackSlug;
+  const finalSlug = creator?.slug || fallbackSlug;
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-                  videoRef.current?.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
-                  if (onSetActive) onSetActive();
-                } else {
+          videoRef.current?.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+          if (onSetActive) onSetActive();
+        } else {
           videoRef.current?.pause();
           setIsPlaying(false);
           setIsExpanded(false);
@@ -279,10 +249,9 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments, onS
       },
       { threshold: 0.6 }
     );
-
     if (videoRef.current) observer.observe(videoRef.current);
     return () => observer.disconnect();
-  }, []);
+  }, [onSetActive]);
 
   const requestRef = useRef<number | null>(null);
 
@@ -294,11 +263,8 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments, onS
       }
       requestRef.current = requestAnimationFrame(animate);
     };
-
     requestRef.current = requestAnimationFrame(animate);
-    return () => {
-      if (requestRef.current) cancelAnimationFrame(requestRef.current);
-    };
+    return () => { if (requestRef.current) cancelAnimationFrame(requestRef.current); };
   }, [isDragging]);
 
   const handleScreenClick = () => {
@@ -360,142 +326,120 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments, onS
   };
 
   return (
-    <div className="relative w-full h-full snap-start snap-always bg-black flex items-center justify-center overflow-hidden">
-      
-      <video
-        ref={videoRef}
-        src={videoSrc}
-        loop
-        playsInline
-        muted={isMuted}
-        preload="auto"
-        
-        onLoadedData={() => {
-          if (videoRef.current) {
-            videoRef.current.play().catch(() => {});
-          }
-          // Trigger permanent view count
-          fetch("/api/views", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ videoId: video.id })
-          }).catch(() => {});
-        }}
-        onError={() => setHasError(true)}
-        className="w-full h-full object-cover cursor-pointer"
+    <div className="w-full h-full snap-start snap-always flex items-center justify-center p-4">
+      <div
+        data-index={video.id}
+        data-video-id={video.id}
+        className="relative h-[80dvh] max-h-[800px] aspect-[9/16] rounded-2xl overflow-hidden shadow-[0_0_40px_rgba(0,0,0,0.8)] border border-white/10 bg-black group"
         onClick={handleScreenClick}
-      />
+      >
+        <video
+          ref={videoRef}
+          src={videoSrc}
+          loop
+          playsInline
+          muted={isMuted}
+          preload="auto"
+          onLoadedData={() => {
+            if (videoRef.current) videoRef.current.play().catch(() => {});
+            fetch("/api/views", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ videoId: video.id })
+            }).catch(() => {});
+          }}
+          onError={() => setHasError(true)}
+          className="w-full h-full object-cover cursor-pointer"
+        />
 
-      {/* ERROR OVERLAY (z-10 so it sits UNDER the buttons) */}
-      {hasError && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 z-10 px-6 text-center pointer-events-none">
-          <p className="text-white font-bold mb-2">Video Unavailable</p>
-          <p className="text-white/50 text-sm">Please upload an .mp4 file.</p>
-        </div>
-      )}
-
-      {/* Play/Pause visual feedback overlay */}
-      {showPlayIcon && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-          <div className="w-20 h-20 bg-black/50 backdrop-blur-md rounded-full flex items-center justify-center">
-            {isPlaying ? <Pause size={40} className="text-white" fill="currentColor" /> : <Play size={40} className="text-white ml-2" fill="currentColor" />}
+        {hasError && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 z-10 px-6 text-center pointer-events-none">
+            <p className="text-white font-bold mb-2">Video Unavailable</p>
+            <p className="text-white/50 text-sm">Please upload an .mp4 file.</p>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Gradients for text readability */}
-      <div className="absolute inset-x-0 bottom-0 h-[35%] bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none" />
-      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/60 to-transparent pointer-events-none" />
-
-
-
-            {/* BOTTOM LEFT: DESCRIPTION, AVATAR, BUTTONS */}
-      <div className="absolute left-4 right-[80px] bottom-[105px] z-30 flex flex-col items-start gap-3 pointer-events-none">
-
-        {/* 1. Description */}
-        <div 
-          className="text-white text-[14px] drop-shadow-md leading-snug cursor-pointer pointer-events-auto"
-          onClick={toggleExpand}
-        >
-          <span className={isExpanded ? "" : "line-clamp-2"}>
-            {video.description || "Watch this exclusive clip on Trooflix."}
-          </span>
-          {!isExpanded && hasLongDescription && (
-            <span className="text-white/60 font-bold ml-1.5 hover:text-white">
-              ... more
-            </span>
-          )}
-        </div>
-
-        {/* 2. Avatar Row */}
-        <div className="flex items-center gap-2 pointer-events-auto">
-          <Link href={finalSlug ? `/profile/${finalSlug}` : "#"} className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-full overflow-hidden border border-white/20 bg-[#1c1c1e]">
-              {finalPhoto ? (
-                <img src={finalPhoto} alt={finalName} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-xs font-black text-white bg-gradient-to-br from-[#E53945] to-[#8a1e26]">
-                  {finalName.charAt(0).toUpperCase()}
-                </div>
-              )}
+        {showPlayIcon && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+            <div className="w-20 h-20 bg-black/50 backdrop-blur-md rounded-full flex items-center justify-center">
+              {isPlaying ? <Pause size={40} className="text-white" fill="currentColor" /> : <Play size={40} className="text-white ml-2" fill="currentColor" />}
             </div>
-            <span className="text-white text-[14px] font-semibold drop-shadow-md group-hover:text-white/80 transition-colors">
-              {finalName}
-            </span>
-          </Link>
-          
-          <button 
-            onClick={handleFollow} 
-            disabled={isSubmittingFollow}
-            className={`ml-1 px-3 py-1 text-xs font-bold rounded-md transition backdrop-blur-sm border ${isFollowing ? "bg-white/10 border-white/20 text-white" : "bg-white/20 border-white/30 text-white hover:bg-white/30"} ${isSubmittingFollow ? "opacity-50 cursor-wait" : ""}`}
+          </div>
+        )}
+
+        <div className="absolute inset-x-0 bottom-0 h-[35%] bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none" />
+        <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/60 to-transparent pointer-events-none" />
+
+        <div className="absolute left-4 right-[80px] bottom-[105px] z-30 flex flex-col items-start gap-3 pointer-events-none">
+          <div 
+            className="text-white text-[14px] drop-shadow-md leading-snug cursor-pointer pointer-events-auto"
+            onClick={toggleExpand}
           >
-            {isFollowing ? "Following" : "Follow"}
-          </button>
-        </div>
-
-        {/* 3. Action Buttons Row */}
-        <div className="flex items-center gap-5 pointer-events-auto">
-          <button onClick={onToggleMute} className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
-            {isMuted ? <VolumeX size={26} strokeWidth={1.5} /> : <Volume2 size={26} strokeWidth={1.5} />}
-          </button>
-          <button onClick={onOpenComments} className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
-            <MessageCircle size={26} strokeWidth={1.5} />
-          </button>
-          <button onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: video.creatorId } }))} className="text-yellow-500 drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
-            <Gift size={26} strokeWidth={1.5} />
-          </button>
-          <div className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
-            <LikeButton videoId={video.id} size={26} stacked={false} />
+            <span className={isExpanded ? "" : "line-clamp-2"}>
+              {video.description || "Watch this exclusive clip on Trooflix."}
+            </span>
+            {!isExpanded && hasLongDescription && (
+              <span className="text-white/60 font-bold ml-1.5 hover:text-white">... more</span>
+            )}
           </div>
-          <div className="flex items-center gap-1.5 text-white drop-shadow-lg">
-            <Eye size={26} strokeWidth={1.5} />
-            <span className="text-[13px] font-bold">{(video as any).views || 0}</span>
+
+          <div className="flex items-center gap-2 pointer-events-auto">
+            <Link href={finalSlug ? `/profile/${finalSlug}` : "#"} className="flex items-center gap-2 group">
+              <div className="w-8 h-8 rounded-full overflow-hidden border border-white/20 bg-[#1c1c1e]">
+                {finalPhoto ? (
+                  <img src={finalPhoto} alt={finalName} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-xs font-black text-white bg-gradient-to-br from-[#E53945] to-[#8a1e26]">
+                    {finalName.charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </div>
+              <span className="text-white text-[14px] font-semibold drop-shadow-md group-hover:text-white/80 transition-colors">
+                {finalName}
+              </span>
+            </Link>
+            <button 
+              onClick={handleFollow} 
+              disabled={isSubmittingFollow}
+              className={`ml-1 px-3 py-1 text-xs font-bold rounded-md transition backdrop-blur-sm border ${isFollowing ? "bg-white/10 border-white/20 text-white" : "bg-white/20 border-white/30 text-white hover:bg-white/30"} ${isSubmittingFollow ? "opacity-50 cursor-wait" : ""}`}
+            >
+              {isFollowing ? "Following" : "Follow"}
+            </button>
+          </div>
+
+          <div className="flex items-center gap-5 pointer-events-auto">
+            <button onClick={onToggleMute} className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
+              {isMuted ? <VolumeX size={26} strokeWidth={1.5} /> : <Volume2 size={26} strokeWidth={1.5} />}
+            </button>
+            <button onClick={onOpenComments} className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
+              <MessageCircle size={26} strokeWidth={1.5} />
+            </button>
+            <button onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: video.creatorId, videoId: video.id } }))} className="text-yellow-500 drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
+              <Gift size={26} strokeWidth={1.5} />
+            </button>
+            <div className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
+              <LikeButton videoId={video.id} size={26} stacked={false} />
+            </div>
+            <div className="flex items-center gap-1.5 text-white drop-shadow-lg">
+              <Eye size={26} strokeWidth={1.5} />
+              <span className="text-[13px] font-bold">{(video as any).views || 0}</span>
+            </div>
           </div>
         </div>
 
-      </div>
-
-      {/* PROGRESS BAR (DRAGGABLE) */}
-      <div className="absolute left-0 right-0 bottom-[85px] z-40 pointer-events-none">
-        <div 
-          ref={progressBarRef}
-          className="relative w-full h-[3px] bg-transparent cursor-pointer touch-none py-3 -my-3 pointer-events-auto"
-          onPointerDown={handleDragStart}
-          onPointerMove={handleDragMove}
-          onPointerUp={handleDragEnd}
-          onPointerCancel={handleDragEnd}
-        >
-          <div className="absolute top-1/2 -translate-y-1/2 left-0 h-[2px] bg-white pointer-events-none" style={{ width: `${progress}%` }} />
+        <div className="absolute left-0 right-0 bottom-[85px] z-40 pointer-events-none px-4">
+          <div 
+            ref={progressBarRef}
+            className="relative w-full h-[3px] bg-transparent cursor-pointer touch-none py-3 -my-3 pointer-events-auto"
+            onPointerDown={handleDragStart}
+            onPointerMove={handleDragMove}
+            onPointerUp={handleDragEnd}
+            onPointerCancel={handleDragEnd}
+          >
+            <div className="absolute top-1/2 -translate-y-1/2 left-0 h-[2px] bg-white pointer-events-none" style={{ width: `${progress}%` }} />
+          </div>
         </div>
       </div>
-
     </div>
   );
-}
-
-function formatTime(seconds: number) {
-  if (isNaN(seconds)) return "0:00";
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
