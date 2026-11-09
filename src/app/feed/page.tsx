@@ -116,11 +116,12 @@ export default function ShortsFeedPage() {
 
       {/* DESKTOP VIEW */}
       <div className="hidden lg:flex w-full h-full items-center bg-[#050505] overflow-hidden">
+        <div className="w-[10%] h-full shrink-0" />
         
         {/* 1. Left: Video (30%) */}
         <div 
           ref={videoContainerRef}
-          className="w-[30%] h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide flex flex-col items-end shrink-0"
+          className="w-[35%] h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide flex flex-col items-end shrink-0"
         >
           {videos.map((video) => (
             <DesktopVideoShort
@@ -169,7 +170,7 @@ export default function ShortsFeedPage() {
         <div className="w-[1.5%] h-full shrink-0" />
 
         {/* 5. Right: Comments (57%) */}
-        <div className="w-[57%] h-full flex items-center pr-6">
+        <div className="w-[42%] h-full flex items-center pr-6">
           <div className="w-full h-[85vh] max-h-[850px] bg-[#0a0a0a] border border-white/10 rounded-3xl flex flex-col overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
             {activeVideo && (
               <>
