@@ -36,6 +36,8 @@ export default function WalletPage() {
 
   // Send State
   const [sendUsername, setSendUsername] = useState("");
+  const [sendSearchResults, setSendSearchResults] = useState<any[]>([]);
+  const [searchingUsers, setSearchingUsers] = useState(false);
   const [sendAmount, setSendAmount] = useState("");
   const [sendStatus, setSendStatus] = useState<"idle"|"loading"|"success"|"error">("idle");
   const [sendError, setSendError] = useState("");
@@ -66,6 +68,18 @@ export default function WalletPage() {
   };
 
   useEffect(() => { fetchWallet(); }, []);
+
+  useEffect(() => {
+    if (sendUsername.length < 2) { setSendSearchResults([]); return; }
+    const t = setTimeout(() => {
+      setSearchingUsers(true);
+      fetch(`/api/users?q=${encodeURIComponent(sendUsername)}`)
+        .then(r => r.json())
+        .then(d => setSendSearchResults(d.users || []))
+        .finally(() => setSearchingUsers(false));
+    }, 300);
+    return () => clearTimeout(t);
+  }, [sendUsername]);
 
   // Fetch video details for tips
   useEffect(() => {
@@ -358,8 +372,33 @@ export default function WalletPage() {
               </div>
             ) : (
               <>
-                <label className="text-xs font-bold text-white/50 mb-2 block">Recipient Username</label>
-                <input type="text" value={sendUsername} onChange={e => setSendUsername(e.target.value)} placeholder="@username" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#E53945] mb-4" />
+                <div className="relative mb-4">
+                  <label className="text-xs font-bold text-white/50 mb-2 block">Recipient Username</label>
+                  <input type="text" value={sendUsername} onChange={e => setSendUsername(e.target.value)} placeholder="@username" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#E53945]" />
+                  
+                  {/* Autocomplete Dropdown */}
+                  {sendUsername.length >= 2 && (sendSearchResults.length > 0 || searchingUsers) && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-[#1c1c1e] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-[300] max-h-48 overflow-y-auto">
+                      {searchingUsers ? (
+                        <div className="p-3 text-center text-xs text-white/50">Searching...</div>
+                      ) : (
+                        sendSearchResults.map(u => (
+                          <button key={u.user_id} onClick={() => { setSendUsername(u.username); setSendSearchResults([]); }} className="w-full flex items-center gap-3 p-3 hover:bg-white/10 transition text-left border-b border-white/5 last:border-0">
+                            {u.avatar_url ? (
+                              <img src={u.avatar_url} className="w-8 h-8 rounded-full object-cover" />
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold">{(u.display_name || u.username)?.[0]?.toUpperCase()}</div>
+                            )}
+                            <div>
+                              <p className="text-sm font-bold text-white leading-tight">{u.display_name || u.username}</p>
+                              <p className="text-xs text-white/50">@{u.username}</p>
+                            </div>
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
                 
                 <label className="text-xs font-bold text-white/50 mb-2 block">Amount ($)</label>
                 <input type="number" min="1" value={sendAmount} onChange={e => setSendAmount(e.target.value)} placeholder="e.g. 5" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#E53945] mb-4" />
