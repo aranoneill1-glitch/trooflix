@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { getCachedUser } from "@/lib/cache";
-import { Send, MessageCircle, Smile, AlertCircle, Gift, DollarSign } from "lucide-react";
+import { Send, MessageCircle, Smile, Gift, DollarSign } from "lucide-react";
 
 type ChatMessage = {
   id: string;
@@ -18,14 +18,13 @@ type ChatMessage = {
 
 const EMOJIS = ["😂", "🔥", "😍", "👏", "😮", "💯", "🚀", "💩", "🎉", "😢", "👀", "🙌", "💪", "🤔", "🙏", "❤️"];
 
-export default function LiveChat({ liveInputId, className = "h-[400px] md:h-[500px]" }: { liveInputId: string, className?: string }) {
+export default function LiveChat({ liveInputId, className = "h-full" }: { liveInputId: string, className?: string }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [sending, setSending] = useState(false);
   const [showEmojis, setShowEmojis] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
@@ -68,9 +67,7 @@ export default function LiveChat({ liveInputId, className = "h-[400px] md:h-[500
           });
         }
       )
-      .subscribe((status) => {
-        setIsConnected(status === "SUBSCRIBED");
-      });
+      .subscribe();
 
     return () => { supabase.removeChannel(channel); };
   }, [liveInputId, supabase]);
@@ -109,7 +106,6 @@ export default function LiveChat({ liveInputId, className = "h-[400px] md:h-[500
 
   const sendTip = async (amount: number) => {
     if (!user) return alert("Please log in to leave a tip.");
-    
     const displayName = profile?.display_name || profile?.username || user.email?.split('@')[0] || "User";
     
     const { data, error } = await supabase.from("live_chat_messages").insert({
@@ -122,34 +118,28 @@ export default function LiveChat({ liveInputId, className = "h-[400px] md:h-[500
       metadata: { amount }
     }).select().single();
 
-    if (error) {
-      console.error("Tip failed:", error);
-      alert("Failed to send tip. (Payment integration coming soon!)");
-    }
-  };
-
-  const handleCustomTip = () => {
-    const amount = prompt("Enter a custom tip amount ($):");
-    if (amount && !isNaN(Number(amount)) && Number(amount) > 0) {
-      sendTip(Number(amount));
-    }
+    if (error) console.error("Tip failed:", error);
   };
 
   return (
-    <div className={`flex flex-col w-full bg-[#0f0f12]/80 backdrop-blur-2xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl relative ${className}`}>
+    <div className={`flex flex-col w-full bg-[#18181b] ${className}`}>
       
-      <div className="bg-white/5 px-4 py-3 border-b border-white/10 flex items-center gap-2 shrink-0">
-        <MessageCircle size={18} className="text-[#E53945]" />
-        <h3 className="font-bold text-white text-sm tracking-wide">Live Chat</h3>
-        <div className="ml-auto flex items-center gap-2">
-          {!isConnected && <AlertCircle size={14} className="text-yellow-500 animate-pulse" />}
-          <span className="text-[10px] font-bold bg-red-500/20 text-red-500 px-2 py-0.5 rounded-full uppercase tracking-wider animate-pulse border border-red-500/20">Live</span>
+      {/* Header */}
+      <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between bg-[#18181b] shrink-0">
+        <div className="flex items-center gap-2">
+          <MessageCircle size={16} className="text-[#E53945]" />
+          <h3 className="font-bold text-white text-sm tracking-wide">Stream Chat</h3>
+        </div>
+        <div className="flex items-center gap-1.5 bg-white/5 px-2 py-1 rounded-md">
+          <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+          <span className="text-[10px] font-bold text-white/70 uppercase">Live</span>
         </div>
       </div>
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-white/10 min-h-0">
+      {/* Messages */}
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide min-h-0 bg-[#18181b]">
         {messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-white/30">
+          <div className="h-full flex flex-col items-center justify-center text-white/20">
             <MessageCircle size={32} className="mb-2 opacity-50" />
             <p className="text-sm">Chat is quiet...</p>
           </div>
@@ -165,39 +155,30 @@ export default function LiveChat({ liveInputId, className = "h-[400px] md:h-[500
               )}
               
               <div className="flex flex-col min-w-0 leading-tight w-full">
-                <span className="text-[11px] font-semibold text-white/40 mb-1">{msg.display_name}</span>
+                <div className="flex items-center gap-1.5 mb-1">
+                  <span className="text-[11px] font-bold text-white/50">{msg.display_name}</span>
+                  {msg.type === "tip" && <span className="text-[9px] font-bold bg-[#D4AF37]/20 text-[#D4AF37] px-1 rounded">TIP</span>}
+                </div>
                 
-                {/* RENDER PRODUCT CARD */}
                 {msg.type === "product" && msg.metadata ? (
-                  <div className="mt-1 bg-[#1c1c1e] border border-[#E53945]/30 rounded-xl overflow-hidden shadow-lg w-full max-w-[240px]">
-                    <div className="relative aspect-video bg-black/50">
-                      <img src={msg.metadata.image_url} alt={msg.metadata.name} className="w-full h-full object-cover" />
-                      <div className="absolute top-2 left-2 bg-[#E53945] text-white text-[10px] font-black px-2 py-0.5 rounded shadow-lg uppercase tracking-wider animate-pulse">
-                        LIVE DEAL
-                      </div>
-                    </div>
+                  <div className="bg-[#26262b] border border-white/10 rounded-xl overflow-hidden shadow-lg w-full max-w-[240px]">
+                    <img src={msg.metadata.image_url} alt="" className="w-full aspect-video object-cover" />
                     <div className="p-3">
-                      <h4 className="text-sm font-bold text-white line-clamp-1">{msg.metadata.name}</h4>
+                      <h4 className="text-xs font-bold text-white line-clamp-1">{msg.metadata.name}</h4>
                       <p className="text-emerald-400 font-bold text-sm mt-0.5">${(msg.metadata.price_cents / 100).toFixed(2)}</p>
-                      <a href={`/shop/${msg.metadata.id}`} target="_blank" rel="noreferrer" className="mt-2 w-full bg-white text-black font-bold text-xs py-2 rounded-lg flex items-center justify-center hover:bg-gray-200 transition">
-                        Buy Now
-                      </a>
                     </div>
                   </div>
                 ) : msg.type === "tip" && msg.metadata ? (
-                  /* RENDER TIP CARD */
-                  <div className="mt-1 bg-gradient-to-r from-[#D4AF37]/20 to-transparent border border-[#D4AF37]/40 rounded-xl p-3 shadow-[0_0_15px_rgba(212,175,55,0.15)] flex items-center gap-3">
+                  <div className="bg-gradient-to-r from-[#D4AF37]/20 to-transparent border border-[#D4AF37]/30 rounded-xl p-3 flex items-center gap-3 w-max max-w-full">
                     <div className="w-8 h-8 rounded-full bg-[#D4AF37] flex items-center justify-center shadow-lg shrink-0">
                       <DollarSign size={16} className="text-black font-bold" />
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-[#D4AF37]">{msg.display_name} tipped ${msg.metadata.amount}!</p>
-                      <p className="text-[10px] text-[#D4AF37]/70 uppercase tracking-wider font-bold mt-0.5">Support the stream</p>
+                      <p className="text-xs font-bold text-[#D4AF37]">{msg.display_name} tipped ${msg.metadata.amount}!</p>
                     </div>
                   </div>
                 ) : (
-                  /* RENDER NORMAL TEXT */
-                  <div className="text-[13px] text-white/90 break-words leading-relaxed">
+                  <div className="text-[13px] text-white/90 break-words leading-relaxed bg-[#26262b] px-3 py-2 rounded-2xl rounded-tl-sm w-max max-w-full">
                     {msg.message}
                   </div>
                 )}
@@ -207,48 +188,34 @@ export default function LiveChat({ liveInputId, className = "h-[400px] md:h-[500
         )}
       </div>
 
-      {showEmojis && (
-        <div className="absolute bottom-[130px] left-3 right-3 bg-[#1c1c1e]/95 backdrop-blur-xl border border-white/10 rounded-xl p-3 shadow-2xl animate-in fade-in slide-in-from-bottom-2 z-50">
-          <div className="grid grid-cols-8 gap-2">
+      {/* Input */}
+      <div className="p-3 bg-[#18181b] border-t border-white/5 shrink-0 relative">
+        {showEmojis && (
+          <div className="absolute bottom-16 left-4 right-4 bg-[#26262b] border border-white/10 rounded-xl p-3 shadow-2xl z-50 grid grid-cols-8 gap-2">
             {EMOJIS.map((e) => (
               <button key={e} type="button" onClick={() => { setNewMessage(prev => prev + e); setShowEmojis(false); }} className="text-xl hover:scale-125 transition-transform p-1">{e}</button>
             ))}
           </div>
-        </div>
-      )}
-
-      {/* TIP BAR */}
-      {user && (
-        <div className="bg-black/30 border-t border-white/5 p-2 flex gap-2 overflow-x-auto scrollbar-none items-center justify-center shrink-0">
-          <button onClick={() => sendTip(5)} className="flex items-center gap-1 bg-[#D4AF37]/10 hover:bg-[#D4AF37]/20 border border-[#D4AF37]/30 text-[#D4AF37] px-3 py-1.5 rounded-full text-xs font-bold transition whitespace-nowrap">
-            <Gift size={14} /> $5
-          </button>
-          <button onClick={() => sendTip(10)} className="flex items-center gap-1 bg-[#D4AF37]/10 hover:bg-[#D4AF37]/20 border border-[#D4AF37]/30 text-[#D4AF37] px-3 py-1.5 rounded-full text-xs font-bold transition whitespace-nowrap">
-            <Gift size={14} /> $10
-          </button>
-          <button onClick={handleCustomTip} className="flex items-center gap-1 bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 px-3 py-1.5 rounded-full text-xs font-bold transition whitespace-nowrap">
-            Custom
-          </button>
-        </div>
-      )}
-
-      {user ? (
-        <form onSubmit={sendMessage} className="p-3 bg-black/40 border-t border-white/10 flex gap-2 items-center shrink-0 z-50 w-full overflow-hidden">
-          <button type="button" onClick={() => setShowEmojis(!showEmojis)} className="p-2 text-white/50 hover:text-white transition-colors"><Smile size={20} /></button>
-          <input
-            type="text"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Say something..."
-            className="flex-1 min-w-0 bg-white/5 border border-white/10 rounded-full px-4 py-2.5 text-sm text-white outline-none focus:border-[#E53945]/50 transition placeholder:text-white/30"
-          />
-          <button type="submit" disabled={!newMessage.trim() || sending} className="w-10 h-10 rounded-full bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 flex items-center justify-center transition flex-shrink-0 shadow-lg shadow-[#E53945]/20">
-            <Send size={16} className="text-white ml-0.5" />
-          </button>
-        </form>
-      ) : (
-        <div className="p-4 bg-black/40 border-t border-white/10 text-center text-sm text-white/50 shrink-0">Please log in to join the chat.</div>
-      )}
+        )}
+        
+        {user ? (
+          <form onSubmit={sendMessage} className="flex gap-2 items-center bg-[#26262b] rounded-full px-2 py-1.5 border border-white/10">
+            <button type="button" onClick={() => setShowEmojis(!showEmojis)} className="p-1.5 text-white/40 hover:text-white transition-colors"><Smile size={18} /></button>
+            <input
+              type="text"
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder="Send a message"
+              className="flex-1 min-w-0 bg-transparent text-sm text-white outline-none placeholder:text-white/30"
+            />
+            <button type="submit" disabled={!newMessage.trim() || sending} className="w-8 h-8 rounded-full bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 flex items-center justify-center transition flex-shrink-0">
+              <Send size={14} className="text-white ml-0.5" />
+            </button>
+          </form>
+        ) : (
+          <div className="text-center text-xs text-white/50 py-2">Log in to chat</div>
+        )}
+      </div>
     </div>
   );
 }

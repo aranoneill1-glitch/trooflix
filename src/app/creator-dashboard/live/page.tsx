@@ -24,6 +24,7 @@ export default function GoLivePage() {
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const [streamTime, setStreamTime] = useState(0);
   
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -35,6 +36,25 @@ export default function GoLivePage() {
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);
   const [myProducts, setMyProducts] = useState<any[]>([]);
   const [liveVisibility, setLiveVisibility] = useState<"public" | "subscribers">("public");
+
+  // Timer
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isLive) {
+      interval = setInterval(() => setStreamTime(prev => prev + 1), 1000);
+    } else {
+      setStreamTime(0);
+    }
+    return () => clearInterval(interval);
+  }, [isLive]);
+
+  const formatTime = (secs: number) => {
+    const h = Math.floor(secs / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    const s = secs % 60;
+    if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
 
   useEffect(() => {
     guestConnectedRef.current = guestConnected;
@@ -168,31 +188,16 @@ export default function GoLivePage() {
     }
   };
 
-  const toggleLiveVisibility = async () => {
-    const newVisibility = liveVisibility === "public" ? "subscribers" : "public";
-    setLiveVisibility(newVisibility);
-    
-    if (isLive && userId) {
-      const supabase = createClient();
-      await supabase.from("profiles").update({ live_visibility: newVisibility }).eq("user_id", userId);
-    }
-  };
-
   const openProductMenu = async () => {
     setShowProductMenu(true);
     if (myProducts.length > 0) return;
-    
     setIsLoadingProducts(true);
-    
     try {
       const user = await getCachedUser();
       if (!user) return;
-
       const cr = await fetch(`/api/me/creator?user_id=${user.id}`).then(r => r.json());
       const cid = cr.creator?.id;
-
       const res = await fetch("/api/products/global").then(r => r.json());
-      
       if (res.products) {
         const myItems = res.products.filter((p: any) => 
           String(p.creator_id) === String(cid) || String(p.creator_id) === String(user.id)
@@ -229,10 +234,7 @@ export default function GoLivePage() {
     if (liveInputId === null) return;
     const supabase = createClient();
     
-    if (hostPcRef.current) {
-      hostPcRef.current.close();
-    }
-    
+    if (hostPcRef.current) hostPcRef.current.close();
     await supabase.from("webrtc_signals").delete().eq("room_id", liveInputId);
 
     const pc = new RTCPeerConnection({
@@ -267,7 +269,6 @@ export default function GoLivePage() {
         guestVideoRef.current.srcObject = event.streams[0];
         guestVideoRef.current.play().catch(e => console.error("Video play failed", e));
       }
-      
       if (event.track.kind === "audio") {
         if (guestAudioRef.current) {
           guestAudioRef.current.srcObject = new MediaStream([event.track]);
@@ -282,9 +283,7 @@ export default function GoLivePage() {
 
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
-    await supabase.from("webrtc_signals").insert({
-      room_id: liveInputId, sender_id: "host", type: "offer", payload: offer
-    });
+    await supabase.from("webrtc_signals").insert({ room_id: liveInputId, sender_id: "host", type: "offer", payload: offer });
 
     const channel = supabase.channel(`webrtc_host_${liveInputId}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "webrtc_signals", filter: `room_id=eq.${liveInputId}` }, async (payload) => {
@@ -324,7 +323,6 @@ export default function GoLivePage() {
     const videoAspect = video.videoWidth / video.videoHeight;
     const canvasAspect = w / h;
     let sx = 0, sy = 0, sw = video.videoWidth, sh = video.videoHeight;
-    
     if (videoAspect > canvasAspect) {
       sw = video.videoHeight * canvasAspect;
       sx = (video.videoWidth - sw) / 2;
@@ -338,7 +336,6 @@ export default function GoLivePage() {
   const startStream = async () => {
     if (stream === null || userId === null) return;
     setLoading(true);
-
     try {
       const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
       const audioCtx = new AudioContext();
@@ -360,7 +357,6 @@ export default function GoLivePage() {
         ctx.fillStyle = "#000";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         const isGuestHere = guestConnectedRef.current;
-
         if (isMobile) {
           if (isGuestHere) {
             if (videoRef.current) drawVideoCover(videoRef.current, 0, 0, 720, 640, ctx);
@@ -382,18 +378,9 @@ export default function GoLivePage() {
 
       const canvasStream = canvas.captureStream(30);
       canvasStreamRef.current = canvasStream;
+      const finalStream = new MediaStream([...canvasStream.getVideoTracks(), ...destRef.current.stream.getAudioTracks()]);
 
-      const finalStream = new MediaStream([
-        ...canvasStream.getVideoTracks(),
-        ...destRef.current.stream.getAudioTracks()
-      ]);
-
-      const res = await fetch("/api/live/create", { 
-        method: "POST", 
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId }) 
-      });
-      
+      const res = await fetch("/api/live/create", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId }) });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Failed to create live input");
 
@@ -415,20 +402,11 @@ export default function GoLivePage() {
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
 
-      const whipRes = await fetch(whipUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/sdp" },
-        body: offer.sdp,
-      });
-
+      const whipRes = await fetch(whipUrl, { method: "POST", headers: { "Content-Type": "application/sdp" }, body: offer.sdp });
       if (!whipRes.ok) throw new Error("WHIP connection failed");
       await pc.setRemoteDescription({ type: "answer", sdp: await whipRes.text() });
 
-      await fetch("/api/live/status", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, is_live: true, live_playback_url: whepUrl, live_input_id: liveInputId, live_visibility: liveVisibility }),
-      });
+      await fetch("/api/live/status", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId, is_live: true, live_playback_url: whepUrl, live_input_id: liveInputId, live_visibility: liveVisibility }) });
 
       setLiveInputId(liveInputId);
       setIsLive(true);
@@ -443,18 +421,8 @@ export default function GoLivePage() {
     if (userId === null) return;
     setLoading(true);
     try {
-      await fetch("/api/live/status", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, is_live: false, live_playback_url: null, live_input_id: null, live_visibility: "public" }),
-      });
-
-      await fetch("/api/live/delete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId }),
-      });
-
+      await fetch("/api/live/status", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId, is_live: false, live_playback_url: null, live_input_id: null, live_visibility: "public" }) });
+      await fetch("/api/live/delete", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId }) });
       if (stream) stream.getTracks().forEach((t) => t.stop());
       setIsLive(false);
       router.push("/creator-dashboard");
@@ -466,12 +434,11 @@ export default function GoLivePage() {
   };
 
   return (
-    <main className="min-h-[100dvh] bg-[#0a0303] text-white flex flex-col overflow-hidden">
+    <main className="h-[100dvh] bg-[#0a0a0a] text-white flex flex-col overflow-hidden">
       
       <video ref={guestVideoRef} autoPlay playsInline style={{ position: "absolute", width: "1px", height: "1px", opacity: 0.01, pointerEvents: "none", top: "-9999px", left: "-9999px" }} muted />
       <audio ref={guestAudioRef} autoPlay className="hidden" />
 
-      {/* PRODUCT PICKER MODAL */}
       {showProductMenu && (
         <div className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-[#1c1c1e] border border-white/10 rounded-3xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden shadow-2xl">
@@ -505,87 +472,81 @@ export default function GoLivePage() {
         </div>
       )}
 
-      <div className="flex-1 flex flex-col lg:flex-row w-full max-w-[1600px] mx-auto overflow-hidden p-4 gap-6">
+      {/* Main Content Layout */}
+      <div className="flex-1 flex flex-col lg:flex-row w-full overflow-hidden">
         
-        <div className="flex-1 flex flex-col gap-4">
-          <div className="relative flex-1 bg-black rounded-3xl overflow-hidden border border-white/10 shadow-2xl flex items-center justify-center">
-            <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-contain absolute inset-0" style={{ transform: "none" }} />
+        {/* Left Side: Video Preview */}
+        <div className="flex-1 relative bg-black flex items-center justify-center p-4 lg:p-6 pb-24 lg:pb-6">
+          
+          <div className="relative w-full h-full rounded-3xl overflow-hidden bg-[#0f0f12] shadow-2xl border border-white/10">
+            <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-cover absolute inset-0" style={{ transform: "none" }} />
             
             {isLive && (
-              <video ref={canvasPreviewRef} autoPlay muted playsInline className="w-full h-full object-contain absolute inset-0 z-10 bg-black" />
+              <video ref={canvasPreviewRef} autoPlay muted playsInline className="w-full h-full object-cover absolute inset-0 z-10 bg-black" />
             )}
 
-            {isLive && (
-              <div className="absolute top-4 left-4 bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-2 shadow-lg z-20">
-                <div className="w-2 h-2 bg-white rounded-full animate-pulse" /> LIVE
+            {/* Top Left Overlay */}
+            <div className="absolute top-4 left-4 z-20 flex items-center gap-3 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 shadow-lg">
+              <div className="w-8 h-8 rounded-full bg-[#E53945] flex items-center justify-center text-sm font-bold text-white border border-white/20">
+                {isLive ? "L" : "P"}
               </div>
-            )}
-            
+              <div className="flex flex-col">
+                <span className="text-sm font-bold text-white leading-tight">My Broadcast</span>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <div className="bg-red-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-sm flex items-center gap-1">
+                    <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" /> LIVE
+                  </div>
+                  <span className="text-xs font-mono text-white/80">{formatTime(streamTime)}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Guest Connected Overlay */}
             {guestConnected && (
-              <div className="absolute top-4 right-4 bg-green-500/20 border border-green-500/50 text-green-400 text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-2 shadow-lg backdrop-blur-md z-20">
+              <div className="absolute top-4 right-4 z-20 bg-green-500/20 border border-green-500/50 text-green-400 text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-2 shadow-lg backdrop-blur-md">
                 <UserCheck size={14} /> {connectedGuestName || "Guest"} Connected
               </div>
             )}
-          </div>
 
-          <div className="bg-[#1c1c1e]/80 backdrop-blur-xl border border-white/10 p-2.5 rounded-2xl flex flex-wrap justify-center lg:justify-between items-center gap-3 shadow-2xl w-full max-w-3xl mx-auto">
-            
-            {/* Left Side: Media Controls */}
-            <div className="flex gap-2">
-              <button onClick={toggleMute} className={`w-11 h-11 rounded-xl flex items-center justify-center transition ${isMuted ? "bg-red-500/20 text-red-500" : "bg-white/5 hover:bg-white/10 text-white"}`} title="Toggle Mic">
-                {isMuted ? <MicOff size={18} /> : <Mic size={18} />}
+            {/* Floating Bottom Controls (Desktop) */}
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 hidden lg:flex items-center gap-3 bg-black/60 backdrop-blur-xl border border-white/10 p-2 rounded-full shadow-2xl">
+              <button onClick={toggleMute} className={`w-12 h-12 rounded-full flex items-center justify-center transition ${isMuted ? "bg-red-500/20 text-red-500" : "bg-white/10 hover:bg-white/20 text-white"}`}>
+                {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
               </button>
-              <button onClick={toggleVideo} className={`w-11 h-11 rounded-xl flex items-center justify-center transition ${isVideoOff ? "bg-red-500/20 text-red-500" : "bg-white/5 hover:bg-white/10 text-white"}`} title="Toggle Camera">
-                {isVideoOff ? <VideoOff size={18} /> : <Video size={18} />}
+              <button onClick={toggleVideo} className={`w-12 h-12 rounded-full flex items-center justify-center transition ${isVideoOff ? "bg-red-500/20 text-red-500" : "bg-white/10 hover:bg-white/20 text-white"}`}>
+                {isVideoOff ? <VideoOff size={20} /> : <Video size={20} />}
               </button>
-              <button onClick={toggleScreenShare} className={`w-11 h-11 rounded-xl flex items-center justify-center transition ${isScreenSharing ? "bg-blue-500/20 text-blue-500" : "bg-white/5 hover:bg-white/10 text-white"}`} title="Share Screen">
-                {isScreenSharing ? <MonitorOff size={18} /> : <Monitor size={18} />}
+              <button onClick={toggleScreenShare} className={`w-12 h-12 rounded-full flex items-center justify-center transition ${isScreenSharing ? "bg-blue-500/20 text-blue-500" : "bg-white/10 hover:bg-white/20 text-white"}`}>
+                {isScreenSharing ? <MonitorOff size={20} /> : <Monitor size={20} />}
               </button>
-              <button onClick={togglePiP} className="w-11 h-11 rounded-xl flex items-center justify-center transition bg-white/5 hover:bg-white/10 text-white" title="Picture in Picture">
-                <PictureInPicture size={18} />
+              <button onClick={togglePiP} className="w-12 h-12 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 text-white transition">
+                <PictureInPicture size={20} />
               </button>
-              <button onClick={openProductMenu} className="w-11 h-11 rounded-xl flex items-center justify-center transition bg-[#E53945]/20 hover:bg-[#E53945]/30 text-[#E53945]" title="Showcase Product">
-                <ShoppingBag size={18} />
+              <button onClick={openProductMenu} className="w-12 h-12 rounded-full flex items-center justify-center bg-[#E53945]/20 hover:bg-[#E53945]/30 text-[#E53945] transition">
+                <ShoppingBag size={20} />
               </button>
-            </div>
-
-            {/* Right Side: Visibility & Go Live */}
-            <div className="flex items-center gap-3">
+              <div className="w-px h-8 bg-white/20 mx-1" />
               
-              {/* Visibility Toggle */}
-              <div className="flex bg-black/50 border border-white/10 rounded-xl p-1 shadow-inner">
-                <button onClick={() => setLiveVisibility("public")} className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition ${liveVisibility === "public" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}>
-                  <Globe size={14} /> <span className="hidden sm:inline">Everyone</span>
-                </button>
-                <button onClick={() => setLiveVisibility("subscribers")} className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition ${liveVisibility === "subscribers" ? "bg-[#D4AF37]/20 text-[#D4AF37] shadow-sm" : "text-white/50 hover:text-white"}`}>
-                  <Lock size={14} /> <span className="hidden sm:inline">Subs Only</span>
-                </button>
-              </div>
-
-              {/* Go Live / End Broadcast Button */}
               {!isLive ? (
-                <button onClick={startStream} disabled={loading} className="bg-[#E53945] hover:bg-[#d12e39] text-white font-bold px-6 py-2.5 rounded-xl transition flex items-center justify-center gap-2 whitespace-nowrap shadow-[0_0_15px_rgba(229,57,69,0.3)] min-w-[120px]">
+                <button onClick={startStream} disabled={loading} className="bg-[#E53945] hover:bg-[#d12e39] text-white font-bold px-6 py-2.5 rounded-full transition flex items-center gap-2">
                   <Radio size={18} /> {loading ? "Starting..." : "Go Live"}
                 </button>
               ) : (
-                <div className="flex items-center gap-2">
-                  <button onClick={toggleLiveVisibility} className={`w-11 h-11 rounded-xl flex items-center justify-center transition ${liveVisibility === "subscribers" ? "bg-[#D4AF37]/20 text-[#D4AF37]" : "bg-white/5 hover:bg-white/10 text-white"}`} title="Toggle Privacy">
-                    {liveVisibility === "subscribers" ? <Lock size={18} /> : <Globe size={18} />}
-                  </button>
-                  <button onClick={stopStream} disabled={loading} className="bg-white/10 hover:bg-white/20 text-red-500 font-bold px-6 py-2.5 rounded-xl transition flex items-center justify-center gap-2 whitespace-nowrap border border-white/10 min-w-[120px]">
-                    <StopCircle size={18} /> End
-                  </button>
-                </div>
+                <button onClick={stopStream} disabled={loading} className="bg-white/10 hover:bg-white/20 border border-white/10 text-red-500 font-bold px-6 py-2.5 rounded-full transition flex items-center gap-2">
+                  <StopCircle size={18} /> End Stream
+                </button>
               )}
             </div>
           </div>
+
         </div>
 
-        <div className="w-full lg:w-[380px] flex flex-col gap-3 h-[600px] lg:h-[calc(100vh-140px)]">
+        {/* Right Side: Chat */}
+        <div className="w-full lg:w-[380px] h-[40vh] lg:h-full flex flex-col shrink-0">
           {isLive && liveInputId ? (
              <>
                {joinRequest && (
-                 <div className="bg-[#1c1c1e] border border-[#E53945]/30 p-4 rounded-xl shadow-lg animate-in slide-in-from-bottom-2">
+                 <div className="bg-[#1c1c1e] border border-[#E53945]/30 p-4 m-4 rounded-xl shadow-lg animate-in slide-in-from-bottom-2 shrink-0 z-40">
                    <div className="flex items-center gap-3 mb-3">
                      {joinRequest.viewer_avatar ? (
                        <img src={joinRequest.viewer_avatar} alt="" className="w-9 h-9 rounded-full object-cover border border-white/20 shadow-sm" />
@@ -602,10 +563,10 @@ export default function GoLivePage() {
                    </div>
                  </div>
                )}
-               <LiveChat liveInputId={liveInputId} className="flex-1 h-full min-h-0" />
+               <LiveChat liveInputId={liveInputId} className="flex-1" />
              </>
           ) : (
-            <div className="flex-1 bg-[#1c1c1e] border border-white/10 rounded-3xl flex flex-col items-center justify-center p-8 text-center">
+            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center border-l border-white/5 bg-[#18181b]">
               <Radio size={48} className="text-white/20 mb-4" />
               <h2 className="text-xl font-bold mb-2">Ready to broadcast</h2>
               <p className="text-white/50 text-sm">When you go live, your chat and viewer interactions will appear here.</p>
