@@ -64,18 +64,33 @@ export async function POST(req: Request) {
       const session = event.data.object as Stripe.Checkout.Session;
 
       if (session.metadata?.type === "coin_topup") {
+        console.log("💰 COIN TOPUP WEBHOOK FIRED:", session.metadata);
         const userId = session.metadata.userId;
         const coins = Number(session.metadata.coins);
+        
         if (userId && coins) {
-          const { data: wallet } = await supabaseAdmin.from("wallets").select("balance").eq("user_id", userId).single();
+          const { data: wallet, error: wErr } = await supabaseAdmin.from("wallets").select("balance").eq("user_id", userId).maybeSingle();
+          if (wErr) console.error("Wallet fetch error:", wErr);
+          
           if (wallet) {
             await supabaseAdmin.from("wallets").update({ balance: wallet.balance + coins }).eq("user_id", userId);
+            console.log("✅ Wallet updated to", wallet.balance + coins);
           } else {
             await supabaseAdmin.from("wallets").insert({ user_id: userId, balance: coins });
+            console.log("✅ New wallet created with", coins);
           }
-          await supabaseAdmin.from("transactions").insert({ sender_id: null, receiver_id: userId, amount: coins, type: "topup", description: `Purchased ${coins} TrooCoins` });
+          
+          await supabaseAdmin.from("transactions").insert({ 
+            sender_id: null, 
+            receiver_id: userId, 
+            amount: coins, 
+            type: "topup", 
+            description: `Purchased ${coins} TrooCoins` 
+          });
         }
       }
+
+      
       
       if (session.metadata?.type === "merch_cart") {
         const sessionDetails = session as any;
