@@ -436,6 +436,9 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments }: {
           <button onClick={onOpenComments} className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
             <MessageCircle size={26} strokeWidth={1.5} />
           </button>
+          <button onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: video.creatorId } }))} className="text-yellow-500 drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
+            <Gift size={26} strokeWidth={1.5} />
+          </button>
           <div className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
             <LikeButton videoId={video.id} size={26} stacked={false} />
           </div>
