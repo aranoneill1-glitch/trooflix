@@ -85,7 +85,7 @@ export default function WalletPage() {
   useEffect(() => {
     if (selectedTx && (selectedTx.type === "tip" || selectedTx.type === "send") && selectedTx.video_id && !videoCache[selectedTx.video_id]) {
       fetch("/api/videos").then(r => r.json()).then(vids => {
-        const v = vids.find((x: any) => x.id === selectedTx.video_id);
+        const v = vids.find((x: any) => Number(x.id) === Number(selectedTx.video_id));
         if (v) setVideoCache(prev => ({ ...prev, [v.id]: v }));
       });
     }
@@ -303,19 +303,23 @@ export default function WalletPage() {
 
               {selectedTx.type === "tip" && (
                 <>
-                  <div className="bg-white/5 p-3 rounded-xl flex items-center gap-3">
-                    {videoCache[selectedTx.video_id] ? (
-                      <>
-                        <img src={videoCache[selectedTx.video_id].posterUrl} className="w-12 h-16 object-cover rounded" />
-                        <div>
-                          <p className="text-xs text-white/50 mb-1">Tipped on video</p>
-                          <p className="text-sm font-bold text-white line-clamp-2">{videoCache[selectedTx.video_id].title}</p>
-                        </div>
-                      </>
-                    ) : (
-                      <p className="text-xs text-white/50">Loading video details...</p>
-                    )}
-                  </div>
+                  {!selectedTx.video_id ? (
+                    <div className="bg-white/5 p-3 rounded-xl flex items-center gap-3">
+                      <p className="text-xs text-white/50">Video details not available for this older tip.</p>
+                    </div>
+                  ) : videoCache[selectedTx.video_id] ? (
+                    <div className="bg-white/5 p-3 rounded-xl flex items-center gap-3">
+                      <img src={videoCache[selectedTx.video_id].posterUrl} className="w-12 h-16 object-cover rounded" />
+                      <div>
+                        <p className="text-xs text-white/50 mb-1">Tipped on video</p>
+                        <p className="text-sm font-bold text-white line-clamp-2">{videoCache[selectedTx.video_id].title}</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-white/5 p-3 rounded-xl flex items-center gap-3">
+                      <p className="text-xs text-white/50">Video not found or deleted.</p>
+                    </div>
+                  )}
                 </>
               )}
 
