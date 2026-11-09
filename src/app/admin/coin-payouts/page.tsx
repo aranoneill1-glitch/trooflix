@@ -42,9 +42,13 @@ export default function AdminCoinPayouts() {
                 </div>
                 <p className="text-xs text-white/40 flex items-center gap-1 mb-1"><Clock size={12}/> {formatDate(p.created_at)}</p>
                 {p.bank_details ? (
-                  <p className="text-xs text-white/60 bg-white/5 inline-block px-2 py-1 rounded">Bank: {p.bank_details.bank_name} | Acc: {p.bank_details.account_number} | Name: {p.bank_details.account_name}</p>
+                  p.bank_details.payout_type === "crypto" ? (
+                    <p className="text-xs text-yellow-500 font-mono bg-yellow-500/10 px-2 py-1 rounded inline-block">Crypto: {p.bank_details.crypto_address}</p>
+                  ) : (
+                    <p className="text-xs text-white/60 bg-white/5 px-2 py-1 rounded inline-block">Bank: {p.bank_details.bank_name} | Acc: {p.bank_details.account_number} | Name: {p.bank_details.account_name}</p>
+                  )
                 ) : (
-                  <p className="text-xs text-red-400">No bank details provided yet.</p>
+                  <p className="text-xs text-red-400">No payout details provided.</p>
                 )}
               </div>
 
@@ -52,6 +56,7 @@ export default function AdminCoinPayouts() {
                 <div className="text-left md:text-right">
                   <p className="text-sm text-white/40 mb-0.5">Amount</p>
                   <p className="text-lg font-black text-green-400">${Number(p.amount).toFixed(2)}</p>
+                  {p.fee > 0 && <p className="text-[10px] text-yellow-500/80">Fee: ${Number(p.fee).toFixed(2)} | Send: ${Number(p.net_amount).toFixed(2)}</p>}
                 </div>
 
                 <div className="flex items-center gap-2">
