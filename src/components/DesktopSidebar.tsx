@@ -27,7 +27,7 @@ export default function DesktopSidebar() {
     { name: "Search", icon: Search, href: "/search" },
     { name: "Home", icon: Home, href: "/" },
     { name: "My TrooFlix", icon: Star, href: "/creator-dashboard" },
-    { name: "Podcasters", icon: Mic, href: "/podcasts" }, // Replaced Categories with Podcasters
+    { name: "Creators", icon: Mic, href: "/creators" }, // Replaced Categories with Podcasters
     { name: "Shorts / Feed", icon: Play, href: "/feed" },
     { name: "Marketplace", icon: ShoppingBag, href: "/merchandise" },
   ];
