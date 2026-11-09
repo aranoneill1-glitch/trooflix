@@ -176,7 +176,9 @@ export default function SignupCheckoutPage() {
               <Icon size={32} className={tier.color} />
             </div>
             
-            <h1 className="text-5xl md:text-6xl font-black tracking-tight mb-2">Good Choice.</h1>
+            <h1 className="text-5xl md:text-6xl font-black tracking-tight mb-2">
+              {tierId === "creator" ? "Excellent Choice." : tierId === "plus" ? "Great Choice." : "Smart Choice."}
+            </h1>
             <p className="text-3xl md:text-4xl text-white/40 font-black mb-10">
               You&apos;re getting <span className={tier.color}>{tier.name}</span>.
             </p>
