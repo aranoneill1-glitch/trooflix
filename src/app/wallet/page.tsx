@@ -55,7 +55,10 @@ export default function WalletPage() {
                 <p className="text-sm text-white/50">TrooBank</p>
               </div>
             </div>
-            <p className="text-sm text-white/50 mb-2">Available Balance</p>
+            <div className="flex items-center gap-2 mb-2">
+              <p className="text-sm text-white/50">Available Balance</p>
+              <span className="text-[10px] bg-[#E53945]/20 text-[#E53945] px-2 py-0.5 rounded-full font-bold">1 Coin = $1.00 USD</span>
+            </div>
             <div className="flex items-baseline gap-2 mb-8">
               <span className="text-5xl font-black">{loading ? "..." : balance.toLocaleString()}</span>
               <span className="text-lg text-white/50 font-bold">TrooCoins</span>
@@ -100,14 +103,14 @@ export default function WalletPage() {
               <X size={18} />
             </button>
             <h2 className="text-2xl font-black mb-1">Top Up</h2>
-            <p className="text-sm text-white/50 mb-6">Select a package</p>
+            <p className="text-sm text-white/50 mb-6">1 Coin = $1.00</p>
             <div className="space-y-3">
-              {[{c: 500, p: 500}, {c: 1000, p: 1000}, {c: 2500, p: 2500}].map(pkg => (
+              {[{c: 5, p: 500}, {c: 10, p: 1000}, {c: 25, p: 2500}, {c: 50, p: 5000}].map(pkg => (
                 <button key={pkg.c} disabled={buying} onClick={() => buyCoins(pkg.c, pkg.p)} className="w-full flex items-center justify-between p-4 rounded-xl border border-white/10 hover:border-[#E53945] hover:bg-[#E53945]/10 transition group">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37] font-black">C</div>
                     <div className="text-left">
-                      <p className="font-bold">{pkg.c.toLocaleString()} Coins</p>
+                      <p className="font-bold">{pkg.c} Coin{pkg.c !== 1 ? "s" : ""}</p>
                       <p className="text-xs text-white/50">${(pkg.p / 100).toFixed(2)}</p>
                     </div>
                   </div>
