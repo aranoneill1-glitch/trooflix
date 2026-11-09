@@ -41,6 +41,10 @@ export async function POST(req: Request) {
     const { data: before } = await supabaseAdmin.from("wallets").select("balance").eq("user_id", senderId).maybeSingle();
     console.log("💵 Balance BEFORE:", before?.balance);
 
+    if (!before || before.balance < amount) {
+      return NextResponse.json({ error: "Not enough credits. Please top up your balance." }, { status: 400 });
+    }
+
     const { error } = await supabaseAdmin.rpc("transfer_coins", {
       p_sender_id: senderId,
       p_receiver_id: validReceiverId,
