@@ -382,7 +382,7 @@ function VideoShort({ video, creator, isMuted, onToggleMute, onOpenComments, onS
           }).catch(() => {});
         }}
         onError={() => setHasError(true)}
-        className="w-full h-full object-cover lg:object-contain cursor-pointer"
+        className="w-full h-full object-cover cursor-pointer"
         onClick={handleScreenClick}
       />
 
