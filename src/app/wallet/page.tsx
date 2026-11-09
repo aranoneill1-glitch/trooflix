@@ -2,34 +2,48 @@
 import { useEffect, useState } from "react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import { Wallet, ArrowDownRight, ArrowUpRight, X, CheckCircle2, Building2, Bitcoin, AlertTriangle } from "lucide-react";
+import { Wallet, ArrowDownRight, ArrowUpRight, X, CheckCircle2, Building2, Bitcoin, Send, Play, AlertTriangle } from "lucide-react";
 import { getCachedUser } from "@/lib/cache";
 
 export default function WalletPage() {
+  const [userId, setUserId] = useState<string | null>(null);
   const [balance, setBalance] = useState(0);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [buying, setBuying] = useState(false);
   const [activeTab, setActiveTab] = useState<"history" | "payouts">("history");
   
-  // Payout State
-  const [bankDetails, setBankDetails] = useState<any>(null);
+  // Modals
+  const [showTopUp, setShowTopUp] = useState(false);
   const [showPayoutModal, setShowPayoutModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-  
+  const [showSendModal, setShowSendModal] = useState(false);
+  const [selectedTx, setSelectedTx] = useState<any>(null);
+  const [videoCache, setVideoCache] = useState<Record<number, any>>({});
+
+  // Payout State
+  const [bankDetails, setBankDetails] = useState<any>(null);
   const [payoutAmount, setPayoutAmount] = useState("");
   const [payoutMethod, setPayoutMethod] = useState<"bank" | "crypto">("bank");
   const [payoutStatus, setPayoutStatus] = useState<"idle"|"loading"|"success"|"error">("idle");
   const [payoutError, setPayoutError] = useState("");
-
   const [detailsType, setDetailsType] = useState<"bank" | "crypto">("bank");
   const [form, setForm] = useState({ accountName: "", bankName: "", accountNumber: "", iban: "", swiftBic: "", sortCode: "", cryptoAddress: "", cryptoNetwork: "USDT (TRC20)" });
   const [detailsStatus, setDetailsStatus] = useState<"idle"|"loading"|"success">("idle");
 
+  // Top Up State
+  const [customTopUp, setCustomTopUp] = useState("");
+  const [buying, setBuying] = useState(false);
+
+  // Send State
+  const [sendUsername, setSendUsername] = useState("");
+  const [sendAmount, setSendAmount] = useState("");
+  const [sendStatus, setSendStatus] = useState<"idle"|"loading"|"success"|"error">("idle");
+  const [sendError, setSendError] = useState("");
+
   const fetchWallet = () => {
     getCachedUser().then(u => {
       if (u) {
+        setUserId(u.id);
         fetch(`/api/wallet?userId=${u.id}&t=${Date.now()}`).then(r => r.json()).then(d => {
           setBalance(d.balance || 0);
           setTransactions(d.transactions || []);
@@ -40,14 +54,10 @@ export default function WalletPage() {
             setBankDetails(d.bankDetails);
             setPayoutMethod(d.bankDetails.payout_type);
             setForm({
-              accountName: d.bankDetails.account_name || "",
-              bankName: d.bankDetails.bank_name || "",
-              accountNumber: d.bankDetails.account_number || "",
-              iban: d.bankDetails.iban || "",
-              swiftBic: d.bankDetails.swift_bic || "",
-              sortCode: d.bankDetails.sort_code || "",
-              cryptoAddress: d.bankDetails.crypto_address || "",
-              cryptoNetwork: d.bankDetails.crypto_network || "USDT (TRC20)"
+              accountName: d.bankDetails.account_name || "", bankName: d.bankDetails.bank_name || "",
+              accountNumber: d.bankDetails.account_number || "", iban: d.bankDetails.iban || "",
+              swiftBic: d.bankDetails.swift_bic || "", sortCode: d.bankDetails.sort_code || "",
+              cryptoAddress: d.bankDetails.crypto_address || "", cryptoNetwork: d.bankDetails.crypto_network || "USDT (TRC20)"
             });
           }
         });
@@ -55,17 +65,22 @@ export default function WalletPage() {
     });
   };
 
+  useEffect(() => { fetchWallet(); }, []);
+
+  // Fetch video details for tips
   useEffect(() => {
-    fetchWallet();
-    window.addEventListener("tip-sent", fetchWallet);
-    return () => window.removeEventListener("tip-sent", fetchWallet);
-  }, []);
+    if (selectedTx && (selectedTx.type === "tip" || selectedTx.type === "send") && selectedTx.video_id && !videoCache[selectedTx.video_id]) {
+      fetch("/api/videos").then(r => r.json()).then(vids => {
+        const v = vids.find((x: any) => x.id === selectedTx.video_id);
+        if (v) setVideoCache(prev => ({ ...prev, [v.id]: v }));
+      });
+    }
+  }, [selectedTx, videoCache]);
 
   const buyCoins = async (coins: number, priceCents: number) => {
+    if (!userId) return;
     setBuying(true);
-    const u = await getCachedUser();
-    if (!u) return;
-    const res = await fetch("/api/stripe/coins", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: u.id, coins, priceCents }) });
+    const res = await fetch("/api/stripe/coins", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId, coins, priceCents }) });
     const d = await res.json();
     if (d.url) window.location.href = d.url;
     setBuying(false);
@@ -73,8 +88,7 @@ export default function WalletPage() {
 
   const submitPayout = async () => {
     setPayoutStatus("loading");
-    const u = await getCachedUser();
-    const res = await fetch("/api/wallet/request-payout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: u?.id, amount: Number(payoutAmount), method: payoutMethod }) });
+    const res = await fetch("/api/wallet/request-payout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId, amount: Number(payoutAmount), method: payoutMethod }) });
     const d = await res.json();
     if (res.ok) { setPayoutStatus("success"); fetchWallet(); }
     else { setPayoutStatus("error"); setPayoutError(d.error); }
@@ -82,9 +96,23 @@ export default function WalletPage() {
 
   const saveDetails = async () => {
     setDetailsStatus("loading");
-    const u = await getCachedUser();
-    const res = await fetch("/api/wallet/bank-details", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: u?.id, payout_type: detailsType, ...form }) });
+    const res = await fetch("/api/wallet/bank-details", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId, payout_type: detailsType, ...form }) });
     if (res.ok) { setDetailsStatus("success"); fetchWallet(); setTimeout(() => setShowDetailsModal(false), 1500); }
+  };
+
+  const cancelPayout = async (id: string) => {
+    if (!confirm("Are you sure? The funds will be returned to your wallet.")) return;
+    const res = await fetch("/api/wallet/cancel-payout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ payoutId: id, userId }) });
+    if (res.ok) { setSelectedTx(null); fetchWallet(); }
+  };
+
+  const submitSend = async () => {
+    setSendStatus("loading");
+    setSendError("");
+    const res = await fetch("/api/wallet/send", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ senderId: userId, recipientUsername: sendUsername, amount: Number(sendAmount) }) });
+    const d = await res.json();
+    if (res.ok) { setSendStatus("success"); fetchWallet(); setTimeout(() => { setShowSendModal(false); setSendStatus("idle"); setSendUsername(""); setSendAmount(""); }, 2000); }
+    else { setSendStatus("error"); setSendError(d.error); }
   };
 
   return (
@@ -107,7 +135,10 @@ export default function WalletPage() {
               <span className="text-5xl font-black">{loading ? "..." : Number(balance).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
               <span className="text-lg text-white/50 font-bold">TrooCoins</span>
             </div>
-            <button onClick={() => setShowModal(true)} className="w-full bg-[#E53945] hover:bg-[#d12e39] text-white font-bold py-3.5 rounded-xl transition shadow-lg shadow-[#E53945]/20">Top Up Coins</button>
+            <div className="flex gap-2">
+              <button onClick={() => setShowTopUp(true)} className="flex-1 bg-[#E53945] hover:bg-[#d12e39] text-white font-bold py-3.5 rounded-xl transition shadow-lg shadow-[#E53945]/20">Top Up</button>
+              <button onClick={() => setShowSendModal(true)} className="flex-1 bg-white/10 hover:bg-white/20 border border-white/10 text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center gap-2"><Send size={16} /> Send</button>
+            </div>
           </div>
         </div>
 
@@ -120,7 +151,6 @@ export default function WalletPage() {
             </div>
             <button onClick={() => setShowDetailsModal(true)} className="text-sm font-bold text-[#E53945] hover:text-[#d12e39] transition">Edit</button>
           </div>
-          
           {!bankDetails ? (
             <div className="bg-black/20 border border-white/5 rounded-xl p-4 text-center">
               <p className="text-sm text-white/50 mb-3">No payout method saved yet.</p>
@@ -142,7 +172,7 @@ export default function WalletPage() {
                   <div>
                     <p className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-0.5">Bank Transfer</p>
                     <p className="text-sm font-bold text-white/90">{bankDetails.account_name}</p>
-                    <p className="text-xs text-white/50">{bankDetails.bank_name} •••• {bankDetails.account_number?.slice(-4)}</p>
+                    <p className="text-xs text-white/50">{bankDetails.bank_name} •••• {bankDetails.account_number?.slice(-4) || bankDetails.iban?.slice(-4)}</p>
                   </div>
                 </div>
               )}
@@ -167,18 +197,17 @@ export default function WalletPage() {
               const isCancelled = isPayout && t.status === "cancelled";
               
               return (
-                <div key={t.id} className="flex items-center justify-between p-4 border-b border-white/5 last:border-0">
+                <div key={t.id} onClick={() => setSelectedTx(t)} className="flex items-center justify-between p-4 border-b border-white/5 last:border-0 hover:bg-white/[0.02] cursor-pointer transition">
                   <div className="flex items-center gap-3">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center ${t.type === "topup" ? "bg-green-500/20 text-green-500" : isPayout ? (isPaid ? "bg-green-500/20 text-green-500" : isCancelled ? "bg-red-500/20 text-red-500" : "bg-yellow-500/20 text-yellow-500") : "bg-red-500/20 text-red-500"}`}>
-                      {t.type === "topup" ? <ArrowDownRight size={18} /> : <ArrowUpRight size={18} />}
+                      {t.type === "topup" ? <ArrowDownRight size={18} /> : t.type === "send" ? <Send size={16} /> : <ArrowUpRight size={18} />}
                     </div>
                     <div>
                       <p className="font-bold text-sm flex items-center gap-2">
-                        {t.type === "topup" ? "Top Up" : t.type === "tip" ? "Tip Sent" : isPayout ? `Payout ${isPaid ? "Paid" : isCancelled ? "Cancelled" : "Pending"}` : "Subscription"}
+                        {t.type === "topup" ? "Top Up" : t.type === "tip" ? "Tip Sent" : t.type === "send" ? "Sent Coins" : isPayout ? `Payout ${isPaid ? "Paid" : isCancelled ? "Cancelled" : "Pending"}` : "Subscription"}
                         {isPayout && <span className="text-[9px] font-mono bg-white/5 text-white/40 px-1.5 py-0.5 rounded">PAY-{t.id.split("-")[0].toUpperCase()}</span>}
                       </p>
-                      <p className="text-xs text-white/50">{new Date(t.created_at).toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" })}</p>
-                      {isPayout && t.fee > 0 && <p className="text-[10px] text-yellow-500/70 mt-0.5">Fee: ${Number(t.fee).toFixed(2)}</p>}
+                      <p className="text-xs text-white/50">{new Date(t.created_at).toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
                     </div>
                   </div>
                   <span className={`font-bold ${t.type === "topup" ? "text-green-500" : isCancelled ? "text-white/40 line-through" : "text-white"}`}>
@@ -191,14 +220,93 @@ export default function WalletPage() {
         )}
       </div>
 
-      {/* Top Up Modal */}
-      {showModal && (
-        <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
+      {/* Transaction Detail Modal */}
+      {selectedTx && (
+        <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setSelectedTx(null)}>
           <div className="bg-[#1c1c1e] border border-white/10 rounded-3xl w-full max-w-sm p-6 relative" onClick={e => e.stopPropagation()}>
-            <button onClick={() => setShowModal(false)} className="absolute top-4 right-4 p-2 bg-white/5 rounded-full hover:bg-white/10 transition"><X size={18} /></button>
+            <button onClick={() => setSelectedTx(null)} className="absolute top-4 right-4 p-2 bg-white/5 rounded-full hover:bg-white/10 transition"><X size={18} /></button>
+            <h2 className="text-xl font-black mb-1">Transaction Details</h2>
+            <p className="text-xs text-white/50 mb-6">{new Date(selectedTx.created_at).toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" })}</p>
+
+            <div className="space-y-4">
+              <div className="flex justify-between items-center py-2 border-b border-white/5">
+                <span className="text-sm text-white/50">Amount</span>
+                <span className="font-bold text-lg">${Number(selectedTx.amount).toFixed(2)}</span>
+              </div>
+              
+              {selectedTx.type === "payout" && (
+                <>
+                  <div className="flex justify-between items-center py-2 border-b border-white/5">
+                    <span className="text-sm text-white/50">Status</span>
+                    <span className={`font-bold text-sm ${selectedTx.status === "pending" ? "text-yellow-500" : selectedTx.status === "completed" ? "text-green-500" : "text-red-500"}`}>{selectedTx.status.toUpperCase()}</span>
+                  </div>
+                  {selectedTx.fee > 0 && (
+                    <div className="flex justify-between items-center py-2 border-b border-white/5">
+                      <span className="text-sm text-white/50">Fee (15%)</span>
+                      <span className="font-bold text-sm text-red-400">-${Number(selectedTx.fee).toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className="bg-white/5 p-3 rounded-xl">
+                    <p className="text-xs font-bold text-white/50 mb-2">Sent To:</p>
+                    {bankDetails?.payout_type === "crypto" ? (
+                      <div className="text-xs font-mono text-white/80 break-all">
+                        <p className="text-yellow-500 mb-1">{bankDetails.crypto_network}</p>
+                        {bankDetails.crypto_address}
+                      </div>
+                    ) : (
+                      <div className="text-xs text-white/80 space-y-1">
+                        <p><strong className="text-white/50">Name:</strong> {bankDetails?.account_name}</p>
+                        <p><strong className="text-white/50">Bank:</strong> {bankDetails?.bank_name}</p>
+                        {bankDetails?.account_number && <p><strong className="text-white/50">Acc:</strong> {bankDetails.account_number}</p>}
+                        {bankDetails?.iban && <p><strong className="text-white/50">IBAN:</strong> {bankDetails.iban}</p>}
+                      </div>
+                    )}
+                  </div>
+                  {selectedTx.status === "pending" && (
+                    <button onClick={() => cancelPayout(selectedTx.id)} className="w-full mt-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold py-3 rounded-xl transition text-sm">
+                      Cancel Payout Request
+                    </button>
+                  )}
+                </>
+              )}
+
+              {selectedTx.type === "tip" && (
+                <>
+                  <div className="bg-white/5 p-3 rounded-xl flex items-center gap-3">
+                    {videoCache[selectedTx.video_id] ? (
+                      <>
+                        <img src={videoCache[selectedTx.video_id].posterUrl} className="w-12 h-16 object-cover rounded" />
+                        <div>
+                          <p className="text-xs text-white/50 mb-1">Tipped on video</p>
+                          <p className="text-sm font-bold text-white line-clamp-2">{videoCache[selectedTx.video_id].title}</p>
+                        </div>
+                      </>
+                    ) : (
+                      <p className="text-xs text-white/50">Loading video details...</p>
+                    )}
+                  </div>
+                </>
+              )}
+
+              {selectedTx.type === "send" && (
+                <div className="bg-white/5 p-3 rounded-xl">
+                  <p className="text-xs font-bold text-white/50 mb-1">Sent To:</p>
+                  <p className="text-sm font-bold text-white">@{selectedTx.description.replace("Sent to @", "")}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Top Up Modal */}
+      {showTopUp && (
+        <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowTopUp(false)}>
+          <div className="bg-[#1c1c1e] border border-white/10 rounded-3xl w-full max-w-sm p-6 relative" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setShowTopUp(false)} className="absolute top-4 right-4 p-2 bg-white/5 rounded-full hover:bg-white/10 transition"><X size={18} /></button>
             <h2 className="text-2xl font-black mb-1">Top Up</h2>
             <p className="text-sm text-white/50 mb-6">1 Coin = $1.00</p>
-            <div className="space-y-3">
+            <div className="space-y-3 mb-4">
               {[{c: 5, p: 500}, {c: 10, p: 1000}, {c: 25, p: 2500}, {c: 50, p: 5000}].map(pkg => (
                 <button key={pkg.c} disabled={buying} onClick={() => buyCoins(pkg.c, pkg.p)} className="w-full flex items-center justify-between p-4 rounded-xl border border-white/10 hover:border-[#E53945] hover:bg-[#E53945]/10 transition group">
                   <div className="flex items-center gap-3">
@@ -209,11 +317,49 @@ export default function WalletPage() {
                 </button>
               ))}
             </div>
+            <div className="flex gap-2">
+              <input type="number" min="5" placeholder="Custom Amount ($)" value={customTopUp} onChange={e => setCustomTopUp(e.target.value)} className="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-[#E53945]" />
+              <button onClick={() => buyCoins(Number(customTopUp), Number(customTopUp) * 100)} disabled={!customTopUp || Number(customTopUp) < 5} className="bg-white/10 hover:bg-white/20 text-white font-bold px-4 rounded-xl transition disabled:opacity-50 text-sm">Buy</button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Withdraw Modal */}
+      {/* Send Modal */}
+      {showSendModal && (
+        <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowSendModal(false)}>
+          <div className="bg-[#1c1c1e] border border-white/10 rounded-3xl w-full max-w-sm p-6 relative" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setShowSendModal(false)} className="absolute top-4 right-4 p-2 bg-white/5 rounded-full hover:bg-white/10 transition"><X size={18} /></button>
+            <h2 className="text-2xl font-black mb-1">Send Coins</h2>
+            <p className="text-sm text-white/50 mb-6">Send TrooCoins to another user.</p>
+            
+            {sendStatus === "success" ? (
+              <div className="text-center py-6">
+                <CheckCircle2 size={48} className="text-green-500 mx-auto mb-4" />
+                <h4 className="text-xl font-bold mb-1">Sent!</h4>
+                <p className="text-sm text-white/50">Coins successfully transferred.</p>
+              </div>
+            ) : (
+              <>
+                <label className="text-xs font-bold text-white/50 mb-2 block">Recipient Username</label>
+                <input type="text" value={sendUsername} onChange={e => setSendUsername(e.target.value)} placeholder="@username" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#E53945] mb-4" />
+                
+                <label className="text-xs font-bold text-white/50 mb-2 block">Amount ($)</label>
+                <input type="number" min="1" value={sendAmount} onChange={e => setSendAmount(e.target.value)} placeholder="e.g. 5" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#E53945] mb-4" />
+                
+                {sendStatus === "error" && <p className="text-red-400 text-sm mb-4">{sendError}</p>}
+                
+                <button onClick={submitSend} disabled={!sendUsername || !sendAmount || sendStatus === "loading"} className="w-full bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold py-3.5 rounded-xl transition">
+                  {sendStatus === "loading" ? "Sending..." : "Send Coins"}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Withdraw & Payout Settings Modals (Same as before) */}
+      {/* ... */}
       {showPayoutModal && (
         <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowPayoutModal(false)}>
           <div className="bg-[#1c1c1e] border border-white/10 rounded-3xl w-full max-w-sm p-6 relative" onClick={e => e.stopPropagation()}>
@@ -257,7 +403,6 @@ export default function WalletPage() {
         </div>
       )}
 
-      {/* Payout Settings Modal */}
       {showDetailsModal && (
         <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowDetailsModal(false)}>
           <div className="bg-[#1c1c1e] border border-white/10 rounded-3xl w-full max-w-sm p-6 relative overflow-y-auto max-h-[90vh]" onClick={e => e.stopPropagation()}>
@@ -301,12 +446,13 @@ export default function WalletPage() {
                 )}
 
                 <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 flex gap-2 items-start mb-4 mt-4">
-                    <AlertTriangle size={16} className="text-red-500 mt-0.5 shrink-0" />
-                    <p className="text-[11px] text-red-400 leading-tight">
-                      <strong>WARNING:</strong> Please double-check all your payout details. Once a payout is processed, it is sent to the destination on file and <strong>cannot be reversed or refunded</strong>.
-                    </p>
-                  </div>
-                  <button onClick={saveDetails} disabled={detailsStatus === "loading" || (detailsType === "bank" && (!form.accountName || !form.bankName)) || (detailsType === "crypto" && !form.cryptoAddress)} className="w-full mt-4 bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold py-3.5 rounded-xl transition">
+                  <AlertTriangle size={16} className="text-red-500 mt-0.5 shrink-0" />
+                  <p className="text-[11px] text-red-400 leading-tight">
+                    <strong>WARNING:</strong> Please double-check all your payout details. Once a payout is processed, it is sent to the destination on file and <strong>cannot be reversed or refunded</strong>.
+                  </p>
+                </div>
+
+                <button onClick={saveDetails} disabled={detailsStatus === "loading" || (detailsType === "bank" && (!form.accountName || !form.bankName)) || (detailsType === "crypto" && !form.cryptoAddress)} className="w-full bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold py-3.5 rounded-xl transition">
                   {detailsStatus === "loading" ? "Saving..." : "Save Details"}
                 </button>
               </>
