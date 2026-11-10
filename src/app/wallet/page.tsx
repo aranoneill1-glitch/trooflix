@@ -17,6 +17,7 @@ export default function WalletPage() {
   
   // Modals
   const [showTopUp, setShowTopUp] = useState(false);
+  useEffect(() => { if (typeof window !== "undefined" && window.location.search.includes("topup=true")) { setShowTopUp(true); window.history.replaceState({}, "", "/wallet"); } }, []);
   const [showPayoutModal, setShowPayoutModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showSendModal, setShowSendModal] = useState(false);

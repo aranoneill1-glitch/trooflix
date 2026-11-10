@@ -33,7 +33,7 @@ export default function PremiumLockModal({
       });
       const data = await res.json();
       if (data.url) { window.location.href = data.url; return; }
-      alert(data.error || "Could not start subscription");
+      if (data.error && data.error.toLowerCase().includes("insufficient")) { if (confirm("You do not have enough TrooCoins. Would you like to top up your wallet?")) { router.push("/wallet?topup=true"); } } else { alert(data.error || "Could not start subscription"); }
     } catch {
       alert("Network error");
     } finally {

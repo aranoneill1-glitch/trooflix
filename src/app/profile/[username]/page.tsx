@@ -174,7 +174,7 @@ export default function PublicProfilePage() {
           setShowSubscribeModal(false);
           alert("Subscribed successfully!");
         } else {
-          alert(data.error || "Could not subscribe with coins.");
+          if (data.error && data.error.toLowerCase().includes("insufficient")) { if (confirm("You do not have enough TrooCoins. Would you like to top up your wallet?")) { router.push("/wallet?topup=true"); } } else { alert(data.error || "Could not subscribe with coins."); }
         }
       } catch (err) {
         console.error(err);
