@@ -168,7 +168,8 @@ export default function PublicProfilePage() {
   };
 
   if (loading) return <div className="min-h-screen bg-[#09090B] flex items-center justify-center"><div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" /></div>;
-  if (!profile) return <main className="min-h-screen bg-[#09090B] text-white flex flex-col items-center justify-center px-4"><h1 className="text-2xl font-bold mb-4">User not found</h1><Link href="/" className="bg-[#E53945] text-white font-bold px-8 py-3 rounded-full">Go Home</Link></main>;
+  if (!profile) return <main className="min-h-screen bg-[#09090B] text-white flex flex-col items-center justify-center px-4"><h1 className="text-2xl font-bold mb-4">User not found</h1>
+                  <button onClick={handleFollow} disabled={isSubmittingFollow} className={`lg:hidden shrink-0 ml-auto flex items-center justify-center gap-1.5 font-bold px-4 py-1.5 rounded-full transition shadow-lg text-sm ${isSubmittingFollow ? 'opacity-50 cursor-wait' : isFollowing ? 'bg-white/10 text-white border border-white/20' : 'bg-white text-black hover:bg-gray-200'}`}><UserPlus size={14} /> {isFollowing ? 'Following' : 'Follow'}</button><Link href="/" className="bg-[#E53945] text-white font-bold px-8 py-3 rounded-full">Go Home</Link></main>;
 
   const displayName = profile.display_name || "User";
   const subscriptionPrice = profile.subscription_price_cents ? (profile.subscription_price_cents / 100).toFixed(2) : "3.99";
@@ -300,7 +301,7 @@ export default function PublicProfilePage() {
 
               {/* NAME, HANDLE, SOCIALS, BIO */}
               <div className="px-1">
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2 mb-1 w-full">
                   <h1 className="text-2xl md:text-3xl font-black flex items-center gap-2 text-white">
                     {displayName} {(profile as any).verification_tick && (profile as any).verification_tick !== "none" && <VerifiedBadge size={20} variant={(profile as any).verification_tick as any} />}
                   </h1>
@@ -341,7 +342,7 @@ export default function PublicProfilePage() {
                           </div> {/* END LEFT COLUMN */}
 
               {/* RIGHT COLUMN: FEATURED VIDEO */}
-              <div className="w-full lg:w-1/2 flex flex-col gap-4">
+              <div className="hidden lg:flex w-full lg:w-1/2 flex-col gap-4">
                 {(() => {
                   const featured = videos.find((v: any) => v.featured) || videos[0];
                   if (!featured) return <div className="w-full aspect-video bg-white/5 rounded-3xl flex items-center justify-center text-white/30 border border-white/10">No videos yet</div>;
