@@ -13,7 +13,7 @@ export async function GET() {
     const { data, error } = await supabaseAdmin
       .from("profiles")
       .select("user_id, display_name, username, avatar_url, bio, tier, is_verified, verification_tick, updated_at")
-      .eq("tier", "podcaster")
+      .eq("tier", "creator")
       .not("username", "like", "mockcreator_%")
       .order("updated_at", { ascending: false });
 
