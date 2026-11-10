@@ -106,45 +106,31 @@ export default function MerchandisePage() {
     <main className="min-h-screen bg-[#09090B] text-white pb-24 lg:pb-20 font-sans selection:bg-[#E53945]/30">
       <TopBar />
       
-      {/* EDITORIAL HERO COLLAGE */}
-      <div className="relative w-full h-[45vh] md:h-[55vh] flex overflow-hidden">
-        {/* 4 Image Slices */}
-        <div className="flex-1 hidden md:block relative group">
-          <img src="https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=800&auto=format&fit=crop" alt="" className="w-full h-full object-cover grayscale-[20%] opacity-80" />
+            {/* CINEMATIC HERO */}
+      <div className="relative w-full h-[50vh] md:h-[65vh] flex flex-col justify-end overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <img src="/images.jpeg" alt="Marketplace" className="w-full h-full object-cover object-center" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#09090B] via-[#09090B]/80 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#09090B]/90 via-[#09090B]/40 to-transparent" />
         </div>
-        <div className="flex-1 relative group">
-          <img src="https://images.unsplash.com/photo-1615160460366-2c9c9c1e2d9f?q=80&w=800&auto=format&fit=crop" alt="" className="w-full h-full object-cover grayscale-[20%] opacity-80" />
-        </div>
-        <div className="flex-1 relative group">
-          <img src="https://images.unsplash.com/photo-1543163521-1bf539c55dd2?q=80&w=800&auto=format&fit=crop" alt="" className="w-full h-full object-cover grayscale-[20%] opacity-80" />
-        </div>
-        <div className="flex-1 hidden md:block relative group">
-          <img src="https://images.unsplash.com/photo-1608256246200-53e635b5b65f?q=80&w=800&auto=format&fit=crop" alt="" className="w-full h-full object-cover grayscale-[20%] opacity-80" />
-        </div>
-
-        {/* Dark Overlay */}
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]" />
-
-        {/* Centered Content */}
-        <div className="absolute inset-0 flex flex-col items-center justify-end pb-12 md:pb-16 text-center px-4 z-10">
-          <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-white leading-none mb-8 drop-shadow-2xl">
-            Creator <span className="bg-gradient-to-r from-orange-500 to-[#E53945] bg-clip-text text-transparent">Marketplace</span>
-          </h1>
-          
-          <div className="flex flex-wrap justify-center gap-3">
-            {(["Merchandise", "Books"] as const).map(tab => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-8 py-3 rounded-full text-sm font-bold uppercase tracking-[0.15em] transition-all duration-300 border border-transparent ${
-                  activeTab === tab
-                    ? "bg-black text-white border-white/20 shadow-2xl scale-105"
-                    : "bg-black/40 text-white/70 hover:text-white hover:bg-black/80 backdrop-blur-md"
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
+        <button onClick={() => router.back()} className="absolute top-24 left-4 md:left-8 z-20 w-12 h-12 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-black/60 transition border border-white/10">
+          <ArrowLeft size={24} />
+        </button>
+        <div className="relative z-10 px-4 md:px-8 w-full max-w-7xl mx-auto pb-12 md:pb-16 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+          <div>
+            <p className="text-[#E53945] font-bold tracking-[0.4em] text-xs md:text-sm uppercase mb-3">Explore Category</p>
+            <h1 className="text-6xl md:text-8xl lg:text-9xl font-black text-white leading-none tracking-tighter drop-shadow-2xl">Marketplace</h1>
+          </div>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full lg:w-auto">
+            <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md p-1.5 rounded-full border border-white/10">
+              {(["Merchandise", "Books"] as const).map(tab => (
+                <button key={tab} onClick={() => setActiveTab(tab)} className={"px-5 py-2 rounded-full font-bold text-sm transition " + (activeTab === tab ? "bg-white text-black" : "text-white/70 hover:text-white hover:bg-white/10")}>{tab}</button>
+              ))}
+            </div>
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/60" size={16} />
+              <input type="text" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-black/40 backdrop-blur-xl border border-white/20 rounded-full py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-white/50 focus:outline-none focus:border-[#E53945]/50 transition-all shadow-xl" />
+            </div>
           </div>
         </div>
       </div>
