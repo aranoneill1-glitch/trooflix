@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, UserPlus, MessageSquare, CheckCircle2, LayoutGrid, List, ShoppingBag, Star, Lock, Play , GripVertical } from "lucide-react";
 import HomeFeedCard from "@/components/HomeFeedCard";
 import CommentSheet from "@/components/CommentSheet";
+import Comments from "@/components/Comments";
 import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
@@ -366,37 +367,89 @@ export default function PublicProfilePage() {
 
             <div className="w-full">
               {activeContentTab === "All" && (
-                <div className="w-full">
-                  {videos.length === 0 ? (
-                    <div className="text-center py-20 text-white/50">No posts yet.</div>
+          <div className="w-full">
+            {/* MOBILE */ }
+            <div className="lg:hidden w-full">
+              {videos.length === 0 ? (
+                <div className="text-center py-20 text-white/50">No posts yet.</div>
+              ) : (
+                <div className="flex flex-col gap-6 pb-20 px-4">
+                  {videos.map((v) => (
+                    <div 
+                      key={v.id} 
+                      ref={(el) => { if (el) { const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting && entry.intersectionRatio > 0.6) setActiveVideoId(v.id); }, { threshold: [0.6] }); observer.observe(el); } }}
+                    >
+                      <HomeFeedCard 
+                        video={v} 
+                        creator={profile} 
+                        onMore={() => {}} 
+                        onPlay={() => {}} 
+                        isActive={activeVideoId === v.id} 
+                        onSetActive={() => setActiveVideoId(v.id)} 
+                        onOpenComments={() => setCommentSheetVideoId(v.id)} 
+                        isLiked={!!likedVideos[v.id]} 
+                        onToggleLike={() => setLikedVideos(prev => ({ ...prev, [v.id]: !prev[v.id] }))} 
+                        hideCreatorInfo={true}
+                        isVertical={v.type?.toLowerCase() === "short"}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* DESKTOP */ }
+            <div className="hidden lg:flex w-full gap-6 h-[calc(100vh-200px)] items-start pb-10">
+              {/* Left: Video Feed */}
+              <div className="flex-1 h-full overflow-y-auto snap-y snap-mandatory scrollbar-hide flex flex-col gap-8 pr-4">
+                {videos.length === 0 ? (
+                  <div className="text-center py-20 text-white/50">No posts yet.</div>
+                ) : (
+                  videos.map((v) => (
+                    <div 
+                      key={v.id} 
+                      className="snap-start shrink-0 w-full"
+                      ref={(el) => { if (el) { const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting && entry.intersectionRatio > 0.6) setActiveVideoId(v.id); }, { threshold: [0.6] }); observer.observe(el); } }}
+                    >
+                      <HomeFeedCard 
+                        video={v} 
+                        creator={profile} 
+                        onMore={() => {}} 
+                        onPlay={() => {}} 
+                        isActive={activeVideoId === v.id} 
+                        onSetActive={() => setActiveVideoId(v.id)} 
+                        onOpenComments={() => setCommentSheetVideoId(v.id)} 
+                        isLiked={!!likedVideos[v.id]} 
+                        onToggleLike={() => setLikedVideos(prev => ({ ...prev, [v.id]: !prev[v.id] }))} 
+                        hideCreatorInfo={true}
+                        isVertical={v.type?.toLowerCase() === "short"}
+                      />
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Right: Comments */}
+              <div className="w-[400px] xl:w-[450px] shrink-0 h-full bg-[#0f0f12] border border-white/10 rounded-2xl flex flex-col overflow-hidden sticky top-24 shadow-2xl">
+                <div className="p-4 border-b border-white/10 bg-[#1c1c1e] flex items-center justify-between">
+                  <h3 className="font-bold text-white text-lg">Comments</h3>
+                </div>
+                <div className="flex-1 overflow-hidden">
+                  {activeVideoId ? (
+                    <Comments videoId={activeVideoId} variant="chat" />
                   ) : (
-                    <div className="flex flex-col gap-6 pb-20 px-4">
-                      {videos.map((v) => (
-                                                <div 
-                          key={v.id} 
-                          ref={(el) => { if (el) { const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting && entry.intersectionRatio > 0.6) setActiveVideoId(v.id); }, { threshold: [0.6] }); observer.observe(el); } }}
-                        >
-                          <HomeFeedCard 
-                            video={v} 
-                            creator={profile} 
-                            onMore={() => {}} 
-                            onPlay={() => {}} 
-                            isActive={activeVideoId === v.id} 
-                            onSetActive={() => setActiveVideoId(v.id)} 
-                            onOpenComments={() => setCommentSheetVideoId(v.id)} 
-                            isLiked={!!likedVideos[v.id]} 
-                            onToggleLike={() => setLikedVideos(prev => ({ ...prev, [v.id]: !prev[v.id] }))} 
-                            hideCreatorInfo={true}
-                            isVertical={v.type?.toLowerCase() === "short"}
-                          />
-                        </div>
-                      ))}
+                    <div className="flex flex-col items-center justify-center h-full text-white/30 gap-2">
+                      <MessageSquare size={32} />
+                      <p>Select a video to see comments</p>
                     </div>
                   )}
                 </div>
-              )}
+              </div>
+            </div>
+          </div>
+        )}
 
-              {activeContentTab === "Premium" && (
+        {activeContentTab === "Premium" && (
                 <div className="w-full">
                   {filteredVideos.length === 0 ? (
                     <div className="text-center py-20 text-white/50">No premium content yet.</div>
