@@ -125,7 +125,7 @@ export default function MerchandisePage() {
         <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]" />
 
         {/* Centered Content */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 z-10">
+        <div className="absolute inset-0 flex flex-col items-center justify-end pb-12 md:pb-16 text-center px-4 z-10">
           <h1 className="text-4xl md:text-6xl font-serif text-white tracking-wide mb-8 drop-shadow-2xl">
             The Creator Marketplace
           </h1>
@@ -135,7 +135,7 @@ export default function MerchandisePage() {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-8 py-3 text-sm font-bold uppercase tracking-[0.15em] transition-all duration-300 border border-transparent ${
+                className={`px-8 py-3 rounded-full text-sm font-bold uppercase tracking-[0.15em] transition-all duration-300 border border-transparent ${
                   activeTab === tab
                     ? "bg-black text-white border-white/20 shadow-2xl scale-105"
                     : "bg-black/40 text-white/70 hover:text-white hover:bg-black/80 backdrop-blur-md"
