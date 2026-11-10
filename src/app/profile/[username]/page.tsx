@@ -264,7 +264,7 @@ export default function PublicProfilePage() {
 
           {/* CREATOR-STYLE PROFILE LAYOUT */}
           <div className="animate-in fade-in duration-300">
-            <div className="flex flex-col lg:flex-row gap-8 mb-8 w-full">
+            <div className="flex flex-col lg:flex-row gap-8 mb-8 w-full items-stretch">
               
               {/* LEFT COLUMN */}
               <div className="w-full lg:w-1/2 flex flex-col">
@@ -342,12 +342,12 @@ export default function PublicProfilePage() {
                           </div> {/* END LEFT COLUMN */}
 
               {/* RIGHT COLUMN: FEATURED VIDEO */}
-              <div className="hidden lg:flex w-full lg:w-1/2 flex-col gap-4">
+              <div className="hidden lg:flex w-full lg:w-1/2 flex-col gap-4 h-full">
                 {(() => {
                   const featured = videos.find((v: any) => v.featured) || videos[0];
                   if (!featured) return <div className="w-full aspect-video bg-white/5 rounded-3xl flex items-center justify-center text-white/30 border border-white/10">No videos yet</div>;
                   return (
-                    <div className="relative w-full aspect-[4/3] lg:aspect-video rounded-3xl overflow-hidden border border-white/10 bg-black group shadow-2xl">
+                    <div className="relative w-full h-full min-h-[350px] rounded-3xl overflow-hidden border border-white/10 bg-black group shadow-2xl">
                       <img src={featured.backdropUrl || featured.posterUrl} alt={featured.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-700" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
                       <div className="absolute inset-0 flex flex-col justify-between p-6">
