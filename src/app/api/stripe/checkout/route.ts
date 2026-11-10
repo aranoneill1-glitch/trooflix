@@ -41,16 +41,6 @@ export async function POST(req: Request) {
     }
 
     const coinCount = Number(coins) || 0;
-    const addInvoiceItems = coinCount > 0 ? [{
-      price_data: {
-        currency: "usd",
-        unit_amount: coinCount * 100,
-        product_data: {
-          name: `${coinCount} TrooCoins`,
-          description: "Pre-load your TrooBank for tipping and merch",
-        },
-      },
-    }] : undefined;
 
     const sessionParams: any = {
       customer: customerId,
@@ -64,6 +54,17 @@ export async function POST(req: Request) {
           },
           quantity: 1,
         },
+        ...(coinCount > 0 ? [{
+          price_data: {
+            currency: "usd",
+            unit_amount: coinCount * 100,
+            product_data: {
+              name: `${coinCount} TrooCoins`,
+              description: "Pre-load your TrooBank for tipping and merch",
+            },
+          },
+          quantity: 1,
+        }] : []),
       ],
       mode: "subscription",
       success_url: `${process.env.NEXT_PUBLIC_URL || "https://www.trooflixtv.com"}/profile?upgraded=${type}`,
@@ -74,7 +75,6 @@ export async function POST(req: Request) {
         type: type === "pass" ? "trooflix_pass" : "podcaster",
         signupCoins: String(coinCount),
       },
-      add_invoice_items: addInvoiceItems,
       subscription_data: {
         metadata: { userId, type: type === "pass" ? "trooflix_pass" : "podcaster" },
       },
