@@ -228,6 +228,19 @@ export async function POST(req: Request) {
       const periodEnd = getPeriodEnd(subscription);
       const currentPeriodEnd = new Date(periodEnd * 1000);
 
+      const signupCoins = Number(subscription.metadata?.signupCoins || 0);
+      if (signupCoins > 0) {
+        const { data: wallet } = await supabaseAdmin.from("wallets").select("balance").eq("user_id", userId).maybeSingle();
+        if (wallet) {
+          await supabaseAdmin.from("wallets").update({ balance: Number(wallet.balance) + signupCoins }).eq("user_id", userId);
+        } else {
+          await supabaseAdmin.from("wallets").insert({ user_id: userId, balance: signupCoins });
+        }
+        await supabaseAdmin.from("transactions").insert({
+          sender_id: null, receiver_id: userId, amount: signupCoins, type: "topup", description: "Signup TrooCoins"
+        });
+      }
+
       if (type === "podcaster") {
         // Creator Tier ($9.99) — gold tick
         const { data: profile } = await supabaseAdmin.from("profiles").select("stripe_subscription_id").eq("user_id", userId).maybeSingle();
