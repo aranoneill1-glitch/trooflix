@@ -6,7 +6,7 @@ import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import { ShoppingBag, Search, Star, X, Plus, ArrowRight, Heart } from "lucide-react";
+import { ArrowLeft, ShoppingBag, Search, Star, X, Plus, ArrowRight, Heart } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 
 export default function MerchandisePage() {
