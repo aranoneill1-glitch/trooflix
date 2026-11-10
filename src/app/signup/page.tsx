@@ -3,131 +3,136 @@
 import Link from "next/link";
 import { ArrowLeft, Check, X, Sparkles, Crown, Video } from "lucide-react";
 
-const FEATURES = [
-  { name: "Watch unlimited Shorts", free: true, plus: true, creator: true },
-  { name: "Send direct messages", free: true, plus: true, creator: true },
-  { name: "Buy merch & books", free: true, plus: true, creator: true },
-  { name: "Upload Shorts (3 min max)", free: true, plus: false, creator: false },
-  { name: "Upload Shorts (Unlimited)", free: false, plus: true, creator: true },
-  { name: "Unlimited long-form viewing", free: false, plus: true, creator: true },
-  { name: "Watch live streams", free: false, plus: true, creator: true },
-  { name: "Upload merch / open shop", free: false, plus: true, creator: true },
-  { name: "Upload long-form (podcasts, docs)", free: false, plus: false, creator: true },
-  { name: "Go Live (broadcast)", free: false, plus: false, creator: true },
-  { name: "Post Tweets", free: false, plus: false, creator: true },
-  { name: "Full Creator Dashboard", free: false, plus: false, creator: true },
-  { name: "Custom profile theme", free: false, plus: false, creator: true },
-  { name: "Red tick", free: false, plus: true, creator: false },
-  { name: "Gold tick", free: false, plus: false, creator: true },
-  { name: "99% revenue share", free: false, plus: false, creator: true },
+const TIERS = [
+  {
+    id: "free",
+    name: "Free",
+    price: "$0",
+    period: "forever",
+    tagline: "Start exploring",
+    icon: Sparkles,
+    features: [
+      { text: "Watch unlimited Shorts", included: true },
+      { text: "3-min long-form previews", included: true },
+      { text: "Like, comment & share", included: true },
+      { text: "Send direct messages", included: true },
+      { text: "Buy merch & books", included: true },
+      { text: "Upload Shorts (any length)", included: true },
+      { text: "Unlimited long-form viewing", included: false },
+      { text: "Watch live streams", included: false },
+      { text: "Upload long-form videos", included: false },
+    ],
+    color: "text-gray-400",
+    border: "border-white/10",
+    bg: "bg-white/5",
+  },
+  {
+    id: "plus",
+    name: "Plus",
+    price: "$3.99",
+    period: "/mo",
+    tagline: "The full viewer",
+    icon: Crown,
+    features: [
+      { text: "Everything in Free", included: true },
+      { text: "Unlimited long-form viewing", included: true },
+      { text: "Upload Shorts (any length)", included: true },
+      { text: "Watch live streams (public)", included: true },
+      { text: "Upload merch / open shop", included: true },
+      { text: "Red tick", included: true },
+      { text: "Watch Premium (must pay creator)", included: false },
+      { text: "Upload long-form videos", included: false },
+      { text: "Go Live (broadcast)", included: false },
+    ],
+    color: "text-[#E53945]",
+    border: "border-[#E53945]",
+    bg: "bg-[#E53945]/10",
+  },
+  {
+    id: "creator",
+    name: "Creator",
+    price: "$9.99",
+    period: "/mo",
+    tagline: "Build your empire",
+    icon: Video,
+    features: [
+      { text: "Everything in Plus", included: true },
+      { text: "Upload long-form (podcasts, docs)", included: true },
+      { text: "Go Live (broadcast)", included: true },
+      { text: "Post Tweets", included: true },
+      { text: "Full Creator Dashboard", included: true },
+      { text: "Custom profile theme", included: true },
+      { text: "99% revenue share", included: true },
+      { text: "Watch Premium (must pay creator)", included: false },
+    ],
+    color: "text-[#D4AF37]",
+    border: "border-[#D4AF37]",
+    bg: "bg-[#D4AF37]/10",
+  },
 ];
 
 export default function SignupPage() {
   return (
-    <main className="min-h-screen bg-[#0a0303] text-white py-20 px-4 md:px-8 font-sans selection:bg-[#E53945]/30 relative overflow-hidden">
-      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-[#E53945]/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-[#D4AF37]/5 rounded-full blur-[120px] pointer-events-none" />
+    <main className="min-h-screen bg-[#0a0303] text-white flex flex-col items-center py-12 px-4 selection:bg-[#E53945]/30 relative overflow-hidden">
+      {/* Background glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] md:w-[600px] h-[300px] bg-[#E53945]/10 rounded-full blur-[100px] pointer-events-none" />
 
-      <div className="max-w-6xl mx-auto relative z-10">
-        <Link href="/" className="inline-flex items-center gap-2 text-white/50 hover:text-white mb-10 transition text-sm font-semibold">
+      <div className="w-full max-w-5xl relative z-10">
+        <Link href="/" className="inline-flex items-center gap-2 text-white/50 hover:text-white mb-8 transition text-sm font-semibold">
           <ArrowLeft size={16} /> Back
         </Link>
 
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-3">Join Trooflix</h1>
-          <p className="text-white/50 text-lg">Choose your plan. Upgrade or cancel anytime.</p>
+        <div className="text-center mb-10">
+          <h1 className="text-3xl md:text-4xl font-black tracking-tight mb-2">Join Trooflix</h1>
+          <p className="text-sm text-white/50">Choose your plan. Upgrade or cancel anytime.</p>
         </div>
 
-        {/* DESKTOP TABLE */}
-        <div className="hidden lg:block bg-[#0f0f12]/80 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
-          <table className="w-full text-center border-collapse">
-            <thead>
-              <tr>
-                <th className="p-8 text-left border-b border-white/10 w-1/3 bg-black/20">
-                  <h2 className="text-xl font-bold text-white mb-1">Features</h2>
-                  <p className="text-sm text-white/50">Compare what you get.</p>
-                </th>
-                
-                <th className="p-8 border-b border-white/10 w-[22%] align-top">
-                  <div className="flex flex-col items-center gap-3">
-                    <Sparkles size={28} className="text-gray-400" />
-                    <h3 className="text-xl font-bold text-white">Free</h3>
-                    <div className="text-3xl font-black text-white mb-2">$0<span className="text-sm text-white/50 font-medium">/mo</span></div>
-                    <Link href="/signup/free" className="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm transition">Start Exploring</Link>
-                  </div>
-                </th>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          {TIERS.map((tier) => {
+            const Icon = tier.icon;
+            return (
+              <Link
+                key={tier.id}
+                href={`/signup/${tier.id}`}
+                className={`text-left cursor-pointer rounded-2xl p-5 border transition-all duration-200 relative overflow-hidden flex flex-col ${tier.bg} ${tier.border} hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(229,57,69,0.15)] hover:border-white/30`}
+              >
+                <div className="flex items-center gap-2 mb-3">
+                  {tier.id === "free" ? (
+                    <div className="w-5 h-5 rounded-full border border-white/20 flex items-center justify-center text-[9px] text-white/30">–</div>
+                  ) : (
+                    <div className="flex items-center gap-1.5">
+                      <div className={`w-5 h-5 rounded-full ${tier.id === "creator" ? "bg-[#D4AF37]" : "bg-[#E53945]"}`} />
+                      <span className="text-[10px] text-white/50 font-bold uppercase tracking-wider">{tier.id === "creator" ? "Gold tick" : "Red tick"}</span>
+                    </div>
+                  )}
+                </div>
+                <Icon size={24} className={`${tier.color} mb-3`} />
+                <h3 className="text-xl font-black leading-tight mb-0.5">{tier.name}</h3>
+                <p className="text-[10px] text-white/50 mb-3 uppercase tracking-wider font-bold">{tier.tagline}</p>
 
-                <th className="p-8 border-b border-white/10 w-[22%] align-top bg-gradient-to-b from-[#E53945]/15 to-transparent border-x border-[#E53945]/30 relative">
-                  <div className="absolute top-0 left-0 right-0 h-1 bg-[#E53945]" />
-                  <div className="flex flex-col items-center gap-3">
-                    <Crown size={28} className="text-[#E53945]" />
-                    <h3 className="text-xl font-bold text-white">Plus</h3>
-                    <div className="text-3xl font-black text-white mb-2">$3.99<span className="text-sm text-white/50 font-medium">/mo</span></div>
-                    <Link href="/signup/plus" className="w-full py-2.5 rounded-xl bg-[#E53945] hover:bg-[#d12e39] text-white font-bold text-sm transition shadow-lg shadow-[#E53945]/20">Get Plus</Link>
-                  </div>
-                </th>
+                <div className="flex items-baseline gap-1 mb-4">
+                  <span className="text-3xl font-black">{tier.price}</span>
+                  <span className="text-xs text-white/50">{tier.period}</span>
+                </div>
 
-                <th className="p-8 border-b border-white/10 w-[22%] align-top">
-                  <div className="flex flex-col items-center gap-3">
-                    <Video size={28} className="text-[#D4AF37]" />
-                    <h3 className="text-xl font-bold text-white">Creator</h3>
-                    <div className="text-3xl font-black text-white mb-2">$9.99<span className="text-sm text-white/50 font-medium">/mo</span></div>
-                    <Link href="/signup/creator" className="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm transition">Go Creator</Link>
-                  </div>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {FEATURES.map((f, i) => (
-                <tr key={i} className="hover:bg-white/[0.03] transition-colors group">
-                  <td className="p-4 text-left border-b border-white/5 text-white/80 font-medium pl-8">{f.name}</td>
-                  <td className="p-4 border-b border-white/5">
-                    {f.free ? <Check size={20} className="mx-auto text-green-500" /> : <X size={20} className="mx-auto text-white/20" />}
-                  </td>
-                  <td className="p-4 border-b border-white/5 bg-gradient-to-b from-[#E53945]/5 to-transparent border-x border-[#E53945]/20">
-                    {f.plus ? <Check size={20} className="mx-auto text-green-500" /> : <X size={20} className="mx-auto text-white/20" />}
-                  </td>
-                  <td className="p-4 border-b border-white/5">
-                    {f.creator ? <Check size={20} className="mx-auto text-green-500" /> : <X size={20} className="mx-auto text-white/20" />}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                <ul className="space-y-1.5 text-[11px] text-white/80 flex-1">
+                  {tier.features.map((f, i) => (
+                    <li key={i} className="flex items-start gap-1.5 leading-tight">
+                      {f.included ? (
+                        <Check size={12} className="text-[#1DB954] shrink-0 mt-0.5" strokeWidth={3} />
+                      ) : (
+                        <X size={12} className="text-white/20 shrink-0 mt-0.5" strokeWidth={3} />
+                      )}
+                      <span className={f.included ? "" : "text-white/40 line-through"}>{f.text}</span>
+                    </li>
+                  ))}
+                </ul>
+              </Link>
+            );
+          })}
         </div>
-
-        {/* MOBILE STACK */}
-        <div className="flex flex-col gap-6 lg:hidden">
-          <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
-            <div className="flex items-center gap-3 mb-4"><Sparkles size={24} className="text-gray-400" /><h3 className="text-2xl font-black">Free</h3></div>
-            <div className="text-3xl font-black mb-4">$0<span className="text-sm text-white/50 font-medium">/mo</span></div>
-            <Link href="/signup/free" className="block w-full text-center py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold transition mb-6">Start Exploring</Link>
-            <div className="space-y-3">
-              {FEATURES.map((f, i) => f.free && (<div key={i} className="flex items-center gap-2 text-sm text-white/80"><Check size={16} className="text-green-500" /> {f.name}</div>))}
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-b from-[#E53945]/10 to-transparent border border-[#E53945]/30 rounded-3xl p-6 relative overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-[#E53945]" />
-            <div className="flex items-center gap-3 mb-4"><Crown size={24} className="text-[#E53945]" /><h3 className="text-2xl font-black">Plus</h3></div>
-            <div className="text-3xl font-black mb-4">$3.99<span className="text-sm text-white/50 font-medium">/mo</span></div>
-            <Link href="/signup/plus" className="block w-full text-center py-3 rounded-xl bg-[#E53945] hover:bg-[#d12e39] text-white font-bold transition mb-6 shadow-lg shadow-[#E53945]/20">Get Plus</Link>
-            <div className="space-y-3">
-              {FEATURES.map((f, i) => f.plus && (<div key={i} className="flex items-center gap-2 text-sm text-white/80"><Check size={16} className="text-green-500" /> {f.name}</div>))}
-            </div>
-          </div>
-
-          <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
-            <div className="flex items-center gap-3 mb-4"><Video size={24} className="text-[#D4AF37]" /><h3 className="text-2xl font-black">Creator</h3></div>
-            <div className="text-3xl font-black mb-4">$9.99<span className="text-sm text-white/50 font-medium">/mo</span></div>
-            <Link href="/signup/creator" className="block w-full text-center py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold transition mb-6">Go Creator</Link>
-            <div className="space-y-3">
-              {FEATURES.map((f, i) => f.creator && (<div key={i} className="flex items-center gap-2 text-sm text-white/80"><Check size={16} className="text-green-500" /> {f.name}</div>))}
-            </div>
-          </div>
-        </div>
-
-        <p className="text-center text-sm text-white/40 mt-12">
+        
+        <p className="text-center text-xs text-white/40 mt-6">
           Already have an account? <Link href="/login" className="text-white hover:underline">Log in</Link>
         </p>
       </div>
