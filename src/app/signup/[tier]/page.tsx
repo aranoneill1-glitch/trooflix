@@ -105,7 +105,7 @@ export default function SignupCheckoutPage() {
         options: { data: { display_name: cleanHandle, username: cleanHandle } },
       });
 
-      if (authError) throw authError;
+      if (authError) { if (authError.message.includes("already registered")) { setError("This email is already registered. Please log in to upgrade your account."); setLoading(false); return; } throw authError; }
       if (!authData.user) throw new Error("Signup failed.");
 
       const profileRes = await fetch("/api/signup-profile", {
@@ -145,7 +145,7 @@ export default function SignupCheckoutPage() {
         router.push("/creator-dashboard/settings?onboarding=1");
         router.refresh();
       } else {
-        const stripeType = tierId === "creator" ? "podcaster" : "pass";
+        const stripeType = tierId === "creator" ? "creator" : "pass";
         const checkoutRes = await fetch("/api/stripe/checkout", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -156,7 +156,7 @@ export default function SignupCheckoutPage() {
         else throw new Error("Checkout failed");
       }
     } catch (err: any) {
-      setError(err.message || "An error occurred.");
+      setError(err.message || "Account created, but checkout failed. Please log in and go to Upgrade to try again.");
       setLoading(false);
     }
   };
