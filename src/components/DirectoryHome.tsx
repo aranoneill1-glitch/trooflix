@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Play } from "lucide-react";
+import {  Play , Newspaper, Camera, ShoppingBag } from "lucide-react";
 
 
 function VideoPreview({ src, poster, className }: { src: string, poster?: string, className?: string }) {
@@ -86,7 +86,7 @@ export default function DirectoryHome({ videos, creators }: { videos: any[], cre
       {/* 3. DON'T MISS A THING */}
       <section>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl md:text-2xl font-black tracking-tight text-white">Don't Miss A <span className="text-[#E53945]">Thing</span></h2>
+          <h2 className="text-xl md:text-2xl font-black tracking-tight text-white flex items-center gap-2"><span className="w-6 h-6 bg-[#E53945] rounded-full flex items-center justify-center"><Newspaper size={12} className="text-white" /></span> Don't Miss A <span className="text-[#E53945]">Thing</span></h2>
           <Link href="/latest" className="text-xs font-bold text-white/50 hover:text-white transition">View All</Link>
         </div>
         <div className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide">
@@ -113,7 +113,7 @@ export default function DirectoryHome({ videos, creators }: { videos: any[], cre
       {/* 1. DISCOVER CREATORS */}
       <section>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl md:text-2xl font-black tracking-tight text-white">Discover <span className="text-[#E53945]">Creators</span></h2>
+          <h2 className="text-xl md:text-2xl font-black tracking-tight text-white flex items-center gap-2"><span className="w-6 h-6 bg-[#E53945] rounded-full flex items-center justify-center"><Camera size={12} className="text-white" /></span> Discover <span className="text-[#E53945]">Creators</span></h2>
           <Link href="/creators" className="text-xs font-bold text-white/50 hover:text-white transition">View All</Link>
         </div>
         <div className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide">
@@ -164,7 +164,7 @@ export default function DirectoryHome({ videos, creators }: { videos: any[], cre
       {/* 4. MERCHANDISE */}
       <section>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl md:text-2xl font-black tracking-tight text-white">Discover <span className="text-[#E53945]">Merchandise</span></h2>
+          <h2 className="text-xl md:text-2xl font-black tracking-tight text-white flex items-center gap-2"><span className="w-6 h-6 bg-[#E53945] rounded-full flex items-center justify-center"><ShoppingBag size={12} className="text-white" /></span> Discover <span className="text-[#E53945]">Merchandise</span></h2>
           <Link href="/merchandise" className="text-xs font-bold text-white/50 hover:text-white transition">View All</Link>
         </div>
         <div className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide">
