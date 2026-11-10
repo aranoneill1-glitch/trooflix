@@ -39,6 +39,7 @@ export async function POST(req: Request) {
       price_cents: amount * 100,
       current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       stripe_subscription_id: "TC_" + Date.now() + "_" + userId.slice(0, 8),
+      stripe_customer_id: "TC_CUSTOMER_" + userId.slice(0, 8),
     });
 
     if (error) throw error;
