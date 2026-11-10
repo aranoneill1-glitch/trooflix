@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+import { kv } from "@vercel/kv";
+
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -78,6 +80,17 @@ export async function POST(req: Request) {
       .eq("user_id", userId);
 
     if (updateErr) return NextResponse.json({ error: updateErr.message }, { status: 500 });
+
+    if (promo.grants_tier === "creator") {
+      const creators = (await kv.get<any[]>("trooflix:creators")) || [];
+      const existing = creators.find((c: any) => String(c.ownerUserId) === String(userId));
+      if (!existing) {
+        const { data: profile } = await supabaseAdmin.from("profiles").select("username, display_name").eq("user_id", userId).maybeSingle();
+        const slug = profile?.username || String(userId).slice(0, 8);
+        creators.push({ id: Date.now(), name: profile?.display_name || slug, slug, photoUrl: "", heroBackdropUrl: "", description: "", ownerUserId: userId, isVerified: true, createdAt: new Date().toISOString() });
+        await kv.set("trooflix:creators", creators);
+      }
+    }
 
     // 5. Log the redemption + increment uses
     const { error: redeemErr } = await supabaseAdmin.from("promo_redemptions").insert({

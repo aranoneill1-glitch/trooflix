@@ -244,6 +244,15 @@ export async function POST(req: Request) {
           podcaster_subscription_status: subscription.status,
           stripe_subscription_id: subscription.id
         }).eq("user_id", userId);
+
+        const creators = (await kv.get<any[]>(CREATORS_KEY)) || [];
+        const existing = creators.find((c: any) => String(c.ownerUserId) === String(userId));
+        if (!existing) {
+          const { data: profile } = await supabaseAdmin.from("profiles").select("username, display_name").eq("user_id", userId).maybeSingle();
+          const slug = profile?.username || String(userId).slice(0, 8);
+          creators.push({ id: Date.now(), name: profile?.display_name || slug, slug, photoUrl: "", heroBackdropUrl: "", description: "", ownerUserId: userId, isVerified: true, createdAt: new Date().toISOString() });
+          await kv.set(CREATORS_KEY, creators);
+        }
       } else {
         // Plus Tier ($3.99) — red glass tick
         await supabaseAdmin.from("profiles").update({
