@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { createClient as createServerClient } from "@supabase/supabase-js";
-import { kv } from "@vercel/kv";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +8,6 @@ const supabaseAdmin = createServerClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
   { auth: { autoRefreshToken: false, persistSession: false } }
 );
-const CREATORS_KEY = "trooflix:creators";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -17,30 +15,34 @@ export async function GET(req: Request) {
   if (!userId) return NextResponse.json({ creator: null });
 
   try {
-    // 1. Get profile safely
     const { data: profile } = await supabaseAdmin
       .from("profiles")
-      .select("username, display_name, avatar_url")
+      .select("user_id, display_name, username, avatar_url, bio, tier, is_verified, verification_tick, updated_at")
       .eq("user_id", userId)
       .maybeSingle();
 
-    const creators = (await kv.get<any[]>(CREATORS_KEY)) || [];
-    
-    // 2. Try to find in KV by ownerUserId or username
-    let creator = creators.find((c: any) => String(c.ownerUserId) === String(userId));
-    
-    if (!creator && profile?.username) {
-      creator = creators.find((c: any) => String(c.slug).toLowerCase() === String(profile.username).toLowerCase());
+    if (!profile || profile.tier !== "creator") {
+      return NextResponse.json({ creator: null });
     }
 
-    // 3. Update creator details with latest profile info if found
-    if (creator) {
-      if (profile?.avatar_url) creator.photoUrl = profile.avatar_url;
-      if (profile?.display_name) creator.name = profile.display_name;
-    }
+    const uuidHex = String(profile.user_id).replace(/-/g, "").slice(0, 12);
+    const numericId = parseInt(uuidHex, 16) || 0;
 
-    // 4. Return null if no creator found (frontend will handle gracefully)
-    return NextResponse.json({ creator: creator || null });
+    return NextResponse.json({
+      creator: {
+        id: numericId,
+        user_id: profile.user_id,
+        name: profile.display_name || profile.username || "Creator",
+        slug: profile.username || String(profile.user_id).slice(0, 8),
+        photoUrl: profile.avatar_url || "",
+        heroBackdropUrl: "",
+        description: profile.bio || "",
+        isVerified: profile.is_verified ?? true,
+        verification_tick: profile.verification_tick || "creator_gold",
+        ownerUserId: profile.user_id,
+        createdAt: profile.updated_at,
+      },
+    });
   } catch (e) {
     console.error("API Error:", e);
     return NextResponse.json({ creator: null });
