@@ -67,7 +67,7 @@ export async function POST(req: Request) {
         }] : []),
       ],
       mode: "subscription",
-      success_url: `${process.env.NEXT_PUBLIC_URL || "https://www.trooflixtv.com"}/profile?upgraded=${type}`,
+      success_url: `${process.env.NEXT_PUBLIC_URL || "https://www.trooflixtv.com"}/creator-dashboard?upgraded=${type}`,
       cancel_url: `${process.env.NEXT_PUBLIC_URL || "https://www.trooflixtv.com"}/upgrade`,
       client_reference_id: userId,
       metadata: {
