@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import { ShoppingBag, Search, Star, ShieldCheck, X, Plus, ArrowRight } from "lucide-react";
+import { ShoppingBag, Search, Heart, Star, ShieldCheck, X, Plus, ArrowRight } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 
 export default function MerchandisePage() {
@@ -151,20 +151,39 @@ export default function MerchandisePage() {
       {/* SEARCH BAR & MAIN CONTENT */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-10">
         
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-10">
-          <div className="relative w-full max-w-md">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" size={18} />
+        {/* SEARCH & ACTIONS ROW */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-10">
+          
+          {/* Search Bar */}
+          <div className="relative w-full max-w-lg group">
+            <div className="absolute inset-0 bg-[#E53945]/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-full pointer-events-none" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 group-focus-within:text-[#E53945] transition-colors z-10" size={18} />
             <input
               type="text"
               placeholder={`Search ${activeTab.toLowerCase()}...`}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[#141418] border border-white/10 rounded-full py-3.5 pl-11 pr-4 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#E53945]/50 transition-all shadow-lg"
+              className="relative z-10 w-full bg-[#0f0f12] border border-white/10 rounded-full py-3.5 pl-11 pr-4 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#E53945] transition-all shadow-xl"
             />
           </div>
           
-          <div className="text-sm text-white/40 font-medium">
-            Showing {filteredProducts.length} {activeTab.toLowerCase()} items
+          {/* Right Icons */}
+          <div className="flex items-center gap-4 shrink-0">
+             <div className="text-xs font-bold text-white/40 uppercase tracking-widest hidden md:block mr-2">
+               {filteredProducts.length} Items
+             </div>
+             
+             <button className="p-2.5 bg-[#0f0f12] border border-white/10 rounded-full hover:bg-white/10 transition text-white/70 hover:text-white">
+               <Heart size={20} />
+             </button>
+             <button className="relative p-2.5 bg-[#0f0f12] border border-white/10 rounded-full hover:bg-white/10 transition text-white/70 hover:text-white">
+               <ShoppingBag size={20} />
+               {basket.length > 0 && (
+                 <span className="absolute -top-1 -right-1 bg-[#E53945] text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-[#09090B]">
+                   {basket.length}
+                 </span>
+               )}
+             </button>
           </div>
         </div>
 
