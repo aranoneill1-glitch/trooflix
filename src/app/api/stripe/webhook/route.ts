@@ -203,6 +203,25 @@ export async function POST(req: Request) {
 
       if (type === "creator") {
         await upsertCreatorSubscription(subscription);
+
+        const creatorOwnerUserId = subscription.metadata?.creatorOwnerUserId;
+        const amount = invoice.amount_paid / 100;
+        if (creatorOwnerUserId && amount > 0) {
+          const { data: wallet } = await supabaseAdmin.from("wallets").select("balance").eq("user_id", creatorOwnerUserId).maybeSingle();
+          if (wallet) {
+            await supabaseAdmin.from("wallets").update({ balance: Number(wallet.balance) + amount }).eq("user_id", creatorOwnerUserId);
+          } else {
+            await supabaseAdmin.from("wallets").insert({ user_id: creatorOwnerUserId, balance: amount });
+          }
+
+          await supabaseAdmin.from("notifications").insert({
+            user_id: creatorOwnerUserId,
+            actor_id: userId,
+            type: "subscription",
+            title: "New Premium Subscriber!",
+            message: "Someone subscribed to your premium content for $" + amount.toFixed(2) + "!"
+          });
+        }
         return new NextResponse("OK", { status: 200 });
       }
 
