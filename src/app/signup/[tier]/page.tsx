@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Check, Sparkles, Crown, Video } from "lucide-react";
+import { ArrowLeft, Check, Sparkles, Crown, Video , Coins } from "lucide-react";
 import { motion } from "framer-motion";
 import { createClient } from "@/utils/supabase/client";
 import { clearUserCache } from "@/lib/cache";
@@ -84,6 +84,7 @@ export default function SignupCheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [promoCode, setPromoCode] = useState("");
   const [showPromo, setShowPromo] = useState(false);
+  const [selectedCoins, setSelectedCoins] = useState<number | null>(null);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -222,6 +223,31 @@ export default function SignupCheckoutPage() {
               <label className="block text-xs font-bold text-white/60 mb-2">Password</label>
               <input required type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-sm text-white focus:outline-none focus:border-[#E53945] transition" placeholder="Min 6 characters" autoComplete="new-password" />
             </div>
+
+            {tierId !== "free" && (
+              <div className="bg-gradient-to-br from-[#D4AF37]/10 to-transparent border border-[#D4AF37]/30 rounded-2xl p-5 mb-6">
+                <div className="flex items-center gap-2 mb-2">
+                  <Coins className="text-[#D4AF37]" size={20} />
+                  <h3 className="text-base font-bold text-white">Power up your TrooBank</h3>
+                </div>
+                <p className="text-xs text-white/60 mb-4 leading-relaxed">
+                  Tipping individually with a card incurs heavy processing fees. Pre-loading TrooCoins batches these transactions, meaning <strong className="text-[#D4AF37]">creators keep more of your money</strong>, and it&apos;s 1-click easy to tip, subscribe, or buy merch.
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {[10, 50, 100].map(amt => (
+                    <button
+                      type="button"
+                      key={amt}
+                      onClick={() => setSelectedCoins(amt === selectedCoins ? null : amt)}
+                      className={`py-2 rounded-lg font-bold text-sm transition-all border ${selectedCoins === amt ? "bg-[#D4AF37] text-black border-[#D4AF37]" : "bg-black/40 text-white/70 border-white/10 hover:border-[#D4AF37]/50"}`}
+                    >
+                      +{amt} TC
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[10px] text-green-400 mt-3 text-center font-semibold">You can top up instantly in your TrooBank after checkout.</p>
+              </div>
+            )}
 
             <label className="flex items-start gap-3 cursor-pointer group">
               <div className="relative flex items-center justify-center mt-0.5">
