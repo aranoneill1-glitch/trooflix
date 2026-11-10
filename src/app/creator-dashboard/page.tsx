@@ -42,7 +42,7 @@ function CreatorDashboardContent() {
     // Normalize legacy tier names
     const raw = String(profile.tier).toLowerCase();
     let normalized: "free" | "plus" | "creator";
-    if (raw === "creator" || raw === "podcaster" || raw === "pro") normalized = "creator";
+    if (raw === "creator" || raw === "creator" || raw === "pro") normalized = "creator";
     else if (raw === "plus" || raw === "pass" || raw === "troopass") normalized = "plus";
     else normalized = "free"; // "user", null, unknown → free
     // Apply grace period expiry
@@ -513,7 +513,7 @@ function CreatorDashboardContent() {
                         <div key={video.id} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden group cursor-pointer shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
                           <div className="relative aspect-square">
                             <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                            <div className={`absolute top-2 left-2 text-white text-[10px] font-bold px-2 py-0.5 rounded-sm ${video.type?.toLowerCase() === 'podcast' ? 'bg-blue-500' : 'bg-[#E53945]'}`}>{video.type || "VIDEO"}</div>
+                            <div className={`absolute top-2 left-2 text-white text-[10px] font-bold px-2 py-0.5 rounded-sm ${video.type?.toLowerCase() === 'long-video' ? 'bg-blue-500' : 'bg-[#E53945]'}`}>{video.type || "VIDEO"}</div>
                           </div>
                           <div className="p-3 text-left"><h3 className="text-sm font-bold leading-tight line-clamp-1">{video.title}</h3></div>
                         </div>
@@ -560,7 +560,7 @@ function CreatorDashboardContent() {
                   <span className="bg-white/10 text-white text-xs font-bold px-3 py-1 rounded-full">{creatorVideos.length} Posts</span>
                 </div>
                 <h3 className="text-xl font-bold text-white mb-2">Manage Content</h3>
-                <p className="text-sm text-white/50">Edit, delete, or reorder your videos and podcasts.</p>
+                <p className="text-sm text-white/50">Edit, delete, or reorder your videos and long-videos.</p>
               </div>
               <div className="flex items-center text-sm font-bold text-white group-hover:text-[#E53945] transition-colors mt-6">Open Dashboard <ChevronRight size={16} className="ml-1" /></div>
             </Link>
@@ -757,7 +757,7 @@ function CreatorDashboardContent() {
                     </div>
                     <div className="relative z-10">
                       <h4 className="font-bold text-white text-base flex items-center gap-1.5">Upload Video {userTier !== "creator" && <Lock size={12} className="text-yellow-400" />}</h4>
-                      <p className="text-xs text-white/50">Publish a long-form video or documentary</p>
+                      <p className="text-xs text-white/50">Publish a long-form video or long-video</p>
                     </div>
                   </Link>
 

@@ -21,7 +21,7 @@ const FEATURES: { label: string; free: boolean; plus: boolean; creator: boolean 
   { label: "Upload Shorts (any length)", free: false, plus: true, creator: true },
   { label: "Watch live streams (public)", free: false, plus: true, creator: true },
   { label: "Upload merch / open shop", free: false, plus: true, creator: true },
-  { label: "Upload long-form (podcasts, docs)", free: false, plus: false, creator: true },
+  { label: "Upload long-form (long-videos, docs)", free: false, plus: false, creator: true },
   { label: "Post Tweets", free: false, plus: false, creator: true },
   { label: "Go Live (broadcast)", free: false, plus: false, creator: true },
   { label: "Full Creator Dashboard", free: false, plus: false, creator: true },
@@ -53,7 +53,7 @@ export default function UpgradePage() {
         const profile = d.profile;
         const raw = String(profile?.tier || "free").toLowerCase();
         let normalized: Tier;
-        if (raw === "creator" || raw === "podcaster" || raw === "pro") normalized = "creator";
+        if (raw === "creator" || raw === "creator" || raw === "pro") normalized = "creator";
         else if (raw === "plus" || raw === "pass" || raw === "troopass") normalized = "plus";
         else normalized = "free";
         if (normalized !== "free" && profile?.plus_expires_at) {
@@ -93,7 +93,7 @@ export default function UpgradePage() {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.id, type: "podcaster" }),
+        body: JSON.stringify({ userId: user.id, type: "creator" }),
       });
       const d = await res.json();
       if (d.url) window.location.href = d.url;
@@ -219,7 +219,7 @@ export default function UpgradePage() {
             badge={<VerifiedBadge size={20} variant="creator_gold" />}
             features={[
               "Everything in Plus",
-              "Upload long-form (podcasts, docs)",
+              "Upload long-form (long-videos, docs)",
               "Post Tweets",
               "Go Live (broadcast)",
               "Full Creator Dashboard",

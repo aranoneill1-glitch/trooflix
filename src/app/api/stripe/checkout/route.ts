@@ -16,15 +16,15 @@ export async function POST(req: Request) {
     const { userId, type, creatorId, coins } = await req.json();
 
     if (!userId) return NextResponse.json({ error: "userId required" }, { status: 400 });
-    if (!["pass", "podcaster", "creator"].includes(type)) return NextResponse.json({ error: "Invalid type" }, { status: 400 });
+    if (!["pass", "creator", "creator"].includes(type)) return NextResponse.json({ error: "Invalid type" }, { status: 400 });
 
-    // === PASS or PODCASTER ===
-    if (type === "pass" || type === "podcaster") {
+    // === PASS or creator ===
+    if (type === "pass" || type === "creator") {
       const isPlus = type === "pass";
       const priceCents = isPlus ? 399 : 999;
       const productName = isPlus ? "Trooflix Plus" : "Trooflix Creator";
       const productDescription = isPlus
-        ? "Unlimited long-form viewing, live streams, unlimited-length reels, red glass tick."
+        ? "Unlimited long-form viewing, live streams, unlimited-length shorts, red glass tick."
         : "Everything in Plus, long-form uploads, live broadcast, full Creator Dashboard, gold tick.";
 
       const { data: profile } = await supabaseAdmin
@@ -67,11 +67,11 @@ export async function POST(req: Request) {
         client_reference_id: userId,
         metadata: {
           userId,
-          type: type === "pass" ? "trooflix_pass" : "podcaster",
+          type: type === "pass" ? "trooflix_pass" : "creator",
           signupCoins: String(coinCount),
         },
         subscription_data: {
-          metadata: { userId, type: type === "pass" ? "trooflix_pass" : "podcaster", signupCoins: String(coinCount) },
+          metadata: { userId, type: type === "pass" ? "trooflix_pass" : "creator", signupCoins: String(coinCount) },
         },
       };
 
@@ -109,7 +109,7 @@ export async function POST(req: Request) {
 
       if (!profile?.premium_enabled || !profile?.premium_price_cents) {
         return NextResponse.json(
-          { error: "This podcaster has not enabled premium subscriptions" },
+          { error: "This creator has not enabled premium subscriptions" },
           { status: 404 }
         );
       }

@@ -241,7 +241,7 @@ export async function POST(req: Request) {
         });
       }
 
-      if (type === "podcaster") {
+      if (type === "creator") {
         // Creator Tier ($9.99) — gold tick
         const { data: profile } = await supabaseAdmin.from("profiles").select("stripe_subscription_id").eq("user_id", userId).maybeSingle();
         if (profile?.stripe_subscription_id && profile.stripe_subscription_id !== subscription.id) {
@@ -253,8 +253,8 @@ export async function POST(req: Request) {
           is_verified: true,
           has_pass: true,
           plus_expires_at: null,
-          podcaster_subscription_id: subscription.id,
-          podcaster_subscription_status: subscription.status,
+          creator_subscription_id: subscription.id,
+          creator_subscription_status: subscription.status,
           stripe_subscription_id: subscription.id
         }).eq("user_id", userId);
 
@@ -281,7 +281,7 @@ export async function POST(req: Request) {
         }).eq("user_id", userId);
       }
 
-      await supabaseAdmin.from("subscriptions").upsert({ user_id: userId, stripe_subscription_id: subscription.id, stripe_customer_id: subscription.customer as string, price_id: subscription.items.data[0].price.id, status: subscription.status, current_period_end: currentPeriodEnd.toISOString(), cancel_at_period_end: subscription.cancel_at_period_end, subscription_type: type === "podcaster" ? "podcaster" : "pass", updated_at: new Date().toISOString() }, { onConflict: "stripe_subscription_id" });
+      await supabaseAdmin.from("subscriptions").upsert({ user_id: userId, stripe_subscription_id: subscription.id, stripe_customer_id: subscription.customer as string, price_id: subscription.items.data[0].price.id, status: subscription.status, current_period_end: currentPeriodEnd.toISOString(), cancel_at_period_end: subscription.cancel_at_period_end, subscription_type: type === "creator" ? "creator" : "pass", updated_at: new Date().toISOString() }, { onConflict: "stripe_subscription_id" });
     }
 
     if (event.type === "customer.subscription.updated") {
@@ -311,9 +311,9 @@ export async function POST(req: Request) {
       await supabaseAdmin.from("profiles").update({
         plus_expires_at: graceEnd.toISOString(),
         subscription_status: "cancelled",
-        ...(type === "podcaster" ? {
-          podcaster_subscription_status: "cancelled",
-          podcaster_expires_at: graceEnd.toISOString()
+        ...(type === "creator" ? {
+          creator_subscription_status: "cancelled",
+          creator_expires_at: graceEnd.toISOString()
         } : {})
       }).eq("user_id", userId);
     }

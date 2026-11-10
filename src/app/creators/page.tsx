@@ -61,15 +61,15 @@ export default function CreatorsPage() {
       const q = searchQuery.toLowerCase();
       result = result.filter(c => c.name?.toLowerCase().includes(q) || c.description?.toLowerCase().includes(q));
     }
-    if (activeTab === "Podcasts") {
-      result = result.filter(c => creatorContentTypes.get(Number(c.id))?.has("Podcast"));
+    if (activeTab === "long-videos") {
+      result = result.filter(c => creatorContentTypes.get(Number(c.id))?.has("long-video"));
     } else if (activeTab === "Documentaries") {
-      result = result.filter(c => creatorContentTypes.get(Number(c.id))?.has("Documentary"));
+      result = result.filter(c => creatorContentTypes.get(Number(c.id))?.has("long-video"));
     }
     return result;
   }, [creators, searchQuery, activeTab, creatorContentTypes]);
 
-  const TABS = ["All", "Podcasts", "Documentaries"];
+  const TABS = ["All", "long-videos", "Documentaries"];
 
   return (
     <main className="min-h-screen bg-[#050505] text-white pb-24 font-sans selection:bg-[#E53945]/30">
@@ -134,7 +134,7 @@ export default function CreatorsPage() {
                 transition={{ delay: i * 0.05, duration: 0.4 }}
                 key={c.id}
               >
-                <Link href={`/podcaster/${c.slug}`} className="group relative flex flex-col w-full aspect-[3/4] rounded-2xl overflow-hidden border border-white/10 bg-[#0a0a0a] hover:border-[#E53945]/50 transition-all duration-300 hover:shadow-[0_0_30px_rgba(229,57,69,0.15)]">
+                <Link href={`/creator/${c.slug}`} className="group relative flex flex-col w-full aspect-[3/4] rounded-2xl overflow-hidden border border-white/10 bg-[#0a0a0a] hover:border-[#E53945]/50 transition-all duration-300 hover:shadow-[0_0_30px_rgba(229,57,69,0.15)]">
                   <img 
                     src={c.heroBackdropUrl || c.photoUrl || "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=400&h=600&fit=crop"} 
                     alt={c.name} 

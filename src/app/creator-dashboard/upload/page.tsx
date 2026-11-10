@@ -11,7 +11,7 @@ import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { r2MultipartUpload } from "@/lib/r2Upload";
 
-const CATEGORIES = ["Documentaries","Podcasts","Independent Films","Books","History","Politics & Geopolitics","War & Conflict","True Crime & Justice","Conspiracy & Mystery","Society & Culture","Business & Finance","Science & Technology","Environment & Nature","Religion & Spirituality","Ancient Civilisation","Comedy","News","Gaming","Medicine"];
+const CATEGORIES = ["Documentaries","long-videos","Independent Films","Books","History","Politics & Geopolitics","War & Conflict","True Crime & Justice","Conspiracy & Mystery","Society & Culture","Business & Finance","Science & Technology","Environment & Nature","Religion & Spirituality","Ancient Civilisation","Comedy","News","Gaming","Medicine"];
 
 function UploadContent() {
   const router = useRouter();
@@ -46,7 +46,7 @@ function UploadContent() {
         const d = await r.json();
         const rawTier = String(d.profile?.tier || "free").toLowerCase();
         const normalized: "free" | "plus" | "creator" =
-          (rawTier === "creator" || rawTier === "podcaster" || rawTier === "pro") ? "creator" :
+          (rawTier === "creator" || rawTier === "creator" || rawTier === "pro") ? "creator" :
           (rawTier === "plus" || rawTier === "pass" || rawTier === "troopass") ? "plus" :
           "free";
         setUserTier(normalized);
@@ -148,7 +148,7 @@ function UploadContent() {
         body: JSON.stringify({
           title: isTweet ? "Tweet" : title,
           description,
-          type: isTweet ? "Tweet" : (isShort ? "Short" : "Documentary"),
+          type: isTweet ? "Tweet" : (isShort ? "Short" : "long-video"),
           creatorId: creatorId || null,
           uploaderUserId: user.id,
           videoUrl: mediaUrl,
