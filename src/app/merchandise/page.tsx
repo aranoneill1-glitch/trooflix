@@ -109,7 +109,7 @@ export default function MerchandisePage() {
                   {/* CINEMATIC HERO */}
       <div className="relative w-full h-[40vh] md:h-[50vh]">
         <img
-          src="/marketplace-hero.jpg"
+          src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2000&auto=format&fit=crop"
           alt="Marketplace"
           className="absolute inset-0 w-full h-full object-cover"
         />
