@@ -40,10 +40,7 @@ export async function POST(req: Request) {
           name: profile?.display_name || profile?.username || undefined,
         });
         customerId = customer.id;
-        await supabaseAdmin
-          .from("profiles")
-          .update({ stripe_customer_id: customerId })
-          .eq("user_id", userId);
+        await supabaseAdmin.from("profiles").update({ stripe_customer_id: customerId }).eq("user_id", userId);
       }
 
       const coinCount = Number(coins) || 0;
@@ -79,15 +76,12 @@ export async function POST(req: Request) {
       };
 
       if (coinCount > 0) {
-        sessionParams.subscription_data.add_invoice_items = [
-          {
-            price_data: {
-              currency: "usd",
-              unit_amount: coinCount * 100,
-              product_data: { name: `${coinCount} TrooCoins` },
-            },
-          },
-        ];
+        const coinPrice = await stripe.prices.create({
+          currency: "usd",
+          unit_amount: coinCount * 100,
+          product_data: { name: `${coinCount} TrooCoins` },
+        });
+        sessionParams.subscription_data.add_invoice_items = [{ price: coinPrice.id }];
       }
 
       const session = await stripe.checkout.sessions.create(sessionParams);
@@ -165,10 +159,7 @@ export async function POST(req: Request) {
           name: userProfile?.display_name || userProfile?.username || undefined,
         });
         customerId = customer.id;
-        await supabaseAdmin
-          .from("profiles")
-          .update({ stripe_customer_id: customerId })
-          .eq("user_id", userId);
+        await supabaseAdmin.from("profiles").update({ stripe_customer_id: customerId }).eq("user_id", userId);
       }
 
       const session = await stripe.checkout.sessions.create({
