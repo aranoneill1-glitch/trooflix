@@ -140,29 +140,7 @@ export default function PublicProfilePage() {
     return num.toString();
   };
 
-  const handleSubscribe = async () => {
-      if (currentUser === null) return router.push("/login");
-      if (resolvedCreatorId === null) return alert("Could not find this creator ID. Please refresh and try again.");
-      try {
-        const res = await fetch("/api/stripe/checkout", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId: currentUser.id, creatorId: resolvedCreatorId }),
-        });
-        const data = await res.json();
-        if (data.url) window.location.href = data.url;
-        else alert(data.error || "Could not start subscription.");
-      } catch (err) {
-        console.error(err);
-        alert("Network error starting subscription.");
-      }
-    };
-
-    
-
-    
-
-    const handleSubscribeCard = async () => {
+  const handleSubscribeCard = async () => {
       if (currentUser === null) return router.push("/login");
       if (profile?.user_id === undefined) return alert("Could not find this creator ID.");
       try {
@@ -416,7 +394,7 @@ export default function PublicProfilePage() {
 
             {/* SUBSCRIBE & MESSAGE BUTTONS */}
             <div className="flex gap-3 mb-8 w-full">
-              <button onClick={handleSubscribe} className="flex-1 flex items-center justify-center gap-2 bg-[#E53945] text-white font-bold py-3 rounded-full hover:bg-[#d12e39] transition shadow-lg shadow-[#E53945]/20">
+              <button onClick={() => setShowSubscribeModal(true)} className="flex-1 flex items-center justify-center gap-2 bg-[#E53945] text-white font-bold py-3 rounded-full hover:bg-[#d12e39] transition shadow-lg shadow-[#E53945]/20">
         <Star size={18} fill="currentColor" /> {isSubscribed ? "Subscribed" : `Subscribe - ${subscriptionPrice}`}
       </button>
       {isSubscribed ? (
@@ -424,7 +402,7 @@ export default function PublicProfilePage() {
           <MessageSquare size={18} /> Message
         </Link>
       ) : (
-        <button onClick={handleSubscribe} className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-full transition border border-white/10">
+        <button onClick={() => setShowSubscribeModal(true)} className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-full transition border border-white/10">
           <MessageSquare size={18} /> Subscribe to Message
         </button>
       )}
