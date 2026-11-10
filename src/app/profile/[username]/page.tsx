@@ -294,7 +294,7 @@ export default function PublicProfilePage() {
 
               {/* NAME, HANDLE, SOCIALS, BIO */}
               <div className="px-1">
-                <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center justify-between gap-4 mb-1">
                   <h1 className="text-2xl md:text-3xl font-black flex items-center gap-2 text-white">
                     {displayName} {(profile as any).verification_tick && (profile as any).verification_tick !== "none" && <VerifiedBadge size={20} variant={(profile as any).verification_tick as any} />}
                   </h1>
