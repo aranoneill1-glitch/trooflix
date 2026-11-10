@@ -40,6 +40,7 @@ export async function POST(req: Request) {
       current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       stripe_subscription_id: "TC_" + Date.now() + "_" + userId.slice(0, 8),
       stripe_customer_id: "TC_CUSTOMER_" + userId.slice(0, 8),
+      stripe_price_id: "TC_PRICE_" + Date.now(),
     });
 
     if (error) throw error;
