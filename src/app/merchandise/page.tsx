@@ -4,14 +4,14 @@ import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import { ShoppingBag, Search, Heart, Star, ShieldCheck, X, Plus, ArrowRight } from "lucide-react";
+import { ShoppingBag, Search, Star, X, Plus, ArrowRight, Heart } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 
 export default function MerchandisePage() {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<"Merchandise" | "Books" | "Other">("Merchandise");
+  const [activeTab, setActiveTab] = useState<"Merchandise" | "Books">("Merchandise");
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [basket, setBasket] = useState<any[]>([]);
   const [creatorProfiles, setCreatorProfiles] = useState<any[]>([]);
@@ -92,11 +92,9 @@ export default function MerchandisePage() {
     }
     
     if (activeTab === "Merchandise") {
-      result = result.filter(p => p.type?.toLowerCase() !== 'book' && p.type?.toLowerCase() !== 'other');
+      result = result.filter(p => p.type?.toLowerCase() !== 'book');
     } else if (activeTab === "Books") {
       result = result.filter(p => p.type?.toLowerCase() === 'book');
-    } else if (activeTab === "Other") {
-      result = result.filter(p => p.type?.toLowerCase() === 'other');
     }
     return result;
   }, [products, searchQuery, activeTab]);
@@ -131,7 +129,7 @@ export default function MerchandisePage() {
           </h1>
           
           <div className="flex flex-wrap justify-center gap-3">
-            {(["Merchandise", "Books", "Other"] as const).map(tab => (
+            {(["Merchandise", "Books"] as const).map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -148,10 +146,8 @@ export default function MerchandisePage() {
         </div>
       </div>
 
-      {/* SEARCH BAR & MAIN CONTENT */}
-      <div className="max-w-7xl mx-auto px-4 md:px-8 py-10">
-        
-        {/* SEARCH & ACTIONS ROW */}
+      {/* SEARCH & ACTIONS ROW */}
+      <div className="max-w-7xl mx-auto px-4 md:px-8 pt-10">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-10">
           
           {/* Search Bar */}
