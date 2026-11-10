@@ -118,11 +118,11 @@ export default function DirectoryHome({ videos, creators }: { videos: any[], cre
         </div>
         <div className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide">
           {creators.slice(0, 15).map((c: any) => (
-            <Link key={c.id} href={`/profile/${c.slug}`} className="flex flex-col items-center shrink-0 w-20 md:w-24 group">
-              <div className="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden border border-white/10 group-hover:border-[#E53945] transition mb-2">
-                {c.photoUrl ? <img src={c.photoUrl} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-white/10 flex items-center justify-center text-xl font-bold">{c.name?.[0]}</div>}
+            <Link key={c.id} href={`/profile/${c.slug}`} className="flex flex-col items-center shrink-0 w-28 md:w-32 group">
+              <div className="w-24 h-24 md:w-[120px] md:h-[120px] rounded-full overflow-hidden border-2 border-white/10 group-hover:border-[#E53945] transition mb-3">
+                {c.photoUrl ? <img src={c.photoUrl} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-white/10 flex items-center justify-center text-3xl font-bold">{c.name?.[0]}</div>}
               </div>
-              <span className="text-xs font-semibold truncate w-full text-center">{c.name}</span>
+              <span className="text-sm font-semibold truncate w-full text-center">{c.name}</span>
             </Link>
           ))}
         </div>
