@@ -277,7 +277,7 @@ export default function SignupCheckoutPage() {
             )}
 
             <button disabled={loading} type="submit" className="w-full bg-[#E53945] hover:bg-[#d12e39] text-white font-bold py-4 rounded-xl transition shadow-lg shadow-[#E53945]/20 flex items-center justify-center text-lg mt-4">
-              {loading ? "Processing..." : promoCode.trim() ? "Create Account with Promo Code" : tier.price === "$0" ? "Create Free Account" : `Continue to Checkout — ${tier.price}`}
+              {loading ? "Processing..." : promoCode.trim() ? "Create Account with Promo Code" : tier.price === "$0" ? "Create Free Account" : `Continue to Checkout — ${((parseFloat(tier.price.replace("$","")) || 0) + (selectedCoins || 0)).toFixed(2)}`}
             </button>
           </form>
         </motion.div>
