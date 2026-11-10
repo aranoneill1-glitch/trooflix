@@ -3,7 +3,7 @@ import { getCachedUser } from "@/lib/cache";
 
 import { useEffect, useState , useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, UserPlus, MessageSquare, CheckCircle2, LayoutGrid, List, ShoppingBag, Star, Lock, Play , GripVertical } from "lucide-react";
+import { CreditCard, Wallet, ArrowLeft, UserPlus, MessageSquare, CheckCircle2, LayoutGrid, List, ShoppingBag, Star, Lock, Play , GripVertical } from "lucide-react";
 import HomeFeedCard from "@/components/HomeFeedCard";
 import CommentSheet from "@/components/CommentSheet";
 import Comments from "@/components/Comments";
@@ -58,6 +58,7 @@ export default function PublicProfilePage() {
   const [isSubmittingFollow, setIsSubmittingFollow] = useState(false);
   const [subscriberCount, setSubscriberCount] = useState(0);
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [showSubscribeModal, setShowSubscribeModal] = useState(false);
   const pressTimer = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -154,6 +155,48 @@ export default function PublicProfilePage() {
       } catch (err) {
         console.error(err);
         alert("Network error starting subscription.");
+      }
+    };
+
+    const handleSubscribeCard = async () => {
+      if (currentUser === null) return router.push("/login");
+      if (profile?.user_id === undefined) return alert("Could not find this creator ID.");
+      try {
+        const res = await fetch("/api/stripe/creator", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: currentUser.id, creatorId: profile.user_id }),
+        });
+        const data = await res.json();
+        if (data.url) window.location.href = data.url;
+        else alert(data.error || "Could not start subscription.");
+      } catch (err) {
+        console.error(err);
+        alert("Network error starting subscription.");
+      }
+    };
+
+    const handleSubscribeCoins = async () => {
+      if (currentUser === null) return router.push("/login");
+      if (resolvedCreatorId === null) return alert("Could not find creator ID.");
+      const amount = profile?.premium_price_cents ? profile.premium_price_cents / 100 : 3.99;
+      try {
+        const res = await fetch("/api/wallet/subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: currentUser.id, creatorId: resolvedCreatorId, amount }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          setIsSubscribed(true);
+          setShowSubscribeModal(false);
+          alert("Subscribed successfully!");
+        } else {
+          alert(data.error || "Could not subscribe with coins.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Network error.");
       }
     };
 
@@ -619,6 +662,43 @@ export default function PublicProfilePage() {
 
         <MobileBottomNav />
       </div>
-    </main>
+    
+      {showSubscribeModal && (
+        <div className="fixed inset-0 z-[500] bg-black/80 backdrop-blur-md flex items-center justify-center p-4" onClick={() => setShowSubscribeModal(false)}>
+          <div className="bg-[#0f0f12] border border-white/10 rounded-3xl w-full max-w-sm p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <h2 className="text-xl font-black text-center mb-2">Subscribe to {displayName}</h2>
+            <p className="text-white/50 text-sm text-center mb-6">Choose how you want to pay</p>
+
+            <div className="space-y-3">
+              <button onClick={handleSubscribeCard} className="w-full flex items-center justify-between p-4 rounded-xl border border-white/10 hover:bg-white/5 transition text-left group">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400">
+                    <CreditCard size={20} />
+                  </div>
+                  <div>
+                    <p className="font-bold text-white group-hover:text-blue-400 transition">Pay with Card</p>
+                    <p className="text-xs text-white/50">${subscriptionPrice}/month</p>
+                  </div>
+                </div>
+              </button>
+
+              <button onClick={handleSubscribeCoins} className="w-full flex items-center justify-between p-4 rounded-xl border border-white/10 hover:bg-white/5 transition text-left group">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37]">
+                    <Wallet size={20} />
+                  </div>
+                  <div>
+                    <p className="font-bold text-white group-hover:text-[#D4AF37] transition">Pay with TrooCoins</p>
+                    <p className="text-xs text-white/50">${subscriptionPrice} TC</p>
+                  </div>
+                </div>
+              </button>
+            </div>
+            
+            <button onClick={() => setShowSubscribeModal(false)} className="w-full mt-4 py-3 text-white/50 hover:text-white text-sm font-semibold transition">Cancel</button>
+          </div>
+        </div>
+      )}
+</main>
   );
 }
