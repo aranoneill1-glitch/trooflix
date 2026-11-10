@@ -649,20 +649,10 @@ export default function PublicProfilePage() {
         <div className="fixed inset-0 z-[500] bg-black/80 backdrop-blur-md flex items-center justify-center p-4" onClick={() => setShowSubscribeModal(false)}>
           <div className="bg-[#0f0f12] border border-white/10 rounded-3xl w-full max-w-sm p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
             <h2 className="text-xl font-black text-center mb-2">Subscribe to {displayName}</h2>
-            <p className="text-white/50 text-sm text-center mb-6">Choose how you want to pay</p>
+            <p className="text-white/50 text-sm text-center mb-6">Pay with TrooCoins</p>
 
             <div className="space-y-3">
-              <button onClick={handleSubscribeCard} className="w-full flex items-center justify-between p-4 rounded-xl border border-white/10 hover:bg-white/5 transition text-left group">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400">
-                    <CreditCard size={20} />
-                  </div>
-                  <div>
-                    <p className="font-bold text-white group-hover:text-blue-400 transition">Pay with Card</p>
-                    <p className="text-xs text-white/50">${subscriptionPrice}/month</p>
-                  </div>
-                </div>
-              </button>
+              
 
               <button onClick={handleSubscribeCoins} className="w-full flex items-center justify-between p-4 rounded-xl border border-white/10 hover:bg-white/5 transition text-left group">
                 <div className="flex items-center gap-3">
