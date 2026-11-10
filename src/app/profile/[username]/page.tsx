@@ -23,6 +23,15 @@ const XIcon = ({ size = 16 }: { size?: number }) => (
 );
 
 
+function timeAgo(iso?: string): string {
+  if (!iso) return "";
+  const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
+  if (diff < 2592000) return `${Math.floor(diff / 604800)}w ago`;
+  return new Date(iso).toLocaleDateString();
+}
+
 export default function PublicProfilePage() {
   const params = useParams();
   const router = useRouter();
@@ -367,89 +376,82 @@ export default function PublicProfilePage() {
 
             <div className="w-full">
               {activeContentTab === "All" && (
-          <div className="w-full">
-            {/* MOBILE */ }
-            <div className="lg:hidden w-full">
-              {videos.length === 0 ? (
-                <div className="text-center py-20 text-white/50">No posts yet.</div>
-              ) : (
-                <div className="flex flex-col gap-6 pb-20 px-4">
-                  {videos.map((v) => (
-                    <div 
-                      key={v.id} 
-                      ref={(el) => { if (el) { const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting && entry.intersectionRatio > 0.6) setActiveVideoId(v.id); }, { threshold: [0.6] }); observer.observe(el); } }}
-                    >
-                      <HomeFeedCard 
-                        video={v} 
-                        creator={profile} 
-                        onMore={() => {}} 
-                        onPlay={() => {}} 
-                        isActive={activeVideoId === v.id} 
-                        onSetActive={() => setActiveVideoId(v.id)} 
-                        onOpenComments={() => setCommentSheetVideoId(v.id)} 
-                        isLiked={!!likedVideos[v.id]} 
-                        onToggleLike={() => setLikedVideos(prev => ({ ...prev, [v.id]: !prev[v.id] }))} 
-                        hideCreatorInfo={true}
-                        isVertical={v.type?.toLowerCase() === "short"}
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* DESKTOP */ }
-            <div className="hidden lg:flex w-full gap-6 h-[calc(100vh-200px)] items-start pb-10">
-              {/* Left: Video Feed */}
-              <div className="flex-1 h-full overflow-y-auto snap-y snap-mandatory scrollbar-hide flex flex-col gap-8 pr-4">
-                {videos.length === 0 ? (
-                  <div className="text-center py-20 text-white/50">No posts yet.</div>
-                ) : (
-                  videos.map((v) => (
-                    <div 
-                      key={v.id} 
-                      className="snap-start shrink-0 w-full"
-                      ref={(el) => { if (el) { const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting && entry.intersectionRatio > 0.6) setActiveVideoId(v.id); }, { threshold: [0.6] }); observer.observe(el); } }}
-                    >
-                      <HomeFeedCard 
-                        video={v} 
-                        creator={profile} 
-                        onMore={() => {}} 
-                        onPlay={() => {}} 
-                        isActive={activeVideoId === v.id} 
-                        onSetActive={() => setActiveVideoId(v.id)} 
-                        onOpenComments={() => setCommentSheetVideoId(v.id)} 
-                        isLiked={!!likedVideos[v.id]} 
-                        onToggleLike={() => setLikedVideos(prev => ({ ...prev, [v.id]: !prev[v.id] }))} 
-                        hideCreatorInfo={true}
-                        isVertical={v.type?.toLowerCase() === "short"}
-                      />
-                    </div>
-                  ))
-                )}
-              </div>
-
-              {/* Right: Comments */}
-              <div className="w-[400px] xl:w-[450px] shrink-0 h-full bg-[#0f0f12] border border-white/10 rounded-2xl flex flex-col overflow-hidden sticky top-24 shadow-2xl">
-                <div className="p-4 border-b border-white/10 bg-[#1c1c1e] flex items-center justify-between">
-                  <h3 className="font-bold text-white text-lg">Comments</h3>
-                </div>
-                <div className="flex-1 overflow-hidden">
-                  {activeVideoId ? (
-                    <Comments videoId={activeVideoId} variant="chat" />
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-white/30 gap-2">
-                      <MessageSquare size={32} />
-                      <p>Select a video to see comments</p>
-                    </div>
-                  )}
+      <div className="w-full flex flex-col gap-10 pb-20">
+        {videos.length > 0 ? (
+          <>
+            {/* Hero Section */}
+            <div className="flex flex-col md:flex-row gap-6 md:gap-8">
+              <div 
+                className="w-full md:w-3/5 aspect-video rounded-2xl overflow-hidden bg-black relative group cursor-pointer border border-white/10 shadow-2xl"
+                onClick={() => setActiveContentTab("Videos")}
+              >
+                <img src={videos[0].posterUrl || videos[0].backdropUrl} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                  <div className="w-16 h-16 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center border border-white/20">
+                    <Play size={32} fill="white" className="text-white ml-1" />
+                  </div>
                 </div>
               </div>
+              
+              <div className="w-full md:w-2/5 flex flex-col justify-center">
+                <h2 className="text-2xl md:text-3xl ont-black text-white mb-2 leading-tight">{videos[0].title}</h2>
+                <p className="text-sm text-white/60 mb-4">
+                  {videos[0].viewCount || 0} views • {timeAgo(videos[0].createdAt)}
+                </p>
+                <p className="text-white/80 whitespace-pre-wrap text-sm leading-relaxed mb-6 line-clamp-4">
+                  {videos[0].description || "No description available."}
+                </p>
+                <button onClick={() => setActiveContentTab("Videos")} className="w-fit px-6 py-2.5 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl transition">
+                  Watch Video
+                </button>
+              </div>
             </div>
-          </div>
+
+            {/* Carousel Section */}
+            <div className="mt-4">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <h3 className="text-xl font-bold text-white">Latest Videos</h3>
+                  <button onClick={() => setActiveContentTab("Videos")} className="flex items-center gap-1.5 text-sm font-semibold text-white/70 hover:text-white transition">
+                    <Play size={16} fill="currentColor" /> Play all
+                  </button>
+                </div>
+              </div>
+              <p className="text-sm text-white/50 mb-4">Watch the latest content from {displayName}</p>
+              
+              <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-6 snap-x">
+                {videos.map((v) => (
+                  <div 
+                    key={v.id} 
+                    className="w-[260px] md:w-[300px] shrink-0 snap-start flex flex-col gap-2 cursor-pointer group"
+                    onClick={() => setActiveContentTab("Videos")}
+                  >
+                    <div className="relative aspect-video rounded-xl overflow-hidden bg-black border border-white/5">
+                      <img src={v.posterUrl || v.backdropUrl} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                      {v.duration && (
+                        <div className="absolute bottom-2 right-2 bg-black/80 px-1.5 py-0.5 rounded text-[10px] font-bold text-white">
+                          {v.duration}
+                        </div>
+                      )}
+                    </div>
+                    <h4 className="text-sm font-bold text-white line-clamp-2 leading-tight group-hover:text-[#E53945] transition">{v.title}</h4>
+                    <div className="text-xs text-white/50 flex items-center gap-1.5">
+                      <span>{v.viewCount || 0} views</span>
+                      <span>•</span>
+                      <span>{timeAgo(v.createdAt)}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="text-center py-20 text-white/50">No posts yet.</div>
         )}
+      </div>
+    )}
 
-        {activeContentTab === "Premium" && (
+    {activeContentTab === "Premium" && (
                 <div className="w-full">
                   {filteredVideos.length === 0 ? (
                     <div className="text-center py-20 text-white/50">No premium content yet.</div>
