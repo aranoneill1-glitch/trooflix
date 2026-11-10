@@ -57,6 +57,7 @@ export default function PublicProfilePage() {
   const [resolvedCreatorId, setResolvedCreatorId] = useState<number | null>(null);
   const [isSubmittingFollow, setIsSubmittingFollow] = useState(false);
   const [subscriberCount, setSubscriberCount] = useState(0);
+  const [isSubscribed, setIsSubscribed] = useState(false);
   const pressTimer = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -87,6 +88,12 @@ export default function PublicProfilePage() {
       setFollowerCount(followData.count || 0);
       setSubscriberCount(followData.subscriberCount || 0);
       setIsFollowing(followData.isFollowing || false);
+
+        fetch("/api/premium/check", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: user?.id || null, creatorId: targetCreatorId }),
+        }).then(r => r.json()).then(d => setIsSubscribed(d.allowed)).catch(() => {});
 
       let creatorId = null;
       try {
@@ -132,7 +139,25 @@ export default function PublicProfilePage() {
     return num.toString();
   };
 
-  const handleFollow = async (e: React.MouseEvent) => {
+  const handleSubscribe = async () => {
+      if (currentUser === null) return router.push("/login");
+      if (resolvedCreatorId === null) return alert("Could not find this creator ID. Please refresh and try again.");
+      try {
+        const res = await fetch("/api/stripe/creator", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: currentUser.id, creatorId: resolvedCreatorId }),
+        });
+        const data = await res.json();
+        if (data.url) window.location.href = data.url;
+        else alert(data.error || "Could not start subscription.");
+      } catch (err) {
+        console.error(err);
+        alert("Network error starting subscription.");
+      }
+    };
+
+    const handleFollow = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (!profile || isSubmittingFollow) return;
@@ -180,7 +205,7 @@ export default function PublicProfilePage() {
 
   const displayName = profile.display_name || "User";
   const featuredVideo = videos.find((v: any) => (v.videoUrl || v.bitchuteUrl) && v.type?.toLowerCase() !== "tweet" && v.type?.toLowerCase() !== "short") || videos[0];
-  const subscriptionPrice = profile.subscription_price_cents ? (profile.subscription_price_cents / 100).toFixed(2) : "3.99";
+  const subscriptionPrice = profile.premium_price_cents ? (profile.premium_price_cents / 100).toFixed(2) : "3.99";
 
   const filteredVideos = videos.filter(v => {
     const type = (v.type || "").toLowerCase();
@@ -344,12 +369,18 @@ export default function PublicProfilePage() {
 
             {/* SUBSCRIBE & MESSAGE BUTTONS */}
             <div className="flex gap-3 mb-8 w-full">
-              <button className="flex-1 flex items-center justify-center gap-2 bg-[#E53945] text-white font-bold py-3 rounded-full hover:bg-[#d12e39] transition shadow-lg shadow-[#E53945]/20">
-                <Star size={18} fill="currentColor" /> Subscribe - ${subscriptionPrice}
-              </button>
-              <Link href={`/messages/${profile.user_id}`} className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-full transition border border-white/10">
-                <MessageSquare size={18} /> Message
-              </Link>
+              <button onClick={handleSubscribe} className="flex-1 flex items-center justify-center gap-2 bg-[#E53945] text-white font-bold py-3 rounded-full hover:bg-[#d12e39] transition shadow-lg shadow-[#E53945]/20">
+        <Star size={18} fill="currentColor" /> {isSubscribed ? "Subscribed" : `Subscribe - ${subscriptionPrice}`}
+      </button>
+      {isSubscribed ? (
+        <Link href={`/messages/${profile.user_id}`} className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-full transition border border-white/10">
+          <MessageSquare size={18} /> Message
+        </Link>
+      ) : (
+        <button onClick={handleSubscribe} className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-full transition border border-white/10">
+          <MessageSquare size={18} /> Subscribe to Message
+        </button>
+      )}
             </div>
 
             </div>
