@@ -169,6 +169,7 @@ export default function PublicProfilePage() {
   if (!profile) return <main className="min-h-screen bg-[#09090B] text-white flex flex-col items-center justify-center px-4"><h1 className="text-2xl font-bold mb-4">User not found</h1><Link href="/" className="bg-[#E53945] text-white font-bold px-8 py-3 rounded-full">Go Home</Link></main>;
 
   const displayName = profile.display_name || "User";
+  const featuredVideo = videos.find((v: any) => (v.videoUrl || v.bitchuteUrl) && v.type?.toLowerCase() !== "tweet" && v.type?.toLowerCase() !== "short") || videos[0];
   const subscriptionPrice = profile.subscription_price_cents ? (profile.subscription_price_cents / 100).toFixed(2) : "3.99";
 
   const filteredVideos = videos.filter(v => {
