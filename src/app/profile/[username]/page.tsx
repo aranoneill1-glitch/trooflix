@@ -158,11 +158,15 @@ export default function PublicProfilePage() {
       }
     };
 
+    
+
+    
+
     const handleSubscribeCard = async () => {
       if (currentUser === null) return router.push("/login");
       if (profile?.user_id === undefined) return alert("Could not find this creator ID.");
       try {
-        const res = await fetch("/api/stripe/creator", {
+        const res = await fetch("/api/stripe/checkout", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ userId: currentUser.id, type: "creator", creatorId: profile.user_id }),
