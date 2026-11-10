@@ -299,8 +299,8 @@ function CreatorDashboardContent() {
         <div className="max-w-5xl mx-auto px-4 pt-24 pb-6">
           
           {(true) && (
-          <div className="flex items-center justify-center mb-6">
-            <div className="flex bg-white/10 backdrop-blur-xl p-1 rounded-full border border-white/20 shadow-2xl overflow-x-auto scrollbar-hide max-w-full">
+          <div className="sticky top-[64px] md:top-[72px] z-[100] flex items-center justify-center py-4 mb-2">
+            <div className="flex bg-[#0a0303]/90 backdrop-blur-2xl p-1 rounded-full border border-white/20 shadow-2xl overflow-x-auto scrollbar-hide max-w-full">
               <button onClick={() => { setIsDashboardView(false); setShowMyTrooFlix(false); }} className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${!isDashboardView && !showMyTrooFlix ? "bg-white text-black shadow-md" : "text-white/50 hover:text-white"}`}><Eye size={16} /> Profile</button>
               <button onClick={() => { if (userTier === "free") { window.location.href = "/upgrade?feature=dashboard"; return; } setIsDashboardView(true); setShowMyTrooFlix(false); }} className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${isDashboardView && !showMyTrooFlix ? "bg-white text-black shadow-md" : "text-white/50 hover:text-white"} ${userTier === "free" ? "opacity-60" : ""}`}><LayoutDashboard size={16} /> Dashboard {userTier === "free" && <Lock size={11} className="text-white/60" />}</button>
               <button onClick={() => { setShowMyTrooFlix(true); setIsDashboardView(false); }} className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${showMyTrooFlix ? "bg-white text-black shadow-md" : "text-white/50 hover:text-white"}`}><Play size={16} /> MyTrooFlix</button>
