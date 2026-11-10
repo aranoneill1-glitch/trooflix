@@ -262,6 +262,8 @@ export default function PublicProfilePage() {
 
           {/* CREATOR-STYLE PROFILE LAYOUT */}
           <div className="animate-in fade-in duration-300">
+<div className="flex flex-col lg:flex-row gap-8 w-full">
+<div className="flex flex-col w-full lg:w-1/2">
             <div className="flex flex-col mb-6 w-full">
               
               <div className="flex items-center gap-4 w-full mb-4">
@@ -340,7 +342,16 @@ export default function PublicProfilePage() {
               </Link>
             </div>
 
-            {/* TABS & CONTENT */}
+            </div>
+<div className="hidden lg:block w-full lg:w-1/2">
+{featuredVideo ? (
+<video src={featuredVideo.videoUrl || featuredVideo.bitchuteUrl} poster={featuredVideo.posterUrl} controls autoPlay muted loop playsInline className="w-full aspect-video object-cover rounded-3xl border border-white/10 shadow-2xl bg-black" />
+) : (
+<div className="w-full aspect-video bg-black rounded-3xl border border-white/10 flex items-center justify-center text-white/30 text-sm">No featured video</div>
+)}
+</div>
+</div>
+{/* TABS & CONTENT */}
             <div className="flex items-center justify-between border-b border-white/10 mb-6">
               <div className="flex items-center gap-8">
                 {(["All", "Videos", "Premium", "Shop"] as const).map((tab) => (
