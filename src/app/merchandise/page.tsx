@@ -125,7 +125,7 @@ export default function MerchandisePage() {
         {/* Centered Content */}
         <div className="absolute inset-0 flex flex-col items-center justify-end pb-12 md:pb-16 text-center px-4 z-10">
           <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-white leading-none mb-8 drop-shadow-2xl">
-            Creator <span className="bg-gradient-to-r from-orange-500 to-[#E53945] bg-clip-text text-transparent">Marketplace</span>
+            Creator Market<span className="bg-gradient-to-r from-orange-500 to-[#E53945] bg-clip-text text-transparent">place</span>
           </h1>
           
           <div className="flex flex-wrap justify-center gap-3">
