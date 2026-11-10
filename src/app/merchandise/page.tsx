@@ -106,21 +106,32 @@ export default function MerchandisePage() {
     <main className="min-h-screen bg-[#09090B] text-white pb-24 lg:pb-20 font-sans selection:bg-[#E53945]/30">
       <TopBar />
       
-            {/* CINEMATIC HERO */}
-      <div className="relative w-full h-[50vh] md:h-[65vh] flex flex-col justify-end overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <img src="/images.jpeg" alt="Marketplace" className="w-full h-full object-cover object-center" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#09090B] via-[#09090B]/80 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#09090B]/90 via-[#09090B]/40 to-transparent" />
-        </div>
-        <button onClick={() => router.back()} className="absolute top-24 left-4 md:left-8 z-20 w-12 h-12 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-black/60 transition border border-white/10">
-          <ArrowLeft size={24} />
+                  {/* CINEMATIC HERO */}
+      <div className="relative w-full h-[40vh] md:h-[50vh]">
+        <img
+          src="/images.jpeg"
+          alt="Marketplace"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-black/40 to-black/60" />
+        
+        <button
+          onClick={() => router.back()}
+          className="absolute top-6 left-6 z-20 w-10 h-10 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-black/60 transition border border-white/10"
+        >
+          <ArrowLeft size={20} />
         </button>
-        <div className="relative z-10 px-4 md:px-8 w-full max-w-7xl mx-auto pb-12 md:pb-16 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+
+        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-12 z-10 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
           <div>
-            <p className="text-[#E53945] font-bold tracking-[0.4em] text-xs md:text-sm uppercase mb-3">Explore Category</p>
-            <h1 className="text-6xl md:text-8xl lg:text-9xl font-black text-white leading-none tracking-tighter drop-shadow-2xl">Marketplace</h1>
+            <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-2 uppercase">
+              Explore Category
+            </p>
+            <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-white drop-shadow-2xl">
+              Marketplace
+            </h1>
           </div>
+
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full lg:w-auto">
             <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md p-1.5 rounded-full border border-white/10">
               {(["Merchandise", "Books"] as const).map(tab => (
@@ -129,7 +140,13 @@ export default function MerchandisePage() {
             </div>
             <div className="relative w-full sm:w-64">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/60" size={16} />
-              <input type="text" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-black/40 backdrop-blur-xl border border-white/20 rounded-full py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-white/50 focus:outline-none focus:border-[#E53945]/50 transition-all shadow-xl" />
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-black/40 backdrop-blur-xl border border-white/20 rounded-full py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-white/50 focus:outline-none focus:border-[#E53945]/50 transition-all shadow-xl"
+              />
             </div>
           </div>
         </div>
