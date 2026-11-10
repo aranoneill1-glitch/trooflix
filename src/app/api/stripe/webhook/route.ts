@@ -201,7 +201,7 @@ export async function POST(req: Request) {
       const type = subscription.metadata?.type;
       if (!userId) return new NextResponse("No userId", { status: 200 });
 
-      if (type === "creator") {
+      if (type === "creator_premium") {
         await upsertCreatorSubscription(subscription);
 
         const creatorOwnerUserId = subscription.metadata?.creatorOwnerUserId;
@@ -253,8 +253,8 @@ export async function POST(req: Request) {
           is_verified: true,
           has_pass: true,
           plus_expires_at: null,
-          creator_subscription_id: subscription.id,
-          creator_subscription_status: subscription.status,
+          
+          
           stripe_subscription_id: subscription.id
         }).eq("user_id", userId);
 
@@ -295,7 +295,7 @@ export async function POST(req: Request) {
       const type = subscription.metadata?.type;
       if (!userId) return new NextResponse("No userId", { status: 200 });
 
-      if (type === "creator") {
+      if (type === "creator_premium") {
         await supabaseAdmin.from("creator_subscriptions").update({ status: "canceled", updated_at: new Date().toISOString() }).eq("stripe_subscription_id", subscription.id);
         return new NextResponse("OK", { status: 200 });
       }

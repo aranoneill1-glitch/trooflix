@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     const { userId, type, creatorId, coins } = await req.json();
 
     if (!userId) return NextResponse.json({ error: "userId required" }, { status: 400 });
-    if (!["pass", "creator", "creator"].includes(type)) return NextResponse.json({ error: "Invalid type" }, { status: 400 });
+    if (!["pass", "creator", "creator_premium"].includes(type)) return NextResponse.json({ error: "Invalid type" }, { status: 400 });
 
     // === PASS or creator ===
     if (type === "pass" || type === "creator") {
@@ -89,7 +89,7 @@ export async function POST(req: Request) {
     }
 
     // === CREATOR ===
-    if (type === "creator") {
+    if (type === "creator_premium") {
       if (!creatorId) {
         return NextResponse.json({ error: "creatorId required for creator type" }, { status: 400 });
       }
@@ -172,7 +172,7 @@ export async function POST(req: Request) {
         subscription_data: {
           metadata: {
             userId,
-            type: "creator",
+            type: "creator_premium",
             creatorId: String(creator.id),
             creatorOwnerUserId: String(dbCreatorId),
           },
