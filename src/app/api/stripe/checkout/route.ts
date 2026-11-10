@@ -103,8 +103,8 @@ export async function POST(req: Request) {
         customer: customerId,
         line_items: [{ price: priceId, quantity: 1 }],
         mode: "subscription",
-        success_url: `${process.env.NEXT_PUBLIC_URL || "https://www.trooflixtv.com"}/podcaster/${creator.slug}?subscribed=1`,
-        cancel_url: `${process.env.NEXT_PUBLIC_URL || "https://www.trooflixtv.com"}/podcaster/${creator.slug}`,
+        success_url: `${process.env.NEXT_PUBLIC_URL || "https://www.trooflixtv.com"}/profile/${creator.slug}?subscribed=1`,
+        cancel_url: `${process.env.NEXT_PUBLIC_URL || "https://www.trooflixtv.com"}/profile/${creator.slug}`,
         client_reference_id: userId,
         subscription_data: { metadata: { userId, type: "creator", creatorId: String(creator.id), creatorOwnerUserId: String(dbCreatorId) } },
       });
