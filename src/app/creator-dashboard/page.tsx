@@ -1,5 +1,5 @@
 "use client";
-import { ChevronRight , Tag, MoreVertical , Download, Sparkles} from "lucide-react";
+import { ChevronRight , Tag, MoreVertical , Download, Sparkles, Wallet , MessageCircle } from "lucide-react";
 
 import { useEffect, useState, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
@@ -300,10 +300,16 @@ function CreatorDashboardContent() {
           
           {(true) && (
           <div className="flex items-center justify-center mb-6">
-            <div className="flex bg-white/10 backdrop-blur-xl p-1 rounded-full border border-white/20 shadow-2xl">
+            <div className="flex bg-white/10 backdrop-blur-xl p-1 rounded-full border border-white/20 shadow-2xl overflow-x-auto scrollbar-hide max-w-full">
               <button onClick={() => { setIsDashboardView(false); setShowMyTrooFlix(false); }} className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${!isDashboardView && !showMyTrooFlix ? "bg-white text-black shadow-md" : "text-white/50 hover:text-white"}`}><Eye size={16} /> Profile</button>
               <button onClick={() => { if (userTier === "free") { window.location.href = "/upgrade?feature=dashboard"; return; } setIsDashboardView(true); setShowMyTrooFlix(false); }} className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${isDashboardView && !showMyTrooFlix ? "bg-white text-black shadow-md" : "text-white/50 hover:text-white"} ${userTier === "free" ? "opacity-60" : ""}`}><LayoutDashboard size={16} /> Dashboard {userTier === "free" && <Lock size={11} className="text-white/60" />}</button>
               <button onClick={() => { setShowMyTrooFlix(true); setIsDashboardView(false); }} className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${showMyTrooFlix ? "bg-white text-black shadow-md" : "text-white/50 hover:text-white"}`}><Play size={16} /> MyTrooFlix</button>
+              <Link href="/wallet" className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all text-white/50 hover:text-white hover:bg-white/5 whitespace-nowrap">
+                <Wallet size={16} /> TrooBank
+              </Link>
+              <Link href="/messages" className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all text-white/50 hover:text-white hover:bg-white/5 whitespace-nowrap">
+                <MessageCircle size={16} /> TrooChat
+              </Link>
             </div>
           </div>
           )}
