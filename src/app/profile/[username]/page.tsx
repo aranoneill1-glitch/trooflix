@@ -7,6 +7,7 @@ import { ArrowLeft, UserPlus, MessageSquare, CheckCircle2, LayoutGrid, List, Sho
 import HomeFeedCard from "@/components/HomeFeedCard";
 import CommentSheet from "@/components/CommentSheet";
 import Link from "next/link";
+import AppleVideoPlayer from "@/components/AppleVideoPlayer";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { createClient } from "@/utils/supabase/client";
@@ -46,6 +47,7 @@ export default function PublicProfilePage() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [resolvedCreatorId, setResolvedCreatorId] = useState<number | null>(null);
   const [isSubmittingFollow, setIsSubmittingFollow] = useState(false);
+  const [playingFeatured, setPlayingFeatured] = useState<any>(null);
   const [subscriberCount, setSubscriberCount] = useState(0);
   const pressTimer = useRef<NodeJS.Timeout | null>(null);
 
@@ -261,7 +263,11 @@ export default function PublicProfilePage() {
 
           {/* CREATOR-STYLE PROFILE LAYOUT */}
           <div className="animate-in fade-in duration-300">
-            <div className="flex flex-col mb-6 w-full">
+            <div className="flex flex-col lg:flex-row gap-8 mb-8 w-full">
+              
+              {/* LEFT COLUMN */}
+              <div className="w-full lg:w-1/2 flex flex-col">
+                <div className="flex flex-col mb-6 w-full">
               
               <div className="flex items-center gap-4 w-full mb-4">
                 {/* AVATAR (Clickable if live) */}
@@ -294,19 +300,12 @@ export default function PublicProfilePage() {
 
               {/* NAME, HANDLE, SOCIALS, BIO */}
               <div className="px-1">
-                <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-2 mb-1">
                   <h1 className="text-2xl md:text-3xl font-black flex items-center gap-2 text-white">
                     {displayName} {(profile as any).verification_tick && (profile as any).verification_tick !== "none" && <VerifiedBadge size={20} variant={(profile as any).verification_tick as any} />}
                   </h1>
                   
-                  {/* FOLLOW BUTTON (Top Right) */}
-                  <button 
-                    onClick={handleFollow}
-                    disabled={isSubmittingFollow}
-                    className={`shrink-0 flex items-center justify-center gap-1.5 font-bold px-5 py-1.5 rounded-full transition shadow-lg text-sm ${isSubmittingFollow ? "opacity-50 cursor-wait" : isFollowing ? "bg-white/10 text-white border border-white/20" : "bg-white text-black hover:bg-gray-200"}`}
-                  >
-                    <UserPlus size={16} /> {isFollowing ? "Following" : "Follow"}
-                  </button>
+                  
                 </div>
                 
                 <p className="text-sm md:text-base text-white/50 mb-3">@{username}</p>
@@ -337,6 +336,35 @@ export default function PublicProfilePage() {
               <Link href={`/messages/${profile.user_id}`} className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-full transition border border-white/10">
                 <MessageSquare size={18} /> Message
               </Link>
+            </div>
+
+                          </div> {/* END LEFT COLUMN */}
+
+              {/* RIGHT COLUMN: FEATURED VIDEO */}
+              <div className="w-full lg:w-1/2 flex flex-col gap-4">
+                {(() => {
+                  const featured = videos.find((v: any) => v.featured) || videos[0];
+                  if (!featured) return <div className="w-full aspect-video bg-white/5 rounded-3xl flex items-center justify-center text-white/30 border border-white/10">No videos yet</div>;
+                  return (
+                    <div className="relative w-full aspect-[4/3] lg:aspect-video rounded-3xl overflow-hidden border border-white/10 bg-black group shadow-2xl">
+                      <img src={featured.backdropUrl || featured.posterUrl} alt={featured.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-700" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+                      <div className="absolute inset-0 flex flex-col justify-between p-6">
+                        <div className="flex justify-end">
+                          <button onClick={handleFollow} disabled={isSubmittingFollow} className={`flex items-center justify-center gap-2 font-bold px-6 py-2.5 rounded-full transition shadow-xl backdrop-blur-md text-sm ${isSubmittingFollow ? 'opacity-50 cursor-wait' : isFollowing ? 'bg-white/10 text-white border border-white/20' : 'bg-white text-black hover:bg-gray-200'}`}>
+                            <UserPlus size={16} /> {isFollowing ? 'Following' : 'Follow'}
+                          </button>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold text-[#E53945] uppercase tracking-widest mb-1">Featured Video</p>
+                          <h2 className="text-2xl font-black text-white leading-tight mb-3 line-clamp-2">{featured.title}</h2>
+                          <button onClick={() => setPlayingFeatured(featured)} className="flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white font-bold px-6 py-2.5 rounded-full transition"><Play size={16} fill="currentColor" /> Watch Now</button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
             </div>
 
             {/* TABS & CONTENT */}
