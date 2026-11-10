@@ -4,22 +4,15 @@ import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import { ShoppingBag, Search, Star, Wallet, CreditCard, CheckCircle2, ArrowRight, Plus, X, ShieldCheck } from "lucide-react";
+import { ShoppingBag, Search, Star, ShieldCheck, X, Plus, ArrowRight } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
-import { getCachedUser } from "@/lib/cache";
 
 export default function MerchandisePage() {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  
+  const [activeTab, setActiveTab] = useState<"Merchandise" | "Books" | "Other">("Merchandise");
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
-  const [payMethod, setPayMethod] = useState<"card" | "coins">("card");
-  const [coinBalance, setCoinBalance] = useState(0);
-  const [coinStatus, setCoinStatus] = useState<"idle"|"loading"|"success"|"error">("idle");
-  const [coinError, setCoinError] = useState("");
-  const [shipping, setShipping] = useState({ name: "", address: "", city: "", postalCode: "", country: "" });
-  
   const [basket, setBasket] = useState<any[]>([]);
   const [creatorProfiles, setCreatorProfiles] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null);
@@ -50,17 +43,6 @@ export default function MerchandisePage() {
       }
     });
   }, []);
-
-
-  useEffect(() => {
-    if (selectedProduct) {
-      setPayMethod("card");
-      setCoinStatus("idle");
-      getCachedUser().then(u => {
-        if (u) fetch(`/api/wallet?userId=${u.id}`).then(r => r.json()).then(d => setCoinBalance(d.balance || 0));
-      });
-    }
-  }, [selectedProduct]);
 
   useEffect(() => {
     const stored = localStorage.getItem("trooflix_basket");
@@ -102,299 +84,201 @@ export default function MerchandisePage() {
     } catch (e) { console.error("Wishlist error:", e); }
   };
 
-  // 1. Extract real creators for the new row
-  const realCreators = useMemo(() => {
-    const map = new Map();
-    products.forEach(p => {
-      if (p.creatorName && p.creatorSlug && !map.has(p.creatorSlug)) {
-        // Look up the real avatar from the profiles we just fetched
-        const realProfile = creatorProfiles.find(c => String(c.user_id) === String(p.creator_id) || String(c.username) === String(p.creatorSlug));
-        
-        map.set(p.creatorSlug, {
-          name: p.creatorName,
-          slug: p.creatorSlug,
-          photo: realProfile?.avatar_url || p.creatorPhoto || `https://ui-avatars.com/api/?name=${encodeURIComponent(p.creatorName)}&background=1c1c1e&color=fff`,
-        });
-      }
-    });
-    return Array.from(map.values());
-  }, [products, creatorProfiles]);
-
   const filteredProducts = useMemo(() => {
-    if (!searchQuery.trim()) return products;
-    const q = searchQuery.toLowerCase();
-    return products.filter(p => p.name?.toLowerCase().includes(q) || p.creatorName?.toLowerCase().includes(q));
-  }, [products, searchQuery]);
-
-  const merchandise = useMemo(() => {
-    return filteredProducts.filter(p => p.type?.toLowerCase() !== 'book');
-  }, [filteredProducts]);
-
-  const books = useMemo(() => {
-    return filteredProducts.filter(p => p.type?.toLowerCase() === 'book');
-  }, [filteredProducts]);
+    let result = products;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(p => p.name?.toLowerCase().includes(q) || p.creatorName?.toLowerCase().includes(q));
+    }
+    
+    if (activeTab === "Merchandise") {
+      result = result.filter(p => p.type?.toLowerCase() !== 'book' && p.type?.toLowerCase() !== 'other');
+    } else if (activeTab === "Books") {
+      result = result.filter(p => p.type?.toLowerCase() === 'book');
+    } else if (activeTab === "Other") {
+      result = result.filter(p => p.type?.toLowerCase() === 'other');
+    }
+    return result;
+  }, [products, searchQuery, activeTab]);
 
   return (
-    <main className="min-h-screen bg-[#09090B] text-white pb-24 lg:pb-20">
+    <main className="min-h-screen bg-[#09090B] text-white pb-24 lg:pb-20 font-sans selection:bg-[#E53945]/30">
       <TopBar />
       
-      {/* CINEMATIC HERO */}
-      <div className="relative w-full h-[45vh] md:h-[55vh] flex flex-col justify-end overflow-hidden pb-8 md:pb-12">
-        <div className="absolute inset-0 z-0">
-          <img 
-            src="/images.jpeg" 
-            alt="Marketplace" 
-            className="w-full h-full object-cover object-center" 
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#09090B] via-[#09090B]/60 to-black/30" />
+      {/* EDITORIAL HERO COLLAGE */}
+      <div className="relative w-full h-[45vh] md:h-[55vh] flex overflow-hidden">
+        {/* 4 Image Slices */}
+        <div className="flex-1 hidden md:block relative group">
+          <img src="https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=800&auto=format&fit=crop" alt="" className="w-full h-full object-cover grayscale-[20%] opacity-80" />
+        </div>
+        <div className="flex-1 relative group">
+          <img src="https://images.unsplash.com/photo-1615160460366-2c9c9c1e2d9f?q=80&w=800&auto=format&fit=crop" alt="" className="w-full h-full object-cover grayscale-[20%] opacity-80" />
+        </div>
+        <div className="flex-1 relative group">
+          <img src="https://images.unsplash.com/photo-1543163521-1bf539c55dd2?q=80&w=800&auto=format&fit=crop" alt="" className="w-full h-full object-cover grayscale-[20%] opacity-80" />
+        </div>
+        <div className="flex-1 hidden md:block relative group">
+          <img src="https://images.unsplash.com/photo-1608256246200-53e635b5b65f?q=80&w=800&auto=format&fit=crop" alt="" className="w-full h-full object-cover grayscale-[20%] opacity-80" />
         </div>
 
-        <div className="relative z-10 px-4 md:px-8 w-full max-w-7xl mx-auto flex flex-col items-start">
-          <p className="text-[#E53945] font-bold tracking-[0.3em] text-[10px] md:text-xs uppercase mb-2 md:mb-3 drop-shadow-md">
-            Explore Merchandise
-          </p>
-          <h1 className="text-5xl md:text-7xl font-black text-white leading-none tracking-tight drop-shadow-2xl mb-6">
-            Marketplace
-          </h1>
+        {/* Dark Overlay */}
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]" />
 
-          <div className="relative w-full max-w-lg">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/60" size={20} />
+        {/* Centered Content */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 z-10">
+          <h1 className="text-4xl md:text-6xl font-serif text-white tracking-wide mb-8 drop-shadow-2xl">
+            The Creator Marketplace
+          </h1>
+          
+          <div className="flex flex-wrap justify-center gap-3">
+            {(["Merchandise", "Books", "Other"] as const).map(tab => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-8 py-3 text-sm font-bold uppercase tracking-[0.15em] transition-all duration-300 border border-transparent ${
+                  activeTab === tab
+                    ? "bg-black text-white border-white/20 shadow-2xl scale-105"
+                    : "bg-black/40 text-white/70 hover:text-white hover:bg-black/80 backdrop-blur-md"
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* SEARCH BAR & MAIN CONTENT */}
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-10">
+        
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-10">
+          <div className="relative w-full max-w-md">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40" size={18} />
             <input
               type="text"
-              placeholder="Search merchandise and books..."
+              placeholder={`Search ${activeTab.toLowerCase()}...`}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-black/40 backdrop-blur-xl border border-white/20 rounded-full py-3.5 pl-12 pr-4 text-sm text-white placeholder:text-white/50 focus:outline-none focus:border-[#E53945]/50 focus:bg-black/60 transition-all shadow-xl"
+              className="w-full bg-[#141418] border border-white/10 rounded-full py-3.5 pl-11 pr-4 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#E53945]/50 transition-all shadow-lg"
             />
           </div>
+          
+          <div className="text-sm text-white/40 font-medium">
+            Showing {filteredProducts.length} {activeTab.toLowerCase()} items
+          </div>
         </div>
-      </div>
 
-      {/* MAIN CONTENT AREA */}
-      <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
-        
-        {/* 1. NEW CREATOR MERCH ROW */}
-        {realCreators.length > 0 && !searchQuery && (
-          <section className="mb-10">
-            <div className="mb-6">
-              <p className="text-[10px] md:text-xs tracking-[0.4em] text-white/50 font-semibold mb-1 uppercase">
-                Own The Knowledge
-              </p>
-              <h2 className="text-2xl md:text-4xl font-black tracking-tight text-white">
-                Support the <span className="text-[#E53945]">Creators</span>
-              </h2>
-            </div>
-            <div className="flex overflow-x-auto scrollbar-hide gap-5 pb-4">
-              {realCreators.map((c: any) => (
-                <Link href={`/profile/${c.slug}`} key={c.slug} className="flex flex-col items-center group w-[135px] shrink-0">
-                  <div className="w-[115px] h-[115px] rounded-full overflow-hidden border-2 border-white/10 group-hover:border-[#E53945] transition-all duration-300 mb-3 shadow-xl">
-                    <img src={c.photo} alt={c.name} className="w-full h-full object-cover" />
-                  </div>
-                  <span className="text-sm font-bold truncate w-full text-center group-hover:text-[#E53945] transition-colors">{c.name}</span>
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* 1.5 WHAT'S NEW */}
-        {filteredProducts.length > 0 && !searchQuery && (
-          <section className="mb-12">
-            <h2 className="text-xl md:text-2xl font-bold mb-4">What's New</h2>
-            <div className="flex overflow-x-auto scrollbar-hide gap-4 pb-4">
-              {filteredProducts.slice(0, 10).map((p) => (
-                <div key={p.id} className="w-[140px] md:w-[180px] shrink-0">
-                  <ProductCard product={p} isWishlisted={wishlistedIds.includes(p.id)} onToggleWishlist={(e) => toggleWishlist(e, p.id)} onClick={() => setSelectedProduct(p)} />
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* 2. FEATURED MERCHANDISE */}
-        {merchandise.length > 0 && (
-          <section className="mb-12">
-            <h2 className="text-xl md:text-2xl font-bold mb-4">
-               {searchQuery ? "Merchandise Results" : "Featured Merch"}
-            </h2>
-            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4 pb-4">
-              {merchandise.map((p) => (
-                <ProductCard key={p.id} product={p} isWishlisted={wishlistedIds.includes(p.id)} onToggleWishlist={(e) => toggleWishlist(e, p.id)} onClick={() => setSelectedProduct(p)} />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* 3. FEATURED BOOKS */}
-        {books.length > 0 && (
-          <section className="mb-12">
-            <h2 className="text-xl md:text-2xl font-bold mb-4">
-              {searchQuery ? "Book Results" : "Featured Books"}
-            </h2>
-            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4 pb-4">
-              {books.map((p) => (
-                <ProductCard key={p.id} product={p} isWishlisted={wishlistedIds.includes(p.id)} onToggleWishlist={(e) => toggleWishlist(e, p.id)} onClick={() => setSelectedProduct(p)} />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* EMPTY STATE */}
-        {!loading && filteredProducts.length === 0 && (
-          <div className="text-center py-24 border border-dashed border-white/10 rounded-3xl bg-white/5">
+        {/* PRODUCT GRID */}
+        {loading ? (
+          <div className="flex justify-center py-20">
+            <div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" />
+          </div>
+        ) : filteredProducts.length === 0 ? (
+          <div className="text-center py-24 border border-dashed border-white/10 rounded-3xl bg-[#0f0f12]">
             <ShoppingBag className="mx-auto text-white/20 mb-4" size={48} />
-            <h3 className="text-lg font-bold text-white mb-2">
-              {searchQuery ? "No items found" : "No products listed yet"}
-            </h3>
+            <h3 className="text-xl font-bold text-white mb-2">No items found</h3>
             <p className="text-white/50 text-sm">
-              {searchQuery ? `We couldn't find anything matching "${searchQuery}".` : "Check back soon for exclusive merch and publications."}
+              {searchQuery ? `We couldn't find anything matching "${searchQuery}".` : `No ${activeTab.toLowerCase()} listed yet.`}
             </p>
           </div>
-        )}
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            {filteredProducts.map((p) => (
+              <div 
+                key={p.id} 
+                onClick={() => setSelectedProduct(p)}
+                className="group flex flex-col cursor-pointer"
+              >
+                {/* Image Container */}
+                <div className="relative aspect-[4/5] w-full rounded-2xl overflow-hidden bg-[#141418] mb-3">
+                  <img 
+                    src={p.image_url} 
+                    alt={p.name} 
+                    className="w-full h-full object-cover group-hover:scale-105 transition duration-700" 
+                  />
+                  
+                  {/* Like Button */}
+                  <button 
+                    className={`absolute top-3 right-3 p-2 rounded-full shadow-md hover:scale-110 transition backdrop-blur-md ${wishlistedIds.includes(p.id) ? "bg-[#D4AF37] text-black" : "bg-black/40 text-white"}`} 
+                    onClick={(e) => toggleWishlist(e, p.id)}
+                  >
+                    <Star size={16} fill={wishlistedIds.includes(p.id) ? "currentColor" : "none"} />
+                  </button>
 
+                  {/* Quick Add */}
+                  <div className="absolute inset-x-3 bottom-3 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); addToBasket(p); }}
+                      className="w-full bg-white text-black font-bold text-xs py-2.5 rounded-xl hover:bg-gray-200 transition shadow-lg flex items-center justify-center gap-1.5"
+                    >
+                      <Plus size={14} /> Quick Add
+                    </button>
+                  </div>
+                </div>
+
+                {/* Info */}
+                <div className="flex justify-between items-start gap-2">
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-bold tracking-widest text-white/40 uppercase mb-1 truncate">{p.creatorName}</p>
+                    <h3 className="text-sm font-bold text-white leading-tight truncate group-hover:text-[#E53945] transition-colors">{p.name}</h3>
+                  </div>
+                  <p className="text-sm font-black text-green-400 shrink-0">${(p.price_cents / 100).toFixed(2)}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* SMALLER ITEM MODAL */}
-            {selectedProduct && (
-        <div className="fixed inset-0 z-[9999] bg-black/80 flex items-end sm:items-center justify-center sm:p-4 backdrop-blur-md" onClick={() => setSelectedProduct(null)}>
-          <div className="bg-[#1c1c1e] border border-white/10 rounded-t-3xl sm:rounded-3xl w-full max-w-md max-h-[90dvh] flex flex-col relative shadow-2xl animate-in slide-in-from-bottom-10 sm:zoom-in-95 duration-300 overflow-hidden" onClick={e => e.stopPropagation()}>
+      {/* PRODUCT MODAL */}
+      {selectedProduct && (
+        <div className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setSelectedProduct(null)}>
+          <div className="bg-[#1c1c1e] border border-white/10 rounded-3xl w-full max-w-sm overflow-hidden flex flex-col relative shadow-2xl animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
             
-            {/* Header Image */}
-            <div className="relative w-full h-[30dvh] sm:h-64 bg-black shrink-0">
+            <button onClick={() => setSelectedProduct(null)} className="absolute top-3 right-3 z-10 p-1.5 bg-black/50 hover:bg-black/80 rounded-full text-white transition">
+              <X size={18} />
+            </button>
+            
+            <div className="w-full aspect-[4/5] bg-black relative">
               <img src={selectedProduct.image_url} alt={selectedProduct.name} className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#1c1c1e] via-[#1c1c1e]/20 to-transparent" />
-              <button onClick={() => setSelectedProduct(null)} className="absolute top-4 right-4 z-10 p-2 bg-black/50 hover:bg-black/80 rounded-full text-white transition backdrop-blur-md">
-                <X size={20} />
-              </button>
             </div>
-
-            {/* Scrollable Body */}
-            <div className="flex-1 overflow-y-auto p-6 scrollbar-hide relative">
-              <p className="text-3xl font-black text-[#1DB954] mb-1">${(selectedProduct.price_cents / 100).toFixed(2)}</p>
-              <h2 className="text-xl font-bold text-white mb-1 leading-tight">{selectedProduct.name}</h2>
-              <p className="text-xs text-white/50 mb-6">Stock: {selectedProduct.stock} available</p>
+            
+            <div className="p-5">
+              <p className="text-2xl font-black text-[#1DB954] mb-1">${(selectedProduct.price_cents / 100).toFixed(2)}</p>
+              <h2 className="text-base font-bold text-white mb-2 leading-tight line-clamp-2">{selectedProduct.name}</h2>
+              <p className="text-xs text-white/60 mb-4">Stock: {selectedProduct.stock} available</p>
               
-              <Link href={`/profile/${selectedProduct.creatorSlug}`} className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition group mb-6">
-                <div className="flex items-center gap-3">
+              <Link href={`/profile/${selectedProduct.creatorSlug}`} className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition group">
+                <div className="flex items-center gap-2.5">
                   {selectedProduct.creatorPhoto ? (
-                    <img src={selectedProduct.creatorPhoto} className="w-10 h-10 rounded-full object-cover border border-white/10" />
+                    <img src={selectedProduct.creatorPhoto} className="w-8 h-8 rounded-full object-cover border border-white/10" />
                   ) : (
-                    <div className="w-10 h-10 rounded-full bg-[#E53945] flex items-center justify-center font-bold text-white">
+                    <div className="w-8 h-8 rounded-full bg-[#E53945] flex items-center justify-center font-bold text-white text-xs">
                       {selectedProduct.creatorName?.charAt(0) || "C"}
                     </div>
                   )}
                   <div className="flex flex-col">
-                    <p className="text-sm font-bold text-white group-hover:text-[#E53945] transition-colors">{selectedProduct.creatorName}</p>
-                    <p className="text-[11px] text-white/50">Visit Store</p>
+                    <p className="text-xs font-bold text-white group-hover:text-[#E53945] transition-colors">{selectedProduct.creatorName}</p>
+                    <p className="text-[10px] text-white/50">Visit Store</p>
                   </div>
                 </div>
-                <ArrowRight size={16} className="text-white/30 group-hover:text-white transition" />
+                <ArrowRight size={14} className="text-white/30 group-hover:text-white transition" />
               </Link>
 
-              {/* Payment Selector */}
-              <div className="flex bg-black/40 p-1 rounded-xl mb-6">
-                <button onClick={() => setPayMethod("card")} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg font-bold text-sm transition ${payMethod === "card" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}>
-                  <CreditCard size={16} /> Card
+              <div className="flex gap-2 mt-5">
+                <button onClick={() => addToBasket(selectedProduct)} className="flex-1 flex items-center justify-center gap-1.5 py-3 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl transition border border-white/10">
+                  <Plus size={16} /> Add to Basket
                 </button>
-                <button onClick={() => setPayMethod("coins")} className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg font-bold text-sm transition ${payMethod === "coins" ? "bg-[#D4AF37]/20 text-[#D4AF37] shadow-sm" : "text-white/50 hover:text-white"}`}>
-                  <Wallet size={16} /> TrooCoins
+                <button className="flex-1 py-3 bg-[#E53945] hover:bg-[#d12e39] text-white text-xs font-bold rounded-xl transition shadow-[0_0_15px_rgba(229,57,69,0.3)]">
+                  Buy Now
                 </button>
               </div>
-
-              {payMethod === "card" ? (
-                <div className="flex gap-3 pb-4">
-                  <button onClick={() => addToBasket(selectedProduct)} className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-white/5 hover:bg-white/10 text-white text-sm font-bold rounded-xl transition border border-white/10">
-                    <Plus size={18} /> Add to Basket
-                  </button>
-                  <button onClick={() => addToBasket(selectedProduct)} className="flex-1 py-3.5 bg-[#E53945] hover:bg-[#d12e39] text-white text-sm font-bold rounded-xl transition shadow-lg shadow-[#E53945]/20">
-                    Buy Now
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-4 pb-4">
-                  <div className="flex justify-between items-center bg-[#D4AF37]/10 border border-[#D4AF37]/20 rounded-xl p-3">
-                    <span className="text-sm text-[#D4AF37]/70 font-semibold">Your Balance:</span>
-                    <span className="font-black text-[#D4AF37]">{Number(coinBalance).toFixed(2)} Coins</span>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <input type="text" placeholder="Full Name" value={shipping.name} onChange={e => setShipping({...shipping, name: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-[#D4AF37] transition" />
-                    <input type="text" placeholder="Address" value={shipping.address} onChange={e => setShipping({...shipping, address: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-[#D4AF37] transition" />
-                    <div className="flex gap-3">
-                      <input type="text" placeholder="City" value={shipping.city} onChange={e => setShipping({...shipping, city: e.target.value})} className="flex-1 min-w-0 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-[#D4AF37] transition" />
-                      <input type="text" placeholder="Postal Code" value={shipping.postalCode} onChange={e => setShipping({...shipping, postalCode: e.target.value})} className="w-1/2 min-w-0 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-[#D4AF37] transition" />
-                    </div>
-                    <input type="text" placeholder="Country" value={shipping.country} onChange={e => setShipping({...shipping, country: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-[#D4AF37] transition" />
-                  </div>
-
-                  {coinError && <p className="text-red-400 text-xs font-semibold px-1">{coinError}</p>}
-                  
-                  <button 
-                    onClick={async () => {
-                      if (!shipping.name || !shipping.address || !shipping.city || !shipping.postalCode || !shipping.country) return setCoinError("Please fill in all shipping details.");
-                      setCoinStatus("loading"); setCoinError("");
-                      const u = await getCachedUser();
-                      const res = await fetch("/api/wallet/buy-merch", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: u?.id, productId: selectedProduct.id, shipping }) });
-                      const d = await res.json();
-                      if (res.ok) setCoinStatus("success");
-                      else { setCoinStatus("error"); setCoinError(d.error); }
-                    }}
-                    disabled={coinStatus === "loading"}
-                    className="w-full py-3.5 bg-[#D4AF37] hover:bg-[#b8952b] disabled:opacity-50 text-black text-sm font-black rounded-xl transition shadow-lg shadow-[#D4AF37]/20"
-                  >
-                    {coinStatus === "loading" ? "Processing..." : `Pay ${(selectedProduct.price_cents / 100).toFixed(2)} Coins`}
-                  </button>
-                </div>
-              )}
-              
-              {/* Success Overlay */}
-              {coinStatus === "success" && (
-                <div className="absolute inset-0 z-20 bg-[#1c1c1e] flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-300">
-                  <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mb-6">
-                    <CheckCircle2 size={40} className="text-green-500" />
-                  </div>
-                  <h3 className="text-2xl font-black text-white mb-2">Order Successful!</h3>
-                  <p className="text-sm text-white/60 mb-8 max-w-[250px]">You have successfully purchased {selectedProduct.name} using TrooCoins.</p>
-                  <button onClick={() => setSelectedProduct(null)} className="w-full py-3.5 bg-white text-black font-bold rounded-xl transition">
-                    Continue Shopping
-                  </button>
-                </div>
-              )}
-
             </div>
           </div>
         </div>
       )}
 
-
       <MobileBottomNav />
     </main>
-  );
-}
-
-// VINTED-STYLE PRODUCT CARD
-function ProductCard({ product, isWishlisted, onToggleWishlist, onClick }: { product: any, isWishlisted: boolean, onToggleWishlist: (e: React.MouseEvent) => void, onClick: () => void }) {
-  return (
-    <div onClick={onClick} className="flex flex-col group cursor-pointer w-full">
-      
-      {/* Image Container */}
-      <div className="relative aspect-square w-full rounded-2xl overflow-hidden mb-2 border border-white/5 bg-[#1c1c1e]">
-        <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-        
-        {/* Like Button */}
-        <button className={`absolute top-2 right-2 p-1.5 rounded-full shadow-md hover:scale-110 transition ${isWishlisted ? "bg-yellow-500 text-white" : "bg-white text-black"}`} onClick={onToggleWishlist}>
-          <Star size={14} fill={isWishlisted ? "currentColor" : "none"} />
-        </button>
-
-        {/* Delivery Tag */}
-        <div className="hidden sm:flex absolute bottom-2 left-2 bg-black/60 backdrop-blur-md text-white text-[9px] font-semibold px-1.5 py-0.5 rounded flex items-center gap-1">
-          <ShieldCheck size={10} className="text-white" /> Delivery
-        </div>
-      </div>
-
-      {/* Details */}
-      <p className="text-[#1DB954] font-black text-sm md:text-base tracking-tight leading-none mb-1">${(product.price_cents / 100).toFixed(2)}</p>
-      <h3 className="text-[11px] md:text-sm font-semibold text-white/90 line-clamp-2 leading-tight">{product.name}</h3>
-    </div>
   );
 }
