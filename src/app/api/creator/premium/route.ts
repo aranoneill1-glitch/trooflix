@@ -81,3 +81,44 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: String(e) }, { status: 500 });
   }
 }
+
+export async function POST(req: Request) {
+  try {
+    const { userId, enabled, price_cents } = await req.json();
+    if (!userId) return NextResponse.json({ error: "userId required" }, { status: 400 });
+
+    const priceCents = price_cents === null || price_cents === undefined
+      ? null
+      : Math.round(Number(price_cents));
+
+    if (enabled) {
+      if (!priceCents || !Number.isFinite(priceCents) || priceCents < 499) {
+        return NextResponse.json(
+          { error: "Price must be at least $4.99 (to cover payment processing)" },
+          { status: 400 }
+        );
+      }
+      if (priceCents > 100000) {
+        return NextResponse.json(
+          { error: "Price too high (max $1,000/mo)" },
+          { status: 400 }
+        );
+      }
+    }
+
+    const { error: upErr } = await supabaseAdmin
+      .from("profiles")
+      .update({
+        premium_enabled: !!enabled,
+        premium_price_cents: enabled ? priceCents : null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("user_id", userId);
+    if (upErr) throw upErr;
+
+    return NextResponse.json({ ok: true });
+  } catch (e: any) {
+    console.error("POST creator premium error:", e);
+    return NextResponse.json({ error: String(e) }, { status: 500 });
+  }
+}

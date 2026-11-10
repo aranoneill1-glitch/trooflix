@@ -1,27 +1,47 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { kv } from "@vercel/kv";
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL as string,
   process.env.SUPABASE_SERVICE_ROLE_KEY as string
 );
 
-const CREATORS_KEY = "trooflix:creators";
-
 export async function POST(req: Request) {
   try {
     const { userId, creatorId, amount } = await req.json();
-    if (userId === undefined || creatorId === undefined || amount === undefined) return NextResponse.json({ error: "Missing data" }, { status: 400 });
+    if (userId === undefined || creatorId === undefined || amount === undefined) {
+      return NextResponse.json({ error: "Missing data" }, { status: 400 });
+    }
 
     const { data: wallet } = await supabaseAdmin.from("wallets").select("balance").eq("user_id", userId).maybeSingle();
-    if (wallet === null || wallet === undefined || wallet.balance < amount) return NextResponse.json({ error: "Insufficient TrooCoins. Please top up your wallet." }, { status: 400 });
+    if (!wallet || wallet.balance < amount) {
+      return NextResponse.json({ error: "Insufficient TrooCoins. Please top up your wallet." }, { status: 400 });
+    }
 
-    const creators = (await kv.get<any[]>(CREATORS_KEY)) || [];
-    const creator = creators.find((c: any) => Number(c.id) === Number(creatorId));
-    const receiverId = creator?.ownerUserId;
+    const numCreatorId = Number(creatorId);
+    if (!Number.isFinite(numCreatorId)) {
+      return NextResponse.json({ error: "Invalid creator ID." }, { status: 400 });
+    }
 
-    if (receiverId === undefined || receiverId === null) return NextResponse.json({ error: "Creator not found." }, { status: 404 });
+    const { data: allCreators } = await supabaseAdmin
+      .from("profiles")
+      .select("user_id, display_name, username, tier")
+      .eq("tier", "creator");
+
+    const creator = (allCreators || []).find((p: any) => {
+      const hex = String(p.user_id).replace(/-/g, "").slice(0, 12);
+      return (parseInt(hex, 16) || 0) === numCreatorId;
+    });
+
+    if (!creator) {
+      return NextResponse.json({ error: "Creator not found." }, { status: 404 });
+    }
+
+    const receiverId = creator.user_id;
+
+    if (String(receiverId) === String(userId)) {
+      return NextResponse.json({ error: "You cannot subscribe to yourself." }, { status: 400 });
+    }
 
     await supabaseAdmin.from("wallets").update({ balance: wallet.balance - amount }).eq("user_id", userId);
 
@@ -34,7 +54,7 @@ export async function POST(req: Request) {
 
     const { error } = await supabaseAdmin.from("creator_subscriptions").insert({
       subscriber_user_id: userId,
-      creator_id: Number(creatorId),
+      creator_id: numCreatorId,
       status: "active",
       price_cents: amount * 100,
       current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
@@ -45,12 +65,19 @@ export async function POST(req: Request) {
 
     if (error) throw error;
 
+    const { data: subscriberProfile } = await supabaseAdmin
+      .from("profiles")
+      .select("display_name, username")
+      .eq("user_id", userId)
+      .maybeSingle();
+    const subscriberName = subscriberProfile?.display_name || subscriberProfile?.username || "Someone";
+
     await supabaseAdmin.from("notifications").insert({
       user_id: receiverId,
       actor_id: userId,
       type: "purchase",
       title: "New Premium Subscriber!",
-      message: "Someone subscribed to your premium content using " + amount + " TrooCoins!"
+      message: `${subscriberName} subscribed to your premium content for ${amount} TrooCoins!`,
     });
 
     await supabaseAdmin.from("transactions").insert({
@@ -58,7 +85,7 @@ export async function POST(req: Request) {
       receiver_id: receiverId,
       amount: amount,
       type: "subscription",
-      description: "Premium subscription",
+      description: `Subscribed to @${creator.username || creator.display_name || "creator"}`,
     });
 
     return NextResponse.json({ success: true });
