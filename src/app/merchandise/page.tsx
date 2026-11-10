@@ -125,10 +125,10 @@ export default function MerchandisePage() {
         <div className="absolute bottom-0 left-0 right-0 p-6 md:p-12 z-10 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
           <div>
             <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-2 uppercase">
-              Explore Category
+              Explore Merchandise
             </p>
             <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-white drop-shadow-2xl">
-              Marketplace
+              Creators <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-400 to-[#E53945]">Market</span>
             </h1>
           </div>
 
