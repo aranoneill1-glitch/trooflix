@@ -37,7 +37,7 @@ export async function POST(req: Request) {
       if (new Date(profile.plus_expires_at) < new Date()) userTier = "free";
     }
 
-    const uploadType = body.type || "Documentary";
+    const uploadType = body.type || "long-video";
     const isTweet = uploadType === "Tweet";
     const isShort = uploadType === "Short";
     const isLongForm = !isTweet && !isShort;
@@ -48,12 +48,15 @@ export async function POST(req: Request) {
     if (isLongForm && userTier !== "creator") {
       return NextResponse.json({ error: "Only Creator tier can upload long-form videos. Upgrade required." }, { status: 403 });
     }
-    if (isShort && userTier === "free") {
+    if (isShort) {
       const durStr = body.duration || "0:00";
       const parts = durStr.split(":");
       const totalSeconds = (parseInt(parts[0]) || 0) * 60 + (parseInt(parts[1]) || 0);
-      if (totalSeconds > 180) {
+      if (userTier === "free" && totalSeconds > 180) {
         return NextResponse.json({ error: "Free accounts can only upload Shorts up to 3 minutes. Upgrade to Plus." }, { status: 403 });
+      }
+      if (userTier === "plus" && totalSeconds > 1200) {
+        return NextResponse.json({ error: "Plus accounts can only upload Shorts up to 20 minutes. Upgrade to Creator for unlimited." }, { status: 403 });
       }
     }
     // ---- END TIER ENFORCEMENT ----
@@ -79,7 +82,7 @@ export async function POST(req: Request) {
       category: body.category || "Uncategorized",
       visibility: body.visibility || "public",
       feed_visible: body.feed_visible !== undefined ? body.feed_visible : true,
-      type: body.type || "Documentary",
+      type: body.type || "long-video",
       featured: !!body.featured,
       creatorId: body.creatorId || null,
       uploaderUserId: body.uploaderUserId || null,

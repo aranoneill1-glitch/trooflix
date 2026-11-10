@@ -102,6 +102,9 @@ function UploadContent() {
       if (isShort && userTier === "free" && videoDuration > 180) {
         return alert("Free accounts can only upload Shorts up to 3 minutes long. Upgrade to Plus for unlimited Shorts length.");
       }
+      if (isShort && userTier === "plus" && videoDuration > 1200) {
+        return alert("Plus accounts can only upload Shorts up to 20 minutes long. Upgrade to Creator for unlimited.");
+      }
     }
     if (step === 2) {
       if (isShort && !title.trim()) return alert("Please enter a title.");
