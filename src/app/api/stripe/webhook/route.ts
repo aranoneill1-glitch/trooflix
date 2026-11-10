@@ -62,6 +62,27 @@ export async function POST(req: Request) {
   try {
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
+      
+      // Handle coins added during signup checkout
+      const signupCoins = Number(session.metadata?.signupCoins);
+      if (signupCoins > 0) {
+        const userId = session.metadata?.userId;
+        if (userId) {
+          const { data: wallet } = await supabaseAdmin.from("wallets").select("balance").eq("user_id", userId).maybeSingle();
+          if (wallet) {
+            await supabaseAdmin.from("wallets").update({ balance: wallet.balance + signupCoins }).eq("user_id", userId);
+          } else {
+            await supabaseAdmin.from("wallets").insert({ user_id: userId, balance: signupCoins });
+          }
+          await supabaseAdmin.from("transactions").insert({ 
+            sender_id: null, 
+            receiver_id: userId, 
+            amount: signupCoins, 
+            type: "topup", 
+            description: `Purchased ${signupCoins} TrooCoins at signup` 
+          });
+        }
+      }
 
       if (session.metadata?.type === "coin_topup") {
         console.log("💰 COIN TOPUP WEBHOOK FIRED:", session.metadata);

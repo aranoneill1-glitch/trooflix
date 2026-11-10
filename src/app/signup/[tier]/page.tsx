@@ -149,7 +149,7 @@ export default function SignupCheckoutPage() {
         const checkoutRes = await fetch("/api/stripe/checkout", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId: authData.user.id, type: stripeType }),
+          body: JSON.stringify({ userId: authData.user.id, type: stripeType, coins: selectedCoins }),
         });
         const checkoutData = await checkoutRes.json();
         if (checkoutData.url) window.location.href = checkoutData.url;
@@ -234,7 +234,7 @@ export default function SignupCheckoutPage() {
                   Tipping individually with a card incurs heavy processing fees. Pre-loading TrooCoins batches these transactions, meaning <strong className="text-[#D4AF37]">creators keep more of your money</strong>, and it&apos;s 1-click easy to tip, subscribe, or buy merch.
                 </p>
                 <div className="grid grid-cols-3 gap-2">
-                  {[10, 50, 100].map(amt => (
+                  {[5, 10, 20].map(amt => (
                     <button
                       type="button"
                       key={amt}
