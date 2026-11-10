@@ -26,10 +26,10 @@ export default function PremiumLockModal({
     try {
       const user = await getCachedUser();
       if (!user) { router.push("/login"); return; }
-      const res = await fetch("/api/stripe/creator", {
+      const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.id, creatorId }),
+        body: JSON.stringify({ userId: user.id, type: "creator", creatorId }),
       });
       const data = await res.json();
       if (data.url) { window.location.href = data.url; return; }

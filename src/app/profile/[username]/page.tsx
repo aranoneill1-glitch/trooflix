@@ -144,7 +144,7 @@ export default function PublicProfilePage() {
       if (currentUser === null) return router.push("/login");
       if (resolvedCreatorId === null) return alert("Could not find this creator ID. Please refresh and try again.");
       try {
-        const res = await fetch("/api/stripe/creator", {
+        const res = await fetch("/api/stripe/checkout", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ userId: currentUser.id, creatorId: resolvedCreatorId }),
@@ -165,7 +165,7 @@ export default function PublicProfilePage() {
         const res = await fetch("/api/stripe/creator", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId: currentUser.id, creatorId: profile.user_id }),
+          body: JSON.stringify({ userId: currentUser.id, type: "creator", creatorId: profile.user_id }),
         });
         const data = await res.json();
         if (data.url) window.location.href = data.url;
