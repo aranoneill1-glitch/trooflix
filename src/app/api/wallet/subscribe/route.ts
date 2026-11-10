@@ -45,7 +45,7 @@ export async function POST(req: Request) {
     await supabaseAdmin.from("notifications").insert({
       user_id: receiverId,
       actor_id: userId,
-      type: "subscription",
+      type: "purchase",
       title: "New Premium Subscriber!",
       message: "Someone subscribed to your premium content using " + amount + " TrooCoins!"
     });
