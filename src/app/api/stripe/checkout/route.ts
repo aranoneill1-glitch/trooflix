@@ -81,7 +81,7 @@ export async function POST(req: Request) {
           unit_amount: coinCount * 100,
           product_data: { name: `${coinCount} TrooCoins` },
         });
-        sessionParams.subscription_data.add_invoice_items = [{ price: coinPrice.id }];
+        sessionParams.add_invoice_items = [{ price: coinPrice.id }];
       }
 
       const session = await stripe.checkout.sessions.create(sessionParams);
