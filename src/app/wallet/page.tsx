@@ -250,7 +250,7 @@ export default function WalletPage() {
                           </div>
                           <div>
                             <p className="font-bold text-sm flex items-center gap-2 text-white">
-                              {t.type === "topup" ? "Top Up" : t.type === "tip" ? "Tip Sent" : t.type === "send" ? "Sent Coins" : isPayout ? `Payout ${isPaid ? "Paid" : isCancelled ? "Cancelled" : "Pending"}` : "Subscription"}
+                              {t.type === "topup" ? "Top Up" : t.type === "tip" ? "Tip Sent" : t.type === "send" ? "Sent Coins" : isPayout ? `Payout ${isPaid ? "Paid" : isCancelled ? "Cancelled" : "Pending"}` : t.type === "subscription" ? (t.sender_id === userId ? "Subscribed to @" + t.receiver_name : "Subscription from @" + t.sender_name) : "Transaction"}
                             </p>
                             <p className="text-[11px] text-white/40">{new Date(t.created_at).toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</p>
                           </div>
