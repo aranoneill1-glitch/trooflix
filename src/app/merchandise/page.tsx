@@ -126,7 +126,7 @@ export default function MerchandisePage() {
 
         {/* Centered Content */}
         <div className="absolute inset-0 flex flex-col items-center justify-end pb-12 md:pb-16 text-center px-4 z-10">
-          <h1 className="text-4xl md:text-6xl font-serif text-white tracking-wide mb-8 drop-shadow-2xl">
+          <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-white leading-none mb-8 drop-shadow-2xl">
             The Creator Marketplace
           </h1>
           
