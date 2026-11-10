@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import TopBar from "@/components/TopBar";
@@ -8,6 +10,7 @@ import { ShoppingBag, Search, Star, X, Plus, ArrowRight, Heart } from "lucide-re
 import { createClient } from "@/utils/supabase/client";
 
 export default function MerchandisePage() {
+  const router = useRouter();
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
