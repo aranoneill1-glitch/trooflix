@@ -54,6 +54,63 @@ export default function MerchandisePage() {
     }
   }, []);
 
+  const [showBuyModal, setShowBuyModal] = useState(false);
+  const [buyLoading, setBuyLoading] = useState(false);
+  const [shipping, setShipping] = useState({ name: "", address: "", city: "", postalCode: "", country: "" });
+  const [buyError, setBuyError] = useState("");
+
+  const openBuyModal = () => {
+    setShowBuyModal(true);
+    setBuyError("");
+  };
+
+  const handleBuyCard = async () => {
+    if (!selectedProduct) return;
+    setBuyLoading(true);
+    try {
+      const user = await createClient().auth.getUser();
+      if (!user.data.user) { router.push("/login"); return; }
+      const res = await fetch("/api/stripe/merch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.data.user.id, items: [{ id: selectedProduct.id, quantity: 1 }] }),
+      });
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+      else setBuyError(data.error || "Checkout failed.");
+    } catch (e: any) { setBuyError("Network error."); }
+    finally { setBuyLoading(false); }
+  };
+
+  const handleBuyCoins = async () => {
+    if (!selectedProduct) return;
+    if (!shipping.name || !shipping.address || !shipping.city || !shipping.postalCode || !shipping.country) {
+      setBuyError("Please fill in all shipping details.");
+      return;
+    }
+    setBuyLoading(true);
+    setBuyError("");
+    try {
+      const user = await createClient().auth.getUser();
+      if (!user.data.user) { router.push("/login"); return; }
+      const res = await fetch("/api/wallet/buy-merch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.data.user.id, productId: selectedProduct.id, shipping }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert("Order placed! Order code: " + data.orderCode);
+        setShowBuyModal(false);
+        setSelectedProduct(null);
+        window.location.href = "/orders";
+      } else {
+        setBuyError(data.error || "Purchase failed.");
+      }
+    } catch (e: any) { setBuyError("Network error."); }
+    finally { setBuyLoading(false); }
+  };
+
   const addToBasket = (product: any) => {
     const newBasket = [...basket];
     const existing = newBasket.find(item => item.id === product.id);
@@ -252,6 +309,49 @@ export default function MerchandisePage() {
       </div>
 
       {/* PRODUCT MODAL */}
+      {showBuyModal && selectedProduct && (
+        <div className="fixed inset-0 z-[10000] bg-black/90 flex items-center justify-center p-4" onClick={() => setShowBuyModal(false)}>
+          <div className="bg-[#1c1c1e] border border-white/10 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b border-white/10">
+              <h2 className="text-lg font-black text-white">Buy {selectedProduct.name}</h2>
+              <button onClick={() => setShowBuyModal(false)} className="p-2 bg-white/5 hover:bg-white/10 rounded-full">
+                <X size={18} className="text-white" />
+              </button>
+            </div>
+            <div className="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
+              <div className="bg-black/40 border border-white/10 rounded-xl p-4">
+                <p className="text-xs text-white/50 mb-1">Total</p>
+                <p className="text-2xl font-black text-green-400">${(selectedProduct.price_cents / 100).toFixed(2)}</p>
+              </div>
+
+              <div>
+                <p className="text-xs font-bold text-white/60 uppercase tracking-wider mb-2">Shipping Details</p>
+                <div className="space-y-2">
+                  <input placeholder="Full Name" value={shipping.name} onChange={e => setShipping({...shipping, name: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-[#E53945]" />
+                  <input placeholder="Address" value={shipping.address} onChange={e => setShipping({...shipping, address: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-[#E53945]" />
+                  <div className="flex gap-2">
+                    <input placeholder="City" value={shipping.city} onChange={e => setShipping({...shipping, city: e.target.value})} className="flex-1 bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-[#E53945]" />
+                    <input placeholder="Postal Code" value={shipping.postalCode} onChange={e => setShipping({...shipping, postalCode: e.target.value})} className="w-1/2 bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-[#E53945]" />
+                  </div>
+                  <input placeholder="Country" value={shipping.country} onChange={e => setShipping({...shipping, country: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-[#E53945]" />
+                </div>
+              </div>
+
+              {buyError && <p className="text-xs text-red-400 font-semibold">{buyError}</p>}
+
+              <div className="grid grid-cols-2 gap-2 pt-2">
+                <button onClick={handleBuyCoins} disabled={buyLoading} className="py-3 bg-[#D4AF37] hover:bg-[#b8952b] disabled:opacity-50 text-black font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5">
+                  <ShoppingBag size={14} /> Pay with Coins
+                </button>
+                <button onClick={handleBuyCard} disabled={buyLoading} className="py-3 bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5">
+                  <Heart size={14} /> Pay with Card
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {selectedProduct && (
         <div className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setSelectedProduct(null)}>
           <div className="bg-[#1c1c1e] border border-white/10 rounded-3xl w-full max-w-sm overflow-hidden flex flex-col relative shadow-2xl animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
@@ -290,7 +390,7 @@ export default function MerchandisePage() {
                 <button onClick={() => addToBasket(selectedProduct)} className="flex-1 flex items-center justify-center gap-1.5 py-3 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl transition border border-white/10">
                   <Plus size={16} /> Add to Basket
                 </button>
-                <button className="flex-1 py-3 bg-[#E53945] hover:bg-[#d12e39] text-white text-xs font-bold rounded-xl transition shadow-[0_0_15px_rgba(229,57,69,0.3)]">
+                <button onClick={openBuyModal} className="flex-1 py-3 bg-[#E53945] hover:bg-[#d12e39] text-white text-xs font-bold rounded-xl transition shadow-[0_0_15px_rgba(229,57,69,0.3)]">
                   Buy Now
                 </button>
               </div>
