@@ -6,7 +6,7 @@ import Link from "next/link";
 import { 
   Plus, Search, Video, Mic, Eye, Heart, 
   MoreVertical, Pencil, Trash2, Play, LayoutGrid, List, 
-  FileText, Crown, Clock, Globe, Lock, ChevronLeft, X, MessageSquare, Radio 
+  FileText, Crown, Clock, Globe, Lock, ChevronLeft, X, MessageSquare, Radio, Star
 } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
@@ -34,6 +34,8 @@ export default function ManageContentPage() {
   const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
   const [videos, setVideos] = useState<VideoType[]>([]);
+  const [profileFeature, setProfileFeature] = useState<any>(null);
+  const [savingProfileFeatureId, setSavingProfileFeatureId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
   // UI States
@@ -57,6 +59,10 @@ export default function ManageContentPage() {
         return;
       }
       setUserId(user.id);
+      fetch(`/api/profile-feature?user_id=${encodeURIComponent(user.id)}`, { cache: "no-store" })
+        .then((r) => r.json())
+        .then((data) => setProfileFeature(data.feature || null))
+        .catch(() => {});
 
       // Fetch all videos and filter by this creator
       fetch("/api/videos", { cache: "no-store" })
@@ -80,6 +86,31 @@ export default function ManageContentPage() {
     setEditType(video.type || "Documentary");
     setEditVisibility(video.visibility || "public");
     setActiveMenuId(null);
+  };
+
+  const setAsProfileFeature = async (video: VideoType) => {
+    if (savingProfileFeatureId !== null) return;
+    setSavingProfileFeatureId(video.id);
+    try {
+      const res = await fetch("/api/profile-feature", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: "video", videoId: video.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not set profile feature");
+      setProfileFeature(data.feature);
+      setActiveMenuId(null);
+    } catch (error: any) {
+      alert(error.message || "Could not set profile feature.");
+    } finally {
+      setSavingProfileFeatureId(null);
+    }
+  };
+
+  const canBeProfileFeature = (video: VideoType) => {
+    const type = String(video.type || "").toLowerCase();
+    return type !== "short" && type !== "reel" && type !== "tweet" && video.visibility !== "premium" && video.is_premium !== true;
   };
 
   const saveEdit = async (e: React.FormEvent) => {
@@ -302,6 +333,11 @@ export default function ManageContentPage() {
                         <span className="flex items-center gap-1"><Heart size={12} /> {(video.likeCount || 0).toLocaleString()}</span>
                         <span className="flex items-center gap-1"><Clock size={12} /> {video.createdAt ? new Date(video.createdAt).toLocaleDateString() : 'Just now'}</span>
                       </div>
+                      {canBeProfileFeature(video) && (
+                        <button onClick={() => setAsProfileFeature(video)} disabled={savingProfileFeatureId !== null || String(profileFeature?.videoId) === String(video.id)} className={`mt-3 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold transition disabled:cursor-default ${String(profileFeature?.videoId) === String(video.id) ? "border-[#E53945]/40 bg-[#E53945]/10 text-[#F06A72]" : "border-white/10 text-white/60 hover:border-[#E53945]/40 hover:text-white"}`}>
+                          <Star size={12} /> {String(profileFeature?.videoId) === String(video.id) ? "Profile feature" : savingProfileFeatureId === video.id ? "Setting…" : "Set as profile feature"}
+                        </button>
+                      )}
                     </div>
 
                     {/* Action Menu */}
@@ -315,6 +351,7 @@ export default function ManageContentPage() {
                           <button onClick={() => openEditModal(video)} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-white hover:bg-white/10 transition text-left">
                             <Pencil size={14} /> Edit
                           </button>
+                          {canBeProfileFeature(video) && <button onClick={() => setAsProfileFeature(video)} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-white hover:bg-white/10 transition text-left"><Star size={14} /> Set as profile feature</button>}
                           <button className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-white hover:bg-white/10 transition text-left">
                             <Eye size={14} /> View
                           </button>
@@ -359,6 +396,7 @@ export default function ManageContentPage() {
 
                 {/* Actions */}
                 <div className="flex items-center gap-1 shrink-0 px-1">
+                  {canBeProfileFeature(video) && <button onClick={() => setAsProfileFeature(video)} disabled={savingProfileFeatureId !== null || String(profileFeature?.videoId) === String(video.id)} className={`hidden sm:inline-flex items-center gap-1 rounded-full border px-2.5 py-1.5 text-[10px] font-semibold transition disabled:cursor-default ${String(profileFeature?.videoId) === String(video.id) ? "border-[#E53945]/40 bg-[#E53945]/10 text-[#F06A72]" : "border-white/10 text-white/60 hover:border-[#E53945]/40 hover:text-white"}`}><Star size={12} />{String(profileFeature?.videoId) === String(video.id) ? "Profile feature" : "Set as feature"}</button>}
                   <button onClick={() => openEditModal(video)} className="p-2 text-white/50 hover:text-white rounded-lg transition hidden md:block">
                     <Pencil size={16} />
                   </button>
@@ -375,6 +413,7 @@ export default function ManageContentPage() {
                         <button onClick={() => openEditModal(video)} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-white hover:bg-white/10 transition text-left">
                           <Pencil size={14} /> Edit
                         </button>
+                        {canBeProfileFeature(video) && <button onClick={() => setAsProfileFeature(video)} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-white hover:bg-white/10 transition text-left"><Star size={14} /> Set as profile feature</button>}
                         <button onClick={() => handleDelete(video.id)} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 transition text-left">
                           <Trash2 size={14} /> Delete
                         </button>

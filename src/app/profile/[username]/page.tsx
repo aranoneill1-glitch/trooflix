@@ -38,6 +38,7 @@ export default function PublicProfilePage() {
   const username = params.username as string;
   
   const [profile, setProfile] = useState<any>(null);
+  const [profileFeature, setProfileFeature] = useState<any>(null);
   const [videos, setVideos] = useState<any[]>([]);
   const [merch, setMerch] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,6 +70,10 @@ export default function PublicProfilePage() {
       
       if (error || !profileData) { setLoading(false); return; }
       setProfile(profileData);
+      fetch(`/api/profile-feature?user_id=${encodeURIComponent(profileData.user_id)}`, { cache: "no-store" })
+        .then((r) => r.json())
+        .then((data) => setProfileFeature(data.feature || null))
+        .catch(() => {});
 
       let targetCreatorId = profileData.creator_id;
       if (!targetCreatorId || isNaN(Number(targetCreatorId))) {
@@ -255,7 +260,9 @@ export default function PublicProfilePage() {
   if (!profile) return <main className="min-h-screen bg-[#09090B] text-white flex flex-col items-center justify-center px-4"><h1 className="text-2xl font-bold mb-4">User not found</h1><Link href="/" className="bg-[#E53945] text-white font-bold px-8 py-3 rounded-full">Go Home</Link></main>;
 
   const displayName = profile.display_name || "User";
-  const featuredVideo = videos.find((v: any) => (v.videoUrl || v.bitchuteUrl) && v.type?.toLowerCase() !== "tweet" && v.type?.toLowerCase() !== "short") || videos[0];
+  const featuredVideo = profileFeature?.mode === "video"
+    ? videos.find((video: any) => String(video.id) === String(profileFeature.videoId))
+    : null;
   const subscriptionPrice = profile.premium_price_cents ? (profile.premium_price_cents / 100).toFixed(2) : "3.99";
 
   const filteredVideos = videos.filter(v => {
@@ -448,10 +455,14 @@ export default function PublicProfilePage() {
 
             </div>
 <div className="hidden lg:block w-full lg:w-1/2">
-{featuredVideo ? (
-<video src={featuredVideo.videoUrl || featuredVideo.bitchuteUrl} poster={featuredVideo.posterUrl} controls autoPlay muted loop playsInline className="w-full aspect-video object-cover rounded-3xl border border-white/10 shadow-2xl bg-black" />
+{profileFeature?.mode === "video" && featuredVideo ? (
+<video src={featuredVideo.videoUrl || featuredVideo.bitchuteUrl} poster={featuredVideo.posterUrl || featuredVideo.backdropUrl} controls playsInline className="w-full aspect-video object-cover rounded-3xl border border-white/10 shadow-2xl bg-black" />
+) : profileFeature?.mode === "custom" && profileFeature.mediaType === "video" ? (
+<video src={profileFeature.mediaUrl} controls playsInline className="w-full aspect-video object-cover rounded-3xl border border-white/10 shadow-2xl bg-black" />
+) : profileFeature?.mode === "custom" && profileFeature.mediaType === "image" ? (
+<img src={profileFeature.mediaUrl} alt={`${displayName} profile feature`} className="w-full aspect-video object-cover rounded-3xl border border-white/10 shadow-2xl bg-black" />
 ) : (
-<div className="w-full aspect-video bg-black rounded-3xl border border-white/10 flex items-center justify-center text-white/30 text-sm">No featured video</div>
+<div className="w-full aspect-video bg-black rounded-3xl border border-white/10 flex items-center justify-center text-white/30 text-sm">No profile feature set</div>
 )}
 </div>
 </div>

@@ -35,6 +35,7 @@ function CreatorDashboardContent() {
   const studioTab = searchParams.get("studioTab");
   const supabase = createClient();
   const avatarInputRef = useRef<HTMLInputElement>(null);
+  const profileFeatureInputRef = useRef<HTMLInputElement>(null);
 
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
@@ -60,6 +61,8 @@ function CreatorDashboardContent() {
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
   const [showAddContentMenu, setShowAddContentMenu] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [profileFeature, setProfileFeature] = useState<any>(null);
+  const [uploadingProfileFeature, setUploadingProfileFeature] = useState(false);
 
   useEffect(() => {
     if (isPublicView || studioTab === "profile") {
@@ -90,6 +93,10 @@ function CreatorDashboardContent() {
     getCachedUser().then(async (u) => {
       if (u) {
         setUser(u);
+        fetch(`/api/profile-feature?user_id=${encodeURIComponent(u.id)}`, { cache: "no-store" })
+          .then((r) => r.json())
+          .then((data) => setProfileFeature(data.feature || null))
+          .catch(() => {});
         
         const { data: prof } = await supabase.from("profiles").select("*").eq("user_id", u.id).single();
         if (prof) setProfile(prof);
@@ -198,6 +205,55 @@ function CreatorDashboardContent() {
     }
   };
 
+  const handleProfileFeatureUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !user) return;
+    const mediaType = file.type.startsWith("image/") ? "image" : file.type.startsWith("video/") ? "video" : null;
+    const maxBytes = mediaType === "image" ? 20 * 1024 * 1024 : 250 * 1024 * 1024;
+    if (!mediaType || file.size > maxBytes) {
+      alert(mediaType ? "Images must be 20 MB or smaller; videos must be 250 MB or smaller." : "Choose an image or video file.");
+      return;
+    }
+
+    setUploadingProfileFeature(true);
+    try {
+      const signed = await fetch("/api/profile-feature/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contentType: file.type, size: file.size }),
+      }).then(async (r) => {
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.error || "Could not prepare upload");
+        return data;
+      });
+
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", signed.uploadUrl, true);
+        xhr.setRequestHeader("Content-Type", file.type);
+        xhr.onload = () => xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error("Upload failed"));
+        xhr.onerror = () => reject(new Error("Network error while uploading"));
+        xhr.send(file);
+      });
+
+      const saved = await fetch("/api/profile-feature", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: "custom", mediaType, mediaUrl: signed.publicUrl }),
+      }).then(async (r) => {
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.error || "Could not save profile feature");
+        return data;
+      });
+      setProfileFeature(saved.feature);
+    } catch (error: any) {
+      alert(error.message || "Could not upload profile feature.");
+    } finally {
+      setUploadingProfileFeature(false);
+    }
+  };
+
   const handleRemoveAvatar = async () => {
     if (!user) return;
     setUploadingAvatar(true);
@@ -224,14 +280,9 @@ function CreatorDashboardContent() {
   const displayName = profile?.display_name || "Creator Name";
   const username = profile?.username || "creator";
 
-  const latestProfileVideo = creatorVideos.find((video) => {
-    const type = String(video.type || "").toLowerCase();
-    return type !== "short" && type !== "reel" && type !== "tweet" && video.visibility !== "premium";
-  });
-  const profileImageUrl = typeof profile?.backdrop_url === "string" && /^https?:\/\//i.test(profile.backdrop_url)
-    ? profile.backdrop_url
+  const profileFeatureVideo = profileFeature?.mode === "video"
+    ? creatorVideos.find((video) => String(video.id) === String(profileFeature.videoId))
     : null;
-  const profilePreviewImage = profileImageUrl || latestProfileVideo?.posterUrl || latestProfileVideo?.backdropUrl;
 
   const filteredVideos = creatorVideos.filter(v => {
     const type = (v.type || "").toLowerCase();
@@ -371,20 +422,34 @@ function CreatorDashboardContent() {
                     )}
                   </div>
                 </div>
-                <div className="relative aspect-video overflow-hidden rounded-2xl border border-white/10 bg-[#111114] shadow-[0_18px_60px_rgba(0,0,0,0.35)]">
-                  {profilePreviewImage ? (
-                    <img src={profilePreviewImage} alt={profileImageUrl ? `${displayName} profile preview` : latestProfileVideo?.title || "Latest video preview"} className="absolute inset-0 h-full w-full object-cover" />
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => profileFeatureInputRef.current?.click()}
+                  onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); profileFeatureInputRef.current?.click(); } }}
+                  className="group relative aspect-video cursor-pointer overflow-hidden rounded-2xl border border-white/10 bg-[#111114] text-left shadow-[0_18px_60px_rgba(0,0,0,0.35)] focus:outline-none focus:ring-2 focus:ring-[#E53945]"
+                  aria-label="Choose a custom profile image or video"
+                >
+                  {profileFeature?.mode === "video" && profileFeatureVideo ? (
+                    <video src={profileFeatureVideo.videoUrl || profileFeatureVideo.bitchuteUrl} poster={profileFeatureVideo.posterUrl || profileFeatureVideo.backdropUrl} controls playsInline className="absolute inset-0 h-full w-full bg-black object-contain" onClick={(event) => event.stopPropagation()} />
+                  ) : profileFeature?.mode === "custom" && profileFeature.mediaType === "video" ? (
+                    <video src={profileFeature.mediaUrl} controls playsInline className="absolute inset-0 h-full w-full bg-black object-contain" onClick={(event) => event.stopPropagation()} />
+                  ) : profileFeature?.mode === "custom" && profileFeature.mediaType === "image" ? (
+                    <img src={profileFeature.mediaUrl} alt={`${displayName} profile feature`} className="absolute inset-0 h-full w-full object-cover" />
                   ) : (
-                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#241316] via-[#111114] to-[#09090B]"><Video size={34} className="text-white/25" /></div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/5 to-transparent" />
-                  <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3">
-                    <div className="min-w-0">
-                      <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.18em] text-white/65">{profileImageUrl ? "Profile image" : latestProfileVideo ? "Latest video" : "Creator preview"}</span>
-                      {!profileImageUrl && latestProfileVideo && <p className="truncate text-sm font-semibold text-white">{latestProfileVideo.title}</p>}
-                      {!profileImageUrl && !latestProfileVideo && <p className="text-sm font-medium text-white/75">Your featured content will appear here</p>}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-[#241316] via-[#111114] to-[#09090B] text-white/65">
+                      <div className="grid h-12 w-12 place-items-center rounded-full border border-white/15 bg-white/[0.06]"><Plus size={22} /></div>
+                      <span className="text-sm font-semibold">Add a profile image or video</span>
                     </div>
-                    {latestProfileVideo && !profileImageUrl && <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/20 bg-black/35 backdrop-blur-sm"><Play size={16} fill="white" /></span>}
+                  )}
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent opacity-90" />
+                  <div className="pointer-events-none absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3">
+                    <div className="min-w-0">
+                      <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.18em] text-white/65">{profileFeature?.mode === "video" ? "Profile video" : profileFeature?.mediaType === "video" ? "Custom video" : profileFeature?.mediaType === "image" ? "Custom image" : "Profile feature"}</span>
+                      {profileFeature?.mode === "video" && profileFeatureVideo && <p className="truncate text-sm font-semibold text-white">{profileFeatureVideo.title}</p>}
+                      {uploadingProfileFeature && <p className="text-sm font-medium text-white">Uploading your feature…</p>}
+                    </div>
+                    {!uploadingProfileFeature && <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/20 bg-black/35 text-white backdrop-blur-sm transition group-hover:bg-[#E53945]"><Pencil size={15} /></span>}
                   </div>
                 </div>
               </div>
@@ -948,6 +1013,13 @@ function CreatorDashboardContent() {
           onChange={handleAvatarUpload} 
           accept="image/*" 
           className="hidden" 
+        />
+        <input
+          type="file"
+          ref={profileFeatureInputRef}
+          onChange={handleProfileFeatureUpload}
+          accept="image/jpeg,image/png,image/webp,image/avif,video/mp4,video/webm"
+          className="hidden"
         />
 
 
