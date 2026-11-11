@@ -178,26 +178,23 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
       <FeaturedVideoHero videos={featuredVideos} onSelect={onVideoSelect} />
 
       <section>
-        <SectionHead kicker="Latest" title="Don't miss a thing" href="/latest" icon={CirclePlay} />
-        <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
-          {videos.filter((v: any) => {
-            const t = v.type?.toLowerCase();
-            const hasVideo = !!(v.videoUrl || v.bitchuteUrl);
-            return hasVideo && t !== "short" && t !== "tweet" && t !== "reel";
-          }).slice(0, 8).map((v: any) => (
-            <Link key={v.id} href="/latest" className="flex flex-col w-[260px] md:w-[300px] shrink-0 group">
-              <div className="relative aspect-video rounded-2xl overflow-hidden bg-[#141418] ring-1 ring-white/10 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]">
+        <SectionHead kicker="Clips" title="Shorts" href="/feed" icon={ShortsMark} />
+        <div className="flex overflow-x-auto gap-3 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+          {videos.filter((v: any) => v.type?.toLowerCase() === "short" || v.type?.toLowerCase() === "reel").slice(0, 10).map((v: any) => (
+            <Link key={v.id} href={`/feed?reel=${v.id}`} className="relative w-[132px] md:w-[168px] aspect-[9/16] shrink-0 rounded-2xl overflow-hidden ring-1 ring-white/10 group shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]">
+              {(v.videoUrl || v.bitchuteUrl) ? (
                 <VideoPreview
                   src={v.videoUrl || v.bitchuteUrl}
                   poster={v.posterUrl || v.backdropUrl}
                   className="transition duration-700 ease-out group-hover:scale-[1.04]"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/10 pointer-events-none" />
-                <span className="absolute bottom-2.5 right-2.5 text-[11px] font-medium px-2 py-1 rounded-full bg-black/55 text-white/90 backdrop-blur-md ring-1 ring-white/10">
-                  {timeAgo(v.createdAt)}
-                </span>
+              ) : (
+                <img src={v.posterUrl || v.backdropUrl} alt="" className="absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:scale-[1.04]" />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-black/20 pointer-events-none" />
+              <div className="absolute bottom-0 left-0 right-0 p-3">
+                <p className="flex items-center gap-1 text-[11px] font-medium text-white/80"><Eye size={13} strokeWidth={2} />{v.views || 0}</p>
               </div>
-              <h3 className="mt-3 text-[15px] font-medium text-white/90 leading-snug line-clamp-2 group-hover:text-white transition">{v.title}</h3>
             </Link>
           ))}
         </div>
@@ -220,23 +217,26 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
       </section>
 
       <section>
-        <SectionHead kicker="Clips" title="Shorts" href="/feed" icon={ShortsMark} />
-        <div className="flex overflow-x-auto gap-3 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
-          {videos.filter((v: any) => v.type?.toLowerCase() === "short" || v.type?.toLowerCase() === "reel").slice(0, 10).map((v: any) => (
-            <Link key={v.id} href={`/feed?reel=${v.id}`} className="relative w-[132px] md:w-[168px] aspect-[9/16] shrink-0 rounded-2xl overflow-hidden ring-1 ring-white/10 group shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]">
-              {(v.videoUrl || v.bitchuteUrl) ? (
+        <SectionHead kicker="Latest" title="Don't miss a thing" href="/latest" icon={CirclePlay} />
+        <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+          {videos.filter((v: any) => {
+            const t = v.type?.toLowerCase();
+            const hasVideo = !!(v.videoUrl || v.bitchuteUrl);
+            return hasVideo && t !== "short" && t !== "tweet" && t !== "reel";
+          }).slice(0, 8).map((v: any) => (
+            <Link key={v.id} href="/latest" className="flex flex-col w-[260px] md:w-[300px] shrink-0 group">
+              <div className="relative aspect-video rounded-2xl overflow-hidden bg-[#141418] ring-1 ring-white/10 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]">
                 <VideoPreview
                   src={v.videoUrl || v.bitchuteUrl}
                   poster={v.posterUrl || v.backdropUrl}
                   className="transition duration-700 ease-out group-hover:scale-[1.04]"
                 />
-              ) : (
-                <img src={v.posterUrl || v.backdropUrl} alt="" className="absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:scale-[1.04]" />
-              )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-black/20 pointer-events-none" />
-              <div className="absolute bottom-0 left-0 right-0 p-3">
-                <p className="flex items-center gap-1 text-[11px] font-medium text-white/80"><Eye size={13} strokeWidth={2} />{v.views || 0}</p>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/10 pointer-events-none" />
+                <span className="absolute bottom-2.5 right-2.5 text-[11px] font-medium px-2 py-1 rounded-full bg-black/55 text-white/90 backdrop-blur-md ring-1 ring-white/10">
+                  {timeAgo(v.createdAt)}
+                </span>
               </div>
+              <h3 className="mt-3 text-[15px] font-medium text-white/90 leading-snug line-clamp-2 group-hover:text-white transition">{v.title}</h3>
             </Link>
           ))}
         </div>
