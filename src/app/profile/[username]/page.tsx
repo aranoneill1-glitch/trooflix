@@ -3,7 +3,7 @@ import { getCachedUser } from "@/lib/cache";
 
 import { useEffect, useState , useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { CreditCard, Wallet, ArrowLeft, UserPlus, MessageSquare, CheckCircle2, LayoutGrid, List, ShoppingBag, Star, Lock, Play , GripVertical } from "lucide-react";
+import { CreditCard, Wallet, ArrowLeft, UserPlus, MessageSquare, CheckCircle2, LayoutGrid, List, ShoppingBag, Star, Lock, Play, GripVertical, X } from "lucide-react";
 import HomeFeedCard from "@/components/HomeFeedCard";
 import CommentSheet from "@/components/CommentSheet";
 import Comments from "@/components/Comments";
@@ -138,6 +138,33 @@ export default function PublicProfilePage() {
     if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
     if (num >= 1000) return (num / 1000).toFixed(1) + "K";
     return num.toString();
+  };
+
+  const [cancelLoading, setCancelLoading] = useState(false);
+
+  const handleCancelSubscription = async () => {
+    if (!currentUser) return alert("Please log in");
+    if (!confirm("Cancel your subscription? You will keep access until the current billing period ends.")) return;
+    setCancelLoading(true);
+    try {
+      const res = await fetch("/api/wallet/cancel-subscription", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: currentUser.id, creatorId: resolvedCreatorId }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert("Subscription cancelled. You have access until " + new Date(data.access_until).toLocaleDateString());
+        setIsSubscribed(false);
+        if (typeof window !== "undefined") window.location.reload();
+      } else {
+        alert(data.error || "Could not cancel subscription.");
+      }
+    } catch (e) {
+      alert("Network error.");
+    } finally {
+      setCancelLoading(false);
+    }
   };
 
   const handleSubscribeCard = async () => {
@@ -394,19 +421,27 @@ export default function PublicProfilePage() {
 
             {/* SUBSCRIBE & MESSAGE BUTTONS */}
             <div className="flex gap-3 mb-8 w-full">
-              <button onClick={() => setShowSubscribeModal(true)} className="flex-1 flex items-center justify-center gap-2 bg-[#E53945] text-white font-bold py-3 rounded-full hover:bg-[#d12e39] transition shadow-lg shadow-[#E53945]/20">
-        <Star size={18} fill="currentColor" /> {isSubscribed ? "Subscribed" : `Subscribe - ${subscriptionPrice}`}
-      </button>
-      {isSubscribed ? (
-        <Link href={`/messages/${profile.user_id}`} className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-full transition border border-white/10">
-          <MessageSquare size={18} /> Message
-        </Link>
-      ) : (
-        <button onClick={() => setShowSubscribeModal(true)} className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-full transition border border-white/10">
-          <MessageSquare size={18} /> Subscribe to Message
-        </button>
-      )}
+              {isSubscribed ? (
+                <>
+                  <button onClick={handleCancelSubscription} disabled={cancelLoading} className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-red-500/20 text-red-400 font-bold py-3 rounded-full transition border border-red-500/30 disabled:opacity-50">
+                    <X size={18} /> {cancelLoading ? "Cancelling..." : "Cancel Subscription"}
+                  </button>
+                  <Link href={`/messages/${profile.user_id}`} className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-full transition border border-white/10">
+                    <MessageSquare size={18} /> Message
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <button onClick={() => setShowSubscribeModal(true)} className="flex-1 flex items-center justify-center gap-2 bg-[#E53945] text-white font-bold py-3 rounded-full hover:bg-[#d12e39] transition shadow-lg shadow-[#E53945]/20">
+                    <Star size={18} fill="currentColor" /> Subscribe - {subscriptionPrice}
+                  </button>
+                  <button onClick={() => setShowSubscribeModal(true)} className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-full transition border border-white/10">
+                    <MessageSquare size={18} /> Subscribe to Message
+                  </button>
+                </>
+              )}
             </div>
+
 
             </div>
 <div className="hidden lg:block w-full lg:w-1/2">
