@@ -4,7 +4,7 @@ import { MessageCircle, Eye, LayoutDashboard, Play } from "lucide-react";
 import { useEffect, useState } from "react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import { Wallet, ArrowDownRight, ArrowUpRight, X, CheckCircle2, Building2, Bitcoin, Send, AlertTriangle, ShieldCheck, ChevronRight } from "lucide-react";
+import { Wallet, ArrowDownRight, ArrowUpRight, ArrowUp, ArrowDown, X, CheckCircle2, Building2, Bitcoin, Send, AlertTriangle, ShieldCheck, ChevronRight } from "lucide-react";
 import { getCachedUser } from "@/lib/cache";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -241,12 +241,13 @@ export default function WalletPage() {
                     const isPayout = t.type === "payout";
                     const isPaid = isPayout && t.status === "completed";
                     const isCancelled = isPayout && t.status === "cancelled";
+                    const isIncoming = t.type === "topup" || ((t.type === "tip" || t.type === "subscription") && t.receiver_id === userId);
                     
                     return (
                       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.05 }} key={t.id} onClick={() => setSelectedTx(t)} className="flex items-center justify-between p-4 border-b border-white/5 last:border-0 hover:bg-white/[0.02] cursor-pointer transition">
                         <div className="flex items-center gap-4">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${t.type === "topup" ? "bg-green-500/10 text-green-500" : t.type === "tip" ? (t.receiver_id === userId ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500") : isPayout ? (isPaid ? "bg-green-500/10 text-green-500" : isCancelled ? "bg-red-500/10 text-red-500" : "bg-yellow-500/10 text-yellow-500") : "bg-red-500/10 text-red-500"}`}>
-                            {t.type === "topup" ? <ArrowDownRight size={18} /> : t.type === "send" ? <Send size={16} /> : <ArrowUpRight size={18} />}
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isIncoming ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"}`}>
+                            {isIncoming ? <ArrowDown size={18} /> : <ArrowUp size={18} />}
                           </div>
                           <div>
                             <p className="font-bold text-sm flex items-center gap-2 text-white">
@@ -255,8 +256,8 @@ export default function WalletPage() {
                             <p className="text-[11px] text-white/40">{new Date(t.created_at).toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</p>
                           </div>
                         </div>
-                        <span className={`font-bold text-sm ${t.type === "topup" ? "text-green-500" : isCancelled ? "text-white/30 line-through" : "text-white"}`}>
-                          {t.type === "topup" ? "+" : "-"}{Number(t.amount).toFixed(2)}
+                        <span className={`font-bold text-sm ${isIncoming ? "text-green-500" : isCancelled ? "text-white/30 line-through" : "text-red-400"}`}>
+                          {isIncoming ? "+" : "-"}{Number(t.amount).toFixed(2)}
                         </span>
                       </motion.div>
                     );
