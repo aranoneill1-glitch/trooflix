@@ -22,7 +22,6 @@ const FEATURES: { label: string; free: boolean; plus: boolean; creator: boolean 
   { label: "Watch live streams (public)", free: false, plus: true, creator: true },
   { label: "Upload merch / open shop", free: false, plus: true, creator: true },
   { label: "Upload long-form (long-videos, docs)", free: false, plus: false, creator: true },
-  { label: "Post Tweets", free: false, plus: false, creator: true },
   { label: "Go Live (broadcast)", free: false, plus: false, creator: true },
   { label: "Full Creator Dashboard", free: false, plus: false, creator: true },
   { label: "Custom profile theme", free: false, plus: false, creator: true },
@@ -220,7 +219,6 @@ export default function UpgradePage() {
             features={[
               "Everything in Plus",
               "Upload long-form (long-videos, docs)",
-              "Post Tweets",
               "Go Live (broadcast)",
               "Full Creator Dashboard",
               "Custom profile theme",

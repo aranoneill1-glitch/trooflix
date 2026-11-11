@@ -59,7 +59,6 @@ const TIERS = [
       { text: "Everything in Plus", included: true },
       { text: "Upload long-form (long-videos, docs)", included: true },
       { text: "Go Live (broadcast)", included: true },
-      { text: "Post Tweets", included: true },
       { text: "Full Creator Dashboard", included: true },
       { text: "Custom profile theme", included: true },
       { text: "99% revenue share", included: true },

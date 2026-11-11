@@ -778,22 +778,6 @@ function CreatorDashboardContent() {
                   </Link>
                   
                   <Link 
-                    href={userTier === "creator" ? "/creator-dashboard/upload?type=tweet" : "/upgrade?feature=add_tweet"}
-                    onClick={() => setShowAddContentMenu(false)}
-                    className={`group relative flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-green-500/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden ${userTier !== "creator" ? "opacity-50" : ""}`}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <div className="absolute inset-0 bg-gradient-to-r from-green-500/0 via-green-500/0 to-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(34,197,94,0.2)]">
-                      <MessageSquare className="text-green-400" size={24} />
-                    </div>
-                    <div className="relative z-10">
-                      <h4 className="font-bold text-white text-base flex items-center gap-1.5">Add a Tweet {userTier !== "creator" && <Lock size={12} className="text-yellow-400" />}</h4>
-                      <p className="text-xs text-white/50">Share a text update on the home feed</p>
-                    </div>
-                  </Link>
-
-                  <Link 
                     href={userTier === "creator" ? "/creator-dashboard/live" : "/upgrade?feature=go_live"}
                     onClick={() => setShowAddContentMenu(false)}
                     className={`group relative flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#E53945]/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden ${userTier !== "creator" ? "opacity-50" : ""}`}

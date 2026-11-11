@@ -60,7 +60,6 @@ const TIERS: Record<Tier, any> = {
       { text: "Everything in Plus", included: true },
       { text: "Upload long-form (podcasts, docs)", included: true },
       { text: "Go Live (broadcast)", included: true },
-      { text: "Post Tweets", included: true },
       { text: "Full Creator Dashboard", included: true },
       { text: "Custom profile theme", included: true },
       { text: "99% revenue share", included: true },

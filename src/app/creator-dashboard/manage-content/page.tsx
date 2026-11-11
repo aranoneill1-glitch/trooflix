@@ -417,11 +417,9 @@ export default function ManageContentPage() {
               <div>
                 <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 block">Content Type</label>
                 <select value={editType} onChange={(e) => setEditType(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#E53945] transition appearance-none">
-                  <option value="Documentary">Documentary</option>
-                  <option value="Podcast">Podcast</option>
-                  <option value="Independent Film">Independent Film</option>
+                  <option value="long-video">Long Video</option>
                   <option value="Short">Short</option>
-                  <option value="Tweet">Tweet</option>
+                  <option value="Independent Film">Independent Film</option>
                 </select>
               </div>
               <div>
@@ -506,21 +504,7 @@ export default function ManageContentPage() {
                   </div>
                 </button>
                 
-                <button 
-                  onClick={() => { setShowAddContentMenu(false); router.push("/creator-dashboard/upload?type=tweet"); }}
-                  className="group relative flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-green-500/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden text-left w-full"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent to-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(34,197,94,0.2)]">
-                    <MessageSquare className="text-green-400" size={24} />
-                  </div>
-                  <div className="relative z-10">
-                    <h4 className="font-bold text-white text-base">Add a Tweet</h4>
-                    <p className="text-xs text-white/50">Share a text update on the home feed</p>
-                  </div>
-                </button>
-
-                <button 
+                <button
                   onClick={() => { setShowAddContentMenu(false); router.push("/creator-dashboard/live"); }}
                   className="group relative flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#E53945]/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden text-left w-full"
                 >
