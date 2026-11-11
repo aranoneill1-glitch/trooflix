@@ -83,7 +83,7 @@ function SectionHead({ kicker, title, href, icon: Icon }: { kicker: string; titl
   return (
     <div className="flex items-end justify-between mb-5">
       <div className="flex min-w-0 items-center gap-3">
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center text-white/75">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center text-[#E53945]">
           <Icon size={22} strokeWidth={2} />
         </span>
         <div className="min-w-0">
@@ -237,8 +237,7 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-black/20 pointer-events-none" />
               <div className="absolute bottom-0 left-0 right-0 p-3">
-                <h3 className="text-white text-[12px] font-medium leading-snug line-clamp-2">{v.title}</h3>
-                <p className="mt-1 flex items-center gap-1 text-[11px] text-white/60"><Eye size={12} strokeWidth={2} />{v.views || 0}</p>
+                <p className="flex items-center gap-1 text-[11px] font-medium text-white/80"><Eye size={13} strokeWidth={2} />{v.views || 0}</p>
               </div>
             </Link>
           ))}
