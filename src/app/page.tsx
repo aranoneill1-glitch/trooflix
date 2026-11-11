@@ -340,7 +340,7 @@ export default function Home() {
         <>
           {!showingFiltered && (
             <>
-              {!user && authResolved && (<>
+              {authResolved && (<>
               {/* MOBILE SECTION: Pills + Header + Avatars + Hero */}
               <div className="lg:hidden relative z-10 flex w-full flex-col px-4 pt-24 sm:px-6">
                 <section className="relative isolate mx-auto w-full max-w-3xl overflow-hidden rounded-[28px] border border-white/10 bg-[#101115] shadow-[0_28px_80px_rgba(0,0,0,0.45)] sm:rounded-[34px]">
