@@ -313,18 +313,20 @@ function CreatorDashboardContent() {
 
         <div className="max-w-5xl mx-auto px-4 pt-[76px] pb-6">
           
-          <CreatorStudioNav
-            active={showMyTrooFlix ? "mytrooflix" : isDashboardView ? "dashboard" : "profile"}
-            dashboardLocked={userTier === "free"}
-            onViewChange={(section) => {
-              if (section === "dashboard" && userTier === "free") {
-                window.location.href = "/upgrade?feature=dashboard";
-                return;
-              }
-              setIsDashboardView(section === "dashboard");
-              setShowMyTrooFlix(section === "mytrooflix");
-            }}
-          />
+          {(isDashboardView || showMyTrooFlix) && (
+            <CreatorStudioNav
+              active={showMyTrooFlix ? "mytrooflix" : "dashboard"}
+              dashboardLocked={userTier === "free"}
+              onViewChange={(section) => {
+                if (section === "dashboard" && userTier === "free") {
+                  window.location.href = "/upgrade?feature=dashboard";
+                  return;
+                }
+                setIsDashboardView(section === "dashboard");
+                setShowMyTrooFlix(section === "mytrooflix");
+              }}
+            />
+          )}
 
           {showMyTrooFlix && <MyTrooFlixContent embedded />}
 
@@ -359,10 +361,13 @@ function CreatorDashboardContent() {
                 </div>
 
                 <div className="px-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <h1 className="text-2xl md:text-3xl font-black flex items-center gap-2 text-white">{displayName} {profile?.verification_tick && profile.verification_tick !== "none" && <VerifiedBadge size={20} variant={profile.verification_tick as any} />}</h1>
-                    
-                    
+                  <div className="flex items-center justify-between gap-3 mb-1">
+                    <h1 className="text-2xl md:text-3xl font-black flex min-w-0 items-center gap-2 text-white">{displayName} {profile?.verification_tick && profile.verification_tick !== "none" && <VerifiedBadge size={20} variant={profile.verification_tick as any} />}</h1>
+                    {userTier === "creator" ? (
+                      <Link href="/creator-dashboard/live" className="inline-flex shrink-0 items-center gap-2 border border-[#E53945]/70 px-3.5 py-2 text-xs font-bold text-[#F06A72] transition hover:bg-[#E53945]/10 sm:px-4 sm:text-sm"><Radio size={15} /> Go Live</Link>
+                    ) : (
+                      <button onClick={() => { window.location.href = "/upgrade?feature=go_live"; }} className="inline-flex shrink-0 items-center gap-2 border border-white/20 px-3.5 py-2 text-xs font-bold text-white/55 transition hover:bg-white/5 sm:px-4 sm:text-sm"><Radio size={15} /> Go Live <Lock size={11} /></button>
+                    )}
                   </div>
                   <p className="text-sm md:text-base text-white/50 mb-3">@{username}</p>
                   
@@ -374,18 +379,19 @@ function CreatorDashboardContent() {
                 </div>
               </div>
 
-              <div className="flex gap-3 mb-8 w-full">
-                <button onClick={() => setShowAddContentMenu(true)} className="flex-1 flex items-center justify-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-white font-bold py-2.5 rounded-full hover:bg-white/20 transition shadow-[0_8px_32px_rgba(0,0,0,0.4)]"><Plus size={16} /> Add Content</button>
-                {userTier === "creator" ? (
-                  <Link href="/creator-dashboard/live" className="flex-1 flex items-center justify-center gap-2 bg-white/10 backdrop-blur-md border border-[#E53945] text-[#E53945] font-bold py-2.5 rounded-full hover:bg-[#E53945]/10 transition shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-                    <Radio size={16} /> Go Live
-                  </Link>
-                ) : (
-                  <button onClick={() => { window.location.href = "/upgrade?feature=go_live"; }} className="flex-1 flex items-center justify-center gap-2 bg-white/5 backdrop-blur-md border border-white/20 text-white/50 font-bold py-2.5 rounded-full hover:bg-white/10 transition shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-                    <Radio size={16} /> Go Live <Lock size={11} />
-                  </button>
-                )}
-              </div>
+              <CreatorStudioNav
+                active="profile"
+                className="mb-8"
+                dashboardLocked={userTier === "free"}
+                onViewChange={(section) => {
+                  if (section === "dashboard" && userTier === "free") {
+                    window.location.href = "/upgrade?feature=dashboard";
+                    return;
+                  }
+                  setIsDashboardView(section === "dashboard");
+                  setShowMyTrooFlix(section === "mytrooflix");
+                }}
+              />
 
               <div className="flex items-center justify-between border-b border-white/10 mb-6">
                 <div className="flex items-center gap-8">
