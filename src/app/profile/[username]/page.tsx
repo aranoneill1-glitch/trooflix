@@ -188,12 +188,11 @@ export default function PublicProfilePage() {
     const handleSubscribeCoins = async () => {
       if (currentUser === null) return router.push("/login");
       if (resolvedCreatorId === null) return alert("Could not find creator ID.");
-      const amount = profile?.premium_price_cents ? profile.premium_price_cents / 100 : 3.99;
       try {
         const res = await fetch("/api/wallet/subscribe", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId: currentUser.id, creatorId: resolvedCreatorId, amount }),
+          body: JSON.stringify({ userId: currentUser.id, creatorId: resolvedCreatorId }),
         });
         const data = await res.json();
         if (res.ok) {

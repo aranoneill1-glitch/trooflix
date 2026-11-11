@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { requireAdmin } from "@/lib/admin-auth";
 
 export async function GET() {
   // HARD STOP: this route creates auth users with a known password.
@@ -8,6 +9,9 @@ export async function GET() {
   if (process.env.NODE_ENV === "production" || process.env.VERCEL === "1") {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
+
+  const unauthorized = await requireAdmin();
+  if (unauthorized) return unauthorized;
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

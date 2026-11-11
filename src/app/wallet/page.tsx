@@ -380,8 +380,8 @@ export default function WalletPage() {
                 </div>
                 <div className="h-px bg-white/5 mb-4"></div>
                 <div className="flex gap-2">
-                  <input type="number" min="5" placeholder="Custom Amount ($)" value={customTopUp} onChange={e => setCustomTopUp(e.target.value)} className="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-[#E53945]" />
-                  <button onClick={() => buyCoins(Number(customTopUp), Number(customTopUp) * 100)} disabled={!customTopUp || Number(customTopUp) < 5} className="bg-[#E53945] hover:bg-[#d12e39] text-white font-bold px-5 rounded-xl transition disabled:opacity-50 text-sm">Buy</button>
+                  <input type="number" min="5" max="500" step="0.01" placeholder="Custom Amount ($)" value={customTopUp} onChange={e => setCustomTopUp(e.target.value)} className="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-[#E53945]" />
+                  <button onClick={() => buyCoins(Number(customTopUp), Number(customTopUp) * 100)} disabled={!customTopUp || Number(customTopUp) < 5 || Number(customTopUp) > 500} className="bg-[#E53945] hover:bg-[#d12e39] text-white font-bold px-5 rounded-xl transition disabled:opacity-50 text-sm">Buy</button>
                 </div>
               </div>
             </motion.div>

@@ -33,7 +33,7 @@ export async function GET() {
       .in("status", ["active", "trialing"]);
 
     const passCount = passSubs?.length || 0;
-    const passGrossCents = passCount * 999; // $9.99 per pass
+    const passGrossCents = passCount * 399; // $3.99 per pass
     // Estimate Stripe fees: 3.6% + 30c per transaction
     const estimatedStripeFees = Math.floor((passGrossCents * 0.036) + (passCount * 30));
     const passNetCents = Math.max(0, passGrossCents - estimatedStripeFees);

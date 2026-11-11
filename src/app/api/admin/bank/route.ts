@@ -26,7 +26,7 @@ export async function GET() {
       .eq("subscription_type", "pass")
       .in("status", ["active", "trialing"]);
     const passCount = passes?.length || 0;
-    const passGrossCents = passCount * 999; // $9.99
+    const passGrossCents = passCount * 399; // $3.99
 
     // 2. Podcaster Tiers (You keep 100%)
     const { data: podcasters } = await supabaseAdmin

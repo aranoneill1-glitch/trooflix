@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { kv } from "@vercel/kv";
+import { requireAdmin } from "@/lib/admin-auth";
 
 export async function GET() {
+  const unauthorized = await requireAdmin();
+  if (unauthorized) return unauthorized;
   try {
     const creators = (await kv.get<any[]>("trooflix:creators")) || [];
     

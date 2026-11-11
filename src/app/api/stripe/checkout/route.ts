@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { kv } from "@vercel/kv";
 import { createClient as createServerClient } from "@supabase/supabase-js";
+import { assertSelf, requireUser } from "@/lib/api-auth";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 const supabaseAdmin = createServerClient(
@@ -14,6 +15,11 @@ const CREATORS_KEY = "trooflix:creators";
 export async function POST(req: Request) {
   try {
     const { userId, type, creatorId, coins } = await req.json();
+
+    const auth = await requireUser();
+    if (auth instanceof Response) return auth;
+    const mismatch = assertSelf(auth.user, userId);
+    if (mismatch) return mismatch;
 
     if (!userId) return NextResponse.json({ error: "userId required" }, { status: 400 });
     if (!["pass", "creator", "creator_premium"].includes(type)) return NextResponse.json({ error: "Invalid type" }, { status: 400 });
@@ -43,7 +49,15 @@ export async function POST(req: Request) {
         await supabaseAdmin.from("profiles").update({ stripe_customer_id: customerId }).eq("user_id", userId);
       }
 
-      const coinCount = Number(coins) || 0;
+      const requestedCoins = coins === undefined || coins === null || coins === "" ? 0 : Number(coins);
+      const coinCents = Math.round(requestedCoins * 100);
+      if (!Number.isFinite(requestedCoins) || requestedCoins < 0 || !Number.isSafeInteger(coinCents) || Math.abs(requestedCoins - coinCents / 100) > 1e-8) {
+        return NextResponse.json({ error: "Invalid TrooCoin amount" }, { status: 400 });
+      }
+      if (coinCents > 0 && (coinCents < 500 || coinCents > 50000)) {
+        return NextResponse.json({ error: "Signup top-ups must be between $5 and $500" }, { status: 400 });
+      }
+      const coinCount = coinCents / 100;
 
       const sessionParams: any = {
         customer: customerId,
@@ -78,7 +92,7 @@ export async function POST(req: Request) {
       if (coinCount > 0) {
         const coinPrice = await stripe.prices.create({
           currency: "usd",
-          unit_amount: coinCount * 100,
+          unit_amount: coinCents,
           product_data: { name: `${coinCount} TrooCoins` },
         });
         sessionParams.add_invoice_items = [{ price: coinPrice.id }];

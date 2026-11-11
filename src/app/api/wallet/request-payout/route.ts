@@ -12,23 +12,35 @@ export async function POST(req: Request) {
     if (auth instanceof Response) return auth;
     const mismatch = assertSelf(auth.user, userId);
     if (mismatch) return mismatch;
-    if (!userId || !amount || amount < 5) return NextResponse.json({ error: "Minimum payout is $5.00" }, { status: 400 });
+    const payoutAmount = Number(amount);
+    const amountCents = Math.round(payoutAmount * 100);
+    if (!Number.isFinite(payoutAmount) || !Number.isSafeInteger(amountCents) || Math.abs(payoutAmount - amountCents / 100) > 1e-8 || amountCents < 500) {
+      return NextResponse.json({ error: "Minimum payout is $5.00; enter a valid amount to the nearest cent." }, { status: 400 });
+    }
+    if (method !== "bank" && method !== "crypto") {
+      return NextResponse.json({ error: "Invalid payout method." }, { status: 400 });
+    }
+
+    const { data: payoutDetails } = await supabaseAdmin.from("payout_methods").select("payout_type").eq("user_id", userId).maybeSingle();
+    if (!payoutDetails || payoutDetails.payout_type !== method) {
+      return NextResponse.json({ error: "Add matching payout details before requesting a payout." }, { status: 400 });
+    }
 
     const { data: wallet } = await supabaseAdmin.from("wallets").select("balance").eq("user_id", userId).maybeSingle();
-    if (!wallet || wallet.balance < amount) return NextResponse.json({ error: "Insufficient balance." }, { status: 400 });
+    if (!wallet || Number(wallet.balance) < payoutAmount) return NextResponse.json({ error: "Insufficient balance." }, { status: 400 });
 
     const isCrypto = method === "crypto";
-    const fee = isCrypto ? amount * 0.15 : 0;
-    const net_amount = amount - fee;
+    const fee = isCrypto ? Math.round(amountCents * 0.15) / 100 : 0;
+    const net_amount = payoutAmount - fee;
 
     // Deduct full amount from wallet
-    await supabaseAdmin.from("wallets").update({ balance: wallet.balance - amount }).eq("user_id", userId);
+    await supabaseAdmin.from("wallets").update({ balance: Number(wallet.balance) - payoutAmount }).eq("user_id", userId);
 
     // Create transaction with fee tracking
     await supabaseAdmin.from("transactions").insert({
       sender_id: userId,
       receiver_id: null,
-      amount: amount,
+      amount: payoutAmount,
       fee: fee,
       net_amount: net_amount,
       type: "payout",

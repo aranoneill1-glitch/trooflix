@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient as createServerClient } from "@supabase/supabase-js";
 import { kv } from "@vercel/kv";
+import { requireAdmin } from "@/lib/admin-auth";
 
 const supabaseAdmin = createServerClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -17,6 +18,8 @@ const CREATORS_KEY = "trooflix:creators";
  * POST /api/admin/link-creators
  */
 export async function POST() {
+  const unauthorized = await requireAdmin();
+  if (unauthorized) return unauthorized;
   try {
     const creators = (await kv.get<any[]>(CREATORS_KEY)) || [];
     const { data: profiles } = await supabaseAdmin

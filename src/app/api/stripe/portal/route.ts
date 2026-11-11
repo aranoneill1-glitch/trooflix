@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient as createServerClient } from "@supabase/supabase-js";
+import { assertSelf, requireUser } from "@/lib/api-auth";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -16,6 +17,10 @@ export async function POST(req: Request) {
     if (!userId) {
       return NextResponse.json({ error: "userId required" }, { status: 400 });
     }
+    const auth = await requireUser();
+    if (auth instanceof Response) return auth;
+    const mismatch = assertSelf(auth.user, userId);
+    if (mismatch) return mismatch;
 
     const { data: profile } = await supabaseAdmin
       .from("profiles")

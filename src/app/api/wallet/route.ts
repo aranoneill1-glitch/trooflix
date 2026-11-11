@@ -13,6 +13,10 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const userId = searchParams.get("userId");
   if (!userId) return NextResponse.json({ error: "Missing userId" }, { status: 400 });
+  const auth = await requireUser();
+  if (auth instanceof Response) return auth;
+  const mismatch = assertSelf(auth.user, userId);
+  if (mismatch) return mismatch;
 
   const { data: wallet } = await supabaseAdmin.from("wallets").select("balance").eq("user_id", userId).single();
   const { data: transactions } = await supabaseAdmin.from("transactions").select("*").or(`sender_id.eq.${userId},receiver_id.eq.${userId}`).order("created_at", { ascending: false }).limit(20);

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient as createServerClient } from "@supabase/supabase-js";
+import { requireAdmin } from "@/lib/admin-auth";
 
 const supabaseAdmin = createServerClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -8,6 +9,8 @@ const supabaseAdmin = createServerClient(
 );
 
 export async function GET() {
+  const unauthorized = await requireAdmin();
+  if (unauthorized) return unauthorized;
   try {
     // Loop through all 50 mock creators and assign a unique face
     let updated = 0;

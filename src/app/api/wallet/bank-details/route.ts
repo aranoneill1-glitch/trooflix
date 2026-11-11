@@ -9,6 +9,11 @@ export async function GET(req: Request) {
   const userId = searchParams.get("userId");
   if (!userId) return NextResponse.json({ error: "Missing userId" }, { status: 400 });
 
+  const auth = await requireUser();
+  if (auth instanceof Response) return auth;
+  const mismatch = assertSelf(auth.user, userId);
+  if (mismatch) return mismatch;
+
   const { data } = await supabaseAdmin.from("payout_methods").select("*").eq("user_id", userId).maybeSingle();
   return NextResponse.json({ bankDetails: data || null });
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient as createServerClient } from "@supabase/supabase-js";
 import { kv } from "@vercel/kv";
+import { requireAdmin } from "@/lib/admin-auth";
 
 const supabaseAdmin = createServerClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -9,6 +10,8 @@ const supabaseAdmin = createServerClient(
 );
 
 export async function GET() {
+  const unauthorized = await requireAdmin();
+  if (unauthorized) return unauthorized;
   try {
     // 1. Fetch all orders
     const { data: orders, error } = await supabaseAdmin
