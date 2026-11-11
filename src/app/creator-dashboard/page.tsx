@@ -364,9 +364,9 @@ function CreatorDashboardContent() {
                   <div className="flex items-center justify-between gap-3 mb-1">
                     <h1 className="text-2xl md:text-3xl font-black flex min-w-0 items-center gap-2 text-white">{displayName} {profile?.verification_tick && profile.verification_tick !== "none" && <VerifiedBadge size={20} variant={profile.verification_tick as any} />}</h1>
                     {userTier === "creator" ? (
-                      <Link href="/creator-dashboard/live" className="inline-flex shrink-0 items-center gap-2 border border-[#E53945]/70 px-3.5 py-2 text-xs font-bold text-[#F06A72] transition hover:bg-[#E53945]/10 sm:px-4 sm:text-sm"><Radio size={15} /> Go Live</Link>
+                      <Link href="/creator-dashboard/live" className="mr-2 inline-flex shrink-0 items-center gap-2 rounded-full border border-[#E53945]/70 px-3.5 py-2 text-xs font-bold text-[#F06A72] transition hover:bg-[#E53945]/10 sm:px-4 sm:text-sm"><Radio size={15} /> Go Live</Link>
                     ) : (
-                      <button onClick={() => { window.location.href = "/upgrade?feature=go_live"; }} className="inline-flex shrink-0 items-center gap-2 border border-white/20 px-3.5 py-2 text-xs font-bold text-white/55 transition hover:bg-white/5 sm:px-4 sm:text-sm"><Radio size={15} /> Go Live <Lock size={11} /></button>
+                      <button onClick={() => { window.location.href = "/upgrade?feature=go_live"; }} className="mr-2 inline-flex shrink-0 items-center gap-2 rounded-full border border-white/20 px-3.5 py-2 text-xs font-bold text-white/55 transition hover:bg-white/5 sm:px-4 sm:text-sm"><Radio size={15} /> Go Live <Lock size={11} /></button>
                     )}
                   </div>
                   <p className="text-sm md:text-base text-white/50 mb-3">@{username}</p>
