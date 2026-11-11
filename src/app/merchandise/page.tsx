@@ -64,24 +64,6 @@ export default function MerchandisePage() {
     setBuyError("");
   };
 
-  const handleBuyCard = async () => {
-    if (!selectedProduct) return;
-    setBuyLoading(true);
-    try {
-      const user = await createClient().auth.getUser();
-      if (!user.data.user) { router.push("/login"); return; }
-      const res = await fetch("/api/stripe/merch", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.data.user.id, items: [{ id: selectedProduct.id, quantity: 1 }] }),
-      });
-      const data = await res.json();
-      if (data.url) window.location.href = data.url;
-      else setBuyError(data.error || "Checkout failed.");
-    } catch (e: any) { setBuyError("Network error."); }
-    finally { setBuyLoading(false); }
-  };
-
   const handleBuyCoins = async () => {
     if (!selectedProduct) return;
     if (!shipping.name || !shipping.address || !shipping.city || !shipping.postalCode || !shipping.country) {
@@ -339,12 +321,9 @@ export default function MerchandisePage() {
 
               {buyError && <p className="text-xs text-red-400 font-semibold">{buyError}</p>}
 
-              <div className="grid grid-cols-2 gap-2 pt-2">
-                <button onClick={handleBuyCoins} disabled={buyLoading} className="py-3 bg-[#D4AF37] hover:bg-[#b8952b] disabled:opacity-50 text-black font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5">
-                  <ShoppingBag size={14} /> Pay with Coins
-                </button>
-                <button onClick={handleBuyCard} disabled={buyLoading} className="py-3 bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5">
-                  <Heart size={14} /> Pay with Card
+              <div className="pt-2">
+                <button onClick={handleBuyCoins} disabled={buyLoading} className="w-full py-3.5 bg-[#D4AF37] hover:bg-[#b8952b] disabled:opacity-50 text-black font-bold text-sm rounded-xl transition flex items-center justify-center gap-2">
+                  <ShoppingBag size={16} /> {buyLoading ? "Processing..." : "Pay with TrooCoins"}
                 </button>
               </div>
             </div>
