@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Clapperboard, ShoppingBag, Sparkles, Users } from "lucide-react";
+import { ArrowRight, Clapperboard, ShoppingBag, Sparkles, Users } from "lucide-react";
 
 
 function VideoPreview({ src, poster, className }: { src: string, poster?: string, className?: string }) {
@@ -99,8 +99,33 @@ export default function DirectoryHome({ videos, creators, flushTop = false }: { 
       .catch(() => {});
   }, []);
 
+  const heroImage = videos.find((video: any) => video.backdropUrl || video.posterUrl);
+
   return (
     <div className={`relative z-10 ${flushTop ? "pt-8" : "pt-20 md:pt-24"} pb-32 md:pb-16 max-w-[1600px] mx-auto px-4 md:px-10 space-y-14`}>
+
+      <section className="relative isolate min-h-[300px] overflow-hidden rounded-[28px] border border-white/10 bg-[#101114] md:min-h-[360px] md:rounded-[32px]">
+        {heroImage && (
+          <img
+            src={heroImage.backdropUrl || heroImage.posterUrl}
+            alt=""
+            className="absolute inset-0 -z-20 h-full w-full object-cover opacity-35"
+          />
+        )}
+        <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-r from-[#101114] via-[#101114]/90 to-[#101114]/35 md:to-[#101114]/55" />
+        <div className="relative flex min-h-[300px] max-w-2xl flex-col items-start justify-center px-6 py-10 md:min-h-[360px] md:px-12 md:py-14">
+          <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#F06A72]">Welcome to Trooflix</p>
+          <h1 className="max-w-xl text-4xl font-bold leading-[1.02] tracking-[-0.045em] text-white md:text-6xl">
+            Find your next favourite.
+          </h1>
+          <p className="mt-4 max-w-lg text-sm leading-6 text-white/65 md:text-base md:leading-7">
+            Discover independent creators, fresh videos and short-form stories worth sharing.
+          </p>
+          <Link href="/latest" className="mt-7 inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#111114] transition hover:bg-white/85">
+            Explore the latest <ArrowRight size={17} />
+          </Link>
+        </div>
+      </section>
 
       <section>
         <SectionHead kicker="Latest" title="Don't miss a thing" href="/latest" icon={Sparkles} />
