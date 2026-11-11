@@ -72,15 +72,20 @@ export async function PATCH(req: Request) {
       .maybeSingle();
 
     if (escrowTx) {
-      // Mark as completed
       await supabaseAdmin.from("transactions").update({ status: "completed" }).eq("id", escrowTx.id);
-      
-      // Credit creator wallet
-      const { data: wallet } = await supabaseAdmin.from("wallets").select("balance").eq("user_id", escrowTx.receiver_id).maybeSingle();
+
+      // Find creator UUID from KV
+      const { kv } = await import("@vercel/kv");
+      const creators = (await kv.get<any[]>("trooflix:creators")) || [];
+      const { data: order } = await supabaseAdmin.from("merch_orders").select("creator_id").eq("id", orderId).maybeSingle();
+      const creator = creators.find((c: any) => Number(c.id) === Number(order?.creator_id));
+      const receiverUserId = creator?.ownerUserId || creator?.user_id || escrowTx.receiver_id;
+
+      const { data: wallet } = await supabaseAdmin.from("wallets").select("balance").eq("user_id", receiverUserId).maybeSingle();
       if (wallet) {
-        await supabaseAdmin.from("wallets").update({ balance: Number(wallet.balance) + Number(escrowTx.amount) }).eq("user_id", escrowTx.receiver_id);
+        await supabaseAdmin.from("wallets").update({ balance: Number(wallet.balance) + Number(escrowTx.amount) }).eq("user_id", receiverUserId);
       } else {
-        await supabaseAdmin.from("wallets").insert({ user_id: escrowTx.receiver_id, balance: escrowTx.amount });
+        await supabaseAdmin.from("wallets").insert({ user_id: receiverUserId, balance: escrowTx.amount });
       }
     }
 
