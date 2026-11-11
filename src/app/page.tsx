@@ -210,6 +210,7 @@ export default function Home() {
     // Strictly exclude Shorts, Reels, Tweets, Premium, and hidden videos from the Hero carousel
     return t !== "short" && t !== "reel" && t !== "tweet" && v.visibility !== "premium" && v.feed_visible !== false;
   });
+  const featuredHeroVideos = heroPool.filter((video) => video.featured);
 
   const [heroIndex, setHeroIndex] = useState(0);
 
@@ -571,7 +572,7 @@ export default function Home() {
       <DirectoryHome
         videos={videos}
         creators={creators}
-        featuredVideos={showingFiltered ? [] : heroPool.filter((video) => video.featured)}
+        featuredVideos={showingFiltered ? [] : featuredHeroVideos.length > 0 ? featuredHeroVideos : heroPool}
         onVideoSelect={handleCardSelect}
       />
         <div className="hidden relative z-10 pt-0 md:pt-2 pb-32 md:pb-20 space-y-2 md:space-y-6">
