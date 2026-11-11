@@ -2,7 +2,7 @@ import TipModal from "@/components/TipModal";
 import PushNotificationManager from "@/components/PushNotificationManager";
 import GlobalIncomingCall from "@/components/GlobalIncomingCall";
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Geist } from "next/font/google";
 import "./globals.css";
 import TVNavigation from "@/components/TVNavigation";
 import { SearchProvider } from "@/context/SearchContext";
@@ -10,7 +10,7 @@ import CacheWarmer from "@/components/CacheWarmer";
 import DesktopSidebar from "@/components/DesktopSidebar";
 import PWAInstallPopup from "@/components/PWAInstallPopup"; // <-- Import
 
-const inter = Inter({ subsets: ["latin"] });
+const geist = Geist({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   icons: {
@@ -65,7 +65,7 @@ export default function RootLayout({
         />
       </head>
       <PushNotificationManager />
-      <body className={inter.className}>
+      <body className={`${geist.className} antialiased`}>
         
         <GlobalIncomingCall />
         <TipModal />{typeof window !== "undefined" && (

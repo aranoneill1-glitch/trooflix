@@ -47,40 +47,36 @@ export default function MobileBottomNav() {
   };
 
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-[250] bg-black/90 backdrop-blur-xl border-t border-white/5 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-3">
-      
-      <div className="flex items-center justify-around w-full px-2 max-w-md mx-auto">
+    <nav className="lg:hidden fixed inset-x-0 bottom-0 z-[250] px-3 pb-[max(10px,env(safe-area-inset-bottom))] pointer-events-none">
+      <div className="pointer-events-auto mx-auto flex max-w-md items-center justify-around rounded-full bg-[#121214]/80 px-1.5 py-1.5 shadow-[0_16px_40px_rgba(0,0,0,0.45)] ring-1 ring-white/10 backdrop-blur-2xl">
         {tabs.map((tab) => {
           const active = isActive(tab.href);
-          
+
           return (
-            <Link 
+            <Link
               key={tab.name}
-              href={tab.href} 
-              className="flex flex-col items-center justify-center w-16 h-10 rounded-xl group"
+              href={tab.href}
+              className="flex flex-col items-center justify-center w-16 h-12 rounded-full group"
             >
-              <motion.div 
-                whileTap={{ scale: 0.82 }} 
-                transition={{ type: "spring", stiffness: 400, damping: 15 }} 
-                className="flex items-center justify-center flex-col gap-1 w-full"
+              <motion.div
+                whileTap={{ scale: 0.9 }}
+                transition={{ type: "spring", stiffness: 400, damping: 18 }}
+                className={`flex items-center justify-center flex-col gap-0.5 w-full h-full rounded-full ${active ? "bg-white/10" : ""}`}
               >
                 {tab.name === "Trooflix" ? (
-                  <div className="relative flex flex-col items-center justify-center w-full h-full pb-[3px]">
-                    <span className="text-[7px] font-black tracking-[0.15em] text-white leading-none mb-[2px] mt-[2px]">MY</span>
-                    <span className="text-[13px] font-black tracking-tighter leading-none">
-                      <span className="text-white">TROO</span><span className="text-[#E53945]">FLIX</span>
-                    </span>
-                  </div>
+                  <span className="text-[12px] font-semibold tracking-[-0.04em] leading-none">
+                    <span className="text-white">TROO</span><span className="text-[#E53945]">FLIX</span>
+                  </span>
                 ) : (
                   <>
                     {tab.icon && (
-                      <tab.icon 
-                        size={22} 
-                        className={active ? "text-white" : "text-white/50 group-hover:text-white/80 transition-colors"} 
-                        fill={active && tab.name === "Shorts" ? "currentColor" : "none"} 
+                      <tab.icon
+                        size={20}
+                        className={active ? "text-white" : "text-white/45 group-hover:text-white/80 transition-colors"}
+                        fill={active && tab.name === "Shorts" ? "currentColor" : "none"}
                       />
                     )}
-                    <span className={`text-[9px] font-bold ${active ? "text-white" : "text-white/50 group-hover:text-white/80 transition-colors"}`}>
+                    <span className={`text-[9px] font-medium ${active ? "text-white" : "text-white/40"}`}>
                       {tab.name}
                     </span>
                   </>
@@ -90,7 +86,6 @@ export default function MobileBottomNav() {
           );
         })}
       </div>
-      
     </nav>
   );
 }

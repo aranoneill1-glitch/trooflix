@@ -3,14 +3,22 @@
 @tailwind utilities;
 
 :root {
-  --background: #0a0a0a;
-  --foreground: #ededed;
+  --background: #070709;
+  --foreground: #f4f4f5;
+  --accent: #e53945;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Inter, Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist), Geist, Inter, Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: rgba(229, 57, 69, 0.35);
+  color: #fff;
 }
 
 .scrollbar-hide::-webkit-scrollbar {

@@ -55,10 +55,10 @@ export default function TopBar({ onMenu }: Props) {
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 lg:left-[72px] right-0 z-[200] flex items-center gap-6 px-6 md:px-8 py-4 transition-colors duration-300 ${
+        className={`fixed top-0 left-0 lg:left-[72px] right-0 z-[200] flex items-center gap-6 px-5 md:px-8 h-[68px] transition-all duration-300 ${
           scrolled
-            ? "bg-black"
-            : "bg-gradient-to-b from-black/90 via-black/60 to-transparent"
+            ? "bg-[#070709]/80 backdrop-blur-xl border-b border-white/[0.06]"
+            : "bg-gradient-to-b from-[#070709]/90 via-[#070709]/40 to-transparent"
         }`}
       >
         {onMenu && (
@@ -73,7 +73,7 @@ export default function TopBar({ onMenu }: Props) {
 
         {/* LOGO: Hidden on search page, visible everywhere else */}
         {!isSearchPage && (
-          <Link href="/" className="text-xl md:text-2xl font-black tracking-tight shrink-0">
+          <Link href="/" className="text-[22px] md:text-[24px] font-semibold tracking-[-0.04em] shrink-0">
             {isMessagesPage ? (
               <>
                 <span className="text-white">TROO</span>
@@ -88,7 +88,7 @@ export default function TopBar({ onMenu }: Props) {
           </Link>
         )}
 
-        <div className="ml-auto flex items-center gap-4 md:gap-5">
+        <div className="ml-auto flex items-center gap-1 md:gap-2">
           
 
 
@@ -97,12 +97,12 @@ export default function TopBar({ onMenu }: Props) {
           <button 
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="text-white/90 hover:text-white transition disabled:opacity-50"
+            className="w-10 h-10 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition disabled:opacity-50"
             aria-label="Refresh App"
           >
             <RefreshCw size={20} className={isRefreshing ? "animate-spin" : ""} />
           </button>
-          <Link href="/merchandise" className="text-white/90 hover:text-white transition" aria-label="Shop">
+          <Link href="/merchandise" className="w-10 h-10 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition" aria-label="Shop">
             <ShoppingBag size={20} />
           </Link>
 

@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import {  Play , Newspaper, Camera, ShoppingBag } from "lucide-react";
 
 
 function VideoPreview({ src, poster, className }: { src: string, poster?: string, className?: string }) {
@@ -70,7 +69,21 @@ function timeAgo(dateString: string) {
   return date.toLocaleDateString();
 }
 
-export default function DirectoryHome({ videos, creators }: { videos: any[], creators: any[] }) {
+function SectionHead({ kicker, title, href }: { kicker: string; title: string; href: string }) {
+  return (
+    <div className="flex items-end justify-between mb-5">
+      <div>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#E53945] mb-1">{kicker}</p>
+        <h2 className="text-[22px] md:text-[28px] font-semibold tracking-[-0.03em] text-white">{title}</h2>
+      </div>
+      <Link href={href} className="text-[13px] font-medium text-white/45 hover:text-white transition mb-1">
+        View all
+      </Link>
+    </div>
+  );
+}
+
+export default function DirectoryHome({ videos, creators, flushTop = false }: { videos: any[], creators: any[], flushTop?: boolean }) {
   const [shopProducts, setShopProducts] = useState<any[]>([]);
   
   useEffect(() => {
@@ -81,100 +94,84 @@ export default function DirectoryHome({ videos, creators }: { videos: any[], cre
   }, []);
 
   return (
-    <div className="relative z-10 pt-4 pb-32 md:pb-20 max-w-[1600px] mx-auto px-4 md:px-12 space-y-10 mt-6">
-      
-      {/* 3. DON'T MISS A THING */}
+    <div className={`relative z-10 ${flushTop ? "pt-8" : "pt-20 md:pt-24"} pb-32 md:pb-16 max-w-[1600px] mx-auto px-4 md:px-10 space-y-14`}>
+
       <section>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl md:text-2xl font-black tracking-tight text-white flex items-center gap-2"><span className="w-6 h-6 bg-[#E53945] rounded-full flex items-center justify-center"><Newspaper size={12} className="text-white" /></span> Don't Miss A <span className="text-[#E53945]">Thing</span></h2>
-          <Link href="/latest" className="text-xs font-bold text-white/50 hover:text-white transition">View All</Link>
-        </div>
-        <div className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide">
+        <SectionHead kicker="Latest" title="Don't miss a thing" href="/latest" />
+        <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
           {videos.filter((v: any) => {
-  const t = v.type?.toLowerCase();
-  const hasVideo = !!(v.videoUrl || v.bitchuteUrl);
-  return hasVideo && t !== "short" && t !== "tweet" && t !== "reel";
-}).slice(0, 8).map((v: any) => (
-            <Link key={v.id} href="/latest" className="flex flex-col w-64 md:w-72 shrink-0 group">
-              <div className="relative aspect-video rounded-xl bg-black overflow-hidden mb-2 border border-white/5 bg-[#1c1c1e]">
-                <VideoPreview 
-                  src={v.videoUrl || v.bitchuteUrl} 
+            const t = v.type?.toLowerCase();
+            const hasVideo = !!(v.videoUrl || v.bitchuteUrl);
+            return hasVideo && t !== "short" && t !== "tweet" && t !== "reel";
+          }).slice(0, 8).map((v: any) => (
+            <Link key={v.id} href="/latest" className="flex flex-col w-[260px] md:w-[300px] shrink-0 group">
+              <div className="relative aspect-video rounded-2xl overflow-hidden bg-[#141418] ring-1 ring-white/10 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]">
+                <VideoPreview
+                  src={v.videoUrl || v.bitchuteUrl}
                   poster={v.posterUrl || v.backdropUrl}
-                  className="w-full h-full object-cover group-hover:scale-105 transition duration-500" 
+                  className="transition duration-700 ease-out group-hover:scale-[1.04]"
                 />
-                <div className="absolute bottom-2 right-2 bg-black/80 text-[10px] font-bold px-1.5 py-0.5 rounded text-white/90">{timeAgo(v.createdAt)}</div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/10 pointer-events-none" />
+                <span className="absolute bottom-2.5 right-2.5 text-[11px] font-medium px-2 py-1 rounded-full bg-black/55 text-white/90 backdrop-blur-md ring-1 ring-white/10">
+                  {timeAgo(v.createdAt)}
+                </span>
               </div>
-              <h3 className="text-sm font-bold text-white line-clamp-2 leading-tight group-hover:text-[#E53945] transition">{v.title}</h3>
+              <h3 className="mt-3 text-[15px] font-medium text-white/90 leading-snug line-clamp-2 group-hover:text-white transition">{v.title}</h3>
             </Link>
           ))}
         </div>
       </section>
 
-      {/* 1. DISCOVER CREATORS */}
       <section>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl md:text-2xl font-black tracking-tight text-white flex items-center gap-2"><span className="w-6 h-6 bg-[#E53945] rounded-full flex items-center justify-center"><Camera size={12} className="text-white" /></span> Discover <span className="text-[#E53945]">Creators</span></h2>
-          <Link href="/creators" className="text-xs font-bold text-white/50 hover:text-white transition">View All</Link>
-        </div>
-        <div className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide">
+        <SectionHead kicker="People" title="Discover creators" href="/creators" />
+        <div className="flex overflow-x-auto gap-5 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
           {creators.slice(0, 15).map((c: any) => (
-            <Link key={c.id} href={`/profile/${c.slug}`} className="flex flex-col items-center shrink-0 w-28 md:w-32 group">
-              <div className="w-24 h-24 md:w-[120px] md:h-[120px] rounded-full overflow-hidden border-2 border-white/10 group-hover:border-[#E53945] transition mb-3">
-                {c.photoUrl ? <img src={c.photoUrl} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-white/10 flex items-center justify-center text-3xl font-bold">{c.name?.[0]}</div>}
+            <Link key={c.id} href={`/profile/${c.slug}`} className="flex flex-col items-center shrink-0 w-[104px] md:w-[120px] group">
+              <div className="p-[2px] rounded-full bg-gradient-to-b from-white/40 to-white/5 group-hover:from-[#E53945] group-hover:to-orange-400 transition duration-300">
+                <div className="w-[92px] h-[92px] md:w-[108px] md:h-[108px] rounded-full overflow-hidden bg-[#141418] ring-4 ring-[#070709]">
+                  {c.photoUrl ? <img src={c.photoUrl} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-2xl font-semibold text-white/70">{c.name?.[0]}</div>}
+                </div>
               </div>
-              <span className="text-sm font-semibold truncate w-full text-center">{c.name}</span>
+              <span className="mt-3 text-[13px] font-medium text-white/80 truncate w-full text-center group-hover:text-white transition">{c.name}</span>
             </Link>
           ))}
         </div>
       </section>
 
-      {/* 2. SHORTS */}
       <section>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl md:text-2xl font-black tracking-tight text-white flex items-center gap-2">
-            <span className="w-6 h-6 bg-[#E53945] rounded-full flex items-center justify-center"><Play size={12} fill="white" className="text-white ml-0.5" /></span>
-            Shorts
-          </h2>
-          <Link href="/feed" className="text-xs font-bold text-white/50 hover:text-white transition">View All</Link>
-        </div>
-        <div className="flex overflow-x-auto gap-3 pb-4 scrollbar-hide">
+        <SectionHead kicker="Clips" title="Shorts" href="/feed" />
+        <div className="flex overflow-x-auto gap-3 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
           {videos.filter((v: any) => v.type?.toLowerCase() === "short" || v.type?.toLowerCase() === "reel").slice(0, 10).map((v: any) => (
-            <Link key={v.id} href="/feed" className="relative w-[120px] md:w-[150px] aspect-[9/16] shrink-0 rounded-xl overflow-hidden group">
+            <Link key={v.id} href="/feed" className="relative w-[132px] md:w-[168px] aspect-[9/16] shrink-0 rounded-2xl overflow-hidden ring-1 ring-white/10 group shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]">
               {(v.videoUrl || v.bitchuteUrl) ? (
-                  <VideoPreview 
-                    src={v.videoUrl || v.bitchuteUrl} 
-                    poster={v.posterUrl || v.backdropUrl}
-                    className="w-full h-full object-cover" 
-                  />
-                ) : (
-                  <img src={v.posterUrl || v.backdropUrl} className="w-full h-full object-cover" />
-                )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                <VideoPreview
+                  src={v.videoUrl || v.bitchuteUrl}
+                  poster={v.posterUrl || v.backdropUrl}
+                  className="transition duration-700 ease-out group-hover:scale-[1.04]"
+                />
+              ) : (
+                <img src={v.posterUrl || v.backdropUrl} alt="" className="absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:scale-[1.04]" />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-black/20 pointer-events-none" />
               <div className="absolute bottom-0 left-0 right-0 p-3">
-                <h3 className="text-white text-[11px] font-bold leading-tight line-clamp-2 mb-1">{v.title}</h3>
-                <p className="text-white/60 text-[10px] font-semibold">{v.views || 0} views</p>
+                <h3 className="text-white text-[12px] font-medium leading-snug line-clamp-2">{v.title}</h3>
+                <p className="text-white/55 text-[11px] mt-1">{v.views || 0} views</p>
               </div>
             </Link>
           ))}
         </div>
       </section>
 
-      
-
-      {/* 4. MERCHANDISE */}
       <section>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl md:text-2xl font-black tracking-tight text-white flex items-center gap-2"><span className="w-6 h-6 bg-[#E53945] rounded-full flex items-center justify-center"><ShoppingBag size={12} className="text-white" /></span> Discover <span className="text-[#E53945]">Merchandise</span></h2>
-          <Link href="/merchandise" className="text-xs font-bold text-white/50 hover:text-white transition">View All</Link>
-        </div>
-        <div className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide">
+        <SectionHead kicker="Shop" title="Merchandise" href="/merchandise" />
+        <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
           {shopProducts.slice(0, 10).map((p: any) => (
-            <Link key={p.id} href="/merchandise" className="flex flex-col w-36 md:w-44 shrink-0 group">
-              <div className="relative aspect-square rounded-xl overflow-hidden mb-2 border border-white/5 bg-[#1c1c1e]">
-                <img src={p.image_url} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+            <Link key={p.id} href="/merchandise" className="flex flex-col w-[148px] md:w-[180px] shrink-0 group">
+              <div className="relative aspect-square rounded-2xl overflow-hidden bg-[#141418] ring-1 ring-white/10">
+                <img src={p.image_url} alt="" className="w-full h-full object-cover transition duration-700 group-hover:scale-[1.04]" />
               </div>
-              <p className="text-[#1DB954] font-black text-xs md:text-sm tracking-tight leading-none mb-1">${(p.price_cents / 100).toFixed(2)}</p>
-              <h3 className="text-[11px] md:text-sm font-semibold text-white/90 line-clamp-2 leading-tight">{p.name}</h3>
+              <p className="mt-3 text-[13px] font-semibold text-[#f3d7a1] tracking-tight">${(p.price_cents / 100).toFixed(2)}</p>
+              <h3 className="mt-0.5 text-[13px] font-medium text-white/75 line-clamp-2 leading-snug group-hover:text-white transition">{p.name}</h3>
             </Link>
           ))}
         </div>

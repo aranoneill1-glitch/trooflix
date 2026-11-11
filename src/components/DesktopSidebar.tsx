@@ -33,7 +33,7 @@ export default function DesktopSidebar() {
   ];
 
   return (
-    <aside className="hidden lg:flex flex-col items-center fixed left-0 top-0 h-screen w-[72px] bg-gradient-to-b from-black/80 via-black/40 to-black/80 backdrop-blur-md border-r border-white/5 z-[100] py-8">
+    <aside className="hidden lg:flex flex-col items-center fixed left-0 top-0 h-screen w-[72px] bg-[#070709]/90 backdrop-blur-xl border-r border-white/[0.06] z-[100] py-6">
       
       <div className="flex flex-col gap-6 flex-1 w-full items-center pt-16">
         {navItems.map((item) => {
@@ -43,11 +43,11 @@ export default function DesktopSidebar() {
             <Link
               key={item.name}
               href={item.href}
-              className={`group relative flex items-center justify-center w-12 h-12 rounded-xl hover:bg-white/10 transition-all ${isActive ? "text-[#E53945]" : "text-white/60 hover:text-white"}`}
+              className={`group relative flex items-center justify-center w-11 h-11 rounded-2xl transition-all ${isActive ? "bg-white/10 text-white shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]" : "text-white/45 hover:text-white hover:bg-white/[0.06]"}`}
             >
               <item.icon size={24} />
               {isActive && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-[#E53945] rounded-r-md" />
+                <div className="absolute -left-[14px] top-1/2 -translate-y-1/2 w-[3px] h-4 bg-[#E53945] rounded-full" />
               )}
               <span className="absolute left-16 px-3 py-1.5 bg-[#1c1c1e] border border-white/10 rounded-lg text-xs font-bold text-white opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
                 {item.name}
