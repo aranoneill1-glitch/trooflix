@@ -446,8 +446,8 @@ export default function ThreadPage() {
   return (
     <main className="fixed inset-0 h-[100dvh] pt-[64px] pb-[72px] bg-black text-white flex flex-col overflow-hidden">
       <TopBar />
-      <div className="flex-shrink-0 border-b border-white/5 bg-black px-3 py-2 md:px-6">
-        <CreatorStudioNav active="chat" />
+      <div className="flex-shrink-0 border-b border-white/5 bg-black px-3 pt-8 md:px-6">
+        <div className="mx-auto w-full max-w-5xl"><CreatorStudioNav active="chat" className="mb-2" /></div>
       </div>
       {/* Header — white bar */}
       <header className="flex-shrink-0 bg-black border-b border-white/10">

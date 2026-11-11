@@ -206,11 +206,11 @@ export default function MessagesInbox() {
 
       {/* Instagram-style header */}
       <div
-        className="pt-16 md:pt-20 flex-shrink-0 border-b border-white/5"
+        className="pt-24 flex-shrink-0 border-b border-white/5"
         style={{ background: "#000000" }}
       >
         
-              <div className="px-3 pb-3 pt-3 md:px-6"><CreatorStudioNav active="chat" /></div>
+              <div className="mx-auto w-full max-w-5xl px-4 md:px-6"><CreatorStudioNav active="chat" className="mb-3" /></div>
 
 <div className="max-w-3xl mx-auto flex items-center justify-between px-4 md:px-6 py-3">
           

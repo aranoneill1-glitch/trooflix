@@ -342,44 +342,40 @@ export default function Home() {
             <>
               {!user && authResolved && (<>
               {/* MOBILE SECTION: Pills + Header + Avatars + Hero */}
-              <div className="lg:hidden w-full flex flex-col relative z-10 bg-transparent">
-                {/* Ambient glow for glass refraction */}
-                <div className="w-full relative z-10">
-
-                {/* CINEMATIC HEADLINE */}
-                <div className="w-full text-center px-6 pt-24 md:pt-32 pb-6 relative z-10 flex flex-col items-center justify-center">
-                  <h1 className="text-[44px] md:text-[80px] font-black tracking-tighter text-white leading-[1.05] mb-6">
-                    Stop letting Big Tech <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#E53945] to-orange-500">eat your lunch.</span>
-                  </h1>
-                  <p className="text-[15px] md:text-xl text-white/50 max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
-                    We didn't build Trooflix to be another YouTube clone. We built it to be the ultimate weapon for independent creators and free thinkers.
-                  </p>
-                  <div className="flex flex-col w-full max-w-sm gap-3">
-                    <a 
-                      href="/features" 
-                      className="w-full flex items-center justify-center gap-2 bg-white text-black font-bold text-lg py-4 rounded-full hover:bg-gray-200 transition"
-                    >
-                      Why Trooflix
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
-                    </a>
-                    <a 
-                      href="/signup" 
-                      className="w-full flex items-center justify-center gap-2 bg-[#1c1c1e] border border-white/10 text-white font-bold text-lg py-4 rounded-full hover:bg-[#2c2c2e] transition"
-                    >
-                      Join Today
-                    </a>
+              <div className="lg:hidden relative z-10 flex w-full flex-col px-4 pt-24 sm:px-6">
+                <section className="relative isolate mx-auto w-full max-w-3xl overflow-hidden rounded-[28px] border border-white/10 bg-[#101115] shadow-[0_28px_80px_rgba(0,0,0,0.45)] sm:rounded-[34px]">
+                  {hero?.backdropUrl && <img src={hero.backdropUrl} alt="" className="absolute inset-0 -z-20 h-full w-full object-cover opacity-40" />}
+                  <div aria-hidden="true" className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_12%_8%,rgba(229,57,69,0.28),transparent_45%),linear-gradient(145deg,rgba(8,9,12,0.72),rgba(8,9,12,0.94)_70%)]" />
+                  <div className="relative z-10 flex flex-col items-center px-5 py-9 text-center sm:px-9 sm:py-12">
+                    <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/25 px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.22em] text-white/65 backdrop-blur sm:text-[10px]">
+                      <Sparkles size={13} className="text-[#F06A72]" /> Independent voices, creator first
+                    </span>
+                    <h1 className="mb-4 max-w-2xl text-[38px] font-black leading-[0.98] tracking-[-0.055em] text-white sm:text-5xl md:text-[64px]">
+                      Stop letting Big Tech <span className="bg-gradient-to-r from-[#F06A72] via-[#E53945] to-orange-400 bg-clip-text text-transparent">eat your lunch.</span>
+                    </h1>
+                    <p className="mb-7 max-w-xl text-sm font-medium leading-6 text-white/60 sm:mb-8 sm:text-base sm:leading-7">
+                      We didn&apos;t build Trooflix to be another YouTube clone. We built it for independent creators and free thinkers.
+                    </p>
+                    <div className="flex w-full max-w-md flex-col gap-2.5 sm:flex-row">
+                      <a href="/features" className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-bold text-black transition hover:bg-white/85">
+                        Why Trooflix <ArrowRight size={17} />
+                      </a>
+                      <a href="/signup" className="flex min-h-12 flex-1 items-center justify-center rounded-full border border-white/15 bg-white/[0.06] px-5 py-3 text-sm font-bold text-white transition hover:bg-white/10">
+                        Join Today
+                      </a>
+                    </div>
                   </div>
-                </div>
+                </section>
 
-                {/* App Reel Hero (Moved below Avatars) */}
                 {heroPool.length > 0 && (
-                  <AppReelHero 
-                    videos={heroPool} 
-                    activeIndex={heroIndex} 
-                    onMore={(v) => setSelected(v)}
-                  />
+                  <div className="mt-5">
+                    <AppReelHero
+                      videos={heroPool}
+                      activeIndex={heroIndex}
+                      onMore={(v) => setSelected(v)}
+                    />
+                  </div>
                 )}
-</div>
                 <div className="hidden">
                   <div className="relative w-full max-w-2xl mx-auto">
                     <form
@@ -494,7 +490,9 @@ export default function Home() {
 
               {/* DESKTOP SECTION: Hero + Avatars */}
               <div className="hidden lg:block w-full max-w-[1600px] mx-auto px-4 md:px-12 pt-24 md:pt-28">
-                <div className="flex items-center gap-8">
+                <section className="relative isolate overflow-hidden rounded-[34px] border border-white/10 bg-[#101115] p-6 shadow-[0_28px_90px_rgba(0,0,0,0.42)] xl:p-9">
+                  <div aria-hidden="true" className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_8%_8%,rgba(229,57,69,0.2),transparent_38%),radial-gradient(ellipse_at_88%_85%,rgba(249,115,22,0.12),transparent_35%)]" />
+                <div className="relative z-10 flex items-center gap-8">
                                     <div className="w-1/2 relative">
                     {heroPool.length > 0 ? (
                       <DesktopHero
@@ -511,14 +509,16 @@ export default function Home() {
                     )}
                   </div>
                   <div className="w-1/2 flex flex-col justify-center">
-                    <h1 className="text-[52px] xl:text-[68px] 2xl:text-[80px] font-black tracking-tighter text-white leading-[1.02] mb-6">Stop letting Big Tech <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#E53945] to-orange-500">eat your lunch.</span></h1>
-                    <p className="text-base xl:text-lg text-white/50 mb-10 leading-relaxed font-medium">Tired of working countless hours making great content just to give half your earnings away to billionaires and get censored in the process? It&apos;s time to take your power back.</p>
+                    <span className="mb-5 inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-white/60"><Sparkles size={13} className="text-[#F06A72]" /> Independent voices, creator first</span>
+                    <h1 className="text-[48px] xl:text-[62px] 2xl:text-[72px] font-black tracking-[-0.055em] text-white leading-[0.98] mb-5">Stop letting Big Tech <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#F06A72] via-[#E53945] to-orange-400">eat your lunch.</span></h1>
+                    <p className="text-base xl:text-lg text-white/55 mb-8 leading-relaxed font-medium">Tired of working countless hours making great content just to give half your earnings away to billionaires and get censored in the process? It&apos;s time to take your power back.</p>
                     <div className="flex flex-wrap gap-3">
                       <a href="/features" className="flex items-center justify-center gap-2 bg-white text-black font-bold text-base px-8 py-4 rounded-full hover:bg-gray-200 transition">Why Trooflix &rarr;</a>
                       <a href="/signup" className="flex items-center justify-center gap-2 bg-[#1c1c1e] border border-white/10 text-white font-bold text-base px-8 py-4 rounded-full hover:bg-[#2c2c2e] transition">Join Today</a>
                     </div>
                   </div>
                 </div>
+                </section>
                 
                 {/* Header */}
                 
@@ -532,7 +532,8 @@ export default function Home() {
                         {/* FEATURES ROW (DESKTOP) */}
       <div className={!user && authResolved ? "hidden lg:block w-full max-w-[1600px] mx-auto px-12 py-20" : "hidden"}>
         <div className="flex items-center justify-between mb-10">
-          <h2 className="text-3xl md:text-5xl font-black tracking-tight">
+          <h2 className="flex items-center gap-3 text-3xl font-black tracking-tight md:gap-4 md:text-5xl">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-[#E53945]/20 bg-[#E53945]/10 text-[#F06A72] md:h-14 md:w-14"><Sparkles size={24} /></span>
             Why Creators Are <span className="text-[#E53945]">Switching</span>
           </h2>
         </div>

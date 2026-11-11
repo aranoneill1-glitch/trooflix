@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { Clapperboard, ShoppingBag, Sparkles, Users } from "lucide-react";
 
 
 function VideoPreview({ src, poster, className }: { src: string, poster?: string, className?: string }) {
@@ -69,12 +70,17 @@ function timeAgo(dateString: string) {
   return date.toLocaleDateString();
 }
 
-function SectionHead({ kicker, title, href }: { kicker: string; title: string; href: string }) {
+function SectionHead({ kicker, title, href, icon: Icon }: { kicker: string; title: string; href: string; icon: typeof Sparkles }) {
   return (
     <div className="flex items-end justify-between mb-5">
-      <div>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#E53945] mb-1">{kicker}</p>
-        <h2 className="text-[22px] md:text-[28px] font-semibold tracking-[-0.03em] text-white">{title}</h2>
+      <div className="flex min-w-0 items-center gap-3.5">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#E53945]/20 bg-[#E53945]/[0.09] text-[#F06A72] shadow-[0_0_24px_rgba(229,57,69,0.08)] md:h-11 md:w-11">
+          <Icon size={19} strokeWidth={1.8} />
+        </span>
+        <div className="min-w-0">
+          <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#E53945] md:text-[11px]">{kicker}</p>
+          <h2 className="text-[21px] font-semibold tracking-[-0.03em] text-white md:text-[28px]">{title}</h2>
+        </div>
       </div>
       <Link href={href} className="text-[13px] font-medium text-white/45 hover:text-white transition mb-1">
         View all
@@ -97,7 +103,7 @@ export default function DirectoryHome({ videos, creators, flushTop = false }: { 
     <div className={`relative z-10 ${flushTop ? "pt-8" : "pt-20 md:pt-24"} pb-32 md:pb-16 max-w-[1600px] mx-auto px-4 md:px-10 space-y-14`}>
 
       <section>
-        <SectionHead kicker="Latest" title="Don't miss a thing" href="/latest" />
+        <SectionHead kicker="Latest" title="Don't miss a thing" href="/latest" icon={Sparkles} />
         <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
           {videos.filter((v: any) => {
             const t = v.type?.toLowerCase();
@@ -123,7 +129,7 @@ export default function DirectoryHome({ videos, creators, flushTop = false }: { 
       </section>
 
       <section>
-        <SectionHead kicker="People" title="Discover creators" href="/creators" />
+        <SectionHead kicker="People" title="Discover creators" href="/creators" icon={Users} />
         <div className="flex overflow-x-auto gap-5 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
           {creators.slice(0, 15).map((c: any) => (
             <Link key={c.id} href={`/profile/${c.slug}`} className="flex flex-col items-center shrink-0 w-[104px] md:w-[120px] group">
@@ -139,7 +145,7 @@ export default function DirectoryHome({ videos, creators, flushTop = false }: { 
       </section>
 
       <section>
-        <SectionHead kicker="Clips" title="Shorts" href="/feed" />
+        <SectionHead kicker="Clips" title="Shorts" href="/feed" icon={Clapperboard} />
         <div className="flex overflow-x-auto gap-3 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
           {videos.filter((v: any) => v.type?.toLowerCase() === "short" || v.type?.toLowerCase() === "reel").slice(0, 10).map((v: any) => (
             <Link key={v.id} href="/feed" className="relative w-[132px] md:w-[168px] aspect-[9/16] shrink-0 rounded-2xl overflow-hidden ring-1 ring-white/10 group shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]">
@@ -163,7 +169,7 @@ export default function DirectoryHome({ videos, creators, flushTop = false }: { 
       </section>
 
       <section>
-        <SectionHead kicker="Shop" title="Merchandise" href="/merchandise" />
+        <SectionHead kicker="Shop" title="Merchandise" href="/merchandise" icon={ShoppingBag} />
         <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
           {shopProducts.slice(0, 10).map((p: any) => (
             <Link key={p.id} href="/merchandise" className="flex flex-col w-[148px] md:w-[180px] shrink-0 group">

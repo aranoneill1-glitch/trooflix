@@ -309,20 +309,18 @@ function CreatorDashboardContent() {
 
         <div className="max-w-5xl mx-auto px-4 pt-24 pb-6">
           
-          <div className="sticky top-[64px] z-[100] mb-5 pt-2 md:top-[72px] md:mb-7">
-            <CreatorStudioNav
-              active={showMyTrooFlix ? "mytrooflix" : isDashboardView ? "dashboard" : "profile"}
-              dashboardLocked={userTier === "free"}
-              onViewChange={(section) => {
-                if (section === "dashboard" && userTier === "free") {
-                  window.location.href = "/upgrade?feature=dashboard";
-                  return;
-                }
-                setIsDashboardView(section === "dashboard");
-                setShowMyTrooFlix(section === "mytrooflix");
-              }}
-            />
-          </div>
+          <CreatorStudioNav
+            active={showMyTrooFlix ? "mytrooflix" : isDashboardView ? "dashboard" : "profile"}
+            dashboardLocked={userTier === "free"}
+            onViewChange={(section) => {
+              if (section === "dashboard" && userTier === "free") {
+                window.location.href = "/upgrade?feature=dashboard";
+                return;
+              }
+              setIsDashboardView(section === "dashboard");
+              setShowMyTrooFlix(section === "mytrooflix");
+            }}
+          />
 
           {showMyTrooFlix && <MyTrooFlixContent embedded />}
 
