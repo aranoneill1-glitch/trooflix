@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
     "hls.js",
   ],
   experimental: {
+    agentUpgrade: "security",
     staleTimes: {
       dynamic: 30,   // Dynamic routes (e.g. /podcaster/[slug]) — 30s client cache
       static: 180,   // Static routes (e.g. /movies, /podcasts) — 3min client cache
