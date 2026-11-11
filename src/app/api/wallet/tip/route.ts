@@ -50,7 +50,8 @@ export async function POST(req: Request) {
       p_receiver_id: validReceiverId,
       p_amount: amount,
       p_type: "tip",
-      p_description: description || "Tipped on a post"
+      p_description: description || "Tipped on a post",
+      p_video_id: null
     });
 
     if (error) {
