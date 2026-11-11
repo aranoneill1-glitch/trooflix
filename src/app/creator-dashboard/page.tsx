@@ -17,7 +17,6 @@ import { createClient } from "@/utils/supabase/client";
 import MyTrooFlixContent from "@/components/MyTrooFlixContent";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
 import { GripVertical } from "lucide-react";
-import HomeFeedCard from "@/components/HomeFeedCard";
 import CreatorStudioNav from "@/components/CreatorStudioNav";
 
 
@@ -75,7 +74,7 @@ function CreatorDashboardContent() {
   }, [isPublicView, studioTab]);
   
   const [contentView, setContentView] = useState<"grid" | "list">("grid");
-  const [activeContentTab, setActiveContentTab] = useState<"All" | "Videos" | "Premium" | "Shop">("All");
+  const [activeContentTab, setActiveContentTab] = useState<"Shorts" | "Videos" | "Premium" | "Shop">("Shorts");
   const [creatorVideos, setCreatorVideos] = useState<any[]>([]);
   const [merch, setMerch] = useState<any[]>([]);
   const [videosLoading, setVideosLoading] = useState(true);
@@ -226,12 +225,16 @@ function CreatorDashboardContent() {
 
   const filteredVideos = creatorVideos.filter(v => {
     const type = (v.type || "").toLowerCase();
+
+    if (activeContentTab === "Shorts") {
+      return type === "short" || type === "reel";
+    }
     
     if (activeContentTab === "Videos") {
-      return type !== "tweet" && type !== "short" && v.visibility !== "premium";
+      return type !== "tweet" && type !== "short" && type !== "reel" && v.visibility !== "premium";
     }
     if (activeContentTab === "Premium") {
-      return v.visibility === "premium" && type !== "tweet" && type !== "short";
+      return v.visibility === "premium" && type !== "tweet" && type !== "short" && type !== "reel";
     }
     return true;
   });
@@ -385,38 +388,33 @@ function CreatorDashboardContent() {
 
               <div className="flex items-center justify-between border-b border-white/10 mb-6">
                 <div className="flex items-center gap-8">
-                  {(["All", "Videos", "Premium", "Shop"] as const).map((tab) => (
+                  {(["Shorts", "Videos", "Premium", "Shop"] as const).map((tab) => (
                     <button key={tab} onClick={() => setActiveContentTab(tab)} className={`pb-3 text-sm font-bold transition-colors ${activeContentTab === tab ? "text-white border-b-2 border-[#E53945]" : "text-white/50 hover:text-white"}`}>{tab}</button>
                   ))}
                 </div>
-                <div className="flex items-center gap-1 bg-white/10 backdrop-blur-xl p-1 rounded-full border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.4)] mb-2">
-                  <button onClick={() => setContentView("grid")} className={`p-1.5 rounded-full transition ${contentView === "grid" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}><LayoutGrid size={16} /></button>
-                  <button onClick={() => setContentView("list")} className={`p-1.5 rounded-full transition ${contentView === "list" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}><List size={16} /></button>
-                </div>
+                {activeContentTab !== "Shorts" && (
+                  <div className="flex items-center gap-1 bg-white/10 backdrop-blur-xl p-1 rounded-full border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.4)] mb-2">
+                    <button onClick={() => setContentView("grid")} className={`p-1.5 rounded-full transition ${contentView === "grid" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}><LayoutGrid size={16} /></button>
+                    <button onClick={() => setContentView("list")} className={`p-1.5 rounded-full transition ${contentView === "list" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}><List size={16} /></button>
+                  </div>
+                )}
               </div>
 
-              {activeContentTab === "All" && (
+              {activeContentTab === "Shorts" && (
                 <div className="w-full">
                   {videosLoading ? (
                     <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" /></div>
-                  ) : creatorVideos.length === 0 ? (
-                    <div className="text-center py-20 text-white/50">No posts yet.</div>
+                  ) : filteredVideos.length === 0 ? (
+                    <div className="text-center py-20 text-white/50">No Shorts yet.</div>
                   ) : (
-                    <div className="flex flex-col gap-6 pb-20">
-                      {creatorVideos.map((v) => (
-                        <HomeFeedCard 
-                          key={v.id} 
-                          video={v} 
-                          creator={profile} 
-                          onMore={() => {}} 
-                          onPlay={() => {}} 
-                          isActive={false} 
-                          onSetActive={() => {}} 
-                          onOpenComments={() => {}} 
-                          isLiked={false} 
-                          onToggleLike={() => {}} 
-                          hideCreatorInfo={true}
-                        />
+                    <div className="grid grid-cols-3 gap-[2px] pb-20 sm:gap-1">
+                      {filteredVideos.map((video) => (
+                        <Link key={video.id} href="/feed" aria-label={`Watch ${video.title}`} className="group relative aspect-[3/4] overflow-hidden bg-[#111114]">
+                          <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-black/10 opacity-80" />
+                          <Play size={17} fill="white" className="absolute right-2 top-2 text-white drop-shadow-md" />
+                          <span className="absolute bottom-2 left-2 right-2 line-clamp-2 text-xs font-semibold leading-tight text-white drop-shadow-md">{video.title}</span>
+                        </Link>
                       ))}
                     </div>
                   )}

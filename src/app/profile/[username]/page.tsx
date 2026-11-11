@@ -4,7 +4,6 @@ import { getCachedUser } from "@/lib/cache";
 import { useEffect, useState , useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { CreditCard, Wallet, ArrowLeft, UserPlus, MessageSquare, CheckCircle2, LayoutGrid, List, ShoppingBag, Star, Lock, Play, GripVertical, X } from "lucide-react";
-import HomeFeedCard from "@/components/HomeFeedCard";
 import CommentSheet from "@/components/CommentSheet";
 import Comments from "@/components/Comments";
 import Link from "next/link";
