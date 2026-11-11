@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireUser, assertSelf } from "@/lib/api-auth";
 import { createClient } from "@supabase/supabase-js";
 import { kv } from "@vercel/kv";
 
@@ -11,6 +12,11 @@ const CREATORS_KEY = "trooflix:creators";
 export async function POST(req: Request) {
   try {
     const { userId, productId, shipping } = await req.json();
+
+    const auth = await requireUser();
+    if (auth instanceof Response) return auth;
+    const mismatch = assertSelf(auth.user, userId);
+    if (mismatch) return mismatch;
     if (!userId || !productId || !shipping) return NextResponse.json({ error: "Missing data" }, { status: 400 });
 
     const { data: product } = await supabaseAdmin.from("products").select("*").eq("id", productId).single();

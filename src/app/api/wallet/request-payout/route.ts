@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireUser, assertSelf } from "@/lib/api-auth";
 import { createClient } from "@supabase/supabase-js";
 
 const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
@@ -6,6 +7,11 @@ const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, proces
 export async function POST(req: Request) {
   try {
     const { userId, amount, method } = await req.json();
+
+    const auth = await requireUser();
+    if (auth instanceof Response) return auth;
+    const mismatch = assertSelf(auth.user, userId);
+    if (mismatch) return mismatch;
     if (!userId || !amount || amount < 5) return NextResponse.json({ error: "Minimum payout is $5.00" }, { status: 400 });
 
     const { data: wallet } = await supabaseAdmin.from("wallets").select("balance").eq("user_id", userId).maybeSingle();

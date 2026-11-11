@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireUser, assertSelf } from "@/lib/api-auth";
 import { createClient } from "@supabase/supabase-js";
 
 const supabaseAdmin = createClient(

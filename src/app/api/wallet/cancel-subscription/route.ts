@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireUser, assertSelf } from "@/lib/api-auth";
 import { createClient } from "@supabase/supabase-js";
 
 const supabaseAdmin = createClient(
@@ -9,6 +10,11 @@ const supabaseAdmin = createClient(
 export async function POST(req: Request) {
   try {
     const { userId, creatorId } = await req.json();
+
+    const auth = await requireUser();
+    if (auth instanceof Response) return auth;
+    const mismatch = assertSelf(auth.user, userId);
+    if (mismatch) return mismatch;
     if (!userId || !creatorId) {
       return NextResponse.json({ error: "Missing userId or creatorId" }, { status: 400 });
     }

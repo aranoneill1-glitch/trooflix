@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireUser, assertSelf } from "@/lib/api-auth";
 import { createClient } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
@@ -11,6 +12,12 @@ const supabaseAdmin = createClient(
 export async function POST(req: Request) {
   try {
     const { senderId, receiverId, amount, description } = await req.json();
+
+    // Auth: verify the caller is the sender
+    const auth = await requireUser();
+    if (auth instanceof Response) return auth;
+    const mismatch = assertSelf(auth.user, senderId);
+    if (mismatch) return mismatch;
 
     if (!senderId || !receiverId || !amount) return NextResponse.json({ error: "Missing data" }, { status: 400 });
     if (amount <= 0 || (amount * 2) % 1 !== 0) return NextResponse.json({ error: "Invalid amount. Must be a multiple of 0.50." }, { status: 400 });
