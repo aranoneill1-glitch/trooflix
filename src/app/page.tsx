@@ -530,7 +530,7 @@ export default function Home() {
 
           
                         {/* FEATURES ROW (DESKTOP) */}
-      <div className="hidden lg:block w-full max-w-[1600px] mx-auto px-12 py-20">
+      <div className={!user && authResolved ? "hidden lg:block w-full max-w-[1600px] mx-auto px-12 py-20" : "hidden"}>
         <div className="flex items-center justify-between mb-10">
           <h2 className="text-3xl md:text-5xl font-black tracking-tight">
             Why Creators Are <span className="text-[#E53945]">Switching</span>
