@@ -114,24 +114,22 @@ function FeaturedVideoHero({ videos, onSelect }: { videos: any[]; onSelect: (vid
   const image = video.backdropUrl || video.posterUrl;
 
   return (
-    <section aria-label="Featured videos" className="relative isolate min-h-[360px] overflow-hidden rounded-2xl bg-[#101114] md:min-h-[500px]">
+    <section aria-label="Featured videos" className="relative isolate -mx-4 h-[min(76vh,780px)] min-h-[500px] max-h-[820px] overflow-hidden bg-[#08090c] md:-mx-10 md:min-h-[620px]">
       <AnimatePresence mode="wait">
         <motion.div key={video.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.7 }} className="absolute inset-0 -z-20">
           {image && <img src={image} alt="" className="h-full w-full object-cover" />}
         </motion.div>
       </AnimatePresence>
-      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-r from-black via-black/75 to-black/10 md:via-black/60" />
-      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-black/80 via-transparent to-black/10" />
+      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-r from-[#08090c] via-[#08090c]/80 to-transparent md:via-[#08090c]/55" />
+      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-[#08090c] via-[#08090c]/25 to-transparent" />
 
-      <div className="flex min-h-[360px] max-w-2xl flex-col justify-end px-5 pb-14 pt-16 md:min-h-[500px] md:px-12 md:pb-16">
-        <p className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70">
-          <Star size={14} className="text-[#F06A72]" /> Featured on Trooflix
-        </p>
+      <div className="flex h-full max-w-7xl flex-col justify-end px-5 pb-14 pt-24 md:mx-auto md:px-12 md:pb-20">
         <AnimatePresence mode="wait">
-          <motion.div key={video.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.35 }}>
-            <h1 className="max-w-xl text-3xl font-black leading-tight tracking-tight text-white drop-shadow-lg md:text-5xl">{video.title}</h1>
-            {video.description && <p className="mt-3 line-clamp-3 max-w-xl text-sm leading-6 text-white/75 md:text-base">{video.description}</p>}
-            <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-xs font-medium text-white/65">
+          <motion.div key={video.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.4 }} className="max-w-3xl">
+            <p className="mb-4 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.28em] text-white/65 md:text-xs"><Star size={13} className="text-[#F06A72]" /> Featured</p>
+            <h1 className="max-w-3xl text-4xl font-black leading-[0.98] tracking-[-0.055em] text-white drop-shadow-lg sm:text-5xl md:text-7xl">{video.title}</h1>
+            {video.description && <p className="mt-5 line-clamp-3 max-w-2xl text-sm leading-6 text-white/75 md:text-base md:leading-7">{video.description}</p>}
+            <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/55 md:text-xs">
               {video.category && <span>{video.category}</span>}
               {video.year ? <span>{video.year}</span> : null}
               {video.duration && <span>{video.duration}</span>}
@@ -139,23 +137,23 @@ function FeaturedVideoHero({ videos, onSelect }: { videos: any[]; onSelect: (vid
           </motion.div>
         </AnimatePresence>
 
-        <div className="mt-6 flex items-center gap-3">
-          <button onClick={() => onSelect(video)} className="inline-flex min-h-11 items-center gap-2 rounded-md bg-white px-5 py-3 text-sm font-bold text-black transition hover:bg-white/85">
-            <Play size={17} fill="currentColor" /> Watch now
+        <div className="mt-7 flex items-center gap-6">
+          <button onClick={() => onSelect(video)} className="inline-flex min-h-11 items-center gap-2 bg-white px-5 py-3 text-sm font-bold text-black transition hover:bg-white/85">
+            <Play size={17} fill="currentColor" /> Play
           </button>
-          <Link href="/latest" className="inline-flex min-h-11 items-center gap-2 rounded-md bg-white/15 px-5 py-3 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/25">
-            Explore <ArrowRight size={17} />
+          <Link href="/latest" className="inline-flex min-h-11 items-center gap-2 py-3 text-sm font-semibold text-white/75 transition hover:text-white">
+            More stories <ArrowRight size={16} />
           </Link>
         </div>
       </div>
 
       {videos.length > 1 && (
-        <div className="absolute bottom-4 right-4 flex items-center gap-2 md:bottom-6 md:right-8">
-          <button aria-label="Previous featured video" onClick={() => setActiveIndex((index) => (index - 1 + videos.length) % videos.length)} className="flex h-9 w-9 items-center justify-center rounded-full border border-white/25 bg-black/35 text-white transition hover:bg-black/65">
+        <div className="absolute bottom-6 right-5 flex items-center gap-4 md:bottom-10 md:right-12">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/55">{activeIndex + 1} <span className="mx-1 text-white/25">/</span> {videos.length}</span>
+          <button aria-label="Previous featured video" onClick={() => setActiveIndex((index) => (index - 1 + videos.length) % videos.length)} className="p-1 text-white/55 transition hover:text-white">
             <ChevronLeft size={18} />
           </button>
-          <span className="min-w-[42px] text-center text-xs font-medium tabular-nums text-white/80">{activeIndex + 1} / {videos.length}</span>
-          <button aria-label="Next featured video" onClick={() => setActiveIndex((index) => (index + 1) % videos.length)} className="flex h-9 w-9 items-center justify-center rounded-full border border-white/25 bg-black/35 text-white transition hover:bg-black/65">
+          <button aria-label="Next featured video" onClick={() => setActiveIndex((index) => (index + 1) % videos.length)} className="p-1 text-white/55 transition hover:text-white">
             <ChevronRight size={18} />
           </button>
         </div>
