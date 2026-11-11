@@ -298,21 +298,42 @@ function CreatorDashboardContent() {
 
         <div className="max-w-5xl mx-auto px-4 pt-24 pb-6">
           
-          {(true) && (
-          <div className="sticky top-[64px] md:top-[72px] z-[100] flex items-center justify-center py-4 mb-2">
-            <div className="flex bg-[#0a0303]/90 backdrop-blur-2xl p-1 rounded-full border border-white/20 shadow-2xl overflow-x-auto scrollbar-hide max-w-full">
-              <button onClick={() => { setIsDashboardView(false); setShowMyTrooFlix(false); }} className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${!isDashboardView && !showMyTrooFlix ? "bg-white text-black shadow-md" : "text-white/50 hover:text-white"}`}><Eye size={16} /> Profile</button>
-              <button onClick={() => { if (userTier === "free") { window.location.href = "/upgrade?feature=dashboard"; return; } setIsDashboardView(true); setShowMyTrooFlix(false); }} className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${isDashboardView && !showMyTrooFlix ? "bg-white text-black shadow-md" : "text-white/50 hover:text-white"} ${userTier === "free" ? "opacity-60" : ""}`}><LayoutDashboard size={16} /> Dashboard {userTier === "free" && <Lock size={11} className="text-white/60" />}</button>
-              <button onClick={() => { setShowMyTrooFlix(true); setIsDashboardView(false); }} className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all ${showMyTrooFlix ? "bg-white text-black shadow-md" : "text-white/50 hover:text-white"}`}><Play size={16} /> MyTrooFlix</button>
-              <Link href="/wallet" className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all text-white/50 hover:text-white hover:bg-white/5 whitespace-nowrap">
-                <Wallet size={16} /> TrooBank
-              </Link>
-              <Link href="/messages" className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all text-white/50 hover:text-white hover:bg-white/5 whitespace-nowrap">
-                <MessageCircle size={16} /> TrooChat
-              </Link>
+          <div className="sticky top-[64px] z-[100] mb-5 pt-2 md:top-[72px] md:mb-7">
+            <div className="rounded-[22px] border border-white/[0.12] bg-[#100d10]/90 p-1.5 shadow-[0_18px_55px_rgba(0,0,0,0.4)] backdrop-blur-2xl sm:p-2">
+              <div className="flex w-full items-stretch gap-1 overflow-x-auto scrollbar-hide">
+                <button
+                  onClick={() => { setIsDashboardView(false); setShowMyTrooFlix(false); }}
+                  aria-pressed={!isDashboardView && !showMyTrooFlix}
+                  className={`flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-1.5 py-2.5 text-[10px] font-bold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E53945] sm:flex-row sm:gap-2 sm:px-3 sm:py-3 sm:text-xs ${!isDashboardView && !showMyTrooFlix ? "bg-gradient-to-br from-[#ef535d] to-[#b91f2b] text-white shadow-[0_6px_20px_rgba(229,57,69,0.28)]" : "text-white/55 hover:bg-white/[0.06] hover:text-white"}`}
+                >
+                  <Eye size={17} className="shrink-0" /><span className="whitespace-nowrap">Profile</span>
+                </button>
+                <button
+                  onClick={() => { if (userTier === "free") { window.location.href = "/upgrade?feature=dashboard"; return; } setIsDashboardView(true); setShowMyTrooFlix(false); }}
+                  aria-pressed={isDashboardView && !showMyTrooFlix}
+                  className={`flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-1.5 py-2.5 text-[10px] font-bold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E53945] sm:flex-row sm:gap-2 sm:px-3 sm:py-3 sm:text-xs ${isDashboardView && !showMyTrooFlix ? "bg-gradient-to-br from-[#ef535d] to-[#b91f2b] text-white shadow-[0_6px_20px_rgba(229,57,69,0.28)]" : "text-white/55 hover:bg-white/[0.06] hover:text-white"} ${userTier === "free" ? "opacity-70" : ""}`}
+                >
+                  <span className="flex items-center gap-1.5"><LayoutDashboard size={17} className="shrink-0" />{userTier === "free" && <Lock size={10} className="text-white/45" />}</span><span className="whitespace-nowrap">Dashboard</span>
+                </button>
+                <button
+                  onClick={() => { setShowMyTrooFlix(true); setIsDashboardView(false); }}
+                  aria-pressed={showMyTrooFlix}
+                  className={`flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-1.5 py-2.5 text-[10px] font-bold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E53945] sm:flex-row sm:gap-2 sm:px-3 sm:py-3 sm:text-xs ${showMyTrooFlix ? "bg-gradient-to-br from-[#ef535d] to-[#b91f2b] text-white shadow-[0_6px_20px_rgba(229,57,69,0.28)]" : "text-white/55 hover:bg-white/[0.06] hover:text-white"}`}
+                >
+                  <Play size={17} className="shrink-0" /><span className="whitespace-nowrap">MyTrooFlix</span>
+                </button>
+
+                <span aria-hidden="true" className="my-1.5 w-px shrink-0 bg-white/10" />
+
+                <Link href="/wallet" className="flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-1.5 py-2.5 text-[10px] font-bold text-white/55 transition-all duration-200 hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E53945] sm:flex-row sm:gap-2 sm:px-3 sm:py-3 sm:text-xs">
+                  <Wallet size={17} className="shrink-0" /><span className="whitespace-nowrap">TrooBank</span>
+                </Link>
+                <Link href="/messages" className="flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-1.5 py-2.5 text-[10px] font-bold text-white/55 transition-all duration-200 hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E53945] sm:flex-row sm:gap-2 sm:px-3 sm:py-3 sm:text-xs">
+                  <MessageCircle size={17} className="shrink-0" /><span className="whitespace-nowrap">TrooChat</span>
+                </Link>
+              </div>
             </div>
           </div>
-          )}
 
           {showMyTrooFlix && <MyTrooFlixContent embedded />}
 
