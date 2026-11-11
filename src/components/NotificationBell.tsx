@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useEffect } from "react";
 import { Bell, X, Trash2, CheckCircle2, Heart, MessageCircle, UserPlus, ShoppingBag, Plus, Minus, Settings, Repeat } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -8,12 +9,15 @@ import { getCachedUser } from "@/lib/cache";
 
 type Notification = {
   id: string;
-  type: "like" | "comment" | "follow" | "system" | "purchase" | "repost" | "report_update";
+  type: "like" | "comment" | "follow" | "system" | "purchase" | "subscription" | "repost" | "report_update";
   title: string;
   message: string;
   is_read: boolean;
   created_at: string;
   sender_avatar: string | null;
+  actor_id?: string | null;
+  actor_name?: string | null;
+  post_id?: number | null;
 };
 
 export default function NotificationBell({ hideTrigger = false }: { hideTrigger?: boolean }) {
@@ -277,41 +281,13 @@ export default function NotificationBell({ hideTrigger = false }: { hideTrigger?
                     </div>
 
                     {items.map(n => (
-                      <div key={n.id} className="bg-[#1c1c1e] border border-white/5 hover:border-white/10 p-4 rounded-2xl flex items-start gap-4 transition-all group relative overflow-hidden">
-                        
-                        {/* Icon / Avatar */}
-                        <div className="w-10 h-10 rounded-full bg-[#0a0303] flex items-center justify-center shrink-0 border border-white/10 overflow-hidden">
-                          {n.sender_avatar ? (
-                    <img src={n.sender_avatar} alt="" className="w-full h-full object-cover" />
-                  ) : n.type === "like" ? (
-                    <Heart size={18} className="text-[#E53945]" fill="currentColor" />
-                  ) : n.type === "comment" ? (
-                    <MessageCircle size={18} className="text-blue-400" />
-                  ) : n.type === "follow" ? (
-                    <UserPlus size={18} className="text-green-400" />
-                  ) : n.type === "purchase" ? (
-                    <ShoppingBag size={18} className="text-yellow-400" />
-                  ) : (
-                    <Bell size={18} className="text-white/50" />
-                  )}
-                        </div>
-
-                        {/* Content */}
-                        <div className="flex-1 min-w-0 pt-0.5">
-                          <div className="flex justify-between items-start gap-4">
-                            <h4 className={`text-base font-bold truncate ${n.is_read ? "text-white/70" : "text-white"}`}>
-                              {n.title}
-                            </h4>
-                            <span className="text-xs text-white/40 shrink-0">{formatTime(n.created_at)}</span>
-                          </div>
-                          <p className="text-sm text-white/50 mt-1 line-clamp-2 leading-relaxed">{n.message}</p>
-                        </div>
-
-                        {/* Delete Action (Visible on Hover) */}
-                        <button onClick={() => deleteNotification(n.id)} className="absolute right-4 bottom-4 p-2 text-white/20 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
+                      <Link
+                        key={n.id}
+                        href={n.type === "purchase" ? "/orders?tab=sold" : n.type === "subscription" ? "/creator-dashboard/subscriptions" : (n.type === "like" || n.type === "comment") && n.post_id ? "/feed?reel=" + n.post_id : n.type === "follow" && n.actor_id ? "/profile/" + n.actor_id : "/notifications"}
+                        onClick={() => setIsOpen(false)}
+                        className="bg-[#1c1c1e] border border-white/5 hover:border-white/10 hover:bg-white/[0.02] p-4 rounded-2xl flex items-start gap-4 transition-all group relative overflow-hidden block cursor-pointer"
+                      >
+                      </Link>
                     ))}
                   </div>
                 ))
