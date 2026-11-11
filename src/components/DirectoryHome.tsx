@@ -80,7 +80,7 @@ function SectionHead({ kicker, title, href, icon: Icon }: { kicker: string; titl
         </span>
         <div className="min-w-0">
           <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#E53945] md:text-[11px]">{kicker}</p>
-          <h2 className="text-[21px] font-semibold tracking-[-0.03em] text-white md:text-[28px]">{title}</h2>
+          <h2 className="text-[21px] font-black tracking-tighter text-white md:text-[28px]">{title}</h2>
         </div>
       </div>
       <Link href={href} className="text-[13px] font-medium text-white/45 hover:text-white transition mb-1">

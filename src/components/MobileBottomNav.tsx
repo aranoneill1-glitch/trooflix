@@ -64,7 +64,7 @@ export default function MobileBottomNav() {
                 className={`flex items-center justify-center flex-col gap-0.5 w-full h-full rounded-full ${active ? "bg-white/10" : ""}`}
               >
                 {tab.name === "Trooflix" ? (
-                  <span className="text-[12px] font-semibold tracking-[-0.04em] leading-none">
+                  <span className="text-[12px] font-black tracking-[-0.06em] leading-none">
                     <span className="text-white">TROO</span><span className="text-[#E53945]">FLIX</span>
                   </span>
                 ) : (

@@ -73,7 +73,7 @@ export default function TopBar({ onMenu }: Props) {
 
         {/* LOGO: Hidden on search page, visible everywhere else */}
         {!isSearchPage && (
-          <Link href="/" className="text-[22px] md:text-[24px] font-semibold tracking-[-0.04em] shrink-0">
+          <Link href="/" className="text-[22px] md:text-[24px] font-black tracking-[-0.06em] shrink-0">
             {isMessagesPage ? (
               <>
                 <span className="text-white">TROO</span>
