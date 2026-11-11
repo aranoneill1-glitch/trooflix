@@ -1,5 +1,4 @@
 "use client";
-import { MessageCircle, Eye, LayoutDashboard, Play, Wallet } from "lucide-react";
 import { PhoneMissed, ArrowDownLeft, ArrowUpRight } from "lucide-react";
 
 import { useEffect, useState } from "react";
@@ -9,6 +8,7 @@ import { Search, Plus, CheckCheck } from "lucide-react";
 import { Phone as PhoneIcon } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import CreatorStudioNav from "@/components/CreatorStudioNav";
 import { createClient } from "@/utils/supabase/client";
 import { useRealtimeDMs } from "@/hooks/useRealtimeDMs";
 import { getCachedUser } from "@/lib/cache";
@@ -210,15 +210,7 @@ export default function MessagesInbox() {
         style={{ background: "#000000" }}
       >
         
-              <div className="flex items-center justify-center mb-2 pt-4">
-                <div className="flex bg-white/10 backdrop-blur-xl p-1 rounded-full border border-white/20 shadow-2xl overflow-x-auto">
-                  <Link href="/creator-dashboard" className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all text-white/50 hover:text-white whitespace-nowrap"><Eye size={16} /> Profile</Link>
-                  <Link href="/creator-dashboard?view=dashboard" className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all text-white/50 hover:text-white whitespace-nowrap"><LayoutDashboard size={16} /> Dashboard</Link>
-                  <Link href="/creator-dashboard?view=mytrooflix" className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all text-white/50 hover:text-white whitespace-nowrap"><Play size={16} /> MyTrooFlix</Link>
-                  <Link href="/wallet" className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all text-white/50 hover:text-white whitespace-nowrap"><Wallet size={16} /> TrooBank</Link>
-                  <Link href="/messages" className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold transition-all bg-white text-black shadow-md whitespace-nowrap"><MessageCircle size={16} /> TrooChat</Link>
-                </div>
-              </div>
+              <div className="px-3 pb-3 pt-3 md:px-6"><CreatorStudioNav active="chat" /></div>
 
 <div className="max-w-3xl mx-auto flex items-center justify-between px-4 md:px-6 py-3">
           

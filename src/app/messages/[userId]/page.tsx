@@ -20,6 +20,7 @@ import VerifiedBadge from "@/components/VerifiedBadge";
 import { getCachedUser } from "@/lib/cache";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import CreatorStudioNav from "@/components/CreatorStudioNav";
 import { motion, AnimatePresence } from "framer-motion";
 
 type Message = {
@@ -445,6 +446,9 @@ export default function ThreadPage() {
   return (
     <main className="fixed inset-0 h-[100dvh] pt-[64px] pb-[72px] bg-black text-white flex flex-col overflow-hidden">
       <TopBar />
+      <div className="flex-shrink-0 border-b border-white/5 bg-black px-3 py-2 md:px-6">
+        <CreatorStudioNav active="chat" />
+      </div>
       {/* Header — white bar */}
       <header className="flex-shrink-0 bg-black border-b border-white/10">
         <div className="flex items-center gap-3 px-3 py-2.5 md:px-6">

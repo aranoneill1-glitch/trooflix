@@ -18,6 +18,7 @@ import MyTrooFlixContent from "@/components/MyTrooFlixContent";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
 import { GripVertical } from "lucide-react";
 import HomeFeedCard from "@/components/HomeFeedCard";
+import CreatorStudioNav from "@/components/CreatorStudioNav";
 
 
 const InstagramIcon = ({ size = 16 }: { size?: number }) => (
@@ -31,6 +32,7 @@ const XIcon = ({ size = 16 }: { size?: number }) => (
 function CreatorDashboardContent() {
   const searchParams = useSearchParams();
   const isPublicView = searchParams.get('view') === 'public';
+  const studioTab = searchParams.get("studioTab");
   const supabase = createClient();
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
@@ -60,8 +62,17 @@ function CreatorDashboardContent() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useEffect(() => {
-    if (isPublicView) setIsDashboardView(false);
-  }, [isPublicView]);
+    if (isPublicView || studioTab === "profile") {
+      setIsDashboardView(false);
+      setShowMyTrooFlix(false);
+    } else if (studioTab === "dashboard") {
+      setIsDashboardView(true);
+      setShowMyTrooFlix(false);
+    } else if (studioTab === "mytrooflix") {
+      setIsDashboardView(false);
+      setShowMyTrooFlix(true);
+    }
+  }, [isPublicView, studioTab]);
   
   const [contentView, setContentView] = useState<"grid" | "list">("grid");
   const [activeContentTab, setActiveContentTab] = useState<"All" | "Videos" | "Premium" | "Shop">("All");
@@ -299,40 +310,18 @@ function CreatorDashboardContent() {
         <div className="max-w-5xl mx-auto px-4 pt-24 pb-6">
           
           <div className="sticky top-[64px] z-[100] mb-5 pt-2 md:top-[72px] md:mb-7">
-            <div className="rounded-[22px] border border-white/[0.12] bg-[#100d10]/90 p-1.5 shadow-[0_18px_55px_rgba(0,0,0,0.4)] backdrop-blur-2xl sm:p-2">
-              <div className="flex w-full items-stretch gap-1 overflow-x-auto scrollbar-hide">
-                <button
-                  onClick={() => { setIsDashboardView(false); setShowMyTrooFlix(false); }}
-                  aria-pressed={!isDashboardView && !showMyTrooFlix}
-                  className={`flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-1.5 py-2.5 text-[10px] font-bold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E53945] sm:flex-row sm:gap-2 sm:px-3 sm:py-3 sm:text-xs ${!isDashboardView && !showMyTrooFlix ? "bg-gradient-to-br from-[#ef535d] to-[#b91f2b] text-white shadow-[0_6px_20px_rgba(229,57,69,0.28)]" : "text-white/55 hover:bg-white/[0.06] hover:text-white"}`}
-                >
-                  <Eye size={17} className="shrink-0" /><span className="whitespace-nowrap">Profile</span>
-                </button>
-                <button
-                  onClick={() => { if (userTier === "free") { window.location.href = "/upgrade?feature=dashboard"; return; } setIsDashboardView(true); setShowMyTrooFlix(false); }}
-                  aria-pressed={isDashboardView && !showMyTrooFlix}
-                  className={`flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-1.5 py-2.5 text-[10px] font-bold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E53945] sm:flex-row sm:gap-2 sm:px-3 sm:py-3 sm:text-xs ${isDashboardView && !showMyTrooFlix ? "bg-gradient-to-br from-[#ef535d] to-[#b91f2b] text-white shadow-[0_6px_20px_rgba(229,57,69,0.28)]" : "text-white/55 hover:bg-white/[0.06] hover:text-white"} ${userTier === "free" ? "opacity-70" : ""}`}
-                >
-                  <span className="flex items-center gap-1.5"><LayoutDashboard size={17} className="shrink-0" />{userTier === "free" && <Lock size={10} className="text-white/45" />}</span><span className="whitespace-nowrap">Dashboard</span>
-                </button>
-                <button
-                  onClick={() => { setShowMyTrooFlix(true); setIsDashboardView(false); }}
-                  aria-pressed={showMyTrooFlix}
-                  className={`flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-1.5 py-2.5 text-[10px] font-bold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E53945] sm:flex-row sm:gap-2 sm:px-3 sm:py-3 sm:text-xs ${showMyTrooFlix ? "bg-gradient-to-br from-[#ef535d] to-[#b91f2b] text-white shadow-[0_6px_20px_rgba(229,57,69,0.28)]" : "text-white/55 hover:bg-white/[0.06] hover:text-white"}`}
-                >
-                  <Play size={17} className="shrink-0" /><span className="whitespace-nowrap">MyTrooFlix</span>
-                </button>
-
-                <span aria-hidden="true" className="my-1.5 w-px shrink-0 bg-white/10" />
-
-                <Link href="/wallet" className="flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-1.5 py-2.5 text-[10px] font-bold text-white/55 transition-all duration-200 hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E53945] sm:flex-row sm:gap-2 sm:px-3 sm:py-3 sm:text-xs">
-                  <Wallet size={17} className="shrink-0" /><span className="whitespace-nowrap">TrooBank</span>
-                </Link>
-                <Link href="/messages" className="flex min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-1.5 py-2.5 text-[10px] font-bold text-white/55 transition-all duration-200 hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E53945] sm:flex-row sm:gap-2 sm:px-3 sm:py-3 sm:text-xs">
-                  <MessageCircle size={17} className="shrink-0" /><span className="whitespace-nowrap">TrooChat</span>
-                </Link>
-              </div>
-            </div>
+            <CreatorStudioNav
+              active={showMyTrooFlix ? "mytrooflix" : isDashboardView ? "dashboard" : "profile"}
+              dashboardLocked={userTier === "free"}
+              onViewChange={(section) => {
+                if (section === "dashboard" && userTier === "free") {
+                  window.location.href = "/upgrade?feature=dashboard";
+                  return;
+                }
+                setIsDashboardView(section === "dashboard");
+                setShowMyTrooFlix(section === "mytrooflix");
+              }}
+            />
           </div>
 
           {showMyTrooFlix && <MyTrooFlixContent embedded />}
