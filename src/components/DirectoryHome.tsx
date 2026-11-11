@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { ArrowRight, Clapperboard, ShoppingBag, Sparkles, Users } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Clapperboard, Play, ShoppingBag, Sparkles, Users } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 
 
 function VideoPreview({ src, poster, className }: { src: string, poster?: string, className?: string }) {
@@ -89,7 +90,73 @@ function SectionHead({ kicker, title, href, icon: Icon }: { kicker: string; titl
   );
 }
 
-export default function DirectoryHome({ videos, creators, flushTop = false }: { videos: any[], creators: any[], flushTop?: boolean }) {
+function FeaturedVideoHero({ videos, onSelect }: { videos: any[]; onSelect: (video: any) => void }) {
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    if (videos.length < 2) return;
+    const timer = window.setInterval(() => {
+      setActiveIndex((index) => (index + 1) % videos.length);
+    }, 9000);
+    return () => window.clearInterval(timer);
+  }, [videos.length]);
+
+  if (!videos.length) return null;
+  const video = videos[activeIndex % videos.length];
+  const image = video.backdropUrl || video.posterUrl;
+
+  return (
+    <section aria-label="Featured videos" className="relative isolate min-h-[360px] overflow-hidden rounded-2xl bg-[#101114] md:min-h-[500px]">
+      <AnimatePresence mode="wait">
+        <motion.div key={video.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.7 }} className="absolute inset-0 -z-20">
+          {image && <img src={image} alt="" className="h-full w-full object-cover" />}
+        </motion.div>
+      </AnimatePresence>
+      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-r from-black via-black/75 to-black/10 md:via-black/60" />
+      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-black/80 via-transparent to-black/10" />
+
+      <div className="flex min-h-[360px] max-w-2xl flex-col justify-end px-5 pb-14 pt-16 md:min-h-[500px] md:px-12 md:pb-16">
+        <p className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70">
+          <Sparkles size={14} className="text-[#F06A72]" /> Featured on Trooflix
+        </p>
+        <AnimatePresence mode="wait">
+          <motion.div key={video.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.35 }}>
+            <h1 className="max-w-xl text-3xl font-black leading-tight tracking-tight text-white drop-shadow-lg md:text-5xl">{video.title}</h1>
+            {video.description && <p className="mt-3 line-clamp-3 max-w-xl text-sm leading-6 text-white/75 md:text-base">{video.description}</p>}
+            <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-xs font-medium text-white/65">
+              {video.category && <span>{video.category}</span>}
+              {video.year ? <span>{video.year}</span> : null}
+              {video.duration && <span>{video.duration}</span>}
+            </div>
+          </motion.div>
+        </AnimatePresence>
+
+        <div className="mt-6 flex items-center gap-3">
+          <button onClick={() => onSelect(video)} className="inline-flex min-h-11 items-center gap-2 rounded-md bg-white px-5 py-3 text-sm font-bold text-black transition hover:bg-white/85">
+            <Play size={17} fill="currentColor" /> Watch now
+          </button>
+          <Link href="/latest" className="inline-flex min-h-11 items-center gap-2 rounded-md bg-white/15 px-5 py-3 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/25">
+            Explore <ArrowRight size={17} />
+          </Link>
+        </div>
+      </div>
+
+      {videos.length > 1 && (
+        <div className="absolute bottom-4 right-4 flex items-center gap-2 md:bottom-6 md:right-8">
+          <button aria-label="Previous featured video" onClick={() => setActiveIndex((index) => (index - 1 + videos.length) % videos.length)} className="flex h-9 w-9 items-center justify-center rounded-full border border-white/25 bg-black/35 text-white transition hover:bg-black/65">
+            <ChevronLeft size={18} />
+          </button>
+          <span className="min-w-[42px] text-center text-xs font-medium tabular-nums text-white/80">{activeIndex + 1} / {videos.length}</span>
+          <button aria-label="Next featured video" onClick={() => setActiveIndex((index) => (index + 1) % videos.length)} className="flex h-9 w-9 items-center justify-center rounded-full border border-white/25 bg-black/35 text-white transition hover:bg-black/65">
+            <ChevronRight size={18} />
+          </button>
+        </div>
+      )}
+    </section>
+  );
+}
+
+export default function DirectoryHome({ videos, creators, featuredVideos, onVideoSelect, flushTop = false }: { videos: any[], creators: any[], featuredVideos: any[], onVideoSelect: (video: any) => void, flushTop?: boolean }) {
   const [shopProducts, setShopProducts] = useState<any[]>([]);
   
   useEffect(() => {
@@ -99,33 +166,10 @@ export default function DirectoryHome({ videos, creators, flushTop = false }: { 
       .catch(() => {});
   }, []);
 
-  const heroImage = videos.find((video: any) => video.backdropUrl || video.posterUrl);
-
   return (
     <div className={`relative z-10 ${flushTop ? "pt-8" : "pt-20 md:pt-24"} pb-32 md:pb-16 max-w-[1600px] mx-auto px-4 md:px-10 space-y-14`}>
 
-      <section className="relative isolate min-h-[300px] overflow-hidden rounded-[28px] border border-white/10 bg-[#101114] md:min-h-[360px] md:rounded-[32px]">
-        {heroImage && (
-          <img
-            src={heroImage.backdropUrl || heroImage.posterUrl}
-            alt=""
-            className="absolute inset-0 -z-20 h-full w-full object-cover opacity-35"
-          />
-        )}
-        <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-r from-[#101114] via-[#101114]/90 to-[#101114]/35 md:to-[#101114]/55" />
-        <div className="relative flex min-h-[300px] max-w-2xl flex-col items-start justify-center px-6 py-10 md:min-h-[360px] md:px-12 md:py-14">
-          <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#F06A72]">Welcome to Trooflix</p>
-          <h1 className="max-w-xl text-4xl font-bold leading-[1.02] tracking-[-0.045em] text-white md:text-6xl">
-            Find your next favourite.
-          </h1>
-          <p className="mt-4 max-w-lg text-sm leading-6 text-white/65 md:text-base md:leading-7">
-            Discover independent creators, fresh videos and short-form stories worth sharing.
-          </p>
-          <Link href="/latest" className="mt-7 inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#111114] transition hover:bg-white/85">
-            Explore the latest <ArrowRight size={17} />
-          </Link>
-        </div>
-      </section>
+      <FeaturedVideoHero videos={featuredVideos} onSelect={onVideoSelect} />
 
       <section>
         <SectionHead kicker="Latest" title="Don't miss a thing" href="/latest" icon={Sparkles} />
