@@ -2,7 +2,7 @@
 import { getCachedUser } from "@/lib/cache";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Volume2, VolumeX, Heart, Eye, MessageCircle, Play, Pause, Gift, ChevronLeft, ChevronUp, ChevronDown } from "lucide-react";
+import { Volume2, VolumeX, Heart, Eye, MessageCircle, Play, Pause, Gift, ArrowLeft, ChevronUp, ChevronDown } from "lucide-react";
 import LikeButton from "@/components/LikeButton";
 import CommentSheet from "@/components/CommentSheet";
 import Comments from "@/components/Comments";
@@ -88,8 +88,8 @@ export default function ShortsFeedPage() {
   if (loading) {
     return (
       <main className="h-[100dvh] bg-black flex items-center justify-center">
-        <Link href="/" aria-label="Return to Home" className="fixed left-4 top-[calc(env(safe-area-inset-top)+12px)] z-[100] inline-flex h-10 items-center gap-1.5 rounded-full border border-white/15 bg-black/45 px-3.5 text-sm font-semibold text-white shadow-lg backdrop-blur-xl transition hover:bg-black/70">
-          <ChevronLeft size={18} /> Home
+        <Link href="/" aria-label="Return to Home" className="fixed left-4 top-[calc(env(safe-area-inset-top)+12px)] z-[100] inline-flex h-11 w-11 items-center justify-center text-white drop-shadow-lg transition hover:scale-110">
+          <ArrowLeft size={28} strokeWidth={2.5} />
         </Link>
         <div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" />
       </main>
@@ -100,8 +100,8 @@ export default function ShortsFeedPage() {
 
   return (
     <main className="h-[100dvh] w-full bg-[#050505] overflow-hidden flex flex-col lg:flex-row">
-      <Link href="/" aria-label="Return to Home" className="fixed left-4 top-[calc(env(safe-area-inset-top)+12px)] z-[100] inline-flex h-10 items-center gap-1.5 rounded-full border border-white/15 bg-black/45 px-3.5 text-sm font-semibold text-white shadow-lg backdrop-blur-xl transition hover:bg-black/70">
-        <ChevronLeft size={18} /> Home
+      <Link href="/" aria-label="Return to Home" className="fixed left-4 top-[calc(env(safe-area-inset-top)+12px)] z-[100] inline-flex h-11 w-11 items-center justify-center text-white drop-shadow-lg transition hover:scale-110">
+        <ArrowLeft size={28} strokeWidth={2.5} />
       </Link>
       
       {/* MOBILE VIEW */}
@@ -558,10 +558,7 @@ function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComment
         </div>
       )}
 
-      <div className="absolute inset-x-0 bottom-0 h-[35%] bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none" />
-      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/60 to-transparent pointer-events-none" />
-
-      <div className="absolute left-4 right-[80px] bottom-[calc(env(safe-area-inset-bottom)+36px)] lg:bottom-[105px] z-30 flex flex-col items-start gap-3 pointer-events-none">
+      <div className="absolute left-4 right-4 lg:right-[80px] bottom-[calc(env(safe-area-inset-bottom)+64px)] lg:bottom-[105px] z-30 flex flex-col items-start gap-3 pointer-events-none">
         <div 
           className="text-white text-[14px] drop-shadow-md leading-snug cursor-pointer pointer-events-auto"
           onClick={toggleExpand}
@@ -598,7 +595,7 @@ function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComment
           </button>
         </div>
 
-        <div className="flex items-center gap-5 pointer-events-auto">
+        <div className="flex w-full items-center justify-center gap-5 pointer-events-auto">
           <button onClick={onToggleMute} className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
             {isMuted ? <VolumeX size={26} strokeWidth={1.5} /> : <Volume2 size={26} strokeWidth={1.5} />}
           </button>
@@ -618,7 +615,7 @@ function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComment
         </div>
       </div>
 
-      <div className="absolute left-0 right-0 bottom-[calc(env(safe-area-inset-bottom)+12px)] lg:bottom-[85px] z-40 pointer-events-none px-4">
+      <div className="absolute left-0 right-0 bottom-[calc(env(safe-area-inset-bottom)+34px)] lg:bottom-[85px] z-40 pointer-events-none px-4">
         <div 
           ref={progressBarRef}
           className="relative w-full h-[3px] bg-transparent cursor-pointer touch-none py-3 -my-3 pointer-events-auto"
