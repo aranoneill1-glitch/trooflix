@@ -96,6 +96,7 @@ export default function Home() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [authResolved, setAuthResolved] = useState(false);
   const [followedCreatorIds, setFollowedCreatorIds] = useState<number[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [allUsers, setAllUsers] = useState<any[]>([]);
@@ -149,7 +150,18 @@ export default function Home() {
     supabase.from("profiles").select("user_id, display_name, username, avatar_url, is_verified, tier").then(({ data }) => {
       if (data) setAllUsers(data);
     });
-    getCachedUser().then((u) => { setUser(u); if (u) { fetch(`/api/follows?user_id=${u.id}`).then(r => r.json()).then(d => setFollowedCreatorIds(d.ids || [])).catch(() => {}); } });
+    getCachedUser()
+      .then((u) => {
+        setUser(u);
+        if (u) {
+          fetch(`/api/follows?user_id=${u.id}`)
+            .then((r) => r.json())
+            .then((d) => setFollowedCreatorIds(d.ids || []))
+            .catch(() => {});
+        }
+      })
+      .catch(() => {})
+      .finally(() => setAuthResolved(true));
     
     fetch("/api/videos", { cache: "no-store" })
       .then((r) => r.json())
@@ -328,7 +340,7 @@ export default function Home() {
         <>
           {!showingFiltered && (
             <>
-              {!user && (<>
+              {!user && authResolved && (<>
               {/* MOBILE SECTION: Pills + Header + Avatars + Hero */}
               <div className="lg:hidden w-full flex flex-col relative z-10 bg-transparent">
                 {/* Ambient glow for glass refraction */}

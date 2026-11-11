@@ -8,8 +8,18 @@
   --accent: #e53945;
 }
 
+html {
+  color-scheme: dark;
+  scroll-behavior: smooth;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  scrollbar-width: thin;
+}
+
 body {
-  background: var(--background);
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse 68% 34% at 50% -12%, rgba(229, 57, 69, 0.13), transparent 72%),
+    var(--background);
   color: var(--foreground);
   font-family: var(--font-geist), Geist, Inter, Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -21,24 +31,37 @@ body {
   color: #fff;
 }
 
+:focus-visible {
+  outline: 2px solid rgba(229, 57, 69, 0.9);
+  outline-offset: 3px;
+}
+
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
 
-
 /* --- Block iOS pinch zoom everywhere --- */
-html, body {
+html,
+body {
   touch-action: pan-x pan-y;
   -webkit-text-size-adjust: 100%;
 }
 
 /* Keep pinch-zoom disabled on any element that had it working */
-input, textarea, select, button {
+input,
+textarea,
+select,
+button {
   touch-action: manipulation;
 }
 
-
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
