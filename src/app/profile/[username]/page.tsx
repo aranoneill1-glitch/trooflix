@@ -11,6 +11,7 @@ import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { createClient } from "@/utils/supabase/client";
 import VerifiedBadge from "@/components/VerifiedBadge";
+import ShortPreviewFrame from "@/components/ShortPreviewFrame";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
 
 const InstagramIcon = ({ size = 16 }: { size?: number }) => (
@@ -477,7 +478,7 @@ export default function PublicProfilePage() {
                   <div className="grid grid-cols-3 gap-[2px] pb-20 sm:gap-1">
                     {filteredVideos.map((video) => (
                       <Link key={video.id} href="/feed" aria-label={`Watch ${video.title}`} className="group relative aspect-[3/4] overflow-hidden bg-[#111114]">
-                        <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
+                        <ShortPreviewFrame src={video.videoUrl || video.bitchuteUrl} poster={video.posterUrl || video.backdropUrl} alt={video.title} />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-black/10 opacity-80" />
                         <Play size={17} fill="white" className="absolute right-2 top-2 text-white drop-shadow-md" />
                         <span className="absolute bottom-2 left-2 right-2 line-clamp-2 text-xs font-semibold leading-tight text-white drop-shadow-md">{video.title}</span>
