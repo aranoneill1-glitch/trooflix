@@ -222,22 +222,49 @@ export default function ShortsFeedPage() {
 function DesktopVideoShort({ video, isMuted, onSetActive }: { video: Video, isMuted: boolean, onSetActive: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isActive, setIsActive] = useState(false);
+  const onSetActiveRef = useRef(onSetActive);
+  const isMutedRef = useRef(isMuted);
+  onSetActiveRef.current = onSetActive;
+  isMutedRef.current = isMuted;
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
+        const current = videoRef.current;
+        if (!current) return;
         if (entry.isIntersecting) {
-          videoRef.current?.play().catch(() => {});
-          onSetActive();
+          document.querySelectorAll<HTMLVideoElement>("video[data-short-player]").forEach((player) => {
+            if (player !== current) {
+              player.pause();
+              player.muted = true;
+              try { player.currentTime = 0; } catch {}
+            }
+          });
+          try { current.currentTime = 0; } catch {}
+          current.muted = isMutedRef.current;
+          setIsActive(true);
+          current.play().catch(() => {});
+          onSetActiveRef.current();
         } else {
-          videoRef.current?.pause();
+          current.pause();
+          current.muted = true;
+          try { current.currentTime = 0; } catch {}
+          setIsActive(false);
         }
       },
       { threshold: 0.6 }
     );
     if (containerRef.current) observer.observe(containerRef.current);
-    return () => observer.disconnect();
-  }, [onSetActive]);
+    return () => {
+      observer.disconnect();
+      if (videoRef.current) {
+        videoRef.current.pause();
+        videoRef.current.muted = true;
+        try { videoRef.current.currentTime = 0; } catch {}
+      }
+    };
+  }, []);
 
   return (
     <div ref={containerRef} className="w-full h-full snap-start flex items-center justify-end pr-2 shrink-0">
@@ -247,16 +274,13 @@ function DesktopVideoShort({ video, isMuted, onSetActive }: { video: Video, isMu
         ) : (
           <video
             ref={videoRef}
+            data-short-player
             src={video.videoUrl || video.bitchuteUrl}
             poster={video.posterUrl}
             loop
             playsInline
-            muted={isMuted}
+            muted={isMuted || !isActive}
             preload="auto"
-            autoPlay
-            onLoadedData={(e) => {
-               e.currentTarget.play().catch(() => {});
-            }}
             className="w-full h-full object-cover cursor-pointer"
             onClick={(e) => {
               if (e.currentTarget.paused) e.currentTarget.play();
@@ -271,6 +295,11 @@ function DesktopVideoShort({ video, isMuted, onSetActive }: { video: Video, isMu
 
 function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComments, onSetActive }: { video: Video, creator: Creator | null, isMuted: boolean, onToggleMute: () => void, onOpenComments: () => void, onSetActive: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [isActive, setIsActive] = useState(false);
+  const onSetActiveRef = useRef(onSetActive);
+  const isMutedRef = useRef(isMuted);
+  onSetActiveRef.current = onSetActive;
+  isMutedRef.current = isMuted;
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const progressBarRef = useRef<HTMLDivElement>(null);
@@ -386,11 +415,26 @@ function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComment
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
+        const current = videoRef.current;
+        if (!current) return;
         if (entry.isIntersecting) {
-          videoRef.current?.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
-          if (onSetActive) onSetActive();
+          document.querySelectorAll<HTMLVideoElement>("video[data-short-player]").forEach((player) => {
+            if (player !== current) {
+              player.pause();
+              player.muted = true;
+              try { player.currentTime = 0; } catch {}
+            }
+          });
+          try { current.currentTime = 0; } catch {}
+          current.muted = isMutedRef.current;
+          setIsActive(true);
+          current.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+          onSetActiveRef.current();
         } else {
-          videoRef.current?.pause();
+          current.pause();
+          current.muted = true;
+          try { current.currentTime = 0; } catch {}
+          setIsActive(false);
           setIsPlaying(false);
           setIsExpanded(false);
         }
@@ -398,8 +442,15 @@ function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComment
       { threshold: 0.6 }
     );
     if (videoRef.current) observer.observe(videoRef.current);
-    return () => observer.disconnect();
-  }, [onSetActive]);
+    return () => {
+      observer.disconnect();
+      if (videoRef.current) {
+        videoRef.current.pause();
+        videoRef.current.muted = true;
+        try { videoRef.current.currentTime = 0; } catch {}
+      }
+    };
+  }, []);
 
   const requestRef = useRef<number | null>(null);
 
@@ -470,13 +521,13 @@ function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComment
     <div className="relative w-full h-[100dvh] snap-start snap-always bg-black flex items-center justify-center overflow-hidden">
       <video
         ref={videoRef}
+        data-short-player
         src={videoSrc}
         loop
         playsInline
-        muted={isMuted}
+        muted={isMuted || !isActive}
         preload="auto"
         onLoadedData={() => {
-          if (videoRef.current) videoRef.current.play().catch(() => {});
           fetch("/api/views", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
