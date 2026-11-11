@@ -479,10 +479,10 @@ export default function PublicProfilePage() {
                 {videos.map((v) => (
                   <div 
                     key={v.id} 
-                    className="w-[260px] md:w-[300px] shrink-0 snap-start flex flex-col gap-2 cursor-pointer group"
+                    className={"shrink-0 snap-start flex flex-col gap-2 cursor-pointer group " + (v.type?.toLowerCase() === "short" ? "w-[140px] md:w-[170px]" : "w-[260px] md:w-[300px]")}
                     onClick={() => setActiveContentTab("Videos")}
                   >
-                    <div className="relative aspect-video rounded-xl overflow-hidden bg-black border border-white/5">
+                    <div className={"relative rounded-xl overflow-hidden bg-black border border-white/5 " + (v.type?.toLowerCase() === "short" ? "aspect-[9/16]" : "aspect-video")}>
                       <img src={v.posterUrl || v.backdropUrl} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
                       {v.duration && (
                         <div className="absolute bottom-2 right-2 bg-black/80 px-1.5 py-0.5 rounded text-[10px] font-bold text-white">
