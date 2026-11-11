@@ -488,7 +488,7 @@ export default function PublicProfilePage() {
                 ) : (
                   <div className="grid grid-cols-3 gap-[2px] pb-20 sm:gap-1">
                     {filteredVideos.map((video) => (
-                      <Link key={video.id} href="/feed" aria-label={`Watch ${video.title}`} className="group relative aspect-[3/4] overflow-hidden bg-[#111114]">
+                      <Link key={video.id} href={`/feed?reel=${video.id}`} aria-label={`Watch ${video.title}`} className="group relative aspect-[3/4] overflow-hidden bg-[#111114]">
                         <ShortPreviewFrame src={video.videoUrl || video.bitchuteUrl} poster={video.posterUrl || video.backdropUrl} alt={video.title} />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-black/10 opacity-80" />
                         <Play size={17} fill="white" className="absolute right-2 top-2 text-white drop-shadow-md" />

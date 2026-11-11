@@ -41,17 +41,22 @@ export default function ShortsFeedPage() {
   const videoContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const requestedReelId = new URLSearchParams(window.location.search).get("reel");
     Promise.all([
       fetch("/api/videos", { cache: "no-store" }).then((r) => r.json()).catch(() => []),
       fetch("/api/creators", { cache: "no-store" }).then((r) => r.json()).catch(() => []),
     ]).then(([vData, cData]) => {
       const all = Array.isArray(vData) ? vData : [];
-      const shortsOnly = all.filter((v: any) => v.type?.toLowerCase() === "short");
+      const shortsOnly = all.filter((v: any) => ["short", "reel"].includes(String(v.type || "").toLowerCase()));
       const sortedShorts = shortsOnly.sort((a: any, b: any) => b.id - a.id);
-      setVideos(sortedShorts);
+      const requestedIndex = requestedReelId ? sortedShorts.findIndex((video: any) => String(video.id) === requestedReelId) : -1;
+      const orderedShorts = requestedIndex > 0
+        ? [sortedShorts[requestedIndex], ...sortedShorts.slice(0, requestedIndex), ...sortedShorts.slice(requestedIndex + 1)]
+        : sortedShorts;
+      setVideos(orderedShorts);
       setCreators(Array.isArray(cData) ? cData : []);
-      if (sortedShorts.length > 0) {
-        setActiveVideo(sortedShorts[0]);
+      if (orderedShorts.length > 0) {
+        setActiveVideo(orderedShorts[0]);
       }
       setLoading(false);
     }).catch(() => setLoading(false));
