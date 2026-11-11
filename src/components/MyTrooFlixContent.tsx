@@ -101,10 +101,6 @@ export default function MyTrooFlixContent({ embedded = false }: { embedded?: boo
     }
     items.sort((a, b) => b.progressSeconds - a.progressSeconds);
     
-    // FALLBACK: If no local progress, show recent videos so it's never empty
-    if (items.length === 0 && videos.length > 0) {
-      return videos.slice(0, 8).map(v => ({ ...v, progressSeconds: 30, progressDuration: 600 })); // Fake 5% progress for visual
-    }
     return items.slice(0, 10);
   }, [progressList, videos]);
 
@@ -162,12 +158,12 @@ export default function MyTrooFlixContent({ embedded = false }: { embedded?: boo
 
   const isCreator = profile?.tier === "creator" || profile?.tier === "podcaster" || profile?.tier === "pro";
   const isTrooPass = profile?.has_pass === true;
-  const memberStatusLabel = isCreator ? "Creator" : "TrooPass Member";
+  const memberStatusLabel = isCreator ? "Creator" : isTrooPass ? "TrooPass Member" : "Member";
   const badgeLabel = isCreator ? "CREATOR ACCESS" : "VIP ACCESS";
   const displayName = profile?.display_name || user?.user_metadata?.display_name || user?.email?.split('@')[0] || "Member";
   
-  // Cinematic Hero Poster (Most recent watch, or newest video)
-  const heroBackdrop = continueWatching[0]?.backdropUrl || videos[0]?.backdropUrl || "";
+  const heroVideo = continueWatching[0] || weeklyPicks[0] || null;
+  const heroBackdrop = heroVideo?.backdropUrl || heroVideo?.posterUrl || "";
 
   if (loading) {
     return (
@@ -192,64 +188,56 @@ export default function MyTrooFlixContent({ embedded = false }: { embedded?: boo
         ) : (
           <div className="w-full">
             
-            {/* A. CINEMATIC WELCOME HERO (No Boxes) */}
-            <div className="relative w-full h-[40vh] min-h-[320px] flex items-center pt-16 pb-8">
-
-
-              {/* Content */}
-              <div className="relative z-10 w-full max-w-7xl mx-auto px-5 md:px-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div className="flex items-center gap-4 md:gap-6">
-                  <div className="w-16 h-16 md:w-24 md:h-24 rounded-full border border-white/20 p-1 bg-black/50 backdrop-blur-md shrink-0">
-                    {profile?.avatar_url ? (
-                      <img src={profile.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full rounded-full flex items-center justify-center text-2xl md:text-4xl font-black text-white">
-                        {displayName.charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <p className="text-[10px] md:text-xs tracking-[0.3em] text-[#E53945] font-bold uppercase mb-1 md:mb-2 drop-shadow-md">
-                      {memberStatusLabel}
-                    </p>
-                    <h1 className="text-3xl md:text-5xl font-black tracking-tight text-white mb-1 md:mb-2 drop-shadow-lg">
-                      {getGreeting()}, {displayName}.
-                    </h1>
-                    <p className="text-sm md:text-lg text-white/70 font-medium drop-shadow-md">
-                      Your Trooflix. Your World.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  {true ? (
-                    <div className="flex items-center gap-2 bg-[#D4AF37]/20 backdrop-blur-md border border-[#D4AF37]/50 rounded-full px-4 py-2 shadow-lg">
-                      <Crown size={14} className="text-[#D4AF37]" />
-                      <span className="text-xs font-bold text-[#D4AF37] tracking-wide drop-shadow-sm">{badgeLabel}</span>
+            <section className="relative isolate mx-4 mt-4 min-h-[340px] overflow-hidden rounded-2xl border border-white/10 bg-[#101114] md:mx-8 md:mt-6 md:min-h-[420px]">
+              {heroBackdrop && <img src={heroBackdrop} alt="" className="absolute inset-0 -z-20 h-full w-full object-cover" />}
+              <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-r from-[#08080a] via-[#08080a]/85 to-[#08080a]/20" />
+              <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-[#08080a]/85 via-transparent to-black/15" />
+              <div className="relative flex min-h-[340px] flex-col justify-between p-5 sm:p-8 md:min-h-[420px] md:p-10">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-11 w-11 overflow-hidden rounded-full border border-white/25 bg-white/10 sm:h-14 sm:w-14">
+                      {profile?.avatar_url ? <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-lg font-black">{displayName.charAt(0).toUpperCase()}</div>}
                     </div>
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/55">{memberStatusLabel}</p>
+                      <p className="mt-0.5 text-sm font-semibold text-white">{displayName}</p>
+                    </div>
+                  </div>
+                  {(isCreator || isTrooPass) ? (
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-[#D4AF37]/35 bg-black/35 px-3 py-1.5 text-[9px] font-bold tracking-[0.12em] text-[#E8C46A] backdrop-blur-sm sm:text-[10px]">
+                      <Crown size={13} /> {badgeLabel}
+                    </span>
                   ) : (
-                    <Link href="/upgrade" className="flex items-center gap-2 bg-[#E53945] hover:bg-[#d12e39] rounded-full px-5 py-2.5 transition shadow-xl">
-                      <Sparkles size={14} className="text-white" />
-                      <span className="text-xs font-bold text-white tracking-wide">UPGRADE</span>
+                    <Link href="/upgrade" className="inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-2 text-xs font-bold text-black transition hover:bg-white/85">
+                      <Sparkles size={14} /> Upgrade
                     </Link>
                   )}
                 </div>
-              </div>
-            </div>
 
-            {/* STATS TICKER (Text only, no boxes) */}
-            <div className="relative z-20 w-full max-w-7xl mx-auto px-5 md:px-12 mt-2 mb-8 flex flex-wrap items-center gap-4 md:gap-8 text-xs md:text-sm font-semibold text-white/50 tracking-wider">
-              <div className="flex items-center gap-2">
-                <Clock size={14} className="text-[#E53945]" /> {totalHours} HRS WATCHED
+                <div className="max-w-2xl pb-1">
+                  <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.25em] text-[#F06A72]">Your Trooflix</p>
+                  <h1 className="text-3xl font-black leading-[1.02] tracking-[-0.05em] text-white sm:text-4xl md:text-6xl">{getGreeting()}, {displayName}.</h1>
+                  <p className="mt-3 max-w-lg text-sm leading-6 text-white/70 sm:text-base">Pick up where you left off, find something new, and keep your favorites close.</p>
+                  {heroVideo && (
+                    <div className="mt-4">
+                      <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-white/55">{continueWatching[0] ? "Continue watching" : "Picked for you"}</p>
+                      <p className="mt-1 line-clamp-1 text-base font-bold text-white sm:text-lg">{heroVideo.title}</p>
+                    </div>
+                  )}
+                  <div className="mt-5 flex flex-wrap items-center gap-3">
+                    {heroVideo && <button onClick={() => setPlaying(heroVideo)} className="inline-flex h-11 items-center gap-2 rounded-lg bg-white px-5 text-sm font-bold text-black transition hover:bg-white/85"><Play size={16} fill="currentColor" />{continueWatching[0] ? "Continue watching" : "Watch now"}</button>}
+                    <Link href="/latest" className="inline-flex h-11 items-center gap-2 rounded-lg border border-white/20 bg-black/30 px-5 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/10">
+                      Explore videos <ArrowRight size={16} />
+                    </Link>
+                  </div>
+                </div>
               </div>
-              <span className="hidden md:inline text-white/20">|</span>
-              <div className="flex items-center gap-2">
-                <Users size={14} className="text-[#E53945]" /> {followedCreatorIds.length} CREATORS
-              </div>
-              <span className="hidden md:inline text-white/20">|</span>
-              <div className="flex items-center gap-2">
-                <List size={14} className="text-[#E53945]" /> {watchlistCount} IN LIST
-              </div>
+            </section>
+
+            <div className="mx-4 mt-4 flex flex-wrap gap-2 md:mx-8 md:mt-5">
+              <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-2 text-xs font-medium text-white/65"><Clock size={14} className="text-[#F06A72]" />{totalHours} hrs watched</div>
+              <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-2 text-xs font-medium text-white/65"><Users size={14} className="text-[#F06A72]" />{followedCreatorIds.length} creators</div>
+              <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-2 text-xs font-medium text-white/65"><List size={14} className="text-[#F06A72]" />{watchlistCount} in your list</div>
             </div>
 
             <div className="max-w-7xl mx-auto space-y-10">
