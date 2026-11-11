@@ -2,7 +2,7 @@
 import { getCachedUser } from "@/lib/cache";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Volume2, VolumeX, Heart, Eye, MessageCircle, Play, Pause, Gift, ArrowLeft, ChevronUp, ChevronDown } from "lucide-react";
+import { Volume2, VolumeX, Heart, Eye, MessageCircle, Play, Pause, Gift, ArrowLeft, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from "lucide-react";
 import LikeButton from "@/components/LikeButton";
 import CommentSheet from "@/components/CommentSheet";
 import Comments from "@/components/Comments";
@@ -314,6 +314,7 @@ function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComment
   const [hasError, setHasError] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
   const [isSubmittingFollow, setIsSubmittingFollow] = useState(false);
+  const [showReelActions, setShowReelActions] = useState(true);
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
@@ -596,22 +597,32 @@ function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComment
         </div>
 
         <div className="flex w-full items-center justify-center gap-5 pointer-events-auto">
-          <button onClick={onToggleMute} className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
-            {isMuted ? <VolumeX size={26} strokeWidth={1.5} /> : <Volume2 size={26} strokeWidth={1.5} />}
+          <button
+            type="button"
+            onClick={() => setShowReelActions((visible) => !visible)}
+            aria-label={showReelActions ? "Hide reel controls" : "Show reel controls"}
+            className="text-white/80 drop-shadow-lg hover:text-white hover:scale-110 active:scale-95 transition-transform"
+          >
+            {showReelActions ? <ChevronLeft size={20} strokeWidth={2} /> : <ChevronRight size={20} strokeWidth={2} />}
           </button>
-          <button onClick={onOpenComments} className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
-            <MessageCircle size={26} strokeWidth={1.5} />
-          </button>
-          <button onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: video.creatorId, videoId: video.id } }))} className="text-yellow-500 drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
-            <Gift size={26} strokeWidth={1.5} />
-          </button>
-          <div className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
-            <LikeButton videoId={video.id} size={26} stacked={false} />
-          </div>
-          <div className="flex items-center gap-1.5 text-white drop-shadow-lg">
-            <Eye size={26} strokeWidth={1.5} />
-            <span className="text-[13px] font-bold">{(video as any).views || 0}</span>
-          </div>
+          {showReelActions && <>
+            <button onClick={onToggleMute} aria-label={isMuted ? "Unmute reel" : "Mute reel"} className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
+              {isMuted ? <VolumeX size={26} strokeWidth={1.5} /> : <Volume2 size={26} strokeWidth={1.5} />}
+            </button>
+            <button onClick={onOpenComments} aria-label="Open comments" className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
+              <MessageCircle size={26} strokeWidth={1.5} />
+            </button>
+            <button onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: video.creatorId, videoId: video.id } }))} aria-label="Tip creator" className="text-yellow-500 drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
+              <Gift size={26} strokeWidth={1.5} />
+            </button>
+            <div className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
+              <LikeButton videoId={video.id} size={26} stacked={false} />
+            </div>
+            <div className="flex items-center gap-1.5 text-white drop-shadow-lg">
+              <Eye size={26} strokeWidth={1.5} />
+              <span className="text-[13px] font-bold">{(video as any).views || 0}</span>
+            </div>
+          </>}
         </div>
       </div>
 
