@@ -11,36 +11,26 @@ const supabaseAdmin = createClient(
 export async function POST(req: Request) {
   try {
     const { senderId, receiverId, amount, description } = await req.json();
-    console.log("💰 TIP REQUEST:", { senderId, receiverId, amount });
 
     if (!senderId || !receiverId || !amount) return NextResponse.json({ error: "Missing data" }, { status: 400 });
     if (amount <= 0 || (amount * 2) % 1 !== 0) return NextResponse.json({ error: "Invalid amount. Must be a multiple of 0.50." }, { status: 400 });
 
     let validReceiverId = receiverId;
-    
-    // Resolve numeric creator ID to Supabase UUID if needed
     if (!String(receiverId).includes("-")) {
       const { data: profile } = await supabaseAdmin
         .from("profiles")
         .select("user_id")
         .eq("creator_id", Number(receiverId))
         .maybeSingle();
-        
-      if (profile?.user_id) {
-        validReceiverId = profile.user_id;
-      } else {
-        return NextResponse.json({ error: "Creator profile not found." }, { status: 404 });
-      }
+      if (profile?.user_id) validReceiverId = profile.user_id;
+      else return NextResponse.json({ error: "Creator profile not found." }, { status: 404 });
     }
 
-    // Block self-tipping AFTER translating to UUID
     if (String(senderId) === String(validReceiverId)) {
       return NextResponse.json({ error: "You cannot tip your own video." }, { status: 400 });
     }
 
     const { data: before } = await supabaseAdmin.from("wallets").select("balance").eq("user_id", senderId).maybeSingle();
-    console.log("💵 Balance BEFORE:", before?.balance);
-
     if (!before || before.balance < amount) {
       return NextResponse.json({ error: "Not enough credits. Please top up your balance." }, { status: 400 });
     }
@@ -51,20 +41,36 @@ export async function POST(req: Request) {
       p_amount: amount,
       p_type: "tip",
       p_description: description || "Tipped on a post",
-      p_video_id: null
+      p_video_id: null,
     });
 
     if (error) {
-      console.error("❌ RPC ERROR:", error.message);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    // Notify the receiver
+    try {
+      const { data: senderProfile } = await supabaseAdmin
+        .from("profiles")
+        .select("display_name, username")
+        .eq("user_id", senderId)
+        .maybeSingle();
+      const senderName = senderProfile?.display_name || senderProfile?.username || "Someone";
+
+      await supabaseAdmin.from("notifications").insert({
+        user_id: validReceiverId,
+        actor_id: senderId,
+        type: "tip",
+        title: "New tip received",
+        message: `${senderName} tipped you ${amount} TrooCoin${amount === 1 ? "" : "s"}!`,
+      });
+    } catch (notifErr) {
+      console.warn("Tip notification failed:", notifErr);
+    }
+
     const { data: after } = await supabaseAdmin.from("wallets").select("balance").eq("user_id", senderId).maybeSingle();
-    console.log("💵 Balance AFTER:", after?.balance);
-    
     return NextResponse.json({ success: true, new_balance: after?.balance });
   } catch (e: any) {
-    console.error("❌ TIP FAILED:", e.message);
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
 }

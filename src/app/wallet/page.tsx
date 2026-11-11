@@ -245,12 +245,12 @@ export default function WalletPage() {
                     return (
                       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.05 }} key={t.id} onClick={() => setSelectedTx(t)} className="flex items-center justify-between p-4 border-b border-white/5 last:border-0 hover:bg-white/[0.02] cursor-pointer transition">
                         <div className="flex items-center gap-4">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${t.type === "topup" ? "bg-green-500/10 text-green-500" : isPayout ? (isPaid ? "bg-green-500/10 text-green-500" : isCancelled ? "bg-red-500/10 text-red-500" : "bg-yellow-500/10 text-yellow-500") : "bg-red-500/10 text-red-500"}`}>
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${t.type === "topup" ? "bg-green-500/10 text-green-500" : t.type === "tip" ? (t.receiver_id === userId ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500") : isPayout ? (isPaid ? "bg-green-500/10 text-green-500" : isCancelled ? "bg-red-500/10 text-red-500" : "bg-yellow-500/10 text-yellow-500") : "bg-red-500/10 text-red-500"}`}>
                             {t.type === "topup" ? <ArrowDownRight size={18} /> : t.type === "send" ? <Send size={16} /> : <ArrowUpRight size={18} />}
                           </div>
                           <div>
                             <p className="font-bold text-sm flex items-center gap-2 text-white">
-                              {t.type === "topup" ? "Top Up" : t.type === "tip" ? "Tip Sent" : t.type === "send" ? "Sent Coins" : isPayout ? `Payout ${isPaid ? "Paid" : isCancelled ? "Cancelled" : "Pending"}` : t.type === "subscription" ? (t.sender_id === userId ? "Subscribed to @" + t.receiver_name : "Subscription from @" + t.sender_name) : "Transaction"}
+                              {t.type === "topup" ? "Top Up" : t.type === "tip" ? (t.sender_id === userId ? "Tip sent to @" + (t.receiver_name || "user") : "Tip received from @" + (t.sender_name || "user")) : t.type === "send" ? "Sent Coins" : isPayout ? `Payout ${isPaid ? "Paid" : isCancelled ? "Cancelled" : "Pending"}` : t.type === "subscription" ? (t.sender_id === userId ? "Subscribed to @" + t.receiver_name : "Subscription from @" + t.sender_name) : "Transaction"}
                             </p>
                             <p className="text-[11px] text-white/40">{new Date(t.created_at).toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</p>
                           </div>
