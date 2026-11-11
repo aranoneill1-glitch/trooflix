@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { ArrowRight, ChevronLeft, ChevronRight, Clapperboard, Play, ShoppingBag, Sparkles, Users } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, CirclePlay, Play, ShoppingBag, Star, UsersRound } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 
@@ -71,12 +71,20 @@ function timeAgo(dateString: string) {
   return date.toLocaleDateString();
 }
 
-function SectionHead({ kicker, title, href, icon: Icon }: { kicker: string; title: string; href: string; icon: typeof Sparkles }) {
+function ShortsMark({ size = 22 }: { size?: number; strokeWidth?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" fill="#FF0033">
+      <path d="m18.931 9.99-1.441-.601 1.717-.913a4.48 4.48 0 0 0 1.874-6.078 4.506 4.506 0 0 0-6.09-1.874L4.792 5.929a4.504 4.504 0 0 0-2.402 4.193 4.521 4.521 0 0 0 2.666 3.904c.036.012 1.442.6 1.442.6l-1.706.901a4.51 4.51 0 0 0-2.369 3.967A4.528 4.528 0 0 0 6.93 24c.725 0 1.437-.174 2.08-.508l10.21-5.406a4.494 4.494 0 0 0 2.39-4.192 4.525 4.525 0 0 0-2.678-3.904ZM9.597 15.19V8.824l6.007 3.184z" />
+    </svg>
+  );
+}
+
+function SectionHead({ kicker, title, href, icon: Icon }: { kicker: string; title: string; href: string; icon: typeof CirclePlay | typeof UsersRound | typeof ShoppingBag | typeof ShortsMark }) {
   return (
     <div className="flex items-end justify-between mb-5">
-      <div className="flex min-w-0 items-center gap-3.5">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#E53945]/20 bg-[#E53945]/[0.09] text-[#F06A72] shadow-[0_0_24px_rgba(229,57,69,0.08)] md:h-11 md:w-11">
-          <Icon size={19} strokeWidth={1.8} />
+      <div className="flex min-w-0 items-center gap-3">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center text-white/75">
+          <Icon size={22} strokeWidth={2} />
         </span>
         <div className="min-w-0">
           <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#E53945] md:text-[11px]">{kicker}</p>
@@ -117,7 +125,7 @@ function FeaturedVideoHero({ videos, onSelect }: { videos: any[]; onSelect: (vid
 
       <div className="flex min-h-[360px] max-w-2xl flex-col justify-end px-5 pb-14 pt-16 md:min-h-[500px] md:px-12 md:pb-16">
         <p className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70">
-          <Sparkles size={14} className="text-[#F06A72]" /> Featured on Trooflix
+          <Star size={14} className="text-[#F06A72]" /> Featured on Trooflix
         </p>
         <AnimatePresence mode="wait">
           <motion.div key={video.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.35 }}>
@@ -172,7 +180,7 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
       <FeaturedVideoHero videos={featuredVideos} onSelect={onVideoSelect} />
 
       <section>
-        <SectionHead kicker="Latest" title="Don't miss a thing" href="/latest" icon={Sparkles} />
+        <SectionHead kicker="Latest" title="Don't miss a thing" href="/latest" icon={CirclePlay} />
         <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
           {videos.filter((v: any) => {
             const t = v.type?.toLowerCase();
@@ -198,7 +206,7 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
       </section>
 
       <section>
-        <SectionHead kicker="People" title="Discover creators" href="/creators" icon={Users} />
+        <SectionHead kicker="People" title="Discover creators" href="/creators" icon={UsersRound} />
         <div className="flex overflow-x-auto gap-5 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
           {creators.slice(0, 15).map((c: any) => (
             <Link key={c.id} href={`/profile/${c.slug}`} className="flex flex-col items-center shrink-0 w-[104px] md:w-[120px] group">
@@ -214,7 +222,7 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
       </section>
 
       <section>
-        <SectionHead kicker="Clips" title="Shorts" href="/feed" icon={Clapperboard} />
+        <SectionHead kicker="Clips" title="Shorts" href="/feed" icon={ShortsMark} />
         <div className="flex overflow-x-auto gap-3 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
           {videos.filter((v: any) => v.type?.toLowerCase() === "short" || v.type?.toLowerCase() === "reel").slice(0, 10).map((v: any) => (
             <Link key={v.id} href="/feed" className="relative w-[132px] md:w-[168px] aspect-[9/16] shrink-0 rounded-2xl overflow-hidden ring-1 ring-white/10 group shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]">
