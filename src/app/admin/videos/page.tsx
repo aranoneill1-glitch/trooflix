@@ -33,7 +33,7 @@ const CATEGORIES = [
   "Comedy & Satire", "News & Current Events",
 ];
 
-const TYPES = ["Movie", "Documentary", "Podcast", "Series"];
+const TYPES = ["Movie", "long-video", "Series"];
 
 export default function VideosPage() {
   const [videos, setVideos] = useState<Video[]>([]);
@@ -43,7 +43,7 @@ export default function VideosPage() {
     title: "",
     description: "",
     category: CATEGORIES[0],
-    type: "Documentary",
+    type: "long-video",
     featured: false,
     videoUrl: "",
     posterUrl: "",
@@ -53,7 +53,7 @@ export default function VideosPage() {
     creatorId: null as number | null,
   });
   const [status, setStatus] = useState("");
-  const [filter, setFilter] = useState<"all" | "home" | "feed" | "podcasts" | "documentaries" | "movies" | "reels" | "images" | "troos" | "no_poster">("all");
+  const [filter, setFilter] = useState<"all" | "home" | "feed" | "shorts" | "long-videos" | "movies" | "reels" | "images" | "troos" | "no_poster">("all");
   const [search, setSearch] = useState("");
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<string | null>(null);
@@ -113,7 +113,7 @@ export default function VideosPage() {
 
   const resetForm = () => {
     setForm({
-      title: "", description: "", category: CATEGORIES[0], type: "Documentary", featured: false,
+      title: "", description: "", category: CATEGORIES[0], type: "long-video", featured: false,
       videoUrl: "", posterUrl: "", backdropUrl: "", year: new Date().getFullYear(), rating: "TV-MA", creatorId: null,
     });
     setEditing(null);
@@ -181,7 +181,7 @@ export default function VideosPage() {
     setEditing(video);
     setForm({
       title: video.title || "", description: video.description || "", category: video.category || CATEGORIES[0],
-      type: video.type || "Documentary", featured: !!video.featured, videoUrl: video.videoUrl ?? video.bitchuteUrl ?? "",
+      type: video.type || "long-video", featured: !!video.featured, videoUrl: video.videoUrl ?? video.bitchuteUrl ?? "",
       posterUrl: video.posterUrl || "", backdropUrl: video.backdropUrl || "", year: video.year || new Date().getFullYear(),
       rating: video.rating || "TV-MA", creatorId: video.creatorId ?? null,
     });
@@ -212,10 +212,10 @@ export default function VideosPage() {
     }
     switch (filter) {
       case "all": return true;
-      case "home": return (v.type === "Documentary" || v.type === "Movie" || v.type === "Podcast") && !v.uploaderUserId;
+      case "home": return (v.type === "long-video" || v.type === "Movie") && !v.uploaderUserId;
       case "feed": return !!v.uploaderUserId || v.type === "Reel" || v.type === "Image" || v.type === "Troo";
-      case "podcasts": return v.type === "Podcast";
-      case "documentaries": return v.type === "Documentary";
+      case "shorts": return v.type === "Short";
+      case "long-videos": return v.type === "long-video";
       case "movies": return v.type === "Movie";
       case "reels": return v.type === "Reel";
       case "images": return v.type === "Image";
@@ -353,7 +353,7 @@ export default function VideosPage() {
       </div>
 
       <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1 scrollbar-hide">
-        {[{ key: "all", label: "All" }, { key: "home", label: "Home" }, { key: "feed", label: "Feed" }, { key: "podcasts", label: "Podcasts" }, { key: "documentaries", label: "Docs" }, { key: "movies", label: "Movies" }, { key: "reels", label: "Reels" }, { key: "images", label: "Images" }, { key: "troos", label: "Troos" }, { key: "no_poster", label: "No Poster" }].map((tab) => (
+        {[{ key: "all", label: "All" }, { key: "home", label: "Home" }, { key: "feed", label: "Feed" }, { key: "shorts", label: "Shorts" }, { key: "long-videos", label: "Long Videos" }, { key: "movies", label: "Movies" }, { key: "reels", label: "Reels" }, { key: "images", label: "Images" }, { key: "troos", label: "Troos" }, { key: "no_poster", label: "No Poster" }].map((tab) => (
           <button key={tab.key} onClick={() => setFilter(tab.key as any)} className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition whitespace-nowrap ${filter === tab.key ? "bg-white text-black" : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"}`}>
             {tab.label}
             {tab.key === "no_poster" && <span className="ml-1 text-red-400">●</span>}
@@ -369,7 +369,7 @@ export default function VideosPage() {
           </div>
         ) : (
         filteredVideos.map((v) => {
-          const isAdminContent = !v.uploaderUserId && (v.type === "Documentary" || v.type === "Movie" || v.type === "Podcast");
+          const isAdminContent = !v.uploaderUserId && (v.type === "long-video" || v.type === "Movie");
           const noPoster = !v.posterUrl || v.posterUrl.startsWith("/api/poster");
           return (
           <div key={v.id} className={`flex items-center gap-4 rounded p-3 transition ${editing?.id === v.id ? "bg-red-950/40 border border-red-600" : "bg-[#141418]"}`}>

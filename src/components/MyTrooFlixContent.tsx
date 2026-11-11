@@ -380,7 +380,7 @@ export default function MyTrooFlixContent({ embedded = false }: { embedded?: boo
                     { name: "Watchlist", icon: List, href: "/my-list", count: watchlistCount },
                     { name: "Favourites", icon: Heart, href: "/my-list?tab=favourites", count: null },
                     { name: "History", icon: History, href: "/my-list?tab=history", count: progressList.length },
-                    { name: "Saved Podcasts", icon: Mic, href: "/podcasts", count: null },
+                    { name: "Saved Podcasts", icon: Mic, href: "/search/podcasts", count: null },
                     { name: "Collections", icon: FolderHeart, href: "/collections", count: null },
                     { name: "Downloads", icon: Download, href: "#", count: null, badge: "App" },
                   ].map((tile) => (

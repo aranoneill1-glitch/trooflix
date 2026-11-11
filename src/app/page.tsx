@@ -78,7 +78,7 @@ const CATEGORIES: string[] = [
   "Comedy & Satire", "News & Current Events",
 ];
 
-const NAV_TABS: string[] = ["Home", "Podcasts", "Feed"];
+const NAV_TABS: string[] = ["Home", "Feed"];
 
 export default function Home() {
   const router = useRouter();
@@ -201,12 +201,10 @@ export default function Home() {
 
   const [heroIndex, setHeroIndex] = useState(0);
 
-  const isDocOrPodcast = (v: Video) => !v.uploaderUserId && (v.type === "Documentary" || v.type === "Podcast");
+  const isLongVideo = (v: Video) => !v.uploaderUserId && v.type === "long-video";
 
-  const newReleases = videos.filter(isDocOrPodcast).sort((a, b) => b.id - a.id).slice(0, 20);
-  const trending = videos.filter(isDocOrPodcast).sort((a, b) => (likeCounts[b.id] || 0) - (likeCounts[a.id] || 0)).slice(0, 20);
-  const latestDocs = videos.filter((v) => v.type === "Documentary").sort((a, b) => b.id - a.id).slice(0, 20);
-  const latestPodcasts = videos.filter((v) => v.type === "Podcast").sort((a, b) => b.id - a.id).slice(0, 20);
+  const newReleases = videos.filter(isLongVideo).sort((a, b) => b.id - a.id).slice(0, 20);
+  const trending = videos.filter(isLongVideo).sort((a, b) => (likeCounts[b.id] || 0) - (likeCounts[a.id] || 0)).slice(0, 20);
 
   const continueWatching = progressList
     .map(p => {
@@ -218,8 +216,6 @@ export default function Home() {
   let displayVideos = videos;
   if (activeCategory) displayVideos = videos.filter((v) => v.category === activeCategory);
   else if (activeTab === "Movies") displayVideos = videos.filter((v) => v.type === "Movie");
-  else if (activeTab === "Documentaries") displayVideos = videos.filter((v) => v.type === "Documentary");
-  else if (activeTab === "Podcasts") displayVideos = videos.filter((v) => v.type === "Podcast");
   else if (activeTab === "Series") displayVideos = videos.filter((v) => v.type === "Series");
 
   const filtered = search ? videos.filter((v) => v.title.toLowerCase().includes(search.toLowerCase())) : null;

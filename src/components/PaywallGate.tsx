@@ -37,7 +37,7 @@ export default function PaywallGate({
         const d = await res.json();
         const profile = d.profile;
 
-        // Podcasters get full access (included in their subscription)
+        // Creators get full access (included in their subscription)
         if (profile?.tier === "podcaster") {
           setAccess("podcaster");
           return;
@@ -65,7 +65,7 @@ export default function PaywallGate({
 
   // Reels and non-podcast content = always free
   const isPaywalledContent =
-    contentType === "Podcast" || contentType === "Documentary";
+    contentType === "long-video";
 
   const isAnon = access === "anon";
   const isLocked =

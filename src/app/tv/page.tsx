@@ -188,11 +188,8 @@ export default function TVPage() {
     if (activeCategory === "__MOVIES__") {
       return [{ title: "Movies", items: videos.filter((v) => v.type === "Movie") }];
     }
-    if (activeCategory === "__DOCS__") {
-      return [{ title: "Documentaries", items: videos.filter((v) => v.type === "Documentary") }];
-    }
-    if (activeCategory === "__PODCASTS__") {
-      return [{ title: "Podcasts", items: videos.filter((v) => v.type === "Podcast") }];
+    if (activeCategory === "__LONG_VIDEOS__") {
+      return [{ title: "Long Videos", items: videos.filter((v) => v.type === "long-video") }];
     }
     if (activeCategory) {
       return [
@@ -250,21 +247,12 @@ export default function TVPage() {
           </button>
           <button
             data-tv-item
-            onClick={() => setActiveCategory("__DOCS__")}
+            onClick={() => setActiveCategory("__LONG_VIDEOS__")}
             className={`text-xl font-semibold transition ${
-              activeCategory === "__DOCS__" ? "text-white" : "text-white/50 hover:text-white/80"
+              activeCategory === "__LONG_VIDEOS__" ? "text-white" : "text-white/50 hover:text-white/80"
             }`}
           >
-            Documentaries
-          </button>
-          <button
-            data-tv-item
-            onClick={() => setActiveCategory("__PODCASTS__")}
-            className={`text-xl font-semibold transition ${
-              activeCategory === "__PODCASTS__" ? "text-white" : "text-white/50 hover:text-white/80"
-            }`}
-          >
-            Podcasts
+            Long Videos
           </button>
         </div>
       </div>

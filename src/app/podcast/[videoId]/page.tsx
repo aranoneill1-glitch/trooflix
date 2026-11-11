@@ -116,7 +116,7 @@ export default function WatchPage() {
         <TopBar />
         <div className="pt-32 text-center">
           <p className="text-white/50 mb-4">Video not found</p>
-          <Link href="/podcasts" className="text-red-500 hover:underline">Back to Podcasts</Link>
+          <Link href="/search/podcasts" className="text-red-500 hover:underline">Back to Podcasts</Link>
         </div>
         <MobileBottomNav />
       </main>
