@@ -224,6 +224,15 @@ function CreatorDashboardContent() {
   const displayName = profile?.display_name || "Creator Name";
   const username = profile?.username || "creator";
 
+  const latestProfileVideo = creatorVideos.find((video) => {
+    const type = String(video.type || "").toLowerCase();
+    return type !== "short" && type !== "reel" && type !== "tweet" && video.visibility !== "premium";
+  });
+  const profileImageUrl = typeof profile?.backdrop_url === "string" && /^https?:\/\//i.test(profile.backdrop_url)
+    ? profile.backdrop_url
+    : null;
+  const profilePreviewImage = profileImageUrl || latestProfileVideo?.posterUrl || latestProfileVideo?.backdropUrl;
+
   const filteredVideos = creatorVideos.filter(v => {
     const type = (v.type || "").toLowerCase();
 
@@ -332,7 +341,54 @@ function CreatorDashboardContent() {
 
           {!isDashboardView && !showMyTrooFlix && (
             <div className="animate-in fade-in duration-300">
-              <div className="flex flex-col mb-6 w-full">
+              <div className="hidden lg:grid grid-cols-[minmax(0,1fr)_minmax(360px,0.92fr)] items-center gap-8 mb-6 w-full">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-5 mb-5">
+                    <div onClick={() => setShowAvatarMenu(true)} className="w-24 h-24 rounded-full p-[3px] bg-gradient-to-tr from-[#E53945] to-orange-500 shrink-0 cursor-pointer group relative">
+                      <div className="w-full h-full rounded-full border-4 border-[#09090B] overflow-hidden bg-[#1c1c1e] relative">
+                        {profile?.avatar_url ? <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-3xl font-bold">{displayName.charAt(0)}</div>}
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"><Camera size={24} className="text-white" /></div>
+                      </div>
+                    </div>
+                    <div className="flex min-w-0 flex-1 justify-around gap-4">
+                      <div><span className="font-bold text-white block text-xl">{formatNumber(followerCount)}</span><span className="text-white/50 text-[11px] uppercase tracking-wider">Followers</span></div>
+                      <div><span className="font-bold text-white block text-xl">{formatNumber(subscriberCount)}</span><span className="text-white/50 text-[11px] uppercase tracking-wider">Subscribers</span></div>
+                      <div><span className="font-bold text-white block text-xl">{creatorVideos.length}</span><span className="text-white/50 text-[11px] uppercase tracking-wider">Posts</span></div>
+                    </div>
+                  </div>
+                  <div className="pl-1">
+                    <h1 className="text-2xl xl:text-3xl font-black flex min-w-0 items-center gap-2 text-white">{displayName} {profile?.verification_tick && profile.verification_tick !== "none" && <VerifiedBadge size={20} variant={profile.verification_tick as any} />}</h1>
+                    <p className="text-sm text-white/50 mt-1 mb-3">@{username}</p>
+                    <div className="flex items-center gap-4 mb-3">
+                      <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors"><InstagramIcon size={14} /><span className="text-xs font-semibold">{profile?.instagram_handle || "@instagram"}</span></a>
+                      <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors"><XIcon size={14} /><span className="text-xs font-semibold">{profile?.x_handle || "@x"}</span></a>
+                    </div>
+                    <p className="text-sm text-white/60 leading-relaxed line-clamp-2">{profile?.bio || "No bio yet."}</p>
+                    {userTier === "creator" ? (
+                      <Link href="/creator-dashboard/live" className="mt-4 inline-flex items-center gap-2 rounded-full border border-[#E53945]/70 px-4 py-2 text-sm font-bold text-[#F06A72] transition hover:bg-[#E53945]/10"><Radio size={15} /> Go Live</Link>
+                    ) : (
+                      <button onClick={() => { window.location.href = "/upgrade?feature=go_live"; }} className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm font-bold text-white/55 transition hover:bg-white/5"><Radio size={15} /> Go Live <Lock size={11} /></button>
+                    )}
+                  </div>
+                </div>
+                <div className="relative aspect-video overflow-hidden rounded-2xl border border-white/10 bg-[#111114] shadow-[0_18px_60px_rgba(0,0,0,0.35)]">
+                  {profilePreviewImage ? (
+                    <img src={profilePreviewImage} alt={profileImageUrl ? `${displayName} profile preview` : latestProfileVideo?.title || "Latest video preview"} className="absolute inset-0 h-full w-full object-cover" />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#241316] via-[#111114] to-[#09090B]"><Video size={34} className="text-white/25" /></div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/5 to-transparent" />
+                  <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3">
+                    <div className="min-w-0">
+                      <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.18em] text-white/65">{profileImageUrl ? "Profile image" : latestProfileVideo ? "Latest video" : "Creator preview"}</span>
+                      {!profileImageUrl && latestProfileVideo && <p className="truncate text-sm font-semibold text-white">{latestProfileVideo.title}</p>}
+                      {!profileImageUrl && !latestProfileVideo && <p className="text-sm font-medium text-white/75">Your featured content will appear here</p>}
+                    </div>
+                    {latestProfileVideo && !profileImageUrl && <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/20 bg-black/35 backdrop-blur-sm"><Play size={16} fill="white" /></span>}
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col mb-6 w-full lg:hidden">
                 <div className="flex items-center gap-4 w-full mb-4">
                   
                   {/* CLICKABLE AVATAR */}
