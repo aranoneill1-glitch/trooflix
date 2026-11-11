@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { Bell, X, Trash2, CheckCircle2, Heart, MessageCircle, UserPlus, ShoppingBag, Plus, Minus, Settings, Repeat } from "lucide-react";
+import { Bell, X, Trash2, CheckCircle2, Heart, MessageCircle, UserPlus, ShoppingBag, Plus, Minus, Settings, Repeat, Star } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/utils/supabase/client";
 import { getCachedUser } from "@/lib/cache";
@@ -305,8 +305,13 @@ export default function NotificationBell({ hideTrigger = false }: { hideTrigger?
 
                         <div className="flex-1 min-w-0 pt-0.5">
                           <div className="flex justify-between items-start gap-4">
-                            <h4 className={`text-base font-bold truncate ${n.is_read ? "text-white/70" : "text-white"}`}>
-                              {n.title}
+                            <h4 className={`text-base font-bold truncate flex items-center gap-1.5 ${n.is_read ? "text-white/70" : "text-white"}`}>
+                              {n.type === "like" && <Heart size={16} className="text-[#E53945] shrink-0" fill="currentColor" />}
+                              {n.type === "comment" && <MessageCircle size={16} className="text-blue-400 shrink-0" />}
+                              {n.type === "follow" && <UserPlus size={16} className="text-green-400 shrink-0" />}
+                              {n.type === "subscription" && <Star size={16} className="text-yellow-400 shrink-0" fill="currentColor" />}
+                              {n.type === "purchase" && <ShoppingBag size={16} className="text-yellow-400 shrink-0" />}
+                              <span className="truncate">{n.title}</span>
                             </h4>
                             <span className="text-xs text-white/40 shrink-0">{formatTime(n.created_at)}</span>
                           </div>
