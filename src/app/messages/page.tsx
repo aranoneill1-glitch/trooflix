@@ -206,7 +206,7 @@ export default function MessagesInbox() {
 
       {/* Instagram-style header */}
       <div
-        className="pt-24 flex-shrink-0 border-b border-white/5"
+        className="pt-[76px] flex-shrink-0 border-b border-white/5"
         style={{ background: "#000000" }}
       >
         

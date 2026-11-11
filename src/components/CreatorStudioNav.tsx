@@ -22,7 +22,7 @@ const tabs = [
 
 export default function CreatorStudioNav({ active, onViewChange, dashboardLocked = false, className = "mb-5" }: Props) {
   return (
-    <div className={`sticky top-[72px] z-[150] ${className}`}>
+    <div className={`sticky top-[68px] z-[150] ${className}`}>
       <nav aria-label="Creator studio" className="rounded-[22px] border border-white/[0.12] bg-[#100d10]/90 p-1.5 shadow-[0_18px_55px_rgba(0,0,0,0.4)] backdrop-blur-2xl sm:p-2">
         <div className="flex w-full items-stretch gap-1 overflow-x-auto scrollbar-hide">
           {tabs.map((tab, index) => {

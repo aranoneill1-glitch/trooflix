@@ -144,7 +144,7 @@ export default function WalletPage() {
       <div className="fixed top-0 left-0 w-full h-[500px] bg-gradient-to-b from-[#1c1c1e]/50 to-transparent pointer-events-none z-0" />
       <TopBar />
       
-      <div className="relative z-10 max-w-4xl mx-auto px-4 md:px-6 pt-24">
+      <div className="relative z-10 max-w-4xl mx-auto px-4 md:px-6 pt-[76px]">
         
         {/* HEADER */}
         

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { ArrowRight, ChevronLeft, ChevronRight, CirclePlay, Play, ShoppingBag, Star, UsersRound } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, CirclePlay, Eye, Play, ShoppingBag, Star, UsersRound } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 
@@ -238,7 +238,7 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-black/20 pointer-events-none" />
               <div className="absolute bottom-0 left-0 right-0 p-3">
                 <h3 className="text-white text-[12px] font-medium leading-snug line-clamp-2">{v.title}</h3>
-                <p className="text-white/55 text-[11px] mt-1">{v.views || 0} views</p>
+                <p className="mt-1 flex items-center gap-1 text-[11px] text-white/60"><Eye size={12} strokeWidth={2} />{v.views || 0}</p>
               </div>
             </Link>
           ))}

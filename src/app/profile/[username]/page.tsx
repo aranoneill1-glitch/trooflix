@@ -42,7 +42,7 @@ export default function PublicProfilePage() {
   const [merch, setMerch] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
-  const [activeContentTab, setActiveContentTab] = useState<"All" | "Videos" | "Premium" | "Shop">("All");
+  const [activeContentTab, setActiveContentTab] = useState<"Shorts" | "Videos" | "Premium" | "Shop">("Shorts");
   const [contentView, setContentView] = useState<"grid" | "list">("grid");
   const [activeVideoId, setActiveVideoId] = useState<number | null>(null);
   const [commentSheetVideoId, setCommentSheetVideoId] = useState<number | null>(null);
@@ -260,14 +260,18 @@ export default function PublicProfilePage() {
 
   const filteredVideos = videos.filter(v => {
     const type = (v.type || "").toLowerCase();
+
+    if (activeContentTab === "Shorts") {
+      return type === "short" || type === "reel";
+    }
     
     if (activeContentTab === "Videos") {
       // Videos tab: No tweets, no shorts, no premium videos
-      return type !== "tweet" && type !== "short" && v.visibility !== "premium";
+      return type !== "tweet" && type !== "short" && type !== "reel" && v.visibility !== "premium";
     }
     if (activeContentTab === "Premium") {
       // Premium tab: ONLY premium videos, NO tweets, NO shorts
-      return v.visibility === "premium" && type !== "tweet" && type !== "short";
+      return v.visibility === "premium" && type !== "tweet" && type !== "short" && type !== "reel";
     }
     return true;
   });
@@ -454,92 +458,35 @@ export default function PublicProfilePage() {
 {/* TABS & CONTENT */}
             <div className="flex items-center justify-between border-b border-white/10 mb-6">
               <div className="flex items-center gap-8">
-                {(["All", "Videos", "Premium", "Shop"] as const).map((tab) => (
+                {(["Shorts", "Videos", "Premium", "Shop"] as const).map((tab) => (
                   <button key={tab} onClick={() => setActiveContentTab(tab)} className={`pb-3 text-sm font-bold transition-colors ${activeContentTab === tab ? "text-white border-b-2 border-[#E53945]" : "text-white/50 hover:text-white"}`}>{tab}</button>
                 ))}
               </div>
-              <div className="flex items-center gap-1 bg-[#1c1c1e] p-1 rounded-lg mb-2">
-                <button onClick={() => setContentView("grid")} className={`p-1.5 rounded-md transition ${contentView === "grid" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}><LayoutGrid size={16} /></button>
-                <button onClick={() => setContentView("list")} className={`p-1.5 rounded-md transition ${contentView === "list" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}><List size={16} /></button>
-              </div>
+              {activeContentTab !== "Shorts" && (
+                <div className="flex items-center gap-1 bg-[#1c1c1e] p-1 rounded-lg mb-2">
+                  <button onClick={() => setContentView("grid")} className={`p-1.5 rounded-md transition ${contentView === "grid" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}><LayoutGrid size={16} /></button>
+                  <button onClick={() => setContentView("list")} className={`p-1.5 rounded-md transition ${contentView === "list" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}><List size={16} /></button>
+                </div>
+              )}
             </div>
 
             <div className="w-full">
-              {activeContentTab === "All" && (
-      <div className="w-full flex flex-col gap-10 pb-20">
-        {videos.length > 0 ? (
-          <>
-            {/* Hero Section */}
-            <div className="flex flex-col md:flex-row gap-6 md:gap-8">
-              <div 
-                className="w-full md:w-3/5 aspect-video rounded-2xl overflow-hidden bg-black relative group cursor-pointer border border-white/10 shadow-2xl"
-                onClick={() => setActiveContentTab("Videos")}
-              >
-                <img src={videos[0].posterUrl || videos[0].backdropUrl} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-                <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                  <div className="w-16 h-16 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center border border-white/20">
-                    <Play size={32} fill="white" className="text-white ml-1" />
+              {activeContentTab === "Shorts" && (
+                filteredVideos.length === 0 ? (
+                  <div className="py-20 text-center text-white/50">No Shorts yet.</div>
+                ) : (
+                  <div className="grid grid-cols-3 gap-[2px] pb-20 sm:gap-1">
+                    {filteredVideos.map((video) => (
+                      <Link key={video.id} href="/feed" aria-label={`Watch ${video.title}`} className="group relative aspect-[3/4] overflow-hidden bg-[#111114]">
+                        <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-black/10 opacity-80" />
+                        <Play size={17} fill="white" className="absolute right-2 top-2 text-white drop-shadow-md" />
+                        <span className="absolute bottom-2 left-2 right-2 line-clamp-2 text-xs font-semibold leading-tight text-white drop-shadow-md">{video.title}</span>
+                      </Link>
+                    ))}
                   </div>
-                </div>
-              </div>
-              
-              <div className="w-full md:w-2/5 flex flex-col justify-center">
-                <h2 className="text-2xl md:text-3xl ont-black text-white mb-2 leading-tight">{videos[0].title}</h2>
-                <p className="text-sm text-white/60 mb-4">
-                  {videos[0].viewCount || 0} views • {timeAgo(videos[0].createdAt)}
-                </p>
-                <p className="text-white/80 whitespace-pre-wrap text-sm leading-relaxed mb-6 line-clamp-4">
-                  {videos[0].description || "No description available."}
-                </p>
-                <button onClick={() => setActiveContentTab("Videos")} className="w-fit px-6 py-2.5 bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl transition">
-                  Watch Video
-                </button>
-              </div>
-            </div>
-
-            {/* Carousel Section */}
-            <div className="mt-4">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <h3 className="text-xl font-bold text-white">Latest Videos</h3>
-                  <button onClick={() => setActiveContentTab("Videos")} className="flex items-center gap-1.5 text-sm font-semibold text-white/70 hover:text-white transition">
-                    <Play size={16} fill="currentColor" /> Play all
-                  </button>
-                </div>
-              </div>
-              <p className="text-sm text-white/50 mb-4">Watch the latest content from {displayName}</p>
-              
-              <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-6 snap-x">
-                {videos.map((v) => (
-                  <div 
-                    key={v.id} 
-                    className={"shrink-0 snap-start flex flex-col gap-2 cursor-pointer group " + (v.type?.toLowerCase() === "short" ? "w-[140px] md:w-[170px]" : "w-[260px] md:w-[300px]")}
-                    onClick={() => setActiveContentTab("Videos")}
-                  >
-                    <div className={"relative rounded-xl overflow-hidden bg-black border border-white/5 " + (v.type?.toLowerCase() === "short" ? "aspect-[9/16]" : "aspect-video")}>
-                      <img src={v.posterUrl || v.backdropUrl} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-                      {v.duration && (
-                        <div className="absolute bottom-2 right-2 bg-black/80 px-1.5 py-0.5 rounded text-[10px] font-bold text-white">
-                          {v.duration}
-                        </div>
-                      )}
-                    </div>
-                    <h4 className="text-sm font-bold text-white line-clamp-2 leading-tight group-hover:text-[#E53945] transition">{v.title}</h4>
-                    <div className="text-xs text-white/50 flex items-center gap-1.5">
-                      <span>{v.viewCount || 0} views</span>
-                      <span>•</span>
-                      <span>{timeAgo(v.createdAt)}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className="text-center py-20 text-white/50">No posts yet.</div>
-        )}
-      </div>
-    )}
+                )
+              )}
 
     {activeContentTab === "Premium" && (
                 <div className="w-full">
