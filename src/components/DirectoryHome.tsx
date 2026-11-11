@@ -173,7 +173,7 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
   }, []);
 
   return (
-    <div className={`relative z-10 ${flushTop ? "pt-8" : "pt-20 md:pt-24"} pb-32 md:pb-16 max-w-[1600px] mx-auto px-4 md:px-10 space-y-14`}>
+    <div className={`relative z-10 ${flushTop ? "pt-8" : "pt-20 md:pt-24"} pb-32 md:pb-16 max-w-[1600px] mx-auto px-4 md:px-10 space-y-8 md:space-y-10`}>
 
       <FeaturedVideoHero videos={featuredVideos} onSelect={onVideoSelect} />
 
@@ -223,7 +223,7 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
         <SectionHead kicker="Clips" title="Shorts" href="/feed" icon={ShortsMark} />
         <div className="flex overflow-x-auto gap-3 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
           {videos.filter((v: any) => v.type?.toLowerCase() === "short" || v.type?.toLowerCase() === "reel").slice(0, 10).map((v: any) => (
-            <Link key={v.id} href="/feed" className="relative w-[132px] md:w-[168px] aspect-[9/16] shrink-0 rounded-2xl overflow-hidden ring-1 ring-white/10 group shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]">
+            <Link key={v.id} href={`/feed?reel=${v.id}`} className="relative w-[132px] md:w-[168px] aspect-[9/16] shrink-0 rounded-2xl overflow-hidden ring-1 ring-white/10 group shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]">
               {(v.videoUrl || v.bitchuteUrl) ? (
                 <VideoPreview
                   src={v.videoUrl || v.bitchuteUrl}

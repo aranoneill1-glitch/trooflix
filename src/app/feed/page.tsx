@@ -41,13 +41,23 @@ export default function ShortsFeedPage() {
   const videoContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const requestedReelId = new URLSearchParams(window.location.search).get("reel");
+    const params = new URLSearchParams(window.location.search);
+    const requestedReelId = params.get("reel");
+    const requestedCreatorUserId = params.get("creator_user_id");
+    const requestedCreatorId = params.get("creator_id");
     Promise.all([
       fetch("/api/videos", { cache: "no-store" }).then((r) => r.json()).catch(() => []),
       fetch("/api/creators", { cache: "no-store" }).then((r) => r.json()).catch(() => []),
     ]).then(([vData, cData]) => {
       const all = Array.isArray(vData) ? vData : [];
-      const shortsOnly = all.filter((v: any) => ["short", "reel"].includes(String(v.type || "").toLowerCase()));
+      const shortsOnly = all.filter((v: any) => {
+        const isShort = ["short", "reel"].includes(String(v.type || "").toLowerCase());
+        if (!isShort) return false;
+        if (!requestedCreatorUserId && !requestedCreatorId) return true;
+        const matchesCreatorUser = requestedCreatorUserId && String(v.uploaderUserId || "") === requestedCreatorUserId;
+        const matchesCreatorId = requestedCreatorId && String(v.creatorId || "") === requestedCreatorId;
+        return Boolean(matchesCreatorUser || matchesCreatorId);
+      });
       const sortedShorts = shortsOnly.sort((a: any, b: any) => b.id - a.id);
       const requestedIndex = requestedReelId ? sortedShorts.findIndex((video: any) => String(video.id) === requestedReelId) : -1;
       const orderedShorts = requestedIndex > 0
