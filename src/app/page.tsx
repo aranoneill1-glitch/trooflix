@@ -328,6 +328,7 @@ export default function Home() {
         <>
           {!showingFiltered && (
             <>
+              {!user && (<>
               {/* MOBILE SECTION: Pills + Header + Avatars + Hero */}
               <div className="lg:hidden w-full flex flex-col relative z-10 bg-transparent">
                 {/* Ambient glow for glass refraction */}
@@ -552,6 +553,8 @@ export default function Home() {
           ))}
         </div>
       </div>
+
+              </>)}
 
       <DirectoryHome videos={videos} creators={creators} />
         <div className="hidden relative z-10 pt-0 md:pt-2 pb-32 md:pb-20 space-y-2 md:space-y-6">
