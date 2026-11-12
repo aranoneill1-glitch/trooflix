@@ -102,7 +102,15 @@ export default function TopBar({ onMenu }: Props) {
           >
             <RefreshCw size={20} className={isRefreshing ? "animate-spin" : ""} />
           </button>
-          <Link href="/merchandise" className="w-10 h-10 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition" aria-label="Shop">
+          <button
+            type="button"
+            onClick={() => setShowCreateMenu(true)}
+            className="lg:hidden w-10 h-10 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition"
+            aria-label="Add content"
+          >
+            <Plus size={22} />
+          </button>
+          <Link href="/merchandise" className="hidden lg:flex w-10 h-10 rounded-full items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition" aria-label="Shop">
             <ShoppingBag size={20} />
           </Link>
 
