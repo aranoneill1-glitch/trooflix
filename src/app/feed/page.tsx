@@ -3,7 +3,8 @@ import { getCachedUser, getCachedVideos, getCachedCreators } from "@/lib/cache";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Volume2, VolumeX, Heart, Eye, MessageCircle, Play, Pause, Gift, ArrowLeft, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from "lucide-react";
-import LikeButton from "@/components/LikeButton";
+import LikeButton, { externalLike } from "@/components/LikeButton";
+import { motion, AnimatePresence } from "framer-motion";
 import CommentSheet from "@/components/CommentSheet";
 import Comments from "@/components/Comments";
 
@@ -232,6 +233,35 @@ function DesktopVideoShort({ video, isMuted, onSetActive }: { video: Video, isMu
   onSetActiveRef.current = onSetActive;
   isMutedRef.current = isMuted;
 
+  const [floatingHearts, setFloatingHearts] = useState<{ id: number; x: number; y: number }[]>([]);
+  const lastTapRef = useRef<number>(0);
+  const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleVideoClick = (e: React.MouseEvent<HTMLVideoElement>) => {
+    const now = Date.now();
+    const diff = now - lastTapRef.current;
+    if (diff < 320) {
+      if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current);
+      lastTapRef.current = 0;
+      externalLike(video.id, true);
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const hId = Date.now() + Math.random();
+      setFloatingHearts((prev) => [...prev.slice(-2), { id: hId, x, y }]);
+      setTimeout(() => {
+        setFloatingHearts((prev) => prev.filter((h) => h.id !== hId));
+      }, 900);
+    } else {
+      lastTapRef.current = now;
+      const target = e.currentTarget;
+      clickTimeoutRef.current = setTimeout(() => {
+        if (target.paused) target.play();
+        else target.pause();
+      }, 260);
+    }
+  };
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -276,21 +306,40 @@ function DesktopVideoShort({ video, isMuted, onSetActive }: { video: Video, isMu
         {(!video.videoUrl && !video.bitchuteUrl) ? (
           <div className="flex items-center justify-center h-full text-white/30 text-sm">No video source</div>
         ) : (
-          <video
-            ref={videoRef}
-            data-short-player
-            src={video.videoUrl || video.bitchuteUrl}
-            poster={video.posterUrl}
-            loop
-            playsInline
-            muted={isMuted || !isActive}
-            preload="auto"
-            className="w-full h-full object-cover cursor-pointer"
-            onClick={(e) => {
-              if (e.currentTarget.paused) e.currentTarget.play();
-              else e.currentTarget.pause();
-            }}
-          />
+          <>
+            <video
+              ref={videoRef}
+              data-short-player
+              src={video.videoUrl || video.bitchuteUrl}
+              poster={video.posterUrl}
+              loop
+              playsInline
+              muted={isMuted || !isActive}
+              preload="auto"
+              className="w-full h-full object-cover cursor-pointer"
+              onClick={handleVideoClick}
+            />
+            <AnimatePresence>
+              {floatingHearts.map((h) => (
+                <motion.div
+                  key={h.id}
+                  initial={{ scale: 0, opacity: 0, x: h.x - 45, y: h.y - 45, rotate: -15 }}
+                  animate={{
+                    scale: [0, 1.4, 1.1, 1],
+                    opacity: [0, 1, 1, 0],
+                    y: h.y - 120,
+                    rotate: [-15, 0, 12],
+                  }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.85, ease: [0.175, 0.885, 0.32, 1.275] }}
+                  className="absolute pointer-events-none z-50 flex items-center justify-center"
+                  style={{ left: 0, top: 0 }}
+                >
+                  <Heart size={90} className="text-red-500 fill-red-500 filter drop-shadow-[0_0_25px_rgba(239,68,68,0.95)]" />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </>
         )}
       </div>
     </div>
@@ -316,6 +365,32 @@ function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComment
   const [isSubmittingFollow, setIsSubmittingFollow] = useState(false);
   const [showReelActions, setShowReelActions] = useState(true);
   const [user, setUser] = useState<any>(null);
+  const [floatingHearts, setFloatingHearts] = useState<{ id: number; x: number; y: number }[]>([]);
+  const lastTapRef = useRef<number>(0);
+  const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleVideoTap = (e: React.MouseEvent<HTMLVideoElement>) => {
+    const now = Date.now();
+    const diff = now - lastTapRef.current;
+    if (diff < 320) {
+      if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current);
+      lastTapRef.current = 0;
+      externalLike(video.id, true);
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const hId = Date.now() + Math.random();
+      setFloatingHearts((prev) => [...prev.slice(-2), { id: hId, x, y }]);
+      setTimeout(() => {
+        setFloatingHearts((prev) => prev.filter((h) => h.id !== hId));
+      }, 900);
+    } else {
+      lastTapRef.current = now;
+      clickTimeoutRef.current = setTimeout(() => {
+        handleScreenClick();
+      }, 260);
+    }
+  };
 
   useEffect(() => {
     getCachedUser().then((u: any) => {
@@ -541,8 +616,29 @@ function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComment
         }}
         onError={() => setHasError(true)}
         className="w-full h-full object-cover cursor-pointer"
-        onClick={handleScreenClick}
+        onClick={handleVideoTap}
       />
+
+      <AnimatePresence>
+        {floatingHearts.map((h) => (
+          <motion.div
+            key={h.id}
+            initial={{ scale: 0, opacity: 0, x: h.x - 48, y: h.y - 48, rotate: -15 }}
+            animate={{
+              scale: [0, 1.5, 1.15, 1],
+              opacity: [0, 1, 1, 0],
+              y: h.y - 130,
+              rotate: [-15, 0, 14],
+            }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.85, ease: [0.175, 0.885, 0.32, 1.275] }}
+            className="absolute pointer-events-none z-50 flex items-center justify-center"
+            style={{ left: 0, top: 0 }}
+          >
+            <Heart size={96} className="text-red-500 fill-red-500 filter drop-shadow-[0_0_30px_rgba(239,68,68,0.95)]" />
+          </motion.div>
+        ))}
+      </AnimatePresence>
 
       {hasError && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 z-10 px-6 text-center pointer-events-none">

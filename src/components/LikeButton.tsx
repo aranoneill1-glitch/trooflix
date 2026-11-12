@@ -2,12 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Heart } from "lucide-react";
+import { motion } from "framer-motion";
 
 // --- Global external like trigger (used by feed double-tap) ---
-const likeBusListeners = new Map<number, Set<() => void>>();
-export function externalLike(videoId: number) {
+const likeBusListeners = new Map<number, Set<(forceLikeOnly?: boolean) => void>>();
+export function externalLike(videoId: number, forceLikeOnly?: boolean) {
   const set = likeBusListeners.get(videoId);
-  if (set) set.forEach((fn) => fn());
+  if (set) set.forEach((fn) => fn(forceLikeOnly));
 }
 
 
@@ -114,6 +115,7 @@ export default function LikeButton({
   const [liked, setLiked] = useState(false);
   const [count, setCountState] = useState<number>(0);
   const [checking, setChecking] = useState(true);
+  const [isSparking, setIsSparking] = useState(false);
   const latestLikedRef = useRef(false);
   const latestCountRef = useRef(0);
   useEffect(() => {
@@ -125,7 +127,12 @@ export default function LikeButton({
 
   // Listen for external like triggers (feed double-tap)
   useEffect(() => {
-    const fn = () => {
+    const fn = (forceLikeOnly?: boolean) => {
+      if (forceLikeOnly && latestLikedRef.current) {
+        setIsSparking(true);
+        setTimeout(() => setIsSparking(false), 500);
+        return;
+      }
       const fakeEvent = {
         stopPropagation: () => {},
         preventDefault: () => {},
@@ -193,6 +200,11 @@ export default function LikeButton({
     const newLiked = !wasLiked;
     const newCount = wasLiked ? Math.max(0, currentCount - 1) : currentCount + 1;
 
+    if (newLiked) {
+      setIsSparking(true);
+      setTimeout(() => setIsSparking(false), 500);
+    }
+
     // Optimistic
     setLiked(newLiked);
     setCountState(newCount);
@@ -236,6 +248,36 @@ export default function LikeButton({
     return <div style={{ width: size, height: size }} />;
   }
 
+  const renderAnimatedHeart = () => (
+    <div className="relative flex items-center justify-center">
+      <motion.div
+        animate={isSparking ? { scale: [1, 1.45, 0.85, 1] } : { scale: 1 }}
+        transition={{ duration: 0.35, ease: "easeOut" }}
+      >
+        <Heart size={size} fill={liked ? "currentColor" : "none"} />
+      </motion.div>
+      {isSparking && (
+        <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+          {[0, 60, 120, 180, 240, 300].map((deg, i) => {
+            const rad = (deg * Math.PI) / 180;
+            const dist = size * 0.75;
+            const x = Math.cos(rad) * dist;
+            const y = Math.sin(rad) * dist;
+            return (
+              <motion.span
+                key={i}
+                initial={{ scale: 0, opacity: 1, x: 0, y: 0 }}
+                animate={{ scale: [0, 1.3, 0], opacity: [1, 1, 0], x, y }}
+                transition={{ duration: 0.45, ease: "easeOut" }}
+                className="absolute w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.9)]"
+              />
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+
   if (stacked) {
     return (
       <button
@@ -246,7 +288,7 @@ export default function LikeButton({
         style={{ minHeight: size + 20 }}
         title={liked ? "Unlike" : "Like"}
       >
-        <Heart size={size} fill={liked ? "currentColor" : "none"} />
+        {renderAnimatedHeart()}
         {showCount && (
           <span className="text-[11px] font-semibold tabular-nums text-white/90 leading-none h-3">
             {count > 0 ? count.toLocaleString() : "\u00A0"}
@@ -264,7 +306,7 @@ export default function LikeButton({
       }`}
       title={liked ? "Unlike" : "Like"}
     >
-      <Heart size={size} fill={liked ? "currentColor" : "none"} />
+      {renderAnimatedHeart()}
       {showCount && count > 0 && (
         <span className="text-sm font-semibold tabular-nums">{count}</span>
       )}
