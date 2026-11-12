@@ -778,6 +778,31 @@ function CreatorDashboardContent() {
         {/* MOBILE OLD LIST */}
         <div className="lg:hidden animate-in fade-in duration-300 space-y-8 max-w-4xl mx-auto">
           <section>
+            <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">Profile</h2>
+            <div className="grid grid-cols-2 gap-3 w-full max-w-2xl">
+              <Link
+                href="/creator-dashboard/settings"
+                className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 active:scale-95 p-4 rounded-2xl flex flex-col items-center justify-center gap-2.5 text-center transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+              >
+                <div className="w-11 h-11 rounded-xl bg-blue-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Pencil className="text-blue-400" size={22} />
+                </div>
+                <span className="text-sm font-bold text-white group-hover:text-white/90">Edit Profile</span>
+              </Link>
+
+              <Link
+                href="/creator-dashboard/theme"
+                className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 active:scale-95 p-4 rounded-2xl flex flex-col items-center justify-center gap-2.5 text-center transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+              >
+                <div className="w-11 h-11 rounded-xl bg-purple-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Palette className="text-purple-400" size={22} />
+                </div>
+                <span className="text-sm font-bold text-white group-hover:text-white/90">Profile Theme</span>
+              </Link>
+            </div>
+          </section>
+
+          <section>
             <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">Content</h2>
             <div className="grid grid-cols-3 gap-3 w-full max-w-2xl">
               <button 
@@ -814,40 +839,26 @@ function CreatorDashboardContent() {
           </section>
 
           <section>
-            <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">Profile</h2>
+            <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">Marketplace</h2>
             <div className="grid grid-cols-2 gap-3 w-full max-w-2xl">
               <Link
-                href="/creator-dashboard/settings"
+                href="/creator-dashboard/shop"
+                className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 active:scale-95 p-4 rounded-2xl flex flex-col items-center justify-center gap-2.5 text-center transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+              >
+                <div className="w-11 h-11 rounded-xl bg-yellow-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <ShoppingBag className="text-yellow-400" size={22} />
+                </div>
+                <span className="text-sm font-bold text-white group-hover:text-white/90">Manage Shop</span>
+              </Link>
+
+              <Link
+                href="/creator-dashboard/orders"
                 className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 active:scale-95 p-4 rounded-2xl flex flex-col items-center justify-center gap-2.5 text-center transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
               >
                 <div className="w-11 h-11 rounded-xl bg-blue-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Pencil className="text-blue-400" size={22} />
+                  <Package className="text-blue-400" size={22} />
                 </div>
-                <span className="text-sm font-bold text-white group-hover:text-white/90">Edit Profile</span>
-              </Link>
-
-              <Link
-                href="/creator-dashboard/theme"
-                className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 active:scale-95 p-4 rounded-2xl flex flex-col items-center justify-center gap-2.5 text-center transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
-              >
-                <div className="w-11 h-11 rounded-xl bg-purple-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Palette className="text-purple-400" size={22} />
-                </div>
-                <span className="text-sm font-bold text-white group-hover:text-white/90">Profile Theme</span>
-              </Link>
-            </div>
-          </section>
-
-          <section>
-            <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">Marketplace</h2>
-            <div className="flex flex-col gap-2 w-full max-w-2xl">
-              <Link href="/creator-dashboard/shop" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-                <div className="flex items-center gap-4"><ShoppingBag className="text-white/70" size={20} /><span className="text-sm font-bold text-white group-hover:text-white/90">Manage Shop</span></div>
-                <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
-              </Link>
-              <Link href="/creator-dashboard/orders" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-                <div className="flex items-center gap-4"><Package className="text-white/70" size={20} /><span className="text-sm font-bold text-white group-hover:text-white/90">Manage Orders</span></div>
-                <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
+                <span className="text-sm font-bold text-white group-hover:text-white/90">Manage Orders</span>
               </Link>
             </div>
           </section>
