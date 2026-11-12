@@ -10,6 +10,8 @@ const supabaseAdmin = createServerClient(
 
 const VIDEOS_KEY = "trooflix:videos";
 const CREATORS_KEY = "trooflix:creators";
+const KV_URL = (process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL)!;
+const KV_TOKEN = (process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN)!;
 
 export async function GET(req: Request) {
   try {
@@ -54,7 +56,13 @@ export async function POST(req: Request) {
     const creator = creators.find((c: any) => String(c.ownerUserId) === String(userId));
     const creatorId = creator ? creator.id : null;
 
-    const videos = (await kv.get<any[]>(VIDEOS_KEY)) || [];
+    const getRes = await fetch(`${KV_URL}/get/${VIDEOS_KEY}`, { headers: { Authorization: `Bearer ${KV_TOKEN}` } });
+    const getData = await getRes.json();
+    let parsed = getData.result ? JSON.parse(getData.result) : [];
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed) && parsed.value) {
+      parsed = typeof parsed.value === "string" ? JSON.parse(parsed.value) : parsed.value;
+    }
+    const videos = Array.isArray(parsed) ? parsed : [];
 
     const newVideo = {
       id: Date.now(),
@@ -119,7 +127,11 @@ export async function DELETE(req: Request) {
     if (post.uploaderUserId !== userId) return NextResponse.json({ error: "Not your post" }, { status: 403 });
 
     const filtered = videos.filter((v: any) => Number(v.id) !== postId);
-    await kv.set(VIDEOS_KEY, filtered);
+    await fetch(`${KV_URL}/set/${VIDEOS_KEY}`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${KV_TOKEN}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ value: JSON.stringify(filtered) })
+    });
 
     // Clean up related data
     try {
