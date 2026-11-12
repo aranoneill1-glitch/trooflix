@@ -134,11 +134,16 @@ function OrdersContent() {
             {activeTab === "bought" ? "Track your merch purchases." : "Manage your merch sales and shipping."}
           </p>
         </div>
-        {syncing && (
-          <div className="flex items-center gap-2 text-xs text-yellow-500 font-semibold bg-yellow-500/10 px-3 py-1.5 rounded-lg animate-pulse">
+        <div className="flex items-center gap-3">
+          <Link href="/merchandise" className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-4 py-2 rounded-full transition border border-white/10">
+            <ShoppingBag size={14} /> Visit Marketplace
+          </Link>
+          {syncing && (
+            <div className="flex items-center gap-2 text-xs text-yellow-500 font-semibold bg-yellow-500/10 px-3 py-1.5 rounded-lg animate-pulse">
             <Loader2 size={14} className="animate-spin" /> Syncing your order...
           </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Tabs */}
