@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ChevronLeft, Package, CheckCircle, Truck, Loader2, ShoppingBag, Store } from "lucide-react";
+import TopBar from "@/components/TopBar";
 import { getCachedUser } from "@/lib/cache";
 
 type Order = {
@@ -122,7 +123,9 @@ function OrdersContent() {
   const shownOrders = activeTab === "bought" ? boughtOrders : soldOrders;
 
   return (
-    <div className="min-h-screen bg-black text-white p-4 md:p-8 max-w-4xl mx-auto">
+    <div className="min-h-screen bg-black text-white">
+      <TopBar />
+      <div className="p-4 md:p-8 pt-24 md:pt-28 max-w-4xl mx-auto">
       <Link href="/profile" className="inline-flex items-center gap-1.5 text-sm text-white/50 hover:text-white mb-6 transition">
         <ChevronLeft size={16} /> Back to profile
       </Link>
@@ -249,6 +252,7 @@ function OrdersContent() {
           ))
         )}
       </div>
+    </div>
     </div>
   );
 }
