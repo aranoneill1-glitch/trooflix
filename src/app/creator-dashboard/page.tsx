@@ -724,7 +724,7 @@ function CreatorDashboardContent() {
               <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center mb-6">
                 <Pencil className="text-blue-400" size={24} />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">Manage Profile</h3>
+              <h3 className="text-xl font-bold text-white mb-2">Edit Profile</h3>
               <p className="text-sm text-white/50">Update your bio, links, and profile picture.</p>
             </Link>
 
@@ -815,14 +815,25 @@ function CreatorDashboardContent() {
 
           <section>
             <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">Profile</h2>
-            <div className="flex flex-col gap-2 w-full max-w-2xl">
-              <Link href="/creator-dashboard/settings" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-                <div className="flex items-center gap-4"><Pencil className="text-white/70" size={20} /><span className="text-sm font-bold text-white group-hover:text-white/90">Manage Profile</span></div>
-                <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
+            <div className="grid grid-cols-2 gap-3 w-full max-w-2xl">
+              <Link
+                href="/creator-dashboard/settings"
+                className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 active:scale-95 p-4 rounded-2xl flex flex-col items-center justify-center gap-2.5 text-center transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+              >
+                <div className="w-11 h-11 rounded-xl bg-blue-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Pencil className="text-blue-400" size={22} />
+                </div>
+                <span className="text-sm font-bold text-white group-hover:text-white/90">Edit Profile</span>
               </Link>
-              <Link href="/creator-dashboard/theme" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-                <div className="flex items-center gap-4"><Palette className="text-white/70" size={20} /><span className="text-sm font-bold text-white group-hover:text-white/90">Profile Theme</span></div>
-                <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
+
+              <Link
+                href="/creator-dashboard/theme"
+                className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 active:scale-95 p-4 rounded-2xl flex flex-col items-center justify-center gap-2.5 text-center transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+              >
+                <div className="w-11 h-11 rounded-xl bg-purple-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Palette className="text-purple-400" size={22} />
+                </div>
+                <span className="text-sm font-bold text-white group-hover:text-white/90">Profile Theme</span>
               </Link>
             </div>
           </section>
