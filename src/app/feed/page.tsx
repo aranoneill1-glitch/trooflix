@@ -2,7 +2,7 @@
 import { getCachedUser, getCachedVideos, getCachedCreators } from "@/lib/cache";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Volume2, VolumeX, Heart, Eye, MessageCircle, Play, Pause, Gift, ArrowLeft, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from "lucide-react";
+import { Volume2, VolumeX, Heart, Eye, MessageCircle, Play, Pause, ArrowLeft, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from "lucide-react";
 import LikeButton, { externalLike } from "@/components/LikeButton";
 import { motion, AnimatePresence } from "framer-motion";
 import CommentSheet from "@/components/CommentSheet";
@@ -173,8 +173,13 @@ export default function ShortsFeedPage() {
             <button className="w-12 h-12 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition">
               <MessageCircle size={24}/>
             </button>
-            <button onClick={() => activeVideo && window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: activeVideo.creatorId, videoId: activeVideo.id } }))} className="w-12 h-12 flex items-center justify-center text-yellow-500 hover:bg-white/10 rounded-full transition">
-              <Gift size={24}/>
+            <button onClick={() => activeVideo && window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: activeVideo.creatorId, videoId: activeVideo.id } }))} className="w-12 h-12 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+                <circle cx="12" cy="12" r="6.6" stroke="currentColor" strokeWidth="1.2" opacity="0.75" />
+                <path d="M10.2 5.8L9.4 3.9M13.8 5.8L14.6 3.9M10.2 18.2L9.4 20.1M13.8 18.2L14.6 20.1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.9" />
+                <text x="12" y="15" textAnchor="middle" fontSize="7.2" fontWeight="800" fill="currentColor" fontFamily="system-ui, -apple-system, sans-serif">TC</text>
+              </svg>
             </button>
             <div className="flex flex-col items-center gap-1">
               {activeVideo && <LikeButton videoId={activeVideo.id} size={24} showCount={true} stacked={true} />}
@@ -361,7 +366,9 @@ function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComment
   const [showPlayIcon, setShowPlayIcon] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const [showError, setShowError] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
+  const errorTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [isSubmittingFollow, setIsSubmittingFollow] = useState(false);
   const [showReelActions, setShowReelActions] = useState(true);
   const [user, setUser] = useState<any>(null);
@@ -505,24 +512,30 @@ function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComment
               try { player.currentTime = 0; } catch {}
             }
           });
+          if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+          setHasError(false);
+          setShowError(false);
           try { current.currentTime = 0; } catch {}
           current.muted = isMutedRef.current;
           setIsActive(true);
           current.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
           onSetActiveRef.current();
         } else {
+          if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
           current.pause();
           current.muted = true;
           try { current.currentTime = 0; } catch {}
           setIsActive(false);
           setIsPlaying(false);
           setIsExpanded(false);
+          setShowError(false);
         }
       },
       { threshold: 0.6 }
     );
     if (videoRef.current) observer.observe(videoRef.current);
     return () => {
+      if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
       observer.disconnect();
       if (videoRef.current) {
         videoRef.current.pause();
@@ -608,18 +621,36 @@ function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComment
         muted={isMuted || !isActive}
         preload="auto"
         onLoadedData={() => {
+          if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
           setHasError(false);
+          setShowError(false);
           fetch("/api/views", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ videoId: video.id })
           }).catch(() => {});
         }}
-        onCanPlay={() => setHasError(false)}
-        onPlaying={() => setHasError(false)}
+        onCanPlay={() => {
+          if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+          setHasError(false);
+          setShowError(false);
+        }}
+        onPlaying={() => {
+          if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+          setHasError(false);
+          setShowError(false);
+        }}
         onError={() => {
           const mediaError = videoRef.current?.error;
-          if (mediaError) setHasError(true);
+          if (!mediaError) return;
+          setHasError(true);
+          if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+          errorTimerRef.current = setTimeout(() => {
+            const v = videoRef.current;
+            if (!v) return;
+            if (v.readyState >= 2 && !v.error) return;
+            setShowError(true);
+          }, 900);
         }}
         className="w-full h-full object-cover cursor-pointer"
         onClick={handleVideoTap}
@@ -646,7 +677,7 @@ function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComment
         ))}
       </AnimatePresence>
 
-      {hasError && (
+      {showError && hasError && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 z-10 px-6 text-center pointer-events-none">
           <p className="text-white font-bold mb-2">Video unavailable</p>
           <p className="text-white/50 text-sm">Please try again later.</p>
@@ -698,45 +729,6 @@ function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComment
           </button>
         </div>
 
-        {/* Rich SVG Gradient Definitions for Bottom Action Icons */}
-        <svg width="0" height="0" className="absolute pointer-events-none opacity-0">
-          <defs>
-            {/* Tip / Gift gradient */}
-            <linearGradient id="reel-tip-stroke" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#FFF2A3" />
-              <stop offset="50%" stopColor="#F59E0B" />
-              <stop offset="100%" stopColor="#D97706" />
-            </linearGradient>
-            <linearGradient id="reel-tip-fill" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#FFF2A3" stopOpacity="0.25" />
-              <stop offset="100%" stopColor="#F59E0B" stopOpacity="0.12" />
-            </linearGradient>
-
-            {/* Comments gradient */}
-            <linearGradient id="reel-comment-stroke" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#E0F2FE" />
-              <stop offset="60%" stopColor="#38BDF8" />
-              <stop offset="100%" stopColor="#0284C7" />
-            </linearGradient>
-            <linearGradient id="reel-comment-fill" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#38BDF8" stopOpacity="0.25" />
-              <stop offset="100%" stopColor="#0284C7" stopOpacity="0.1" />
-            </linearGradient>
-
-            {/* Audio gradient */}
-            <linearGradient id="reel-audio-stroke" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#FFFFFF" />
-              <stop offset="100%" stopColor="#CBD5E1" />
-            </linearGradient>
-
-            {/* Views gradient */}
-            <linearGradient id="reel-views-stroke" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#FFFFFF" />
-              <stop offset="100%" stopColor="#94A3B8" />
-            </linearGradient>
-          </defs>
-        </svg>
-
         <div className="flex w-full items-center justify-center gap-4 sm:gap-5 pointer-events-auto">
           <button
             type="button"
@@ -749,46 +741,35 @@ function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComment
           {showReelActions && (
             <>
               {/* Audio Toggle */}
-              <button 
-                onClick={onToggleMute} 
-                aria-label={isMuted ? "Unmute reel" : "Mute reel"} 
-                className="hover:scale-115 active:scale-90 transition-transform p-1.5 focus:outline-none"
+              <button
+                onClick={onToggleMute}
+                aria-label={isMuted ? "Unmute reel" : "Mute reel"}
+                className="text-white hover:scale-115 active:scale-90 transition-transform p-1.5 focus:outline-none drop-shadow-[0_2px_8px_rgba(255,255,255,0.35)]"
               >
-                {isMuted ? (
-                  <VolumeX size={27} stroke="url(#reel-audio-stroke)" strokeWidth={2.2} className="filter drop-shadow-[0_2px_8px_rgba(255,255,255,0.4)]" />
-                ) : (
-                  <Volume2 size={27} stroke="url(#reel-audio-stroke)" strokeWidth={2.2} className="filter drop-shadow-[0_2px_8px_rgba(255,255,255,0.4)]" />
-                )}
+                {isMuted ? <VolumeX size={27} strokeWidth={2.2} /> : <Volume2 size={27} strokeWidth={2.2} />}
               </button>
 
               {/* Comments */}
-              <button 
-                onClick={onOpenComments} 
-                aria-label="Open comments" 
-                className="hover:scale-115 active:scale-90 transition-transform p-1.5 focus:outline-none"
+              <button
+                onClick={onOpenComments}
+                aria-label="Open comments"
+                className="text-white hover:scale-115 active:scale-90 transition-transform p-1.5 focus:outline-none drop-shadow-[0_2px_8px_rgba(255,255,255,0.35)]"
               >
-                <MessageCircle 
-                  size={27} 
-                  stroke="url(#reel-comment-stroke)" 
-                  fill="url(#reel-comment-fill)" 
-                  strokeWidth={2.2} 
-                  className="filter drop-shadow-[0_2px_10px_rgba(56,189,248,0.55)]" 
-                />
+                <MessageCircle size={27} strokeWidth={2.2} />
               </button>
 
               {/* Tip Creator */}
-              <button 
-                onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: video.creatorId, videoId: video.id } }))} 
-                aria-label="Tip creator" 
-                className="hover:scale-115 active:scale-90 transition-transform p-1.5 focus:outline-none"
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: video.creatorId, videoId: video.id } }))}
+                aria-label="Tip creator"
+                className="text-white hover:scale-115 active:scale-90 transition-transform p-1.5 focus:outline-none drop-shadow-[0_2px_8px_rgba(255,255,255,0.35)]"
               >
-                <Gift 
-                  size={27} 
-                  stroke="url(#reel-tip-stroke)" 
-                  fill="url(#reel-tip-fill)" 
-                  strokeWidth={2.2} 
-                  className="filter drop-shadow-[0_2px_12px_rgba(245,158,11,0.65)]" 
-                />
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+                  <circle cx="12" cy="12" r="6.6" stroke="currentColor" strokeWidth="1.2" opacity="0.75" />
+                  <path d="M10.2 5.8L9.4 3.9M13.8 5.8L14.6 3.9M10.2 18.2L9.4 20.1M13.8 18.2L14.6 20.1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.9" />
+                  <text x="12" y="15" textAnchor="middle" fontSize="7.2" fontWeight="800" fill="currentColor" fontFamily="system-ui, -apple-system, sans-serif">TC</text>
+                </svg>
               </button>
 
               {/* Like Button */}
@@ -796,9 +777,9 @@ function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComment
                 <LikeButton videoId={video.id} size={27} stacked={false} />
               </div>
 
-              {/* Views Pill */}
-              <div className="flex items-center gap-1.5 text-white/95 px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-md border border-white/10 shadow-sm">
-                <Eye size={18} stroke="url(#reel-views-stroke)" strokeWidth={2.2} />
+              {/* Views */}
+              <div className="flex items-center gap-1.5 text-white/95 drop-shadow-[0_2px_8px_rgba(255,255,255,0.2)]">
+                <Eye size={20} strokeWidth={2.2} />
                 <span className="text-[12px] font-extrabold tracking-tight">{(video as any).views || 0}</span>
               </div>
             </>
