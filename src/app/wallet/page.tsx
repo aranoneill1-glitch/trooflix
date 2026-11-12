@@ -214,8 +214,8 @@ export default function WalletPage() {
             const isPayout = t.type === "payout";
             const isPaid = isPayout && t.status === "completed";
             const isCancelled = isPayout && t.status === "cancelled";
-            const isIncoming = t.type === "topup" || ((t.type === "tip" || t.type === "subscription") && t.receiver_id === userId);
-            const showAvatar = t.type === "tip" && isIncoming && t.sender_avatar;
+            const isIncoming = t.type === "topup" || (t.sender_id !== userId && t.receiver_id === userId);
+            const showAvatar = (t.type === "tip" || t.type === "subscription") && (isIncoming ? t.sender_avatar : t.receiver_avatar);
 
             return (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.05 }} key={t.id} onClick={() => setSelectedTx(t)} className="flex items-center justify-between p-4 border-b border-white/5 last:border-0 hover:bg-white/[0.02] cursor-pointer transition">
