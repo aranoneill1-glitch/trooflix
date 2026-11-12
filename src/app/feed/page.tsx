@@ -608,13 +608,19 @@ function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComment
         muted={isMuted || !isActive}
         preload="auto"
         onLoadedData={() => {
+          setHasError(false);
           fetch("/api/views", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ videoId: video.id })
           }).catch(() => {});
         }}
-        onError={() => setHasError(true)}
+        onCanPlay={() => setHasError(false)}
+        onPlaying={() => setHasError(false)}
+        onError={() => {
+          const mediaError = videoRef.current?.error;
+          if (mediaError) setHasError(true);
+        }}
         className="w-full h-full object-cover cursor-pointer"
         onClick={handleVideoTap}
       />
@@ -642,8 +648,8 @@ function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComment
 
       {hasError && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 z-10 px-6 text-center pointer-events-none">
-          <p className="text-white font-bold mb-2">Video Unavailable</p>
-          <p className="text-white/50 text-sm">Please upload an .mp4 file.</p>
+          <p className="text-white font-bold mb-2">Video unavailable</p>
+          <p className="text-white/50 text-sm">Please try again later.</p>
         </div>
       )}
 
