@@ -84,7 +84,11 @@ export async function POST(req: Request) {
     };
 
     videos.push(newVideo);
-    await kv.set(VIDEOS_KEY, videos);
+    await fetch(KV_URL + "/set/" + VIDEOS_KEY, {
+      method: "POST",
+      headers: { Authorization: "Bearer " + KV_TOKEN, "Content-Type": "application/json" },
+      body: JSON.stringify({ value: JSON.stringify(videos) })
+    });
 
     return NextResponse.json({ ok: true, video: newVideo });
   } catch (e: any) {
@@ -97,7 +101,13 @@ export async function PUT(req: Request) {
     const { userId, postId, title, description, posterUrl } = await req.json();
     if (!userId || !postId) return NextResponse.json({ error: "userId and postId required" }, { status: 400 });
 
-    const videos = (await kv.get<any[]>(VIDEOS_KEY)) || [];
+    const getRes = await fetch(KV_URL + "/get/" + VIDEOS_KEY, { headers: { Authorization: "Bearer " + KV_TOKEN } });
+    const getData = await getRes.json();
+    let parsed = getData.result ? JSON.parse(getData.result) : [];
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed) && parsed.value) {
+      parsed = typeof parsed.value === "string" ? JSON.parse(parsed.value) : parsed.value;
+    }
+    const videos = Array.isArray(parsed) ? parsed : [];
     const idx = videos.findIndex((v: any) => Number(v.id) === Number(postId));
     if (idx === -1) return NextResponse.json({ error: "Not found" }, { status: 404 });
     if (videos[idx].uploaderUserId !== userId) return NextResponse.json({ error: "Not your post" }, { status: 403 });
@@ -106,7 +116,11 @@ export async function PUT(req: Request) {
     if (description !== undefined) videos[idx].description = String(description).slice(0, 800);
     if (posterUrl !== undefined) videos[idx].posterUrl = String(posterUrl);
 
-    await kv.set(VIDEOS_KEY, videos);
+    await fetch(KV_URL + "/set/" + VIDEOS_KEY, {
+      method: "POST",
+      headers: { Authorization: "Bearer " + KV_TOKEN, "Content-Type": "application/json" },
+      body: JSON.stringify({ value: JSON.stringify(videos) })
+    });
     return NextResponse.json({ ok: true, video: videos[idx] });
   } catch (e: any) {
     return NextResponse.json({ error: String(e) }, { status: 500 });
@@ -121,7 +135,13 @@ export async function DELETE(req: Request) {
 
     if (!postId || !userId) return NextResponse.json({ error: "id and userId required" }, { status: 400 });
 
-    const videos = (await kv.get<any[]>(VIDEOS_KEY)) || [];
+    const getRes = await fetch(KV_URL + "/get/" + VIDEOS_KEY, { headers: { Authorization: "Bearer " + KV_TOKEN } });
+    const getData = await getRes.json();
+    let parsed = getData.result ? JSON.parse(getData.result) : [];
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed) && parsed.value) {
+      parsed = typeof parsed.value === "string" ? JSON.parse(parsed.value) : parsed.value;
+    }
+    const videos = Array.isArray(parsed) ? parsed : [];
     const post = videos.find((v: any) => Number(v.id) === postId);
     if (!post) return NextResponse.json({ error: "Not found" }, { status: 404 });
     if (post.uploaderUserId !== userId) return NextResponse.json({ error: "Not your post" }, { status: 403 });

@@ -954,11 +954,11 @@ function CreatorDashboardContent() {
               <motion.div 
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} 
                 onClick={() => setShowAvatarMenu(false)}
-                className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm"
+                className="fixed inset-0 z-[300] bg-black/60 backdrop-blur-sm"
               />
               <motion.div 
                 initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                className="fixed bottom-0 left-0 right-0 z-[201] bg-[#1c1c1e] rounded-t-3xl border-t border-white/10 p-6 pb-12 shadow-2xl max-h-[85vh] overflow-y-auto"
+                className="fixed bottom-0 left-0 right-0 z-[301] bg-[#1c1c1e] rounded-t-3xl border-t border-white/10 p-6 pb-32 shadow-2xl max-h-[85vh] overflow-y-auto"
               >
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xl font-bold">Profile Photo</h3>
