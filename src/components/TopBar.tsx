@@ -55,7 +55,7 @@ export default function TopBar({ onMenu }: Props) {
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 lg:left-[72px] right-0 z-[200] flex items-center gap-6 px-5 md:px-8 h-[68px] transition-all duration-300 ${
+        className={`fixed top-0 left-0 lg:left-[72px] right-0 z-[200] flex items-center gap-6 px-5 md:px-8 h-[calc(68px+env(safe-area-inset-top))] pt-[env(safe-area-inset-top)] transition-all duration-300 ${
           scrolled
             ? "bg-[#070709]/80 backdrop-blur-xl border-b border-white/[0.06]"
             : "bg-gradient-to-b from-[#070709]/90 via-[#070709]/40 to-transparent"
