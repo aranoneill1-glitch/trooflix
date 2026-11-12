@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import { getCachedCreators, getCachedVideos } from "@/lib/cache";
+import { getCachedCreators, getCachedVideos, getSyncCachedCreators, getSyncCachedVideos } from "@/lib/cache";
 import { Search, Sparkles } from "lucide-react";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import { motion } from "framer-motion";
@@ -27,9 +27,9 @@ type Video = {
 };
 
 export default function CreatorsPage() {
-  const [creators, setCreators] = useState<Creator[]>([]);
-  const [videos, setVideos] = useState<Video[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [creators, setCreators] = useState<Creator[]>(() => (typeof window !== "undefined" ? getSyncCachedCreators() || [] : []));
+  const [videos, setVideos] = useState<Video[]>(() => (typeof window !== "undefined" ? getSyncCachedVideos() || [] : []));
+  const [loading, setLoading] = useState(() => (typeof window !== "undefined" ? !Boolean(getSyncCachedCreators()?.length) : true));
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("All");
 

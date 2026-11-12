@@ -12,7 +12,7 @@ import {
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import VerifiedBadge from "@/components/VerifiedBadge";
-import { getCachedUser, clearUserCache } from "@/lib/cache";
+import { getCachedUser, clearUserCache, getCachedVideos, getCachedProducts } from "@/lib/cache";
 import { createClient } from "@/utils/supabase/client";
 import MyTrooFlixContent from "@/components/MyTrooFlixContent";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
@@ -93,40 +93,42 @@ function CreatorDashboardContent() {
     getCachedUser().then(async (u) => {
       if (u) {
         setUser(u);
-        fetch(`/api/profile-feature?user_id=${encodeURIComponent(u.id)}`, { cache: "no-store" })
+        fetch(`/api/profile-feature?user_id=${encodeURIComponent(u.id)}`)
           .then((r) => r.json())
           .then((data) => setProfileFeature(data.feature || null))
           .catch(() => {});
         
-        const { data: prof } = await supabase.from("profiles").select("*").eq("user_id", u.id).single();
+        // Fast parallel fetch for primary data
+        const [profResult, crResult, allVideos, allProducts] = await Promise.all([
+          supabase.from("profiles").select("*").eq("user_id", u.id).single(),
+          fetch(`/api/me/creator?user_id=${u.id}`).then(r => r.json()).catch(() => ({})),
+          getCachedVideos().catch(() => []),
+          getCachedProducts().catch(() => []),
+        ]);
+
+        const prof = profResult.data;
         if (prof) setProfile(prof);
 
+        const myVideos = Array.isArray(allVideos) ? allVideos.filter((v: any) => 
+          String(v.uploaderUserId) === String(u.id)
+        ) : [];
+        setCreatorVideos(myVideos);
+        setVideosLoading(false);
+
+        const cid = crResult.creator?.id;
+        if (Array.isArray(allProducts)) {
+          setMerch(allProducts.filter((p: any) => String(p.creator_id) === String(cid) || String(p.creator_id) === String(u.id)));
+        }
+
+        // Parallelize follower & subscriber counts
         const targetCreatorId = prof?.creator_id || u.id;
-        const { count: followers } = await supabase.from("follows").select("*", { count: "exact", head: true }).eq("creator_id", targetCreatorId);
-        const { count: subs } = await supabase.from("creator_subscriptions").select("*", { count: "exact", head: true }).eq("creator_id", targetCreatorId);
-        setFollowerCount(followers || 0);
-        setSubscriberCount(subs || 0);
+        const [followersRes, subsRes] = await Promise.all([
+          supabase.from("follows").select("*", { count: "exact", head: true }).eq("creator_id", targetCreatorId),
+          supabase.from("creator_subscriptions").select("*", { count: "exact", head: true }).eq("creator_id", targetCreatorId),
+        ]);
+        setFollowerCount(followersRes.count || 0);
+        setSubscriberCount(subsRes.count || 0);
         setLoading(false);
-
-        fetch("/api/videos")
-          .then(r => r.json())
-          .then(data => {
-            const myVideos = Array.isArray(data) ? data.filter((v: any) => 
-              String(v.uploaderUserId) === String(u.id)
-            ) : [];
-            setCreatorVideos(myVideos);
-            setVideosLoading(false);
-          })
-          .catch(() => setVideosLoading(false));
-
-        try {
-          const cr = await fetch(`/api/me/creator?user_id=${u.id}`).then(r => r.json());
-          const cid = cr.creator?.id;
-          const mRes = await fetch("/api/products/global").then(r => r.json());
-          if (mRes.products) {
-            setMerch(mRes.products.filter((p: any) => String(p.creator_id) === String(cid) || String(p.creator_id) === String(u.id)));
-          }
-        } catch (e) {}
       } else {
         setLoading(false);
       }

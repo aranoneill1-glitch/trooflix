@@ -25,7 +25,11 @@ export async function GET() {
     const videos = Array.isArray(parsed) ? parsed : [];
     const sorted = [...videos].sort((a, b) => b.id - a.id);
     
-    return NextResponse.json(sorted);
+    return NextResponse.json(sorted, {
+      headers: {
+        "Cache-Control": "public, s-maxage=30, stale-while-revalidate=300",
+      },
+    });
     
   } catch (e: any) {
     return NextResponse.json([]);

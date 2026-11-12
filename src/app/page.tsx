@@ -42,7 +42,15 @@ import MobileBottomNav from "@/components/MobileBottomNav";
 import TextOverlayRenderer from "@/components/TextOverlay";
 import CommentSheet from "@/components/CommentSheet";
 import { getAllProgress } from "@/lib/progress";
-import { getCachedCreators, getCachedUser } from "@/lib/cache";
+import { 
+  getCachedCreators, 
+  getCachedUser, 
+  getCachedVideos, 
+  getCachedProducts, 
+  getSyncCachedVideos, 
+  getSyncCachedCreators, 
+  getSyncCachedProducts 
+} from "@/lib/cache";
 
 type Chapter = { title: string; time: number };
 
@@ -82,11 +90,11 @@ const NAV_TABS: string[] = ["Home", "Feed"];
 
 export default function Home() {
   const router = useRouter();
-  const [videos, setVideos] = useState<Video[]>([]);
-  const [merchandise, setMerchandise] = useState<any[]>([]);
+  const [videos, setVideos] = useState<Video[]>(() => (typeof window !== "undefined" ? getSyncCachedVideos() || [] : []));
+  const [merchandise, setMerchandise] = useState<any[]>(() => (typeof window !== "undefined" ? getSyncCachedProducts() || [] : []));
   const [books, setBooks] = useState<Video[]>([]);
   const [likeCounts, setLikeCounts] = useState<Record<number, number>>({});
-  const [creators, setCreators] = useState<any[]>([]);
+  const [creators, setCreators] = useState<any[]>(() => (typeof window !== "undefined" ? getSyncCachedCreators() || [] : []));
   const { search } = useSearch();
   const [selected, setSelected] = useState<Video | null>(null);
   const [playing, setPlaying] = useState<Video | null>(null);
@@ -139,7 +147,7 @@ export default function Home() {
     } catch (_) {}
   }, []);
 
-  const [loaded, setLoaded] = useState(false);
+  const [loaded, setLoaded] = useState(() => (typeof window !== "undefined" && Boolean(getSyncCachedVideos()?.length)));
   const [progressList, setProgressList] = useState<any[]>([]);
 
   useEffect(() => {
@@ -163,8 +171,7 @@ export default function Home() {
       .catch(() => {})
       .finally(() => setAuthResolved(true));
     
-    fetch("/api/videos", { cache: "no-store" })
-      .then((r) => r.json())
+    getCachedVideos()
       .then((data) => {
         const all = Array.isArray(data) ? data : [];
         setVideos(all);
@@ -172,10 +179,8 @@ export default function Home() {
       })
       .catch(() => setLoaded(true));
 
-    fetch("/api/products/global", { cache: "no-store" })
-      .then((r) => r.json())
-      .then((data) => {
-        const _products = data.products || [];
+    getCachedProducts()
+      .then((_products) => {
         if (Array.isArray(_products)) setMerchandise(_products);
       }).catch(() => {});
 

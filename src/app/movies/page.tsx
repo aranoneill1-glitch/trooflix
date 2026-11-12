@@ -7,7 +7,7 @@ import TopBar from "@/components/TopBar";
 import { useSearch } from "@/context/SearchContext";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import VideoPlayer from "@/components/VideoPlayer";
-import { getCachedVideos, getCachedCreators } from "@/lib/cache";
+import { getCachedVideos, getCachedCreators, getSyncCachedVideos } from "@/lib/cache";
 
 type Video = {
   id: number;
@@ -29,11 +29,15 @@ type Video = {
 };
 
 export default function MoviesPage() {
-  const [videos, setVideos] = useState<Video[]>([]);
+  const [videos, setVideos] = useState<Video[]>(() => {
+    if (typeof window === "undefined") return [];
+    const cached = getSyncCachedVideos();
+    return Array.isArray(cached) ? cached.filter((v: any) => v.type === "Movie" && !v.creatorId) : [];
+  });
   const { search } = useSearch();
   const [selected, setSelected] = useState<Video | null>(null);
   const [playing, setPlaying] = useState<Video | null>(null);
-  const [loaded, setLoaded] = useState(false);
+  const [loaded, setLoaded] = useState(() => (typeof window !== "undefined" && Boolean(getSyncCachedVideos()?.length)));
 
   useEffect(() => {
     getCachedVideos()

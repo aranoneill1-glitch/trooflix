@@ -51,7 +51,11 @@ export async function GET() {
       };
     });
 
-    return NextResponse.json({ products: enrichedProducts });
+    return NextResponse.json({ products: enrichedProducts }, {
+      headers: {
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=600",
+      },
+    });
   } catch (e: any) {
     console.error("Global products error:", e);
     return NextResponse.json({ products: [] });

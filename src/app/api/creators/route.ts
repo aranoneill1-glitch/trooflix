@@ -39,7 +39,11 @@ export async function GET() {
       };
     });
 
-    return NextResponse.json(creators);
+    return NextResponse.json(creators, {
+      headers: {
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=600",
+      },
+    });
   } catch (e: any) {
     console.error("GET creators error:", e);
     return NextResponse.json([]);

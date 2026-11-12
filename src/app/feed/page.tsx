@@ -1,5 +1,5 @@
 "use client";
-import { getCachedUser } from "@/lib/cache";
+import { getCachedUser, getCachedVideos, getCachedCreators } from "@/lib/cache";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Volume2, VolumeX, Heart, Eye, MessageCircle, Play, Pause, Gift, ArrowLeft, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from "lucide-react";
@@ -45,8 +45,8 @@ export default function ShortsFeedPage() {
     const requestedCreatorUserId = params.get("creator_user_id");
     const requestedCreatorId = params.get("creator_id");
     Promise.all([
-      fetch("/api/videos", { cache: "no-store" }).then((r) => r.json()).catch(() => []),
-      fetch("/api/creators", { cache: "no-store" }).then((r) => r.json()).catch(() => []),
+      getCachedVideos().catch(() => []),
+      getCachedCreators().catch(() => []),
     ]).then(([vData, cData]) => {
       const all = Array.isArray(vData) ? vData : [];
       const shortsOnly = all.filter((v: any) => {

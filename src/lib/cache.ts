@@ -101,6 +101,10 @@ export async function getCachedVideos(opts: { force?: boolean } = {}): Promise<V
   return videosInflight;
 }
 
+export function getSyncCachedVideos(): Video[] | null {
+  return cachedVideos;
+}
+
 export function invalidateVideosCache() {
   cachedVideos = null;
   videosFetchedAt = 0;
@@ -146,6 +150,10 @@ export async function getCachedCreators(opts: { force?: boolean } = {}): Promise
   })();
 
   return creatorsInflight;
+}
+
+export function getSyncCachedCreators(): any[] | null {
+  return cachedCreators;
 }
 
 export function invalidateCreatorsCache() {
@@ -200,4 +208,55 @@ export function invalidateProfileCache(userId?: string) {
 export function onProfileChange(fn: (userId: string, profile: any) => void) {
   profilesListeners.add(fn);
   return () => profilesListeners.delete(fn);
+}
+
+// ---------------------------------------------------------------------------
+// Products / Merch cache
+// ---------------------------------------------------------------------------
+
+let cachedProducts: any[] | null = null;
+let productsInflight: Promise<any[]> | null = null;
+const productsListeners = new Set<(p: any[]) => void>();
+let productsFetchedAt = 0;
+const PRODUCTS_TTL_MS = 60_000;
+
+async function fetchProducts(): Promise<any[]> {
+  try {
+    const r = await fetch("/api/products/global");
+    const d = await r.json();
+    return Array.isArray(d.products) ? d.products : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function getCachedProducts(opts: { force?: boolean } = {}): Promise<any[]> {
+  const fresh = Date.now() - productsFetchedAt < PRODUCTS_TTL_MS;
+  if (cachedProducts && fresh && !opts.force) return cachedProducts;
+  if (productsInflight) return productsInflight;
+
+  productsInflight = (async () => {
+    const p = await fetchProducts();
+    cachedProducts = p;
+    productsFetchedAt = Date.now();
+    productsInflight = null;
+    productsListeners.forEach((fn) => fn(p));
+    return p;
+  })();
+
+  return productsInflight;
+}
+
+export function getSyncCachedProducts(): any[] | null {
+  return cachedProducts;
+}
+
+export function invalidateProductsCache() {
+  cachedProducts = null;
+  productsFetchedAt = 0;
+}
+
+export function onProductsChange(fn: (p: any[]) => void) {
+  productsListeners.add(fn);
+  return () => productsListeners.delete(fn);
 }
