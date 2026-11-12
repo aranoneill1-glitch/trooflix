@@ -305,6 +305,11 @@ function DesktopVideoShort({ video, isMuted, onSetActive }: { video: Video, isMu
     };
   }, []);
 
+  useEffect(() => {
+    if (!videoRef.current) return;
+    videoRef.current.muted = isMuted || !isActive;
+  }, [isMuted, isActive]);
+
   return (
     <div ref={containerRef} className="w-full h-full snap-start flex items-center justify-end pr-2 shrink-0">
       <div className="relative w-full max-w-[500px] aspect-[9/16] max-h-[85vh] rounded-3xl overflow-hidden border border-white/10 bg-black shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
@@ -545,6 +550,11 @@ function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComment
     };
   }, []);
 
+  useEffect(() => {
+    if (!videoRef.current) return;
+    videoRef.current.muted = isMuted || !isActive;
+  }, [isMuted, isActive]);
+
   const requestRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -639,7 +649,9 @@ function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComment
           if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
           setHasError(false);
           setShowError(false);
+          setIsPlaying(true);
         }}
+        onPause={() => setIsPlaying(false)}
         onError={() => {
           const mediaError = videoRef.current?.error;
           if (!mediaError) return;
