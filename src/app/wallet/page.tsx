@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import CreatorStudioNav from "@/components/CreatorStudioNav";
-import { Wallet, ArrowDownRight, ArrowUpRight, ArrowUp, ArrowDown, X, CheckCircle2, Building2, Bitcoin, Send, AlertTriangle, ShieldCheck, ChevronRight } from "lucide-react";
+import { Wallet, Plus, ArrowDownRight, ArrowUpRight, ArrowUp, ArrowDown, X, CheckCircle2, Building2, Bitcoin, Send, AlertTriangle, ShieldCheck, ChevronRight } from "lucide-react";
 import { getCachedUser } from "@/lib/cache";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -13,7 +13,7 @@ export default function WalletPage() {
   const [balance, setBalance] = useState(0);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"history" | "payouts">("history");
+  const [activeTab, setActiveTab] = useState<"all" | "tips" | "subs" | "withdrawals">("all");
   
   // Modals
   const [showTopUp, setShowTopUp] = useState(false);
@@ -146,122 +146,106 @@ export default function WalletPage() {
       
       <div className="relative z-10 max-w-4xl mx-auto px-4 md:px-6 pt-[76px]">
         
-        {/* HEADER */}
-        
-              <CreatorStudioNav active="bank" className="mb-8" />
+        {/* NEW LAYOUT */}
+    <CreatorStudioNav active="bank" className="mb-8" />
 
-<div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-black tracking-tight flex items-center gap-3">
-              <Wallet className="text-[#E53945]" size={32} /> TrooBank
-            </h1>
-            <div className="flex items-center gap-2 mt-2">
-              <p className="text-white/50 text-sm">Your financial command center.</p>
-              <span className="text-[10px] bg-[#E53945]/20 text-[#E53945] px-2 py-0.5 rounded-md font-bold tracking-wide">1 TC = $1.00 USD</span>
-            </div>
-          </div>
-          <div className="hidden md:flex items-center gap-2 bg-white/5 border border-white/10 px-3 py-1.5 rounded-full">
-            <ShieldCheck size={16} className="text-green-500" />
-            <span className="text-xs font-bold text-white/70">Secured by Trooflix</span>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          
-          {/* LEFT COLUMN: BALANCE & ACTIONS */}
-          <div className="lg:col-span-7 space-y-6">
-            
-            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="relative bg-gradient-to-br from-[#1c1c1e] to-[#0a0a0a] border border-white/10 rounded-3xl p-8 overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-[#E53945]/10 blur-[80px] rounded-full pointer-events-none" />
-              <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 blur-[60px] rounded-full pointer-events-none" />
-              
-              <div className="relative z-10">
-                <div className="flex justify-between items-start mb-8">
-                  <div>
-                    <p className="text-[11px] font-bold tracking-[0.2em] text-white/40 uppercase mb-1">Available Balance</p>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-5xl md:text-6xl font-black tracking-tighter text-white">
-                        {loading ? "..." : Number(balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </span>
-                      <span className="text-lg font-bold text-[#E53945]">TC</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-3 mb-6">
-                  <button onClick={() => setShowTopUp(true)} className="flex flex-col items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/10 py-3.5 rounded-2xl transition group cursor-pointer">
-                    <ArrowDownRight size={20} className="text-green-400 group-hover:scale-110 transition-transform" />
-                    <span className="text-xs font-bold text-white">Top Up</span>
-                  </button>
-                  <button onClick={() => setShowSendModal(true)} className="flex flex-col items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/10 py-3.5 rounded-2xl transition group cursor-pointer">
-                    <Send size={20} className="text-blue-400 group-hover:scale-110 transition-transform" />
-                    <span className="text-xs font-bold text-white">Send</span>
-                  </button>
-                  <button onClick={() => setShowPayoutModal(true)} disabled={Number(balance) < 5} className="flex flex-col items-center justify-center gap-2 bg-white/10 hover:bg-white/20 disabled:opacity-50 border border-white/10 py-3.5 rounded-2xl transition group cursor-pointer">
-                    <ArrowUpRight size={20} className="text-[#E53945] group-hover:scale-110 transition-transform" />
-                    <span className="text-xs font-bold text-white">Withdraw</span>
-                  </button>
-                </div>
-
-                <div className="flex items-center justify-between bg-black/40 border border-white/5 rounded-xl px-4 py-3 backdrop-blur-md">
-                  <div className="flex items-center gap-2">
-                    <Building2 size={14} className="text-white/50" />
-                    <span className="text-xs font-medium text-white/70">Payout Method</span>
-                  </div>
-                  <button onClick={() => setShowDetailsModal(true)} className="text-xs font-bold text-white hover:text-[#E53945] transition flex items-center gap-1 cursor-pointer">
-                    {bankDetails ? (bankDetails.payout_type === "crypto" ? "Crypto Linked" : "Bank Linked") : "Setup"}
-                    <ChevronRight size={14} />
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* RIGHT COLUMN: HISTORY */}
-          <div className="lg:col-span-5">
-            <div className="bg-[#0f0f12] border border-white/5 rounded-3xl overflow-hidden h-full flex flex-col shadow-2xl">
-              <div className="flex items-center gap-6 border-b border-white/5 px-6 pt-5">
-                <button onClick={() => setActiveTab("history")} className={`pb-4 text-xs font-bold uppercase tracking-wider transition-colors border-b-2 cursor-pointer ${activeTab === "history" ? "text-white border-[#E53945]" : "text-white/40 border-transparent hover:text-white/70"}`}>History</button>
-                <button onClick={() => setActiveTab("payouts")} className={`pb-4 text-xs font-bold uppercase tracking-wider transition-colors border-b-2 cursor-pointer ${activeTab === "payouts" ? "text-white border-[#E53945]" : "text-white/40 border-transparent hover:text-white/70"}`}>Payouts</button>
-              </div>
-
-              <div className="flex-1 overflow-y-auto max-h-[500px] scrollbar-hide">
-                {transactions.filter(t => activeTab === "history" ? true : t.type === "payout").length === 0 ? (
-                  <div className="p-10 text-center"><p className="text-white/30 text-sm">No {activeTab} found.</p></div>
-                ) : (
-                  transactions.filter(t => activeTab === "history" ? true : t.type === "payout").map((t, i) => {
-                    const isPayout = t.type === "payout";
-                    const isPaid = isPayout && t.status === "completed";
-                    const isCancelled = isPayout && t.status === "cancelled";
-                    const isIncoming = t.type === "topup" || ((t.type === "tip" || t.type === "subscription") && t.receiver_id === userId);
-                    
-                    return (
-                      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.05 }} key={t.id} onClick={() => setSelectedTx(t)} className="flex items-center justify-between p-4 border-b border-white/5 last:border-0 hover:bg-white/[0.02] cursor-pointer transition">
-                        <div className="flex items-center gap-4">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isIncoming ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"}`}>
-                            {isIncoming ? <ArrowDown size={18} /> : <ArrowUp size={18} />}
-                          </div>
-                          <div>
-                            <p className="font-bold text-sm flex items-center gap-2 text-white">
-                              {t.type === "topup" ? "Top Up" : t.type === "tip" ? (t.sender_id === userId ? "Tip sent to @" + (t.receiver_name || "user") : "Tip received from @" + (t.sender_name || "user")) : t.type === "send" ? "Sent Coins" : isPayout ? `Payout ${isPaid ? "Paid" : isCancelled ? "Cancelled" : "Pending"}` : t.type === "subscription" ? (t.sender_id === userId ? "Subscribed to @" + t.receiver_name : "Subscription from @" + t.sender_name) : "Transaction"}
-                            </p>
-                            <p className="text-[11px] text-white/40">{new Date(t.created_at).toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</p>
-                          </div>
-                        </div>
-                        <span className={`font-bold text-sm ${isIncoming ? "text-green-500" : isCancelled ? "text-white/30 line-through" : "text-red-400"}`}>
-                          {isIncoming ? "+" : "-"}{Number(t.amount).toFixed(2)}
-                        </span>
-                      </motion.div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+    <div className="mb-12 flex flex-col items-center text-center">
+      <p className="text-[11px] font-bold tracking-[0.2em] text-white/40 uppercase mb-2">Available Balance</p>
+      <div className="flex items-baseline gap-2 mb-8">
+        <span className="text-6xl md:text-8xl font-black tracking-tighter text-white">
+          {loading ? "..." : Number(balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        </span>
+        <span className="text-2xl font-bold text-[#E53945]">TC</span>
       </div>
 
-      {/* TRANSACTION DETAIL MODAL */}
+      <div className="flex items-center justify-center gap-6 mb-10">
+        <button onClick={() => setShowTopUp(true)} className="w-20 h-20 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex flex-col items-center justify-center transition group cursor-pointer">
+          <Plus size={24} className="text-green-400 group-hover:scale-110 transition-transform mb-1" />
+          <span className="text-[10px] font-bold text-white uppercase tracking-wider">Top Up</span>
+        </button>
+        <button onClick={() => setShowSendModal(true)} className="w-20 h-20 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex flex-col items-center justify-center transition group cursor-pointer">
+          <Send size={20} className="text-blue-400 group-hover:scale-110 transition-transform mb-1" />
+          <span className="text-[10px] font-bold text-white uppercase tracking-wider">Send</span>
+        </button>
+        <button onClick={() => setShowPayoutModal(true)} disabled={Number(balance) < 5} className="w-20 h-20 rounded-full bg-white/5 hover:bg-white/10 disabled:opacity-50 border border-white/10 flex flex-col items-center justify-center transition group cursor-pointer">
+          <ArrowUpRight size={22} className="text-[#E53945] group-hover:scale-110 transition-transform mb-1" />
+          <span className="text-[10px] font-bold text-white uppercase tracking-wider">Withdraw</span>
+        </button>
+      </div>
+
+      <div className="flex items-center justify-between bg-white/[0.02] border border-white/5 rounded-full px-6 py-3 w-full max-w-sm">
+        <div className="flex items-center gap-2">
+          <Building2 size={14} className="text-white/50" />
+          <span className="text-xs font-medium text-white/70">Payout Method</span>
+        </div>
+        <button onClick={() => setShowDetailsModal(true)} className="text-xs font-bold text-white hover:text-[#E53945] transition flex items-center gap-1 cursor-pointer">
+          {bankDetails ? (bankDetails.payout_type === "crypto" ? "Crypto Linked" : "Bank Linked") : "Setup"}
+          <ChevronRight size={14} />
+        </button>
+      </div>
+    </div>
+
+    <div className="w-full">
+      <div className="flex items-center justify-center gap-8 border-b border-white/5 mb-2 overflow-x-auto scrollbar-hide">
+        {(["all", "tips", "subs", "withdrawals"] as const).map((tab) => (
+          <button key={tab} onClick={() => setActiveTab(tab)} className={`pb-4 text-xs font-bold uppercase tracking-widest transition-colors border-b-2 cursor-pointer ${activeTab === tab ? "text-white border-[#E53945]" : "text-white/40 border-transparent hover:text-white/70"}`}>
+            {tab === "subs" ? "Subs" : tab}
+          </button>
+        ))}
+      </div>
+
+      <div className="w-full">
+        {transactions.filter(t => {
+          if (activeTab === "all") return true;
+          if (activeTab === "tips") return t.type === "tip";
+          if (activeTab === "subs") return t.type === "subscription";
+          if (activeTab === "withdrawals") return t.type === "payout";
+          return true;
+        }).length === 0 ? (
+          <div className="py-20 text-center"><p className="text-white/30 text-sm">No {activeTab} transactions found.</p></div>
+        ) : (
+          transactions.filter(t => {
+            if (activeTab === "all") return true;
+            if (activeTab === "tips") return t.type === "tip";
+            if (activeTab === "subs") return t.type === "subscription";
+            if (activeTab === "withdrawals") return t.type === "payout";
+            return true;
+          }).map((t, i) => {
+            const isPayout = t.type === "payout";
+            const isPaid = isPayout && t.status === "completed";
+            const isCancelled = isPayout && t.status === "cancelled";
+            const isIncoming = t.type === "topup" || ((t.type === "tip" || t.type === "subscription") && t.receiver_id === userId);
+            const showAvatar = t.type === "tip" && isIncoming && t.sender_avatar;
+
+            return (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.05 }} key={t.id} onClick={() => setSelectedTx(t)} className="flex items-center justify-between p-4 border-b border-white/5 last:border-0 hover:bg-white/[0.02] cursor-pointer transition">
+                <div className="flex items-center gap-4">
+                  {showAvatar ? (
+                    <img src={t.sender_avatar} className="w-10 h-10 rounded-full object-cover border border-white/10" alt="" />
+                  ) : (
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isIncoming ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"}`}>
+                      {t.type === "topup" ? <Plus size={18} /> : isIncoming ? <ArrowDown size={18} /> : <ArrowUp size={18} />}
+                    </div>
+                  )}
+                  <div>
+                    <p className="font-bold text-sm flex items-center gap-2 text-white">
+                      {t.type === "topup" ? "Top Up" : t.type === "tip" ? (t.sender_id === userId ? "Tip sent to @" + (t.receiver_name || "user") : "Tip received from @" + (t.sender_name || "user")) : t.type === "send" ? "Sent Coins" : isPayout ? `Withdrawal ${isPaid ? "Paid" : isCancelled ? "Cancelled" : "Pending"}` : t.type === "subscription" ? (t.sender_id === userId ? "Subscribed to @" + t.receiver_name : "Subscription from @" + t.sender_name) : "Transaction"}
+                    </p>
+                    <p className="text-[11px] text-white/40">{new Date(t.created_at).toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</p>
+                  </div>
+                </div>
+                <span className={`font-bold text-sm ${isIncoming ? "text-green-500" : isCancelled ? "text-white/30 line-through" : "text-red-400"}`}>
+                  {isIncoming ? "+" : "-"}{Number(t.amount).toFixed(2)}
+                </span>
+              </motion.div>
+            );
+          })
+        )}
+      </div>
+    </div>
+  </div>
+
+  {/* TRANSACTION DETAIL MODAL */}
       <AnimatePresence>
         {selectedTx && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[400] bg-black/80 backdrop-blur-md flex items-center justify-center p-4" onClick={() => setSelectedTx(null)}>
