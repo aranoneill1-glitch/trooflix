@@ -692,33 +692,111 @@ function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComment
           </button>
         </div>
 
-        <div className="flex w-full items-center justify-center gap-5 pointer-events-auto">
+        {/* Rich SVG Gradient Definitions for Bottom Action Icons */}
+        <svg width="0" height="0" className="absolute pointer-events-none opacity-0">
+          <defs>
+            {/* Tip / Gift gradient */}
+            <linearGradient id="reel-tip-stroke" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#FFF2A3" />
+              <stop offset="50%" stopColor="#F59E0B" />
+              <stop offset="100%" stopColor="#D97706" />
+            </linearGradient>
+            <linearGradient id="reel-tip-fill" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#FFF2A3" stopOpacity="0.25" />
+              <stop offset="100%" stopColor="#F59E0B" stopOpacity="0.12" />
+            </linearGradient>
+
+            {/* Comments gradient */}
+            <linearGradient id="reel-comment-stroke" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#E0F2FE" />
+              <stop offset="60%" stopColor="#38BDF8" />
+              <stop offset="100%" stopColor="#0284C7" />
+            </linearGradient>
+            <linearGradient id="reel-comment-fill" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#38BDF8" stopOpacity="0.25" />
+              <stop offset="100%" stopColor="#0284C7" stopOpacity="0.1" />
+            </linearGradient>
+
+            {/* Audio gradient */}
+            <linearGradient id="reel-audio-stroke" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#FFFFFF" />
+              <stop offset="100%" stopColor="#CBD5E1" />
+            </linearGradient>
+
+            {/* Views gradient */}
+            <linearGradient id="reel-views-stroke" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#FFFFFF" />
+              <stop offset="100%" stopColor="#94A3B8" />
+            </linearGradient>
+          </defs>
+        </svg>
+
+        <div className="flex w-full items-center justify-center gap-4 sm:gap-5 pointer-events-auto">
           <button
             type="button"
             onClick={() => setShowReelActions((visible) => !visible)}
             aria-label={showReelActions ? "Hide reel controls" : "Show reel controls"}
-            className="text-white/80 drop-shadow-lg hover:text-white hover:scale-110 active:scale-95 transition-transform"
+            className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/80 hover:text-white hover:scale-110 active:scale-95 transition-all shadow-md"
           >
-            {showReelActions ? <ChevronLeft size={20} strokeWidth={2} /> : <ChevronRight size={20} strokeWidth={2} />}
+            {showReelActions ? <ChevronLeft size={16} strokeWidth={2.5} /> : <ChevronRight size={16} strokeWidth={2.5} />}
           </button>
-          {showReelActions && <>
-            <button onClick={onToggleMute} aria-label={isMuted ? "Unmute reel" : "Mute reel"} className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
-              {isMuted ? <VolumeX size={26} strokeWidth={1.5} /> : <Volume2 size={26} strokeWidth={1.5} />}
-            </button>
-            <button onClick={onOpenComments} aria-label="Open comments" className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
-              <MessageCircle size={26} strokeWidth={1.5} />
-            </button>
-            <button onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: video.creatorId, videoId: video.id } }))} aria-label="Tip creator" className="text-yellow-500 drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
-              <Gift size={26} strokeWidth={1.5} />
-            </button>
-            <div className="text-white drop-shadow-lg hover:scale-110 active:scale-95 transition-transform">
-              <LikeButton videoId={video.id} size={26} stacked={false} />
-            </div>
-            <div className="flex items-center gap-1.5 text-white drop-shadow-lg">
-              <Eye size={26} strokeWidth={1.5} />
-              <span className="text-[13px] font-bold">{(video as any).views || 0}</span>
-            </div>
-          </>}
+          {showReelActions && (
+            <>
+              {/* Audio Toggle */}
+              <button 
+                onClick={onToggleMute} 
+                aria-label={isMuted ? "Unmute reel" : "Mute reel"} 
+                className="hover:scale-115 active:scale-90 transition-transform p-1.5 focus:outline-none"
+              >
+                {isMuted ? (
+                  <VolumeX size={27} stroke="url(#reel-audio-stroke)" strokeWidth={2.2} className="filter drop-shadow-[0_2px_8px_rgba(255,255,255,0.4)]" />
+                ) : (
+                  <Volume2 size={27} stroke="url(#reel-audio-stroke)" strokeWidth={2.2} className="filter drop-shadow-[0_2px_8px_rgba(255,255,255,0.4)]" />
+                )}
+              </button>
+
+              {/* Comments */}
+              <button 
+                onClick={onOpenComments} 
+                aria-label="Open comments" 
+                className="hover:scale-115 active:scale-90 transition-transform p-1.5 focus:outline-none"
+              >
+                <MessageCircle 
+                  size={27} 
+                  stroke="url(#reel-comment-stroke)" 
+                  fill="url(#reel-comment-fill)" 
+                  strokeWidth={2.2} 
+                  className="filter drop-shadow-[0_2px_10px_rgba(56,189,248,0.55)]" 
+                />
+              </button>
+
+              {/* Tip Creator */}
+              <button 
+                onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: video.creatorId, videoId: video.id } }))} 
+                aria-label="Tip creator" 
+                className="hover:scale-115 active:scale-90 transition-transform p-1.5 focus:outline-none"
+              >
+                <Gift 
+                  size={27} 
+                  stroke="url(#reel-tip-stroke)" 
+                  fill="url(#reel-tip-fill)" 
+                  strokeWidth={2.2} 
+                  className="filter drop-shadow-[0_2px_12px_rgba(245,158,11,0.65)]" 
+                />
+              </button>
+
+              {/* Like Button */}
+              <div className="hover:scale-115 active:scale-90 transition-transform p-1.5">
+                <LikeButton videoId={video.id} size={27} stacked={false} />
+              </div>
+
+              {/* Views Pill */}
+              <div className="flex items-center gap-1.5 text-white/95 px-2.5 py-1 rounded-full bg-black/40 backdrop-blur-md border border-white/10 shadow-sm">
+                <Eye size={18} stroke="url(#reel-views-stroke)" strokeWidth={2.2} />
+                <span className="text-[12px] font-extrabold tracking-tight">{(video as any).views || 0}</span>
+              </div>
+            </>
+          )}
         </div>
       </div>
 

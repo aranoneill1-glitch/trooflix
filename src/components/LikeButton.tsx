@@ -250,11 +250,25 @@ export default function LikeButton({
 
   const renderAnimatedHeart = () => (
     <div className="relative flex items-center justify-center">
+      <svg width="0" height="0" className="absolute pointer-events-none opacity-0">
+        <defs>
+          <linearGradient id="like-heart-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#FF4B72" />
+            <stop offset="100%" stopColor="#E53945" />
+          </linearGradient>
+        </defs>
+      </svg>
       <motion.div
         animate={isSparking ? { scale: [1, 1.45, 0.85, 1] } : { scale: 1 }}
         transition={{ duration: 0.35, ease: "easeOut" }}
       >
-        <Heart size={size} fill={liked ? "currentColor" : "none"} />
+        <Heart 
+          size={size} 
+          fill={liked ? "url(#like-heart-grad)" : "none"} 
+          stroke={liked ? "url(#like-heart-grad)" : "currentColor"}
+          strokeWidth={2.2}
+          className={liked ? "filter drop-shadow-[0_2px_10px_rgba(229,57,69,0.7)]" : "drop-shadow-md"}
+        />
       </motion.div>
       {isSparking && (
         <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
