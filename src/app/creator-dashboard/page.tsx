@@ -674,17 +674,17 @@ function CreatorDashboardContent() {
         <div className="hidden lg:block animate-in fade-in duration-300 max-w-6xl mx-auto">
           <div className="grid grid-cols-3 gap-6">
             
-            <Link href="/creator-dashboard/import" className="bg-white/[0.03] backdrop-blur-2xl border border-white/10 rounded-3xl hover:bg-white/[0.08] p-6 group hover:border-[#E53945]/50 transition-all duration-300 relative overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53945]/10 rounded-full blur-3xl -mr-10 -mt-10 group-hover:bg-[#E53945]/20 transition-colors" />
-              <div className="w-12 h-12 rounded-2xl bg-[#E53945]/20 flex items-center justify-center mb-6">
-                <Download className="text-[#E53945]" size={24} />
+            {/* 1. Add */}
+            <button onClick={() => setShowAddContentMenu(true)} className="bg-white/[0.03] backdrop-blur-2xl border border-white/10 rounded-3xl hover:bg-white/[0.08] p-6 group hover:border-green-500/50 transition-all duration-300 text-left relative overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+              <div className="w-12 h-12 rounded-2xl bg-green-500/20 flex items-center justify-center mb-6">
+                <Plus className="text-green-400" size={24} />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">Import from YouTube</h3>
-              <p className="text-sm text-white/50 mb-6">Bring your entire back-catalog to Trooflix seamlessly.</p>
-              <div className="flex items-center text-sm font-bold text-[#E53945]">Open Tool <ChevronRight size={16} className="ml-1" /></div>
-            </Link>
+              <h3 className="text-xl font-bold text-white mb-2">Add</h3>
+              <p className="text-sm text-white/50">Upload a new video, short, or tweet.</p>
+            </button>
 
-            <Link href="/creator-dashboard/manage-content" className="col-span-2 bg-white/[0.03] backdrop-blur-2xl border border-white/10 rounded-3xl hover:bg-white/[0.08] p-6 group hover:border-[#E53945]/50 transition-all duration-300 relative overflow-hidden flex flex-col justify-between shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+            {/* 2. Manage */}
+            <Link href="/creator-dashboard/manage-content" className="bg-white/[0.03] backdrop-blur-2xl border border-white/10 rounded-3xl hover:bg-white/[0.08] p-6 group hover:border-[#E53945]/50 transition-all duration-300 relative overflow-hidden flex flex-col justify-between shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
               <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full blur-3xl -mr-10 -mt-10" />
               <div>
                 <div className="flex items-center justify-between mb-6">
@@ -693,19 +693,22 @@ function CreatorDashboardContent() {
                   </div>
                   <span className="bg-white/10 text-white text-xs font-bold px-3 py-1 rounded-full">{creatorVideos.length} Posts</span>
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">Manage Content</h3>
+                <h3 className="text-xl font-bold text-white mb-2">Manage</h3>
                 <p className="text-sm text-white/50">Edit, delete, or reorder your videos and long-videos.</p>
               </div>
               <div className="flex items-center text-sm font-bold text-white group-hover:text-[#E53945] transition-colors mt-6">Open Dashboard <ChevronRight size={16} className="ml-1" /></div>
             </Link>
 
-            <button onClick={() => setShowAddContentMenu(true)} className="bg-white/[0.03] backdrop-blur-2xl border border-white/10 rounded-3xl hover:bg-white/[0.08] p-6 group hover:border-green-500/50 transition-all duration-300 text-left relative overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-              <div className="w-12 h-12 rounded-2xl bg-green-500/20 flex items-center justify-center mb-6">
-                <Plus className="text-green-400" size={24} />
+            {/* 3. Import */}
+            <Link href="/creator-dashboard/import" className="bg-white/[0.03] backdrop-blur-2xl border border-white/10 rounded-3xl hover:bg-white/[0.08] p-6 group hover:border-[#E53945]/50 transition-all duration-300 relative overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53945]/10 rounded-full blur-3xl -mr-10 -mt-10 group-hover:bg-[#E53945]/20 transition-colors" />
+              <div className="w-12 h-12 rounded-2xl bg-[#E53945]/20 flex items-center justify-center mb-6">
+                <Download className="text-[#E53945]" size={24} />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">Add Content</h3>
-              <p className="text-sm text-white/50">Upload a new video, short, or tweet.</p>
-            </button>
+              <h3 className="text-xl font-bold text-white mb-2">Import</h3>
+              <p className="text-sm text-white/50 mb-6">Bring your entire back-catalog to Trooflix seamlessly.</p>
+              <div className="flex items-center text-sm font-bold text-[#E53945]">Open Tool <ChevronRight size={16} className="ml-1" /></div>
+            </Link>
 
             <Link href="/creator-dashboard/fix-posters" className="bg-white/[0.03] backdrop-blur-2xl border border-white/10 rounded-3xl hover:bg-white/[0.08] p-6 group hover:border-orange-500/50 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
               <div className="w-12 h-12 rounded-2xl bg-orange-500/20 flex items-center justify-center mb-6">
@@ -774,23 +777,37 @@ function CreatorDashboardContent() {
         <div className="lg:hidden animate-in fade-in duration-300 space-y-8 max-w-4xl mx-auto">
           <section>
             <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">Content</h2>
-            <div className="flex flex-col gap-2 w-full max-w-2xl">
-              <Link href="/creator-dashboard/import" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-                <div className="flex items-center gap-4"><Download className="text-[#E53945]" size={20} /><span className="text-sm font-bold text-white group-hover:text-white/90">Import from YouTube</span></div>
-                <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
-              </Link>
-              <Link href="/creator-dashboard/manage-content" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-                <div className="flex items-center gap-4"><Video className="text-[#E53945]" size={20} /><span className="text-sm font-bold text-white group-hover:text-white/90">Manage Content</span></div>
-                <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
-              </Link>
-              <Link href="/creator-dashboard/fix-posters" className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-                <div className="flex items-center gap-4"><Sparkles className="text-[#E53945]" size={20} /><span className="text-sm font-bold text-white group-hover:text-white/90">Auto-Fix Missing Posters</span></div>
-                <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
-              </Link>
-              <button onClick={() => setShowAddContentMenu(true)} className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)] w-full text-left">
-                <div className="flex items-center gap-4"><Plus className="text-[#E53945]" size={20} /><span className="text-sm font-bold text-white group-hover:text-white/90">Add Content</span></div>
-                <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
+            <div className="grid grid-cols-3 gap-3 w-full max-w-2xl">
+              <button 
+                type="button"
+                onClick={() => setShowAddContentMenu(true)} 
+                className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 active:scale-95 p-4 rounded-2xl flex flex-col items-center justify-center gap-2.5 text-center transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+              >
+                <div className="w-11 h-11 rounded-xl bg-[#E53945]/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Plus className="text-[#E53945]" size={22} />
+                </div>
+                <span className="text-sm font-bold text-white group-hover:text-white/90">Add</span>
               </button>
+
+              <Link 
+                href="/creator-dashboard/manage-content" 
+                className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 active:scale-95 p-4 rounded-2xl flex flex-col items-center justify-center gap-2.5 text-center transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+              >
+                <div className="w-11 h-11 rounded-xl bg-[#E53945]/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Video className="text-[#E53945]" size={22} />
+                </div>
+                <span className="text-sm font-bold text-white group-hover:text-white/90">Manage</span>
+              </Link>
+
+              <Link 
+                href="/creator-dashboard/import" 
+                className="bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/10 active:scale-95 p-4 rounded-2xl flex flex-col items-center justify-center gap-2.5 text-center transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+              >
+                <div className="w-11 h-11 rounded-xl bg-[#E53945]/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Download className="text-[#E53945]" size={22} />
+                </div>
+                <span className="text-sm font-bold text-white group-hover:text-white/90">Import</span>
+              </Link>
             </div>
           </section>
 
