@@ -96,64 +96,56 @@ export default function ProfileThemePage() {
   const previewBackground = getBackdropFromColor(selectedColor) || DEFAULT_COLOR;
 
   return (
-    <main className="min-h-screen bg-[#09090B] text-white pb-32 font-sans selection:bg-[#E53945]/30">
+    <main className="min-h-screen bg-[#09090B] text-white pb-28 font-sans selection:bg-[#E53945]/30">
       <TopBar />
-      <div className="max-w-2xl mx-auto px-4 pt-24 pb-6">
+      <div className="max-w-2xl mx-auto px-4 pt-20 pb-4">
         <Link
           href="/creator-dashboard"
-          className="inline-flex items-center gap-2 text-sm text-white/50 hover:text-white mb-8 transition"
+          className="inline-flex items-center gap-2 text-sm text-white/50 hover:text-white mb-4 transition"
         >
           <ChevronLeft size={16} /> Back to Dashboard
         </Link>
 
-        <div className="mb-8">
-          <h1 className="text-3xl font-black tracking-tight mb-2">Profile Theme</h1>
+        <div className="mb-5">
+          <h1 className="text-2xl font-black tracking-tight mb-1 flex items-center gap-2">
+            <Palette size={22} className="text-white/70" /> Profile Theme
+          </h1>
           <p className="text-sm text-white/50">
             Pick a color for your profile background.
           </p>
         </div>
 
-        <div className="bg-[#1c1c1e] border border-white/5 rounded-3xl p-6 md:p-8 space-y-8">
-          <div>
-            <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-4 flex items-center gap-2">
-              <Palette size={14} /> Color
-            </label>
-
-            <div className="flex flex-col items-center gap-5">
-              <div
-                className="relative w-40 h-40 rounded-full border border-white/15 shadow-[0_12px_40px_rgba(0,0,0,0.45)] overflow-hidden"
-                style={{ background: selectedColor }}
-              >
-                <input
-                  type="color"
-                  value={selectedColor}
-                  onChange={(e) => setSelectedColor(e.target.value)}
-                  aria-label="Choose profile theme color"
-                  className="absolute inset-0 w-full h-full cursor-pointer opacity-0"
-                />
-              </div>
-
-              <div className="text-center">
-                <p className="text-sm text-white/60 mb-1">Tap the circle to choose a color</p>
-                <p className="text-sm font-semibold tracking-wide text-white/90">
-                  {selectedColor.toUpperCase()}
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setSelectedColor(DEFAULT_COLOR)}
-                className="text-xs font-semibold text-white/60 hover:text-white transition underline underline-offset-4"
-              >
-                Reset to default
-              </button>
+        <div className="flex flex-col sm:flex-row items-center sm:items-start justify-center gap-6 sm:gap-10">
+          <div className="flex flex-col items-center gap-3">
+            <div
+              className="relative w-36 h-36 sm:w-40 sm:h-40 rounded-full border border-white/20 shadow-[0_12px_40px_rgba(0,0,0,0.45)] overflow-hidden"
+              style={{ background: selectedColor }}
+            >
+              <input
+                type="color"
+                value={selectedColor}
+                onChange={(e) => setSelectedColor(e.target.value)}
+                aria-label="Choose profile theme color"
+                className="absolute inset-0 w-full h-full cursor-pointer opacity-0"
+              />
             </div>
+            <p className="text-xs text-white/50">Tap to choose</p>
+            <p className="text-sm font-semibold tracking-wide text-white/90">
+              {selectedColor.toUpperCase()}
+            </p>
+            <button
+              type="button"
+              onClick={() => setSelectedColor(DEFAULT_COLOR)}
+              className="text-xs font-semibold text-white/60 hover:text-white transition underline underline-offset-4"
+            >
+              Reset to default
+            </button>
           </div>
 
-          <div>
-            <p className="text-xs font-bold text-white/50 uppercase tracking-wider mb-3">Preview</p>
+          <div className="w-full sm:flex-1 max-w-sm">
+            <p className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 text-center sm:text-left">Preview</p>
             <div
-              className="h-28 rounded-2xl border border-white/10 overflow-hidden"
+              className="h-24 sm:h-40 rounded-2xl border border-white/10 overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.35)]"
               style={{ background: previewBackground }}
             />
           </div>
@@ -161,7 +153,7 @@ export default function ProfileThemePage() {
 
         {status.message && (
           <div
-            className={`mt-6 rounded-xl px-4 py-3 text-sm font-medium ${
+            className={`mt-5 rounded-xl px-4 py-3 text-sm font-medium ${
               status.type === "success"
                 ? "bg-emerald-950/30 border border-emerald-600/40 text-emerald-300"
                 : "bg-red-950/30 border border-red-600/40 text-red-300"
@@ -174,7 +166,7 @@ export default function ProfileThemePage() {
         <button
           onClick={saveTheme}
           disabled={saving}
-          className="w-full mt-6 flex items-center justify-center gap-2 bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold py-4 rounded-xl transition-all hover:scale-[1.02] shadow-[0_0_20px_rgba(229,57,69,0.3)]"
+          className="w-full mt-5 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 backdrop-blur-xl border border-white/20 disabled:opacity-50 text-white font-bold py-3.5 rounded-2xl transition-all shadow-[0_8px_32px_rgba(0,0,0,0.25)]"
         >
           <Save size={18} /> {saving ? "Saving Theme…" : "Save Theme"}
         </button>
