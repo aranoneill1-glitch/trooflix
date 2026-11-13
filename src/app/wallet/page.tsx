@@ -215,13 +215,14 @@ export default function WalletPage() {
             const isPaid = isPayout && t.status === "completed";
             const isCancelled = isPayout && t.status === "cancelled";
             const isIncoming = t.type === "topup" || (t.sender_id !== userId && t.receiver_id === userId);
-            const showAvatar = (t.type === "tip" || t.type === "subscription") && (isIncoming ? t.sender_avatar : t.receiver_avatar);
+            const avatarUrl = isIncoming ? t.sender_avatar : t.receiver_avatar;
+            const showAvatar = (t.type === "tip" || t.type === "subscription") && avatarUrl;
 
             return (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.05 }} key={t.id} onClick={() => setSelectedTx(t)} className="flex items-center justify-between p-4 border-b border-white/5 last:border-0 hover:bg-white/[0.02] cursor-pointer transition">
                 <div className="flex items-center gap-4">
                   {showAvatar ? (
-                    <img src={t.sender_avatar} className="w-10 h-10 rounded-full object-cover border border-white/10" alt="" />
+                    <img src={avatarUrl} className="w-10 h-10 rounded-full object-cover border border-white/10" alt="" />
                   ) : (
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isIncoming ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"}`}>
                       {t.type === "topup" ? <Plus size={18} /> : isIncoming ? <ArrowDown size={18} /> : <ArrowUp size={18} />}
@@ -229,7 +230,7 @@ export default function WalletPage() {
                   )}
                   <div>
                     <p className="font-bold text-sm flex items-center gap-2 text-white">
-                      {t.type === "topup" ? "Top Up" : t.type === "tip" ? (t.sender_id === userId ? "Tip sent to @" + (t.receiver_name || "user") : "Tip received from @" + (t.sender_name || "user")) : t.type === "send" ? "Sent Coins" : isPayout ? `Withdrawal ${isPaid ? "Paid" : isCancelled ? "Cancelled" : "Pending"}` : t.type === "subscription" ? (t.sender_id === userId ? "Subscribed to @" + t.receiver_name : "Subscription from @" + t.sender_name) : "Transaction"}
+                      {t.type === "topup" ? "Top Up" : t.type === "tip" ? (t.sender_id === userId ? "Tip sent to @" + (t.receiver_name || "user") : "Tip received from @" + (t.sender_name || "user")) : t.type === "send" ? "Sent Coins" : isPayout ? `Withdrawal ${isPaid ? "Paid" : isCancelled ? "Cancelled" : "Pending"}` : t.type === "subscription" ? (t.sender_id === userId ? "Subscribed to @" + (t.receiver_name || "creator") : "Subscription from @" + (t.sender_name || "user")) : "Transaction"}
                     </p>
                     <p className="text-[11px] text-white/40">{new Date(t.created_at).toLocaleString("en-GB", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</p>
                   </div>

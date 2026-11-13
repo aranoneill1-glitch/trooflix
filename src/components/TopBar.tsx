@@ -55,10 +55,10 @@ export default function TopBar({ onMenu }: Props) {
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 lg:left-[72px] right-0 z-[200] flex items-center gap-6 px-5 md:px-8 h-[68px] transition-all duration-300 ${
+        className={`fixed top-0 left-0 lg:left-[72px] right-0 z-[200] flex items-center gap-3 px-4 md:px-6 h-[56px] transition-all duration-300 ${
           scrolled
             ? "bg-[#070709]/80 backdrop-blur-xl border-b border-white/[0.06]"
-            : "bg-gradient-to-b from-[#070709]/90 via-[#070709]/40 to-transparent"
+            : "bg-gradient-to-b from-[#070709]/90 via-[#070709]/30 to-transparent"
         }`}
       >
         {onMenu && (
@@ -73,7 +73,7 @@ export default function TopBar({ onMenu }: Props) {
 
         {/* LOGO: Hidden on search page, visible everywhere else */}
         {!isSearchPage && (
-          <Link href="/" className="text-[22px] md:text-[24px] font-black tracking-[-0.06em] shrink-0">
+          <Link href="/" className="text-[20px] md:text-[22px] font-black tracking-[-0.06em] shrink-0 leading-none" style={{ fontFamily: "inherit" }}>
             {isMessagesPage ? (
               <>
                 <span className="text-white">TROO</span>
@@ -88,36 +88,32 @@ export default function TopBar({ onMenu }: Props) {
           </Link>
         )}
 
-        <div className="ml-auto flex items-center gap-1 md:gap-2">
-          
-
-
+        <div className="ml-auto flex items-center gap-0.5 md:gap-1">
           <PWAInstallButton />
 
           <button 
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="w-10 h-10 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition disabled:opacity-50"
+            className="w-9 h-9 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition disabled:opacity-50"
             aria-label="Refresh App"
           >
-            <RefreshCw size={20} className={isRefreshing ? "animate-spin" : ""} />
+            <RefreshCw size={18} className={isRefreshing ? "animate-spin" : ""} />
           </button>
           <button
             type="button"
             onClick={() => setShowCreateMenu(true)}
-            className="lg:hidden w-10 h-10 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition"
+            className="lg:hidden w-9 h-9 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition"
             aria-label="Add content"
           >
-            <Plus size={22} />
+            <Plus size={20} />
           </button>
-          <Link href="/merchandise" className="hidden lg:flex w-10 h-10 rounded-full items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition" aria-label="Shop">
-            <ShoppingBag size={20} />
+          <Link href="/merchandise" className="hidden lg:flex w-9 h-9 rounded-full items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition" aria-label="Shop">
+            <ShoppingBag size={18} />
           </Link>
 
-          
           <NotificationBell hideTrigger />
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <UserMenu />
           </div>
         </div>
