@@ -21,11 +21,39 @@ export default function ResetPasswordPage() {
 
     const init = async () => {
       try {
+        const params = new URLSearchParams(window.location.search);
+        const code = params.get("code");
+        const tokenHash = params.get("token_hash");
+        const type = params.get("type");
+
+        if (code) {
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) throw error;
+          if (mounted) setCanReset(true);
+          return;
+        }
+
+        if (tokenHash && type) {
+          const { error } = await supabase.auth.verifyOtp({
+            token_hash: tokenHash,
+            type: type as any,
+          });
+          if (error) throw error;
+          if (mounted) setCanReset(true);
+          return;
+        }
+
+        const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+        if (hashParams.get("type") === "recovery" || hashParams.get("access_token")) {
+          // Supabase client may process hash tokens automatically; check session shortly after.
+          await new Promise((r) => setTimeout(r, 300));
+        }
+
         const { data: { session } } = await supabase.auth.getSession();
         if (!mounted) return;
-        if (session) {
-          setCanReset(true);
-        }
+        if (session) setCanReset(true);
+      } catch (err: any) {
+        if (mounted) setError(err.message || "This reset link is invalid or has expired.");
       } finally {
         if (mounted) setChecking(false);
       }
@@ -35,6 +63,7 @@ export default function ResetPasswordPage() {
       if (!mounted) return;
       if (event === "PASSWORD_RECOVERY" || session) {
         setCanReset(true);
+        setError("");
         setChecking(false);
       }
     });
@@ -97,7 +126,7 @@ export default function ResetPasswordPage() {
         ) : !canReset ? (
           <div className="space-y-4">
             <div className="bg-red-950/30 border border-red-600/40 rounded-lg px-4 py-3 text-sm text-red-300">
-              This reset link is invalid or has expired. Please request a new one.
+              {error || "This reset link is invalid or has expired. Please request a new one."}
             </div>
             <Link href="/forgot-password" className="inline-flex w-full justify-center bg-red-600 hover:bg-red-700 font-bold py-3 rounded-lg transition">
               Request new reset link
