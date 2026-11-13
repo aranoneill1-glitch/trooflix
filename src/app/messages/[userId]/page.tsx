@@ -101,13 +101,15 @@ export default function ThreadPage() {
   
   // Voice call state (delegated to global instance)
   const [userTier, setUserTier] = useState<"free" | "plus" | "creator">("free");
+  const [profileBackdrop, setProfileBackdrop] = useState<string>("");
 
-  // Fetch tier only
+  // Fetch tier and profile theme
   useEffect(() => {
     if (!me) return;
     fetch(`/api/profile?user_id=${me}`)
       .then((r) => r.json())
       .then((d) => {
+        setProfileBackdrop(d.profile?.backdrop_url || "");
         const raw = String(d.profile?.tier || "free").toLowerCase();
         let norm: "free" | "plus" | "creator" = "free";
         if (raw === "creator" || raw === "podcaster" || raw === "pro") norm = "creator";
@@ -119,6 +121,12 @@ export default function ThreadPage() {
       })
       .catch(() => {});
   }, [me]);
+
+  const bgStyle = profileBackdrop
+    ? profileBackdrop.startsWith("http")
+      ? { backgroundImage: `url(${profileBackdrop})`, backgroundSize: "cover", backgroundPosition: "center" }
+      : { background: profileBackdrop }
+    : null;
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -444,13 +452,19 @@ export default function ThreadPage() {
   };
 
   return (
-    <main className="fixed inset-0 h-[100dvh] pt-[64px] pb-[72px] bg-black text-white flex flex-col overflow-hidden">
+    <main className={`fixed inset-0 h-[100dvh] pt-[64px] pb-[72px] text-white flex flex-col overflow-hidden ${profileBackdrop ? "bg-transparent" : "bg-black"}`}>
+      {bgStyle && (
+        <div className="fixed inset-0 z-0" style={bgStyle as any}>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+        </div>
+      )}
+      <div className="relative z-10 flex flex-col h-full overflow-hidden">
       <TopBar />
-      <div className="flex-shrink-0 border-b border-white/5 bg-black px-3 pt-8 md:px-6">
+      <div className={`flex-shrink-0 border-b border-white/5 px-3 pt-8 md:px-6 ${profileBackdrop ? "bg-black/20 backdrop-blur-md" : "bg-black"}`}>
         <div className="mx-auto w-full max-w-5xl"><CreatorStudioNav active="chat" className="mb-2" /></div>
       </div>
       {/* Header — white bar */}
-      <header className="flex-shrink-0 bg-black border-b border-white/10">
+      <header className={`flex-shrink-0 border-b border-white/10 ${profileBackdrop ? "bg-black/20 backdrop-blur-md" : "bg-black"}`}>
         <div className="flex items-center gap-3 px-3 py-2.5 md:px-6">
           <button
             onClick={() => router.push("/messages")}
@@ -879,6 +893,7 @@ export default function ThreadPage() {
         )}
       </AnimatePresence>
 
+      </div>
       <div className="fixed bottom-0 left-0 right-0 z-[250]"><MobileBottomNav /></div>
     </main>
   );

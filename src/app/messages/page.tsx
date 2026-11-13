@@ -72,18 +72,25 @@ export default function MessagesInbox() {
   const [callFilter, setCallFilter] = useState<"all" | "missed">("all");
   const [callHistory, setCallHistory] = useState<any[]>([]);
   const [callsLoading, setCallsLoading] = useState(false);
+  const [profileBackdrop, setProfileBackdrop] = useState<string>("");
 
   useEffect(() => {
-    const supabase = createClient();
     getCachedUser().then((user) => {
       if (!user) {
         router.push("/login");
         return;
       }
       setUserId(user.id);
+      fetch(`/api/profile?user_id=${user.id}`).then(r => r.json()).then(d => setProfileBackdrop(d.profile?.backdrop_url || "")).catch(() => {});
       loadInbox(user.id);
     });
   }, [router]);
+
+  const bgStyle = profileBackdrop
+    ? profileBackdrop.startsWith("http")
+      ? { backgroundImage: `url(${profileBackdrop})`, backgroundSize: "cover", backgroundPosition: "center" }
+      : { background: profileBackdrop }
+    : null;
 
   // --- Realtime: refresh inbox on every new incoming message ---
   useRealtimeDMs({
@@ -201,13 +208,19 @@ export default function MessagesInbox() {
   const totalUnread = conversations.reduce((n, c) => n + c.unread_count, 0);
 
   return (
-    <main className="flex flex-col text-white overflow-hidden" style={{ background: "#000000", height: "100dvh" }}>
+    <main className="flex flex-col text-white overflow-hidden relative" style={{ background: profileBackdrop ? "transparent" : "#000000", height: "100dvh" }}>
+      {bgStyle && (
+        <div className="fixed inset-0 z-0" style={bgStyle as any}>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+        </div>
+      )}
+      <div className="relative z-10 flex flex-col h-full overflow-hidden">
       <TopBar />
 
       {/* Instagram-style header */}
       <div
         className="pt-[76px] flex-shrink-0 border-b border-white/5"
-        style={{ background: "#000000" }}
+        style={{ background: profileBackdrop ? "rgba(0,0,0,0.25)" : "#000000", backdropFilter: profileBackdrop ? "blur(12px)" : undefined }}
       >
         
               <div className="mx-auto w-full max-w-5xl px-4 md:px-6"><CreatorStudioNav active="chat" className="mb-3" /></div>
@@ -491,6 +504,7 @@ export default function MessagesInbox() {
           </div>
         </div>
       )}
+      </div>
     </main>
   );
 }

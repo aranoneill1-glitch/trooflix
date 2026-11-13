@@ -14,6 +14,7 @@ export default function WalletPage() {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"all" | "tips" | "subs" | "withdrawals">("all");
+  const [profileBackdrop, setProfileBackdrop] = useState<string>("");
   
   // Modals
   const [showTopUp, setShowTopUp] = useState(false);
@@ -50,6 +51,7 @@ export default function WalletPage() {
     getCachedUser().then(u => {
       if (u) {
         setUserId(u.id);
+        fetch(`/api/profile?user_id=${u.id}`).then(r => r.json()).then(d => setProfileBackdrop(d.profile?.backdrop_url || "")).catch(() => {});
         fetch(`/api/wallet?userId=${u.id}&t=${Date.now()}`).then(r => r.json()).then(d => {
           setBalance(d.balance || 0);
           setTransactions(d.transactions || []);
@@ -72,6 +74,12 @@ export default function WalletPage() {
   };
 
   useEffect(() => { fetchWallet(); }, []);
+
+  const bgStyle = profileBackdrop
+    ? profileBackdrop.startsWith("http")
+      ? { backgroundImage: `url(${profileBackdrop})`, backgroundSize: "cover", backgroundPosition: "center" }
+      : { background: profileBackdrop }
+    : null;
 
   useEffect(() => {
     if (sendUsername.length < 2) { setSendSearchResults([]); return; }
@@ -140,11 +148,18 @@ export default function WalletPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#050505] text-white pb-24 selection:bg-[#E53945]/30">
-      <div className="fixed top-0 left-0 w-full h-[500px] bg-gradient-to-b from-[#1c1c1e]/50 to-transparent pointer-events-none z-0" />
+    <main className={`min-h-screen text-white pb-24 selection:bg-[#E53945]/30 relative overflow-hidden ${profileBackdrop ? "bg-transparent" : "bg-[#050505]"}`}>
+      {bgStyle ? (
+        <div className="fixed inset-0 z-0" style={bgStyle as any}>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+        </div>
+      ) : (
+        <div className="fixed top-0 left-0 w-full h-[500px] bg-gradient-to-b from-[#1c1c1e]/50 to-transparent pointer-events-none z-0" />
+      )}
+      <div className="relative z-10">
       <TopBar />
       
-      <div className="relative z-10 max-w-4xl mx-auto px-4 md:px-6 pt-[76px]">
+      <div className="max-w-4xl mx-auto px-4 md:px-6 pt-[76px]">
         
         {/* NEW LAYOUT */}
     <CreatorStudioNav active="bank" className="mb-8" />
@@ -536,6 +551,7 @@ export default function WalletPage() {
       </AnimatePresence>
 
       <MobileBottomNav />
+      </div>
     </main>
   );
 }
