@@ -570,7 +570,7 @@ export default function Home() {
       <DirectoryHome
         videos={videos}
         creators={creators}
-        featuredVideos={showingFiltered ? [] : featuredHeroVideos.length > 0 ? featuredHeroVideos : heroPool}
+        featuredVideos={!user ? [] : showingFiltered ? [] : featuredHeroVideos.length > 0 ? featuredHeroVideos : heroPool}
         onVideoSelect={handleCardSelect}
       />
         <div className="hidden relative z-10 pt-0 md:pt-2 pb-32 md:pb-20 space-y-2 md:space-y-6">
