@@ -136,13 +136,13 @@ function HeroPreviewFrame({ src, poster, alt }: { src?: string; poster?: string;
         <img
           src={poster}
           alt={alt}
-          className="absolute inset-0 h-full w-full object-cover"
+          className={`absolute inset-0 h-full w-full object-cover ${hasFrame ? "opacity-0" : "opacity-100"} transition-opacity duration-500`}
           style={{ animation: "hero-pan-lr 18s ease-in-out infinite alternate" }}
         />
       ) : (
         <div className="absolute inset-0 bg-[#111114]" />
       )}
-      {src && !poster && (
+      {src && (
         <video
           ref={videoRef}
           src={src}
@@ -177,14 +177,14 @@ function FeaturedVideoHero({ videos, onSelect }: { videos: any[]; onSelect: (vid
 
   if (!videos.length) return null;
   const video = videos[activeIndex % videos.length];
-  const image = video.backdropUrl || video.posterUrl;
+  const image = video.posterUrl || video.backdropUrl;
   const previewSrc = video.videoUrl || video.bitchuteUrl;
 
   return (
     <section aria-label="Featured videos" className="relative isolate -mx-4 -mt-[env(safe-area-inset-top)] h-[calc(min(38vh,340px)+env(safe-area-inset-top))] min-h-[calc(220px+env(safe-area-inset-top))] max-h-[calc(360px+env(safe-area-inset-top))] overflow-hidden bg-[#08090c] md:mx-[-2.5rem] md:mt-0 md:h-[min(34vh,310px)] md:min-h-[220px] md:max-h-[310px]">
       <AnimatePresence mode="wait">
         <motion.div key={video.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.7 }} className="absolute inset-0 -z-20">
-          <HeroPreviewFrame src={image ? undefined : previewSrc} poster={image} alt={video.title || ""} />
+          <HeroPreviewFrame src={previewSrc} poster={image} alt={video.title || ""} />
         </motion.div>
       </AnimatePresence>
       <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-r from-[#08090c] via-[#08090c]/75 to-transparent md:via-[#08090c]/50" />
