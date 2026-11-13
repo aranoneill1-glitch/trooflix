@@ -181,7 +181,7 @@ function FeaturedVideoHero({ videos, onSelect }: { videos: any[]; onSelect: (vid
   const previewSrc = video.videoUrl || video.bitchuteUrl;
 
   return (
-    <section aria-label="Featured videos" className="relative isolate -mx-4 -mt-[env(safe-area-inset-top)] h-[calc(min(38vh,340px)+env(safe-area-inset-top))] min-h-[calc(220px+env(safe-area-inset-top))] max-h-[calc(360px+env(safe-area-inset-top))] overflow-hidden bg-[#08090c] md:mx-[-2.5rem] md:mt-0 md:h-[min(34vh,310px)] md:min-h-[220px] md:max-h-[310px]">
+    <section aria-label="Featured videos" className="relative isolate -mx-4 h-[min(31vh,290px)] min-h-[180px] max-h-[310px] overflow-hidden bg-[#08090c] md:-mx-10 md:h-[min(34vh,310px)] md:min-h-[220px]">
       <AnimatePresence mode="wait">
         <motion.div key={video.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.7 }} className="absolute inset-0 -z-20">
           <HeroPreviewFrame src={previewSrc} poster={image} alt={video.title || ""} />
@@ -190,7 +190,7 @@ function FeaturedVideoHero({ videos, onSelect }: { videos: any[]; onSelect: (vid
       <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-r from-[#08090c] via-[#08090c]/75 to-transparent md:via-[#08090c]/50" />
       <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-[#08090c] via-[#08090c]/20 to-transparent" />
 
-      <div className="flex h-full max-w-7xl flex-col justify-end px-5 pb-6 pt-[calc(5.5rem+env(safe-area-inset-top))] md:mx-auto md:px-12 md:pb-8 md:pt-28">
+      <div className="flex h-full max-w-7xl flex-col justify-end px-5 pb-6 pt-24 md:mx-auto md:px-12 md:pb-8 md:pt-28">
         <AnimatePresence mode="wait">
           <motion.div key={video.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.4 }} className="max-w-3xl">
             <p className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.28em] text-white/65 md:text-xs"><Star size={13} className="text-[#F06A72]" /> Featured</p>
@@ -236,7 +236,7 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
   }, []);
 
   return (
-    <div className="relative z-10 pt-0 md:pt-24 pb-32 md:pb-16 max-w-[1600px] mx-auto px-4 md:px-10 space-y-8 md:space-y-10">
+    <div className={`relative z-10 ${flushTop ? "pt-8" : "pt-20 md:pt-24"} pb-32 md:pb-16 max-w-[1600px] mx-auto px-4 md:px-10 space-y-8 md:space-y-10`}>
 
       <FeaturedVideoHero videos={featuredVideos} onSelect={onVideoSelect} />
 
