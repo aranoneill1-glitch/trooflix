@@ -579,6 +579,7 @@ export default function Home() {
         creators={creators}
         featuredVideos={showingFiltered ? [] : featuredHeroVideos.length > 0 ? featuredHeroVideos : heroPool}
         onVideoSelect={handleCardSelect}
+        flushTop
       />
         <div className="hidden relative z-10 pt-0 md:pt-2 pb-32 md:pb-20 space-y-2 md:space-y-6">
             {filtered && <SearchResults search={search} videos={videos} creators={creators} onVideoClick={setSelected} />}

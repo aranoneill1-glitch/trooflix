@@ -229,7 +229,7 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
   }, []);
 
   return (
-    <div className={`relative z-10 ${flushTop ? "pt-8" : "pt-20 md:pt-24"} pb-32 md:pb-16 max-w-[1600px] mx-auto px-4 md:px-10 space-y-8 md:space-y-10`}>
+    <div className={`relative z-10 ${flushTop ? "pt-0" : "pt-20 md:pt-24"} pb-32 md:pb-16 max-w-[1600px] mx-auto px-4 md:px-10 space-y-8 md:space-y-10`}>
 
       <FeaturedVideoHero videos={featuredVideos} onSelect={onVideoSelect} />
 
