@@ -1015,26 +1015,41 @@ function CreatorDashboardContent() {
               <motion.div 
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} 
                 onClick={() => setShowAvatarMenu(false)}
-                className="fixed inset-0 z-[300] bg-black/60 backdrop-blur-sm"
+                className="fixed inset-0 z-[300] bg-black/50 backdrop-blur-md"
               />
               <motion.div 
                 initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                className="fixed bottom-0 left-0 right-0 z-[301] bg-[#1c1c1e] rounded-t-3xl border-t border-white/10 p-6 pb-32 shadow-2xl max-h-[85vh] overflow-y-auto md:max-w-md md:mx-auto md:rounded-3xl md:bottom-10"
+                className="fixed bottom-0 left-0 right-0 z-[301] bg-white/10 backdrop-blur-2xl backdrop-saturate-150 rounded-t-3xl border-t border-white/20 p-6 pb-32 shadow-[0_20px_60px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.18)] max-h-[85vh] overflow-y-auto md:max-w-md md:mx-auto md:rounded-3xl md:bottom-10"
               >
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xl font-bold">Profile Photo</h3>
-                  <button onClick={() => setShowAvatarMenu(false)} className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition">
+                  <button onClick={() => setShowAvatarMenu(false)} className="p-2 bg-white/10 hover:bg-white/15 rounded-full transition border border-white/10">
                     <X size={18} />
                   </button>
                 </div>
                 
                 <div className="flex flex-col gap-3">
+                  <Link
+                    href="/creator-dashboard/settings"
+                    onClick={() => setShowAvatarMenu(false)}
+                    className="group relative flex items-center gap-4 bg-white/[0.08] hover:bg-white/[0.12] border border-white/20 p-4 rounded-2xl transition-all duration-300 overflow-hidden text-left"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center border border-white/10">
+                      <Pencil size={20} className="text-blue-300" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold">Edit Profile</h4>
+                      <p className="text-xs text-white/50">Update your name, bio, and links</p>
+                    </div>
+                    <ChevronRight size={18} className="ml-auto text-white/40" />
+                  </Link>
+
                   <button 
                     onClick={() => avatarInputRef.current?.click()}
                     disabled={uploadingAvatar}
-                    className="group relative flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 p-4 rounded-2xl transition-all duration-300 overflow-hidden text-left"
+                    className="group relative flex items-center gap-4 bg-white/[0.08] hover:bg-white/[0.12] border border-white/20 p-4 rounded-2xl transition-all duration-300 overflow-hidden text-left"
                   >
-                    <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center border border-white/10">
                       <Camera size={20} className="text-white" />
                     </div>
                     <div>
@@ -1047,14 +1062,14 @@ function CreatorDashboardContent() {
                     <button 
                       onClick={handleRemoveAvatar}
                       disabled={uploadingAvatar}
-                      className="flex items-center gap-4 bg-red-950/20 hover:bg-red-950/40 border border-red-900/30 p-4 rounded-xl transition text-left"
+                      className="flex items-center gap-4 bg-red-500/10 hover:bg-red-500/15 border border-red-400/20 p-4 rounded-2xl transition text-left"
                     >
-                      <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center">
-                        <Trash2 size={20} className="text-red-500" />
+                      <div className="w-10 h-10 rounded-full bg-red-500/15 flex items-center justify-center border border-red-400/20">
+                        <Trash2 size={20} className="text-red-400" />
                       </div>
                       <div>
-                        <h4 className="font-bold text-red-500">Remove Photo</h4>
-                        <p className="text-xs text-red-500/50">Revert to default avatar</p>
+                        <h4 className="font-bold text-red-400">Remove Photo</h4>
+                        <p className="text-xs text-red-300/60">Revert to default avatar</p>
                       </div>
                     </button>
                   )}
