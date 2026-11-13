@@ -190,13 +190,12 @@ function FeaturedVideoHero({ videos, onSelect }: { videos: any[]; onSelect: (vid
       <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-r from-[#08090c] via-[#08090c]/75 to-transparent md:via-[#08090c]/50" />
       <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-[#08090c] via-[#08090c]/20 to-transparent" />
 
-      <div className="flex h-full max-w-7xl flex-col justify-end px-5 pb-10 pt-20 md:mx-auto md:px-12 md:pb-12">
+      <div className="flex h-full max-w-7xl flex-col justify-end px-5 pb-6 pt-24 md:mx-auto md:px-12 md:pb-8 md:pt-28">
         <AnimatePresence mode="wait">
           <motion.div key={video.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.4 }} className="max-w-3xl">
-            <p className="mb-3 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.28em] text-white/65 md:text-xs"><Star size={13} className="text-[#F06A72]" /> Featured</p>
-            <h1 className="max-w-3xl text-3xl font-black leading-[0.98] tracking-[-0.055em] text-white drop-shadow-lg sm:text-4xl md:text-5xl">{video.title}</h1>
-            {video.description && <p className="mt-3 line-clamp-2 max-w-2xl text-sm leading-6 text-white/75 md:text-base md:leading-7">{video.description}</p>}
-            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/55 md:text-xs">
+            <p className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.28em] text-white/65 md:text-xs"><Star size={13} className="text-[#F06A72]" /> Featured</p>
+            <h1 className="max-w-3xl text-2xl font-black leading-[0.98] tracking-[-0.055em] text-white drop-shadow-lg sm:text-3xl md:text-4xl">{video.title}</h1>
+            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/55 md:text-xs">
               {video.category && <span>{video.category}</span>}
               {video.year ? <span>{video.year}</span> : null}
               {video.duration && <span>{video.duration}</span>}
@@ -204,9 +203,9 @@ function FeaturedVideoHero({ videos, onSelect }: { videos: any[]; onSelect: (vid
           </motion.div>
         </AnimatePresence>
 
-        <div className="mt-5 flex items-center gap-6">
-          <button onClick={() => onSelect(video)} className="inline-flex min-h-11 items-center gap-2 rounded-full bg-white/15 backdrop-blur-xl border border-white/30 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.25)]">
-            <Play size={17} fill="currentColor" /> Play
+        <div className="mt-4 flex items-center gap-6">
+          <button onClick={() => onSelect(video)} className="inline-flex min-h-10 items-center gap-2 rounded-full bg-white/15 backdrop-blur-xl border border-white/30 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.25)]">
+            <Play size={14} fill="currentColor" /> Play
           </button>
         </div>
       </div>
