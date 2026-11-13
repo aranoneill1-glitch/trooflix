@@ -120,14 +120,34 @@ function CreatorDashboardContent() {
           setMerch(allProducts.filter((p: any) => String(p.creator_id) === String(cid) || String(p.creator_id) === String(u.id)));
         }
 
-        // Parallelize follower & subscriber counts
-        const targetCreatorId = prof?.creator_id || u.id;
-        const [followersRes, subsRes] = await Promise.all([
-          supabase.from("follows").select("*", { count: "exact", head: true }).eq("creator_id", targetCreatorId),
-          supabase.from("creator_subscriptions").select("*", { count: "exact", head: true }).eq("creator_id", targetCreatorId),
-        ]);
-        setFollowerCount(followersRes.count || 0);
-        setSubscriberCount(subsRes.count || 0);
+        // Resolve numeric creator ID for follower & subscriber counts
+        let targetCreatorId: number | null = crResult?.creator?.id ?? prof?.creator_id ?? null;
+        if (targetCreatorId != null) targetCreatorId = Number(targetCreatorId);
+        if (!targetCreatorId || isNaN(targetCreatorId)) {
+          try {
+            const creatorsRes = await fetch("/api/creators");
+            const creatorsList = await creatorsRes.json();
+            const creatorMatch = Array.isArray(creatorsList)
+              ? creatorsList.find((c: any) => String(c.user_id) === String(u.id) || String(c.ownerUserId) === String(u.id))
+              : null;
+            if (creatorMatch?.id != null) targetCreatorId = Number(creatorMatch.id);
+          } catch {}
+        }
+
+        if (targetCreatorId && !isNaN(targetCreatorId)) {
+          try {
+            const followRes = await fetch(`/api/follows?creator_id=${targetCreatorId}`);
+            const followData = await followRes.json();
+            setFollowerCount(followData.count || 0);
+            setSubscriberCount(followData.subscriberCount || 0);
+          } catch {
+            setFollowerCount(0);
+            setSubscriberCount(0);
+          }
+        } else {
+          setFollowerCount(0);
+          setSubscriberCount(0);
+        }
         setLoading(false);
       } else {
         setLoading(false);
