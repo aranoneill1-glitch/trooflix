@@ -358,7 +358,7 @@ export default function Home() {
                     Stop letting Big Tech <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#E53945] to-orange-500">eat your lunch.</span>
                   </h1>
                   <p className="text-[15px] md:text-xl text-white/50 max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
-                    We didn't build Trooflix to be another YouTube clone. We built it to be the ultimate weapon for independent creators and free thinkers.
+                    Tired of working countless hours making great content just to give half your earnings away to billionaires and get censored in the process? It's time to take your power back.
                   </p>
                   <div className="flex flex-col w-full max-w-sm gap-3">
                     <a
