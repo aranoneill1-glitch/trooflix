@@ -204,7 +204,7 @@ function FeaturedVideoHero({ videos, onSelect }: { videos: any[]; onSelect: (vid
         </AnimatePresence>
 
         <div className="mt-4 flex items-center gap-6">
-          <button onClick={() => onSelect(video)} className="inline-flex min-h-10 items-center gap-2 rounded-full bg-white/15 backdrop-blur-xl border border-white/30 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.25)]">
+          <button onClick={() => onSelect(video)} className="inline-flex min-h-10 items-center gap-2 rounded-full bg-white/15 backdrop-blur-2xl backdrop-saturate-150 border border-white/25 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)]">
             <Play size={14} fill="currentColor" /> Play
           </button>
         </div>
@@ -295,7 +295,7 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
                   className="transition duration-700 ease-out group-hover:scale-[1.04]"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/10 pointer-events-none" />
-                <span className="absolute bottom-2.5 right-2.5 text-[11px] font-medium px-2 py-1 rounded-full bg-black/55 text-white/90 backdrop-blur-md ring-1 ring-white/10">
+                <span className="absolute bottom-2.5 right-2.5 text-[11px] font-medium px-2 py-1 rounded-full bg-white/10 text-white/95 backdrop-blur-2xl backdrop-saturate-150 border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]">
                   {timeAgo(v.createdAt)}
                 </span>
               </div>

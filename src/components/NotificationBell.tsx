@@ -184,7 +184,7 @@ export default function NotificationBell({ hideTrigger = false }: { hideTrigger?
             className="fixed top-[64px] left-0 right-0 bottom-0 z-[190] bg-[#0a0303] text-white flex flex-col overflow-hidden"
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-white/10 bg-[#0a0303]/90 backdrop-blur-md shrink-0">
+            <div className="flex items-center justify-between p-4 border-b border-white/20 bg-white/[0.08] backdrop-blur-2xl backdrop-saturate-150 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] shrink-0">
               <button onClick={() => setIsOpen(false)} className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition">
                 <X size={20} />
               </button>
@@ -194,7 +194,7 @@ export default function NotificationBell({ hideTrigger = false }: { hideTrigger?
 
             {/* Segmented Control */}
             <div className="flex justify-center mt-6 shrink-0">
-              <div className="flex bg-[#1c1c1e] p-1 rounded-full border border-white/5">
+              <div className="flex bg-white/10 backdrop-blur-2xl backdrop-saturate-150 p-1 rounded-full border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]">
                 <button 
                   onClick={() => setActiveTab("all")} 
                   className={`px-6 py-2 rounded-full text-sm font-bold transition-all ${activeTab === "all" ? "bg-[#E53945] text-white shadow-lg" : "text-white/50 hover:text-white"}`}

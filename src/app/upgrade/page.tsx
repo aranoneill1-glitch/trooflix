@@ -245,7 +245,7 @@ export default function UpgradePage() {
           />
         </div>
 
-                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden">
+                <div className="bg-white/[0.08] backdrop-blur-2xl backdrop-saturate-150 border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] rounded-2xl overflow-hidden">
           <div className="px-5 py-4 border-b border-white/10">
             <h2 className="text-lg font-bold">Compare all plans</h2>
           </div>
@@ -337,7 +337,7 @@ function TierCard({
       className={`relative rounded-2xl p-6 flex flex-col ${
         highlight
           ? "bg-white/10 backdrop-blur-xl border-2 border-red-600/40 shadow-[0_0_30px_rgba(229,57,69,0.15)]"
-          : "bg-white/5 backdrop-blur-xl border border-white/10"
+          : "bg-white/[0.08] backdrop-blur-2xl backdrop-saturate-150 border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]"
       } ${isCurrent ? "ring-2 ring-white/20" : ""}`}
     >
       {highlight && !isCurrent && (

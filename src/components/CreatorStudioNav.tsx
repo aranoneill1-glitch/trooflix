@@ -22,13 +22,13 @@ const tabs = [
 
 export default function CreatorStudioNav({ active, onViewChange, dashboardLocked = false, className = "mb-5" }: Props) {
   return (
-    <div className={`sticky top-[68px] z-[150] ${className}`}>
-      <nav aria-label="Creator studio" className="rounded-full border border-white/20 bg-white/10 p-1 shadow-[0_12px_40px_rgba(0,0,0,0.35)] backdrop-blur-2xl sm:p-1.5">
+    <div className={`sticky top-[56px] z-[150] ${className}`}>
+      <nav aria-label="Creator studio" className="rounded-full border border-white/20 bg-white/10 p-1 shadow-[0_10px_40px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.16)] backdrop-blur-2xl backdrop-saturate-150 sm:p-1.5">
         <div className="flex w-full items-stretch gap-0.5 overflow-x-auto scrollbar-hide">
           {tabs.map((tab, index) => {
           const selected = active === tab.id;
           const Icon = tab.icon;
-          const className = `flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-full px-1 py-2 text-[9px] font-bold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 sm:flex-row sm:gap-1.5 sm:px-2 sm:py-2 sm:text-[11px] ${selected ? "text-white [text-shadow:0_0_14px_rgba(255,255,255,0.55)]" : "text-white/45 hover:bg-white/[0.06] hover:text-white/80"} ${tab.id === "dashboard" && dashboardLocked ? "opacity-70" : ""}`;
+          const className = `flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-full px-1 py-2 text-[9px] font-bold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 sm:flex-row sm:gap-1.5 sm:px-2 sm:py-2 sm:text-[11px] ${selected ? "bg-white/12 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] [text-shadow:0_0_14px_rgba(255,255,255,0.55)]" : "text-white/45 hover:bg-white/[0.06] hover:text-white/80"} ${tab.id === "dashboard" && dashboardLocked ? "opacity-70" : ""}`;
           const label = (
             <>
               {tab.id === "dashboard" ? (

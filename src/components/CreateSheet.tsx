@@ -49,7 +49,7 @@ export default function CreateSheet({ open, onClose }: Props) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -10 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
-            className="absolute top-[110%] left-0 w-60 bg-[#1c1c1e]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-[100]"
+            className="absolute top-[110%] left-0 w-60 bg-white/10 backdrop-blur-2xl backdrop-saturate-150 border border-white/20 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.16)] overflow-hidden z-[100]"
           >
             <div className="py-1">
               <button onClick={() => handleAction("/profile/upload")} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition text-white">

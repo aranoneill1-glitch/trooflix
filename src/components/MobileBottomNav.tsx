@@ -48,7 +48,7 @@ export default function MobileBottomNav() {
 
   return (
     <nav className="lg:hidden fixed inset-x-0 bottom-0 z-[250] px-3 pb-[max(10px,env(safe-area-inset-bottom))] pointer-events-none">
-      <div className="pointer-events-auto mx-auto flex max-w-md items-center justify-around rounded-full bg-[#121214]/80 px-1.5 py-1.5 shadow-[0_16px_40px_rgba(0,0,0,0.45)] ring-1 ring-white/10 backdrop-blur-2xl">
+      <div className="pointer-events-auto mx-auto flex max-w-md items-center justify-around rounded-full border border-white/20 bg-white/10 px-1.5 py-1.5 shadow-[0_10px_40px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.18)] backdrop-blur-2xl backdrop-saturate-150">
         {tabs.map((tab) => {
           const active = isActive(tab.href);
 
@@ -61,7 +61,7 @@ export default function MobileBottomNav() {
               <motion.div
                 whileTap={{ scale: 0.9 }}
                 transition={{ type: "spring", stiffness: 400, damping: 18 }}
-                className={`flex items-center justify-center flex-col gap-0.5 w-full h-full rounded-full ${active ? "bg-white/10" : ""}`}
+                className={`flex items-center justify-center flex-col gap-0.5 w-full h-full rounded-full transition-colors ${active ? "bg-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]" : ""}`}
               >
                 {tab.name === "Trooflix" ? (
                   <span className="text-[12px] font-black tracking-[-0.06em] leading-none">

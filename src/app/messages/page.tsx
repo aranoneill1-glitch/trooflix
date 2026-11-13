@@ -228,7 +228,7 @@ export default function MessagesInbox() {
 <div className="max-w-3xl mx-auto flex items-center justify-between px-4 md:px-6 py-3">
           
           {/* Glass Pill Tabs */}
-          <div className="flex bg-white/10 backdrop-blur-xl p-1 rounded-full border border-white/20 shadow-2xl">
+          <div className="flex bg-white/[0.12] backdrop-blur-2xl backdrop-saturate-150 p-1 rounded-full border border-white/20 shadow-[0_8px_30px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.16)]">
             <button
               onClick={() => setActiveTab("messages")}
               className={`px-6 py-1.5 rounded-full text-sm font-bold transition-all ${activeTab === "messages" ? "bg-white text-black shadow-md" : "text-white/50 hover:text-white"}`}
