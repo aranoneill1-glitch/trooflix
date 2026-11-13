@@ -362,29 +362,22 @@ export default function Home() {
                   </p>
                   <div className="flex flex-col w-full max-w-sm gap-3">
                     <a
+                      href="/signup"
+                      className="w-full flex items-center justify-center gap-2 bg-[#1c1c1e] border border-white/10 text-white font-bold text-lg py-4 rounded-full hover:bg-[#2c2c2e] transition"
+                    >
+                      Join Today
+                    </a>
+                    <a
                       href="/features"
                       className="w-full flex items-center justify-center gap-2 bg-white text-black font-bold text-lg py-4 rounded-full hover:bg-gray-200 transition"
                     >
                       Why Trooflix
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
                     </a>
-                    <a
-                      href="/signup"
-                      className="w-full flex items-center justify-center gap-2 bg-[#1c1c1e] border border-white/10 text-white font-bold text-lg py-4 rounded-full hover:bg-[#2c2c2e] transition"
-                    >
-                      Join Today
-                    </a>
                   </div>
                 </div>
 
-                {/* App Reel Hero (Moved below Avatars) */}
-                {heroPool.length > 0 && (
-                  <AppReelHero
-                    videos={heroPool}
-                    activeIndex={heroIndex}
-                    onMore={(v) => setSelected(v)}
-                  />
-                )}
+
 </div>
                 <div className="hidden">
                   <div className="relative w-full max-w-2xl mx-auto">
@@ -520,8 +513,8 @@ export default function Home() {
                     <h1 className="text-[52px] xl:text-[68px] 2xl:text-[80px] font-black tracking-tighter text-white leading-[1.02] mb-6">Stop letting Big Tech <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#E53945] to-orange-500">eat your lunch.</span></h1>
                     <p className="text-base xl:text-lg text-white/50 mb-10 leading-relaxed font-medium">Tired of working countless hours making great content just to give half your earnings away to billionaires and get censored in the process? It&apos;s time to take your power back.</p>
                     <div className="flex flex-wrap gap-3">
-                      <a href="/features" className="flex items-center justify-center gap-2 bg-white text-black font-bold text-base px-8 py-4 rounded-full hover:bg-gray-200 transition">Why Trooflix &rarr;</a>
                       <a href="/signup" className="flex items-center justify-center gap-2 bg-[#1c1c1e] border border-white/10 text-white font-bold text-base px-8 py-4 rounded-full hover:bg-[#2c2c2e] transition">Join Today</a>
+                      <a href="/features" className="flex items-center justify-center gap-2 bg-white text-black font-bold text-base px-8 py-4 rounded-full hover:bg-gray-200 transition">Why Trooflix &rarr;</a>
                     </div>
                   </div>
                 </div>
