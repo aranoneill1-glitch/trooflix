@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { ArrowRight, ChevronLeft, ChevronRight, CirclePlay, Eye, Play, ShoppingBag, Star, UsersRound } from "lucide-react";
+import { ChevronLeft, ChevronRight, CirclePlay, Eye, Play, ShoppingBag, Star, UsersRound } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 
@@ -98,6 +98,64 @@ function SectionHead({ kicker, title, href, icon: Icon }: { kicker: string; titl
   );
 }
 
+function HeroPreviewFrame({ src, poster, alt }: { src?: string; poster?: string; alt: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [hasFrame, setHasFrame] = useState(false);
+
+  useEffect(() => {
+    setHasFrame(false);
+  }, [src]);
+
+  const seekToPreviewFrame = (video: HTMLVideoElement) => {
+    if (!Number.isFinite(video.duration) || video.duration <= 0) return;
+    const frameTime = Math.min(1, Math.max(0.2, video.duration * 0.08));
+    try {
+      video.currentTime = frameTime;
+    } catch {}
+  };
+
+  const panStyle = `
+    @keyframes hero-pan-lr {
+      0% { transform: scale(1.08) translateX(-3%); }
+      100% { transform: scale(1.08) translateX(3%); }
+    }
+  `;
+
+  return (
+    <div className="absolute inset-0 overflow-hidden">
+      <style>{panStyle}</style>
+      {poster ? (
+        <img
+          src={poster}
+          alt={alt}
+          className={`absolute inset-0 h-full w-full object-cover ${hasFrame ? "opacity-0" : "opacity-100"} transition-opacity duration-500`}
+          style={{ animation: "hero-pan-lr 18s ease-in-out infinite alternate" }}
+        />
+      ) : (
+        <div className="absolute inset-0 bg-[#111114]" />
+      )}
+      {src && (
+        <video
+          ref={videoRef}
+          src={src}
+          muted
+          playsInline
+          preload="metadata"
+          aria-hidden="true"
+          tabIndex={-1}
+          onLoadedMetadata={(e) => seekToPreviewFrame(e.currentTarget)}
+          onSeeked={(e) => {
+            e.currentTarget.pause();
+            setHasFrame(true);
+          }}
+          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${hasFrame ? "opacity-100" : "opacity-0"}`}
+          style={{ animation: "hero-pan-lr 18s ease-in-out infinite alternate" }}
+        />
+      )}
+    </div>
+  );
+}
+
 function FeaturedVideoHero({ videos, onSelect }: { videos: any[]; onSelect: (video: any) => void }) {
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -111,25 +169,26 @@ function FeaturedVideoHero({ videos, onSelect }: { videos: any[]; onSelect: (vid
 
   if (!videos.length) return null;
   const video = videos[activeIndex % videos.length];
-  const image = video.backdropUrl || video.posterUrl;
+  const image = video.posterUrl || video.backdropUrl;
+  const previewSrc = video.videoUrl || video.bitchuteUrl;
 
   return (
-    <section aria-label="Featured videos" className="relative isolate -mx-4 h-[min(76vh,780px)] min-h-[500px] max-h-[820px] overflow-hidden bg-[#08090c] md:-mx-10 md:min-h-[620px]">
+    <section aria-label="Featured videos" className="relative isolate -mx-4 h-[min(52vh,480px)] min-h-[300px] max-h-[520px] overflow-hidden bg-[#08090c] md:-mx-10 md:h-[min(56vh,520px)] md:min-h-[360px]">
       <AnimatePresence mode="wait">
         <motion.div key={video.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.7 }} className="absolute inset-0 -z-20">
-          {image && <img src={image} alt="" className="h-full w-full object-cover" />}
+          <HeroPreviewFrame src={previewSrc} poster={image} alt={video.title || ""} />
         </motion.div>
       </AnimatePresence>
-      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-r from-[#08090c] via-[#08090c]/80 to-transparent md:via-[#08090c]/55" />
-      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-[#08090c] via-[#08090c]/25 to-transparent" />
+      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-r from-[#08090c] via-[#08090c]/75 to-transparent md:via-[#08090c]/50" />
+      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-[#08090c] via-[#08090c]/20 to-transparent" />
 
-      <div className="flex h-full max-w-7xl flex-col justify-end px-5 pb-14 pt-24 md:mx-auto md:px-12 md:pb-20">
+      <div className="flex h-full max-w-7xl flex-col justify-end px-5 pb-10 pt-20 md:mx-auto md:px-12 md:pb-12">
         <AnimatePresence mode="wait">
           <motion.div key={video.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.4 }} className="max-w-3xl">
-            <p className="mb-4 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.28em] text-white/65 md:text-xs"><Star size={13} className="text-[#F06A72]" /> Featured</p>
-            <h1 className="max-w-3xl text-4xl font-black leading-[0.98] tracking-[-0.055em] text-white drop-shadow-lg sm:text-5xl md:text-7xl">{video.title}</h1>
-            {video.description && <p className="mt-5 line-clamp-3 max-w-2xl text-sm leading-6 text-white/75 md:text-base md:leading-7">{video.description}</p>}
-            <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/55 md:text-xs">
+            <p className="mb-3 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.28em] text-white/65 md:text-xs"><Star size={13} className="text-[#F06A72]" /> Featured</p>
+            <h1 className="max-w-3xl text-3xl font-black leading-[0.98] tracking-[-0.055em] text-white drop-shadow-lg sm:text-4xl md:text-5xl">{video.title}</h1>
+            {video.description && <p className="mt-3 line-clamp-2 max-w-2xl text-sm leading-6 text-white/75 md:text-base md:leading-7">{video.description}</p>}
+            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/55 md:text-xs">
               {video.category && <span>{video.category}</span>}
               {video.year ? <span>{video.year}</span> : null}
               {video.duration && <span>{video.duration}</span>}
@@ -137,18 +196,15 @@ function FeaturedVideoHero({ videos, onSelect }: { videos: any[]; onSelect: (vid
           </motion.div>
         </AnimatePresence>
 
-        <div className="mt-7 flex items-center gap-6">
-          <button onClick={() => onSelect(video)} className="inline-flex min-h-11 items-center gap-2 bg-white px-5 py-3 text-sm font-bold text-black transition hover:bg-white/85">
+        <div className="mt-5 flex items-center gap-6">
+          <button onClick={() => onSelect(video)} className="inline-flex min-h-11 items-center gap-2 rounded-full bg-white/15 backdrop-blur-xl border border-white/30 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.25)]">
             <Play size={17} fill="currentColor" /> Play
           </button>
-          <Link href="/latest" className="inline-flex min-h-11 items-center gap-2 py-3 text-sm font-semibold text-white/75 transition hover:text-white">
-            More stories <ArrowRight size={16} />
-          </Link>
         </div>
       </div>
 
       {videos.length > 1 && (
-        <div className="absolute bottom-6 right-5 flex items-center gap-4 md:bottom-10 md:right-12">
+        <div className="absolute bottom-4 right-5 flex items-center gap-4 md:bottom-6 md:right-12">
           <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/55">{activeIndex + 1} <span className="mx-1 text-white/25">/</span> {videos.length}</span>
           <button aria-label="Previous featured video" onClick={() => setActiveIndex((index) => (index - 1 + videos.length) % videos.length)} className="p-1 text-white/55 transition hover:text-white">
             <ChevronLeft size={18} />
