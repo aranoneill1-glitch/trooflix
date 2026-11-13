@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, Plus, RefreshCw, Video, Radio, X, Play, MessageSquare, Tag, ShoppingBag, Monitor, Smartphone } from "lucide-react";
+import { Menu, Plus, RefreshCw, Video, Radio, X, Play, MessageSquare, Tag, ShoppingBag } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import UserMenu from "@/components/UserMenu";
 import NotificationBell from "@/components/NotificationBell";
@@ -20,34 +20,10 @@ export default function TopBar({ onMenu }: Props) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isCreator, setIsCreator] = useState(false);
   const [showCreateMenu, setShowCreateMenu] = useState(false);
-  const [forceDesktop, setForceDesktop] = useState(false);
 
   // Check if we are on the search page
   const isSearchPage = pathname === "/search";
   const isMessagesPage = pathname === "/messages";
-
-  useEffect(() => {
-    try {
-      setForceDesktop(localStorage.getItem("trooflix:force-desktop") === "1");
-    } catch {}
-  }, []);
-
-  const toggleDesktopView = () => {
-    try {
-      const next = !forceDesktop;
-      setForceDesktop(next);
-      localStorage.setItem("trooflix:force-desktop", next ? "1" : "0");
-      const meta = document.querySelector('meta[name="viewport"]');
-      if (meta) {
-        if (next) {
-          meta.setAttribute("content", "width=1280, initial-scale=0.3, minimum-scale=0.1, maximum-scale=5, user-scalable=yes");
-        } else {
-          meta.setAttribute("content", "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no");
-        }
-      }
-      window.location.reload();
-    } catch {}
-  };
 
   const handleRefresh = () => {
     setIsRefreshing(true);
@@ -117,16 +93,6 @@ export default function TopBar({ onMenu }: Props) {
 
 
           <PWAInstallButton />
-
-          <button
-            type="button"
-            onClick={toggleDesktopView}
-            className="lg:hidden w-10 h-10 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition"
-            aria-label={forceDesktop ? "Switch to mobile view" : "Switch to desktop view"}
-            title={forceDesktop ? "Switch to mobile view" : "Switch to desktop view"}
-          >
-            {forceDesktop ? <Smartphone size={20} /> : <Monitor size={20} />}
-          </button>
 
           <button 
             onClick={handleRefresh}

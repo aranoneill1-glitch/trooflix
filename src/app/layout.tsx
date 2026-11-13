@@ -48,24 +48,17 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
-                function applyViewportMode() {
-                  var meta = document.querySelector('meta[name="viewport"]');
-                  if (!meta) return;
+                function applyTVViewport() {
                   if (window.Capacitor && window.Capacitor.getPlatform() === 'android') {
-                    meta.setAttribute('content', 'width=1920, initial-scale=1, maximum-scale=1, user-scalable=no');
-                    return;
-                  }
-                  try {
-                    if (localStorage.getItem('trooflix:force-desktop') === '1') {
-                      meta.setAttribute('content', 'width=1280, initial-scale=0.3, minimum-scale=0.1, maximum-scale=5, user-scalable=yes');
-                      return;
+                    var meta = document.querySelector('meta[name="viewport"]');
+                    if (meta) {
+                      meta.setAttribute('content', 'width=1920, initial-scale=1, maximum-scale=1, user-scalable=no');
                     }
-                  } catch (e) {}
-                  meta.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no');
+                  }
                 }
-                applyViewportMode();
-                document.addEventListener('DOMContentLoaded', applyViewportMode);
-                setTimeout(applyViewportMode, 100);
+                applyTVViewport();
+                document.addEventListener('DOMContentLoaded', applyTVViewport);
+                setTimeout(applyTVViewport, 100);
               })();
             `,
           }}
