@@ -293,7 +293,7 @@ export default function Home() {
 {/* Subtle ambient background gradient */}
       <div className="fixed top-0 left-0 w-full h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/[0.05] via-transparent to-transparent pointer-events-none z-0" />
       
-      <div className="relative z-[100]"><TopBar /></div>
+      <TopBar />
       
       <AnimatePresence>
         {drawerOpen && (
