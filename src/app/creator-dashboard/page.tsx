@@ -921,20 +921,20 @@ function CreatorDashboardContent() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setShowAddContentMenu(false)}
-                className="fixed inset-0 z-[300] bg-black/60 backdrop-blur-md"
+                className="fixed inset-0 z-[300] bg-black/50 backdrop-blur-md"
               />
               <motion.div
-                initial={{ y: "100%", opacity: 0, scale: 0.95 }}
+                initial={{ y: "100%", opacity: 0, scale: 0.98 }}
                 animate={{ y: 0, opacity: 1, scale: 1 }}
-                exit={{ y: "100%", opacity: 0, scale: 0.95 }}
+                exit={{ y: "100%", opacity: 0, scale: 0.98 }}
                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="fixed bottom-0 left-0 right-0 z-[301] bg-black/40 backdrop-blur-3xl rounded-t-[32px] border-t border-white/20 p-6 pb-28 lg:max-w-md lg:mx-auto lg:rounded-[32px] lg:bottom-10 shadow-[0_-20px_50px_rgba(0,0,0,0.5)] max-h-[85vh] overflow-y-auto"
+                className="fixed bottom-0 left-0 right-0 z-[301] bg-white/10 backdrop-blur-2xl backdrop-saturate-150 rounded-t-[32px] border-t border-white/20 p-6 pb-28 lg:max-w-md lg:mx-auto lg:rounded-[32px] lg:bottom-10 shadow-[0_-20px_60px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.18)] max-h-[85vh] overflow-y-auto"
               >
-                <div className="w-12 h-1.5 bg-white/20 rounded-full mx-auto mb-6 lg:hidden" />
+                <div className="w-12 h-1.5 bg-white/25 rounded-full mx-auto mb-6 lg:hidden" />
                 
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-2xl font-black text-white tracking-tight">Create New</h3>
-                  <button onClick={() => setShowAddContentMenu(false)} className="p-2.5 bg-white/10 rounded-full hover:bg-white/20 transition text-white border border-white/5">
+                  <h3 className="text-2xl font-black text-white tracking-tight">Add Content</h3>
+                  <button onClick={() => setShowAddContentMenu(false)} className="p-2.5 bg-white/10 rounded-full hover:bg-white/15 transition text-white border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]">
                     <X size={18} />
                   </button>
                 </div>
@@ -943,7 +943,7 @@ function CreatorDashboardContent() {
                   <Link 
                     href="/creator-dashboard/upload" 
                     onClick={() => setShowAddContentMenu(false)}
-                    className="group relative flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/20 hover:border-white/20 p-4 rounded-2xl transition-all duration-300 overflow-hidden"
+                    className="group relative flex items-center gap-4 bg-white/[0.08] hover:bg-white/[0.12] border border-white/20 hover:border-white/25 p-4 rounded-2xl transition-all duration-300 overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="absolute inset-0 bg-gradient-to-r from-[#E53945]/0 via-[#E53945]/0 to-[#E53945]/5 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -959,7 +959,7 @@ function CreatorDashboardContent() {
                   <Link 
                     href="/creator-dashboard/upload?type=short" 
                     onClick={() => setShowAddContentMenu(false)}
-                    className="group relative flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-blue-500/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden"
+                    className="group relative flex items-center gap-4 bg-white/[0.08] hover:bg-white/[0.12] border border-white/20 hover:border-blue-400/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-blue-500/0 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -975,7 +975,7 @@ function CreatorDashboardContent() {
                   <Link 
                     href={userTier === "creator" ? "/creator-dashboard/live" : "/upgrade?feature=go_live"}
                     onClick={() => setShowAddContentMenu(false)}
-                    className={`group relative flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#E53945]/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden ${userTier !== "creator" ? "opacity-50" : ""}`}
+                    className={`group relative flex items-center gap-4 bg-white/[0.08] hover:bg-white/[0.12] border border-white/20 hover:border-[#E53945]/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] ${userTier !== "creator" ? "opacity-50" : ""}`}
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="absolute inset-0 bg-gradient-to-r from-[#E53945]/0 via-[#E53945]/0 to-[#E53945]/5 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -991,7 +991,7 @@ function CreatorDashboardContent() {
                   <Link 
                     href={userTier !== "free" ? "/creator-dashboard/shop" : "/upgrade?feature=add_product"}
                     onClick={() => setShowAddContentMenu(false)}
-                    className={`group relative flex items-center gap-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-500/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden ${userTier === "free" ? "opacity-50" : ""}`}
+                    className={`group relative flex items-center gap-4 bg-white/[0.08] hover:bg-white/[0.12] border border-white/20 hover:border-purple-400/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] ${userTier === "free" ? "opacity-50" : ""}`}
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(168,85,247,0.2)]">
