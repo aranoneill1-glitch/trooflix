@@ -33,7 +33,7 @@ export default function DesktopSidebar() {
   ];
 
   return (
-    <aside className="hidden lg:flex flex-col items-center fixed left-0 top-0 h-screen w-[72px] bg-white/[0.08] backdrop-blur-2xl backdrop-saturate-150 border-r border-white/20 shadow-[1px_0_0_rgba(255,255,255,0.06)] z-[100] py-6">
+    <aside className="hidden lg:flex flex-col items-center fixed left-0 top-0 h-screen w-[72px] bg-[#070709] border-r border-white/[0.06] z-[100] py-6">
       
       <div className="flex flex-col gap-6 flex-1 w-full items-center pt-16">
         {navItems.map((item) => {

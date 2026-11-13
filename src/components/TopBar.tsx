@@ -57,7 +57,7 @@ export default function TopBar({ onMenu }: Props) {
       <nav
         className={`fixed top-0 left-0 lg:left-[72px] right-0 z-[200] flex items-center gap-3 px-4 md:px-6 h-[56px] transition-all duration-300 ${
           scrolled
-            ? "bg-white/[0.08] backdrop-blur-2xl backdrop-saturate-150 border-b border-white/20 shadow-[0_1px_0_rgba(255,255,255,0.06),0_8px_30px_rgba(0,0,0,0.25)]"
+            ? "bg-[#070709] border-b border-white/[0.06]"
             : "bg-transparent border-b border-transparent"
         }`}
       >
