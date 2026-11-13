@@ -216,19 +216,7 @@ export default function HomeFeedCard({ video, creator, onMore, onPlay, isActive,
 
           {error && <div className="absolute inset-0 flex items-center justify-center bg-black/80"><p className="text-white/50 text-sm">Video unavailable</p></div>}
 
-          <div className="absolute top-0 inset-x-0 h-24 bg-gradient-to-b from-black/80 to-transparent pointer-events-none z-10" />
-
-          {/* CREATOR INFO (Hidden on Profile Feed) */}
-          {!hideCreatorInfo && (
-            <div className="absolute top-3 left-3 z-20 flex items-center gap-2 pointer-events-none">
-              <div className="w-8 h-8 rounded-full overflow-hidden bg-[#1c1c1e] flex-shrink-0 border border-white/20">
-                {creator?.photoUrl ? <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" /> : <span className="font-bold text-xs text-white">{creator?.name?.[0] || 'TF'}</span>}
-              </div>
-              <div><h2 className="text-sm font-bold text-white drop-shadow-md">{creator?.name || 'Creator'}</h2></div>
-            </div>
-          )}
-
-          <button onClick={(e) => { e.stopPropagation(); onMore(); }} className="absolute top-3 right-3 z-20 p-1 text-white/80 hover:text-white drop-shadow-md transition"><MoreVertical size={20} /></button>
+          <button onClick={(e) => { e.stopPropagation(); onMore(); }} className="absolute top-3 right-3 z-20 p-1.5 rounded-full bg-black/30 text-white/90 hover:text-white backdrop-blur-sm transition"><MoreVertical size={18} /></button>
 
           {!isPlaying && <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none"><div className="w-16 h-16 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-xl"><Play size={32} fill="white" className="text-white ml-1" /></div></div>}
           
@@ -242,8 +230,18 @@ export default function HomeFeedCard({ video, creator, onMore, onPlay, isActive,
 
         {/* TEXT INFO */}
         <div className="px-4 pt-3 pb-3">
-          <h3 className="text-[15px] font-semibold text-white leading-snug mb-1 line-clamp-2">{video.title}</h3>
-          <p className="text-[14px] text-white/90 leading-snug line-clamp-3 mb-3">{video.description || 'No description available.'}</p>
+          <div className="flex items-start gap-3">
+            {!hideCreatorInfo && (
+              <div className="w-9 h-9 rounded-full overflow-hidden bg-[#1c1c1e] flex-shrink-0 border border-white/15 mt-0.5">
+                {creator?.photoUrl ? <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" /> : <span className="w-full h-full flex items-center justify-center font-bold text-xs text-white">{creator?.name?.[0] || 'T'}</span>}
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
+              <h3 className="text-[15px] font-semibold text-white leading-snug mb-0.5 line-clamp-2">{video.title}</h3>
+              {!hideCreatorInfo && <p className="text-[13px] text-white/55 mb-1 truncate">{creator?.name || 'Creator'}</p>}
+              <p className="text-[14px] text-white/80 leading-snug line-clamp-2">{video.description || 'No description available.'}</p>
+            </div>
+          </div>
 
           {/* ACTION BUTTONS (NUMBERS ONLY) */}
           <div className="flex items-center justify-between mt-2 pt-3 border-t border-white/10">
