@@ -173,7 +173,7 @@ function FeaturedVideoHero({ videos, onSelect }: { videos: any[]; onSelect: (vid
   const previewSrc = video.videoUrl || video.bitchuteUrl;
 
   return (
-    <section aria-label="Featured videos" className="relative isolate -mx-4 h-[min(52vh,480px)] min-h-[300px] max-h-[520px] overflow-hidden bg-[#08090c] md:-mx-10 md:h-[min(56vh,520px)] md:min-h-[360px]">
+    <section aria-label="Featured videos" className="relative isolate -mx-4 h-[min(31vh,290px)] min-h-[180px] max-h-[310px] overflow-hidden bg-[#08090c] md:-mx-10 md:h-[min(34vh,310px)] md:min-h-[220px]">
       <AnimatePresence mode="wait">
         <motion.div key={video.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.7 }} className="absolute inset-0 -z-20">
           <HeroPreviewFrame src={previewSrc} poster={image} alt={video.title || ""} />
