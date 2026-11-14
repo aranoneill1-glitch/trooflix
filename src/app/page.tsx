@@ -395,7 +395,7 @@ export default function Home() {
                   ) : (
                     <div className="absolute inset-0 bg-[#111114]" />
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/30 to-black/10" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/35 to-black/20" />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0a0303] via-transparent to-transparent" />
                   <div className="absolute inset-y-0 left-0 w-full lg:w-1/2 flex items-center justify-start px-8 xl:px-16">
                     <div className="max-w-2xl text-left lg:pl-8">
@@ -411,6 +411,23 @@ export default function Home() {
                       </div>
                     </div>
                   </div>
+                  <div className="absolute right-8 xl:right-16 top-1/2 -translate-y-1/2 w-[320px] xl:w-[360px]">
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { icon: Landmark, title: "Keep 99%" },
+                        { icon: ShieldOff, title: "Zero Censorship" },
+                        { icon: Radio, title: "Live Streaming" },
+                        { icon: Tv, title: "Watch on TV" },
+                        { icon: Wallet, title: "TrooCoins" },
+                        { icon: ShoppingBag, title: "Storefront" },
+                      ].map((feat, i) => (
+                        <div key={i} className="flex items-center gap-2 rounded-xl border border-white/10 bg-black/35 backdrop-blur-md px-3 py-2.5 shadow-[0_8px_24px_rgba(0,0,0,0.25)]">
+                          <feat.icon size={14} className="text-[#E53945] shrink-0" />
+                          <span className="text-[11px] font-semibold text-white/90 leading-tight">{feat.title}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
             </>
@@ -420,40 +437,7 @@ export default function Home() {
 
           
                         {/* FEATURES ROW (DESKTOP) */}
-      <div className={!user && authResolved ? "hidden lg:block w-full max-w-[1600px] mx-auto px-12 py-20" : "hidden"}>
-        <div className="flex items-center justify-between mb-10">
-          <h2 className="text-3xl md:text-5xl font-black tracking-tight">
-            Why Creators Are <span className="text-[#E53945]">Switching</span>
-          </h2>
-        </div>
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
-          {[
-            { icon: Landmark, title: "Keep 99% of Revenue", desc: "A flat 1% fee. No hidden cuts, no demonetization.", img: "https://images.unsplash.com/photo-1621761191319-c6fb62004040?q=80&w=600&auto=format&fit=crop" },
-            { icon: ShieldOff, title: "Zero Censorship", desc: "No shadowbans. No algorithmic suppression. Your audience gets your content. Only 2 rules: no adult content, no AI slop.", img: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=600&auto=format&fit=crop" },
-            { icon: Radio, title: "Live Streaming", desc: "Broadcast-quality WebRTC live streams with multi-guest support.", img: "https://images.unsplash.com/photo-1470229722913-7ea0a4e88db9?q=80&w=600&auto=format&fit=crop" },
-            { icon: Tv, title: "Watch on TV", desc: "Stream your favourite podcasts and documentaries directly on your Smart TV or Fire Stick for a cinematic experience.", img: "https://images.unsplash.com/photo-1593784991095-a205069470b6?q=80&w=600&auto=format&fit=crop" },
-            { icon: Wallet, title: "TrooCoins Economy", desc: "Tip creators, buy merch, and manage your funds with our built-in wallet.", img: "https://images.unsplash.com/photo-1621504450181-5d356f61d307?q=80&w=600&auto=format&fit=crop" },
-            { icon: ShoppingBag, title: "Built-in Storefront", desc: "Sell merch, books, and digital goods directly on your profile.", img: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=600&auto=format&fit=crop" }
-          ].map((feat, i) => (
-            <div key={i} className="relative bg-[#0f0f12] border border-white/5 rounded-3xl p-8 hover:border-[#E53945]/40 transition-all duration-500 group overflow-hidden shadow-2xl flex flex-col">
-              {/* Background Image */}
-              <div className="absolute inset-0 z-0">
-                <img src={feat.img} alt="" className="w-full h-full object-cover opacity-20 group-hover:opacity-40 transition-opacity duration-700 mix-blend-luminosity" />
-                <div className="absolute inset-0 bg-gradient-to-r from-[#0f0f12] via-[#0f0f12]/90 to-transparent" />
-              </div>
-              
-              <div className="relative z-10">
-                <feat.icon size={28} className="text-[#E53945] mb-6 drop-shadow-[0_0_15px_rgba(229,57,69,0.4)] group-hover:scale-110 group-hover:drop-shadow-[0_0_20px_rgba(229,57,69,0.7)] transition-all duration-300 origin-left" />
-                <h3 className="text-xl font-bold text-white mb-3">
-                  {feat.title}
-                </h3>
-                <p className="text-[15px] text-white/50 leading-relaxed group-hover:text-white/70 transition-colors">
-                  {feat.desc}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
+      <div className="hidden">
       </div>
 
               </>)}
