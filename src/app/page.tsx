@@ -349,55 +349,20 @@ export default function Home() {
               {!user && authResolved && (<>
               {/* MOBILE SECTION: Pills + Header + Avatars + Hero */}
               <div className="lg:hidden w-full flex flex-col relative z-10 bg-transparent overflow-hidden">
-                <div className="w-full relative z-10 px-4 pt-24 pb-10">
-                  <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-[420px] h-[420px] bg-[radial-gradient(circle,rgba(229,57,69,0.22),rgba(229,57,69,0.08)_35%,transparent_70%)] blur-2xl pointer-events-none" />
-                  <div className="absolute top-40 -left-16 w-56 h-56 bg-[radial-gradient(circle,rgba(212,175,55,0.18),transparent_70%)] blur-3xl pointer-events-none" />
-                  <div className="absolute top-56 -right-10 w-56 h-56 bg-[radial-gradient(circle,rgba(59,130,246,0.16),transparent_70%)] blur-3xl pointer-events-none" />
+                <div className="w-full relative z-10 px-6 pt-28 pb-16 min-h-[78vh] flex flex-col items-center justify-center text-center">
+                  <div className="absolute inset-x-0 top-8 h-72 bg-[radial-gradient(circle_at_center,rgba(229,57,69,0.2),transparent_65%)] blur-2xl pointer-events-none" />
+                  <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-64 h-64 bg-[radial-gradient(circle,rgba(255,255,255,0.08),transparent_70%)] blur-3xl pointer-events-none" />
 
-                  <div className="relative text-center mb-7">
-                    <h1 className="text-[38px] leading-[0.98] font-black tracking-[-0.04em] text-white mb-3">
-                      A complete ecosystem.
-                      <span className="block bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-[#E53945]">Engineered for creators who refuse to be limited.</span>
-                    </h1>
-                    <p className="text-[14px] text-white/60 max-w-sm mx-auto leading-relaxed">
-                      Stream, create, chat, sell, and own your space — all in one cinematic Trooflix experience.
-                    </p>
-                  </div>
+                  <p className="relative text-[11px] font-bold uppercase tracking-[0.28em] text-[#E53945] mb-5">Trooflix</p>
+                  <h1 className="relative text-[46px] leading-[0.95] font-black tracking-[-0.05em] text-white mb-5">
+                    Create without limits.
+                    <span className="block mt-1 bg-clip-text text-transparent bg-gradient-to-r from-white via-[#ffd7db] to-[#E53945]">Own what you build.</span>
+                  </h1>
+                  <p className="relative text-[15px] text-white/60 max-w-sm mx-auto leading-relaxed mb-10">
+                    Stream, share, connect, and grow on a platform built for creators who want freedom, power, and a real home for their work.
+                  </p>
 
-                  <div className="relative grid grid-cols-3 gap-2.5 max-w-md mx-auto">
-                    {[
-                      { icon: Radio, title: "Livestreaming", desc: "Go live in seconds", img: "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?q=80&w=500&auto=format&fit=crop" },
-                      { icon: ShoppingBag, title: "Marketplace", desc: "Sell merch & products", img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=500&auto=format&fit=crop" },
-                      { icon: Film, title: "Docs & Indie Films", desc: "Long-form cinema", img: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=500&auto=format&fit=crop" },
-                      { icon: MessageCircle, title: "Calls & Chat", desc: "Video, voice, messages", img: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=500&auto=format&fit=crop" },
-                      { icon: Play, title: "Shorts", desc: "Fast viral content", img: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=500&auto=format&fit=crop" },
-                      { icon: Monitor, title: "Any Screen", desc: "Desktop, phone & TV", img: "https://images.unsplash.com/photo-1593784991095-a205069470b6?q=80&w=500&auto=format&fit=crop" },
-                      { icon: ShieldOff, title: "Uncensored", desc: "Your voice, your rules", img: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=500&auto=format&fit=crop" },
-                      { icon: Wallet, title: "Bank Ecosystem", desc: "Wallet, tips, payouts", img: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?q=80&w=500&auto=format&fit=crop" },
-                      { icon: Palette, title: "Custom Themes", desc: "Make your page yours", img: "https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=500&auto=format&fit=crop" },
-                    ].map((f, i) => (
-                      <div
-                        key={i}
-                        className="group relative overflow-hidden rounded-[22px] border border-white/15 bg-[#0b0b10] min-h-[132px] shadow-[0_18px_45px_rgba(0,0,0,0.5)]"
-                      >
-                        <img src={f.img} alt="" className="absolute inset-0 h-full w-full object-cover scale-105 transition-transform duration-700 group-active:scale-110 opacity-80" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-black/20" />
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.18),transparent_40%)]" />
-                        <div className="absolute inset-x-0 top-0 h-px bg-white/25" />
-                        <div className="relative h-full p-2.5 flex flex-col justify-between">
-                          <div className="w-9 h-9 rounded-xl bg-black/35 backdrop-blur-md border border-white/20 flex items-center justify-center text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]">
-                            <f.icon size={16} />
-                          </div>
-                          <div>
-                            <p className="text-[11.5px] font-black leading-tight text-white mb-0.5 tracking-tight drop-shadow">{f.title}</p>
-                            <p className="text-[10px] leading-tight text-white/75">{f.desc}</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="flex flex-col w-full max-w-sm gap-3 mt-8 mx-auto">
+                  <div className="relative flex flex-col w-full max-w-sm gap-3">
                     <a
                       href="/signup"
                       className="group relative w-full flex items-center justify-center gap-2 overflow-hidden bg-gradient-to-r from-[#E53945] to-[#ff5a5f] text-white font-bold text-lg py-4 rounded-full transition shadow-[0_18px_40px_rgba(229,57,69,0.35)]"
@@ -416,61 +381,27 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* DESKTOP SECTION: Signed-out 3x3 hero */}
-              <div className="hidden lg:block w-full max-w-[1600px] mx-auto px-4 md:px-12 pt-24 md:pt-28">
-                <div className="relative overflow-hidden rounded-[36px] border border-white/10 bg-[#08080b] p-8 xl:p-12 shadow-[0_40px_120px_rgba(0,0,0,0.65)]">
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(229,57,69,0.22),transparent_28%),radial-gradient(circle_at_85%_15%,rgba(212,175,55,0.16),transparent_22%),radial-gradient(circle_at_70%_85%,rgba(59,130,246,0.14),transparent_26%)] pointer-events-none" />
-                  <div className="absolute inset-0 opacity-[0.08] pointer-events-none" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)", backgroundSize: "48px 48px", maskImage: "radial-gradient(circle at center, black, transparent 85%)" }} />
-                  <div className="relative flex items-end justify-between gap-10 mb-10">
-                    <div className="max-w-3xl">
-                      <h1 className="text-5xl xl:text-7xl font-black tracking-[-0.05em] text-white leading-[0.95] mb-5">
-                        A complete ecosystem.
-                        <span className="block bg-clip-text text-transparent bg-gradient-to-r from-white via-[#ffd9dc] to-[#E53945]">Engineered for creators who refuse to be limited.</span>
-                      </h1>
-                      <p className="text-lg xl:text-xl text-white/55 leading-relaxed max-w-2xl">
-                        Create, stream, watch, message, sell, and build your world — with a premium all-in-one experience made to blow people away.
-                      </p>
-                    </div>
-                    <div className="flex gap-3 shrink-0 pb-1">
-                      <a href="/signup" className="group relative overflow-hidden flex items-center justify-center gap-2 bg-gradient-to-r from-[#E53945] to-[#ff5a5f] text-white font-bold text-base px-8 py-4 rounded-full transition shadow-[0_18px_45px_rgba(229,57,69,0.35)]">
+              {/* DESKTOP SECTION: Signed-out hero */}
+              <div className="hidden lg:block w-full max-w-[1600px] mx-auto px-4 md:px-12 pt-28 md:pt-32 pb-8">
+                <div className="relative overflow-hidden rounded-[36px] border border-white/10 bg-[#08080b] px-10 xl:px-16 py-20 xl:py-24 shadow-[0_40px_120px_rgba(0,0,0,0.65)] min-h-[62vh] flex items-center">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(229,57,69,0.22),transparent_30%),radial-gradient(circle_at_80%_20%,rgba(255,255,255,0.06),transparent_25%),radial-gradient(circle_at_70%_80%,rgba(212,175,55,0.12),transparent_28%)] pointer-events-none" />
+                  <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+                  <div className="relative w-full max-w-5xl mx-auto text-center">
+                    <p className="text-xs font-bold uppercase tracking-[0.32em] text-[#E53945] mb-6">Trooflix</p>
+                    <h1 className="text-6xl xl:text-8xl font-black tracking-[-0.06em] text-white leading-[0.92] mb-8">
+                      Create without limits.
+                      <span className="block mt-2 bg-clip-text text-transparent bg-gradient-to-r from-white via-[#ffd7db] to-[#E53945]">Own what you build.</span>
+                    </h1>
+                    <p className="text-xl xl:text-2xl text-white/55 leading-relaxed max-w-3xl mx-auto mb-12">
+                      Stream, share, connect, and grow on a platform built for creators who want freedom, power, and a real home for their work.
+                    </p>
+                    <div className="flex items-center justify-center gap-4">
+                      <a href="/signup" className="group relative overflow-hidden flex items-center justify-center gap-2 bg-gradient-to-r from-[#E53945] to-[#ff5a5f] text-white font-bold text-lg px-10 py-4 rounded-full transition shadow-[0_18px_45px_rgba(229,57,69,0.35)]">
                         <span className="absolute inset-0 bg-[linear-gradient(110deg,transparent,rgba(255,255,255,0.28),transparent)] translate-x-[-120%] group-hover:translate-x-[120%] transition-transform duration-700" />
                         <span className="relative">Join Today</span>
                       </a>
-                      <a href="/features" className="flex items-center justify-center gap-2 bg-white/[0.06] border border-white/15 text-white font-bold text-base px-8 py-4 rounded-full hover:bg-white/[0.1] transition backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">Why Trooflix <ArrowRight size={18} /></a>
+                      <a href="/features" className="flex items-center justify-center gap-2 bg-white/[0.06] border border-white/15 text-white font-bold text-lg px-10 py-4 rounded-full hover:bg-white/[0.1] transition backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">Why Trooflix <ArrowRight size={18} /></a>
                     </div>
-                  </div>
-
-                  <div className="relative grid grid-cols-3 gap-4 xl:gap-5">
-                    {[
-                      { icon: Radio, title: "Livestreaming", desc: "Go live instantly and connect with your audience in real time.", img: "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?q=80&w=1200&auto=format&fit=crop", featured: true },
-                      { icon: ShoppingBag, title: "Personal Marketplace", desc: "Sell merch, books, and products directly from your world.", img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=900&auto=format&fit=crop" },
-                      { icon: Film, title: "Long Docs & Indie Movies", desc: "Showcase powerful documentaries and independent films.", img: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=900&auto=format&fit=crop" },
-                      { icon: MessageCircle, title: "Video, Voice & Messaging", desc: "Calls and chat built in so your community stays close.", img: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=900&auto=format&fit=crop" },
-                      { icon: Play, title: "Shorts", desc: "Fast, addictive short-form content that grabs attention.", img: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=900&auto=format&fit=crop" },
-                      { icon: Monitor, title: "Desktop, Phone & TV", desc: "A seamless experience wherever your audience watches.", img: "https://images.unsplash.com/photo-1593784991095-a205069470b6?q=80&w=1200&auto=format&fit=crop", featured: true },
-                      { icon: ShieldOff, title: "Uncensored", desc: "A freer platform built for creators who won’t be boxed in.", img: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=900&auto=format&fit=crop" },
-                      { icon: Wallet, title: "Personal Bank Ecosystem", desc: "Wallet, tips, and earnings flowing through one ecosystem.", img: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?q=80&w=900&auto=format&fit=crop" },
-                      { icon: Palette, title: "Customisable Theme Page", desc: "Shape your profile and presence with your own style.", img: "https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=900&auto=format&fit=crop" },
-                    ].map((f, i) => (
-                      <div
-                        key={i}
-                        className={`group relative overflow-hidden rounded-[30px] border border-white/12 bg-[#0b0b10] min-h-[210px] transition-all duration-500 hover:-translate-y-1.5 hover:border-white/25 hover:shadow-[0_35px_90px_rgba(0,0,0,0.55)] ${f.featured ? "md:col-span-2" : ""}`}
-                      >
-                        <img src={f.img} alt="" className="absolute inset-0 h-full w-full object-cover scale-105 transition-transform duration-700 group-hover:scale-110 opacity-75" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/20" />
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.18),transparent_35%)]" />
-                        <div className="absolute inset-x-0 top-0 h-px bg-white/30" />
-                        <div className="relative h-full p-6 xl:p-7 flex flex-col justify-between">
-                          <div className="w-14 h-14 rounded-2xl bg-black/35 backdrop-blur-md border border-white/20 flex items-center justify-center text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_12px_30px_rgba(0,0,0,0.3)]">
-                            <f.icon size={24} />
-                          </div>
-                          <div className={f.featured ? "max-w-xl" : ""}>
-                            <h3 className={`relative font-black text-white mb-2 leading-tight tracking-tight drop-shadow ${f.featured ? "text-3xl xl:text-[34px]" : "text-2xl"}`}>{f.title}</h3>
-                            <p className={`relative text-white/75 leading-relaxed ${f.featured ? "text-base xl:text-lg max-w-[42ch]" : "text-sm xl:text-[15px] max-w-[30ch]"}`}>{f.desc}</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
                   </div>
                 </div>
               </div>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, CirclePlay, Eye, Play, ShoppingBag, Star, UsersRound } from "lucide-react";
+import { ChevronLeft, ChevronRight, CirclePlay, Eye, Film, Mic, Play, ShoppingBag, Star, UsersRound } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 
@@ -87,7 +87,7 @@ function ShortsMark({ size = 22 }: { size?: number; strokeWidth?: number }) {
   );
 }
 
-function SectionHead({ kicker, title, href, icon: Icon }: { kicker: string; title: string; href: string; icon: typeof CirclePlay | typeof UsersRound | typeof ShoppingBag | typeof ShortsMark }) {
+function SectionHead({ kicker, title, href, icon: Icon }: { kicker: string; title: string; href: string; icon: any }) {
   return (
     <div className="flex items-end justify-between mb-5">
       <div className="flex min-w-0 items-center gap-3">
@@ -235,15 +235,69 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
       .catch(() => {});
   }, []);
 
+  const latestVideos = videos.filter((v: any) => {
+    const t = v.type?.toLowerCase();
+    const hasVideo = !!(v.videoUrl || v.bitchuteUrl);
+    return hasVideo && t !== "short" && t !== "tweet" && t !== "reel";
+  }).slice(0, 8);
+  const shortsVideos = videos.filter((v: any) => v.type?.toLowerCase() === "short" || v.type?.toLowerCase() === "reel").slice(0, 10);
+  const podcastVideos = videos.filter((v: any) => v.type?.toLowerCase() === "podcast").slice(0, 8);
+  const documentaryVideos = videos.filter((v: any) => v.type?.toLowerCase() === "documentary").slice(0, 8);
+
+  const renderLongFormCard = (v: any) => {
+    const creator = creators.find((c: any) =>
+      (v.creatorId && c.id === v.creatorId) ||
+      (v.uploaderUserId && c.ownerUserId === v.uploaderUserId) ||
+      (v.uploaderUserId && c.user_id === v.uploaderUserId)
+    );
+    return (
+      <Link key={v.id} href="/latest" className="flex flex-col w-[260px] md:w-[300px] shrink-0 group">
+        <div className="relative aspect-video rounded-2xl overflow-hidden bg-[#141418] ring-1 ring-white/10 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]">
+          <VideoPreview
+            src={v.videoUrl || v.bitchuteUrl}
+            poster={v.posterUrl || v.backdropUrl}
+            className="transition duration-700 ease-out group-hover:scale-[1.04]"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/10 pointer-events-none" />
+          <span className="absolute bottom-2.5 right-2.5 text-[11px] font-medium px-2 py-1 rounded-full bg-white/10 text-white/95 backdrop-blur-2xl backdrop-saturate-150 border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]">
+            {timeAgo(v.createdAt)}
+          </span>
+        </div>
+        <div className="mt-3 flex items-start gap-3">
+          <div className="w-9 h-9 rounded-full overflow-hidden bg-white/10 ring-1 ring-white/10 shrink-0">
+            {creator?.photoUrl ? (
+              <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-xs font-bold text-white/80">
+                {(creator?.name || "T")[0]}
+              </div>
+            )}
+          </div>
+          <div className="min-w-0">
+            <h3 className="text-[15px] font-medium text-white/90 leading-snug line-clamp-2 group-hover:text-white transition">{v.title}</h3>
+            {creator?.name && <p className="mt-0.5 text-[13px] text-white/55 truncate">{creator.name}</p>}
+          </div>
+        </div>
+      </Link>
+    );
+  };
+
   return (
     <div className={`relative z-10 ${flushTop ? "pt-0" : "pt-0 md:pt-0"} pb-32 md:pb-16 max-w-[1600px] mx-auto px-4 md:px-10 space-y-8 md:space-y-10`}>
 
       <FeaturedVideoHero videos={featuredVideos} onSelect={onVideoSelect} />
 
       <section>
+        <SectionHead kicker="Latest" title="Don't miss a thing" href="/latest" icon={CirclePlay} />
+        <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+          {latestVideos.map(renderLongFormCard)}
+        </div>
+      </section>
+
+      <section>
         <SectionHead kicker="Clips" title="Shorts" href="/feed" icon={ShortsMark} />
         <div className="flex overflow-x-auto gap-3 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
-          {videos.filter((v: any) => v.type?.toLowerCase() === "short" || v.type?.toLowerCase() === "reel").slice(0, 10).map((v: any) => {
+          {shortsVideos.map((v: any) => {
             const creator = creators.find((c: any) =>
               (v.creatorId && c.id === v.creatorId) ||
               (v.uploaderUserId && c.ownerUserId === v.uploaderUserId) ||
@@ -285,49 +339,16 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
       </section>
 
       <section>
-        <SectionHead kicker="Latest" title="Don't miss a thing" href="/latest" icon={CirclePlay} />
+        <SectionHead kicker="Audio" title="Podcasts" href="/latest" icon={Mic} />
         <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
-          {videos.filter((v: any) => {
-            const t = v.type?.toLowerCase();
-            const hasVideo = !!(v.videoUrl || v.bitchuteUrl);
-            return hasVideo && t !== "short" && t !== "tweet" && t !== "reel";
-          }).slice(0, 8).map((v: any) => {
-            const creator = creators.find((c: any) =>
-              (v.creatorId && c.id === v.creatorId) ||
-              (v.uploaderUserId && c.ownerUserId === v.uploaderUserId) ||
-              (v.uploaderUserId && c.user_id === v.uploaderUserId)
-            );
-            return (
-              <Link key={v.id} href="/latest" className="flex flex-col w-[260px] md:w-[300px] shrink-0 group">
-                <div className="relative aspect-video rounded-2xl overflow-hidden bg-[#141418] ring-1 ring-white/10 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]">
-                  <VideoPreview
-                    src={v.videoUrl || v.bitchuteUrl}
-                    poster={v.posterUrl || v.backdropUrl}
-                    className="transition duration-700 ease-out group-hover:scale-[1.04]"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/10 pointer-events-none" />
-                  <span className="absolute bottom-2.5 right-2.5 text-[11px] font-medium px-2 py-1 rounded-full bg-white/10 text-white/95 backdrop-blur-2xl backdrop-saturate-150 border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]">
-                    {timeAgo(v.createdAt)}
-                  </span>
-                </div>
-                <div className="mt-3 flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-full overflow-hidden bg-white/10 ring-1 ring-white/10 shrink-0">
-                    {creator?.photoUrl ? (
-                      <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-xs font-bold text-white/80">
-                        {(creator?.name || "T")[0]}
-                      </div>
-                    )}
-                  </div>
-                  <div className="min-w-0">
-                    <h3 className="text-[15px] font-medium text-white/90 leading-snug line-clamp-2 group-hover:text-white transition">{v.title}</h3>
-                    {creator?.name && <p className="mt-0.5 text-[13px] text-white/55 truncate">{creator.name}</p>}
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
+          {podcastVideos.map(renderLongFormCard)}
+        </div>
+      </section>
+
+      <section>
+        <SectionHead kicker="Films" title="Documentaries" href="/latest" icon={Film} />
+        <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+          {documentaryVideos.map(renderLongFormCard)}
         </div>
       </section>
 
