@@ -419,8 +419,6 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* DESKTOP SECTION: Signed-out hero */}
-              <SignedOutDesktopHero />
               {/* FEATURES HEROES (DESKTOP SIGNED-OUT) */}
               <div className="hidden lg:block w-full relative">
                 <style>{`
@@ -430,6 +428,8 @@ export default function Home() {
                 `}</style>
 
                 <div className="snap-y snap-proximity">
+                <WatchEverywhereHero />
+
                 {/* Page 1: Content Power / Your Voice. Unfiltered. */}
                 <section className="relative w-full min-h-[100svh] snap-start overflow-hidden bg-[#040406] flex items-center">
                   <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#050507] to-transparent z-[2]" />
@@ -520,8 +520,6 @@ export default function Home() {
                 <TrooChatHero />
 
                 <CreatorEconomicsHero />
-
-                <WatchEverywhereHero />
 
                 <TrooflixEconomyHero />
                 </div>
@@ -961,8 +959,8 @@ function CreatorEconomicsHero() {
         <motion.div initial={{ opacity: 0, y: 30 }} animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }} className="max-w-3xl">
           <p className="mb-5 text-[11px] font-bold uppercase tracking-[0.34em] text-[#ffb0a8]/70">CREATOR-FIRST ECONOMICS</p>
           <h2 className="mb-7 text-[56px] font-black leading-[0.96] tracking-tighter text-white xl:text-[74px] 2xl:text-[88px]">
-            Stop paying the<br />
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff4d5a] via-[#ff6b4a] to-orange-400">Big Tech tax.</span>
+            Stop letting big tech<br />
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff4d5a] via-[#ff6b4a] to-orange-400">eat your lunch.</span>
           </h2>
           <div className="mb-8 max-w-2xl space-y-2 text-lg font-medium leading-relaxed text-white/68 xl:text-xl">
             <p>Legacy platforms can take nearly half before you ever see it.</p>
