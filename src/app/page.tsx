@@ -544,34 +544,7 @@ export default function Home() {
                   </div>
                 </section>
 
-                {/* Page 2: Keep 99% of Earnings */}
-                <section className="relative w-full min-h-[100svh] snap-start overflow-hidden bg-[#020805] flex items-center">
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(16,185,129,0.24),transparent_30%),linear-gradient(135deg,#020805_0%,#04110a_45%,#000000_100%)]" />
-                  <motion.div className="absolute left-[10%] bottom-[10%] h-72 w-72 rounded-full bg-emerald-400/10 blur-[120px]" animate={{ scale:[1,1.15,1], opacity:[0.5,0.8,0.5] }} transition={{ duration:8, repeat:Infinity }} />
-                  <div className="absolute inset-0 opacity-[0.07] [background-image:radial-gradient(rgba(255,255,255,0.7)_1px,transparent_1px)] [background-size:26px_26px]" />
-                  <div className="relative z-10 w-full max-w-[1600px] mx-auto px-8 xl:px-16 flex items-center justify-between gap-12">
-                    <motion.div className="w-full lg:w-[45%] max-w-3xl" initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.45 }} transition={{ duration: 0.9, ease: [0.22,1,0.36,1] }}>
-                      <div className="mb-6 flex items-center gap-3"><span className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-emerald-200">Creator-first economics</span><span className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/35">02 / 06</span></div>
-                      <h2 className="text-[56px] xl:text-[74px] 2xl:text-[88px] font-black tracking-tighter text-white leading-[0.98] mb-6">Stop paying the<br /><span className="bg-clip-text text-transparent bg-gradient-to-r from-[#34d399] to-emerald-200">Big Tech tax.</span></h2>
-                      <p className="text-lg xl:text-xl text-white/70 leading-relaxed font-medium max-w-2xl mb-8">Legacy platforms can take nearly half before you ever see it. Trooflix flips the model: keep <span className="text-white font-semibold">99%</span> with a flat <span className="text-white font-semibold">1% fee</span>.</p>
-                      <div className="mb-10 flex flex-wrap gap-3">{['Flat 1% fee','Predictable payouts','No surprise cuts'].map((t)=>(<span key={t} className="rounded-full border border-emerald-300/20 bg-emerald-400/10 px-4 py-2 text-sm font-medium text-emerald-50/90 backdrop-blur-md">{t}</span>))}</div>
-                      <a href="/wallet" className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-500 px-8 py-4 text-base font-bold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_18px_45px_rgba(16,185,129,0.35),0_0_30px_rgba(16,185,129,0.25)] transition hover:scale-[1.02] hover:bg-emerald-400">Calculate Your Earnings <ArrowRight size={18} /></a>
-                    </motion.div>
-                    <motion.div className="hidden lg:flex w-[50%] items-center justify-center relative" initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: false, amount: 0.4 }} transition={{ duration: 0.9, ease: [0.22,1,0.36,1] }}>
-                      <div className="relative w-full max-w-[560px]">
-                        <div className="mb-8 flex items-end gap-6 justify-center">
-                          <div className="text-[150px] xl:text-[190px] leading-none font-black tracking-tighter text-white drop-shadow-[0_0_50px_rgba(34,197,94,0.5)]">99%</div>
-                          <div className="relative mb-8 text-4xl xl:text-5xl font-black text-white/25">45% <span className="text-white/20">(YouTube)</span><span className="absolute left-[-8%] right-[-8%] top-1/2 h-[5px] -translate-y-1/2 rotate-[-12deg] bg-red-500/90 shadow-[0_0_16px_rgba(239,68,68,0.7)]" /></div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <motion.div className="rounded-2xl border border-white/12 bg-white/[0.06] p-5 backdrop-blur-2xl" whileHover={{ y: -4 }}><div className="text-xs uppercase tracking-[0.18em] text-white/45 mb-2">On $10,000</div><div className="text-3xl font-black text-emerald-300">$9,900</div><div className="text-sm text-white/45 mt-1">kept with Trooflix</div></motion.div>
-                          <motion.div className="rounded-2xl border border-white/12 bg-white/[0.06] p-5 backdrop-blur-2xl" whileHover={{ y: -4 }}><div className="text-xs uppercase tracking-[0.18em] text-white/45 mb-2">Old model</div><div className="text-3xl font-black text-white/45">$5,500</div><div className="text-sm text-white/35 mt-1">after 45% platform take</div></motion.div>
-                        </div>
-                        <motion.div className="mt-5 ml-auto w-[330px] rounded-2xl border border-white/15 bg-white/[0.07] backdrop-blur-2xl p-4 shadow-[0_20px_60px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.12)]" animate={{ y: [0, -10, 0] }} transition={{ duration: 4.2, repeat: Infinity, ease: 'easeInOut' }}><div className="flex items-center gap-3"><div className="h-10 w-10 rounded-full bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-300"><CheckCircle2 size={20} /></div><div><div className="text-sm font-semibold text-white">Payout Received</div><div className="text-xs text-white/55">+$1,284.00 deposited to TrooBank</div></div></div></motion.div>
-                      </div>
-                    </motion.div>
-                  </div>
-                </section>
+                <CreatorEconomicsHero />
 
                 {/* Page 3: Built-in Storefront */}
                 <section className="relative w-full min-h-[100svh] snap-start overflow-hidden bg-[#120a03] flex items-center">
@@ -763,6 +736,116 @@ export default function Home() {
     </main>
         <MobileBottomNav />
     </>
+  );
+}
+
+function CreatorEconomicsHero() {
+  const [revenue, setRevenue] = useState(10000);
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: false, amount: 0.35 });
+  const trooflixKeep = Math.round(revenue * 0.99);
+  const oldKeep = Math.round(revenue * 0.55);
+
+  return (
+    <section ref={ref} className="relative hidden min-h-[100svh] w-full snap-start overflow-hidden bg-[#020604] lg:flex items-center">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_35%,rgba(16,185,129,0.20),transparent_24%),radial-gradient(circle_at_20%_70%,rgba(16,185,129,0.10),transparent_28%),linear-gradient(180deg,#020604_0%,#010302_100%)]" />
+      <motion.div className="absolute right-[18%] top-[22%] h-80 w-80 rounded-full bg-emerald-400/10 blur-[140px]" animate={{ scale: [1, 1.12, 1], opacity: [0.35, 0.55, 0.35] }} transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }} />
+      <div className="absolute inset-0 opacity-[0.05] [background-image:radial-gradient(rgba(255,255,255,0.7)_1px,transparent_1px)] [background-size:28px_28px]" />
+
+      <div className="relative z-10 mx-auto grid w-full max-w-[1600px] grid-cols-[1.05fr_0.95fr] items-center gap-12 px-8 xl:px-16">
+        <motion.div initial={{ opacity: 0, y: 30 }} animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }} className="max-w-3xl">
+          <p className="mb-5 text-[11px] font-bold uppercase tracking-[0.34em] text-emerald-200/70">CREATOR-FIRST ECONOMICS</p>
+          <h2 className="mb-7 text-[56px] font-black leading-[0.96] tracking-tighter text-white xl:text-[74px] 2xl:text-[88px]">
+            Stop paying the<br />
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#34d399] to-emerald-200">Big Tech tax.</span>
+          </h2>
+          <div className="mb-8 max-w-2xl space-y-2 text-lg font-medium leading-relaxed text-white/68 xl:text-xl">
+            <p>Legacy platforms can take nearly half before you ever see it.</p>
+            <p>Trooflix flips the model: keep 99% with a flat 1% fee.</p>
+            <p>No surprise cuts. No algorithm tax. No censorship tax.</p>
+          </div>
+
+          <div className="mb-10 flex flex-wrap gap-3">
+            {["Flat 1% fee", "Predictable payouts", "No surprise cuts"].map((tag) => (
+              <span key={tag} className="rounded-full border border-emerald-300/20 bg-emerald-400/10 px-4 py-2 text-sm font-medium text-emerald-50/90 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">{tag}</span>
+            ))}
+          </div>
+
+          <div className="mb-8 grid max-w-3xl grid-cols-2 gap-4">
+            <motion.div whileHover={{ y: -4 }} className="rounded-[26px] border border-emerald-300/20 bg-white/[0.06] p-6 backdrop-blur-2xl shadow-[0_24px_70px_rgba(0,0,0,0.28),0_0_0_1px_rgba(16,185,129,0.08),0_0_40px_rgba(16,185,129,0.08)]">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-200/80">Trooflix</span>
+                <span className="rounded-full border border-emerald-300/25 bg-emerald-400/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-100">Highlighted</span>
+              </div>
+              <div className="mb-1 text-xs uppercase tracking-[0.18em] text-white/45">On ${revenue.toLocaleString()}</div>
+              <div className="text-4xl font-black tracking-tight text-emerald-300">${trooflixKeep.toLocaleString()}</div>
+              <div className="mt-2 text-sm text-white/55">You keep $9,900 on $10,000</div>
+            </motion.div>
+
+            <motion.div whileHover={{ y: -4 }} className="rounded-[26px] border border-white/10 bg-white/[0.03] p-6 backdrop-blur-xl opacity-80">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-sm font-semibold uppercase tracking-[0.18em] text-white/55">Old Model / YouTube</span>
+                <span className="relative text-sm font-bold text-white/35">45%<span className="absolute left-[-10%] right-[-10%] top-1/2 h-[2px] -translate-y-1/2 rotate-[-12deg] bg-red-500/90" /></span>
+              </div>
+              <div className="mb-1 text-xs uppercase tracking-[0.18em] text-white/35">On ${revenue.toLocaleString()}</div>
+              <div className="text-4xl font-black tracking-tight text-white/45">${oldKeep.toLocaleString()}</div>
+              <div className="mt-2 text-sm text-white/40">You keep $5,500 on $10,000</div>
+            </motion.div>
+          </div>
+
+          <div id="earnings-calculator" className="mb-8 max-w-xl rounded-[24px] border border-white/10 bg-white/[0.04] p-5 backdrop-blur-xl">
+            <div className="mb-3 flex items-center justify-between">
+              <span className="text-sm font-semibold text-white/80">Earnings calculator</span>
+              <span className="text-xs uppercase tracking-[0.18em] text-white/40">Monthly revenue</span>
+            </div>
+            <input
+              type="range"
+              min={1000}
+              max={100000}
+              step={500}
+              value={revenue}
+              onChange={(e) => setRevenue(Number(e.target.value))}
+              className="w-full accent-emerald-400"
+            />
+            <div className="mt-3 flex items-center justify-between text-sm text-white/55">
+              <span>${revenue.toLocaleString()} / month</span>
+              <span className="text-emerald-300 font-semibold">+${(trooflixKeep - oldKeep).toLocaleString()} vs old model</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-5 flex-wrap">
+            <motion.a href="#earnings-calculator" whileHover={{ scale: 1.03, boxShadow: "0 0 0 1px rgba(255,255,255,0.1), 0 18px 45px rgba(16,185,129,0.35), 0 0 30px rgba(16,185,129,0.2)" }} whileTap={{ scale: 0.99 }} className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-500 px-8 py-4 text-base font-bold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_18px_40px_rgba(16,185,129,0.3)]">
+              Calculate Your Earnings <ArrowRight size={18} />
+            </motion.a>
+            <p className="text-sm text-white/45">On $10,000 → You keep <span className="text-white/75 font-semibold">$9,900</span> · Old model → <span className="text-white/55 font-semibold">$5,500</span></p>
+          </div>
+        </motion.div>
+
+        <div className="relative flex min-h-[70vh] items-center justify-center">
+          <motion.div initial={{ opacity: 0, scale: 0.92 }} animate={inView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.92 }} transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }} className="relative">
+            <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }} className="text-[170px] font-black leading-none tracking-tighter text-white drop-shadow-[0_0_60px_rgba(52,211,153,0.35)] xl:text-[220px] 2xl:text-[260px]">
+              99%
+            </motion.div>
+            <div className="absolute -bottom-2 left-1/2 h-24 w-[80%] -translate-x-1/2 rounded-full bg-emerald-400/10 blur-3xl" />
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, x: 40, y: 20 }}
+            animate={inView ? { opacity: 1, x: 0, y: [0, -6, 0] } : { opacity: 0, x: 40, y: 20 }}
+            transition={{ opacity: { duration: 0.7, delay: 0.8 }, x: { duration: 0.7, delay: 0.8 }, y: { duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 1.2 } }}
+            className="absolute bottom-8 right-0 w-[340px] rounded-2xl border border-white/15 bg-white/[0.07] p-4 shadow-[0_24px_70px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-2xl"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-full border border-emerald-400/40 bg-emerald-500/20 text-emerald-300"><CheckCircle2 size={20} /></div>
+              <div>
+                <div className="text-sm font-semibold text-white">Payout Received</div>
+                <div className="text-xs text-white/55">+$1,284.00 deposited to TrooBank</div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </section>
   );
 }
 
