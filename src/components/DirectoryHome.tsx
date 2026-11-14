@@ -430,8 +430,6 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
               <div className="relative aspect-square rounded-xl overflow-hidden bg-[#141418] ring-1 ring-white/10">
                 <img src={p.image_url} alt="" className="w-full h-full object-cover transition duration-700 group-hover:scale-[1.04]" />
               </div>
-              <p className="mt-1.5 text-[11px] font-semibold text-[#f3d7a1] tracking-tight">${(p.price_cents / 100).toFixed(2)}</p>
-              <h3 className="mt-0.5 text-[11px] font-medium text-white/75 line-clamp-2 leading-snug group-hover:text-white transition">{p.name}</h3>
             </Link>
           ))}
         </div>
