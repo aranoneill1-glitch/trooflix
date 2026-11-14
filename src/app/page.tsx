@@ -416,43 +416,248 @@ export default function Home() {
               </div>
               {/* FEATURES HEROES (DESKTOP SIGNED-OUT) */}
               <div className="hidden lg:block w-full">
-                {[
-                  { title: "Keep 99% of", accent: "Revenue.", desc: "A flat 1% fee. No hidden cuts, no demonetization. You earn it, you keep it.", img: "https://images.unsplash.com/photo-1621761191319-c6fb62004040?q=80&w=2000&auto=format&fit=crop" },
-                  { title: "Zero", accent: "Censorship.", desc: "No shadowbans. No algorithmic suppression. Your audience gets your content. Only 2 rules: no adult content, no AI slop.", img: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=2000&auto=format&fit=crop" },
-                  { title: "Live", accent: "Streaming.", desc: "Broadcast-quality WebRTC live streams with multi-guest support. Go live and connect in real time.", img: "https://images.unsplash.com/photo-1470229722913-7ea0a4e88db9?q=80&w=2000&auto=format&fit=crop" },
-                  { title: "Watch on", accent: "TV.", desc: "Stream your favourite podcasts and documentaries directly on your Smart TV or Fire Stick for a cinematic experience.", img: "https://images.unsplash.com/photo-1593784991095-a205069470b6?q=80&w=2000&auto=format&fit=crop" },
-                  { title: "TrooCoins", accent: "Economy.", desc: "Tip creators, buy merch, and manage your funds with our built-in wallet — all in one ecosystem.", img: "https://images.unsplash.com/photo-1621504450181-5d356f61d307?q=80&w=2000&auto=format&fit=crop" },
-                  { title: "Built-in", accent: "Storefront.", desc: "Sell merch, books, and digital goods directly on your profile and turn your audience into customers.", img: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=2000&auto=format&fit=crop" },
-                ].map((feat, i) => (
-                  <section key={i} className="relative w-full min-h-[100vh] overflow-hidden bg-[#08090c] flex items-center">
-                    <motion.img
-                      src={feat.img}
-                      alt=""
-                      className="absolute inset-0 h-full w-full object-cover"
-                      initial={{ scale: 1.08, opacity: 0.35 }}
-                      whileInView={{ scale: 1, opacity: 0.55 }}
-                      viewport={{ once: false, amount: 0.35 }}
-                      transition={{ duration: 1.2, ease: "easeOut" }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-black/15" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a0303] via-transparent to-transparent" />
+                {/* Page 1: Zero Censorship (custom) */}
+                <section className="relative w-full min-h-[100vh] overflow-hidden bg-[#050308] flex items-center">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_110%,rgba(168,85,247,0.35),rgba(229,57,69,0.28)_28%,rgba(5,3,8,0.95)_62%,#050308_100%)]" />
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.04),transparent_30%)]" />
+                  <div className="relative z-10 w-full max-w-[1600px] mx-auto px-8 xl:px-16 flex items-center justify-between gap-10">
                     <motion.div
-                      className="relative z-10 w-full lg:w-1/2 px-8 xl:px-16 lg:pl-24 max-w-4xl"
+                      className="w-full lg:w-[46%] max-w-3xl"
                       initial={{ opacity: 0, y: 40 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: false, amount: 0.4 }}
                       transition={{ duration: 0.8, ease: "easeOut" }}
                     >
-                      <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/50 mb-5">Feature {i + 1} of 6</p>
+                      <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/45 mb-5">Page 1 of 6</p>
                       <h2 className="text-[52px] xl:text-[68px] 2xl:text-[80px] font-black tracking-tighter text-white leading-[1.02] mb-6">
-                        {feat.title} <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#E53945] to-orange-500">{feat.accent}</span>
+                        Your Voice. <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#E53945] to-orange-500">Unfiltered.</span>
                       </h2>
-                      <p className="text-base xl:text-lg text-white/60 leading-relaxed font-medium max-w-2xl">
-                        {feat.desc}
+                      <p className="text-base xl:text-lg text-white/65 leading-relaxed font-medium max-w-2xl mb-10">
+                        Broadcast-quality WebRTC live streams with multi-guest support. Post reels, docs, and podcasts without the shadowban.
                       </p>
+                      <a href="/signup" className="inline-flex items-center justify-center gap-2 rounded-full bg-[#E53945] px-8 py-4 text-base font-bold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_18px_45px_rgba(229,57,69,0.45),0_0_35px_rgba(229,57,69,0.35)] hover:bg-[#ff4b57] transition">
+                        Start Broadcasting
+                      </a>
                     </motion.div>
-                  </section>
-                ))}
+
+                    <motion.div
+                      className="hidden lg:flex w-[46%] items-center justify-center"
+                      initial={{ opacity: 0, y: 30, scale: 0.98 }}
+                      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                      viewport={{ once: false, amount: 0.35 }}
+                      transition={{ duration: 0.9, ease: "easeOut" }}
+                    >
+                      <div className="relative w-full max-w-[520px]">
+                        <div className="relative overflow-hidden rounded-[28px] border border-white/15 bg-white/[0.06] backdrop-blur-2xl shadow-[0_30px_100px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.12)] p-5">
+                          <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-2">
+                              <span className="relative flex h-3 w-3">
+                                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75"></span>
+                                <span className="relative inline-flex h-3 w-3 rounded-full bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.9)]"></span>
+                              </span>
+                              <span className="rounded-full bg-red-500/20 border border-red-400/40 px-2.5 py-1 text-[10px] font-black tracking-[0.18em] text-red-300">LIVE</span>
+                            </div>
+                            <span className="text-xs text-white/50 font-medium">Multi-guest stream</span>
+                          </div>
+                          <div className="relative aspect-video rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-br from-[#1a1020] via-[#120b16] to-[#09090c]">
+                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(229,57,69,0.25),transparent_35%),radial-gradient(circle_at_70%_60%,rgba(168,85,247,0.25),transparent_35%)]" />
+                            <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/60 to-transparent" />
+                            <div className="absolute left-4 bottom-4 flex items-center gap-3">
+                              <div className="h-10 w-10 rounded-full bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center text-white font-bold">YV</div>
+                              <div>
+                                <div className="text-sm font-semibold text-white">Your Voice, Live</div>
+                                <div className="text-xs text-white/55">Streaming now</div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="mt-6 flex items-center pl-2">
+                          {[
+                            { label: "A", bg: "from-[#E53945] to-[#ff7a45]", delay: 0 },
+                            { label: "B", bg: "from-[#a855f7] to-[#6366f1]", delay: 0.2 },
+                            { label: "C", bg: "from-[#14b8a6] to-[#22d3ee]", delay: 0.4 },
+                          ].map((guest, idx) => (
+                            <motion.div
+                              key={guest.label}
+                              className={`relative ${idx > 0 ? "-ml-4" : ""} h-16 w-16 rounded-full border border-white/25 bg-gradient-to-br ${guest.bg} backdrop-blur-xl shadow-[0_10px_30px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.25)] flex items-center justify-center text-white font-bold`}
+                              animate={{ y: [0, -8, 0] }}
+                              transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut", delay: guest.delay }}
+                            >
+                              <span className="absolute inset-0 rounded-full bg-white/10 backdrop-blur-xl" />
+                              <span className="relative">{guest.label}</span>
+                            </motion.div>
+                          ))}
+                          <span className="ml-4 text-sm text-white/55 font-medium">3 guest slots live</span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  </div>
+                </section>
+
+                {/* Page 2: Keep 99% of Earnings */}
+                <section className="relative w-full min-h-[100vh] overflow-hidden bg-[#020805] flex items-center">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(16,185,129,0.22),transparent_30%),linear-gradient(135deg,#020805_0%,#04110a_45%,#000000_100%)]" />
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(34,197,94,0.12),transparent_35%)]" />
+                  <div className="relative z-10 w-full max-w-[1600px] mx-auto px-8 xl:px-16 flex items-center justify-between gap-10">
+                    <motion.div className="w-full lg:w-[45%] max-w-3xl" initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.4 }} transition={{ duration: 0.8, ease: "easeOut" }}>
+                      <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/45 mb-5">Page 2 of 6</p>
+                      <h2 className="text-[52px] xl:text-[68px] 2xl:text-[80px] font-black tracking-tighter text-white leading-[1.02] mb-6">
+                        Stop paying the <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#22c55e] to-emerald-300">Big Tech tax.</span>
+                      </h2>
+                      <p className="text-base xl:text-lg text-white/65 leading-relaxed font-medium max-w-2xl mb-10">Why give away 45% of your hard-earned money? Keep 99% of your earnings. A flat 1% fee.</p>
+                      <a href="/wallet" className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-500 px-8 py-4 text-base font-bold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_18px_45px_rgba(16,185,129,0.35),0_0_30px_rgba(16,185,129,0.25)] hover:bg-emerald-400 transition">Calculate Your Earnings</a>
+                    </motion.div>
+                    <motion.div className="hidden lg:flex w-[50%] items-center justify-center relative" initial={{ opacity: 0, scale: 0.96 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: false, amount: 0.35 }} transition={{ duration: 0.9, ease: "easeOut" }}>
+                      <div className="relative w-full max-w-[560px] flex flex-col items-center">
+                        <div className="flex items-end gap-6">
+                          <div className="text-[140px] xl:text-[180px] leading-none font-black tracking-tighter text-white drop-shadow-[0_0_40px_rgba(34,197,94,0.45)]">99%</div>
+                          <div className="relative mb-6 text-3xl xl:text-4xl font-black text-white/25">
+                            45% <span className="text-white/20">(YouTube)</span>
+                            <span className="absolute left-[-6%] right-[-6%] top-1/2 h-[4px] -translate-y-1/2 rotate-[-12deg] bg-red-500/90 shadow-[0_0_12px_rgba(239,68,68,0.6)]" />
+                          </div>
+                        </div>
+                        <motion.div className="mt-8 self-end mr-8 w-[320px] rounded-2xl border border-white/15 bg-white/[0.07] backdrop-blur-2xl p-4 shadow-[0_20px_60px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.12)]" animate={{ y: [0, -10, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}>
+                          <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-full bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-300"><CheckCircle2 size={20} /></div>
+                            <div>
+                              <div className="text-sm font-semibold text-white">Payout Received</div>
+                              <div className="text-xs text-white/55">+$1,284.00 deposited to TrooBank</div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      </div>
+                    </motion.div>
+                  </div>
+                </section>
+
+                {/* Page 3: Built-in Storefront */}
+                <section className="relative w-full min-h-[100vh] overflow-hidden bg-[#120a03] flex items-center">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_35%,rgba(245,158,11,0.28),transparent_28%),radial-gradient(circle_at_75%_70%,rgba(249,115,22,0.22),transparent_30%),linear-gradient(180deg,#120a03_0%,#090603_100%)]" />
+                  <div className="relative z-10 w-full max-w-[1600px] mx-auto px-8 xl:px-16 flex items-center justify-between gap-10">
+                    <motion.div className="w-full lg:w-[42%] max-w-3xl" initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.4 }} transition={{ duration: 0.8, ease: "easeOut" }}>
+                      <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/45 mb-5">Page 3 of 6</p>
+                      <h2 className="text-[52px] xl:text-[68px] 2xl:text-[80px] font-black tracking-tighter text-white leading-[1.02] mb-6">Turn your audience into a <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#f59e0b] to-orange-400">business.</span></h2>
+                      <p className="text-base xl:text-lg text-white/65 leading-relaxed font-medium max-w-2xl mb-10">Sell merch, books, and digital goods directly on your profile. No third-party store needed.</p>
+                      <a href="/creator-dashboard/merch" className="inline-flex items-center justify-center gap-2 rounded-full bg-amber-500 px-8 py-4 text-base font-bold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_18px_45px_rgba(245,158,11,0.35),0_0_30px_rgba(245,158,11,0.25)] hover:bg-amber-400 transition">Open Your Store</a>
+                    </motion.div>
+                    <motion.div className="hidden lg:flex w-[54%] justify-center" initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: false, amount: 0.35 }} transition={{ duration: 0.9, ease: "easeOut" }}>
+                      <div className="flex gap-5 items-end">
+                        {[
+                          { name: "Creator Hoodie", tag: "New Drop", icon: "🧥", price: "$48" },
+                          { name: "Limited Book", tag: "Sold Out", icon: "📘", price: "$24" },
+                          { name: "Digital Preset", tag: "New Drop", icon: "⬇️", price: "$12" },
+                        ].map((item, idx) => (
+                          <motion.div key={item.name} className={`relative w-[170px] rounded-[24px] border border-white/15 bg-white/[0.07] backdrop-blur-2xl p-4 shadow-[0_20px_60px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.12)] ${idx === 1 ? "mb-10" : idx === 2 ? "mb-4" : ""}`} animate={{ y: [0, idx === 1 ? -12 : -8, 0] }} transition={{ duration: 4 + idx * 0.4, repeat: Infinity, ease: "easeInOut", delay: idx * 0.2 }}>
+                            <span className={`absolute -top-3 right-3 rounded-full px-2.5 py-1 text-[10px] font-bold tracking-wide ${item.tag === "Sold Out" ? "bg-red-500/90 text-white" : "bg-amber-400 text-black"}`}>{item.tag}</span>
+                            <div className="h-28 rounded-2xl bg-gradient-to-br from-white/10 to-white/[0.03] border border-white/10 flex items-center justify-center text-4xl mb-4">{item.icon}</div>
+                            <div className="text-sm font-semibold text-white leading-tight">{item.name}</div>
+                            <div className="mt-1 text-xs text-white/55">{item.price}</div>
+                          </motion.div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  </div>
+                </section>
+
+                {/* Page 4: Watch on All Platforms */}
+                <section className="relative w-full min-h-[100vh] overflow-hidden bg-[#03070d] flex items-center">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_60%_40%,rgba(56,189,248,0.22),transparent_28%),linear-gradient(135deg,#02050a_0%,#04111f_45%,#020409_100%)]" />
+                  <div className="relative z-10 w-full max-w-[1600px] mx-auto px-8 xl:px-16 flex items-center justify-between gap-10">
+                    <motion.div className="w-full lg:w-[42%] max-w-3xl" initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.4 }} transition={{ duration: 0.8, ease: "easeOut" }}>
+                      <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/45 mb-5">Page 4 of 6</p>
+                      <h2 className="text-[52px] xl:text-[68px] 2xl:text-[80px] font-black tracking-tighter text-white leading-[1.02] mb-6">One platform. <span className="bg-clip-text text-transparent bg-gradient-to-r from-sky-300 to-cyan-200">Every screen.</span></h2>
+                      <p className="text-base xl:text-lg text-white/65 leading-relaxed font-medium max-w-2xl mb-10">Stream on your phone, computer, Smart TV, or Fire Stick. Zero buffering, cinematic quality.</p>
+                      <a href="/tv" className="inline-flex items-center justify-center gap-2 rounded-full bg-sky-500 px-8 py-4 text-base font-bold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_18px_45px_rgba(14,165,233,0.35),0_0_30px_rgba(56,189,248,0.25)] hover:bg-sky-400 transition"><Tv size={18} /> Cast to TV</a>
+                    </motion.div>
+                    <motion.div className="hidden lg:flex w-[54%] justify-center relative" initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.35 }} transition={{ duration: 0.9, ease: "easeOut" }}>
+                      <div className="relative w-full max-w-[620px] h-[420px]">
+                        <motion.div className="absolute left-8 top-4 right-16 h-[300px] rounded-[28px] border border-cyan-200/20 bg-gradient-to-br from-[#0b1624] to-[#050910] shadow-[0_0_80px_rgba(56,189,248,0.22),0_30px_80px_rgba(0,0,0,0.45)] overflow-hidden" animate={{ boxShadow: ["0 0 50px rgba(56,189,248,0.18),0 30px 80px rgba(0,0,0,0.45)", "0 0 90px rgba(56,189,248,0.30),0 30px 80px rgba(0,0,0,0.45)", "0 0 50px rgba(56,189,248,0.18),0 30px 80px rgba(0,0,0,0.45)"] }} transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}>
+                          <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(56,189,248,0.18),transparent_35%,rgba(255,255,255,0.06))]" />
+                          <div className="absolute inset-6 rounded-2xl bg-gradient-to-br from-[#10243a] via-[#0a1422] to-[#05070b] border border-white/10 flex items-center justify-center">
+                            <div className="text-center">
+                              <div className="text-white/80 text-sm font-semibold tracking-[0.2em] uppercase mb-2">Now Playing</div>
+                              <div className="text-3xl font-black text-white">Cinematic Documentary</div>
+                            </div>
+                          </div>
+                        </motion.div>
+                        <motion.div className="absolute right-0 bottom-0 w-[150px] h-[300px] rounded-[30px] border border-white/20 bg-white/[0.08] backdrop-blur-2xl shadow-[0_20px_60px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.15)] p-3" animate={{ y: [0, -8, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}>
+                          <div className="h-full rounded-[22px] bg-[#081018] border border-white/10 p-3 flex flex-col">
+                            <div className="text-[10px] uppercase tracking-[0.18em] text-white/45 mb-3">Mini Player</div>
+                            <div className="flex-1 rounded-xl bg-gradient-to-br from-sky-500/30 to-cyan-300/10 border border-white/10 mb-3" />
+                            <div className="h-1.5 rounded-full bg-white/10 overflow-hidden"><div className="h-full w-2/3 bg-sky-400 rounded-full" /></div>
+                          </div>
+                        </motion.div>
+                      </div>
+                    </motion.div>
+                  </div>
+                </section>
+
+                {/* Page 5: TrooChat */}
+                <section className="relative w-full min-h-[100vh] overflow-hidden bg-[#090616] flex items-center">
+                  <style>{`@keyframes waveBar { 0%,100% { transform: scaleY(0.35); opacity: .55; } 50% { transform: scaleY(1); opacity: 1; } }`}</style>
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_35%_35%,rgba(168,85,247,0.28),transparent_28%),radial-gradient(circle_at_75%_70%,rgba(59,130,246,0.2),transparent_30%),linear-gradient(180deg,#090616_0%,#05040b_100%)]" />
+                  <div className="relative z-10 w-full max-w-[1600px] mx-auto px-8 xl:px-16 flex items-center justify-between gap-10">
+                    <motion.div className="w-full lg:w-[42%] max-w-3xl" initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.4 }} transition={{ duration: 0.8, ease: "easeOut" }}>
+                      <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/45 mb-5">Page 5 of 6</p>
+                      <h2 className="text-[52px] xl:text-[68px] 2xl:text-[80px] font-black tracking-tighter text-white leading-[1.02] mb-6">Connect beyond the <span className="bg-clip-text text-transparent bg-gradient-to-r from-violet-300 to-blue-300">comment section.</span></h2>
+                      <p className="text-base xl:text-lg text-white/65 leading-relaxed font-medium max-w-2xl mb-10">TrooChat messaging, voice, and video calls. No algorithms, just real conversations.</p>
+                      <a href="/messages" className="inline-flex items-center justify-center gap-2 rounded-full bg-violet-500 px-8 py-4 text-base font-bold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_18px_45px_rgba(139,92,246,0.35),0_0_30px_rgba(139,92,246,0.25)] hover:bg-violet-400 transition">Start a Conversation</a>
+                    </motion.div>
+                    <motion.div className="hidden lg:flex w-[52%] justify-center relative" initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: false, amount: 0.35 }} transition={{ duration: 0.9, ease: "easeOut" }}>
+                      <div className="relative w-full max-w-[520px] h-[420px]">
+                        <div className="absolute left-8 top-6 max-w-[320px] rounded-3xl rounded-bl-md border border-white/15 bg-white/[0.08] backdrop-blur-2xl p-4 text-white/85 shadow-[0_20px_50px_rgba(0,0,0,0.3)]">Loved the new episode — when’s the next live?</div>
+                        <div className="absolute right-6 top-28 max-w-[320px] rounded-3xl rounded-br-md border border-violet-300/20 bg-violet-500/20 backdrop-blur-2xl p-4 text-white shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
+                          <div className="text-sm text-white/90 mb-3">Voice message</div>
+                          <div className="flex items-end gap-1 h-8">
+                            {[8,14,22,12,26,18,10,24,16,20,12,18].map((h, idx) => (
+                              <span key={idx} className="w-1.5 rounded-full bg-gradient-to-t from-violet-300 to-blue-300 origin-bottom" style={{ height: `${h}px`, animation: `waveBar 1s ease-in-out ${idx * 0.06}s infinite` }} />
+                            ))}
+                          </div>
+                        </div>
+                        <div className="absolute left-16 bottom-20 max-w-[300px] rounded-3xl rounded-bl-md border border-white/15 bg-white/[0.08] backdrop-blur-2xl p-4 text-white/85 shadow-[0_20px_50px_rgba(0,0,0,0.3)]">Let’s hop on a quick call.</div>
+                        <div className="absolute right-10 bottom-8">
+                          <span className="absolute inset-0 rounded-full bg-emerald-400/30 animate-ping" />
+                          <button className="relative h-16 w-16 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-[0_0_0_8px_rgba(16,185,129,0.12),0_18px_40px_rgba(16,185,129,0.35)]"><Phone size={24} /></button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  </div>
+                </section>
+
+                {/* Page 6: Trooflix Economy */}
+                <section className="relative w-full min-h-[100vh] overflow-hidden bg-[#090602] flex items-center">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(234,179,8,0.22),transparent_25%),radial-gradient(circle_at_70%_75%,rgba(245,158,11,0.15),transparent_30%),linear-gradient(180deg,#090602_0%,#040301_100%)]" />
+                  <div className="relative z-10 w-full max-w-[1600px] mx-auto px-8 xl:px-16 flex items-center justify-between gap-10">
+                    <motion.div className="w-full lg:w-[42%] max-w-3xl" initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.4 }} transition={{ duration: 0.8, ease: "easeOut" }}>
+                      <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/45 mb-5">Page 6 of 6</p>
+                      <h2 className="text-[52px] xl:text-[68px] 2xl:text-[80px] font-black tracking-tighter text-white leading-[1.02] mb-6">The creator economy, <span className="bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 to-amber-400">reimagined.</span></h2>
+                      <p className="text-base xl:text-lg text-white/65 leading-relaxed font-medium max-w-2xl mb-10">Tip creators, buy merch, and manage your funds with TrooBank. All in one ecosystem.</p>
+                      <a href="/wallet" className="inline-flex items-center justify-center gap-2 rounded-full bg-amber-400 px-8 py-4 text-base font-bold text-black shadow-[0_0_0_1px_rgba(255,255,255,0.1),0_18px_45px_rgba(251,191,36,0.3),0_0_30px_rgba(251,191,36,0.2)] hover:bg-amber-300 transition">Explore TrooBank</a>
+                    </motion.div>
+                    <motion.div className="hidden lg:flex w-[52%] justify-center relative" initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.35 }} transition={{ duration: 0.9, ease: "easeOut" }}>
+                      <div className="relative w-full max-w-[520px] h-[420px] flex items-center justify-center">
+                        <motion.div className="absolute top-2 text-5xl drop-shadow-[0_0_20px_rgba(251,191,36,0.55)]" animate={{ y: [0, 130, 0], rotate: [0, 10, 0], scale: [1, 0.95, 1] }} transition={{ duration: 3.8, repeat: Infinity, ease: "easeInOut" }}>🪙</motion.div>
+                        <div className="absolute top-[150px] h-20 w-20 rounded-2xl border border-amber-200/20 bg-white/[0.06] backdrop-blur-xl flex items-center justify-center text-3xl shadow-[0_10px_30px_rgba(0,0,0,0.3)]"><Wallet className="text-amber-300" size={34} /></div>
+                        <motion.div whileHover={{ rotateX: 8, rotateY: -10, scale: 1.02 }} className="group relative mt-24 w-[360px] h-[220px] rounded-[28px] border border-amber-200/20 bg-gradient-to-br from-[#3b2a06] via-[#1f1606] to-[#0c0904] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.45),0_0_40px_rgba(251,191,36,0.12)] [transform-style:preserve-3d]">
+                          <div className="absolute inset-0 rounded-[28px] bg-[linear-gradient(120deg,rgba(251,191,36,0.18),transparent_35%,rgba(255,255,255,0.06))]" />
+                          <div className="relative h-full flex flex-col justify-between">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm font-bold tracking-[0.2em] text-amber-200/90">TROOBANK</span>
+                              <span className="h-8 w-10 rounded-md bg-gradient-to-br from-amber-200 to-yellow-500/70" />
+                            </div>
+                            <div>
+                              <div className="text-xs uppercase tracking-[0.2em] text-white/45 mb-1">Available Balance</div>
+                              <div className="text-3xl font-black text-white group-hover:hidden">$2,480.00</div>
+                              <div className="hidden group-hover:block text-3xl font-black text-amber-200">$2,480.00 • 12,400 TC</div>
+                            </div>
+                            <div className="text-sm text-white/55 tracking-[0.22em]">•••• •••• •••• 2048</div>
+                          </div>
+                        </motion.div>
+                      </div>
+                    </motion.div>
+                  </div>
+                </section>
               </div>
             </>
           )}
