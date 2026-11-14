@@ -358,7 +358,6 @@ export default function Home() {
 
                   <h1 className="relative text-[46px] leading-[0.95] font-black tracking-[-0.05em] text-white mb-5">
                     Create without limits.
-                    <span className="block mt-1 bg-clip-text text-transparent bg-gradient-to-r from-white via-[#ffd7db] to-[#E53945]">Own what you build.</span>
                   </h1>
                   <p className="relative text-[15px] text-white/60 max-w-sm mx-auto leading-relaxed mb-10">
                     Stream, share, connect, and grow on a platform built for creators who want freedom, power, and a real home for their work.
@@ -394,7 +393,6 @@ export default function Home() {
                   <div className="relative w-full max-w-5xl mx-auto text-center">
                     <h1 className="text-6xl xl:text-8xl font-black tracking-[-0.06em] text-white leading-[0.92] mb-8">
                       Create without limits.
-                      <span className="block mt-2 bg-clip-text text-transparent bg-gradient-to-r from-white via-[#ffd7db] to-[#E53945]">Own what you build.</span>
                     </h1>
                     <p className="text-xl xl:text-2xl text-white/55 leading-relaxed max-w-3xl mx-auto mb-12">
                       Stream, share, connect, and grow on a platform built for creators who want freedom, power, and a real home for their work.
