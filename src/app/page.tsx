@@ -428,14 +428,7 @@ export default function Home() {
                   @keyframes floatSlow { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-14px); } }
                   @keyframes sheen { 0% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
                 `}</style>
-                <div className="pointer-events-none fixed left-8 top-1/2 z-30 hidden -translate-y-1/2 flex-col gap-3 xl:flex">
-                  {['Voice', 'Earnings', 'Store', 'Screens', 'Chat', 'Economy'].map((label, i) => (
-                    <div key={label} className="group pointer-events-auto flex items-center justify-start gap-3">
-                      <span className="h-2.5 w-2.5 rounded-full border border-white/30 bg-white/20 shadow-[0_0_0_4px_rgba(255,255,255,0.03)]" />
-                      <span className="rounded-full border border-white/10 bg-black/30 px-2.5 py-1 text-[10px] font-semibold tracking-[0.18em] uppercase text-white/0 backdrop-blur-md transition group-hover:text-white/70">{label}</span>
-                    </div>
-                  ))}
-                </div>
+
                 <div className="snap-y snap-proximity">
                 {/* Page 1: Content Power / Your Voice. Unfiltered. */}
                 <section className="relative w-full min-h-[100svh] snap-start overflow-hidden bg-[#040406] flex items-center">
@@ -554,32 +547,7 @@ export default function Home() {
 
                 <TrooChatHero />
 
-                {/* Page 6: Trooflix Economy */}
-                <section className="relative w-full min-h-[100svh] snap-start overflow-hidden bg-[#090602] flex items-center">
-                  <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#050507] to-transparent z-[2]" />
-                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#050507] to-transparent z-[2]" />
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(234,179,8,0.24),transparent_25%),radial-gradient(circle_at_70%_75%,rgba(245,158,11,0.16),transparent_30%),linear-gradient(180deg,#090602_0%,#040301_100%)]" />
-                  <motion.div className="absolute left-[20%] top-[20%] h-64 w-64 rounded-full bg-amber-300/10 blur-[110px]" animate={{ y:[0,20,0], opacity:[0.5,0.8,0.5] }} transition={{ duration:8.5, repeat:Infinity }} />
-                  <div className="relative z-10 w-full max-w-[1600px] mx-auto px-8 xl:px-16 flex items-center justify-between gap-12">
-                    <motion.div className="w-full lg:w-[42%] max-w-3xl" initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.45 }} transition={{ duration: 0.9, ease: [0.22,1,0.36,1] }}>
-                      <div className="mb-6 flex items-center gap-3"><span className="rounded-full border border-amber-400/30 bg-amber-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-amber-200">One connected ecosystem</span><span className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/35">06 / 06</span></div>
-                      <h2 className="text-[56px] xl:text-[74px] 2xl:text-[88px] font-black tracking-tighter text-white leading-[0.98] mb-6">The creator economy,<br /><span className="bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 to-amber-400">reimagined.</span></h2>
-                      <p className="text-lg xl:text-xl text-white/70 leading-relaxed font-medium max-w-2xl mb-8">Tips, purchases, payouts, and support all flow through one native system. TrooCoins and TrooBank make the value exchange feel seamless for creators and fans.</p>
-                      <div className="mb-10 grid grid-cols-3 gap-3 max-w-xl">{[{k:'Tips',v:'Instant support'},{k:'Wallet',v:'TrooBank'},{k:'Currency',v:'TrooCoins'}].map(s=>(<div key={s.k} className="rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 backdrop-blur-xl"><div className="text-[10px] uppercase tracking-[0.18em] text-white/40 mb-1">{s.k}</div><div className="text-base font-bold text-white">{s.v}</div></div>))}</div>
-                      <a href="/wallet" className="inline-flex items-center justify-center gap-2 rounded-full bg-amber-400 px-8 py-4 text-base font-bold text-black shadow-[0_0_0_1px_rgba(255,255,255,0.1),0_18px_45px_rgba(251,191,36,0.3),0_0_30px_rgba(251,191,36,0.2)] transition hover:scale-[1.02] hover:bg-amber-300">Explore TrooBank <ArrowRight size={18} /></a>
-                    </motion.div>
-                    <motion.div className="hidden lg:flex w-[52%] justify-center relative" initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.4 }} transition={{ duration: 0.9, ease: [0.22,1,0.36,1] }}>
-                      <div className="relative flex h-[430px] w-full max-w-[520px] items-center justify-center">
-                        <motion.div className="absolute top-2 text-5xl drop-shadow-[0_0_24px_rgba(251,191,36,0.6)]" animate={{ y:[0,135,0], rotate:[0,12,0], scale:[1,0.95,1] }} transition={{ duration:3.8, repeat:Infinity, ease:'easeInOut' }}>🪙</motion.div>
-                        <div className="absolute top-[155px] flex h-20 w-20 items-center justify-center rounded-2xl border border-amber-200/20 bg-white/[0.06] text-3xl shadow-[0_10px_30px_rgba(0,0,0,0.3)] backdrop-blur-xl"><Wallet className="text-amber-300" size={34} /></div>
-                        <motion.div whileHover={{ rotateX: 8, rotateY: -10, scale: 1.03 }} className="group relative mt-24 h-[225px] w-[365px] rounded-[28px] border border-amber-200/20 bg-gradient-to-br from-[#3b2a06] via-[#1f1606] to-[#0c0904] p-6 shadow-[0_30px_80px_rgba(0,0,0,0.45),0_0_45px_rgba(251,191,36,0.14)] [transform-style:preserve-3d]">
-                          <div className="absolute inset-0 rounded-[28px] bg-[linear-gradient(120deg,rgba(251,191,36,0.2),transparent_35%,rgba(255,255,255,0.08))]" />
-                          <div className="relative flex h-full flex-col justify-between"><div className="flex items-center justify-between"><span className="text-sm font-bold tracking-[0.22em] text-amber-200/90">TROOBANK</span><span className="h-8 w-10 rounded-md bg-gradient-to-br from-amber-200 to-yellow-500/70" /></div><div><div className="mb-1 text-xs uppercase tracking-[0.2em] text-white/45">Available Balance</div><div className="text-3xl font-black text-white group-hover:hidden">$2,480.00</div><div className="hidden text-3xl font-black text-amber-200 group-hover:block">$2,480.00 • 12,400 TC</div><div className="mt-2 text-sm text-emerald-300/90">+ $312 this week</div></div><div className="text-sm tracking-[0.22em] text-white/55">•••• •••• •••• 2048</div></div>
-                        </motion.div>
-                      </div>
-                    </motion.div>
-                  </div>
-                </section>
+                <TrooflixEconomyHero />
                 </div>
               </div>
             </>
@@ -670,6 +638,69 @@ export default function Home() {
   );
 }
 
+function TrooflixEconomyHero() {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: false, amount: 0.35 });
+
+  return (
+    <section ref={ref} className="relative hidden min-h-[100svh] w-full snap-start overflow-hidden bg-[#050405] lg:flex items-center">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#050507] to-transparent z-[2]" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#050507] to-transparent z-[2]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_45%_30%,rgba(251,191,36,0.14),transparent_24%),radial-gradient(circle_at_70%_70%,rgba(229,57,69,0.08),transparent_22%),linear-gradient(180deg,#060506_0%,#020203_100%)]" />
+      <motion.div className="absolute right-[15%] top-[18%] h-72 w-72 rounded-full bg-amber-300/10 blur-[130px]" animate={{ y: [0, -18, 0], opacity: [0.35, 0.55, 0.35] }} transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }} />
+
+      <div className="relative z-10 mx-auto grid w-full max-w-[1600px] grid-cols-[0.95fr_1.05fr] items-center gap-14 px-8 xl:px-16">
+        <motion.div initial="hidden" animate={inView ? "visible" : "hidden"} variants={{ visible: { transition: { staggerChildren: 0.1 } } }} className="max-w-3xl">
+          <motion.p variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-5 text-[11px] font-bold uppercase tracking-[0.34em] text-white/40">Trooflix Economy</motion.p>
+          <motion.h2 variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.85 } } }} className="mb-7 text-[56px] font-black leading-[0.96] tracking-tighter text-white xl:text-[74px] 2xl:text-[88px]">
+            The creator economy,<br />
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ffd37a] via-[#ffb347] to-[#ff6a2a]">reimagined.</span>
+          </motion.h2>
+          <motion.p variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-8 max-w-2xl text-lg font-medium leading-relaxed text-white/60 xl:text-xl">
+            Tips, purchases, payouts, and support — connected in one native system. TrooCoins and TrooBank make value flow simply between creators and their audience.
+          </motion.p>
+          <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-10 flex flex-wrap gap-3">
+            {["TrooCoins", "TrooBank", "Instant tips", "Seamless payouts"].map((t) => (
+              <span key={t} className="rounded-full border border-amber-300/20 bg-amber-400/10 px-4 py-2 text-sm font-medium text-amber-50/90 backdrop-blur-md">{t}</span>
+            ))}
+          </motion.div>
+          <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+            <motion.a href="/wallet" whileHover={{ scale: 1.03, boxShadow: "0 0 0 1px rgba(255,255,255,0.1), 0 18px 45px rgba(251,191,36,0.28), 0 0 30px rgba(255,106,42,0.18)" }} className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#fbbf24] to-[#ff7a2f] px-8 py-4 text-base font-bold text-black shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_18px_40px_rgba(251,191,36,0.22)]">
+              Explore TrooBank <ArrowRight size={18} />
+            </motion.a>
+          </motion.div>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, x: 30 }} animate={inView ? { opacity: 1, x: 0 } : {}} transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }} className="relative flex h-[500px] items-center justify-center">
+          <div className="relative w-full max-w-[520px]">
+            <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }} className="absolute -top-2 right-10 flex h-16 w-16 items-center justify-center rounded-full border border-amber-300/25 bg-gradient-to-br from-amber-300/30 to-orange-400/20 text-2xl shadow-[0_0_30px_rgba(251,191,36,0.2)] backdrop-blur-xl">◉</motion.div>
+            <div className="rounded-[32px] border border-white/10 bg-white/[0.04] p-6 shadow-[0_40px_120px_rgba(0,0,0,0.45)] backdrop-blur-2xl">
+              <div className="mb-6 flex items-center justify-between">
+                <div>
+                  <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/40">TrooBank</div>
+                  <div className="mt-1 text-sm text-white/55">Creator wallet</div>
+                </div>
+                <div className="rounded-full border border-amber-300/20 bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-200">Active</div>
+              </div>
+              <div className="mb-6 rounded-[24px] border border-amber-200/15 bg-gradient-to-br from-[#2a1d08] via-[#171106] to-[#0b0905] p-6">
+                <div className="mb-8 flex items-center justify-between"><span className="text-sm font-bold tracking-[0.22em] text-amber-100/80">TROOBANK</span><span className="h-8 w-10 rounded-md bg-gradient-to-br from-amber-200 to-orange-400/80" /></div>
+                <div className="text-xs uppercase tracking-[0.2em] text-white/40 mb-1">Available Balance</div>
+                <div className="text-4xl font-black tracking-tight text-white">$2,480.00</div>
+                <div className="mt-2 text-sm text-amber-200/80">12,400 TrooCoins</div>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                {[{l:"Tip received",v:"+$24"}, {l:"Merch sale",v:"+$86"}, {l:"Payout",v:"Ready"}].map((i)=>(
+                  <div key={i.l} className="rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-3"><div className="text-[10px] uppercase tracking-[0.16em] text-white/35 mb-1">{i.l}</div><div className="text-sm font-semibold text-white/85">{i.v}</div></div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
 function TrooChatHero() {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: false, amount: 0.35 });
@@ -741,7 +772,7 @@ function WatchEverywhereHero() {
       <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#050507] to-transparent z-[2]" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#050507] to-transparent z-[2]" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_15%,rgba(229,57,69,0.14),transparent_28%),radial-gradient(circle_at_80%_70%,rgba(255,140,60,0.08),transparent_24%),linear-gradient(180deg,#050507_0%,#020203_100%)]" />
-      <div className="absolute inset-0 opacity-[0.04] [background-image:linear-gradient(rgba(255,255,255,0.7)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.7)_1px,transparent_1px)] [background-size:96px_96px]" />
+
 
       <div className="relative z-10 mx-auto w-full max-w-[1400px] px-8 xl:px-16">
         <motion.div
@@ -872,7 +903,7 @@ function MonetizationHero() {
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#050507] to-transparent z-[2]" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(0,230,118,0.10),transparent_22%),radial-gradient(circle_at_20%_80%,rgba(255,255,255,0.04),transparent_20%),linear-gradient(180deg,#050607_0%,#030405_100%)]" />
       <motion.div className="absolute right-[12%] top-[18%] h-72 w-72 rounded-full bg-[#00E676]/10 blur-[120px]" animate={{ scale: [1, 1.15, 1], opacity: [0.3, 0.5, 0.3] }} transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }} />
-      <div className="absolute inset-0 opacity-[0.05] [background-image:linear-gradient(rgba(255,255,255,0.5)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.5)_1px,transparent_1px)] [background-size:80px_80px]" />
+
 
       <div className="relative z-10 mx-auto grid w-full max-w-[1600px] grid-cols-[0.95fr_1.05fr] items-center gap-14 px-8 xl:px-16">
         <motion.div initial="hidden" animate={inView ? "visible" : "hidden"} variants={{ visible: { transition: { staggerChildren: 0.1 } } }} className="max-w-3xl">
@@ -964,7 +995,7 @@ function CreatorEconomicsHero() {
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#050507] to-transparent z-[2]" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_35%,rgba(16,185,129,0.20),transparent_24%),radial-gradient(circle_at_20%_70%,rgba(16,185,129,0.10),transparent_28%),linear-gradient(180deg,#020604_0%,#010302_100%)]" />
       <motion.div className="absolute right-[18%] top-[22%] h-80 w-80 rounded-full bg-emerald-400/10 blur-[140px]" animate={{ scale: [1, 1.12, 1], opacity: [0.35, 0.55, 0.35] }} transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }} />
-      <div className="absolute inset-0 opacity-[0.05] [background-image:radial-gradient(rgba(255,255,255,0.7)_1px,transparent_1px)] [background-size:28px_28px]" />
+
 
       <div className="relative z-10 mx-auto grid w-full max-w-[1600px] grid-cols-[1.05fr_0.95fr] items-center gap-12 px-8 xl:px-16">
         <motion.div initial={{ opacity: 0, y: 30 }} animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }} className="max-w-3xl">
