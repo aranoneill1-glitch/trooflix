@@ -356,8 +356,8 @@ export default function Home() {
 
                   <div className="relative text-center mb-7">
                     <h1 className="text-[38px] leading-[0.98] font-black tracking-[-0.04em] text-white mb-3">
-                      An entire ecosystem.
-                      <span className="block bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-[#E53945]">In one powerful platform.</span>
+                      A complete ecosystem.
+                      <span className="block bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-[#E53945]">Engineered for creators who refuse to be limited.</span>
                     </h1>
                     <p className="text-[14px] text-white/60 max-w-sm mx-auto leading-relaxed">
                       Stream, create, chat, sell, and own your space — all in one cinematic Trooflix experience.
@@ -424,8 +424,8 @@ export default function Home() {
                   <div className="relative flex items-end justify-between gap-10 mb-10">
                     <div className="max-w-3xl">
                       <h1 className="text-5xl xl:text-7xl font-black tracking-[-0.05em] text-white leading-[0.95] mb-5">
-                        An entire ecosystem.
-                        <span className="block bg-clip-text text-transparent bg-gradient-to-r from-white via-[#ffd9dc] to-[#E53945]">In one powerful platform.</span>
+                        A complete ecosystem.
+                        <span className="block bg-clip-text text-transparent bg-gradient-to-r from-white via-[#ffd9dc] to-[#E53945]">Engineered for creators who refuse to be limited.</span>
                       </h1>
                       <p className="text-lg xl:text-xl text-white/55 leading-relaxed max-w-2xl">
                         Create, stream, watch, message, sell, and build your world — with a premium all-in-one experience made to blow people away.
