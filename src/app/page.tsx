@@ -651,11 +651,7 @@ function TrooflixEconomyHero() {
               <span key={t} className="rounded-full border border-[#ff6b4a]/25 bg-[#E53945]/10 px-4 py-2 text-sm font-medium text-white/90 backdrop-blur-md">{t}</span>
             ))}
           </motion.div>
-          <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-            <motion.a href="/wallet" whileHover={{ scale: 1.03, boxShadow: "0 0 0 1px rgba(255,255,255,0.1), 0 18px 45px rgba(229,57,69,0.32), 0 0 30px rgba(255,106,42,0.18)" }} className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#E53945] to-[#ff6a2a] px-8 py-4 text-base font-bold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_18px_40px_rgba(229,57,69,0.26)]">
-              Explore TrooBank <ArrowRight size={18} />
-            </motion.a>
-          </motion.div>
+
         </motion.div>
 
         <motion.div initial={{ opacity: 0, x: 30 }} animate={inView ? { opacity: 1, x: 0 } : {}} transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }} className="relative flex h-[500px] items-center justify-center">
@@ -714,11 +710,7 @@ function TrooChatHero() {
               <span key={t} className="rounded-full border border-[#ff6b4a]/25 bg-[#E53945]/10 px-4 py-2 text-sm font-medium text-white/90 backdrop-blur-md">{t}</span>
             ))}
           </motion.div>
-          <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-            <motion.a href="/messages" whileHover={{ scale: 1.03, boxShadow: "0 0 0 1px rgba(255,255,255,0.1), 0 18px 45px rgba(229,57,69,0.35), 0 0 30px rgba(255,106,42,0.2)" }} className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#E53945] to-[#ff6a2a] px-8 py-4 text-base font-bold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_18px_40px_rgba(229,57,69,0.28)]">
-              Start a Conversation <ArrowRight size={18} />
-            </motion.a>
-          </motion.div>
+
         </motion.div>
 
         <motion.div initial={{ opacity: 0, x: 30 }} animate={inView ? { opacity: 1, x: 0 } : {}} transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }} className="relative flex h-[500px] items-center justify-center">
@@ -779,14 +771,7 @@ function WatchEverywhereHero() {
             <br className="hidden xl:block" />
             A seamless, cinematic experience — wherever you watch.
           </p>
-          <div className="mt-10 flex items-center justify-center gap-4">
-            <motion.a href="/tv" whileHover={{ scale: 1.03, boxShadow: "0 0 0 1px rgba(255,255,255,0.1), 0 18px 45px rgba(229,57,69,0.35), 0 0 30px rgba(255,106,42,0.2)" }} className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#E53945] to-[#ff6a2a] px-8 py-4 text-base font-bold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_18px_40px_rgba(229,57,69,0.28)]">
-              <Tv size={18} /> Cast to TV
-            </motion.a>
-            <a href="/features" className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-8 py-4 text-base font-semibold text-white/85 backdrop-blur-xl transition hover:bg-white/[0.08] hover:text-white">
-              Learn more
-            </a>
-          </div>
+
         </motion.div>
 
         <motion.div
