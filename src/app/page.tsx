@@ -363,20 +363,20 @@ export default function Home() {
                     Stream, share, connect, and grow on a platform built for creators who want freedom, power, and a real home for their work.
                   </p>
 
-                  <div className="relative flex flex-col w-full max-w-sm gap-3">
+                  <div className="relative flex flex-row w-full max-w-md gap-2.5">
                     <a
                       href="/signup"
-                      className="group relative w-full flex items-center justify-center gap-2 overflow-hidden bg-gradient-to-r from-[#E53945] to-[#ff5a5f] text-white font-bold text-lg py-4 rounded-full transition shadow-[0_18px_40px_rgba(229,57,69,0.35)]"
+                      className="group relative flex-1 min-w-0 flex items-center justify-center gap-1.5 overflow-hidden bg-gradient-to-r from-[#E53945] to-[#ff5a5f] text-white font-bold text-[15px] px-4 py-3.5 rounded-full transition shadow-[0_18px_40px_rgba(229,57,69,0.35)] whitespace-nowrap"
                     >
                       <span className="absolute inset-0 bg-[linear-gradient(110deg,transparent,rgba(255,255,255,0.25),transparent)] translate-x-[-120%] group-hover:translate-x-[120%] transition-transform duration-700" />
                       <span className="relative">Join Today</span>
                     </a>
                     <a
                       href="/features"
-                      className="w-full flex items-center justify-center gap-2 bg-white/[0.07] border border-white/15 text-white font-bold text-lg py-4 rounded-full hover:bg-white/[0.12] transition backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
+                      className="flex-1 min-w-0 flex items-center justify-center gap-1.5 bg-white/[0.07] border border-white/15 text-white font-bold text-[15px] px-4 py-3.5 rounded-full hover:bg-white/[0.12] transition backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] whitespace-nowrap"
                     >
                       Why Trooflix
-                      <ArrowRight size={18} />
+                      <ArrowRight size={16} />
                     </a>
                   </div>
                 </div>
