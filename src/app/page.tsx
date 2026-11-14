@@ -447,7 +447,7 @@ export default function Home() {
                       </h2>
                     </motion.div>
 
-                    <motion.div className="mt-14 grid grid-cols-3 gap-6 items-end" initial="hidden" whileInView="visible" viewport={{ once: false, amount: 0.3 }} variants={{ visible: { transition: { staggerChildren: 0.14 } } }}>
+                    <motion.div className="mt-14 grid grid-cols-3 gap-6 items-center" initial="hidden" whileInView="visible" viewport={{ once: false, amount: 0.3 }} variants={{ visible: { transition: { staggerChildren: 0.14 } } }}>
                       {/* Livestream */}
                       <motion.div variants={{ hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22,1,0.36,1] } } }} className="flex flex-col items-center">
                         <motion.div whileHover={{ y: -8, boxShadow: '0 30px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.08), 0 0 40px rgba(239,68,68,0.12)' }} className="group relative w-full max-w-[360px] overflow-hidden rounded-[28px] border border-white/12 bg-[#0b0b10]/80 backdrop-blur-xl shadow-[0_24px_70px_rgba(0,0,0,0.45)] transition cursor-pointer">
