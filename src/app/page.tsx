@@ -434,9 +434,9 @@ export default function Home() {
                 <section className="relative w-full min-h-[100svh] snap-start overflow-hidden bg-[#040406] flex items-center">
                   <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#050507] to-transparent z-[2]" />
                   <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#050507] to-transparent z-[2]" />
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(255,255,255,0.05),transparent_22%),radial-gradient(circle_at_80%_20%,rgba(120,80,255,0.10),transparent_24%),linear-gradient(180deg,#050507_0%,#020203_100%)]" />
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(229,57,69,0.08),transparent_22%),radial-gradient(circle_at_80%_20%,rgba(255,106,42,0.10),transparent_24%),linear-gradient(180deg,#050507_0%,#020203_100%)]" />
                   <motion.div className="absolute -left-20 top-1/3 h-72 w-72 rounded-full bg-white/[0.04] blur-[120px]" animate={{ x:[0,40,0], y:[0,-20,0] }} transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }} />
-                  <motion.div className="absolute right-[-5%] bottom-[10%] h-80 w-80 rounded-full bg-fuchsia-500/[0.08] blur-[130px]" animate={{ x:[0,-30,0], y:[0,25,0] }} transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }} />
+                  <motion.div className="absolute right-[-5%] bottom-[10%] h-80 w-80 rounded-full bg-[#ff4d5a]/[0.08] blur-[130px]" animate={{ x:[0,-30,0], y:[0,25,0] }} transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }} />
                   <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent_0%,rgba(255,255,255,0.03)_45%,transparent_70%)] opacity-60" />
                   <div className="relative z-10 w-full max-w-[1600px] mx-auto px-8 xl:px-16 py-20">
                     <motion.div className="mx-auto max-w-4xl text-center" initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.45 }} transition={{ duration: 0.8, ease: [0.22,1,0.36,1] }}>
@@ -519,7 +519,7 @@ export default function Home() {
                             <div className="absolute inset-x-0 bottom-0 h-[14%] bg-black/85" />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/20" />
                             <div className="absolute left-5 bottom-[18%]">
-                              <div className="text-[10px] uppercase tracking-[0.2em] text-amber-200/80 mb-1">Original Documentary</div>
+                              <div className="text-[10px] uppercase tracking-[0.2em] text-[#ffb0a8]/80 mb-1">Original Documentary</div>
                               <div className="text-xl font-black tracking-tight text-white">The Untold Signal</div>
                             </div>
                           </div>
@@ -646,26 +646,26 @@ function TrooflixEconomyHero() {
     <section ref={ref} className="relative hidden min-h-[100svh] w-full snap-start overflow-hidden bg-[#050405] lg:flex items-center">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#050507] to-transparent z-[2]" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#050507] to-transparent z-[2]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_45%_30%,rgba(251,191,36,0.14),transparent_24%),radial-gradient(circle_at_70%_70%,rgba(229,57,69,0.08),transparent_22%),linear-gradient(180deg,#060506_0%,#020203_100%)]" />
-      <motion.div className="absolute right-[15%] top-[18%] h-72 w-72 rounded-full bg-amber-300/10 blur-[130px]" animate={{ y: [0, -18, 0], opacity: [0.35, 0.55, 0.35] }} transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }} />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_45%_30%,rgba(229,57,69,0.16),transparent_24%),radial-gradient(circle_at_70%_70%,rgba(255,106,42,0.12),transparent_22%),linear-gradient(180deg,#060506_0%,#020203_100%)]" />
+      <motion.div className="absolute right-[15%] top-[18%] h-72 w-72 rounded-full bg-[#ff4d5a]/10 blur-[130px]" animate={{ y: [0, -18, 0], opacity: [0.35, 0.55, 0.35] }} transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }} />
 
       <div className="relative z-10 mx-auto grid w-full max-w-[1600px] grid-cols-[0.95fr_1.05fr] items-center gap-14 px-8 xl:px-16">
         <motion.div initial="hidden" animate={inView ? "visible" : "hidden"} variants={{ visible: { transition: { staggerChildren: 0.1 } } }} className="max-w-3xl">
           <motion.p variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-5 text-[11px] font-bold uppercase tracking-[0.34em] text-white/40">Trooflix Economy</motion.p>
           <motion.h2 variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.85 } } }} className="mb-7 text-[56px] font-black leading-[0.96] tracking-tighter text-white xl:text-[74px] 2xl:text-[88px]">
             The creator economy,<br />
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ffd37a] via-[#ffb347] to-[#ff6a2a]">reimagined.</span>
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff4d5a] via-[#ff6b4a] to-orange-400">reimagined.</span>
           </motion.h2>
           <motion.p variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-8 max-w-2xl text-lg font-medium leading-relaxed text-white/60 xl:text-xl">
             Tips, purchases, payouts, and support — connected in one native system. TrooCoins and TrooBank make value flow simply between creators and their audience.
           </motion.p>
           <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-10 flex flex-wrap gap-3">
             {["TrooCoins", "TrooBank", "Instant tips", "Seamless payouts"].map((t) => (
-              <span key={t} className="rounded-full border border-amber-300/20 bg-amber-400/10 px-4 py-2 text-sm font-medium text-amber-50/90 backdrop-blur-md">{t}</span>
+              <span key={t} className="rounded-full border border-[#ff6b4a]/25 bg-[#E53945]/10 px-4 py-2 text-sm font-medium text-white/90 backdrop-blur-md">{t}</span>
             ))}
           </motion.div>
           <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-            <motion.a href="/wallet" whileHover={{ scale: 1.03, boxShadow: "0 0 0 1px rgba(255,255,255,0.1), 0 18px 45px rgba(251,191,36,0.28), 0 0 30px rgba(255,106,42,0.18)" }} className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#fbbf24] to-[#ff7a2f] px-8 py-4 text-base font-bold text-black shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_18px_40px_rgba(251,191,36,0.22)]">
+            <motion.a href="/wallet" whileHover={{ scale: 1.03, boxShadow: "0 0 0 1px rgba(255,255,255,0.1), 0 18px 45px rgba(229,57,69,0.32), 0 0 30px rgba(255,106,42,0.18)" }} className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#E53945] to-[#ff6a2a] px-8 py-4 text-base font-bold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_18px_40px_rgba(229,57,69,0.26)]">
               Explore TrooBank <ArrowRight size={18} />
             </motion.a>
           </motion.div>
@@ -673,20 +673,20 @@ function TrooflixEconomyHero() {
 
         <motion.div initial={{ opacity: 0, x: 30 }} animate={inView ? { opacity: 1, x: 0 } : {}} transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }} className="relative flex h-[500px] items-center justify-center">
           <div className="relative w-full max-w-[520px]">
-            <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }} className="absolute -top-2 right-10 flex h-16 w-16 items-center justify-center rounded-full border border-amber-300/25 bg-gradient-to-br from-amber-300/30 to-orange-400/20 text-2xl shadow-[0_0_30px_rgba(251,191,36,0.2)] backdrop-blur-xl">◉</motion.div>
+            <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }} className="absolute -top-2 right-10 flex h-16 w-16 items-center justify-center rounded-full border border-[#ff6b4a]/30 bg-gradient-to-br from-[#E53945]/25 to-[#ff6a2a]/20 text-2xl text-[#ffd6cf] shadow-[0_0_30px_rgba(229,57,69,0.22)] backdrop-blur-xl">◉</motion.div>
             <div className="rounded-[32px] border border-white/10 bg-white/[0.04] p-6 shadow-[0_40px_120px_rgba(0,0,0,0.45)] backdrop-blur-2xl">
               <div className="mb-6 flex items-center justify-between">
                 <div>
                   <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/40">TrooBank</div>
                   <div className="mt-1 text-sm text-white/55">Creator wallet</div>
                 </div>
-                <div className="rounded-full border border-amber-300/20 bg-amber-400/10 px-3 py-1 text-xs font-semibold text-amber-200">Active</div>
+                <div className="rounded-full border border-[#ff6b4a]/25 bg-[#E53945]/10 px-3 py-1 text-xs font-semibold text-[#ffb0a8]">Active</div>
               </div>
-              <div className="mb-6 rounded-[24px] border border-amber-200/15 bg-gradient-to-br from-[#2a1d08] via-[#171106] to-[#0b0905] p-6">
-                <div className="mb-8 flex items-center justify-between"><span className="text-sm font-bold tracking-[0.22em] text-amber-100/80">TROOBANK</span><span className="h-8 w-10 rounded-md bg-gradient-to-br from-amber-200 to-orange-400/80" /></div>
+              <div className="mb-6 rounded-[24px] border border-[#ff6b4a]/20 bg-gradient-to-br from-[#2a1214] via-[#17090a] to-[#0b0606] p-6">
+                <div className="mb-8 flex items-center justify-between"><span className="text-sm font-bold tracking-[0.22em] text-[#ffd6cf]/85">TROOBANK</span><span className="h-8 w-10 rounded-md bg-gradient-to-br from-[#ffb0a8] to-[#ff6a2a]" /></div>
                 <div className="text-xs uppercase tracking-[0.2em] text-white/40 mb-1">Available Balance</div>
                 <div className="text-4xl font-black tracking-tight text-white">$2,480.00</div>
-                <div className="mt-2 text-sm text-amber-200/80">12,400 TrooCoins</div>
+                <div className="mt-2 text-sm text-[#ffb0a8]/85">12,400 TrooCoins</div>
               </div>
               <div className="grid grid-cols-3 gap-3">
                 {[{l:"Tip received",v:"+$24"}, {l:"Merch sale",v:"+$86"}, {l:"Payout",v:"Ready"}].map((i)=>(
@@ -706,29 +706,29 @@ function TrooChatHero() {
   const inView = useInView(ref, { once: false, amount: 0.35 });
 
   return (
-    <section ref={ref} className="relative hidden min-h-[100svh] w-full snap-start overflow-hidden bg-[#06050b] lg:flex items-center">
+    <section ref={ref} className="relative hidden min-h-[100svh] w-full snap-start overflow-hidden bg-[#060407] lg:flex items-center">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/70 to-transparent z-[1]" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/70 to-transparent z-[1]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_35%,rgba(168,85,247,0.18),transparent_26%),radial-gradient(circle_at_75%_65%,rgba(59,130,246,0.14),transparent_24%),linear-gradient(180deg,#06050b_0%,#04030a_100%)]" />
-      <motion.div className="absolute left-[12%] top-[18%] h-72 w-72 rounded-full bg-violet-400/10 blur-[130px]" animate={{ x: [0, 20, 0], y: [0, -18, 0] }} transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }} />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_35%,rgba(229,57,69,0.16),transparent_26%),radial-gradient(circle_at_75%_65%,rgba(255,106,42,0.12),transparent_24%),linear-gradient(180deg,#060405_0%,#030203_100%)]" />
+      <motion.div className="absolute left-[12%] top-[18%] h-72 w-72 rounded-full bg-[#ff4d5a]/10 blur-[130px]" animate={{ x: [0, 20, 0], y: [0, -18, 0] }} transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }} />
 
       <div className="relative z-10 mx-auto grid w-full max-w-[1600px] grid-cols-[0.95fr_1.05fr] items-center gap-14 px-8 xl:px-16">
         <motion.div initial="hidden" animate={inView ? "visible" : "hidden"} variants={{ visible: { transition: { staggerChildren: 0.1 } } }} className="max-w-3xl">
           <motion.p variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-5 text-[11px] font-bold uppercase tracking-[0.34em] text-white/40">TrooChat</motion.p>
           <motion.h2 variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.85 } } }} className="mb-7 text-[56px] font-black leading-[0.96] tracking-tighter text-white xl:text-[74px] 2xl:text-[88px]">
             Connect beyond the<br />
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-violet-300 via-fuchsia-300 to-blue-300">comment section.</span>
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff4d5a] via-[#ff6b4a] to-orange-400">comment section.</span>
           </motion.h2>
           <motion.p variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-8 max-w-2xl text-lg font-medium leading-relaxed text-white/60 xl:text-xl">
             Move from public replies to real relationships. Messages, voice notes, and calls — in one private, creator-owned space, without algorithms in the middle.
           </motion.p>
           <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-10 flex flex-wrap gap-3">
             {["Direct messages", "Voice notes", "Video calls", "Private & direct"].map((t) => (
-              <span key={t} className="rounded-full border border-violet-300/20 bg-violet-400/10 px-4 py-2 text-sm font-medium text-violet-50/90 backdrop-blur-md">{t}</span>
+              <span key={t} className="rounded-full border border-[#ff6b4a]/25 bg-[#E53945]/10 px-4 py-2 text-sm font-medium text-white/90 backdrop-blur-md">{t}</span>
             ))}
           </motion.div>
           <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-            <motion.a href="/messages" whileHover={{ scale: 1.03, boxShadow: "0 0 0 1px rgba(255,255,255,0.1), 0 18px 45px rgba(139,92,246,0.35), 0 0 30px rgba(139,92,246,0.2)" }} className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-violet-500 to-indigo-500 px-8 py-4 text-base font-bold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_18px_40px_rgba(139,92,246,0.28)]">
+            <motion.a href="/messages" whileHover={{ scale: 1.03, boxShadow: "0 0 0 1px rgba(255,255,255,0.1), 0 18px 45px rgba(229,57,69,0.35), 0 0 30px rgba(255,106,42,0.2)" }} className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#E53945] to-[#ff6a2a] px-8 py-4 text-base font-bold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_18px_40px_rgba(229,57,69,0.28)]">
               Start a Conversation <ArrowRight size={18} />
             </motion.a>
           </motion.div>
@@ -739,19 +739,19 @@ function TrooChatHero() {
             <div className="rounded-[32px] border border-white/10 bg-white/[0.04] p-5 shadow-[0_40px_120px_rgba(0,0,0,0.45)] backdrop-blur-2xl">
               <div className="mb-5 flex items-center justify-between border-b border-white/8 pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-violet-400 to-indigo-400" />
+                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#E53945] to-[#ff6a2a]" />
                   <div>
                     <div className="text-sm font-semibold text-white">Creator Circle</div>
                     <div className="text-xs text-white/40">3 members · active now</div>
                   </div>
                 </div>
-                <div className="flex h-9 w-9 items-center justify-center rounded-full border border-emerald-400/20 bg-emerald-500/10 text-emerald-300"><Phone size={16} /></div>
+                <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[#ff6b4a]/25 bg-[#E53945]/10 text-[#ffb0a8]"><Phone size={16} /></div>
               </div>
               <div className="space-y-4">
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ delay: 0.3 }} className="max-w-[75%] rounded-3xl rounded-bl-md border border-white/10 bg-white/[0.06] px-4 py-3 text-sm text-white/80">Loved the new episode — when’s the next live?</motion.div>
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ delay: 0.45 }} className="ml-auto max-w-[78%] rounded-3xl rounded-br-md border border-violet-300/20 bg-gradient-to-br from-violet-500/25 to-indigo-500/20 px-4 py-3 text-sm text-white">
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ delay: 0.45 }} className="ml-auto max-w-[78%] rounded-3xl rounded-br-md border border-[#ff6b4a]/25 bg-gradient-to-br from-[#E53945]/25 to-[#ff6a2a]/20 px-4 py-3 text-sm text-white">
                   <div className="mb-2 text-white/70 text-xs">Voice message · 0:18</div>
-                  <div className="flex h-7 items-end gap-1">{[8,14,22,12,26,18,10,24,16,20,12,18].map((h,idx)=>(<span key={idx} className="w-1.5 origin-bottom rounded-full bg-gradient-to-t from-violet-300 to-blue-300" style={{ height:`${h}px`, animation:`waveBar 1s ease-in-out ${idx*0.06}s infinite` }} />))}</div>
+                  <div className="flex h-7 items-end gap-1">{[8,14,22,12,26,18,10,24,16,20,12,18].map((h,idx)=>(<span key={idx} className="w-1.5 origin-bottom rounded-full bg-gradient-to-t from-[#ff6b4a] to-[#ffb0a8]" style={{ height:`${h}px`, animation:`waveBar 1s ease-in-out ${idx*0.06}s infinite` }} />))}</div>
                 </motion.div>
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ delay: 0.6 }} className="max-w-[70%] rounded-3xl rounded-bl-md border border-white/10 bg-white/[0.06] px-4 py-3 text-sm text-white/80">Let’s hop on a quick call and plan the drop.</motion.div>
               </div>
@@ -901,8 +901,8 @@ function MonetizationHero() {
     <section ref={ref} className="relative hidden min-h-[100svh] w-full snap-start overflow-hidden bg-[#050607] lg:flex items-center">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#050507] to-transparent z-[2]" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#050507] to-transparent z-[2]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(0,230,118,0.10),transparent_22%),radial-gradient(circle_at_20%_80%,rgba(255,255,255,0.04),transparent_20%),linear-gradient(180deg,#050607_0%,#030405_100%)]" />
-      <motion.div className="absolute right-[12%] top-[18%] h-72 w-72 rounded-full bg-[#00E676]/10 blur-[120px]" animate={{ scale: [1, 1.15, 1], opacity: [0.3, 0.5, 0.3] }} transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }} />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(229,57,69,0.14),transparent_22%),radial-gradient(circle_at_20%_80%,rgba(255,106,42,0.08),transparent_20%),linear-gradient(180deg,#050607_0%,#030405_100%)]" />
+      <motion.div className="absolute right-[12%] top-[18%] h-72 w-72 rounded-full bg-[#ff4d5a]/10 blur-[120px]" animate={{ scale: [1, 1.15, 1], opacity: [0.3, 0.5, 0.3] }} transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }} />
 
 
       <div className="relative z-10 mx-auto grid w-full max-w-[1600px] grid-cols-[0.95fr_1.05fr] items-center gap-14 px-8 xl:px-16">
@@ -910,7 +910,7 @@ function MonetizationHero() {
           <motion.p variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-5 text-[11px] font-bold uppercase tracking-[0.34em] text-white/45">MONETIZATION</motion.p>
           <motion.h2 variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8 } } }} className="mb-7 text-[56px] font-black leading-[0.96] tracking-tighter text-white xl:text-[74px] 2xl:text-[88px]">
             Turn your audience<br />
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#00E676] to-emerald-200">into a business.</span>
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff4d5a] via-[#ff6b4a] to-orange-400">into a business.</span>
           </motion.h2>
           <motion.p variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-8 max-w-2xl text-lg font-medium leading-relaxed text-white/65 xl:text-xl">
             Subscriptions. Tips. Merchandise. Paid communities.<br className="hidden xl:block" />
@@ -920,13 +920,13 @@ function MonetizationHero() {
           <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-10 flex flex-wrap gap-3">
             {streams.map((s) => (
               <span key={s.label} className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-md">
-                <span className="text-[#00E676]/90">{s.icon}</span>{s.label}
+                <span className="text-[#ff7a5c]/90">{s.icon}</span>{s.label}
               </span>
             ))}
           </motion.div>
 
           <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="flex flex-col items-start gap-3">
-            <motion.a href="/signup" whileHover={{ scale: 1.03, boxShadow: "0 0 0 1px rgba(255,255,255,0.1), 0 18px 45px rgba(0,230,118,0.22), 0 0 30px rgba(0,230,118,0.14)" }} whileTap={{ scale: 0.99 }} className="inline-flex items-center justify-center gap-2 rounded-full bg-[#00E676] px-8 py-4 text-base font-bold text-black shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_18px_40px_rgba(0,230,118,0.18)]">
+            <motion.a href="/signup" whileHover={{ scale: 1.03, boxShadow: "0 0 0 1px rgba(255,255,255,0.1), 0 18px 45px rgba(229,57,69,0.28), 0 0 30px rgba(255,106,42,0.16)" }} whileTap={{ scale: 0.99 }} className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#E53945] to-[#ff6a2a] px-8 py-4 text-base font-bold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_18px_40px_rgba(229,57,69,0.24)]">
               Start Building Your Business <ArrowRight size={18} />
             </motion.a>
             <p className="text-sm font-medium text-white/45">You own the relationship. You own the revenue.</p>
@@ -940,17 +940,17 @@ function MonetizationHero() {
                 <div className="text-xs uppercase tracking-[0.18em] text-white/40 mb-1">Creator Dashboard</div>
                 <div className="text-lg font-semibold text-white">Earnings overview</div>
               </div>
-              <span className="rounded-full border border-[#00E676]/25 bg-[#00E676]/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#00E676]">Live</span>
+              <span className="rounded-full border border-[#ff6b4a]/30 bg-[#E53945]/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#ffb0a8]">Live</span>
             </div>
             <div className="grid grid-cols-3 gap-4 mb-6">
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"><div className="text-xs uppercase tracking-[0.16em] text-white/40 mb-2">Total earnings</div><motion.div animate={inView ? { opacity: [0.6,1,1] } : {}} className="text-3xl font-black text-white">$24,860</motion.div><div className="mt-1 text-xs text-[#00E676]/90">+18% this month</div></div>
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"><div className="text-xs uppercase tracking-[0.16em] text-white/40 mb-2">Total earnings</div><motion.div animate={inView ? { opacity: [0.6,1,1] } : {}} className="text-3xl font-black text-white">$24,860</motion.div><div className="mt-1 text-xs text-[#ff8a6a]">+18% this month</div></div>
               <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"><div className="text-xs uppercase tracking-[0.16em] text-white/40 mb-2">Subscribers</div><div className="text-3xl font-black text-white">3,482</div><div className="mt-1 text-xs text-white/45">Active members</div></div>
               <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"><div className="text-xs uppercase tracking-[0.16em] text-white/40 mb-2">Recent payout</div><div className="text-3xl font-black text-white">$2,140</div><div className="mt-1 text-xs text-white/45">Deposited</div></div>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
               <div className="mb-3 flex items-center justify-between"><span className="text-sm font-medium text-white/75">Revenue breakdown</span><span className="text-xs text-white/40">Last 30 days</span></div>
               <div className="space-y-3">
-                {[{l:'Subscriptions',w:'72%',c:'bg-[#00E676]'},{l:'Merchandise',w:'38%',c:'bg-emerald-300/80'},{l:'Tips & Gifts',w:'24%',c:'bg-emerald-200/70'},{l:'Communities',w:'18%',c:'bg-white/40'}].map((row)=>(
+                {[{l:'Subscriptions',w:'72%',c:'bg-[#E53945]'},{l:'Merchandise',w:'38%',c:'bg-[#ff6b4a]/80'},{l:'Tips & Gifts',w:'24%',c:'bg-[#ff8a6a]/70'},{l:'Communities',w:'18%',c:'bg-white/40'}].map((row)=>(
                   <div key={row.l}><div className="mb-1 flex items-center justify-between text-xs text-white/50"><span>{row.l}</span><span>{row.w}</span></div><div className="h-2 rounded-full bg-white/10 overflow-hidden"><motion.div initial={{ width: 0 }} animate={inView ? { width: row.w } : { width: 0 }} transition={{ duration: 1, delay: 0.4, ease: 'easeOut' }} className={`h-full rounded-full ${row.c}`} /></div></div>
                 ))}
               </div>
@@ -963,14 +963,14 @@ function MonetizationHero() {
               initial={{ opacity: 0, y: 24, x: i % 2 === 0 ? -10 : 10 }}
               animate={inView ? { opacity: 1, y: [0, -4, 0], x: 0 } : {}}
               transition={{ opacity: { duration: 0.6, delay: 0.35 + i * 0.08 }, y: { duration: 4 + i * 0.3, repeat: Infinity, ease: "easeInOut", delay: 0.8 + i * 0.15 }, x: { duration: 0.6, delay: 0.35 + i * 0.08 } }}
-              whileHover={{ y: -8, boxShadow: "0 18px 45px rgba(0,0,0,0.35), 0 0 0 1px rgba(0,230,118,0.12)" }}
+              whileHover={{ y: -8, boxShadow: "0 18px 45px rgba(0,0,0,0.35), 0 0 0 1px rgba(229,57,69,0.18)" }}
               className={`absolute rounded-2xl border border-white/10 bg-[rgba(255,255,255,0.04)] px-4 py-3 shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-xl ${
                 i === 0 ? "right-0 top-0 w-[210px]" : i === 1 ? "-left-2 top-[150px] w-[190px]" : i === 2 ? "right-[-10px] top-[240px] w-[190px]" : i === 3 ? "left-4 bottom-[130px] w-[200px]" : "right-6 bottom-2 w-[220px]"
               }`}
             >
               <div className="mb-2 flex items-center justify-between">
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-xs text-[#00E676]">{s.icon}</span>
-                <span className="text-[10px] uppercase tracking-[0.16em] text-[#00E676]/80">Active</span>
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-xs text-[#ff7a5c]">{s.icon}</span>
+                <span className="text-[10px] uppercase tracking-[0.16em] text-[#ffb0a8]/80">Active</span>
               </div>
               <div className="text-sm font-semibold text-white">{s.label}</div>
               <div className="mt-1 flex items-center justify-between text-xs text-white/45"><span>{s.meta}</span><span className="font-semibold text-white/75">{s.value}</span></div>
@@ -990,19 +990,18 @@ function CreatorEconomicsHero() {
   const oldKeep = Math.round(revenue * 0.55);
 
   return (
-    <section ref={ref} className="relative hidden min-h-[100svh] w-full snap-start overflow-hidden bg-[#020604] lg:flex items-center">
+    <section ref={ref} className="relative hidden min-h-[100svh] w-full snap-start overflow-hidden bg-[#080405] lg:flex items-center">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#050507] to-transparent z-[2]" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#050507] to-transparent z-[2]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_35%,rgba(16,185,129,0.20),transparent_24%),radial-gradient(circle_at_20%_70%,rgba(16,185,129,0.10),transparent_28%),linear-gradient(180deg,#020604_0%,#010302_100%)]" />
-      <motion.div className="absolute right-[18%] top-[22%] h-80 w-80 rounded-full bg-emerald-400/10 blur-[140px]" animate={{ scale: [1, 1.12, 1], opacity: [0.35, 0.55, 0.35] }} transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }} />
-
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_35%,rgba(229,57,69,0.18),transparent_24%),radial-gradient(circle_at_20%_70%,rgba(255,106,42,0.12),transparent_28%),linear-gradient(180deg,#080405_0%,#030203_100%)]" />
+      <motion.div className="absolute right-[18%] top-[22%] h-80 w-80 rounded-full bg-[#ff4d5a]/10 blur-[140px]" animate={{ scale: [1, 1.12, 1], opacity: [0.35, 0.55, 0.35] }} transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }} />
 
       <div className="relative z-10 mx-auto grid w-full max-w-[1600px] grid-cols-[1.05fr_0.95fr] items-center gap-12 px-8 xl:px-16">
         <motion.div initial={{ opacity: 0, y: 30 }} animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }} className="max-w-3xl">
-          <p className="mb-5 text-[11px] font-bold uppercase tracking-[0.34em] text-emerald-200/70">CREATOR-FIRST ECONOMICS</p>
+          <p className="mb-5 text-[11px] font-bold uppercase tracking-[0.34em] text-[#ffb0a8]/70">CREATOR-FIRST ECONOMICS</p>
           <h2 className="mb-7 text-[56px] font-black leading-[0.96] tracking-tighter text-white xl:text-[74px] 2xl:text-[88px]">
             Stop paying the<br />
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#34d399] to-emerald-200">Big Tech tax.</span>
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff4d5a] via-[#ff6b4a] to-orange-400">Big Tech tax.</span>
           </h2>
           <div className="mb-8 max-w-2xl space-y-2 text-lg font-medium leading-relaxed text-white/68 xl:text-xl">
             <p>Legacy platforms can take nearly half before you ever see it.</p>
@@ -1012,18 +1011,18 @@ function CreatorEconomicsHero() {
 
           <div className="mb-10 flex flex-wrap gap-3">
             {["Flat 1% fee", "Predictable payouts", "No surprise cuts"].map((tag) => (
-              <span key={tag} className="rounded-full border border-emerald-300/20 bg-emerald-400/10 px-4 py-2 text-sm font-medium text-emerald-50/90 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">{tag}</span>
+              <span key={tag} className="rounded-full border border-[#ff6b4a]/25 bg-[#E53945]/10 px-4 py-2 text-sm font-medium text-white/85 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">{tag}</span>
             ))}
           </div>
 
           <div className="mb-8 grid max-w-3xl grid-cols-2 gap-4">
-            <motion.div whileHover={{ y: -4 }} className="rounded-[26px] border border-emerald-300/20 bg-white/[0.06] p-6 backdrop-blur-2xl shadow-[0_24px_70px_rgba(0,0,0,0.28),0_0_0_1px_rgba(16,185,129,0.08),0_0_40px_rgba(16,185,129,0.08)]">
+            <motion.div whileHover={{ y: -4 }} className="rounded-[26px] border border-[#ff6b4a]/20 bg-white/[0.06] p-6 backdrop-blur-2xl shadow-[0_24px_70px_rgba(0,0,0,0.28),0_0_0_1px_rgba(229,57,69,0.08),0_0_40px_rgba(229,57,69,0.08)]">
               <div className="mb-3 flex items-center justify-between">
-                <span className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-200/80">Trooflix</span>
-                <span className="rounded-full border border-emerald-300/25 bg-emerald-400/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-100">Highlighted</span>
+                <span className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ffb0a8]">Trooflix</span>
+                <span className="rounded-full border border-[#ff6b4a]/25 bg-[#E53945]/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-white/90">Highlighted</span>
               </div>
               <div className="mb-1 text-xs uppercase tracking-[0.18em] text-white/45">On ${revenue.toLocaleString()}</div>
-              <div className="text-4xl font-black tracking-tight text-emerald-300">${trooflixKeep.toLocaleString()}</div>
+              <div className="text-4xl font-black tracking-tight text-[#ff7a5c]">${trooflixKeep.toLocaleString()}</div>
               <div className="mt-2 text-sm text-white/55">You keep $9,900 on $10,000</div>
             </motion.div>
 
@@ -1050,16 +1049,16 @@ function CreatorEconomicsHero() {
               step={500}
               value={revenue}
               onChange={(e) => setRevenue(Number(e.target.value))}
-              className="w-full accent-emerald-400"
+              className="w-full accent-[#E53945]"
             />
             <div className="mt-3 flex items-center justify-between text-sm text-white/55">
               <span>${revenue.toLocaleString()} / month</span>
-              <span className="text-emerald-300 font-semibold">+${(trooflixKeep - oldKeep).toLocaleString()} vs old model</span>
+              <span className="text-[#ff8a6a] font-semibold">+${(trooflixKeep - oldKeep).toLocaleString()} vs old model</span>
             </div>
           </div>
 
           <div className="flex items-center gap-5 flex-wrap">
-            <motion.a href="#earnings-calculator" whileHover={{ scale: 1.03, boxShadow: "0 0 0 1px rgba(255,255,255,0.1), 0 18px 45px rgba(16,185,129,0.35), 0 0 30px rgba(16,185,129,0.2)" }} whileTap={{ scale: 0.99 }} className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-500 px-8 py-4 text-base font-bold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_18px_40px_rgba(16,185,129,0.3)]">
+            <motion.a href="#earnings-calculator" whileHover={{ scale: 1.03, boxShadow: "0 0 0 1px rgba(255,255,255,0.1), 0 18px 45px rgba(229,57,69,0.35), 0 0 30px rgba(255,106,42,0.2)" }} whileTap={{ scale: 0.99 }} className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#E53945] to-[#ff6a2a] px-8 py-4 text-base font-bold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_18px_40px_rgba(229,57,69,0.3)]">
               Calculate Your Earnings <ArrowRight size={18} />
             </motion.a>
             <p className="text-sm text-white/45">On $10,000 → You keep <span className="text-white/75 font-semibold">$9,900</span> · Old model → <span className="text-white/55 font-semibold">$5,500</span></p>
@@ -1068,10 +1067,10 @@ function CreatorEconomicsHero() {
 
         <div className="relative flex min-h-[70vh] items-center justify-center">
           <motion.div initial={{ opacity: 0, scale: 0.92 }} animate={inView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.92 }} transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }} className="relative">
-            <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }} className="text-[170px] font-black leading-none tracking-tighter text-white drop-shadow-[0_0_60px_rgba(52,211,153,0.35)] xl:text-[220px] 2xl:text-[260px]">
+            <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }} className="text-[170px] font-black leading-none tracking-tighter text-white drop-shadow-[0_0_60px_rgba(229,57,69,0.35)] xl:text-[220px] 2xl:text-[260px]">
               99%
             </motion.div>
-            <div className="absolute -bottom-2 left-1/2 h-24 w-[80%] -translate-x-1/2 rounded-full bg-emerald-400/10 blur-3xl" />
+            <div className="absolute -bottom-2 left-1/2 h-24 w-[80%] -translate-x-1/2 rounded-full bg-[#ff4d5a]/10 blur-3xl" />
           </motion.div>
 
           <motion.div
@@ -1081,7 +1080,7 @@ function CreatorEconomicsHero() {
             className="absolute bottom-8 right-0 w-[340px] rounded-2xl border border-white/15 bg-white/[0.07] p-4 shadow-[0_24px_70px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-2xl"
           >
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-full border border-emerald-400/40 bg-emerald-500/20 text-emerald-300"><CheckCircle2 size={20} /></div>
+              <div className="flex h-11 w-11 items-center justify-center rounded-full border border-[#ff6b4a]/40 bg-[#E53945]/20 text-[#ffb0a8]"><CheckCircle2 size={20} /></div>
               <div>
                 <div className="text-sm font-semibold text-white">Payout Received</div>
                 <div className="text-xs text-white/55">+$1,284.00 deposited to TrooBank</div>
