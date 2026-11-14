@@ -515,14 +515,7 @@ export default function Home() {
                       </motion.div>
                     </motion.div>
 
-                    <motion.div className="mt-12 flex items-center justify-center gap-4" initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.4 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.22,1,0.36,1] }}>
-                      <motion.a href="/creator-dashboard/upload" whileHover={{ scale: 1.03, boxShadow: '0 0 0 1px rgba(255,255,255,0.12), 0 20px 50px rgba(229,57,69,0.4)' }} whileTap={{ scale: 0.99 }} className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#E53945] to-[#ff6a2a] px-8 py-4 text-base font-bold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_18px_40px_rgba(229,57,69,0.35)]">
-                        Start Creating <ArrowRight size={18} />
-                      </motion.a>
-                      <motion.a href="/features" whileHover={{ backgroundColor: 'rgba(255,255,255,0.1)' }} className="inline-flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/[0.06] px-8 py-4 text-base font-bold text-white backdrop-blur-xl transition">
-                        See How It Works
-                      </motion.a>
-                    </motion.div>
+
                   </div>
                 </section>
 
