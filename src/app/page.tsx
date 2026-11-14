@@ -428,9 +428,7 @@ export default function Home() {
                 `}</style>
 
                 <div className="snap-y snap-proximity">
-                <WatchEverywhereHero />
-
-                {/* Page 1: Content Power / Your Voice. Unfiltered. */}
+                {/* Page 1: Content Power / Your Voice. Unfiltered. (MAIN HERO) */}
                 <section className="relative w-full min-h-[100svh] snap-start overflow-hidden bg-[#040406] flex items-center">
                   <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#050507] to-transparent z-[2]" />
                   <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#050507] to-transparent z-[2]" />
@@ -439,79 +437,84 @@ export default function Home() {
                   <motion.div className="absolute right-[-5%] bottom-[10%] h-80 w-80 rounded-full bg-[#ff4d5a]/[0.08] blur-[130px]" animate={{ x:[0,-30,0], y:[0,25,0] }} transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }} />
                   <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent_0%,rgba(255,255,255,0.03)_45%,transparent_70%)] opacity-60" />
                   <div className="relative z-10 w-full max-w-[1600px] mx-auto px-8 xl:px-16 py-20">
-                    <motion.div className="mx-auto max-w-4xl text-center" initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.45 }} transition={{ duration: 0.8, ease: [0.22,1,0.36,1] }}>
-                      <p className="mb-5 text-[11px] font-bold uppercase tracking-[0.34em] text-white/45">CREATE WITHOUT LIMITS</p>
-                      <h2 className="text-[56px] xl:text-[74px] 2xl:text-[88px] font-black tracking-tighter text-white leading-[0.98]">
-                        Your Voice.<br />
-                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff4d5a] via-[#ff6b4a] to-orange-400">Unfiltered.</span>
-                      </h2>
-                    </motion.div>
-
-                    <motion.div className="mt-14 grid grid-cols-3 gap-6 items-center" initial="hidden" whileInView="visible" viewport={{ once: false, amount: 0.3 }} variants={{ visible: { transition: { staggerChildren: 0.14 } } }}>
-                      {/* Livestream */}
-                      <motion.div variants={{ hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22,1,0.36,1] } } }} className="flex flex-col items-center">
-                        <motion.div whileHover={{ y: -8, boxShadow: '0 30px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.08), 0 0 40px rgba(239,68,68,0.12)' }} className="group relative w-full max-w-[360px] overflow-hidden rounded-[28px] border border-white/12 bg-[#0b0b10]/80 backdrop-blur-xl shadow-[0_24px_70px_rgba(0,0,0,0.45)] transition cursor-pointer">
-                          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(239,68,68,0.18),transparent_30%),linear-gradient(180deg,#15151d_0%,#09090d_100%)]" />
-                          <div className="relative p-5">
-                            <div className="mb-4 flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <span className="relative flex h-2.5 w-2.5"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-70"></span><span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.9)]"></span></span>
-                                <span className="rounded-full border border-red-400/40 bg-red-500/15 px-2.5 py-1 text-[10px] font-black tracking-[0.18em] text-red-200">LIVE</span>
-                              </div>
-                              <span className="text-xs text-white/55 font-medium">8.2k watching</span>
-                            </div>
-                            <div className="relative aspect-[16/10] overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#201018] via-[#120d14] to-[#070709]">
-                              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(255,255,255,0.08),transparent_35%),radial-gradient(circle_at_70%_70%,rgba(239,68,68,0.18),transparent_35%)]" />
-                              <div className="absolute left-4 top-4 rounded-full border border-white/15 bg-black/30 px-3 py-1 text-[10px] uppercase tracking-[0.16em] text-white/70">Broadcast Studio</div>
-                              <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/70 to-transparent" />
-                              <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3">
-                                <div>
-                                  <div className="text-sm font-semibold text-white">Live Session</div>
-                                  <div className="text-xs text-white/50">Studio quality</div>
-                                </div>
-                                <div className="flex items-end gap-1 h-8">
-                                  {[7,13,18,10,22,14,9,16,12].map((h,idx)=>(
-                                    <span key={idx} className="w-1 rounded-full bg-gradient-to-t from-red-400 to-orange-300 origin-bottom" style={{ height:`${h}px`, animation:`waveBar 1s ease-in-out ${idx*0.08}s infinite` }} />
-                                  ))}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </motion.div>
-                        <p className="mt-4 text-sm font-semibold uppercase tracking-[0.18em] text-white/55">Livestream</p>
+                    <div className="grid grid-cols-[0.95fr_1.05fr] items-center gap-12 xl:gap-16">
+                      <motion.div className="max-w-2xl" initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.45 }} transition={{ duration: 0.8, ease: [0.22,1,0.36,1] }}>
+                        <p className="mb-5 text-[11px] font-bold uppercase tracking-[0.34em] text-white/45">CREATE WITHOUT LIMITS</p>
+                        <h2 className="text-[56px] xl:text-[74px] 2xl:text-[88px] font-black tracking-tighter text-white leading-[0.98] mb-6">
+                          Your Voice.<br />
+                          <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff4d5a] via-[#ff6b4a] to-orange-400">Unfiltered.</span>
+                        </h2>
+                        <p className="max-w-xl text-lg xl:text-xl text-white/65 leading-relaxed font-medium">
+                          Go live in broadcast quality, drop cinematic Shorts, and publish powerful documentaries — all on one platform built to amplify creators, not silence them.
+                        </p>
                       </motion.div>
 
-                      {/* Shorts */}
-                      <motion.div variants={{ hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22,1,0.36,1] } } }} className="flex flex-col items-center">
-                        <motion.div whileHover={{ y: -8, boxShadow: '0 30px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.08), 0 0 40px rgba(255,255,255,0.08)' }} className="group relative w-full max-w-[300px] overflow-hidden rounded-[34px] border border-white/12 bg-[#0b0b10]/80 backdrop-blur-xl shadow-[0_24px_70px_rgba(0,0,0,0.45)] transition cursor-pointer p-3">
-                          <div className="relative mx-auto aspect-[9/16] overflow-hidden rounded-[26px] border border-white/10 bg-[#050507]">
-                            <HeroLatestShortPhone />
-                          </div>
-                        </motion.div>
-                        <p className="mt-4 text-sm font-semibold uppercase tracking-[0.18em] text-white/55">Shorts</p>
-                      </motion.div>
-
-                      {/* Documentaries */}
-                      <motion.div variants={{ hidden: { opacity: 0, y: 40 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22,1,0.36,1] } } }} className="flex flex-col items-center">
-                        <motion.div whileHover={{ y: -8, boxShadow: '0 30px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.08), 0 0 40px rgba(251,191,36,0.10)' }} className="group relative w-full max-w-[420px] overflow-hidden rounded-[28px] border border-white/12 bg-[#0b0b10]/80 backdrop-blur-xl shadow-[0_24px_70px_rgba(0,0,0,0.45)] transition cursor-pointer">
-                          <div className="relative aspect-[16/10] overflow-hidden">
-                            <motion.div className="absolute inset-[-6%]" animate={{ scale: [1.02, 1.08, 1.02], x: [0, -12, 0] }} transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}>
-                              <img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=1800&auto=format&fit=crop" alt="" className="h-full w-full object-cover brightness-[0.7] contrast-[1.05] saturate-[0.85]" />
+                      <motion.div className="flex items-center justify-center gap-6" initial="hidden" whileInView="visible" viewport={{ once: false, amount: 0.3 }} variants={{ visible: { transition: { staggerChildren: 0.14 } } }}>
+                        <div className="flex flex-col gap-5 w-full max-w-[340px]">
+                          {/* Livestream */}
+                          <motion.div variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22,1,0.36,1] } } }} className="flex flex-col items-center">
+                            <motion.div whileHover={{ y: -6, boxShadow: '0 24px 70px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08), 0 0 30px rgba(239,68,68,0.12)' }} className="group relative w-full overflow-hidden rounded-[24px] border border-white/12 bg-[#0b0b10]/80 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.4)] transition cursor-pointer">
+                              <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(239,68,68,0.18),transparent_30%),linear-gradient(180deg,#15151d_0%,#09090d_100%)]" />
+                              <div className="relative p-4">
+                                <div className="mb-3 flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <span className="relative flex h-2.5 w-2.5"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-70"></span><span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.9)]"></span></span>
+                                    <span className="rounded-full border border-red-400/40 bg-red-500/15 px-2.5 py-1 text-[10px] font-black tracking-[0.18em] text-red-200">LIVE</span>
+                                  </div>
+                                  <span className="text-xs text-white/55 font-medium">8.2k watching</span>
+                                </div>
+                                <div className="relative aspect-[16/10] overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-[#201018] via-[#120d14] to-[#070709]">
+                                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(255,255,255,0.08),transparent_35%),radial-gradient(circle_at_70%_70%,rgba(239,68,68,0.18),transparent_35%)]" />
+                                  <div className="absolute left-3 top-3 rounded-full border border-white/15 bg-black/30 px-2.5 py-1 text-[9px] uppercase tracking-[0.16em] text-white/70">Broadcast Studio</div>
+                                  <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/70 to-transparent" />
+                                  <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-3">
+                                    <div>
+                                      <div className="text-sm font-semibold text-white">Live Session</div>
+                                      <div className="text-[11px] text-white/50">Studio quality</div>
+                                    </div>
+                                    <div className="flex items-end gap-1 h-7">
+                                      {[7,13,18,10,22,14,9,16,12].map((h,idx)=>(
+                                        <span key={idx} className="w-1 rounded-full bg-gradient-to-t from-red-400 to-orange-300 origin-bottom" style={{ height:`${h}px`, animation:`waveBar 1s ease-in-out ${idx*0.08}s infinite` }} />
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
                             </motion.div>
-                            <div className="absolute inset-x-0 top-0 h-[14%] bg-black/85" />
-                            <div className="absolute inset-x-0 bottom-0 h-[14%] bg-black/85" />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/20" />
-                            <div className="absolute left-5 bottom-[18%]">
-                              <div className="text-[10px] uppercase tracking-[0.2em] text-[#ffb0a8]/80 mb-1">Original Documentary</div>
-                              <div className="text-xl font-black tracking-tight text-white">The Untold Signal</div>
+                            <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-white/55">Livestream</p>
+                          </motion.div>
+
+                          {/* Documentaries */}
+                          <motion.div variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22,1,0.36,1] } } }} className="flex flex-col items-center">
+                            <motion.div whileHover={{ y: -6, boxShadow: '0 24px 70px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08), 0 0 30px rgba(229,57,69,0.10)' }} className="group relative w-full overflow-hidden rounded-[24px] border border-white/12 bg-[#0b0b10]/80 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.4)] transition cursor-pointer">
+                              <div className="relative aspect-[16/10] overflow-hidden">
+                                <motion.div className="absolute inset-[-6%]" animate={{ scale: [1.02, 1.08, 1.02], x: [0, -12, 0] }} transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}>
+                                  <img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=1800&auto=format&fit=crop" alt="" className="h-full w-full object-cover brightness-[0.7] contrast-[1.05] saturate-[0.85]" />
+                                </motion.div>
+                                <div className="absolute inset-x-0 top-0 h-[14%] bg-black/85" />
+                                <div className="absolute inset-x-0 bottom-0 h-[14%] bg-black/85" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/20" />
+                                <div className="absolute left-4 bottom-[18%]">
+                                  <div className="text-[10px] uppercase tracking-[0.2em] text-[#ffb0a8]/80 mb-1">Original Documentary</div>
+                                  <div className="text-lg font-black tracking-tight text-white">The Untold Signal</div>
+                                </div>
+                              </div>
+                            </motion.div>
+                            <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-white/55">Documentaries</p>
+                          </motion.div>
+                        </div>
+
+                        {/* Shorts */}
+                        <motion.div variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22,1,0.36,1] } } }} className="flex flex-col items-center shrink-0">
+                          <motion.div whileHover={{ y: -8, boxShadow: '0 30px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.08), 0 0 40px rgba(255,255,255,0.08)' }} className="group relative w-[280px] xl:w-[300px] overflow-hidden rounded-[34px] border border-white/12 bg-[#0b0b10]/80 backdrop-blur-xl shadow-[0_24px_70px_rgba(0,0,0,0.45)] transition cursor-pointer p-3">
+                            <div className="relative mx-auto aspect-[9/16] overflow-hidden rounded-[26px] border border-white/10 bg-[#050507]">
+                              <HeroLatestShortPhone />
                             </div>
-                          </div>
+                          </motion.div>
+                          <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-white/55">Shorts</p>
                         </motion.div>
-                        <p className="mt-4 text-sm font-semibold uppercase tracking-[0.18em] text-white/55">Documentaries</p>
                       </motion.div>
-                    </motion.div>
-
-
+                    </div>
                   </div>
                 </section>
 
@@ -522,6 +525,8 @@ export default function Home() {
                 <TrooChatHero />
 
                 <CreatorEconomicsHero />
+
+                <WatchEverywhereHero />
                 </div>
               </div>
             </>
