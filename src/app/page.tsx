@@ -37,7 +37,7 @@ import MerchRow from "@/components/MerchRow";
 import SaveButton from "@/components/SaveButton";
 import LikeButton from "@/components/LikeButton";
 import SearchResults from "@/components/SearchResults";
-import DirectoryHome from "@/components/DirectoryHome";
+import DirectoryHome, { FeaturedVideoHero } from "@/components/DirectoryHome";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import TextOverlayRenderer from "@/components/TextOverlay";
 import CommentSheet from "@/components/CommentSheet";
@@ -347,13 +347,15 @@ export default function Home() {
           {!showingFiltered && (
             <>
               {!user && authResolved && (<>
+              <div className="lg:hidden w-full">
+                <FeaturedVideoHero videos={featuredHeroVideos.length > 0 ? featuredHeroVideos : heroPool} onSelect={handleCardSelect} className="-mx-0" />
+              </div>
               {/* MOBILE SECTION: Pills + Header + Avatars + Hero */}
               <div className="lg:hidden w-full flex flex-col relative z-10 bg-transparent overflow-hidden">
-                <div className="w-full relative z-10 px-6 pt-28 pb-16 min-h-[78vh] flex flex-col items-center justify-center text-center">
+                <div className="w-full relative z-10 px-6 pt-16 pb-16 min-h-[70vh] flex flex-col items-center justify-center text-center">
                   <div className="absolute inset-x-0 top-8 h-72 bg-[radial-gradient(circle_at_center,rgba(229,57,69,0.2),transparent_65%)] blur-2xl pointer-events-none" />
                   <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-64 h-64 bg-[radial-gradient(circle,rgba(255,255,255,0.08),transparent_70%)] blur-3xl pointer-events-none" />
 
-                  <p className="relative text-[11px] font-bold uppercase tracking-[0.28em] text-[#E53945] mb-5">Trooflix</p>
                   <h1 className="relative text-[46px] leading-[0.95] font-black tracking-[-0.05em] text-white mb-5">
                     Create without limits.
                     <span className="block mt-1 bg-clip-text text-transparent bg-gradient-to-r from-white via-[#ffd7db] to-[#E53945]">Own what you build.</span>
@@ -382,12 +384,14 @@ export default function Home() {
               </div>
 
               {/* DESKTOP SECTION: Signed-out hero */}
-              <div className="hidden lg:block w-full max-w-[1600px] mx-auto px-4 md:px-12 pt-28 md:pt-32 pb-8">
+              <div className="hidden lg:block w-full max-w-[1600px] mx-auto px-4 md:px-12 pt-20 md:pt-24 pb-8">
+                <div className="mb-8 overflow-hidden rounded-[28px] border border-white/10">
+                  <FeaturedVideoHero videos={featuredHeroVideos.length > 0 ? featuredHeroVideos : heroPool} onSelect={handleCardSelect} className="-mx-0" />
+                </div>
                 <div className="relative overflow-hidden rounded-[36px] border border-white/10 bg-[#08080b] px-10 xl:px-16 py-20 xl:py-24 shadow-[0_40px_120px_rgba(0,0,0,0.65)] min-h-[62vh] flex items-center">
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(229,57,69,0.22),transparent_30%),radial-gradient(circle_at_80%_20%,rgba(255,255,255,0.06),transparent_25%),radial-gradient(circle_at_70%_80%,rgba(212,175,55,0.12),transparent_28%)] pointer-events-none" />
                   <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
                   <div className="relative w-full max-w-5xl mx-auto text-center">
-                    <p className="text-xs font-bold uppercase tracking-[0.32em] text-[#E53945] mb-6">Trooflix</p>
                     <h1 className="text-6xl xl:text-8xl font-black tracking-[-0.06em] text-white leading-[0.92] mb-8">
                       Create without limits.
                       <span className="block mt-2 bg-clip-text text-transparent bg-gradient-to-r from-white via-[#ffd7db] to-[#E53945]">Own what you build.</span>

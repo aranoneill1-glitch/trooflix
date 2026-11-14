@@ -164,7 +164,7 @@ function HeroPreviewFrame({ src, poster, alt }: { src?: string; poster?: string;
   );
 }
 
-function FeaturedVideoHero({ videos, onSelect }: { videos: any[]; onSelect: (video: any) => void }) {
+export function FeaturedVideoHero({ videos, onSelect, className = "" }: { videos: any[]; onSelect: (video: any) => void; className?: string }) {
   const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
@@ -181,7 +181,7 @@ function FeaturedVideoHero({ videos, onSelect }: { videos: any[]; onSelect: (vid
   const previewSrc = video.videoUrl || video.bitchuteUrl;
 
   return (
-    <section aria-label="Featured videos" className="relative isolate -mx-4 h-[min(31vh,290px)] min-h-[180px] max-h-[310px] overflow-hidden bg-[#08090c] md:-mx-10 md:h-[min(34vh,310px)] md:min-h-[220px]">
+    <section aria-label="Featured videos" className={`relative isolate h-[min(31vh,290px)] min-h-[180px] max-h-[310px] overflow-hidden bg-[#08090c] md:h-[min(34vh,310px)] md:min-h-[220px] ${className || "-mx-4 md:-mx-10"}`}>
       <AnimatePresence mode="wait">
         <motion.div key={video.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.7 }} className="absolute inset-0 -z-20">
           <HeroPreviewFrame src={previewSrc} poster={image} alt={video.title || ""} />
