@@ -219,7 +219,7 @@ function HeroPreviewFrame({ src, poster, alt }: { src?: string; poster?: string;
   );
 }
 
-export function FeaturedVideoHero({ videos, onSelect, className = "" }: { videos: any[]; onSelect: (video: any) => void; className?: string }) {
+export function FeaturedVideoHero({ videos, onSelect, className = "", extendDesktopTop = false }: { videos: any[]; onSelect: (video: any) => void; className?: string; extendDesktopTop?: boolean }) {
   const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
@@ -236,7 +236,7 @@ export function FeaturedVideoHero({ videos, onSelect, className = "" }: { videos
   const previewSrc = video.videoUrl || video.bitchuteUrl;
 
   return (
-    <section aria-label="Featured videos" className={`relative isolate max-md:-mt-[env(safe-area-inset-top)] max-md:h-[calc(42vh+env(safe-area-inset-top))] max-md:min-h-[calc(240px+env(safe-area-inset-top))] max-md:max-h-[calc(420px+env(safe-area-inset-top))] h-[42vh] min-h-[240px] max-h-[420px] overflow-hidden bg-[#08090c] md:mt-0 md:h-[min(34vh,310px)] md:min-h-[220px] md:max-h-[310px] ${className || "-mx-4 md:-mx-10"}`}>
+    <section aria-label="Featured videos" className={`relative isolate max-md:-mt-[env(safe-area-inset-top)] max-md:h-[calc(42vh+env(safe-area-inset-top))] max-md:min-h-[calc(240px+env(safe-area-inset-top))] max-md:max-h-[calc(420px+env(safe-area-inset-top))] h-[42vh] min-h-[240px] max-h-[420px] overflow-hidden bg-[#08090c] ${extendDesktopTop ? "md:-mt-[env(safe-area-inset-top)] md:h-[calc(100vh)] md:min-h-[700px] md:max-h-none" : "md:mt-0 md:h-[min(34vh,310px)] md:min-h-[220px] md:max-h-[310px]"} ${className || "-mx-4 md:-mx-10"}`}>
       <AnimatePresence mode="wait">
         <motion.div key={video.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.7 }} className="absolute inset-0 -z-20">
           <HeroPreviewFrame src={previewSrc} poster={image} alt={video.title || ""} />
@@ -244,7 +244,7 @@ export function FeaturedVideoHero({ videos, onSelect, className = "" }: { videos
       </AnimatePresence>
       <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-[#08090c] via-[#08090c]/25 to-transparent" />
 
-      <div className="flex h-full max-w-7xl flex-col justify-end px-5 pb-6 pt-24 md:mx-auto md:px-12 md:pb-8 md:pt-28">
+      <div className={`flex h-full max-w-7xl flex-col justify-end px-5 pb-6 pt-24 md:mx-auto md:px-12 md:pb-8 ${extendDesktopTop ? "md:pt-[calc(env(safe-area-inset-top)+6rem)]" : "md:pt-28"}`}>
         <AnimatePresence mode="wait">
           <motion.div key={video.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.4 }} className="max-w-3xl">
             <p className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.28em] text-white/65 md:text-xs"><Star size={13} className="text-[#F06A72]" /> Featured</p>

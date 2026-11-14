@@ -382,26 +382,33 @@ export default function Home() {
               </div>
 
               {/* DESKTOP SECTION: Signed-out hero */}
-              <div className="hidden lg:block w-full max-w-[1600px] mx-auto px-4 md:px-12 pt-20 md:pt-24 pb-8">
-                <div className="mb-8 overflow-hidden rounded-[28px] border border-white/10">
-                  <FeaturedVideoHero videos={featuredHeroVideos.length > 0 ? featuredHeroVideos : heroPool} onSelect={handleCardSelect} className="-mx-0" />
-                </div>
-                <div className="relative overflow-hidden rounded-[36px] border border-white/10 bg-[#08080b] px-10 xl:px-16 py-20 xl:py-24 shadow-[0_40px_120px_rgba(0,0,0,0.65)] min-h-[62vh] flex items-center">
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,255,255,0.06),transparent_25%),radial-gradient(circle_at_70%_80%,rgba(212,175,55,0.12),transparent_28%)] pointer-events-none" />
-                  <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
-                  <div className="relative w-full max-w-5xl mx-auto text-center">
-                    <h1 className="text-6xl xl:text-8xl font-black tracking-[-0.06em] text-white leading-[0.92] mb-8">
-                      Create without <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#E53945] to-orange-500">limits</span>.
-                    </h1>
-                    <p className="text-xl xl:text-2xl text-white/55 leading-relaxed max-w-3xl mx-auto mb-12">
-                      Stream, share, connect, and grow on a platform built for creators who want freedom, power, and a real home for their work.
-                    </p>
-                    <div className="flex items-center justify-center gap-4">
-                      <a href="/signup" className="group relative overflow-hidden flex items-center justify-center gap-2 bg-gradient-to-r from-[#E53945] to-[#ff5a5f] text-white font-bold text-lg px-10 py-4 rounded-full transition shadow-[0_18px_45px_rgba(229,57,69,0.35)]">
-                        <span className="absolute inset-0 bg-[linear-gradient(110deg,transparent,rgba(255,255,255,0.28),transparent)] translate-x-[-120%] group-hover:translate-x-[120%] transition-transform duration-700" />
-                        <span className="relative">Join Today</span>
-                      </a>
-                      <a href="/features" className="flex items-center justify-center gap-2 bg-white/[0.06] border border-white/15 text-white font-bold text-lg px-10 py-4 rounded-full hover:bg-white/[0.1] transition backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">Why Trooflix <ArrowRight size={18} /></a>
+              <div className="hidden lg:block w-full relative">
+                <div className="relative w-full min-h-[100vh] -mt-[calc(env(safe-area-inset-top)+56px)] pt-[calc(env(safe-area-inset-top)+56px)] overflow-hidden bg-[#08090c]">
+                  {heroPool.length > 0 ? (
+                    <DesktopHero
+                      videos={heroPool}
+                      activeIndex={heroIndex}
+                      onMore={handleCardSelect}
+                      inColumn
+                      fullBleed
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-[#111114]" />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-black/10 to-black/70" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a0303] via-transparent to-transparent" />
+                  <div className="absolute inset-y-0 right-0 w-full lg:w-1/2 flex items-center justify-end px-8 xl:px-16">
+                    <div className="max-w-2xl text-right lg:text-left lg:pr-8">
+                      <h1 className="text-[52px] xl:text-[68px] 2xl:text-[80px] font-black tracking-tighter text-white leading-[1.02] mb-6">
+                        Stop letting Big Tech <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#E53945] to-orange-500">eat your lunch.</span>
+                      </h1>
+                      <p className="text-base xl:text-lg text-white/60 mb-10 leading-relaxed font-medium">
+                        Tired of working countless hours making great content just to give half your earnings away to billionaires and get censored in the process? It&apos;s time to take your power back.
+                      </p>
+                      <div className="flex flex-wrap gap-3 lg:justify-start justify-end">
+                        <a href="/signup" className="flex items-center justify-center gap-2 bg-[#1c1c1e] border border-white/10 text-white font-bold text-base px-8 py-4 rounded-full hover:bg-[#2c2c2e] transition">Join Today</a>
+                        <a href="/features" className="flex items-center justify-center gap-2 bg-white text-black font-bold text-base px-8 py-4 rounded-full hover:bg-gray-200 transition">Why Trooflix <ArrowRight size={18} /></a>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -532,7 +539,7 @@ export default function Home() {
   );
 }
 
-function HeroVideoCard({ video, onMore, isMobile, inColumn }: { video: Video, onMore: (v: Video) => void, isMobile: boolean, inColumn?: boolean }) {
+function HeroVideoCard({ video, onMore, isMobile, inColumn, fullBleed }: { video: Video, onMore: (v: Video) => void, isMobile: boolean, inColumn?: boolean, fullBleed?: boolean }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = useState(true);
   const [duration, setDuration] = useState(0);
@@ -570,10 +577,10 @@ function HeroVideoCard({ video, onMore, isMobile, inColumn }: { video: Video, on
   };
 
   return (
-    <div className={`w-full mx-auto ${inColumn ? "" : isMobile ? "px-4 pb-6 mt-2" : "max-w-[1600px] px-4 md:px-12 mt-4 mb-8"}`}>
+    <div className={fullBleed ? "absolute inset-0 w-full h-full" : `w-full mx-auto ${inColumn ? "" : isMobile ? "px-4 pb-6 mt-2" : "max-w-[1600px] px-4 md:px-12 mt-4 mb-8"}`}>
       <section 
         onClick={() => onMore(video)}
-        className={`relative w-full ${inColumn ? "aspect-video min-h-[420px]" : isMobile ? "aspect-video min-h-[220px]" : "h-[45vh] min-h-[420px]"} rounded-2xl overflow-hidden bg-[#1c1c1e] shadow-2xl cursor-pointer group`}
+        className={`relative w-full ${fullBleed ? "h-full" : inColumn ? "aspect-video min-h-[420px]" : isMobile ? "aspect-video min-h-[220px]" : "h-[45vh] min-h-[420px]"} ${fullBleed ? "" : "rounded-2xl"} overflow-hidden bg-[#1c1c1e] ${fullBleed ? "" : "shadow-2xl"} cursor-pointer group`}
       >
         {/* Always show the image fallback behind the video */}
         <img 
@@ -611,7 +618,7 @@ function HeroVideoCard({ video, onMore, isMobile, inColumn }: { video: Video, on
   );
 }
 
-function DesktopHero({ videos, activeIndex, onMore, inColumn }: { videos: Video[], activeIndex: number, onMore: (v: Video) => void, inColumn?: boolean }) {
+function DesktopHero({ videos, activeIndex, onMore, inColumn, fullBleed }: { videos: Video[], activeIndex: number, onMore: (v: Video) => void, inColumn?: boolean, fullBleed?: boolean }) {
   if (!videos || videos.length === 0) return null;
   const activeVideo = videos[activeIndex];
 
@@ -623,9 +630,9 @@ function DesktopHero({ videos, activeIndex, onMore, inColumn }: { videos: Video[
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 1 }}
-        className="w-full"
+        className={fullBleed ? "absolute inset-0 w-full h-full" : "w-full"}
       >
-        <HeroVideoCard video={activeVideo} onMore={onMore} isMobile={false} inColumn={inColumn} />
+        <HeroVideoCard video={activeVideo} onMore={onMore} isMobile={false} inColumn={inColumn} fullBleed={fullBleed} />
       </motion.div>
     </AnimatePresence>
   );
