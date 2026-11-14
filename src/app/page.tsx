@@ -395,7 +395,7 @@ export default function Home() {
                   ) : (
                     <div className="absolute inset-0 bg-[#111114]" />
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-black/10 to-black/70" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-black/30 to-black/80" />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0a0303] via-transparent to-transparent" />
                   <div className="absolute inset-y-0 right-0 w-full lg:w-1/2 flex items-center justify-end px-8 xl:px-16">
                     <div className="max-w-2xl text-right lg:text-left lg:pr-8">
