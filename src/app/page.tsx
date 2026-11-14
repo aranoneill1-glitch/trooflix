@@ -382,38 +382,7 @@ export default function Home() {
               </div>
 
               {/* DESKTOP SECTION: Signed-out hero */}
-              <div className="hidden lg:block w-full relative">
-                <div className="relative w-full min-h-[100vh] -mt-[calc(env(safe-area-inset-top)+56px)] pt-[calc(env(safe-area-inset-top)+56px)] overflow-hidden bg-[#08090c]">
-                  {heroPool.length > 0 ? (
-                    <DesktopHero
-                      videos={heroPool}
-                      activeIndex={heroIndex}
-                      onMore={handleCardSelect}
-                      inColumn
-                      fullBleed
-                    />
-                  ) : (
-                    <div className="absolute inset-0 bg-[#111114]" />
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/35 to-black/20" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a0303] via-transparent to-transparent" />
-                  <div className="absolute inset-y-0 left-0 w-full lg:w-1/2 flex items-center justify-start px-8 xl:px-16">
-                    <div className="max-w-2xl text-left lg:pl-8">
-                      <h1 className="text-[52px] xl:text-[68px] 2xl:text-[80px] font-black tracking-tighter text-white leading-[1.02] mb-6">
-                        Stop letting Big Tech <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#E53945] to-orange-500">eat your lunch.</span>
-                      </h1>
-                      <p className="text-base xl:text-lg text-white/60 mb-10 leading-relaxed font-medium">
-                        Tired of working countless hours making great content just to give half your earnings away to billionaires and get censored in the process? It&apos;s time to take your power back.
-                      </p>
-                      <div className="flex flex-wrap gap-3 justify-start">
-                        <a href="/signup" className="flex items-center justify-center gap-2 bg-[#1c1c1e] border border-white/10 text-white font-bold text-base px-8 py-4 rounded-full hover:bg-[#2c2c2e] transition">Join Today</a>
-                        <a href="/features" className="flex items-center justify-center gap-2 bg-white text-black font-bold text-base px-8 py-4 rounded-full hover:bg-gray-200 transition">Why Trooflix <ArrowRight size={18} /></a>
-                      </div>
-                    </div>
-                  </div>
-
-                </div>
-              </div>
+              <SignedOutDesktopHero />
               {/* FEATURES HEROES (DESKTOP SIGNED-OUT) */}
               <div className="hidden lg:block w-full relative">
                 <style>{`
@@ -694,6 +663,129 @@ export default function Home() {
     </main>
         <MobileBottomNav />
     </>
+  );
+}
+
+function SignedOutDesktopHero() {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
+  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
+  const bgScale = useTransform(scrollYProgress, [0, 1], [1.08, 1.16]);
+  const contentOpacity = useTransform(scrollYProgress, [0, 0.7, 1], [1, 0.85, 0.15]);
+  const contentY = useTransform(scrollYProgress, [0, 1], [0, -40]);
+  const [mouse, setMouse] = useState({ x: 0.5, y: 0.5 });
+
+  const headline = ["Stop", "letting", "Big", "Tech"];
+
+  return (
+    <div ref={ref} className="hidden lg:block w-full relative">
+      <section
+        className="relative h-[100vh] min-h-[100vh] w-full overflow-hidden bg-[#050505] -mt-[calc(env(safe-area-inset-top)+56px)] pt-[calc(env(safe-area-inset-top)+56px)]"
+        onMouseMove={(e) => {
+          const r = e.currentTarget.getBoundingClientRect();
+          setMouse({ x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height });
+        }}
+      >
+        <motion.div className="absolute inset-[-8%]" style={{ y: bgY, scale: bgScale }}>
+          <motion.img
+            src="https://images.unsplash.com/photo-1474511320723-9a56873867b5?q=80&w=2400&auto=format&fit=crop"
+            alt=""
+            className="h-full w-full object-cover saturate-[0.55] contrast-[1.08] brightness-[0.55]"
+            initial={{ opacity: 0, scale: 1.14 }}
+            animate={{ opacity: 1, scale: 1.08 }}
+            transition={{ duration: 1.8, ease: [0.22, 1, 0.36, 1] }}
+          />
+        </motion.div>
+
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_35%,rgba(255,176,120,0.18),transparent_28%),radial-gradient(ellipse_at_70%_20%,rgba(255,255,255,0.08),transparent_22%)] mix-blend-screen opacity-70" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/45 to-black/20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/25" />
+        <div className="absolute inset-0 shadow-[inset_0_0_180px_rgba(0,0,0,0.85)]" />
+        <div className="pointer-events-none absolute inset-0 opacity-[0.08] [background-image:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22140%22 height=%22140%22 viewBox=%220 0 140 140%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22140%22 height=%22140%22 filter=%22url(%23n)%22 opacity=%220.35%22/%3E%3C/svg%3E')]" />
+
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          {Array.from({ length: 14 }).map((_, i) => (
+            <motion.span
+              key={i}
+              className="absolute h-1 w-1 rounded-full bg-white/20 blur-[0.5px]"
+              style={{
+                left: `${(i * 7.3) % 100}%`,
+                top: `${(i * 13 + 10) % 100}%`,
+              }}
+              animate={{
+                y: [0, -30 - (i % 5) * 8, 0],
+                x: [0, (mouse.x - 0.5) * (8 + (i % 4) * 4), 0],
+                opacity: [0.08, 0.22, 0.08],
+              }}
+              transition={{ duration: 8 + (i % 6), repeat: Infinity, ease: "easeInOut", delay: i * 0.25 }}
+            />
+          ))}
+        </div>
+
+        <motion.div style={{ opacity: contentOpacity, y: contentY }} className="relative z-10 flex h-full items-center">
+          <div className="w-full max-w-[1600px] px-8 xl:px-20">
+            <div className="max-w-[720px] xl:max-w-[780px]">
+              <h1 className="mb-8 text-[58px] font-black leading-[0.95] tracking-[-0.055em] text-white xl:text-[78px] 2xl:text-[92px]">
+                <span className="block overflow-hidden">
+                  <motion.span
+                    className="inline-flex flex-wrap gap-x-[0.28em]"
+                    initial="hidden"
+                    animate="visible"
+                    variants={{ visible: { transition: { staggerChildren: 0.08, delayChildren: 0.25 } } }}
+                  >
+                    {headline.map((word) => (
+                      <motion.span key={word} variants={{ hidden: { y: "110%", opacity: 0 }, visible: { y: 0, opacity: 1, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } } }} className="inline-block">
+                        {word}
+                      </motion.span>
+                    ))}
+                  </motion.span>
+                </span>
+                <span className="block overflow-hidden">
+                  <motion.span
+                    initial={{ y: "110%", opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 0.9, delay: 0.62, ease: [0.22, 1, 0.36, 1] }}
+                    className="inline-block bg-clip-text text-transparent bg-gradient-to-r from-[#ff3b30] via-[#ff5a1f] to-[#ff8a00] drop-shadow-[0_8px_30px_rgba(255,90,31,0.18)]"
+                  >
+                    eat your lunch.
+                  </motion.span>
+                </span>
+              </h1>
+
+              <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, delay: 0.95, ease: [0.22, 1, 0.36, 1] }} className="mb-10 max-w-2xl space-y-4">
+                <p className="text-lg leading-relaxed text-white/72 xl:text-[22px] xl:leading-[1.55] font-medium">
+                  Tired of working countless hours making great content just to give half your earnings to billionaires and get censored in the process?
+                </p>
+                <p className="text-lg leading-relaxed text-white/72 xl:text-[22px] xl:leading-[1.55] font-medium">
+                  It’s time to take your power back.
+                </p>
+              </motion.div>
+
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 1.15, ease: [0.22, 1, 0.36, 1] }} className="flex flex-wrap items-center gap-4">
+                <motion.a
+                  href="/signup"
+                  whileHover={{ scale: 1.03, boxShadow: "0 0 0 1px rgba(255,255,255,0.12), 0 20px 50px rgba(229,57,69,0.45), 0 0 40px rgba(255,90,31,0.25)" }}
+                  whileTap={{ scale: 0.99 }}
+                  className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-[#E53945] to-[#ff6a2a] px-8 py-4 text-base font-bold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_18px_40px_rgba(229,57,69,0.35)] transition"
+                >
+                  Start Earning 99%
+                </motion.a>
+                <motion.a
+                  href="/features"
+                  whileHover="hover"
+                  className="group inline-flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/[0.06] px-8 py-4 text-base font-bold text-white backdrop-blur-xl transition hover:bg-white/[0.1]"
+                >
+                  Why Trooflix
+                  <motion.span variants={{ hover: { x: 4 } }} transition={{ type: "spring", stiffness: 300, damping: 20 }} className="inline-flex">
+                    <ArrowRight size={18} />
+                  </motion.span>
+                </motion.a>
+              </motion.div>
+            </div>
+          </div>
+        </motion.div>
+      </section>
+    </div>
   );
 }
 
