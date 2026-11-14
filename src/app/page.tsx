@@ -20,6 +20,10 @@ import HomeFeedCard from "@/components/HomeFeedCard";
 import Link from "next/link";
 import { motion, AnimatePresence, useMotionValue, useTransform, animate, useScroll, useSpring, useInView } from "framer-motion";
 import { useEffect, useState, useRef } from "react";
+import Lenis from "lenis";
+import "lenis/dist/lenis.css";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useRouter } from "next/navigation";
 import {  Play, Info, ChevronLeft, ChevronRight, X,
   Search, Bell, HomeIcon, Menu,
@@ -202,6 +206,40 @@ export default function Home() {
     const onProg = () => setProgressList(getAllProgress());
     window.addEventListener("progress-changed", onProg);
     return () => window.removeEventListener("progress-changed", onProg);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const desktop = window.matchMedia("(min-width: 1024px)");
+    let lenis: Lenis | null = null;
+    let rafId = 0;
+    const raf = (time: number) => {
+      lenis?.raf(time);
+      ScrollTrigger.update();
+      rafId = requestAnimationFrame(raf);
+    };
+    const enable = () => {
+      if (!desktop.matches || lenis) return;
+      lenis = new Lenis({ smoothWheel: true, duration: 1.05 });
+      rafId = requestAnimationFrame(raf);
+    };
+    const disable = () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = 0;
+      lenis?.destroy();
+      lenis = null;
+      ScrollTrigger.refresh();
+    };
+    const onChange = () => {
+      if (desktop.matches) enable();
+      else disable();
+    };
+    onChange();
+    desktop.addEventListener("change", onChange);
+    return () => {
+      desktop.removeEventListener("change", onChange);
+      disable();
+    };
   }, []);
 
   useEffect(() => {
@@ -667,101 +705,176 @@ export default function Home() {
 }
 
 function SignedOutDesktopHero() {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
-  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
-  const bgScale = useTransform(scrollYProgress, [0, 1], [1.08, 1.16]);
-  const contentOpacity = useTransform(scrollYProgress, [0, 0.7, 1], [1, 0.85, 0.15]);
-  const contentY = useTransform(scrollYProgress, [0, 1], [0, -40]);
-  const [mouse, setMouse] = useState({ x: 0.5, y: 0.5 });
+  const rootRef = useRef<HTMLDivElement>(null);
+  const bgRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const line1Ref = useRef<HTMLSpanElement>(null);
+  const line2Ref = useRef<HTMLSpanElement>(null);
+  const subRef = useRef<HTMLDivElement>(null);
+  const ctaRef = useRef<HTMLDivElement>(null);
+  const dustRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!window.matchMedia("(min-width: 1024px)").matches) return;
+    gsap.registerPlugin(ScrollTrigger);
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+      tl.fromTo(bgRef.current, { opacity: 0, scale: 1.14 }, { opacity: 1, scale: 1.08, duration: 1.8, ease: "power2.out" }, 0);
+      if (line1Ref.current) {
+        const words = line1Ref.current.querySelectorAll("[data-word]");
+        tl.fromTo(words, { yPercent: 120, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.9, stagger: 0.08 }, 0.25);
+      }
+      tl.fromTo(line2Ref.current, { yPercent: 120, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.95 }, 0.6);
+      tl.fromTo(subRef.current?.children || [], { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.9, stagger: 0.12 }, 0.95);
+      tl.fromTo(ctaRef.current, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8 }, 1.15);
+
+      gsap.to(bgRef.current, {
+        yPercent: 16,
+        scale: 1.16,
+        ease: "none",
+        scrollTrigger: {
+          trigger: rootRef.current,
+          start: "top top",
+          end: "bottom top",
+          scrub: true,
+        },
+      });
+      gsap.to(contentRef.current, {
+        opacity: 0.12,
+        y: -50,
+        ease: "none",
+        scrollTrigger: {
+          trigger: rootRef.current,
+          start: "top top",
+          end: "75% top",
+          scrub: true,
+        },
+      });
+    }, rootRef);
+    return () => ctx.revert();
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!window.matchMedia("(min-width: 1024px)").matches) return;
+    const canvas = dustRef.current;
+    const host = rootRef.current;
+    if (!canvas || !host) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    let w = 0, h = 0, raf = 0;
+    const mouse = { x: -9999, y: -9999 };
+    const particles = Array.from({ length: 22 }, () => ({
+      x: Math.random(),
+      y: Math.random(),
+      r: 0.6 + Math.random() * 1.4,
+      a: 0.05 + Math.random() * 0.12,
+      vx: (Math.random() - 0.5) * 0.00015,
+      vy: -0.00005 - Math.random() * 0.00012,
+    }));
+    const resize = () => {
+      w = host.clientWidth;
+      h = host.clientHeight;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      canvas.style.width = `${w}px`;
+      canvas.style.height = `${h}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    const onMove = (e: MouseEvent) => {
+      const rect = host.getBoundingClientRect();
+      mouse.x = e.clientX - rect.left;
+      mouse.y = e.clientY - rect.top;
+    };
+    const onLeave = () => { mouse.x = -9999; mouse.y = -9999; };
+    const draw = () => {
+      ctx.clearRect(0, 0, w, h);
+      for (const p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.y < -0.05) p.y = 1.05;
+        if (p.x < -0.05) p.x = 1.05;
+        if (p.x > 1.05) p.x = -0.05;
+        let px = p.x * w;
+        let py = p.y * h;
+        const dx = px - mouse.x;
+        const dy = py - mouse.y;
+        const dist = Math.hypot(dx, dy) || 1;
+        if (dist < 90) {
+          const push = (90 - dist) / 90 * 6;
+          px += (dx / dist) * push;
+          py += (dy / dist) * push;
+        }
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(255,255,255,${p.a})`;
+        ctx.arc(px, py, p.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      raf = requestAnimationFrame(draw);
+    };
+    resize();
+    draw();
+    window.addEventListener("resize", resize);
+    host.addEventListener("mousemove", onMove);
+    host.addEventListener("mouseleave", onLeave);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", resize);
+      host.removeEventListener("mousemove", onMove);
+      host.removeEventListener("mouseleave", onLeave);
+    };
+  }, []);
 
   const headline = ["Stop", "letting", "Big", "Tech"];
 
   return (
-    <div ref={ref} className="hidden lg:block w-full relative">
-      <section
-        className="relative h-[100vh] min-h-[100vh] w-full overflow-hidden bg-[#050505] -mt-[calc(env(safe-area-inset-top)+56px)] pt-[calc(env(safe-area-inset-top)+56px)]"
-        onMouseMove={(e) => {
-          const r = e.currentTarget.getBoundingClientRect();
-          setMouse({ x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height });
-        }}
-      >
-        <motion.div className="absolute inset-[-8%]" style={{ y: bgY, scale: bgScale }}>
-          <motion.img
+    <div ref={rootRef} className="hidden lg:block w-full relative">
+      <section className="relative h-[100vh] min-h-[100vh] w-full overflow-hidden bg-[#050505] -mt-[calc(env(safe-area-inset-top)+56px)] pt-[calc(env(safe-area-inset-top)+56px)]">
+        <div ref={bgRef} className="absolute inset-[-8%] will-change-transform opacity-0">
+          <img
             src="https://images.unsplash.com/photo-1474511320723-9a56873867b5?q=80&w=2400&auto=format&fit=crop"
             alt=""
             className="h-full w-full object-cover saturate-[0.55] contrast-[1.08] brightness-[0.55]"
-            initial={{ opacity: 0, scale: 1.14 }}
-            animate={{ opacity: 1, scale: 1.08 }}
-            transition={{ duration: 1.8, ease: [0.22, 1, 0.36, 1] }}
           />
-        </motion.div>
+        </div>
 
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_35%,rgba(255,176,120,0.18),transparent_28%),radial-gradient(ellipse_at_70%_20%,rgba(255,255,255,0.08),transparent_22%)] mix-blend-screen opacity-70" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/45 to-black/20" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/25" />
         <div className="absolute inset-0 shadow-[inset_0_0_180px_rgba(0,0,0,0.85)]" />
         <div className="pointer-events-none absolute inset-0 opacity-[0.08] [background-image:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22140%22 height=%22140%22 viewBox=%220 0 140 140%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22140%22 height=%22140%22 filter=%22url(%23n)%22 opacity=%220.35%22/%3E%3C/svg%3E')]" />
+        <canvas ref={dustRef} className="pointer-events-none absolute inset-0 z-[1]" />
 
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          {Array.from({ length: 14 }).map((_, i) => (
-            <motion.span
-              key={i}
-              className="absolute h-1 w-1 rounded-full bg-white/20 blur-[0.5px]"
-              style={{
-                left: `${(i * 7.3) % 100}%`,
-                top: `${(i * 13 + 10) % 100}%`,
-              }}
-              animate={{
-                y: [0, -30 - (i % 5) * 8, 0],
-                x: [0, (mouse.x - 0.5) * (8 + (i % 4) * 4), 0],
-                opacity: [0.08, 0.22, 0.08],
-              }}
-              transition={{ duration: 8 + (i % 6), repeat: Infinity, ease: "easeInOut", delay: i * 0.25 }}
-            />
-          ))}
-        </div>
-
-        <motion.div style={{ opacity: contentOpacity, y: contentY }} className="relative z-10 flex h-full items-center">
+        <div ref={contentRef} className="relative z-10 flex h-full items-center will-change-transform">
           <div className="w-full max-w-[1600px] px-8 xl:px-20">
             <div className="max-w-[720px] xl:max-w-[780px]">
               <h1 className="mb-8 text-[58px] font-black leading-[0.95] tracking-[-0.055em] text-white xl:text-[78px] 2xl:text-[92px]">
                 <span className="block overflow-hidden">
-                  <motion.span
-                    className="inline-flex flex-wrap gap-x-[0.28em]"
-                    initial="hidden"
-                    animate="visible"
-                    variants={{ visible: { transition: { staggerChildren: 0.08, delayChildren: 0.25 } } }}
-                  >
+                  <span ref={line1Ref} className="inline-flex flex-wrap gap-x-[0.28em]">
                     {headline.map((word) => (
-                      <motion.span key={word} variants={{ hidden: { y: "110%", opacity: 0 }, visible: { y: 0, opacity: 1, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } } }} className="inline-block">
-                        {word}
-                      </motion.span>
+                      <span key={word} data-word className="inline-block">{word}</span>
                     ))}
-                  </motion.span>
+                  </span>
                 </span>
                 <span className="block overflow-hidden">
-                  <motion.span
-                    initial={{ y: "110%", opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ duration: 0.9, delay: 0.62, ease: [0.22, 1, 0.36, 1] }}
-                    className="inline-block bg-clip-text text-transparent bg-gradient-to-r from-[#ff3b30] via-[#ff5a1f] to-[#ff8a00] drop-shadow-[0_8px_30px_rgba(255,90,31,0.18)]"
-                  >
+                  <span ref={line2Ref} className="inline-block bg-clip-text text-transparent bg-gradient-to-r from-[#ff3b30] via-[#ff5a1f] to-[#ff8a00] drop-shadow-[0_8px_30px_rgba(255,90,31,0.18)]">
                     eat your lunch.
-                  </motion.span>
+                  </span>
                 </span>
               </h1>
 
-              <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, delay: 0.95, ease: [0.22, 1, 0.36, 1] }} className="mb-10 max-w-2xl space-y-4">
+              <div ref={subRef} className="mb-10 max-w-2xl space-y-4">
                 <p className="text-lg leading-relaxed text-white/72 xl:text-[22px] xl:leading-[1.55] font-medium">
                   Tired of working countless hours making great content just to give half your earnings to billionaires and get censored in the process?
                 </p>
                 <p className="text-lg leading-relaxed text-white/72 xl:text-[22px] xl:leading-[1.55] font-medium">
                   It’s time to take your power back.
                 </p>
-              </motion.div>
+              </div>
 
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 1.15, ease: [0.22, 1, 0.36, 1] }} className="flex flex-wrap items-center gap-4">
+              <div ref={ctaRef} className="flex flex-wrap items-center gap-4">
                 <motion.a
                   href="/signup"
                   whileHover={{ scale: 1.03, boxShadow: "0 0 0 1px rgba(255,255,255,0.12), 0 20px 50px rgba(229,57,69,0.45), 0 0 40px rgba(255,90,31,0.25)" }}
@@ -780,10 +893,10 @@ function SignedOutDesktopHero() {
                     <ArrowRight size={18} />
                   </motion.span>
                 </motion.a>
-              </motion.div>
+              </div>
             </div>
           </div>
-        </motion.div>
+        </div>
       </section>
     </div>
   );
