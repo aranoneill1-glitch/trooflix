@@ -25,7 +25,7 @@ import {  Play, Info, ChevronLeft, ChevronRight, X,
   Search, Bell, HomeIcon, Menu,
   Compass, LogOut, LogIn, Users, ShoppingBag, Sparkles, BookOpen, Flame, List,
   CheckCircle2, Pause, VolumeX, Volume2, MoreVertical, Plus, Maximize,
-  ThumbsUp, MessageCircle, Share2, Bookmark , DollarSign, ShieldOff, Radio, MessageSquare, Download , Wallet , ArrowRight , Tv , Landmark } from "lucide-react";
+  ThumbsUp, MessageCircle, Share2, Bookmark , DollarSign, ShieldOff, Radio, MessageSquare, Download , Wallet , ArrowRight , Tv , Landmark, Phone, Monitor, Smartphone, Palette, Film } from "lucide-react";
 import AuthPlaybackGate from "@/components/AuthPlaybackGate";
 import AppleVideoPlayer from "@/components/AppleVideoPlayer";
 import UserMenu from "@/components/UserMenu";
@@ -349,178 +349,96 @@ export default function Home() {
               {!user && authResolved && (<>
               {/* MOBILE SECTION: Pills + Header + Avatars + Hero */}
               <div className="lg:hidden w-full flex flex-col relative z-10 bg-transparent">
-                {/* Ambient glow for glass refraction */}
-                <div className="w-full relative z-10">
+                <div className="w-full relative z-10 px-4 pt-24 pb-8">
+                  <div className="absolute inset-x-0 top-10 h-64 bg-[radial-gradient(circle_at_center,rgba(229,57,69,0.18),transparent_65%)] pointer-events-none" />
+                  <div className="relative text-center mb-6">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-[#E53945] mb-3">Welcome to Trooflix</p>
+                    <h1 className="text-[34px] leading-[1.02] font-black tracking-tighter text-white mb-3">Everything you want in one platform</h1>
+                    <p className="text-sm text-white/55 max-w-sm mx-auto leading-relaxed">Create, watch, stream, chat, sell, and grow — without the usual limits.</p>
+                  </div>
 
-                {/* CINEMATIC HEADLINE */}
-                <div className="w-full text-center px-6 pt-24 md:pt-32 pb-6 relative z-10 flex flex-col items-center justify-center">
-                  <h1 className="text-[44px] md:text-[80px] font-black tracking-tighter text-white leading-[1.05] mb-6">
-                    Stop letting Big Tech <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#E53945] to-orange-500">eat your lunch.</span>
-                  </h1>
-                  <p className="text-[15px] md:text-xl text-white/50 max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
-                    Tired of working countless hours making great content just to give half your earnings away to billionaires and get censored in the process? It's time to take your power back.
-                  </p>
-                  <div className="flex flex-col w-full max-w-sm gap-3">
+                  <div className="relative grid grid-cols-3 gap-2.5 max-w-md mx-auto">
+                    {[
+                      { icon: Radio, title: "Livestreaming", desc: "Go live instantly", tone: "from-[#E53945]/25 to-[#E53945]/5" },
+                      { icon: ShoppingBag, title: "Personal Marketplace", desc: "Sell merch & goods", tone: "from-[#D4AF37]/25 to-[#D4AF37]/5" },
+                      { icon: Film, title: "Docs & Indie Films", desc: "Long-form stories", tone: "from-blue-500/25 to-blue-500/5" },
+                      { icon: MessageCircle, title: "Calls & Messaging", desc: "Video, voice & chat", tone: "from-emerald-500/25 to-emerald-500/5" },
+                      { icon: Play, title: "Shorts", desc: "Fast viral clips", tone: "from-fuchsia-500/25 to-fuchsia-500/5" },
+                      { icon: Monitor, title: "Desktop, Phone & TV", desc: "Watch anywhere", tone: "from-cyan-500/25 to-cyan-500/5" },
+                      { icon: ShieldOff, title: "Uncensored", desc: "Your voice, your rules", tone: "from-orange-500/25 to-orange-500/5" },
+                      { icon: Wallet, title: "Bank Ecosystem", desc: "Wallet & payouts", tone: "from-violet-500/25 to-violet-500/5" },
+                      { icon: Palette, title: "Custom Themes", desc: "Make it yours", tone: "from-pink-500/25 to-pink-500/5" },
+                    ].map((f, i) => (
+                      <div key={i} className={`relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b ${f.tone} p-2.5 min-h-[118px] flex flex-col justify-between shadow-[0_10px_30px_rgba(0,0,0,0.35)]`}>
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.12),transparent_45%)]" />
+                        <div className="relative w-8 h-8 rounded-xl bg-black/25 border border-white/10 flex items-center justify-center text-white">
+                          <f.icon size={16} />
+                        </div>
+                        <div className="relative">
+                          <p className="text-[11px] font-bold leading-tight text-white mb-0.5">{f.title}</p>
+                          <p className="text-[10px] leading-tight text-white/55">{f.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex flex-col w-full max-w-sm gap-3 mt-7 mx-auto">
                     <a
                       href="/signup"
-                      className="w-full flex items-center justify-center gap-2 bg-[#1c1c1e] border border-white/10 text-white font-bold text-lg py-4 rounded-full hover:bg-[#2c2c2e] transition"
+                      className="w-full flex items-center justify-center gap-2 bg-[#E53945] text-white font-bold text-lg py-4 rounded-full hover:bg-[#d12e39] transition shadow-[0_12px_30px_rgba(229,57,69,0.3)]"
                     >
                       Join Today
                     </a>
                     <a
                       href="/features"
-                      className="w-full flex items-center justify-center gap-2 bg-white text-black font-bold text-lg py-4 rounded-full hover:bg-gray-200 transition"
+                      className="w-full flex items-center justify-center gap-2 bg-white/10 border border-white/15 text-white font-bold text-lg py-4 rounded-full hover:bg-white/15 transition"
                     >
                       Why Trooflix
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+                      <ArrowRight size={18} />
                     </a>
                   </div>
                 </div>
-
-
-</div>
-                <div className="hidden">
-                  <div className="relative w-full max-w-2xl mx-auto">
-                    <form
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        if (searchQuery.trim()) {
-                          setShowSearchDropdown(false);
-                          router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
-                        }
-                      }}
-                      className="relative w-full"
-                    >
-                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/50" size={18} />
-                      <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => {
-                          setSearchQuery(e.target.value);
-                          setShowSearchDropdown(e.target.value.trim().length > 0);
-                        }}
-                        onFocus={() => {
-                          if (searchQuery.trim().length > 0) setShowSearchDropdown(true);
-                        }}
-                        onBlur={() => setTimeout(() => setShowSearchDropdown(false), 200)}
-                        placeholder="Search videos, creators, podcasts..."
-                        className="w-full bg-white/[0.04] border border-white/10 rounded-full py-3.5 pl-11 pr-4 text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-[#E53945]/50 focus:bg-white/[0.08] transition-all backdrop-blur-xl shadow-lg"
-                      />
-                      {searchQuery && (
-                        <button type="button" onClick={() => { setSearchQuery(""); setShowSearchDropdown(false); }} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 bg-white/10 rounded-full hover:bg-white/20 transition">
-                          <X size={14} />
-                        </button>
-                      )}
-                    </form>
-
-                    {/* GLASS DROPDOWN */}
-                    {showSearchDropdown && (
-                      <div className="absolute top-full left-0 right-0 mt-2 bg-[#0a0303]/90 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col z-[100] animate-in fade-in slide-in-from-top-2">
-                        
-                        {/* MATCHING CREATORS */}
-                        {allUsers.filter(c => 
-                          (c.display_name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) || 
-                          (c.username?.toLowerCase() || "").includes(searchQuery.toLowerCase())
-                        ).length > 0 && (
-                          <div className="p-2 border-b border-white/5">
-                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-wider px-3 py-1">Creators</p>
-                            {allUsers.filter(c => 
-                              (c.display_name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) || 
-                              (c.username?.toLowerCase() || "").includes(searchQuery.toLowerCase())
-                            ).slice(0, 3).map(c => (
-                              <Link key={c.user_id} href={`/profile/${c.username}`} className="flex items-center gap-3 p-2 hover:bg-white/10 rounded-xl transition">
-                                <div className="w-8 h-8 rounded-full overflow-hidden bg-[#1c1c1e] shrink-0 border border-white/10">
-                                  {c.avatar_url ? <img src={c.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xs font-bold">{c.display_name?.[0] || "?"}</div>}
-                                </div>
-                                <div className="flex flex-col min-w-0">
-                                  <span className="text-sm font-bold text-white truncate">{c.display_name}</span>
-                                  <span className="text-[11px] text-white/50 truncate">@{c.username}</span>
-                                </div>
-                              </Link>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* MATCHING VIDEOS */}
-                        {videos.filter(v => (v.title?.toLowerCase() || "").includes(searchQuery.toLowerCase())).length > 0 && (
-                          <div className="p-2 border-b border-white/5">
-                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-wider px-3 py-1">Videos</p>
-                            {videos.filter(v => (v.title?.toLowerCase() || "").includes(searchQuery.toLowerCase())).slice(0, 3).map(v => (
-                              <Link key={v.id} href={`/watch/${v.id}`} className="flex items-center gap-3 p-2 hover:bg-white/10 rounded-xl transition">
-                                <div className="w-12 h-8 rounded overflow-hidden bg-[#1c1c1e] shrink-0 border border-white/10">
-                                  <img src={v.posterUrl || v.backdropUrl} className="w-full h-full object-cover" />
-                                </div>
-                                <div className="flex flex-col min-w-0">
-                                  <span className="text-sm font-bold text-white truncate">{v.title}</span>
-                                  <span className="text-[11px] text-white/50 truncate">{v.type} • {v.category}</span>
-                                </div>
-                              </Link>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* NO RESULTS */}
-                        {allUsers.filter(c => (c.display_name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) || (c.username?.toLowerCase() || "").includes(searchQuery.toLowerCase())).length === 0 &&
-                         videos.filter(v => (v.title?.toLowerCase() || "").includes(searchQuery.toLowerCase())).length === 0 && (
-                          <div className="p-6 text-center text-sm text-white/50">
-                            No quick results found for "{searchQuery}".
-                          </div>
-                        )}
-
-                        {/* PRESS ENTER */}
-                        <button 
-                          onClick={() => {
-                            if (searchQuery.trim()) {
-                              setShowSearchDropdown(false);
-                              router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
-                            }
-                          }}
-                          className="w-full p-3 bg-white/5 hover:bg-white/10 text-[#E53945] text-xs font-bold transition flex items-center justify-center gap-2"
-                        >
-                          Press Enter to see all results for "{searchQuery}"
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Header */}
-                
-
-                
-
               </div>
 
-              {/* DESKTOP SECTION: Hero + Avatars */}
+              {/* DESKTOP SECTION: Signed-out 3x3 hero */}
               <div className="hidden lg:block w-full max-w-[1600px] mx-auto px-4 md:px-12 pt-24 md:pt-28">
-                <div className="flex items-center gap-8">
-                                    <div className="w-1/2 relative">
-                    {heroPool.length > 0 ? (
-                      <DesktopHero
-                        videos={heroPool}
-                        activeIndex={heroIndex}
-                        onMore={(v) => setSelected(v)}
-                        inColumn
-                      />
-                    ) : (
-                      <div className="w-full aspect-video min-h-[420px] bg-[#1c1c1e] rounded-2xl flex flex-col items-center justify-center text-white/50 border border-white/10">
-                        <Play size={48} className="mb-4 opacity-20" />
-                        <p>No videos found.</p>
-                      </div>
-                    )}
-                  </div>
-                  <div className="w-1/2 flex flex-col justify-center">
-                    <h1 className="text-[52px] xl:text-[68px] 2xl:text-[80px] font-black tracking-tighter text-white leading-[1.02] mb-6">Stop letting Big Tech <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#E53945] to-orange-500">eat your lunch.</span></h1>
-                    <p className="text-base xl:text-lg text-white/50 mb-10 leading-relaxed font-medium">Tired of working countless hours making great content just to give half your earnings away to billionaires and get censored in the process? It&apos;s time to take your power back.</p>
-                    <div className="flex flex-wrap gap-3">
-                      <a href="/signup" className="flex items-center justify-center gap-2 bg-[#1c1c1e] border border-white/10 text-white font-bold text-base px-8 py-4 rounded-full hover:bg-[#2c2c2e] transition">Join Today</a>
-                      <a href="/features" className="flex items-center justify-center gap-2 bg-white text-black font-bold text-base px-8 py-4 rounded-full hover:bg-gray-200 transition">Why Trooflix &rarr;</a>
+                <div className="relative overflow-hidden rounded-[32px] border border-white/10 bg-[#0a0a0d]/80 p-8 xl:p-10 shadow-[0_30px_80px_rgba(0,0,0,0.5)]">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(229,57,69,0.18),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(212,175,55,0.12),transparent_30%)] pointer-events-none" />
+                  <div className="relative flex items-end justify-between gap-8 mb-8">
+                    <div className="max-w-2xl">
+                      <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#E53945] mb-3">Welcome to Trooflix</p>
+                      <h1 className="text-5xl xl:text-6xl font-black tracking-tighter text-white leading-[1.02] mb-4">Everything you want in one platform</h1>
+                      <p className="text-lg text-white/55 leading-relaxed">Create, watch, stream, chat, sell, and grow — built for creators and viewers who want more freedom.</p>
+                    </div>
+                    <div className="flex gap-3 shrink-0">
+                      <a href="/signup" className="flex items-center justify-center gap-2 bg-[#E53945] text-white font-bold text-base px-7 py-3.5 rounded-full hover:bg-[#d12e39] transition shadow-[0_12px_30px_rgba(229,57,69,0.3)]">Join Today</a>
+                      <a href="/features" className="flex items-center justify-center gap-2 bg-white/10 border border-white/15 text-white font-bold text-base px-7 py-3.5 rounded-full hover:bg-white/15 transition">Why Trooflix <ArrowRight size={18} /></a>
                     </div>
                   </div>
+
+                  <div className="relative grid grid-cols-3 gap-4">
+                    {[
+                      { icon: Radio, title: "Livestreaming", desc: "Go live instantly and connect in real time.", tone: "from-[#E53945]/20 to-transparent" },
+                      { icon: ShoppingBag, title: "Personal Marketplace", desc: "Sell merch, books, and products your way.", tone: "from-[#D4AF37]/20 to-transparent" },
+                      { icon: Film, title: "Long Docs & Indie Movies", desc: "Host powerful documentaries and films.", tone: "from-blue-500/20 to-transparent" },
+                      { icon: MessageCircle, title: "Video, Voice & Messaging", desc: "Calls and chat built right into the platform.", tone: "from-emerald-500/20 to-transparent" },
+                      { icon: Play, title: "Shorts", desc: "Share fast, scroll-stopping short-form content.", tone: "from-fuchsia-500/20 to-transparent" },
+                      { icon: Monitor, title: "Desktop, Phone & TV", desc: "Available wherever your audience watches.", tone: "from-cyan-500/20 to-transparent" },
+                      { icon: ShieldOff, title: "Uncensored", desc: "A freer home for creators and conversations.", tone: "from-orange-500/20 to-transparent" },
+                      { icon: Wallet, title: "Personal Bank Ecosystem", desc: "Wallet, tips, and earnings in one place.", tone: "from-violet-500/20 to-transparent" },
+                      { icon: Palette, title: "Customisable Theme Page", desc: "Make your profile and space feel like you.", tone: "from-pink-500/20 to-transparent" },
+                    ].map((f, i) => (
+                      <div key={i} className={`group relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br ${f.tone} bg-[#121217] p-6 min-h-[170px] transition duration-300 hover:-translate-y-1 hover:border-white/20 hover:shadow-[0_20px_50px_rgba(0,0,0,0.35)]`}>
+                        <div className="absolute -right-8 -top-8 w-28 h-28 rounded-full bg-white/5 blur-2xl group-hover:bg-white/10 transition" />
+                        <div className="relative w-12 h-12 rounded-2xl bg-white/10 border border-white/10 flex items-center justify-center text-white mb-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
+                          <f.icon size={22} />
+                        </div>
+                        <h3 className="relative text-xl font-bold text-white mb-2 leading-tight">{f.title}</h3>
+                        <p className="relative text-sm text-white/55 leading-relaxed">{f.desc}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                
-                {/* Header */}
-                
               </div>
             </>
           )}

@@ -17,10 +17,13 @@ export default function FeaturesPage() {
 
         {/* HEADER */}
         <div className="text-center mb-20">
-          <h1 className="text-4xl md:text-7xl font-black tracking-tighter text-white mb-6">
-            The Unfair <span className="text-[#E53945]">Advantage.</span>
+          <h1 className="text-4xl md:text-7xl font-black tracking-tighter text-white leading-[1.02] mb-6">
+            Stop letting Big Tech <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#E53945] to-orange-500">eat your lunch.</span>
           </h1>
-          <p className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto leading-relaxed mb-6">
+            Tired of working countless hours making great content just to give half your earnings away to billionaires and get censored in the process? It&apos;s time to take your power back.
+          </p>
+          <p className="text-base md:text-lg text-white/50 max-w-2xl mx-auto leading-relaxed">
             Traditional platforms take massive cuts and hide your content behind algorithms. Trooflix was built for creators who are tired of sharing their revenue with billionaires and being censored in the process. And for viewers who want an ad-free home for their favorite content.
           </p>
         </div>
