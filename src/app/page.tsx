@@ -395,17 +395,17 @@ export default function Home() {
                   ) : (
                     <div className="absolute inset-0 bg-[#111114]" />
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-black/30 to-black/80" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/30 to-black/10" />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0a0303] via-transparent to-transparent" />
-                  <div className="absolute inset-y-0 right-0 w-full lg:w-1/2 flex items-center justify-end px-8 xl:px-16">
-                    <div className="max-w-2xl text-right lg:text-left lg:pr-8">
+                  <div className="absolute inset-y-0 left-0 w-full lg:w-1/2 flex items-center justify-start px-8 xl:px-16">
+                    <div className="max-w-2xl text-left lg:pl-8">
                       <h1 className="text-[52px] xl:text-[68px] 2xl:text-[80px] font-black tracking-tighter text-white leading-[1.02] mb-6">
                         Stop letting Big Tech <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#E53945] to-orange-500">eat your lunch.</span>
                       </h1>
                       <p className="text-base xl:text-lg text-white/60 mb-10 leading-relaxed font-medium">
                         Tired of working countless hours making great content just to give half your earnings away to billionaires and get censored in the process? It&apos;s time to take your power back.
                       </p>
-                      <div className="flex flex-wrap gap-3 lg:justify-start justify-end">
+                      <div className="flex flex-wrap gap-3 justify-start">
                         <a href="/signup" className="flex items-center justify-center gap-2 bg-[#1c1c1e] border border-white/10 text-white font-bold text-base px-8 py-4 rounded-full hover:bg-[#2c2c2e] transition">Join Today</a>
                         <a href="/features" className="flex items-center justify-center gap-2 bg-white text-black font-bold text-base px-8 py-4 rounded-full hover:bg-gray-200 transition">Why Trooflix <ArrowRight size={18} /></a>
                       </div>
