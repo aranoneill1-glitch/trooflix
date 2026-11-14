@@ -517,11 +517,11 @@ export default function Home() {
 
                 <MonetizationHero />
 
+                <TrooflixEconomyHero />
+
                 <TrooChatHero />
 
                 <CreatorEconomicsHero />
-
-                <TrooflixEconomyHero />
                 </div>
               </div>
             </>
@@ -623,25 +623,8 @@ function TrooflixEconomyHero() {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_45%_30%,rgba(229,57,69,0.16),transparent_24%),radial-gradient(circle_at_70%_70%,rgba(255,106,42,0.12),transparent_22%),linear-gradient(180deg,#060506_0%,#020203_100%)]" />
       <motion.div className="absolute right-[15%] top-[18%] h-72 w-72 rounded-full bg-[#ff4d5a]/10 blur-[130px]" animate={{ y: [0, -18, 0], opacity: [0.35, 0.55, 0.35] }} transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }} />
 
-      <div className="relative z-10 mx-auto grid w-full max-w-[1600px] grid-cols-[0.95fr_1.05fr] items-center gap-14 px-8 xl:px-16">
-        <motion.div initial="hidden" animate={inView ? "visible" : "hidden"} variants={{ visible: { transition: { staggerChildren: 0.1 } } }} className="max-w-3xl">
-          <motion.p variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-5 text-[11px] font-bold uppercase tracking-[0.34em] text-white/40">Trooflix Economy</motion.p>
-          <motion.h2 variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.85 } } }} className="mb-7 text-[56px] font-black leading-[0.96] tracking-tighter text-white xl:text-[74px] 2xl:text-[88px]">
-            The creator economy,<br />
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff4d5a] via-[#ff6b4a] to-orange-400">reimagined.</span>
-          </motion.h2>
-          <motion.p variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-8 max-w-2xl text-lg font-medium leading-relaxed text-white/60 xl:text-xl">
-            Tips, purchases, payouts, and support — connected in one native system. TrooCoins and TrooBank make value flow simply between creators and their audience.
-          </motion.p>
-          <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-10 flex flex-wrap gap-3">
-            {["TrooCoins", "TrooBank", "Instant tips", "Seamless payouts"].map((t) => (
-              <span key={t} className="rounded-full border border-[#ff6b4a]/25 bg-[#E53945]/10 px-4 py-2 text-sm font-medium text-white/90 backdrop-blur-md">{t}</span>
-            ))}
-          </motion.div>
-
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, x: 30 }} animate={inView ? { opacity: 1, x: 0 } : {}} transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }} className="relative flex h-[500px] items-center justify-center">
+      <div className="relative z-10 mx-auto grid w-full max-w-[1600px] grid-cols-[1.05fr_0.95fr] items-center gap-14 px-8 xl:px-16">
+        <motion.div initial={{ opacity: 0, x: -30 }} animate={inView ? { opacity: 1, x: 0 } : {}} transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }} className="relative flex h-[500px] items-center justify-center">
           <div className="relative w-full max-w-[520px]">
             <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }} className="absolute -top-2 right-10 flex h-16 w-16 items-center justify-center rounded-full border border-[#ff6b4a]/30 bg-gradient-to-br from-[#E53945]/25 to-[#ff6a2a]/20 text-2xl text-[#ffd6cf] shadow-[0_0_30px_rgba(229,57,69,0.22)] backdrop-blur-xl">◉</motion.div>
             <div className="rounded-[32px] border border-white/10 bg-white/[0.04] p-6 shadow-[0_40px_120px_rgba(0,0,0,0.45)] backdrop-blur-2xl">
@@ -665,6 +648,23 @@ function TrooflixEconomyHero() {
               </div>
             </div>
           </div>
+        </motion.div>
+
+        <motion.div initial="hidden" animate={inView ? "visible" : "hidden"} variants={{ visible: { transition: { staggerChildren: 0.1 } } }} className="max-w-3xl">
+          <motion.p variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-5 text-[11px] font-bold uppercase tracking-[0.34em] text-white/40">Trooflix Economy</motion.p>
+          <motion.h2 variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.85 } } }} className="mb-7 text-[56px] font-black leading-[0.96] tracking-tighter text-white xl:text-[74px] 2xl:text-[88px]">
+            The creator economy,<br />
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff4d5a] via-[#ff6b4a] to-orange-400">reimagined.</span>
+          </motion.h2>
+          <motion.p variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-8 max-w-2xl text-lg font-medium leading-relaxed text-white/60 xl:text-xl">
+            Tips, purchases, payouts, and support — connected in one native system. TrooCoins and TrooBank make value flow simply between creators and their audience.
+          </motion.p>
+          <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-10 flex flex-wrap gap-3">
+            {["TrooCoins", "TrooBank", "Instant tips", "Seamless payouts"].map((t) => (
+              <span key={t} className="rounded-full border border-[#ff6b4a]/25 bg-[#E53945]/10 px-4 py-2 text-sm font-medium text-white/90 backdrop-blur-md">{t}</span>
+            ))}
+          </motion.div>
+
         </motion.div>
       </div>
     </section>
