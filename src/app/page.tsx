@@ -515,13 +515,13 @@ export default function Home() {
                   </div>
                 </section>
 
-                <CreatorEconomicsHero />
-
                 <MonetizationHero />
 
-                <WatchEverywhereHero />
-
                 <TrooChatHero />
+
+                <CreatorEconomicsHero />
+
+                <WatchEverywhereHero />
 
                 <TrooflixEconomyHero />
                 </div>
