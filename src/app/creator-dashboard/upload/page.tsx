@@ -11,17 +11,23 @@ import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { r2MultipartUpload } from "@/lib/r2Upload";
 
-const CATEGORIES = ["Documentaries","long-videos","Independent Films","Books","History","Politics & Geopolitics","War & Conflict","True Crime & Justice","Conspiracy & Mystery","Society & Culture","Business & Finance","Science & Technology","Environment & Nature","Religion & Spirituality","Ancient Civilisation","Comedy","News","Gaming","Medicine"];
+const CATEGORIES = ["Documentaries","Podcasts","long-videos","Independent Films","Books","History","Politics & Geopolitics","War & Conflict","True Crime & Justice","Conspiracy & Mystery","Society & Culture","Business & Finance","Science & Technology","Environment & Nature","Religion & Spirituality","Ancient Civilisation","Comedy","News","Gaming","Medicine"];
 
 function UploadContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const isShort = searchParams.get("type") === "short";
-  const isTweet = searchParams.get("type") === "tweet";
+  const typeParam = (searchParams.get("type") || "").toLowerCase();
+  const isShort = typeParam === "short";
+  const isTweet = typeParam === "tweet";
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("History");
+  const [longFormType, setLongFormType] = useState<"long-video" | "Podcast" | "Documentary">(
+    typeParam === "podcast" ? "Podcast" : typeParam === "documentary" ? "Documentary" : "long-video"
+  );
+  const isPodcast = !isShort && !isTweet && longFormType === "Podcast";
+  const isDocumentary = !isShort && !isTweet && longFormType === "Documentary";
+  const [category, setCategory] = useState(typeParam === "podcast" ? "Podcasts" : typeParam === "documentary" ? "Documentaries" : "History");
   const [visibility, setVisibility] = useState<"public" | "premium">("public");
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
@@ -81,6 +87,11 @@ function UploadContent() {
       router.push("/upgrade");
     }
   }, [userTier, isShort, isTweet, checkingTier, router]);
+
+  useEffect(() => {
+    if (longFormType === "Podcast" && category === "History") setCategory("Podcasts");
+    if (longFormType === "Documentary" && (category === "History" || category === "Podcasts")) setCategory("Documentaries");
+  }, [longFormType, category]);
 
   const uploadToSupabase = async (file: File, label: string) => {
     if (file.size === 0) throw new Error(label + " is 0 bytes. On iPhone, wait for iCloud download first.");
@@ -151,7 +162,7 @@ function UploadContent() {
         body: JSON.stringify({
           title: isTweet ? "Tweet" : title,
           description,
-          type: isTweet ? "Tweet" : (isShort ? "Short" : "long-video"),
+          type: isTweet ? "Tweet" : (isShort ? "Short" : longFormType),
           creatorId: creatorId || null,
           uploaderUserId: user.id,
           videoUrl: mediaUrl,
@@ -228,9 +239,28 @@ function UploadContent() {
       <div className="max-w-2xl mx-auto px-4 pt-24">
         <div className="flex items-center gap-4 mb-8">
           <Link href="/creator-dashboard" className="p-2 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition"><ArrowLeft size={20} /></Link>
-          <div><h1 className="text-2xl font-bold">{isTweet ? "Add a Tweet" : (isShort ? "Upload Short" : "Upload Video")}</h1>
+          <div><h1 className="text-2xl font-bold">{isTweet ? "Add a Tweet" : (isShort ? "Upload Short" : (isPodcast ? "Upload Podcast" : isDocumentary ? "Upload Documentary" : "Upload Video"))}</h1>
           <p className="text-sm text-white/50">Step {step} of {totalSteps}</p></div>
         </div>
+
+        {!isShort && !isTweet && (
+          <div className="flex items-center gap-2 mb-6 bg-[#1c1c1e] p-1 rounded-xl border border-white/10">
+            {([
+              { value: "long-video", label: "Video" },
+              { value: "Podcast", label: "Podcast" },
+              { value: "Documentary", label: "Documentary" },
+            ] as const).map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setLongFormType(opt.value)}
+                className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition ${longFormType === opt.value ? "bg-white text-black" : "text-white/60 hover:text-white"}`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        )}
         <div className="w-full h-1 bg-white/10 rounded-full mb-8 overflow-hidden">
           <div className="h-full bg-[#E53945] transition-all duration-300" style={{ width: `${((step - 1) / (totalSteps - 1)) * 100}%` }} />
         </div>

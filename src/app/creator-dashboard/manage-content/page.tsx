@@ -40,14 +40,14 @@ export default function ManageContentPage() {
 
   // UI States
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<"All" | "Videos" | "Podcasts" | "Premium" | "Drafts">("All");
+  const [activeTab, setActiveTab] = useState<"All" | "Videos" | "Podcasts" | "Documentaries" | "Premium" | "Drafts">("All");
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
   const [editingVideo, setEditingVideo] = useState<any>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editCategory, setEditCategory] = useState("History");
-  const [editType, setEditType] = useState("Documentary");
+  const [editType, setEditType] = useState("long-video");
   const [editVisibility, setEditVisibility] = useState("public");
   const [savingEdit, setSavingEdit] = useState(false);
   const [showAddContentMenu, setShowAddContentMenu] = useState(false);
@@ -83,7 +83,7 @@ export default function ManageContentPage() {
     setEditTitle(video.title || "");
     setEditDescription(video.description || "");
     setEditCategory(video.category || "History");
-    setEditType(video.type || "Documentary");
+    setEditType(video.type || "long-video");
     setEditVisibility(video.visibility || "public");
     setActiveMenuId(null);
   };
@@ -165,8 +165,10 @@ export default function ManageContentPage() {
       if (searchQuery && !v.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
       
       // 2. Tab Filter
-      if (activeTab === "Videos") return v.type?.toLowerCase() !== "tweet" && v.type?.toLowerCase() !== "short" && v.visibility !== "premium";
-      if (activeTab === "Podcasts") return v.type?.toLowerCase() === "podcast";
+      const t = v.type?.toLowerCase();
+      if (activeTab === "Videos") return t !== "tweet" && t !== "short" && t !== "podcast" && t !== "documentary" && v.visibility !== "premium";
+      if (activeTab === "Podcasts") return t === "podcast";
+      if (activeTab === "Documentaries") return t === "documentary";
       if (activeTab === "Premium") return v.visibility === "premium" || v.is_premium === true; // Or however you flag premium
       if (activeTab === "Drafts") return false; // Placeholder if you add draft logic
       
@@ -178,6 +180,7 @@ export default function ManageContentPage() {
   const totalViews = videos.reduce((sum, v) => sum + (v.viewCount || 0), 0);
   const totalLikes = videos.reduce((sum, v) => sum + (v.likeCount || 0), 0);
   const totalPodcasts = videos.filter(v => v.type?.toLowerCase() === "podcast").length;
+  const totalDocumentaries = videos.filter(v => v.type?.toLowerCase() === "documentary").length;
 
   if (loading) {
     return (
@@ -227,6 +230,15 @@ export default function ManageContentPage() {
             </div>
           </div>
           <div className="bg-[#1c1c1e] border border-white/5 rounded-2xl p-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-violet-500/10 flex items-center justify-center text-violet-400">
+              <Video size={18} />
+            </div>
+            <div>
+              <p className="text-xs text-white/50 font-semibold uppercase">Documentaries</p>
+              <p className="text-xl font-black">{totalDocumentaries}</p>
+            </div>
+          </div>
+          <div className="bg-[#1c1c1e] border border-white/5 rounded-2xl p-4 flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400">
               <Eye size={18} />
             </div>
@@ -249,7 +261,7 @@ export default function ManageContentPage() {
         {/* CONTROLS */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-1 bg-[#1c1c1e] p-1 rounded-xl overflow-x-auto scrollbar-hide">
-            {(["All", "Videos", "Podcasts", "Premium", "Drafts"] as const).map((tab) => (
+            {(["All", "Videos", "Podcasts", "Documentaries", "Premium", "Drafts"] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -457,6 +469,8 @@ export default function ManageContentPage() {
                 <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 block">Content Type</label>
                 <select value={editType} onChange={(e) => setEditType(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#E53945] transition appearance-none">
                   <option value="long-video">Long Video</option>
+                  <option value="Podcast">Podcast</option>
+                  <option value="Documentary">Documentary</option>
                   <option value="Short">Short</option>
                   <option value="Independent Film">Independent Film</option>
                 </select>
@@ -525,7 +539,33 @@ export default function ManageContentPage() {
                   </div>
                   <div className="relative z-10">
                     <h4 className="font-bold text-white text-base">Upload Video</h4>
-                    <p className="text-xs text-white/50">Publish a long-form video or documentary</p>
+                    <p className="text-xs text-white/50">Publish a long-form video</p>
+                  </div>
+                </button>
+
+                <button 
+                  onClick={() => { setShowAddContentMenu(false); router.push("/creator-dashboard/upload?type=podcast"); }}
+                  className="group relative flex items-center gap-4 bg-white/[0.08] hover:bg-white/[0.12] border border-white/20 hover:border-blue-400/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden text-left w-full shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                    <Mic className="text-blue-400" size={24} />
+                  </div>
+                  <div className="relative z-10">
+                    <h4 className="font-bold text-white text-base">Upload Podcast</h4>
+                    <p className="text-xs text-white/50">Publish to the Podcasts section on Home</p>
+                  </div>
+                </button>
+
+                <button 
+                  onClick={() => { setShowAddContentMenu(false); router.push("/creator-dashboard/upload?type=documentary"); }}
+                  className="group relative flex items-center gap-4 bg-white/[0.08] hover:bg-white/[0.12] border border-white/20 hover:border-violet-400/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden text-left w-full shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-violet-500/20 flex items-center justify-center flex-shrink-0">
+                    <FileText className="text-violet-400" size={24} />
+                  </div>
+                  <div className="relative z-10">
+                    <h4 className="font-bold text-white text-base">Upload Documentary</h4>
+                    <p className="text-xs text-white/50">Publish to the Documentaries section on Home</p>
                   </div>
                 </button>
 
