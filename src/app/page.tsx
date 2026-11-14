@@ -389,37 +389,7 @@ export default function Home() {
             <>
               {!user && authResolved && (<>
               <div className="lg:hidden w-full">
-                <FeaturedVideoHero videos={featuredHeroVideos.length > 0 ? featuredHeroVideos : heroPool} onSelect={handleCardSelect} className="-mx-0" />
-              </div>
-              {/* MOBILE SECTION: Pills + Header + Avatars + Hero */}
-              <div className="lg:hidden w-full flex flex-col relative z-10 bg-transparent overflow-hidden">
-                <div className="w-full relative z-10 px-6 pt-4 pb-10 flex flex-col items-center justify-start text-center">
-                  <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-56 h-56 bg-[radial-gradient(circle,rgba(255,255,255,0.08),transparent_70%)] blur-3xl pointer-events-none" />
-
-                  <h1 className="relative text-[46px] leading-[0.95] font-black tracking-[-0.05em] text-white mb-4 mt-2">
-                    Create without <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#E53945] to-orange-500">limits</span>.
-                  </h1>
-                  <p className="relative text-[15px] text-white/60 max-w-sm mx-auto leading-relaxed mb-8">
-                    Stream, share, connect, and grow on a platform built for creators who want freedom, power, and a real home for their work.
-                  </p>
-
-                  <div className="relative flex flex-row w-full max-w-md gap-2.5">
-                    <a
-                      href="/signup"
-                      className="group relative flex-1 min-w-0 flex items-center justify-center gap-1.5 overflow-hidden bg-gradient-to-r from-[#E53945] to-[#ff5a5f] text-white font-bold text-[15px] px-4 py-3.5 rounded-full transition shadow-[0_18px_40px_rgba(229,57,69,0.35)] whitespace-nowrap"
-                    >
-                      <span className="absolute inset-0 bg-[linear-gradient(110deg,transparent,rgba(255,255,255,0.25),transparent)] translate-x-[-120%] group-hover:translate-x-[120%] transition-transform duration-700" />
-                      <span className="relative">Join Today</span>
-                    </a>
-                    <a
-                      href="/features"
-                      className="flex-1 min-w-0 flex items-center justify-center gap-1.5 bg-white/[0.07] border border-white/15 text-white font-bold text-[15px] px-4 py-3.5 rounded-full hover:bg-white/[0.12] transition backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] whitespace-nowrap"
-                    >
-                      Why Trooflix
-                      <ArrowRight size={16} />
-                    </a>
-                  </div>
-                </div>
+                <MobileSignedOutShowcase />
               </div>
 
               {/* FEATURES HEROES (DESKTOP SIGNED-OUT) */}
@@ -619,6 +589,205 @@ export default function Home() {
     </main>
         <MobileBottomNav />
     </>
+  );
+}
+
+function MobileSectionShell({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return (
+    <section className={`relative overflow-hidden bg-[#050507] px-5 py-14 ${className}`}>
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#050507] to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#050507] to-transparent" />
+      <div className="relative z-10 mx-auto w-full max-w-md">{children}</div>
+    </section>
+  );
+}
+
+function MobileSignedOutShowcase() {
+  const [revenue, setRevenue] = useState(10000);
+  const trooflixKeep = Math.round(revenue * 0.99);
+  const oldKeep = Math.round(revenue * 0.55);
+  const streams = [
+    { label: "Subscriptions", value: "$4,280" },
+    { label: "Tips & Gifts", value: "$1,140" },
+    { label: "Merchandise", value: "$2,060" },
+    { label: "Paid Communities", value: "$980" },
+    { label: "Ticketed Events", value: "$760" },
+  ];
+
+  return (
+    <div className="relative w-full bg-[#050507]">
+      <style>{`
+        @keyframes waveBar { 0%,100% { transform: scaleY(0.35); opacity: .55; } 50% { transform: scaleY(1); opacity: 1; } }
+      `}</style>
+
+      {/* 1. Intro / What is Trooflix */}
+      <section className="relative min-h-[92svh] overflow-hidden bg-[#040406] px-5 pt-8 pb-14 flex items-center">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(229,57,69,0.22),transparent_28%),radial-gradient(circle_at_85%_30%,rgba(255,106,42,0.18),transparent_26%),radial-gradient(circle_at_50%_85%,rgba(229,57,69,0.12),transparent_32%)]" />
+        <motion.div className="absolute -left-16 top-20 h-56 w-56 rounded-full bg-[#ff4d5a]/12 blur-[90px]" animate={{ y: [0, -16, 0], opacity: [0.35, 0.55, 0.35] }} transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }} />
+        <motion.div className="absolute -right-10 bottom-24 h-56 w-56 rounded-full bg-[#ff6a2a]/12 blur-[90px]" animate={{ y: [0, 14, 0], opacity: [0.3, 0.5, 0.3] }} transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }} />
+        <div className="relative z-10 mx-auto w-full max-w-md">
+          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-2 backdrop-blur-xl">
+            <span className="h-2 w-2 rounded-full bg-[#ff4d5a] shadow-[0_0_12px_rgba(229,57,69,0.9)]" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/70">What is Trooflix</span>
+          </motion.div>
+          <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.05 }} className="text-[44px] leading-[0.94] font-black tracking-[-0.05em] text-white mb-5">
+            The <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff4d5a] via-[#ff6b4a] to-orange-400">creator-owned</span> home for your content.
+          </motion.h1>
+          <motion.p initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1 }} className="text-[16px] leading-relaxed text-white/68 mb-7">
+            Trooflix is where you go live, post Shorts, publish documentaries, build community, and get paid directly — while keeping <span className="text-white font-semibold">99%</span> of what you earn.
+          </motion.p>
+          <div className="grid grid-cols-2 gap-2.5 mb-7">
+            {[
+              { k: "Create", v: "Live, Shorts & Docs" },
+              { k: "Earn", v: "Keep 99%" },
+              { k: "Connect", v: "TrooChat & community" },
+              { k: "Own", v: "TrooBank & TrooCoins" },
+            ].map((item, i) => (
+              <motion.div key={item.k} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.15 + i * 0.05 }} className="rounded-2xl border border-white/10 bg-white/[0.04] p-3.5 backdrop-blur-xl">
+                <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#ffb0a8]/80 mb-1">{item.k}</div>
+                <div className="text-sm font-semibold text-white leading-snug">{item.v}</div>
+              </motion.div>
+            ))}
+          </div>
+          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }} className="flex gap-2.5">
+            <a href="/signup" className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#E53945] to-[#ff6a2a] px-5 py-3.5 text-[15px] font-bold text-white shadow-[0_18px_40px_rgba(229,57,69,0.35)]">Start Creating <ArrowRight size={16} /></a>
+            <a href="/features" className="flex-1 inline-flex items-center justify-center rounded-full border border-white/15 bg-white/[0.06] px-5 py-3.5 text-[15px] font-semibold text-white/90 backdrop-blur-xl">Why Trooflix</a>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* 2. Your Voice Unfiltered */}
+      <MobileSectionShell className="bg-[#040406]">
+        <motion.p initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.4 }} className="mb-3 text-[10px] font-bold uppercase tracking-[0.3em] text-white/45">CREATE WITHOUT LIMITS</motion.p>
+        <motion.h2 initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.4 }} className="text-[38px] leading-[0.98] font-black tracking-tighter text-white mb-4">Your Voice. <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff4d5a] via-[#ff6b4a] to-orange-400">Unfiltered.</span></motion.h2>
+        <motion.p initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.4 }} className="text-[15px] leading-relaxed text-white/65 mb-7">Go live in broadcast quality, drop cinematic Shorts, and publish powerful documentaries — all on one platform built to amplify creators, not silence them.</motion.p>
+        <div className="space-y-4">
+          <motion.div initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }} className="flex items-start gap-4 rounded-[26px] border border-white/10 bg-white/[0.04] p-4 backdrop-blur-xl">
+            <div className="w-[132px] shrink-0">
+              <div className="relative aspect-[9/16] overflow-hidden rounded-[22px] border border-white/10 bg-[#050507] p-1.5">
+                <div className="relative h-full w-full overflow-hidden rounded-[18px]"><HeroLatestShortPhone /></div>
+              </div>
+              <p className="mt-2 text-center text-[10px] font-semibold uppercase tracking-[0.16em] text-white/55">Shorts</p>
+            </div>
+            <div className="flex-1 space-y-3 pt-1">
+              <div className="rounded-2xl border border-white/10 bg-black/20 overflow-hidden">
+                <div className="relative aspect-[16/10]">
+                  <img src="/20240503-podcast-studio-with-armando-108-3.jpg.webp" alt="Live podcast studio" className="absolute inset-0 h-full w-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                  <div className="absolute left-2.5 top-2.5 flex items-center gap-1.5 rounded-full border border-red-400/40 bg-red-500/20 px-2 py-1"><span className="h-2 w-2 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.9)]" /><span className="text-[9px] font-black tracking-[0.14em] text-red-100">LIVE</span></div>
+                  <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-end justify-between"><div><div className="text-xs font-semibold text-white">Live Session</div><div className="text-[10px] text-white/60">Studio quality</div></div><div className="flex items-end gap-0.5 h-5">{[6,10,14,8,16,11,7].map((h,idx)=>(<span key={idx} className="w-1 rounded-full bg-gradient-to-t from-red-400 to-orange-300 origin-bottom" style={{ height:`${h}px`, animation:`waveBar 1s ease-in-out ${idx*0.08}s infinite` }} />))}</div></div>
+                </div>
+                <div className="px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/55">Livestream</div>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-black/20 overflow-hidden">
+                <div className="relative aspect-[16/10]">
+                  <motion.img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=1200&auto=format&fit=crop" alt="" className="absolute inset-0 h-full w-full object-cover brightness-[0.72]" animate={{ scale: [1.02, 1.06, 1.02] }} transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }} />
+                  <div className="absolute inset-x-0 top-0 h-[14%] bg-black/80" /><div className="absolute inset-x-0 bottom-0 h-[14%] bg-black/80" />
+                  <div className="absolute left-3 bottom-[18%]"><div className="text-[9px] uppercase tracking-[0.18em] text-[#ffb0a8]/80 mb-0.5">Original Documentary</div><div className="text-sm font-black text-white">The Untold Signal</div></div>
+                </div>
+                <div className="px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/55">Documentaries</div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </MobileSectionShell>
+
+      {/* 3. Monetization */}
+      <MobileSectionShell>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_20%,rgba(229,57,69,0.16),transparent_30%),radial-gradient(circle_at_20%_80%,rgba(255,106,42,0.10),transparent_28%)]" />
+        <motion.p initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.35 }} className="mb-3 text-[10px] font-bold uppercase tracking-[0.3em] text-white/45">MONETIZATION</motion.p>
+        <motion.h2 initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.35 }} className="text-[38px] leading-[0.98] font-black tracking-tighter text-white mb-4">Turn your audience <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff4d5a] via-[#ff6b4a] to-orange-400">into a business.</span></motion.h2>
+        <motion.p initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.35 }} className="text-[15px] leading-relaxed text-white/65 mb-6">Subscriptions. Tips. Merchandise. Paid communities. One platform where every dollar flows directly to you — with only a 1% fee.</motion.p>
+        <div className="rounded-[26px] border border-white/10 bg-white/[0.04] p-4 backdrop-blur-xl mb-4">
+          <div className="mb-4 flex items-center justify-between"><div><div className="text-[10px] uppercase tracking-[0.16em] text-white/40 mb-1">Creator Dashboard</div><div className="text-base font-semibold text-white">Earnings overview</div></div><span className="rounded-full border border-[#ff6b4a]/30 bg-[#E53945]/10 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.14em] text-[#ffb0a8]">Live</span></div>
+          <div className="grid grid-cols-3 gap-2 mb-4">
+            {[{l:"Total",v:"$24,860"},{l:"Subs",v:"3,482"},{l:"Payout",v:"$2,140"}].map(x=>(<div key={x.l} className="rounded-xl border border-white/10 bg-white/[0.03] p-2.5"><div className="text-[10px] uppercase tracking-[0.14em] text-white/40 mb-1">{x.l}</div><div className="text-lg font-black text-white leading-none">{x.v}</div></div>))}
+          </div>
+          <div className="space-y-2.5">{[{l:'Subscriptions',w:'72%'},{l:'Merchandise',w:'38%'},{l:'Tips & Gifts',w:'24%'}].map(row=>(<div key={row.l}><div className="mb-1 flex justify-between text-[11px] text-white/50"><span>{row.l}</span><span>{row.w}</span></div><div className="h-2 rounded-full bg-white/10 overflow-hidden"><motion.div initial={{width:0}} whileInView={{width:row.w}} viewport={{once:true}} transition={{duration:0.8}} className="h-full rounded-full bg-gradient-to-r from-[#E53945] to-[#ff6a2a]" /></div></div>))}</div>
+        </div>
+        <div className="flex flex-wrap gap-2 mb-6">{streams.map(s=>(<span key={s.label} className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-white/80"><span className="text-[#ff8a6a]">{s.value}</span>{s.label}</span>))}</div>
+        <a href="/signup" className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#E53945] to-[#ff6a2a] px-6 py-3.5 text-[15px] font-bold text-white shadow-[0_18px_40px_rgba(229,57,69,0.3)]">Start Building Your Business <ArrowRight size={16} /></a>
+      </MobileSectionShell>
+
+      {/* 4. Trooflix Economy */}
+      <MobileSectionShell className="bg-[#050405]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(229,57,69,0.18),transparent_30%),radial-gradient(circle_at_70%_70%,rgba(255,106,42,0.14),transparent_28%)]" />
+        <motion.p initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.35 }} className="mb-3 text-[10px] font-bold uppercase tracking-[0.3em] text-white/40">Trooflix Economy</motion.p>
+        <motion.h2 initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.35 }} className="text-[38px] leading-[0.98] font-black tracking-tighter text-white mb-4">The creator economy, <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff4d5a] via-[#ff6b4a] to-orange-400">reimagined.</span></motion.h2>
+        <motion.p initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.35 }} className="text-[15px] leading-relaxed text-white/62 mb-6">Tips, purchases, payouts, and support — connected in one native system. TrooCoins and TrooBank make value flow simply between creators and their audience.</motion.p>
+        <div className="relative rounded-[28px] border border-white/10 bg-white/[0.04] p-5 backdrop-blur-2xl overflow-hidden mb-5">
+          <motion.div className="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-[#ff6a2a]/12 blur-3xl" animate={{ scale:[1,1.15,1], opacity:[0.4,0.7,0.4] }} transition={{ duration: 6, repeat: Infinity }} />
+          {["TC","TC","TC"].map((t,i)=>(<motion.div key={i} className="absolute flex items-center justify-center rounded-full border border-[#ffb38a]/30 bg-gradient-to-br from-[#ffcf8a]/30 to-[#E53945]/20 text-[9px] font-black text-[#ffe8d6] shadow-[0_0_20px_rgba(255,106,42,0.2)]" style={{width:26+i*6,height:26+i*6,right:18+i*22,top:18+i*14}} animate={{y:[0,-8,0], rotate:[0,10,-6,0]}} transition={{duration:4+i, repeat:Infinity, ease:"easeInOut", delay:i*0.3}}>{t}</motion.div>))}
+          <div className="relative flex items-center justify-between mb-4"><div><div className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">TrooBank</div><div className="text-sm text-white/55">Creator wallet</div></div><span className="rounded-full border border-[#ff6b4a]/25 bg-[#E53945]/10 px-3 py-1 text-xs font-semibold text-[#ffb0a8]">Active</span></div>
+          <div className="relative rounded-[22px] border border-[#ff6b4a]/20 bg-gradient-to-br from-[#2a1214] via-[#17090a] to-[#0b0606] p-5 overflow-hidden mb-3">
+            <motion.div className="absolute inset-y-0 -left-1/3 w-1/3 bg-gradient-to-r from-transparent via-white/10 to-transparent" animate={{x:["0%","420%"]}} transition={{duration:4.5, repeat:Infinity, ease:"easeInOut", repeatDelay:1.2}} />
+            <div className="mb-6 flex items-center justify-between relative"><span className="text-sm font-bold tracking-[0.22em] text-[#ffd6cf]/85">TROOBANK</span><span className="h-7 w-9 rounded-md bg-gradient-to-br from-[#ffb0a8] to-[#ff6a2a]" /></div>
+            <div className="text-[10px] uppercase tracking-[0.18em] text-white/40 mb-1 relative">Available Balance</div>
+            <div className="text-3xl font-black tracking-tight text-white relative">$2,480.00</div>
+            <div className="mt-1.5 text-sm text-[#ffb0a8]/85 relative">12,400 TrooCoins</div>
+          </div>
+          <div className="grid grid-cols-3 gap-2">{[{l:"Tip",v:"+$24"},{l:"Merch",v:"+$86"},{l:"Payout",v:"Ready"}].map(i=>(<div key={i.l} className="rounded-xl border border-white/10 bg-white/[0.03] px-2.5 py-2.5"><div className="text-[10px] uppercase tracking-[0.14em] text-white/35 mb-1">{i.l}</div><div className="text-sm font-semibold text-white/85">{i.v}</div></div>))}</div>
+        </div>
+        <div className="flex flex-wrap gap-2">{["TrooCoins","TrooBank","Instant tips","Seamless payouts"].map(t=>(<span key={t} className="rounded-full border border-[#ff6b4a]/25 bg-[#E53945]/10 px-3.5 py-2 text-xs font-medium text-white/90">{t}</span>))}</div>
+      </MobileSectionShell>
+
+      {/* 5. TrooChat */}
+      <MobileSectionShell className="bg-[#060407]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_30%,rgba(229,57,69,0.18),transparent_30%),radial-gradient(circle_at_75%_70%,rgba(255,106,42,0.12),transparent_28%)]" />
+        <motion.p initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.35 }} className="mb-3 text-[10px] font-bold uppercase tracking-[0.3em] text-white/40">TrooChat</motion.p>
+        <motion.h2 initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.35 }} className="text-[38px] leading-[0.98] font-black tracking-tighter text-white mb-4">Connect beyond the <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff4d5a] via-[#ff6b4a] to-orange-400">comment section.</span></motion.h2>
+        <motion.p initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.35 }} className="text-[15px] leading-relaxed text-white/62 mb-6">Move from public replies to real relationships. Messages, voice notes, and calls — in one private, creator-owned space, without algorithms in the middle.</motion.p>
+        <div className="rounded-[28px] border border-white/10 bg-white/[0.04] p-4 backdrop-blur-2xl mb-5 overflow-hidden relative">
+          <motion.div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-[#ff4d5a]/10 blur-2xl" animate={{scale:[1,1.2,1],opacity:[0.3,0.5,0.3]}} transition={{duration:6,repeat:Infinity}} />
+          <div className="mb-4 flex items-center justify-between border-b border-white/8 pb-3 relative"><div className="flex items-center gap-3"><div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#E53945] to-[#ff6a2a]" /><div><div className="text-sm font-semibold text-white">Creator Circle</div><div className="text-xs text-white/40">active now</div></div></div><div className="flex h-8 w-8 items-center justify-center rounded-full border border-[#ff6b4a]/25 bg-[#E53945]/10 text-[#ffb0a8]"><Phone size={14} /></div></div>
+          <div className="space-y-3 relative">
+            <div className="max-w-[82%] rounded-3xl rounded-bl-md border border-white/10 bg-white/[0.06] px-4 py-3 text-sm text-white/80">Loved the new episode — when’s the next live?</div>
+            <div className="ml-auto max-w-[86%] rounded-3xl rounded-br-md border border-[#ff6b4a]/25 bg-gradient-to-br from-[#E53945]/25 to-[#ff6a2a]/20 px-4 py-3 text-sm text-white"><div className="mb-2 text-white/70 text-xs">Voice message · 0:18</div><div className="flex h-6 items-end gap-1">{[7,12,18,10,20,14,9,18,13,16].map((h,idx)=>(<span key={idx} className="w-1.5 origin-bottom rounded-full bg-gradient-to-t from-[#ff6b4a] to-[#ffb0a8]" style={{height:`${h}px`, animation:`waveBar 1s ease-in-out ${idx*0.06}s infinite`}} />))}</div></div>
+            <div className="max-w-[78%] rounded-3xl rounded-bl-md border border-white/10 bg-white/[0.06] px-4 py-3 text-sm text-white/80">Let’s hop on a quick call and plan the drop.</div>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">{["Direct messages","Voice notes","Video calls","Private & direct"].map(t=>(<span key={t} className="rounded-full border border-[#ff6b4a]/25 bg-[#E53945]/10 px-3.5 py-2 text-xs font-medium text-white/90">{t}</span>))}</div>
+      </MobileSectionShell>
+
+      {/* 6. Creator Economics */}
+      <MobileSectionShell className="bg-[#080405]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_25%,rgba(229,57,69,0.2),transparent_30%),radial-gradient(circle_at_20%_75%,rgba(255,106,42,0.12),transparent_28%)]" />
+        <motion.p initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.35 }} className="mb-3 text-[10px] font-bold uppercase tracking-[0.3em] text-[#ffb0a8]/70">CREATOR-FIRST ECONOMICS</motion.p>
+        <motion.h2 initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.35 }} className="text-[38px] leading-[0.98] font-black tracking-tighter text-white mb-4">Stop letting big tech <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff4d5a] via-[#ff6b4a] to-orange-400">eat your lunch.</span></motion.h2>
+        <motion.p initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.35 }} className="text-[15px] leading-relaxed text-white/65 mb-5">Legacy platforms can take nearly half. Trooflix flips the model: keep 99% with a flat 1% fee. No surprise cuts. No algorithm tax.</motion.p>
+        <div className="mb-4 flex items-center justify-center py-2"><motion.div animate={{ textShadow: ["0 0 30px rgba(229,57,69,0.25)", "0 0 60px rgba(255,106,42,0.35)", "0 0 30px rgba(229,57,69,0.25)"] }} transition={{ duration: 4, repeat: Infinity }} className="text-[96px] font-black leading-none tracking-tighter text-white">99%</motion.div></div>
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          <div className="rounded-[22px] border border-[#ff6b4a]/20 bg-white/[0.06] p-4 backdrop-blur-xl"><div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#ffb0a8] mb-1">Trooflix</div><div className="text-2xl font-black text-[#ff7a5c]">${trooflixKeep.toLocaleString()}</div><div className="mt-1 text-xs text-white/55">On ${revenue.toLocaleString()}</div></div>
+          <div className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4 opacity-80"><div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/50 mb-1">Old Model</div><div className="text-2xl font-black text-white/45">${oldKeep.toLocaleString()}</div><div className="mt-1 text-xs text-white/40">On ${revenue.toLocaleString()}</div></div>
+        </div>
+        <div className="mb-5 rounded-[22px] border border-white/10 bg-white/[0.04] p-4 backdrop-blur-xl">
+          <div className="mb-2 flex items-center justify-between"><span className="text-sm font-semibold text-white/80">Earnings calculator</span><span className="text-xs text-[#ff8a6a] font-semibold">+${(trooflixKeep - oldKeep).toLocaleString()}</span></div>
+          <input type="range" min={1000} max={100000} step={500} value={revenue} onChange={(e)=>setRevenue(Number(e.target.value))} className="w-full accent-[#E53945]" />
+          <div className="mt-2 text-sm text-white/55">${revenue.toLocaleString()} / month</div>
+        </div>
+        <a href="/signup" className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#E53945] to-[#ff6a2a] px-6 py-3.5 text-[15px] font-bold text-white shadow-[0_18px_40px_rgba(229,57,69,0.3)]">Calculate Your Earnings <ArrowRight size={16} /></a>
+      </MobileSectionShell>
+
+      {/* 7. Watch Everywhere */}
+      <MobileSectionShell className="pb-20">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(229,57,69,0.14),transparent_30%),radial-gradient(circle_at_80%_25%,rgba(255,140,60,0.10),transparent_26%)]" />
+        <motion.p initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.35 }} className="mb-3 text-[10px] font-bold uppercase tracking-[0.3em] text-white/40">Watch everywhere</motion.p>
+        <motion.h2 initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.35 }} className="text-[38px] leading-[0.98] font-black tracking-tighter text-white mb-4">One platform. <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff4d5a] via-[#ff6b4a] to-orange-400">Every screen.</span></motion.h2>
+        <motion.p initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.35 }} className="text-[15px] leading-relaxed text-white/60 mb-6">Pick up where you left off on phone, desktop, or TV. A seamless, cinematic experience — wherever you watch.</motion.p>
+        <div className="relative h-[300px] mb-5">
+          <div className="absolute left-1/2 top-0 w-[92%] -translate-x-1/2 rounded-[20px] border border-white/10 bg-white/[0.04] p-2 shadow-[0_30px_80px_rgba(0,0,0,0.5)]">
+            <div className="relative aspect-[16/9] overflow-hidden rounded-[14px] bg-[#0b0b0e]">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_45%_30%,rgba(229,57,69,0.16),transparent_35%),linear-gradient(180deg,#1a1a20_0%,#0b0b0e_100%)]" />
+              <div className="absolute left-4 top-4"><div className="mb-1 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/25 px-2 py-1 text-[8px] font-semibold uppercase tracking-[0.16em] text-white/60"><span className="h-1.5 w-1.5 rounded-full bg-[#ff4d5a]" /> Now Playing</div><div className="text-sm font-black text-white">Cinematic Documentary</div></div>
+              <div className="absolute inset-x-4 bottom-4 h-[2px] rounded-full bg-white/10 overflow-hidden"><motion.div className="h-full rounded-full bg-gradient-to-r from-[#E53945] to-[#ff8a3d]" animate={{width:["30%","68%","30%"]}} transition={{duration:8, repeat:Infinity, ease:"easeInOut"}} /></div>
+            </div>
+          </div>
+          <div className="absolute left-2 bottom-2 w-[44%] rounded-t-[14px] border border-white/10 border-b-0 bg-white/[0.04] p-1.5"><div className="relative aspect-[16/10] overflow-hidden rounded-[10px] bg-[#0b0b0e]"><div className="absolute inset-0 bg-[linear-gradient(180deg,#17171c_0%,#0b0b0e_100%)]" /><div className="absolute left-2.5 top-2.5 text-[9px] text-white/55">Desktop</div><div className="absolute inset-x-2.5 bottom-2.5 h-[2px] rounded-full bg-white/10 overflow-hidden"><motion.div className="h-full rounded-full bg-gradient-to-r from-[#E53945] to-[#ff8a3d]" animate={{width:["30%","68%","30%"]}} transition={{duration:8, repeat:Infinity, ease:"easeInOut"}} /></div></div><div className="h-2 rounded-b-[10px] bg-gradient-to-b from-[#242428] to-[#121215]" /></div>
+          <div className="absolute right-6 bottom-0 w-[72px] rounded-[22px] border border-white/12 bg-white/[0.05] p-1 shadow-[0_20px_50px_rgba(0,0,0,0.5)]"><div className="relative aspect-[9/19.5] overflow-hidden rounded-[18px] bg-[#0b0b0e]"><div className="absolute inset-0 bg-[linear-gradient(180deg,#17171c_0%,#0b0b0e_100%)]" /><div className="absolute left-1/2 top-1 h-3 w-9 -translate-x-1/2 rounded-full bg-black/85" /><div className="absolute inset-x-2 top-7 text-[8px] text-white/50 text-center">Phone</div><div className="absolute inset-x-2 bottom-4 h-[2px] rounded-full bg-white/10 overflow-hidden"><motion.div className="h-full rounded-full bg-gradient-to-r from-[#E53945] to-[#ff8a3d]" animate={{width:["30%","68%","30%"]}} transition={{duration:8, repeat:Infinity, ease:"easeInOut"}} /></div></div></div>
+        </div>
+        <div className="flex flex-wrap justify-center gap-2">{["Phone","Desktop","Smart TV","Fire Stick"].map(item=>(<span key={item} className="rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-2 text-xs text-white/55">{item}</span>))}</div>
+      </MobileSectionShell>
+    </div>
   );
 }
 
