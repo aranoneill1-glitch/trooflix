@@ -141,7 +141,7 @@ export default function MyTrooFlixContent({ embedded = false }: { embedded?: boo
     <main className={`${embedded ? "bg-transparent pb-4" : "min-h-screen bg-[#0a0303] pb-32"} text-white font-sans selection:bg-[#E53945]/30`}>
       {!embedded && <div className="relative z-[100]"><TopBar /></div>}
 
-      <div className="w-full max-w-7xl mx-auto px-5 md:px-12 pt-8 md:pt-12">
+      <div className={`w-full max-w-7xl mx-auto px-5 md:px-12 ${embedded ? "pt-8 md:pt-12" : "pt-[calc(env(safe-area-inset-top)+5rem)] md:pt-[calc(env(safe-area-inset-top)+6rem)]"}`}>
         
         {/* 1. WELCOME HEADER */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
