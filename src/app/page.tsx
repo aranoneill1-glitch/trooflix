@@ -439,6 +439,8 @@ export default function Home() {
                 <div className="snap-y snap-proximity">
                 {/* Page 1: Content Power / Your Voice. Unfiltered. */}
                 <section className="relative w-full min-h-[100svh] snap-start overflow-hidden bg-[#040406] flex items-center">
+                  <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#050507] to-transparent z-[2]" />
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#050507] to-transparent z-[2]" />
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(255,255,255,0.05),transparent_22%),radial-gradient(circle_at_80%_20%,rgba(120,80,255,0.10),transparent_24%),linear-gradient(180deg,#050507_0%,#020203_100%)]" />
                   <motion.div className="absolute -left-20 top-1/3 h-72 w-72 rounded-full bg-white/[0.04] blur-[120px]" animate={{ x:[0,40,0], y:[0,-20,0] }} transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }} />
                   <motion.div className="absolute right-[-5%] bottom-[10%] h-80 w-80 rounded-full bg-fuchsia-500/[0.08] blur-[130px]" animate={{ x:[0,-30,0], y:[0,25,0] }} transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }} />
@@ -550,34 +552,12 @@ export default function Home() {
 
                 <WatchEverywhereHero />
 
-                {/* Page 5: TrooChat */}
-                <section className="relative w-full min-h-[100svh] snap-start overflow-hidden bg-[#090616] flex items-center">
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_35%_35%,rgba(168,85,247,0.3),transparent_28%),radial-gradient(circle_at_75%_70%,rgba(59,130,246,0.22),transparent_30%),linear-gradient(180deg,#090616_0%,#05040b_100%)]" />
-                  <motion.div className="absolute right-[10%] top-[20%] h-72 w-72 rounded-full bg-violet-400/10 blur-[120px]" animate={{ scale:[1,1.2,1] }} transition={{ duration:9, repeat:Infinity }} />
-                  <div className="relative z-10 w-full max-w-[1600px] mx-auto px-8 xl:px-16 flex items-center justify-between gap-12">
-                    <motion.div className="w-full lg:w-[42%] max-w-3xl" initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.45 }} transition={{ duration: 0.9, ease: [0.22,1,0.36,1] }}>
-                      <div className="mb-6 flex items-center gap-3"><span className="rounded-full border border-violet-400/30 bg-violet-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-violet-200">Real conversations</span><span className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/35">05 / 06</span></div>
-                      <h2 className="text-[56px] xl:text-[74px] 2xl:text-[88px] font-black tracking-tighter text-white leading-[0.98] mb-6">Connect beyond the<br /><span className="bg-clip-text text-transparent bg-gradient-to-r from-violet-300 to-blue-300">comment section.</span></h2>
-                      <p className="text-lg xl:text-xl text-white/70 leading-relaxed font-medium max-w-2xl mb-8">Move from public replies to real relationships. TrooChat brings messaging, voice notes, and video calls into one private, creator-owned space.</p>
-                      <div className="mb-10 flex flex-wrap gap-3">{['Direct messages','Voice notes','Video calls'].map(t=>(<span key={t} className="rounded-full border border-violet-300/20 bg-violet-400/10 px-4 py-2 text-sm font-medium text-violet-50/90 backdrop-blur-md">{t}</span>))}</div>
-                      <a href="/messages" className="inline-flex items-center justify-center gap-2 rounded-full bg-violet-500 px-8 py-4 text-base font-bold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_18px_45px_rgba(139,92,246,0.35),0_0_30px_rgba(139,92,246,0.25)] transition hover:scale-[1.02] hover:bg-violet-400">Start a Conversation <ArrowRight size={18} /></a>
-                    </motion.div>
-                    <motion.div className="hidden lg:flex w-[52%] justify-center relative" initial={{ opacity: 0, x: 40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: false, amount: 0.4 }} transition={{ duration: 0.9, ease: [0.22,1,0.36,1] }}>
-                      <div className="relative h-[430px] w-full max-w-[520px]">
-                        <motion.div className="absolute left-8 top-6 max-w-[320px] rounded-3xl rounded-bl-md border border-white/15 bg-white/[0.08] p-4 text-white/85 shadow-[0_20px_50px_rgba(0,0,0,0.3)] backdrop-blur-2xl" animate={{ y:[0,-6,0] }} transition={{ duration:5, repeat:Infinity }}>Loved the new episode — when’s the next live?</motion.div>
-                        <motion.div className="absolute right-6 top-28 max-w-[330px] rounded-3xl rounded-br-md border border-violet-300/20 bg-violet-500/20 p-4 text-white shadow-[0_20px_50px_rgba(0,0,0,0.3)] backdrop-blur-2xl" animate={{ y:[0,-8,0] }} transition={{ duration:4.6, repeat:Infinity, delay:0.3 }}>
-                          <div className="mb-3 text-sm text-white/90">Voice message · 0:18</div>
-                          <div className="flex h-8 items-end gap-1">{[8,14,22,12,26,18,10,24,16,20,12,18,22,14].map((h,idx)=>(<span key={idx} className="w-1.5 origin-bottom rounded-full bg-gradient-to-t from-violet-300 to-blue-300" style={{ height:`${h}px`, animation:`waveBar 1s ease-in-out ${idx*0.06}s infinite` }} />))}</div>
-                        </motion.div>
-                        <motion.div className="absolute left-16 bottom-20 max-w-[300px] rounded-3xl rounded-bl-md border border-white/15 bg-white/[0.08] p-4 text-white/85 shadow-[0_20px_50px_rgba(0,0,0,0.3)] backdrop-blur-2xl" animate={{ y:[0,-5,0] }} transition={{ duration:5.4, repeat:Infinity, delay:0.5 }}>Let’s hop on a quick call and plan the drop.</motion.div>
-                        <div className="absolute right-10 bottom-8"><span className="absolute inset-0 rounded-full bg-emerald-400/30 animate-ping" /><motion.button whileHover={{ scale:1.08 }} className="relative flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 text-white shadow-[0_0_0_8px_rgba(16,185,129,0.12),0_18px_40px_rgba(16,185,129,0.35)]"><Phone size={24} /></motion.button></div>
-                      </div>
-                    </motion.div>
-                  </div>
-                </section>
+                <TrooChatHero />
 
                 {/* Page 6: Trooflix Economy */}
                 <section className="relative w-full min-h-[100svh] snap-start overflow-hidden bg-[#090602] flex items-center">
+                  <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#050507] to-transparent z-[2]" />
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#050507] to-transparent z-[2]" />
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(234,179,8,0.24),transparent_25%),radial-gradient(circle_at_70%_75%,rgba(245,158,11,0.16),transparent_30%),linear-gradient(180deg,#090602_0%,#040301_100%)]" />
                   <motion.div className="absolute left-[20%] top-[20%] h-64 w-64 rounded-full bg-amber-300/10 blur-[110px]" animate={{ y:[0,20,0], opacity:[0.5,0.8,0.5] }} transition={{ duration:8.5, repeat:Infinity }} />
                   <div className="relative z-10 w-full max-w-[1600px] mx-auto px-8 xl:px-16 flex items-center justify-between gap-12">
@@ -690,12 +670,76 @@ export default function Home() {
   );
 }
 
+function TrooChatHero() {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: false, amount: 0.35 });
+
+  return (
+    <section ref={ref} className="relative hidden min-h-[100svh] w-full snap-start overflow-hidden bg-[#06050b] lg:flex items-center">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/70 to-transparent z-[1]" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/70 to-transparent z-[1]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_35%,rgba(168,85,247,0.18),transparent_26%),radial-gradient(circle_at_75%_65%,rgba(59,130,246,0.14),transparent_24%),linear-gradient(180deg,#06050b_0%,#04030a_100%)]" />
+      <motion.div className="absolute left-[12%] top-[18%] h-72 w-72 rounded-full bg-violet-400/10 blur-[130px]" animate={{ x: [0, 20, 0], y: [0, -18, 0] }} transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }} />
+
+      <div className="relative z-10 mx-auto grid w-full max-w-[1600px] grid-cols-[0.95fr_1.05fr] items-center gap-14 px-8 xl:px-16">
+        <motion.div initial="hidden" animate={inView ? "visible" : "hidden"} variants={{ visible: { transition: { staggerChildren: 0.1 } } }} className="max-w-3xl">
+          <motion.p variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-5 text-[11px] font-bold uppercase tracking-[0.34em] text-white/40">TrooChat</motion.p>
+          <motion.h2 variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.85 } } }} className="mb-7 text-[56px] font-black leading-[0.96] tracking-tighter text-white xl:text-[74px] 2xl:text-[88px]">
+            Connect beyond the<br />
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-violet-300 via-fuchsia-300 to-blue-300">comment section.</span>
+          </motion.h2>
+          <motion.p variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-8 max-w-2xl text-lg font-medium leading-relaxed text-white/60 xl:text-xl">
+            Move from public replies to real relationships. Messages, voice notes, and calls — in one private, creator-owned space, without algorithms in the middle.
+          </motion.p>
+          <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-10 flex flex-wrap gap-3">
+            {["Direct messages", "Voice notes", "Video calls", "Private & direct"].map((t) => (
+              <span key={t} className="rounded-full border border-violet-300/20 bg-violet-400/10 px-4 py-2 text-sm font-medium text-violet-50/90 backdrop-blur-md">{t}</span>
+            ))}
+          </motion.div>
+          <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+            <motion.a href="/messages" whileHover={{ scale: 1.03, boxShadow: "0 0 0 1px rgba(255,255,255,0.1), 0 18px 45px rgba(139,92,246,0.35), 0 0 30px rgba(139,92,246,0.2)" }} className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-violet-500 to-indigo-500 px-8 py-4 text-base font-bold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_18px_40px_rgba(139,92,246,0.28)]">
+              Start a Conversation <ArrowRight size={18} />
+            </motion.a>
+          </motion.div>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0, x: 30 }} animate={inView ? { opacity: 1, x: 0 } : {}} transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }} className="relative flex h-[500px] items-center justify-center">
+          <div className="relative w-full max-w-[520px]">
+            <div className="rounded-[32px] border border-white/10 bg-white/[0.04] p-5 shadow-[0_40px_120px_rgba(0,0,0,0.45)] backdrop-blur-2xl">
+              <div className="mb-5 flex items-center justify-between border-b border-white/8 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-violet-400 to-indigo-400" />
+                  <div>
+                    <div className="text-sm font-semibold text-white">Creator Circle</div>
+                    <div className="text-xs text-white/40">3 members · active now</div>
+                  </div>
+                </div>
+                <div className="flex h-9 w-9 items-center justify-center rounded-full border border-emerald-400/20 bg-emerald-500/10 text-emerald-300"><Phone size={16} /></div>
+              </div>
+              <div className="space-y-4">
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ delay: 0.3 }} className="max-w-[75%] rounded-3xl rounded-bl-md border border-white/10 bg-white/[0.06] px-4 py-3 text-sm text-white/80">Loved the new episode — when’s the next live?</motion.div>
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ delay: 0.45 }} className="ml-auto max-w-[78%] rounded-3xl rounded-br-md border border-violet-300/20 bg-gradient-to-br from-violet-500/25 to-indigo-500/20 px-4 py-3 text-sm text-white">
+                  <div className="mb-2 text-white/70 text-xs">Voice message · 0:18</div>
+                  <div className="flex h-7 items-end gap-1">{[8,14,22,12,26,18,10,24,16,20,12,18].map((h,idx)=>(<span key={idx} className="w-1.5 origin-bottom rounded-full bg-gradient-to-t from-violet-300 to-blue-300" style={{ height:`${h}px`, animation:`waveBar 1s ease-in-out ${idx*0.06}s infinite` }} />))}</div>
+                </motion.div>
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ delay: 0.6 }} className="max-w-[70%] rounded-3xl rounded-bl-md border border-white/10 bg-white/[0.06] px-4 py-3 text-sm text-white/80">Let’s hop on a quick call and plan the drop.</motion.div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
 function WatchEverywhereHero() {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: false, amount: 0.35 });
 
   return (
     <section ref={ref} className="relative hidden min-h-[100svh] w-full snap-start overflow-hidden bg-[#050507] lg:flex items-center">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#050507] to-transparent z-[2]" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#050507] to-transparent z-[2]" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_15%,rgba(229,57,69,0.14),transparent_28%),radial-gradient(circle_at_80%_70%,rgba(255,140,60,0.08),transparent_24%),linear-gradient(180deg,#050507_0%,#020203_100%)]" />
       <div className="absolute inset-0 opacity-[0.04] [background-image:linear-gradient(rgba(255,255,255,0.7)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.7)_1px,transparent_1px)] [background-size:96px_96px]" />
 
@@ -824,6 +868,8 @@ function MonetizationHero() {
 
   return (
     <section ref={ref} className="relative hidden min-h-[100svh] w-full snap-start overflow-hidden bg-[#050607] lg:flex items-center">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#050507] to-transparent z-[2]" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#050507] to-transparent z-[2]" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(0,230,118,0.10),transparent_22%),radial-gradient(circle_at_20%_80%,rgba(255,255,255,0.04),transparent_20%),linear-gradient(180deg,#050607_0%,#030405_100%)]" />
       <motion.div className="absolute right-[12%] top-[18%] h-72 w-72 rounded-full bg-[#00E676]/10 blur-[120px]" animate={{ scale: [1, 1.15, 1], opacity: [0.3, 0.5, 0.3] }} transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }} />
       <div className="absolute inset-0 opacity-[0.05] [background-image:linear-gradient(rgba(255,255,255,0.5)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.5)_1px,transparent_1px)] [background-size:80px_80px]" />
@@ -914,6 +960,8 @@ function CreatorEconomicsHero() {
 
   return (
     <section ref={ref} className="relative hidden min-h-[100svh] w-full snap-start overflow-hidden bg-[#020604] lg:flex items-center">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#050507] to-transparent z-[2]" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#050507] to-transparent z-[2]" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_35%,rgba(16,185,129,0.20),transparent_24%),radial-gradient(circle_at_20%_70%,rgba(16,185,129,0.10),transparent_28%),linear-gradient(180deg,#020604_0%,#010302_100%)]" />
       <motion.div className="absolute right-[18%] top-[22%] h-80 w-80 rounded-full bg-emerald-400/10 blur-[140px]" animate={{ scale: [1, 1.12, 1], opacity: [0.35, 0.55, 0.35] }} transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }} />
       <div className="absolute inset-0 opacity-[0.05] [background-image:radial-gradient(rgba(255,255,255,0.7)_1px,transparent_1px)] [background-size:28px_28px]" />
@@ -1158,6 +1206,7 @@ function SignedOutDesktopHero() {
         <div className="pointer-events-none absolute inset-0 opacity-[0.08] [background-image:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22140%22 height=%22140%22 viewBox=%220 0 140 140%22%3E%3Cfilter id=%22n%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%222%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22140%22 height=%22140%22 filter=%22url(%23n)%22 opacity=%220.35%22/%3E%3C/svg%3E')]" />
         <canvas ref={dustRef} className="pointer-events-none absolute inset-0 z-[1]" />
 
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#050507] to-transparent z-[5]" />
         <div ref={contentRef} className="relative z-10 flex h-full items-center will-change-transform">
           <div className="w-full max-w-[1600px] px-8 xl:px-20">
             <div className="max-w-[720px] xl:max-w-[780px]">
