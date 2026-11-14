@@ -244,7 +244,7 @@ function UploadContent() {
   return (
     <main className="min-h-screen bg-[#0a0303] text-white pb-32 font-sans">
       <TopBar />
-      <div className="max-w-2xl mx-auto px-4 pt-24">
+      <div className="max-w-2xl mx-auto px-4 pt-[calc(env(safe-area-inset-top)+6rem)]">
         <div className="flex items-center gap-4 mb-8">
           <Link href="/creator-dashboard" className="p-2 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition"><ArrowLeft size={20} /></Link>
           <div><h1 className="text-2xl font-bold">{isTweet ? "Add a Tweet" : (isShort ? "Upload Short" : (isPodcast ? "Upload Podcast" : isDocumentary ? "Upload Documentary" : "Upload Video"))}</h1>

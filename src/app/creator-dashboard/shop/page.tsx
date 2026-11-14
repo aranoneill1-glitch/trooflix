@@ -230,7 +230,7 @@ function ManageShopContent() {
     <main className="min-h-screen bg-[#09090B] text-white pb-32 font-sans selection:bg-[#E53945]/30">
       <TopBar />
 
-      <div className="max-w-5xl mx-auto px-4 pt-24 pb-6">
+      <div className="max-w-5xl mx-auto px-4 pt-[calc(env(safe-area-inset-top)+6rem)] pb-6">
         
         <Link href="/creator-dashboard" className="inline-flex items-center gap-2 text-sm text-white/50 hover:text-white mb-8 transition">
           <ChevronLeft size={16} /> Back to Dashboard

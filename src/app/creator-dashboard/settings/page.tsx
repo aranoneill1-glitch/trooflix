@@ -132,7 +132,7 @@ function ProfileSettingsContent() {
       </div>
       <TopBar />
       
-      <div className="relative z-10 max-w-2xl mx-auto pt-24 pb-32 px-4">
+      <div className="relative z-10 max-w-2xl mx-auto pt-[calc(env(safe-area-inset-top)+6rem)] pb-32 px-4">
 
         {/* ONBOARDING BANNER (only shows during signup) */}
         {isOnboarding && (

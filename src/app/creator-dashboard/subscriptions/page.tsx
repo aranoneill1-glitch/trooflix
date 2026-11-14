@@ -261,7 +261,7 @@ export default function PremiumSettings() {
 
         {/* RIGHT COLUMN: Live Preview */}
         <div className="lg:col-span-1">
-          <div className="sticky top-8">
+          <div className="sticky" style={{ top: "calc(env(safe-area-inset-top) + 2rem)" }}>
             <div className="flex items-center gap-2 mb-4 text-white/50">
               <Eye size={16} />
               <h3 className="text-xs font-bold uppercase tracking-widest">Fan View Preview</h3>

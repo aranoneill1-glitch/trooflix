@@ -46,7 +46,7 @@ export default function SecurityBillingPage() {
   return (
     <main className="min-h-screen bg-[#0a0303] text-white pb-32 font-sans">
       <TopBar />
-      <div className="max-w-2xl mx-auto px-4 pt-24">
+      <div className="max-w-2xl mx-auto px-4 pt-[calc(env(safe-area-inset-top)+6rem)]">
         <div className="flex items-center gap-4 mb-8">
           <Link href="/creator-dashboard" className="p-2 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition"><ArrowRight size={20} className="rotate-180" /></Link>
           <div><h1 className="text-2xl font-bold">Security & Billing</h1><p className="text-sm text-white/50">Manage your account security and subscription.</p></div>

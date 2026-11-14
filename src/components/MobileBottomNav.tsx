@@ -48,7 +48,7 @@ export default function MobileBottomNav() {
 
   return (
     <nav className="lg:hidden fixed inset-x-0 bottom-0 z-[250] border-t border-white/10 bg-[#070709]">
-      <div className="flex items-center justify-around px-2 pt-1 pb-[max(6px,env(safe-area-inset-bottom))]">
+      <div className="flex items-center justify-around px-2 pt-0.5 pb-[max(2px,env(safe-area-inset-bottom))]">
         {tabs.map((tab) => {
           const active = isActive(tab.href);
 
@@ -56,7 +56,7 @@ export default function MobileBottomNav() {
             <Link
               key={tab.name}
               href={tab.href}
-              className="flex flex-col items-center justify-center gap-0.5 min-w-0 flex-1 py-0.5"
+              className="flex flex-col items-center justify-center gap-0 min-w-0 flex-1 py-0"
             >
               {tab.name === "Trooflix" ? (
                 <span className="text-[12px] font-black tracking-[-0.06em] leading-none">

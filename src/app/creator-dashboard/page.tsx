@@ -393,7 +393,7 @@ function CreatorDashboardContent() {
       <div className="relative z-10">
         <TopBar />
 
-        <div className="max-w-5xl mx-auto px-4 pt-[76px] pb-6">
+        <div className="max-w-5xl mx-auto px-4 pt-[calc(env(safe-area-inset-top)+76px)] pb-6">
           
           {(isDashboardView || showMyTrooFlix) && (
             <CreatorStudioNav

@@ -122,7 +122,7 @@ export default function ImportPage() {
   return (
     <main className="min-h-screen bg-[#0a0303] text-white pb-24 font-sans">
       <TopBar />
-      <div className="max-w-3xl mx-auto px-4 pt-24">
+      <div className="max-w-3xl mx-auto px-4 pt-[calc(env(safe-area-inset-top)+6rem)]">
         <Link href="/creator-dashboard" className="inline-flex items-center gap-2 text-white/50 hover:text-white mb-8 transition text-sm font-semibold">
           <ArrowLeft size={16} /> Back to Dashboard
         </Link>

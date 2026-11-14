@@ -98,7 +98,7 @@ export default function ProfileThemePage() {
   return (
     <main className="min-h-screen bg-[#09090B] text-white pb-28 font-sans selection:bg-[#E53945]/30">
       <TopBar />
-      <div className="max-w-2xl mx-auto px-4 pt-20 pb-4">
+      <div className="max-w-2xl mx-auto px-4 pt-[calc(env(safe-area-inset-top)+5rem)] pb-4">
         <Link
           href="/creator-dashboard"
           className="inline-flex items-center gap-2 text-sm text-white/50 hover:text-white mb-4 transition"
