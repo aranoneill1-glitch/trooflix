@@ -441,19 +441,31 @@ export default function Home() {
                   <motion.div className="absolute right-[-5%] bottom-[10%] h-80 w-80 rounded-full bg-[#ff4d5a]/[0.08] blur-[130px] z-[1]" animate={{ x:[0,-30,0], y:[0,25,0] }} transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }} />
                   <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent_0%,rgba(255,255,255,0.03)_45%,transparent_70%)] opacity-60 z-[1]" />
                   <div className="relative z-10 w-full max-w-[1600px] mx-auto px-8 xl:px-16 py-20">
-                    <div className="grid grid-cols-[1.05fr_0.95fr] items-center gap-12 xl:gap-16">
+                    <div className="grid grid-cols-[0.95fr_1.05fr] items-center gap-12 xl:gap-16">
                       <motion.div className="max-w-2xl" initial="hidden" whileInView="visible" viewport={{ once: false, amount: 0.35 }} variants={{ visible: { transition: { staggerChildren: 0.12 } } }}>
                         <motion.p variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-5 text-[11px] font-bold uppercase tracking-[0.34em] text-white/45">CREATE WITHOUT LIMITS</motion.p>
                         <motion.h2 variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8 } } }} className="text-[56px] xl:text-[68px] 2xl:text-[78px] font-black tracking-tighter text-white leading-[0.98] mb-6">
                           Your Voice. <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff4d5a] via-[#ff6b4a] to-orange-400">Unfiltered.</span>
                         </motion.h2>
-                        <motion.p variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="max-w-xl text-lg xl:text-xl text-white/65 leading-relaxed font-medium mb-10">
+                        <motion.p variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="max-w-xl text-lg xl:text-xl text-white/65 leading-relaxed font-medium">
                           Go live in broadcast quality, drop cinematic Shorts, and publish powerful documentaries — all on one platform built to amplify creators, not silence them.
                         </motion.p>
+                      </motion.div>
 
-                        <div className="grid grid-cols-2 gap-4 w-full max-w-[560px]">
+                      <motion.div className="flex items-center justify-center gap-6" initial="hidden" whileInView="visible" viewport={{ once: false, amount: 0.3 }} variants={{ visible: { transition: { staggerChildren: 0.14 } } }}>
+                        {/* Shorts */}
+                        <motion.div variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22,1,0.36,1] } } }} className="flex flex-col items-center shrink-0">
+                          <motion.div whileHover={{ y: -8, boxShadow: '0 30px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.08), 0 0 40px rgba(255,255,255,0.08)' }} className="group relative w-[280px] xl:w-[300px] overflow-hidden rounded-[34px] border border-white/12 bg-[#0b0b10]/80 backdrop-blur-xl shadow-[0_24px_70px_rgba(0,0,0,0.45)] transition cursor-pointer p-3">
+                            <div className="relative mx-auto aspect-[9/16] overflow-hidden rounded-[26px] border border-white/10 bg-[#050507]">
+                              <HeroLatestShortPhone />
+                            </div>
+                          </motion.div>
+                          <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-white/55">Shorts</p>
+                        </motion.div>
+
+                        <div className="flex flex-col gap-5 w-full max-w-[320px]">
                           {/* Livestream */}
-                          <motion.div variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22,1,0.36,1] } } }} className="flex flex-col items-start">
+                          <motion.div variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22,1,0.36,1] } } }} className="flex flex-col items-center">
                             <motion.div whileHover={{ y: -6, boxShadow: '0 24px 70px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08), 0 0 30px rgba(239,68,68,0.12)' }} className="group relative w-full overflow-hidden rounded-[24px] border border-white/12 bg-[#0b0b10]/80 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.4)] transition cursor-pointer">
                               <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(239,68,68,0.18),transparent_30%),linear-gradient(180deg,#15151d_0%,#09090d_100%)]" />
                               <div className="relative p-4">
@@ -462,7 +474,7 @@ export default function Home() {
                                     <span className="relative flex h-2.5 w-2.5"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-70"></span><span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.9)]"></span></span>
                                     <span className="rounded-full border border-red-400/40 bg-red-500/15 px-2.5 py-1 text-[10px] font-black tracking-[0.18em] text-red-200">LIVE</span>
                                   </div>
-                                  <span className="text-[11px] text-white/55 font-medium">8.2k</span>
+                                  <span className="text-xs text-white/55 font-medium">8.2k watching</span>
                                 </div>
                                 <div className="relative aspect-[16/10] overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-[#201018] via-[#120d14] to-[#070709]">
                                   <img src="/20240503-podcast-studio-with-armando-108-3.jpg.webp" alt="Live podcast studio" className="absolute inset-0 h-full w-full object-cover" />
@@ -487,7 +499,7 @@ export default function Home() {
                           </motion.div>
 
                           {/* Documentaries */}
-                          <motion.div variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22,1,0.36,1] } } }} className="flex flex-col items-start">
+                          <motion.div variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22,1,0.36,1] } } }} className="flex flex-col items-center">
                             <motion.div whileHover={{ y: -6, boxShadow: '0 24px 70px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08), 0 0 30px rgba(229,57,69,0.10)' }} className="group relative w-full overflow-hidden rounded-[24px] border border-white/12 bg-[#0b0b10]/80 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.4)] transition cursor-pointer">
                               <div className="relative aspect-[16/10] overflow-hidden">
                                 <motion.div className="absolute inset-[-6%]" animate={{ scale: [1.02, 1.08, 1.02], x: [0, -12, 0] }} transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}>
@@ -504,17 +516,6 @@ export default function Home() {
                             </motion.div>
                             <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-white/55">Documentaries</p>
                           </motion.div>
-                        </div>
-                      </motion.div>
-
-                      <motion.div className="flex items-center justify-center" initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.3 }} transition={{ duration: 0.9, ease: [0.22,1,0.36,1], delay: 0.1 }}>
-                        <div className="flex flex-col items-center shrink-0">
-                          <motion.div whileHover={{ y: -8, boxShadow: '0 30px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.08), 0 0 40px rgba(255,255,255,0.08)' }} className="group relative w-[290px] xl:w-[320px] overflow-hidden rounded-[34px] border border-white/12 bg-[#0b0b10]/80 backdrop-blur-xl shadow-[0_24px_70px_rgba(0,0,0,0.45)] transition cursor-pointer p-3">
-                            <div className="relative mx-auto aspect-[9/16] overflow-hidden rounded-[26px] border border-white/10 bg-[#050507]">
-                              <HeroLatestShortPhone />
-                            </div>
-                          </motion.div>
-                          <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-white/55">Shorts</p>
                         </div>
                       </motion.div>
                     </div>
