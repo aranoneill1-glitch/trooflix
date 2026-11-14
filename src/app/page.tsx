@@ -694,75 +694,108 @@ function WatchEverywhereHero() {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: false, amount: 0.35 });
 
-  const devices = [
-    { name: "Smart TV", sub: "Living room", icon: <Tv size={16} />, x: "left-[6%]", y: "top-[10%]" },
-    { name: "Desktop", sub: "Studio setup", icon: <Monitor size={16} />, x: "right-[4%]", y: "top-[18%]" },
-    { name: "Phone", sub: "On the go", icon: <Smartphone size={16} />, x: "left-[2%]", y: "bottom-[16%]" },
-    { name: "Tablet", sub: "Anywhere", icon: <BookOpen size={16} />, x: "right-[8%]", y: "bottom-[10%]" },
-  ];
-
   return (
-    <section ref={ref} className="relative hidden min-h-[100svh] w-full snap-start overflow-hidden bg-[#02060d] lg:flex items-center">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_55%_35%,rgba(56,189,248,0.22),transparent_24%),radial-gradient(circle_at_15%_75%,rgba(34,211,238,0.12),transparent_22%),linear-gradient(135deg,#02040a_0%,#031224_45%,#02050b_100%)]" />
-      <motion.div className="absolute left-[8%] top-[20%] h-80 w-80 rounded-full bg-sky-400/10 blur-[130px]" animate={{ x: [0, 25, 0], y: [0, -20, 0] }} transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }} />
-      <motion.div className="absolute right-[10%] bottom-[12%] h-72 w-72 rounded-full bg-cyan-300/10 blur-[120px]" animate={{ x: [0, -20, 0], y: [0, 20, 0] }} transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }} />
-      <div className="absolute inset-0 opacity-[0.06] [background-image:linear-gradient(rgba(255,255,255,0.7)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.7)_1px,transparent_1px)] [background-size:90px_90px]" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_35%,rgba(0,0,0,0.45)_100%)]" />
-
-      <div className="relative z-10 mx-auto grid w-full max-w-[1600px] grid-cols-[0.95fr_1.05fr] items-center gap-14 px-8 xl:px-16">
-        <motion.div initial="hidden" animate={inView ? "visible" : "hidden"} variants={{ visible: { transition: { staggerChildren: 0.1 } } }} className="max-w-3xl">
-          <motion.p variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-5 text-[11px] font-bold uppercase tracking-[0.34em] text-sky-200/70">WATCH EVERYWHERE</motion.p>
-          <motion.h2 variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.85 } } }} className="mb-7 text-[56px] font-black leading-[0.96] tracking-tighter text-white xl:text-[74px] 2xl:text-[88px]">
-            One platform.<br />
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-sky-300 via-cyan-200 to-blue-200">Every screen.</span>
-          </motion.h2>
-          <motion.p variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-8 max-w-2xl text-lg font-medium leading-relaxed text-white/68 xl:text-xl">
-            Start on your phone, continue on desktop, and finish on the big screen. Trooflix delivers a seamless, cinematic viewing experience wherever your audience is.
-          </motion.p>
-
-          <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-8 grid max-w-xl grid-cols-3 gap-3">
-            {[{ k: "Playback", v: "Zero-buffer feel" }, { k: "Quality", v: "Crisp & cinematic" }, { k: "Sync", v: "Across devices" }].map((s) => (
-              <div key={s.k} className="rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 backdrop-blur-xl"><div className="mb-1 text-[10px] uppercase tracking-[0.18em] text-white/40">{s.k}</div><div className="text-sm font-bold text-white">{s.v}</div></div>
-            ))}
-          </motion.div>
-
-          <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-10 flex flex-wrap gap-3">
-            {["Phone", "Desktop", "Smart TV", "Fire Stick", "Tablet"].map((t) => (
-              <span key={t} className="rounded-full border border-cyan-300/20 bg-cyan-400/10 px-4 py-2 text-sm font-medium text-cyan-50/90 backdrop-blur-md">{t}</span>
-            ))}
-          </motion.div>
-
-          <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="flex items-center gap-4 flex-wrap">
-            <motion.a href="/tv" whileHover={{ scale: 1.03, boxShadow: "0 0 0 1px rgba(255,255,255,0.1), 0 18px 45px rgba(14,165,233,0.35), 0 0 30px rgba(56,189,248,0.22)" }} whileTap={{ scale: 0.99 }} className="inline-flex items-center justify-center gap-2 rounded-full bg-sky-500 px-8 py-4 text-base font-bold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_18px_40px_rgba(14,165,233,0.3)]"><Tv size={18} /> Cast to TV</motion.a>
-            <p className="text-sm font-medium text-white/45">04 / 06 · Built for lean-back and on-the-go viewing</p>
-          </motion.div>
+    <section ref={ref} className="relative hidden min-h-[100svh] w-full snap-start overflow-hidden bg-[#000000] lg:flex items-center">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.06),transparent_35%)]" />
+      <div className="relative z-10 mx-auto w-full max-w-[1400px] px-8 xl:px-16">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+          className="mx-auto max-w-3xl text-center"
+        >
+          <p className="mb-5 text-[12px] font-semibold tracking-[0.24em] text-white/45">Every screen</p>
+          <h2 className="text-[64px] font-semibold leading-[1.02] tracking-[-0.045em] text-white xl:text-[84px]">
+            Beautiful on TV.
+            <br />
+            Brilliant everywhere.
+          </h2>
+          <p className="mx-auto mt-6 max-w-2xl text-xl leading-relaxed text-white/55 font-normal">
+            Start on iPhone. Continue on desktop. Finish on the big screen.
+            <br className="hidden xl:block" />
+            Trooflix moves with you, seamlessly.
+          </p>
+          <div className="mt-10 flex items-center justify-center gap-6 text-[15px] font-medium">
+            <a href="/tv" className="text-[#2997ff] transition hover:text-[#5ab0ff]">Open on TV</a>
+            <a href="/features" className="text-white/55 transition hover:text-white/80">Learn more</a>
+          </div>
         </motion.div>
 
-        <div className="relative h-[560px]">
-          <motion.div className="absolute left-1/2 top-1/2 h-[360px] w-[360px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-cyan-200/10" animate={{ rotate: 360 }} transition={{ duration: 30, repeat: Infinity, ease: "linear" }} />
-          <motion.div className="absolute left-1/2 top-1/2 h-[500px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-cyan-200/[0.07]" animate={{ rotate: -360 }} transition={{ duration: 45, repeat: Infinity, ease: "linear" }} />
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 1, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+          className="relative mx-auto mt-20 h-[460px] max-w-[1100px]"
+        >
+          {/* TV */}
+          <div className="absolute left-1/2 top-0 w-[760px] -translate-x-1/2">
+            <div className="rounded-[28px] border border-white/10 bg-[#121214] p-3 shadow-[0_40px_120px_rgba(0,0,0,0.7)]">
+              <div className="relative aspect-[16/9] overflow-hidden rounded-[18px] bg-[#0a0a0c]">
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,#1c1c1f_0%,#0b0b0d_100%)]" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(255,255,255,0.08),transparent_45%)]" />
+                <div className="absolute left-8 top-8">
+                  <div className="text-[11px] font-medium uppercase tracking-[0.2em] text-white/35">Now Playing</div>
+                  <div className="mt-2 text-3xl font-semibold tracking-[-0.03em] text-white/90">Cinematic Documentary</div>
+                </div>
+                <div className="absolute inset-x-10 bottom-8">
+                  <div className="h-[3px] rounded-full bg-white/10 overflow-hidden">
+                    <motion.div className="h-full rounded-full bg-white/70" animate={{ width: ["28%", "64%", "28%"] }} transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }} />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="mx-auto mt-3 h-10 w-40 rounded-b-[18px] bg-gradient-to-b from-[#1a1a1c] to-[#0d0d0f]" />
+          </div>
 
-          <motion.div initial={{ opacity: 0, y: 30, scale: 0.97 }} animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}} transition={{ duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1] }} className="absolute left-1/2 top-[52%] w-[520px] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-[34px] border border-cyan-200/20 bg-gradient-to-br from-[#0b1624] to-[#050910] shadow-[0_0_100px_rgba(56,189,248,0.22),0_35px_90px_rgba(0,0,0,0.5)]">
-            <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(56,189,248,0.18),transparent_35%,rgba(255,255,255,0.08))]" />
-            <div className="p-5">
-              <div className="mb-4 flex items-center justify-between"><span className="text-[10px] font-bold uppercase tracking-[0.22em] text-cyan-100/70">Smart TV</span><span className="rounded-full border border-emerald-300/20 bg-emerald-400/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-200">Synced</span></div>
-              <div className="relative aspect-video overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#10243a] via-[#0a1422] to-[#05070b]">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_45%_35%,rgba(56,189,248,0.18),transparent_30%),radial-gradient(circle_at_70%_70%,rgba(255,255,255,0.06),transparent_30%)]" />
-                <motion.div className="absolute inset-x-8 bottom-8 h-1.5 rounded-full bg-white/10 overflow-hidden" initial={false}><motion.div className="h-full rounded-full bg-gradient-to-r from-sky-400 to-cyan-300" animate={{ width: ["35%", "72%", "35%"] }} transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }} /></motion.div>
-                <div className="absolute left-6 top-6 text-left"><div className="mb-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-white/55">Now Playing</div><div className="text-2xl font-black text-white">Cinematic Documentary</div><div className="mt-1 text-xs text-cyan-100/60">4K HDR • Surround-ready • Continue watching</div></div>
+          {/* Laptop */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.9, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute left-[2%] bottom-0 w-[360px]"
+          >
+            <div className="rounded-t-[20px] border border-white/10 border-b-0 bg-[#151518] p-2.5">
+              <div className="relative aspect-[16/10] overflow-hidden rounded-[12px] bg-[#0b0b0d]">
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,#18181b_0%,#0b0b0d_100%)]" />
+                <div className="absolute inset-x-6 bottom-6 h-[2px] rounded-full bg-white/10 overflow-hidden">
+                  <motion.div className="h-full rounded-full bg-white/60" animate={{ width: ["28%", "64%", "28%"] }} transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }} />
+                </div>
+              </div>
+            </div>
+            <div className="h-3 rounded-b-[14px] bg-gradient-to-b from-[#2a2a2e] to-[#141416]" />
+          </motion.div>
+
+          {/* Phone */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.9, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute right-[8%] bottom-2 w-[150px]"
+          >
+            <div className="rounded-[34px] border border-white/12 bg-[#151518] p-2 shadow-[0_20px_60px_rgba(0,0,0,0.6)]">
+              <div className="relative aspect-[9/19.5] overflow-hidden rounded-[26px] bg-[#0b0b0d]">
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,#18181b_0%,#0b0b0d_100%)]" />
+                <div className="absolute left-1/2 top-2 h-5 w-20 -translate-x-1/2 rounded-full bg-black/80" />
+                <div className="absolute inset-x-4 bottom-8 h-[2px] rounded-full bg-white/10 overflow-hidden">
+                  <motion.div className="h-full rounded-full bg-white/60" animate={{ width: ["28%", "64%", "28%"] }} transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }} />
+                </div>
               </div>
             </div>
           </motion.div>
+        </motion.div>
 
-          {devices.map((d, i) => (
-            <motion.div key={d.name} initial={{ opacity: 0, y: 20 }} animate={inView ? { opacity: 1, y: [0, -6, 0] } : {}} transition={{ opacity: { duration: 0.6, delay: 0.25 + i * 0.08 }, y: { duration: 4.2 + i * 0.3, repeat: Infinity, ease: "easeInOut", delay: 0.6 + i * 0.15 } }} whileHover={{ y: -8, boxShadow: "0 18px 45px rgba(0,0,0,0.35), 0 0 0 1px rgba(56,189,248,0.18)" }} className={`absolute ${d.x} ${d.y} w-[170px] rounded-2xl border border-white/10 bg-[rgba(255,255,255,0.05)] px-4 py-3 shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-xl`}>
-              <div className="mb-2 flex items-center justify-between"><span className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-cyan-200">{d.icon}</span><span className="text-[10px] uppercase tracking-[0.16em] text-emerald-200/80">Live</span></div>
-              <div className="text-sm font-semibold text-white">{d.name}</div><div className="text-xs text-white/45">{d.sub}</div>
-            </motion.div>
-          ))}
-
-          <motion.div className="absolute left-1/2 bottom-[8%] -translate-x-1/2 rounded-full border border-cyan-200/15 bg-black/30 px-4 py-2 text-xs font-medium text-cyan-100/80 backdrop-blur-xl" animate={{ opacity: [0.6, 1, 0.6] }} transition={{ duration: 3, repeat: Infinity }}>Seamless handoff between devices</motion.div>
-        </div>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={inView ? { opacity: 1 } : {}}
+          transition={{ duration: 1, delay: 0.5 }}
+          className="mt-14 flex items-center justify-center gap-10 text-sm text-white/35"
+        >
+          <span>iPhone</span>
+          <span>iPad</span>
+          <span>Mac</span>
+          <span>Apple TV</span>
+          <span>Smart TV</span>
+        </motion.div>
       </div>
     </section>
   );
