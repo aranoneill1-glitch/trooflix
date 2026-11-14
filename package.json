@@ -21,6 +21,8 @@
     "@cloudflare/stream-react": "^1.9.3",
     "@eyevinn/webrtc-player": "^0.13.0",
     "@noriginmedia/norigin-spatial-navigation": "^3.3.0",
+    "@react-three/drei": "^10.7.9",
+    "@react-three/fiber": "^9.8.2",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.117.3",
     "@tsparticles/engine": "^4.6.0",
@@ -41,6 +43,7 @@
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "stripe": "^23.0.0",
+    "three": "^0.187.0",
     "tus-js-client": "^4.3.1",
     "web-push": "^3.6.7"
   },

@@ -20,11 +20,14 @@ import HomeFeedCard from "@/components/HomeFeedCard";
 import Link from "next/link";
 import { motion, AnimatePresence, useMotionValue, useTransform, animate, useScroll, useSpring, useInView } from "framer-motion";
 import { useEffect, useState, useRef } from "react";
+import dynamic from "next/dynamic";
 import Lenis from "lenis";
 import "lenis/dist/lenis.css";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useRouter } from "next/navigation";
+
+const HeroScene3D = dynamic(() => import("@/components/HeroScene3D"), { ssr: false });
 import {  Play, Info, ChevronLeft, ChevronRight, X,
   Search, Bell, HomeIcon, Menu,
   Compass, LogOut, LogIn, Users, ShoppingBag, Sparkles, BookOpen, Flame, List,
@@ -430,12 +433,13 @@ export default function Home() {
                 <div className="snap-y snap-proximity">
                 {/* Page 1: Content Power / Your Voice. Unfiltered. (MAIN HERO) */}
                 <section className="relative w-full min-h-[100svh] snap-start overflow-hidden bg-[#040406] flex items-center">
+                  <HeroScene3D />
                   <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#050507] to-transparent z-[2]" />
                   <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#050507] to-transparent z-[2]" />
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(229,57,69,0.08),transparent_22%),radial-gradient(circle_at_80%_20%,rgba(255,106,42,0.10),transparent_24%),linear-gradient(180deg,#050507_0%,#020203_100%)]" />
-                  <motion.div className="absolute -left-20 top-1/3 h-72 w-72 rounded-full bg-white/[0.04] blur-[120px]" animate={{ x:[0,40,0], y:[0,-20,0] }} transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }} />
-                  <motion.div className="absolute right-[-5%] bottom-[10%] h-80 w-80 rounded-full bg-[#ff4d5a]/[0.08] blur-[130px]" animate={{ x:[0,-30,0], y:[0,25,0] }} transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }} />
-                  <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent_0%,rgba(255,255,255,0.03)_45%,transparent_70%)] opacity-60" />
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(229,57,69,0.08),transparent_22%),radial-gradient(circle_at_80%_20%,rgba(255,106,42,0.10),transparent_24%),linear-gradient(180deg,rgba(5,5,7,0.15)_0%,rgba(2,2,3,0.35)_100%)] z-[1]" />
+                  <motion.div className="absolute -left-20 top-1/3 h-72 w-72 rounded-full bg-white/[0.04] blur-[120px] z-[1]" animate={{ x:[0,40,0], y:[0,-20,0] }} transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }} />
+                  <motion.div className="absolute right-[-5%] bottom-[10%] h-80 w-80 rounded-full bg-[#ff4d5a]/[0.08] blur-[130px] z-[1]" animate={{ x:[0,-30,0], y:[0,25,0] }} transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }} />
+                  <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent_0%,rgba(255,255,255,0.03)_45%,transparent_70%)] opacity-60 z-[1]" />
                   <div className="relative z-10 w-full max-w-[1600px] mx-auto px-8 xl:px-16 py-20">
                     <div className="grid grid-cols-[0.95fr_1.05fr] items-center gap-12 xl:gap-16">
                       <motion.div className="max-w-2xl" initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.45 }} transition={{ duration: 0.8, ease: [0.22,1,0.36,1] }}>
