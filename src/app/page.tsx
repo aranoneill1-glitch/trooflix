@@ -625,35 +625,68 @@ export default function Home() {
 function TrooflixEconomyHero() {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: false, amount: 0.35 });
+  const coins = [
+    { x: "8%", y: "18%", s: 34, d: 0, dur: 6.5 },
+    { x: "18%", y: "70%", s: 26, d: 0.8, dur: 7.2 },
+    { x: "82%", y: "22%", s: 30, d: 0.4, dur: 6.8 },
+    { x: "74%", y: "72%", s: 22, d: 1.2, dur: 7.8 },
+    { x: "50%", y: "10%", s: 20, d: 0.6, dur: 5.8 },
+    { x: "90%", y: "46%", s: 18, d: 1.6, dur: 6.2 },
+  ];
 
   return (
     <section ref={ref} className="relative hidden min-h-[100svh] w-full snap-start overflow-hidden bg-[#050405] lg:flex items-center">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#050507] to-transparent z-[2]" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#050507] to-transparent z-[2]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_45%_30%,rgba(229,57,69,0.16),transparent_24%),radial-gradient(circle_at_70%_70%,rgba(255,106,42,0.12),transparent_22%),linear-gradient(180deg,#060506_0%,#020203_100%)]" />
-      <motion.div className="absolute right-[15%] top-[18%] h-72 w-72 rounded-full bg-[#ff4d5a]/10 blur-[130px]" animate={{ y: [0, -18, 0], opacity: [0.35, 0.55, 0.35] }} transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }} />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_45%_30%,rgba(229,57,69,0.18),transparent_24%),radial-gradient(circle_at_70%_70%,rgba(255,106,42,0.14),transparent_22%),linear-gradient(180deg,#060506_0%,#020203_100%)]" />
+      <motion.div className="absolute right-[15%] top-[18%] h-72 w-72 rounded-full bg-[#ff4d5a]/10 blur-[130px]" animate={{ y: [0, -18, 0], opacity: [0.35, 0.6, 0.35], scale: [1, 1.1, 1] }} transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }} />
+      <motion.div className="absolute left-[10%] bottom-[15%] h-64 w-64 rounded-full bg-[#ff6a2a]/10 blur-[120px]" animate={{ y: [0, 16, 0], opacity: [0.25, 0.45, 0.25] }} transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }} />
+      {coins.map((c, i) => (
+        <motion.div
+          key={i}
+          className="pointer-events-none absolute z-[1] flex items-center justify-center rounded-full border border-[#ffb38a]/30 bg-gradient-to-br from-[#ffcf8a]/30 via-[#ff7a4a]/25 to-[#E53945]/20 text-[10px] font-black text-[#ffe8d6] shadow-[0_0_24px_rgba(255,106,42,0.22),inset_0_1px_0_rgba(255,255,255,0.25)] backdrop-blur-sm"
+          style={{ left: c.x, top: c.y, width: c.s, height: c.s }}
+          animate={{ y: [0, -18 - (i % 3) * 6, 0], x: [0, i % 2 ? 8 : -8, 0], rotate: [0, 12, -8, 0], scale: [1, 1.08, 1], opacity: [0.55, 0.95, 0.55] }}
+          transition={{ duration: c.dur, delay: c.d, repeat: Infinity, ease: "easeInOut" }}
+        >
+          TC
+        </motion.div>
+      ))}
 
       <div className="relative z-10 mx-auto grid w-full max-w-[1600px] grid-cols-[1.05fr_0.95fr] items-center gap-14 px-8 xl:px-16">
-        <motion.div initial={{ opacity: 0, x: -30 }} animate={inView ? { opacity: 1, x: 0 } : {}} transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }} className="relative flex h-[500px] items-center justify-center">
+        <motion.div initial={{ opacity: 0, x: -30 }} animate={inView ? { opacity: 1, x: 0 } : {}} transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }} className="relative flex h-[520px] items-center justify-center">
+          <div className="pointer-events-none absolute inset-0">
+            <motion.div className="absolute left-1/2 top-1/2 h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#ff6b4a]/10" animate={{ rotate: 360 }} transition={{ duration: 28, repeat: Infinity, ease: "linear" }} />
+            <motion.div className="absolute left-1/2 top-1/2 h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#ff6b4a]/15 border-dashed" animate={{ rotate: -360 }} transition={{ duration: 18, repeat: Infinity, ease: "linear" }} />
+          </div>
           <div className="relative w-full max-w-[520px]">
-            <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }} className="absolute -top-2 right-10 flex h-16 w-16 items-center justify-center rounded-full border border-[#ff6b4a]/30 bg-gradient-to-br from-[#E53945]/25 to-[#ff6a2a]/20 text-2xl text-[#ffd6cf] shadow-[0_0_30px_rgba(229,57,69,0.22)] backdrop-blur-xl">◉</motion.div>
-            <div className="rounded-[32px] border border-white/10 bg-white/[0.04] p-6 shadow-[0_40px_120px_rgba(0,0,0,0.45)] backdrop-blur-2xl">
+            <motion.div animate={{ y: [0, -10, 0], rotate: [0, 8, 0] }} transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }} className="absolute -top-4 right-8 flex h-16 w-16 items-center justify-center rounded-full border border-[#ffb38a]/35 bg-gradient-to-br from-[#ffcf8a]/35 via-[#ff7a4a]/30 to-[#E53945]/25 text-sm font-black text-[#ffe8d6] shadow-[0_0_40px_rgba(255,106,42,0.28)] backdrop-blur-xl">TC</motion.div>
+            <motion.div animate={{ y: [0, 10, 0], rotate: [0, -10, 0] }} transition={{ duration: 6.2, repeat: Infinity, ease: "easeInOut", delay: 0.6 }} className="absolute -bottom-2 left-4 flex h-12 w-12 items-center justify-center rounded-full border border-[#ffb38a]/30 bg-gradient-to-br from-[#ffcf8a]/25 to-[#E53945]/20 text-[10px] font-black text-[#ffe8d6] shadow-[0_0_28px_rgba(255,106,42,0.22)] backdrop-blur-xl">TC</motion.div>
+            <div className="rounded-[32px] border border-white/10 bg-white/[0.04] p-6 shadow-[0_40px_120px_rgba(0,0,0,0.45)] backdrop-blur-2xl relative overflow-hidden">
+              <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-[#ff6a2a]/10 blur-3xl" />
               <div className="mb-6 flex items-center justify-between">
                 <div>
                   <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/40">TrooBank</div>
                   <div className="mt-1 text-sm text-white/55">Creator wallet</div>
                 </div>
-                <div className="rounded-full border border-[#ff6b4a]/25 bg-[#E53945]/10 px-3 py-1 text-xs font-semibold text-[#ffb0a8]">Active</div>
+                <motion.div className="rounded-full border border-[#ff6b4a]/25 bg-[#E53945]/10 px-3 py-1 text-xs font-semibold text-[#ffb0a8]" animate={{ boxShadow: ["0 0 0 rgba(229,57,69,0)", "0 0 18px rgba(229,57,69,0.25)", "0 0 0 rgba(229,57,69,0)"] }} transition={{ duration: 2.4, repeat: Infinity }}>Active</motion.div>
               </div>
-              <div className="mb-6 rounded-[24px] border border-[#ff6b4a]/20 bg-gradient-to-br from-[#2a1214] via-[#17090a] to-[#0b0606] p-6">
-                <div className="mb-8 flex items-center justify-between"><span className="text-sm font-bold tracking-[0.22em] text-[#ffd6cf]/85">TROOBANK</span><span className="h-8 w-10 rounded-md bg-gradient-to-br from-[#ffb0a8] to-[#ff6a2a]" /></div>
-                <div className="text-xs uppercase tracking-[0.2em] text-white/40 mb-1">Available Balance</div>
-                <div className="text-4xl font-black tracking-tight text-white">$2,480.00</div>
-                <div className="mt-2 text-sm text-[#ffb0a8]/85">12,400 TrooCoins</div>
+              <div className="mb-6 rounded-[24px] border border-[#ff6b4a]/20 bg-gradient-to-br from-[#2a1214] via-[#17090a] to-[#0b0606] p-6 relative overflow-hidden">
+                <motion.div className="pointer-events-none absolute inset-y-0 -left-1/3 w-1/3 bg-gradient-to-r from-transparent via-white/10 to-transparent" animate={{ x: ["0%", "420%"] }} transition={{ duration: 4.8, repeat: Infinity, ease: "easeInOut", repeatDelay: 1.2 }} />
+                <div className="mb-8 flex items-center justify-between relative"><span className="text-sm font-bold tracking-[0.22em] text-[#ffd6cf]/85">TROOBANK</span><span className="h-8 w-10 rounded-md bg-gradient-to-br from-[#ffb0a8] to-[#ff6a2a]" /></div>
+                <div className="text-xs uppercase tracking-[0.2em] text-white/40 mb-1 relative">Available Balance</div>
+                <motion.div className="text-4xl font-black tracking-tight text-white relative" animate={{ textShadow: ["0 0 0 rgba(255,106,42,0)", "0 0 24px rgba(255,106,42,0.18)", "0 0 0 rgba(255,106,42,0)"] }} transition={{ duration: 3, repeat: Infinity }}>$2,480.00</motion.div>
+                <div className="mt-2 flex items-center gap-2 text-sm text-[#ffb0a8]/85 relative">
+                  <motion.span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-[#ffb38a]/30 bg-[#ff6a2a]/15 text-[9px] font-black" animate={{ rotateY: [0, 180, 360] }} transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}>TC</motion.span>
+                  12,400 TrooCoins
+                </div>
               </div>
               <div className="grid grid-cols-3 gap-3">
-                {[{l:"Tip received",v:"+$24"}, {l:"Merch sale",v:"+$86"}, {l:"Payout",v:"Ready"}].map((i)=>(
-                  <div key={i.l} className="rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-3"><div className="text-[10px] uppercase tracking-[0.16em] text-white/35 mb-1">{i.l}</div><div className="text-sm font-semibold text-white/85">{i.v}</div></div>
+                {[{l:"Tip received",v:"+$24"},{l:"Merch sale",v:"+$86"},{l:"Payout",v:"Ready"}].map((i, idx)=>(
+                  <motion.div key={i.l} className="rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-3" animate={{ y: [0, -3, 0] }} transition={{ duration: 3.5 + idx, repeat: Infinity, ease: "easeInOut", delay: idx * 0.2 }}>
+                    <div className="text-[10px] uppercase tracking-[0.16em] text-white/35 mb-1">{i.l}</div>
+                    <div className="text-sm font-semibold text-white/85">{i.v}</div>
+                  </motion.div>
                 ))}
               </div>
             </div>
@@ -670,8 +703,8 @@ function TrooflixEconomyHero() {
             Tips, purchases, payouts, and support — connected in one native system. TrooCoins and TrooBank make value flow simply between creators and their audience.
           </motion.p>
           <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-10 flex flex-wrap gap-3">
-            {["TrooCoins", "TrooBank", "Instant tips", "Seamless payouts"].map((t) => (
-              <span key={t} className="rounded-full border border-[#ff6b4a]/25 bg-[#E53945]/10 px-4 py-2 text-sm font-medium text-white/90 backdrop-blur-md">{t}</span>
+            {["TrooCoins", "TrooBank", "Instant tips", "Seamless payouts"].map((t, i) => (
+              <motion.span key={t} className="rounded-full border border-[#ff6b4a]/25 bg-[#E53945]/10 px-4 py-2 text-sm font-medium text-white/90 backdrop-blur-md" animate={{ y: [0, -2, 0] }} transition={{ duration: 3 + i * 0.3, repeat: Infinity, ease: "easeInOut", delay: i * 0.15 }}>{t}</motion.span>
             ))}
           </motion.div>
 
@@ -689,8 +722,9 @@ function TrooChatHero() {
     <section ref={ref} className="relative hidden min-h-[100svh] w-full snap-start overflow-hidden bg-[#060407] lg:flex items-center">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/70 to-transparent z-[1]" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/70 to-transparent z-[1]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_35%,rgba(229,57,69,0.16),transparent_26%),radial-gradient(circle_at_75%_65%,rgba(255,106,42,0.12),transparent_24%),linear-gradient(180deg,#060405_0%,#030203_100%)]" />
-      <motion.div className="absolute left-[12%] top-[18%] h-72 w-72 rounded-full bg-[#ff4d5a]/10 blur-[130px]" animate={{ x: [0, 20, 0], y: [0, -18, 0] }} transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }} />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_35%,rgba(229,57,69,0.18),transparent_26%),radial-gradient(circle_at_75%_65%,rgba(255,106,42,0.14),transparent_24%),linear-gradient(180deg,#060405_0%,#030203_100%)]" />
+      <motion.div className="absolute left-[12%] top-[18%] h-72 w-72 rounded-full bg-[#ff4d5a]/10 blur-[130px]" animate={{ x: [0, 20, 0], y: [0, -18, 0], scale: [1, 1.08, 1] }} transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }} />
+      <motion.div className="absolute right-[18%] bottom-[20%] h-64 w-64 rounded-full bg-[#ff6a2a]/10 blur-[120px]" animate={{ y: [0, -16, 0], opacity: [0.25, 0.45, 0.25] }} transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }} />
 
       <div className="relative z-10 mx-auto grid w-full max-w-[1600px] grid-cols-[0.95fr_1.05fr] items-center gap-14 px-8 xl:px-16">
         <motion.div initial="hidden" animate={inView ? "visible" : "hidden"} variants={{ visible: { transition: { staggerChildren: 0.1 } } }} className="max-w-3xl">
@@ -712,16 +746,17 @@ function TrooChatHero() {
 
         <motion.div initial={{ opacity: 0, x: 30 }} animate={inView ? { opacity: 1, x: 0 } : {}} transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }} className="relative flex h-[500px] items-center justify-center">
           <div className="relative w-full max-w-[520px]">
-            <div className="rounded-[32px] border border-white/10 bg-white/[0.04] p-5 shadow-[0_40px_120px_rgba(0,0,0,0.45)] backdrop-blur-2xl">
-              <div className="mb-5 flex items-center justify-between border-b border-white/8 pb-4">
+            <div className="rounded-[32px] border border-white/10 bg-white/[0.04] p-5 shadow-[0_40px_120px_rgba(0,0,0,0.45)] backdrop-blur-2xl relative overflow-hidden">
+              <motion.div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-[#ff4d5a]/10 blur-3xl" animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.55, 0.3] }} transition={{ duration: 6, repeat: Infinity }} />
+              <div className="mb-5 flex items-center justify-between border-b border-white/8 pb-4 relative">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#E53945] to-[#ff6a2a]" />
+                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#E53945] to-[#ff6a2a] shadow-[0_0_20px_rgba(229,57,69,0.35)]" />
                   <div>
                     <div className="text-sm font-semibold text-white">Creator Circle</div>
                     <div className="text-xs text-white/40">3 members · active now</div>
                   </div>
                 </div>
-                <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[#ff6b4a]/25 bg-[#E53945]/10 text-[#ffb0a8]"><Phone size={16} /></div>
+                <motion.div className="flex h-9 w-9 items-center justify-center rounded-full border border-[#ff6b4a]/25 bg-[#E53945]/10 text-[#ffb0a8]" animate={{ boxShadow: ["0 0 0 rgba(229,57,69,0)", "0 0 18px rgba(229,57,69,0.3)", "0 0 0 rgba(229,57,69,0)"] }} transition={{ duration: 2.2, repeat: Infinity }}><Phone size={16} /></motion.div>
               </div>
               <div className="space-y-4">
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={inView ? { opacity: 1, y: 0 } : {}} transition={{ delay: 0.3 }} className="max-w-[75%] rounded-3xl rounded-bl-md border border-white/10 bg-white/[0.06] px-4 py-3 text-sm text-white/80">Loved the new episode — when’s the next live?</motion.div>
@@ -747,7 +782,9 @@ function WatchEverywhereHero() {
     <section ref={ref} className="relative hidden min-h-[100svh] w-full snap-start overflow-hidden bg-[#050507] lg:flex items-center">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#050507] to-transparent z-[2]" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#050507] to-transparent z-[2]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_40%,rgba(229,57,69,0.12),transparent_26%),radial-gradient(circle_at_80%_30%,rgba(255,140,60,0.10),transparent_24%),linear-gradient(180deg,#050507_0%,#020203_100%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_40%,rgba(229,57,69,0.14),transparent_26%),radial-gradient(circle_at_80%_30%,rgba(255,140,60,0.12),transparent_24%),linear-gradient(180deg,#050507_0%,#020203_100%)]" />
+      <motion.div className="absolute left-[20%] top-[25%] h-64 w-64 rounded-full bg-[#ff4d5a]/10 blur-[120px]" animate={{ x: [0, 20, 0], y: [0, -12, 0], opacity: [0.25, 0.45, 0.25] }} transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }} />
+      <motion.div className="pointer-events-none absolute left-[35%] top-1/2 h-px w-[30%] bg-gradient-to-r from-[#E53945]/0 via-[#ff6b4a]/40 to-[#ff6a2a]/0" animate={{ opacity: [0.15, 0.5, 0.15], scaleX: [0.9, 1.05, 0.9] }} transition={{ duration: 4, repeat: Infinity }} />
 
       <div className="relative z-10 mx-auto grid w-full max-w-[1600px] grid-cols-[1.05fr_0.95fr] items-center gap-12 px-8 xl:px-16">
         <motion.div
@@ -870,8 +907,10 @@ function MonetizationHero() {
     <section ref={ref} className="relative hidden min-h-[100svh] w-full snap-start overflow-hidden bg-[#050607] lg:flex items-center">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#050507] to-transparent z-[2]" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#050507] to-transparent z-[2]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(229,57,69,0.14),transparent_22%),radial-gradient(circle_at_20%_80%,rgba(255,106,42,0.08),transparent_20%),linear-gradient(180deg,#050607_0%,#030405_100%)]" />
-      <motion.div className="absolute right-[12%] top-[18%] h-72 w-72 rounded-full bg-[#ff4d5a]/10 blur-[120px]" animate={{ scale: [1, 1.15, 1], opacity: [0.3, 0.5, 0.3] }} transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }} />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(229,57,69,0.16),transparent_22%),radial-gradient(circle_at_20%_80%,rgba(255,106,42,0.10),transparent_20%),linear-gradient(180deg,#050607_0%,#030405_100%)]" />
+      <motion.div className="absolute right-[12%] top-[18%] h-72 w-72 rounded-full bg-[#ff4d5a]/10 blur-[120px]" animate={{ scale: [1, 1.18, 1], opacity: [0.3, 0.55, 0.3] }} transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }} />
+      <motion.div className="absolute left-[8%] bottom-[12%] h-56 w-56 rounded-full bg-[#ff6a2a]/10 blur-[110px]" animate={{ y: [0, -14, 0], opacity: [0.2, 0.4, 0.2] }} transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }} />
+      <motion.div className="pointer-events-none absolute left-1/2 top-[58%] h-px w-[70%] -translate-x-1/2 bg-gradient-to-r from-transparent via-[#ff6b4a]/30 to-transparent" animate={{ opacity: [0.2, 0.5, 0.2] }} transition={{ duration: 4, repeat: Infinity }} />
 
 
       <div className="relative z-10 mx-auto grid w-full max-w-[1600px] grid-cols-[0.95fr_1.05fr] items-center gap-14 px-8 xl:px-16">
@@ -903,16 +942,17 @@ function MonetizationHero() {
         </motion.div>
 
         <div className="relative h-[560px]">
-          <motion.div initial={{ opacity: 0, y: 30, scale: 0.97 }} animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}} transition={{ duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1] }} className="absolute left-0 right-8 top-8 rounded-[30px] border border-white/10 bg-white/[0.04] p-6 shadow-[0_30px_90px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-2xl">
-            <div className="mb-6 flex items-center justify-between">
+          <motion.div initial={{ opacity: 0, y: 30, scale: 0.97 }} animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}} transition={{ duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1] }} className="absolute left-0 right-8 top-8 rounded-[30px] border border-white/10 bg-white/[0.04] p-6 shadow-[0_30px_90px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-2xl overflow-hidden">
+            <motion.div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-[#ff4d5a]/10 blur-3xl" animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0.7, 0.4] }} transition={{ duration: 6, repeat: Infinity }} />
+            <div className="mb-6 flex items-center justify-between relative">
               <div>
                 <div className="text-xs uppercase tracking-[0.18em] text-white/40 mb-1">Creator Dashboard</div>
                 <div className="text-lg font-semibold text-white">Earnings overview</div>
               </div>
-              <span className="rounded-full border border-[#ff6b4a]/30 bg-[#E53945]/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#ffb0a8]">Live</span>
+              <motion.span className="rounded-full border border-[#ff6b4a]/30 bg-[#E53945]/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#ffb0a8]" animate={{ opacity: [0.7, 1, 0.7] }} transition={{ duration: 1.8, repeat: Infinity }}>Live</motion.span>
             </div>
-            <div className="grid grid-cols-3 gap-4 mb-6">
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"><div className="text-xs uppercase tracking-[0.16em] text-white/40 mb-2">Total earnings</div><motion.div animate={inView ? { opacity: [0.6,1,1] } : {}} className="text-3xl font-black text-white">$24,860</motion.div><div className="mt-1 text-xs text-[#ff8a6a]">+18% this month</div></div>
+            <div className="grid grid-cols-3 gap-4 mb-6 relative">
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"><div className="text-xs uppercase tracking-[0.16em] text-white/40 mb-2">Total earnings</div><motion.div animate={inView ? { opacity: [0.6,1,1], scale: [0.98,1,1] } : {}} className="text-3xl font-black text-white">$24,860</motion.div><div className="mt-1 text-xs text-[#ff8a6a]">+18% this month</div></div>
               <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"><div className="text-xs uppercase tracking-[0.16em] text-white/40 mb-2">Subscribers</div><div className="text-3xl font-black text-white">3,482</div><div className="mt-1 text-xs text-white/45">Active members</div></div>
               <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"><div className="text-xs uppercase tracking-[0.16em] text-white/40 mb-2">Recent payout</div><div className="text-3xl font-black text-white">$2,140</div><div className="mt-1 text-xs text-white/45">Deposited</div></div>
             </div>
@@ -962,8 +1002,9 @@ function CreatorEconomicsHero() {
     <section ref={ref} className="relative hidden min-h-[100svh] w-full snap-start overflow-hidden bg-[#080405] lg:flex items-center">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#050507] to-transparent z-[2]" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#050507] to-transparent z-[2]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_35%,rgba(229,57,69,0.18),transparent_24%),radial-gradient(circle_at_20%_70%,rgba(255,106,42,0.12),transparent_28%),linear-gradient(180deg,#080405_0%,#030203_100%)]" />
-      <motion.div className="absolute right-[18%] top-[22%] h-80 w-80 rounded-full bg-[#ff4d5a]/10 blur-[140px]" animate={{ scale: [1, 1.12, 1], opacity: [0.35, 0.55, 0.35] }} transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }} />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_35%,rgba(229,57,69,0.2),transparent_24%),radial-gradient(circle_at_20%_70%,rgba(255,106,42,0.14),transparent_28%),linear-gradient(180deg,#080405_0%,#030203_100%)]" />
+      <motion.div className="absolute right-[18%] top-[22%] h-80 w-80 rounded-full bg-[#ff4d5a]/10 blur-[140px]" animate={{ scale: [1, 1.15, 1], opacity: [0.35, 0.6, 0.35] }} transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }} />
+      <motion.div className="absolute left-[12%] bottom-[18%] h-56 w-56 rounded-full bg-[#ff6a2a]/10 blur-[120px]" animate={{ y: [0, -14, 0], opacity: [0.2, 0.4, 0.2] }} transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }} />
 
       <div className="relative z-10 mx-auto grid w-full max-w-[1600px] grid-cols-[1.05fr_0.95fr] items-center gap-12 px-8 xl:px-16">
         <motion.div initial={{ opacity: 0, y: 30 }} animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }} className="max-w-3xl">
@@ -1036,7 +1077,8 @@ function CreatorEconomicsHero() {
 
         <div className="relative flex min-h-[70vh] items-center justify-center">
           <motion.div initial={{ opacity: 0, scale: 0.92 }} animate={inView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.92 }} transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }} className="relative">
-            <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }} className="text-[170px] font-black leading-none tracking-tighter text-white drop-shadow-[0_0_60px_rgba(229,57,69,0.35)] xl:text-[220px] 2xl:text-[260px]">
+            <motion.div className="pointer-events-none absolute left-1/2 top-1/2 h-[320px] w-[320px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#ff6b4a]/10" animate={{ rotate: 360, scale: [1, 1.04, 1] }} transition={{ rotate: { duration: 20, repeat: Infinity, ease: "linear" }, scale: { duration: 4, repeat: Infinity, ease: "easeInOut" } }} />
+            <motion.div animate={{ y: [0, -8, 0], textShadow: ["0 0 40px rgba(229,57,69,0.25)", "0 0 80px rgba(255,106,42,0.4)", "0 0 40px rgba(229,57,69,0.25)"] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }} className="text-[170px] font-black leading-none tracking-tighter text-white drop-shadow-[0_0_60px_rgba(229,57,69,0.35)] xl:text-[220px] 2xl:text-[260px]">
               99%
             </motion.div>
             <div className="absolute -bottom-2 left-1/2 h-24 w-[80%] -translate-x-1/2 rounded-full bg-[#ff4d5a]/10 blur-3xl" />
