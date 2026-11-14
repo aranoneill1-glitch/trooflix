@@ -370,30 +370,32 @@ export default function Home() {
 
                   <div className="relative grid grid-cols-3 gap-2.5 max-w-md mx-auto">
                     {[
-                      { icon: Radio, title: "Livestreaming", desc: "Go live in seconds", glow: "rgba(229,57,69,0.35)", grad: "from-[#E53945]/30 via-[#E53945]/10 to-transparent" },
-                      { icon: ShoppingBag, title: "Marketplace", desc: "Sell merch & products", glow: "rgba(212,175,55,0.3)", grad: "from-[#D4AF37]/30 via-[#D4AF37]/10 to-transparent" },
-                      { icon: Film, title: "Docs & Indie Films", desc: "Long-form cinema", glow: "rgba(59,130,246,0.3)", grad: "from-blue-500/30 via-blue-500/10 to-transparent" },
-                      { icon: MessageCircle, title: "Calls & Chat", desc: "Video, voice, messages", glow: "rgba(16,185,129,0.28)", grad: "from-emerald-500/30 via-emerald-500/10 to-transparent" },
-                      { icon: Play, title: "Shorts", desc: "Fast viral content", glow: "rgba(217,70,239,0.28)", grad: "from-fuchsia-500/30 via-fuchsia-500/10 to-transparent" },
-                      { icon: Monitor, title: "Any Screen", desc: "Desktop, phone & TV", glow: "rgba(6,182,212,0.28)", grad: "from-cyan-500/30 via-cyan-500/10 to-transparent" },
-                      { icon: ShieldOff, title: "Uncensored", desc: "Your voice, your rules", glow: "rgba(249,115,22,0.28)", grad: "from-orange-500/30 via-orange-500/10 to-transparent" },
-                      { icon: Wallet, title: "Bank Ecosystem", desc: "Wallet, tips, payouts", glow: "rgba(139,92,246,0.3)", grad: "from-violet-500/30 via-violet-500/10 to-transparent" },
-                      { icon: Palette, title: "Custom Themes", desc: "Make your page yours", glow: "rgba(236,72,153,0.28)", grad: "from-pink-500/30 via-pink-500/10 to-transparent" },
+                      { icon: Radio, title: "Livestreaming", desc: "Go live in seconds", img: "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?q=80&w=500&auto=format&fit=crop" },
+                      { icon: ShoppingBag, title: "Marketplace", desc: "Sell merch & products", img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=500&auto=format&fit=crop" },
+                      { icon: Film, title: "Docs & Indie Films", desc: "Long-form cinema", img: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=500&auto=format&fit=crop" },
+                      { icon: MessageCircle, title: "Calls & Chat", desc: "Video, voice, messages", img: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=500&auto=format&fit=crop" },
+                      { icon: Play, title: "Shorts", desc: "Fast viral content", img: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=500&auto=format&fit=crop" },
+                      { icon: Monitor, title: "Any Screen", desc: "Desktop, phone & TV", img: "https://images.unsplash.com/photo-1593784991095-a205069470b6?q=80&w=500&auto=format&fit=crop" },
+                      { icon: ShieldOff, title: "Uncensored", desc: "Your voice, your rules", img: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=500&auto=format&fit=crop" },
+                      { icon: Wallet, title: "Bank Ecosystem", desc: "Wallet, tips, payouts", img: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?q=80&w=500&auto=format&fit=crop" },
+                      { icon: Palette, title: "Custom Themes", desc: "Make your page yours", img: "https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=500&auto=format&fit=crop" },
                     ].map((f, i) => (
                       <div
                         key={i}
-                        className="relative overflow-hidden rounded-[22px] border border-white/12 bg-[#0d0d12]/80 p-2.5 min-h-[126px] flex flex-col justify-between shadow-[0_18px_40px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.1)]"
-                        style={{ boxShadow: `0 18px 40px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.04), 0 0 28px ${f.glow}` }}
+                        className="group relative overflow-hidden rounded-[22px] border border-white/15 bg-[#0b0b10] min-h-[132px] shadow-[0_18px_45px_rgba(0,0,0,0.5)]"
                       >
-                        <div className={`absolute inset-0 bg-gradient-to-br ${f.grad}`} />
-                        <div className="absolute inset-x-0 top-0 h-px bg-white/20" />
-                        <div className="absolute -right-6 -top-6 w-16 h-16 rounded-full bg-white/10 blur-2xl" />
-                        <div className="relative w-9 h-9 rounded-xl bg-black/30 border border-white/15 flex items-center justify-center text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]">
-                          <f.icon size={17} />
-                        </div>
-                        <div className="relative">
-                          <p className="text-[11.5px] font-black leading-tight text-white mb-0.5 tracking-tight">{f.title}</p>
-                          <p className="text-[10px] leading-tight text-white/60">{f.desc}</p>
+                        <img src={f.img} alt="" className="absolute inset-0 h-full w-full object-cover scale-105 transition-transform duration-700 group-active:scale-110 opacity-80" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-black/20" />
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.18),transparent_40%)]" />
+                        <div className="absolute inset-x-0 top-0 h-px bg-white/25" />
+                        <div className="relative h-full p-2.5 flex flex-col justify-between">
+                          <div className="w-9 h-9 rounded-xl bg-black/35 backdrop-blur-md border border-white/20 flex items-center justify-center text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]">
+                            <f.icon size={16} />
+                          </div>
+                          <div>
+                            <p className="text-[11.5px] font-black leading-tight text-white mb-0.5 tracking-tight drop-shadow">{f.title}</p>
+                            <p className="text-[10px] leading-tight text-white/75">{f.desc}</p>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -448,30 +450,33 @@ export default function Home() {
 
                   <div className="relative grid grid-cols-3 gap-4 xl:gap-5">
                     {[
-                      { icon: Radio, title: "Livestreaming", desc: "Go live instantly and connect with your audience in real time.", glow: "rgba(229,57,69,0.35)", grad: "from-[#E53945]/35 via-[#E53945]/10 to-transparent", ring: "group-hover:border-[#E53945]/40" },
-                      { icon: ShoppingBag, title: "Personal Marketplace", desc: "Sell merch, books, and products directly from your world.", glow: "rgba(212,175,55,0.32)", grad: "from-[#D4AF37]/35 via-[#D4AF37]/10 to-transparent", ring: "group-hover:border-[#D4AF37]/40" },
-                      { icon: Film, title: "Long Docs & Indie Movies", desc: "Showcase powerful documentaries and independent films.", glow: "rgba(59,130,246,0.32)", grad: "from-blue-500/35 via-blue-500/10 to-transparent", ring: "group-hover:border-blue-400/40" },
-                      { icon: MessageCircle, title: "Video, Voice & Messaging", desc: "Calls and chat built in so your community stays close.", glow: "rgba(16,185,129,0.3)", grad: "from-emerald-500/35 via-emerald-500/10 to-transparent", ring: "group-hover:border-emerald-400/40" },
-                      { icon: Play, title: "Shorts", desc: "Fast, addictive short-form content that grabs attention.", glow: "rgba(217,70,239,0.3)", grad: "from-fuchsia-500/35 via-fuchsia-500/10 to-transparent", ring: "group-hover:border-fuchsia-400/40" },
-                      { icon: Monitor, title: "Desktop, Phone & TV", desc: "A seamless experience wherever your audience watches.", glow: "rgba(6,182,212,0.3)", grad: "from-cyan-500/35 via-cyan-500/10 to-transparent", ring: "group-hover:border-cyan-400/40" },
-                      { icon: ShieldOff, title: "Uncensored", desc: "A freer platform built for creators who won’t be boxed in.", glow: "rgba(249,115,22,0.3)", grad: "from-orange-500/35 via-orange-500/10 to-transparent", ring: "group-hover:border-orange-400/40" },
-                      { icon: Wallet, title: "Personal Bank Ecosystem", desc: "Wallet, tips, and earnings flowing through one ecosystem.", glow: "rgba(139,92,246,0.32)", grad: "from-violet-500/35 via-violet-500/10 to-transparent", ring: "group-hover:border-violet-400/40" },
-                      { icon: Palette, title: "Customisable Theme Page", desc: "Shape your profile and presence with your own style.", glow: "rgba(236,72,153,0.3)", grad: "from-pink-500/35 via-pink-500/10 to-transparent", ring: "group-hover:border-pink-400/40" },
+                      { icon: Radio, title: "Livestreaming", desc: "Go live instantly and connect with your audience in real time.", img: "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?q=80&w=1200&auto=format&fit=crop", featured: true },
+                      { icon: ShoppingBag, title: "Personal Marketplace", desc: "Sell merch, books, and products directly from your world.", img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=900&auto=format&fit=crop" },
+                      { icon: Film, title: "Long Docs & Indie Movies", desc: "Showcase powerful documentaries and independent films.", img: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=900&auto=format&fit=crop" },
+                      { icon: MessageCircle, title: "Video, Voice & Messaging", desc: "Calls and chat built in so your community stays close.", img: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=900&auto=format&fit=crop" },
+                      { icon: Play, title: "Shorts", desc: "Fast, addictive short-form content that grabs attention.", img: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=900&auto=format&fit=crop" },
+                      { icon: Monitor, title: "Desktop, Phone & TV", desc: "A seamless experience wherever your audience watches.", img: "https://images.unsplash.com/photo-1593784991095-a205069470b6?q=80&w=1200&auto=format&fit=crop", featured: true },
+                      { icon: ShieldOff, title: "Uncensored", desc: "A freer platform built for creators who won’t be boxed in.", img: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=900&auto=format&fit=crop" },
+                      { icon: Wallet, title: "Personal Bank Ecosystem", desc: "Wallet, tips, and earnings flowing through one ecosystem.", img: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?q=80&w=900&auto=format&fit=crop" },
+                      { icon: Palette, title: "Customisable Theme Page", desc: "Shape your profile and presence with your own style.", img: "https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=900&auto=format&fit=crop" },
                     ].map((f, i) => (
                       <div
                         key={i}
-                        className={`group relative overflow-hidden rounded-[28px] border border-white/10 bg-[#101016]/90 p-6 xl:p-7 min-h-[190px] transition-all duration-300 hover:-translate-y-1.5 ${f.ring} hover:shadow-[0_30px_70px_rgba(0,0,0,0.45)]`}
-                        style={{ boxShadow: `0 24px 60px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.03), 0 0 40px ${f.glow}` }}
+                        className={`group relative overflow-hidden rounded-[30px] border border-white/12 bg-[#0b0b10] min-h-[210px] transition-all duration-500 hover:-translate-y-1.5 hover:border-white/25 hover:shadow-[0_35px_90px_rgba(0,0,0,0.55)] ${f.featured ? "md:col-span-2" : ""}`}
                       >
-                        <div className={`absolute inset-0 bg-gradient-to-br ${f.grad}`} />
-                        <div className="absolute inset-x-0 top-0 h-px bg-white/20" />
-                        <div className="absolute -right-10 -top-10 w-32 h-32 rounded-full bg-white/10 blur-3xl group-hover:bg-white/15 transition" />
-                        <div className="absolute bottom-0 right-0 w-24 h-24 bg-[radial-gradient(circle,rgba(255,255,255,0.12),transparent_70%)] opacity-60" />
-                        <div className="relative w-14 h-14 rounded-2xl bg-black/30 border border-white/15 flex items-center justify-center text-white mb-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_10px_30px_rgba(0,0,0,0.25)]">
-                          <f.icon size={24} />
+                        <img src={f.img} alt="" className="absolute inset-0 h-full w-full object-cover scale-105 transition-transform duration-700 group-hover:scale-110 opacity-75" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/20" />
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.18),transparent_35%)]" />
+                        <div className="absolute inset-x-0 top-0 h-px bg-white/30" />
+                        <div className="relative h-full p-6 xl:p-7 flex flex-col justify-between">
+                          <div className="w-14 h-14 rounded-2xl bg-black/35 backdrop-blur-md border border-white/20 flex items-center justify-center text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_12px_30px_rgba(0,0,0,0.3)]">
+                            <f.icon size={24} />
+                          </div>
+                          <div className={f.featured ? "max-w-xl" : ""}>
+                            <h3 className={`relative font-black text-white mb-2 leading-tight tracking-tight drop-shadow ${f.featured ? "text-3xl xl:text-[34px]" : "text-2xl"}`}>{f.title}</h3>
+                            <p className={`relative text-white/75 leading-relaxed ${f.featured ? "text-base xl:text-lg max-w-[42ch]" : "text-sm xl:text-[15px] max-w-[30ch]"}`}>{f.desc}</p>
+                          </div>
                         </div>
-                        <h3 className="relative text-2xl font-black text-white mb-2 leading-tight tracking-tight">{f.title}</h3>
-                        <p className="relative text-sm xl:text-[15px] text-white/58 leading-relaxed max-w-[28ch]">{f.desc}</p>
                       </div>
                     ))}
                   </div>
