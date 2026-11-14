@@ -219,7 +219,7 @@ export default function MessagesInbox() {
 
       {/* Instagram-style header */}
       <div
-        className="pt-[76px] flex-shrink-0 border-b border-white/5"
+        className="pt-[calc(env(safe-area-inset-top)+76px)] flex-shrink-0 border-b border-white/5"
         style={{ background: profileBackdrop ? "rgba(0,0,0,0.25)" : "#000000", backdropFilter: profileBackdrop ? "blur(12px)" : undefined }}
       >
         

@@ -159,7 +159,7 @@ export default function WalletPage() {
       <div className="relative z-10">
       <TopBar />
       
-      <div className="max-w-4xl mx-auto px-4 md:px-6 pt-[76px]">
+      <div className="max-w-4xl mx-auto px-4 md:px-6 pt-[calc(env(safe-area-inset-top)+76px)]">
         
         {/* NEW LAYOUT */}
     <CreatorStudioNav active="bank" className="mb-8" />

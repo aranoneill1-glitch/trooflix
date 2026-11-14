@@ -452,7 +452,7 @@ export default function ThreadPage() {
   };
 
   return (
-    <main className={`fixed inset-0 h-[100dvh] pt-[64px] pb-[72px] text-white flex flex-col overflow-hidden ${profileBackdrop ? "bg-transparent" : "bg-black"}`}>
+    <main className={`fixed inset-0 h-[100dvh] pt-[calc(env(safe-area-inset-top)+56px)] pb-[72px] text-white flex flex-col overflow-hidden ${profileBackdrop ? "bg-transparent" : "bg-black"}`}>
       {bgStyle && (
         <div className="fixed inset-0 z-0" style={bgStyle as any}>
           <div className="absolute inset-0 bg-black/60 backdrop-blur-md" />
