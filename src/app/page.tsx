@@ -464,6 +464,7 @@ export default function Home() {
                                   <span className="text-xs text-white/55 font-medium">8.2k watching</span>
                                 </div>
                                 <div className="relative aspect-[16/10] overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-[#201018] via-[#120d14] to-[#070709]">
+                                  <img src="/20240503-podcast-studio-with-armando-108-3.jpg.webp" alt="Live podcast studio" className="absolute inset-0 h-full w-full object-cover" />
                                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(255,255,255,0.08),transparent_35%),radial-gradient(circle_at_70%_70%,rgba(239,68,68,0.18),transparent_35%)]" />
                                   <div className="absolute left-3 top-3 rounded-full border border-white/15 bg-black/30 px-2.5 py-1 text-[9px] uppercase tracking-[0.16em] text-white/70">Broadcast Studio</div>
                                   <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/70 to-transparent" />
