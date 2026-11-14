@@ -48,7 +48,7 @@ export default function MobileBottomNav() {
 
   return (
     <nav className="lg:hidden fixed inset-x-0 bottom-0 z-[250] border-t border-white/10 bg-[#070709]">
-      <div className="flex items-center justify-around px-2 pt-2 pb-[calc(10px+env(safe-area-inset-bottom))]">
+      <div className="flex items-center justify-around px-2 pt-2 pb-[max(8px,env(safe-area-inset-bottom))]">
         {tabs.map((tab) => {
           const active = isActive(tab.href);
 
