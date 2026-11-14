@@ -551,13 +551,13 @@ function CreatorDashboardContent() {
               </div>
 
               {activeContentTab === "Shorts" && (
-                <div className="w-full">
+                <div className="w-full -mx-4 sm:mx-0">
                   {videosLoading ? (
                     <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" /></div>
                   ) : filteredVideos.length === 0 ? (
                     <div className="text-center py-20 text-white/50">No Shorts yet.</div>
                   ) : (
-                    <div className="grid grid-cols-3 gap-[2px] pb-20 sm:gap-1">
+                    <div className="grid grid-cols-3 gap-[2px] pb-20">
                       {filteredVideos.map((video) => (
                         <Link key={video.id} href={`/feed?creator_user_id=${encodeURIComponent(user.id)}${video.creatorId ? `&creator_id=${video.creatorId}` : ""}&reel=${video.id}`} aria-label={`Watch ${video.title}`} className="group relative aspect-[3/4] overflow-hidden bg-[#111114]">
                           <ShortPreviewFrame src={video.videoUrl || video.bitchuteUrl} poster={video.posterUrl || video.backdropUrl} alt={video.title} />
@@ -578,18 +578,13 @@ function CreatorDashboardContent() {
                   ) : (
                     <div className="grid grid-cols-3 gap-4">
                       {filteredVideos.map((video) => (
-                        <div key={video.id} className="bg-[#1c1c1e] border border-white/5 rounded-2xl overflow-hidden group cursor-pointer relative shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-                          <div className="relative aspect-[3/4] md:aspect-square">
-                            <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-60" />
-                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/30 backdrop-blur-md border border-white/10 m-2 rounded-xl">
-                              <div className="w-10 h-10 rounded-full bg-[#E53945]/20 flex items-center justify-center mb-2 shadow-[0_0_15px_rgba(229,57,69,0.4)]">
-                                <Lock size={18} className="text-[#E53945]" />
-                              </div>
-                              <span className="text-[10px] font-black text-white uppercase tracking-widest drop-shadow-md">Premium</span>
-                            </div>
+                        <div key={video.id} className="bg-white/[0.08] backdrop-blur-2xl backdrop-saturate-150 border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] rounded-2xl overflow-hidden group cursor-pointer shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+                          <div className="relative aspect-square">
+                            <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                            <div className="absolute top-2 left-2 text-white text-[10px] font-bold px-2 py-0.5 rounded-sm bg-[#E53945]">PREMIUM</div>
                           </div>
                           <div className="p-3 text-left">
-                            <h3 className="text-sm font-bold leading-tight line-clamp-1 text-white/70">{video.title}</h3>
+                            <h3 className="text-sm font-bold leading-tight line-clamp-1 text-white">{video.title}</h3>
                           </div>
                         </div>
                       ))}
