@@ -56,13 +56,13 @@ export default function TopBar({ onMenu }: Props) {
     <>
       {scrolled && (
         <div
-          className="fixed top-0 left-0 lg:left-[72px] right-0 z-[200] bg-[#070709]"
+          className="fixed top-0 left-0 lg:left-[72px] right-0 z-[200] bg-[#070709] [transform:translateZ(0)]"
           style={{ height: "env(safe-area-inset-top)" }}
           aria-hidden="true"
         />
       )}
       <nav
-        className={`fixed left-0 lg:left-[72px] right-0 z-[200] flex items-center gap-3 px-4 md:px-6 h-[56px] transition-all duration-300 ${
+        className={`fixed left-0 lg:left-[72px] right-0 z-[200] flex items-center gap-3 px-4 md:px-6 h-[56px] transition-all duration-300 [transform:translateZ(0)] [backface-visibility:hidden] ${
           scrolled
             ? "bg-[#070709] border-b border-white/[0.06]"
             : "bg-transparent border-b border-transparent"
