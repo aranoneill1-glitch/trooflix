@@ -348,50 +348,68 @@ export default function Home() {
             <>
               {!user && authResolved && (<>
               {/* MOBILE SECTION: Pills + Header + Avatars + Hero */}
-              <div className="lg:hidden w-full flex flex-col relative z-10 bg-transparent">
-                <div className="w-full relative z-10 px-4 pt-24 pb-8">
-                  <div className="absolute inset-x-0 top-10 h-64 bg-[radial-gradient(circle_at_center,rgba(229,57,69,0.18),transparent_65%)] pointer-events-none" />
-                  <div className="relative text-center mb-6">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-[#E53945] mb-3">Welcome to Trooflix</p>
-                    <h1 className="text-[34px] leading-[1.02] font-black tracking-tighter text-white mb-3">Everything you want in one platform</h1>
-                    <p className="text-sm text-white/55 max-w-sm mx-auto leading-relaxed">Create, watch, stream, chat, sell, and grow — without the usual limits.</p>
+              <div className="lg:hidden w-full flex flex-col relative z-10 bg-transparent overflow-hidden">
+                <div className="w-full relative z-10 px-4 pt-24 pb-10">
+                  <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-[420px] h-[420px] bg-[radial-gradient(circle,rgba(229,57,69,0.22),rgba(229,57,69,0.08)_35%,transparent_70%)] blur-2xl pointer-events-none" />
+                  <div className="absolute top-40 -left-16 w-56 h-56 bg-[radial-gradient(circle,rgba(212,175,55,0.18),transparent_70%)] blur-3xl pointer-events-none" />
+                  <div className="absolute top-56 -right-10 w-56 h-56 bg-[radial-gradient(circle,rgba(59,130,246,0.16),transparent_70%)] blur-3xl pointer-events-none" />
+
+                  <div className="relative text-center mb-7">
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/15 bg-white/[0.06] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] mb-4">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#E53945] shadow-[0_0_12px_rgba(229,57,69,0.9)]" />
+                      <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/80">Welcome to Trooflix</span>
+                    </div>
+                    <h1 className="text-[38px] leading-[0.98] font-black tracking-[-0.04em] text-white mb-3">
+                      Everything you want.
+                      <span className="block bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-[#E53945]">One powerful platform.</span>
+                    </h1>
+                    <p className="text-[14px] text-white/60 max-w-sm mx-auto leading-relaxed">
+                      Stream, create, chat, sell, and own your space — all in one cinematic Trooflix experience.
+                    </p>
                   </div>
 
                   <div className="relative grid grid-cols-3 gap-2.5 max-w-md mx-auto">
                     {[
-                      { icon: Radio, title: "Livestreaming", desc: "Go live instantly", tone: "from-[#E53945]/25 to-[#E53945]/5" },
-                      { icon: ShoppingBag, title: "Personal Marketplace", desc: "Sell merch & goods", tone: "from-[#D4AF37]/25 to-[#D4AF37]/5" },
-                      { icon: Film, title: "Docs & Indie Films", desc: "Long-form stories", tone: "from-blue-500/25 to-blue-500/5" },
-                      { icon: MessageCircle, title: "Calls & Messaging", desc: "Video, voice & chat", tone: "from-emerald-500/25 to-emerald-500/5" },
-                      { icon: Play, title: "Shorts", desc: "Fast viral clips", tone: "from-fuchsia-500/25 to-fuchsia-500/5" },
-                      { icon: Monitor, title: "Desktop, Phone & TV", desc: "Watch anywhere", tone: "from-cyan-500/25 to-cyan-500/5" },
-                      { icon: ShieldOff, title: "Uncensored", desc: "Your voice, your rules", tone: "from-orange-500/25 to-orange-500/5" },
-                      { icon: Wallet, title: "Bank Ecosystem", desc: "Wallet & payouts", tone: "from-violet-500/25 to-violet-500/5" },
-                      { icon: Palette, title: "Custom Themes", desc: "Make it yours", tone: "from-pink-500/25 to-pink-500/5" },
+                      { icon: Radio, title: "Livestreaming", desc: "Go live in seconds", glow: "rgba(229,57,69,0.35)", grad: "from-[#E53945]/30 via-[#E53945]/10 to-transparent" },
+                      { icon: ShoppingBag, title: "Marketplace", desc: "Sell merch & products", glow: "rgba(212,175,55,0.3)", grad: "from-[#D4AF37]/30 via-[#D4AF37]/10 to-transparent" },
+                      { icon: Film, title: "Docs & Indie Films", desc: "Long-form cinema", glow: "rgba(59,130,246,0.3)", grad: "from-blue-500/30 via-blue-500/10 to-transparent" },
+                      { icon: MessageCircle, title: "Calls & Chat", desc: "Video, voice, messages", glow: "rgba(16,185,129,0.28)", grad: "from-emerald-500/30 via-emerald-500/10 to-transparent" },
+                      { icon: Play, title: "Shorts", desc: "Fast viral content", glow: "rgba(217,70,239,0.28)", grad: "from-fuchsia-500/30 via-fuchsia-500/10 to-transparent" },
+                      { icon: Monitor, title: "Any Screen", desc: "Desktop, phone & TV", glow: "rgba(6,182,212,0.28)", grad: "from-cyan-500/30 via-cyan-500/10 to-transparent" },
+                      { icon: ShieldOff, title: "Uncensored", desc: "Your voice, your rules", glow: "rgba(249,115,22,0.28)", grad: "from-orange-500/30 via-orange-500/10 to-transparent" },
+                      { icon: Wallet, title: "Bank Ecosystem", desc: "Wallet, tips, payouts", glow: "rgba(139,92,246,0.3)", grad: "from-violet-500/30 via-violet-500/10 to-transparent" },
+                      { icon: Palette, title: "Custom Themes", desc: "Make your page yours", glow: "rgba(236,72,153,0.28)", grad: "from-pink-500/30 via-pink-500/10 to-transparent" },
                     ].map((f, i) => (
-                      <div key={i} className={`relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b ${f.tone} p-2.5 min-h-[118px] flex flex-col justify-between shadow-[0_10px_30px_rgba(0,0,0,0.35)]`}>
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.12),transparent_45%)]" />
-                        <div className="relative w-8 h-8 rounded-xl bg-black/25 border border-white/10 flex items-center justify-center text-white">
-                          <f.icon size={16} />
+                      <div
+                        key={i}
+                        className="relative overflow-hidden rounded-[22px] border border-white/12 bg-[#0d0d12]/80 p-2.5 min-h-[126px] flex flex-col justify-between shadow-[0_18px_40px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.1)]"
+                        style={{ boxShadow: `0 18px 40px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.04), 0 0 28px ${f.glow}` }}
+                      >
+                        <div className={`absolute inset-0 bg-gradient-to-br ${f.grad}`} />
+                        <div className="absolute inset-x-0 top-0 h-px bg-white/20" />
+                        <div className="absolute -right-6 -top-6 w-16 h-16 rounded-full bg-white/10 blur-2xl" />
+                        <div className="relative w-9 h-9 rounded-xl bg-black/30 border border-white/15 flex items-center justify-center text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]">
+                          <f.icon size={17} />
                         </div>
                         <div className="relative">
-                          <p className="text-[11px] font-bold leading-tight text-white mb-0.5">{f.title}</p>
-                          <p className="text-[10px] leading-tight text-white/55">{f.desc}</p>
+                          <p className="text-[11.5px] font-black leading-tight text-white mb-0.5 tracking-tight">{f.title}</p>
+                          <p className="text-[10px] leading-tight text-white/60">{f.desc}</p>
                         </div>
                       </div>
                     ))}
                   </div>
 
-                  <div className="flex flex-col w-full max-w-sm gap-3 mt-7 mx-auto">
+                  <div className="flex flex-col w-full max-w-sm gap-3 mt-8 mx-auto">
                     <a
                       href="/signup"
-                      className="w-full flex items-center justify-center gap-2 bg-[#E53945] text-white font-bold text-lg py-4 rounded-full hover:bg-[#d12e39] transition shadow-[0_12px_30px_rgba(229,57,69,0.3)]"
+                      className="group relative w-full flex items-center justify-center gap-2 overflow-hidden bg-gradient-to-r from-[#E53945] to-[#ff5a5f] text-white font-bold text-lg py-4 rounded-full transition shadow-[0_18px_40px_rgba(229,57,69,0.35)]"
                     >
-                      Join Today
+                      <span className="absolute inset-0 bg-[linear-gradient(110deg,transparent,rgba(255,255,255,0.25),transparent)] translate-x-[-120%] group-hover:translate-x-[120%] transition-transform duration-700" />
+                      <span className="relative">Join Today</span>
                     </a>
                     <a
                       href="/features"
-                      className="w-full flex items-center justify-center gap-2 bg-white/10 border border-white/15 text-white font-bold text-lg py-4 rounded-full hover:bg-white/15 transition"
+                      className="w-full flex items-center justify-center gap-2 bg-white/[0.07] border border-white/15 text-white font-bold text-lg py-4 rounded-full hover:bg-white/[0.12] transition backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
                     >
                       Why Trooflix
                       <ArrowRight size={18} />
@@ -402,39 +420,58 @@ export default function Home() {
 
               {/* DESKTOP SECTION: Signed-out 3x3 hero */}
               <div className="hidden lg:block w-full max-w-[1600px] mx-auto px-4 md:px-12 pt-24 md:pt-28">
-                <div className="relative overflow-hidden rounded-[32px] border border-white/10 bg-[#0a0a0d]/80 p-8 xl:p-10 shadow-[0_30px_80px_rgba(0,0,0,0.5)]">
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(229,57,69,0.18),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(212,175,55,0.12),transparent_30%)] pointer-events-none" />
-                  <div className="relative flex items-end justify-between gap-8 mb-8">
-                    <div className="max-w-2xl">
-                      <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#E53945] mb-3">Welcome to Trooflix</p>
-                      <h1 className="text-5xl xl:text-6xl font-black tracking-tighter text-white leading-[1.02] mb-4">Everything you want in one platform</h1>
-                      <p className="text-lg text-white/55 leading-relaxed">Create, watch, stream, chat, sell, and grow — built for creators and viewers who want more freedom.</p>
+                <div className="relative overflow-hidden rounded-[36px] border border-white/10 bg-[#08080b] p-8 xl:p-12 shadow-[0_40px_120px_rgba(0,0,0,0.65)]">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(229,57,69,0.22),transparent_28%),radial-gradient(circle_at_85%_15%,rgba(212,175,55,0.16),transparent_22%),radial-gradient(circle_at_70%_85%,rgba(59,130,246,0.14),transparent_26%)] pointer-events-none" />
+                  <div className="absolute inset-0 opacity-[0.08] pointer-events-none" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)", backgroundSize: "48px 48px", maskImage: "radial-gradient(circle at center, black, transparent 85%)" }} />
+                  <div className="relative flex items-end justify-between gap-10 mb-10">
+                    <div className="max-w-3xl">
+                      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/15 bg-white/[0.05] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] mb-5">
+                        <span className="w-2 h-2 rounded-full bg-[#E53945] shadow-[0_0_14px_rgba(229,57,69,1)]" />
+                        <span className="text-[11px] font-bold uppercase tracking-[0.24em] text-white/80">Welcome to Trooflix</span>
+                      </div>
+                      <h1 className="text-5xl xl:text-7xl font-black tracking-[-0.05em] text-white leading-[0.95] mb-5">
+                        Everything you want.
+                        <span className="block bg-clip-text text-transparent bg-gradient-to-r from-white via-[#ffd9dc] to-[#E53945]">One unstoppable platform.</span>
+                      </h1>
+                      <p className="text-lg xl:text-xl text-white/55 leading-relaxed max-w-2xl">
+                        Create, stream, watch, message, sell, and build your world — with a premium all-in-one experience made to blow people away.
+                      </p>
                     </div>
-                    <div className="flex gap-3 shrink-0">
-                      <a href="/signup" className="flex items-center justify-center gap-2 bg-[#E53945] text-white font-bold text-base px-7 py-3.5 rounded-full hover:bg-[#d12e39] transition shadow-[0_12px_30px_rgba(229,57,69,0.3)]">Join Today</a>
-                      <a href="/features" className="flex items-center justify-center gap-2 bg-white/10 border border-white/15 text-white font-bold text-base px-7 py-3.5 rounded-full hover:bg-white/15 transition">Why Trooflix <ArrowRight size={18} /></a>
+                    <div className="flex gap-3 shrink-0 pb-1">
+                      <a href="/signup" className="group relative overflow-hidden flex items-center justify-center gap-2 bg-gradient-to-r from-[#E53945] to-[#ff5a5f] text-white font-bold text-base px-8 py-4 rounded-full transition shadow-[0_18px_45px_rgba(229,57,69,0.35)]">
+                        <span className="absolute inset-0 bg-[linear-gradient(110deg,transparent,rgba(255,255,255,0.28),transparent)] translate-x-[-120%] group-hover:translate-x-[120%] transition-transform duration-700" />
+                        <span className="relative">Join Today</span>
+                      </a>
+                      <a href="/features" className="flex items-center justify-center gap-2 bg-white/[0.06] border border-white/15 text-white font-bold text-base px-8 py-4 rounded-full hover:bg-white/[0.1] transition backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">Why Trooflix <ArrowRight size={18} /></a>
                     </div>
                   </div>
 
-                  <div className="relative grid grid-cols-3 gap-4">
+                  <div className="relative grid grid-cols-3 gap-4 xl:gap-5">
                     {[
-                      { icon: Radio, title: "Livestreaming", desc: "Go live instantly and connect in real time.", tone: "from-[#E53945]/20 to-transparent" },
-                      { icon: ShoppingBag, title: "Personal Marketplace", desc: "Sell merch, books, and products your way.", tone: "from-[#D4AF37]/20 to-transparent" },
-                      { icon: Film, title: "Long Docs & Indie Movies", desc: "Host powerful documentaries and films.", tone: "from-blue-500/20 to-transparent" },
-                      { icon: MessageCircle, title: "Video, Voice & Messaging", desc: "Calls and chat built right into the platform.", tone: "from-emerald-500/20 to-transparent" },
-                      { icon: Play, title: "Shorts", desc: "Share fast, scroll-stopping short-form content.", tone: "from-fuchsia-500/20 to-transparent" },
-                      { icon: Monitor, title: "Desktop, Phone & TV", desc: "Available wherever your audience watches.", tone: "from-cyan-500/20 to-transparent" },
-                      { icon: ShieldOff, title: "Uncensored", desc: "A freer home for creators and conversations.", tone: "from-orange-500/20 to-transparent" },
-                      { icon: Wallet, title: "Personal Bank Ecosystem", desc: "Wallet, tips, and earnings in one place.", tone: "from-violet-500/20 to-transparent" },
-                      { icon: Palette, title: "Customisable Theme Page", desc: "Make your profile and space feel like you.", tone: "from-pink-500/20 to-transparent" },
+                      { icon: Radio, title: "Livestreaming", desc: "Go live instantly and connect with your audience in real time.", glow: "rgba(229,57,69,0.35)", grad: "from-[#E53945]/35 via-[#E53945]/10 to-transparent", ring: "group-hover:border-[#E53945]/40" },
+                      { icon: ShoppingBag, title: "Personal Marketplace", desc: "Sell merch, books, and products directly from your world.", glow: "rgba(212,175,55,0.32)", grad: "from-[#D4AF37]/35 via-[#D4AF37]/10 to-transparent", ring: "group-hover:border-[#D4AF37]/40" },
+                      { icon: Film, title: "Long Docs & Indie Movies", desc: "Showcase powerful documentaries and independent films.", glow: "rgba(59,130,246,0.32)", grad: "from-blue-500/35 via-blue-500/10 to-transparent", ring: "group-hover:border-blue-400/40" },
+                      { icon: MessageCircle, title: "Video, Voice & Messaging", desc: "Calls and chat built in so your community stays close.", glow: "rgba(16,185,129,0.3)", grad: "from-emerald-500/35 via-emerald-500/10 to-transparent", ring: "group-hover:border-emerald-400/40" },
+                      { icon: Play, title: "Shorts", desc: "Fast, addictive short-form content that grabs attention.", glow: "rgba(217,70,239,0.3)", grad: "from-fuchsia-500/35 via-fuchsia-500/10 to-transparent", ring: "group-hover:border-fuchsia-400/40" },
+                      { icon: Monitor, title: "Desktop, Phone & TV", desc: "A seamless experience wherever your audience watches.", glow: "rgba(6,182,212,0.3)", grad: "from-cyan-500/35 via-cyan-500/10 to-transparent", ring: "group-hover:border-cyan-400/40" },
+                      { icon: ShieldOff, title: "Uncensored", desc: "A freer platform built for creators who won’t be boxed in.", glow: "rgba(249,115,22,0.3)", grad: "from-orange-500/35 via-orange-500/10 to-transparent", ring: "group-hover:border-orange-400/40" },
+                      { icon: Wallet, title: "Personal Bank Ecosystem", desc: "Wallet, tips, and earnings flowing through one ecosystem.", glow: "rgba(139,92,246,0.32)", grad: "from-violet-500/35 via-violet-500/10 to-transparent", ring: "group-hover:border-violet-400/40" },
+                      { icon: Palette, title: "Customisable Theme Page", desc: "Shape your profile and presence with your own style.", glow: "rgba(236,72,153,0.3)", grad: "from-pink-500/35 via-pink-500/10 to-transparent", ring: "group-hover:border-pink-400/40" },
                     ].map((f, i) => (
-                      <div key={i} className={`group relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br ${f.tone} bg-[#121217] p-6 min-h-[170px] transition duration-300 hover:-translate-y-1 hover:border-white/20 hover:shadow-[0_20px_50px_rgba(0,0,0,0.35)]`}>
-                        <div className="absolute -right-8 -top-8 w-28 h-28 rounded-full bg-white/5 blur-2xl group-hover:bg-white/10 transition" />
-                        <div className="relative w-12 h-12 rounded-2xl bg-white/10 border border-white/10 flex items-center justify-center text-white mb-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
-                          <f.icon size={22} />
+                      <div
+                        key={i}
+                        className={`group relative overflow-hidden rounded-[28px] border border-white/10 bg-[#101016]/90 p-6 xl:p-7 min-h-[190px] transition-all duration-300 hover:-translate-y-1.5 ${f.ring} hover:shadow-[0_30px_70px_rgba(0,0,0,0.45)]`}
+                        style={{ boxShadow: `0 24px 60px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.03), 0 0 40px ${f.glow}` }}
+                      >
+                        <div className={`absolute inset-0 bg-gradient-to-br ${f.grad}`} />
+                        <div className="absolute inset-x-0 top-0 h-px bg-white/20" />
+                        <div className="absolute -right-10 -top-10 w-32 h-32 rounded-full bg-white/10 blur-3xl group-hover:bg-white/15 transition" />
+                        <div className="absolute bottom-0 right-0 w-24 h-24 bg-[radial-gradient(circle,rgba(255,255,255,0.12),transparent_70%)] opacity-60" />
+                        <div className="relative w-14 h-14 rounded-2xl bg-black/30 border border-white/15 flex items-center justify-center text-white mb-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_10px_30px_rgba(0,0,0,0.25)]">
+                          <f.icon size={24} />
                         </div>
-                        <h3 className="relative text-xl font-bold text-white mb-2 leading-tight">{f.title}</h3>
-                        <p className="relative text-sm text-white/55 leading-relaxed">{f.desc}</p>
+                        <h3 className="relative text-2xl font-black text-white mb-2 leading-tight tracking-tight">{f.title}</h3>
+                        <p className="relative text-sm xl:text-[15px] text-white/58 leading-relaxed max-w-[28ch]">{f.desc}</p>
                       </div>
                     ))}
                   </div>
