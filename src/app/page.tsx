@@ -441,14 +441,10 @@ export default function Home() {
                   <div className="relative z-10 w-full max-w-[1600px] mx-auto px-8 xl:px-16 py-20">
                     <motion.div className="mx-auto max-w-4xl text-center" initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.45 }} transition={{ duration: 0.8, ease: [0.22,1,0.36,1] }}>
                       <p className="mb-5 text-[11px] font-bold uppercase tracking-[0.34em] text-white/45">CREATE WITHOUT LIMITS</p>
-                      <h2 className="text-[56px] xl:text-[74px] 2xl:text-[88px] font-black tracking-tighter text-white leading-[0.98] mb-6">
+                      <h2 className="text-[56px] xl:text-[74px] 2xl:text-[88px] font-black tracking-tighter text-white leading-[0.98]">
                         Your Voice.<br />
                         <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff4d5a] via-[#ff6b4a] to-orange-400">Unfiltered.</span>
                       </h2>
-                      <p className="mx-auto max-w-3xl text-lg xl:text-xl text-white/65 leading-relaxed font-medium">
-                        Go live in broadcast quality. Drop cinematic shorts. Publish full documentaries.<br className="hidden xl:block" />
-                        All on one platform that doesn’t censor, demonetize, or hide your work.
-                      </p>
                     </motion.div>
 
                     <motion.div className="mt-14 grid grid-cols-3 gap-6 items-end" initial="hidden" whileInView="visible" viewport={{ once: false, amount: 0.3 }} variants={{ visible: { transition: { staggerChildren: 0.14 } } }}>
