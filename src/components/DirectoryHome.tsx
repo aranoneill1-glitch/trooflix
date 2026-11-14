@@ -7,8 +7,36 @@ import { AnimatePresence, motion } from "framer-motion";
 
 
 function VideoPreview({ src, poster, className }: { src: string, poster?: string, className?: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const startTimeRef = useRef<number>(0);
+  const [inView, setInView] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    if (typeof IntersectionObserver === "undefined") {
+      setInView(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { rootMargin: "120px 0px", threshold: 0.15 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!inView) {
+      setIsPlaying(false);
+      if (videoRef.current) {
+        try { videoRef.current.pause(); } catch {}
+        try { videoRef.current.removeAttribute("src"); videoRef.current.load(); } catch {}
+      }
+    }
+  }, [inView]);
 
   const handleLoadedMetadata = () => {
     if (videoRef.current) {
@@ -17,8 +45,8 @@ function VideoPreview({ src, poster, className }: { src: string, poster?: string
       if (duration < 15) seekTime = 0;
       
       startTimeRef.current = seekTime;
-      videoRef.current.currentTime = seekTime;
-      videoRef.current.play().catch(() => {}); // Force play
+      try { videoRef.current.currentTime = seekTime; } catch {}
+      videoRef.current.play().catch(() => {});
     }
   };
 
@@ -27,33 +55,34 @@ function VideoPreview({ src, poster, className }: { src: string, poster?: string
       const current = videoRef.current.currentTime;
       const start = startTimeRef.current;
       if (current > start + 7) {
-        videoRef.current.currentTime = start;
+        try { videoRef.current.currentTime = start; } catch {}
       }
     }
   };
 
-  const [isPlaying, setIsPlaying] = useState(false);
-
   return (
-    <>
+    <div ref={containerRef} className="absolute inset-0">
       {poster ? (
-        <img src={poster} alt="" className="absolute inset-0 w-full h-full object-cover" />
+        <img src={poster} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
       ) : (
         <div className="absolute inset-0 bg-white/5" />
       )}
-      <video
-        ref={videoRef}
-        src={src}
-        autoPlay
-        muted
-        playsInline
-        preload="metadata"
-        onLoadedMetadata={handleLoadedMetadata}
-        onTimeUpdate={handleTimeUpdate}
-        onPlaying={() => setIsPlaying(true)}
-        className={`${className} absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${isPlaying ? "opacity-100" : "opacity-0"}`}
-      />
-    </>
+      {inView && src ? (
+        <video
+          ref={videoRef}
+          src={src}
+          autoPlay
+          muted
+          playsInline
+          preload="metadata"
+          onLoadedMetadata={handleLoadedMetadata}
+          onTimeUpdate={handleTimeUpdate}
+          onPlaying={() => setIsPlaying(true)}
+          onPause={() => setIsPlaying(false)}
+          className={`${className || ""} absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${isPlaying ? "opacity-100" : "opacity-0"}`}
+        />
+      ) : null}
+    </div>
   );
 }
 
@@ -107,12 +136,37 @@ function SectionHead({ kicker, title, href, icon: Icon }: { kicker: string; titl
 }
 
 function HeroPreviewFrame({ src, poster, alt }: { src?: string; poster?: string; alt: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [inView, setInView] = useState(false);
   const [hasFrame, setHasFrame] = useState(false);
 
   useEffect(() => {
     setHasFrame(false);
   }, [src]);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    if (typeof IntersectionObserver === "undefined") {
+      setInView(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { rootMargin: "80px 0px", threshold: 0.2 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!inView && videoRef.current) {
+      try { videoRef.current.pause(); } catch {}
+      try { videoRef.current.removeAttribute("src"); videoRef.current.load(); } catch {}
+      setHasFrame(false);
+    }
+  }, [inView]);
 
   const seekToPreviewFrame = (video: HTMLVideoElement) => {
     if (!Number.isFinite(video.duration) || video.duration <= 0) return;
@@ -130,19 +184,20 @@ function HeroPreviewFrame({ src, poster, alt }: { src?: string; poster?: string;
   `;
 
   return (
-    <div className="absolute inset-0 overflow-hidden">
+    <div ref={containerRef} className="absolute inset-0 overflow-hidden">
       <style>{panStyle}</style>
       {poster ? (
         <img
           src={poster}
           alt={alt}
+          loading="eager"
           className={`absolute inset-0 h-full w-full object-cover ${hasFrame ? "opacity-0" : "opacity-100"} transition-opacity duration-500`}
           style={{ animation: "hero-pan-lr 18s ease-in-out infinite alternate" }}
         />
       ) : (
         <div className="absolute inset-0 bg-[#111114]" />
       )}
-      {src && (
+      {inView && src && (
         <video
           ref={videoRef}
           src={src}
