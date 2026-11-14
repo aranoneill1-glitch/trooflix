@@ -27,6 +27,7 @@ function UploadContent() {
   );
   const isPodcast = !isShort && !isTweet && longFormType === "Podcast";
   const isDocumentary = !isShort && !isTweet && longFormType === "Documentary";
+  const [podcastFormat, setPodcastFormat] = useState<"video" | "audio">("video");
   const [category, setCategory] = useState(typeParam === "podcast" ? "Podcasts" : typeParam === "documentary" ? "Documentaries" : "History");
   const [visibility, setVisibility] = useState<"public" | "premium">("public");
   const [mediaFile, setMediaFile] = useState<File | null>(null);
@@ -42,6 +43,7 @@ function UploadContent() {
   const [videoDuration, setVideoDuration] = useState(0);
   const [checkingTier, setCheckingTier] = useState(true);
   const totalSteps = isTweet ? 1 : isShort ? 3 : 5;
+  const isAudioPodcast = isPodcast && podcastFormat === "audio";
 
   // Fetch user tier on mount
   useEffect(() => {
@@ -61,19 +63,24 @@ function UploadContent() {
     });
   }, []);
 
-  // Extract video duration when file is picked
+  // Extract media duration when file is picked
   useEffect(() => {
     if (!mediaFile) { setVideoDuration(0); return; }
-    const vid = document.createElement("video");
-    vid.preload = "metadata";
-    vid.onloadedmetadata = () => {
-      const dur = isFinite(vid.duration) ? vid.duration : 0;
+    const isAudio = mediaFile.type.startsWith("audio/") || (isPodcast && podcastFormat === "audio");
+    const el = document.createElement(isAudio ? "audio" : "video") as HTMLMediaElement;
+    el.preload = "metadata";
+    el.onloadedmetadata = () => {
+      const dur = isFinite((el as any).duration) ? (el as any).duration : 0;
       setVideoDuration(dur);
-      URL.revokeObjectURL(vid.src);
+      URL.revokeObjectURL(el.src);
     };
-    vid.onerror = () => setVideoDuration(0);
-    vid.src = URL.createObjectURL(mediaFile);
-  }, [mediaFile]);
+    el.onerror = () => setVideoDuration(0);
+    el.src = URL.createObjectURL(mediaFile);
+  }, [mediaFile, isPodcast, podcastFormat]);
+
+  useEffect(() => {
+    if (!isPodcast) setPodcastFormat("video");
+  }, [isPodcast]);
 
   // Hard gate: Redirect if this upload type isn't allowed for their tier
   useEffect(() => {
@@ -190,13 +197,14 @@ function UploadContent() {
         <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-20 h-20 bg-[#1ed760]/20 rounded-full flex items-center justify-center mb-6">
           <CheckCircle2 size={40} className="text-[#1ed760]" />
         </motion.div>
-        <h1 className="text-2xl font-bold mb-2">{isTweet ? "Tweet Published" : (isShort ? "Short Published" : "Video Published")}</h1>
+        <h1 className="text-2xl font-bold mb-2">{isTweet ? "Tweet Published" : (isShort ? "Short Published" : (isAudioPodcast ? "Audio Podcast Published" : isPodcast ? "Video Podcast Published" : "Video Published"))}</h1>
         <p className="text-white/50 text-sm">Redirecting...</p>
       </main>
     );
   }
 
   const generateThumbnail = (file: File) => {
+    if (file.type.startsWith("audio/")) return;
     const video = document.createElement("video");
     video.src = URL.createObjectURL(file);
     video.muted = true;
@@ -244,7 +252,7 @@ function UploadContent() {
         </div>
 
         {!isShort && !isTweet && (
-          <div className="flex items-center gap-2 mb-6 bg-[#1c1c1e] p-1 rounded-xl border border-white/10">
+          <div className="flex items-center gap-2 mb-4 bg-[#1c1c1e] p-1 rounded-xl border border-white/10">
             {([
               { value: "long-video", label: "Video" },
               { value: "Podcast", label: "Podcast" },
@@ -261,17 +269,34 @@ function UploadContent() {
             ))}
           </div>
         )}
+        {isPodcast && (
+          <div className="flex items-center gap-2 mb-6 bg-[#1c1c1e] p-1 rounded-xl border border-white/10">
+            {([
+              { value: "video", label: "Video Podcast" },
+              { value: "audio", label: "Audio Podcast" },
+            ] as const).map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => { setPodcastFormat(opt.value); setMediaFile(null); setVideoDuration(0); setThumbnailFile(null); setAutoThumbnailPreview(null); }}
+                className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition ${podcastFormat === opt.value ? "bg-blue-500 text-white" : "text-white/60 hover:text-white"}`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        )}
         <div className="w-full h-1 bg-white/10 rounded-full mb-8 overflow-hidden">
           <div className="h-full bg-[#E53945] transition-all duration-300" style={{ width: `${((step - 1) / (totalSteps - 1)) * 100}%` }} />
         </div>
         <div className="space-y-6">
           <div className="space-y-4">
-            {step === 1 && !isTweet && (<div><label className="block text-xs font-bold text-white/60 mb-1">Video File *</label><div onClick={() => document.getElementById("media-upload")?.click()} className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] transition min-h-[200px]"><UploadCloud size={32} className="text-white/50 mb-3" /><span className="text-sm font-bold text-white text-center">{mediaFile ? mediaFile.name : "Tap to select video"}</span></div><input id="media-upload" type="file" accept="video/*" onChange={(e) => { const f = e.target.files?.[0] || null; setMediaFile(f); if (f) generateThumbnail(f); }} className="hidden" /></div>)}
+            {step === 1 && !isTweet && (<div><label className="block text-xs font-bold text-white/60 mb-1">{isAudioPodcast ? "Audio File *" : "Video File *"}</label><div onClick={() => document.getElementById("media-upload")?.click()} className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] transition min-h-[200px]"><UploadCloud size={32} className="text-white/50 mb-3" /><span className="text-sm font-bold text-white text-center">{mediaFile ? mediaFile.name : (isAudioPodcast ? "Tap to select audio" : "Tap to select video")}</span></div><input id="media-upload" type="file" accept={isAudioPodcast ? "audio/*" : "video/*"} onChange={(e) => { const f = e.target.files?.[0] || null; setMediaFile(f); setThumbnailFile(null); setAutoThumbnailPreview(null); if (f) generateThumbnail(f); }} className="hidden" /></div>)}
             
             {step === 2 && !isShort && !isTweet && (
               <div>
                 <label className="block text-xs font-bold text-white/60 mb-1 flex items-center gap-2">
-                  Thumbnail {autoThumbnailPreview && <span className="bg-green-500/20 text-green-400 text-[9px] px-1.5 py-0.5 rounded">AUTO</span>}
+                  {isAudioPodcast ? "Cover Image" : "Thumbnail"} {autoThumbnailPreview && <span className="bg-green-500/20 text-green-400 text-[9px] px-1.5 py-0.5 rounded">AUTO</span>}
                 </label>
                 {autoThumbnailPreview ? (
                   <div className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-4 flex flex-col items-center justify-center">

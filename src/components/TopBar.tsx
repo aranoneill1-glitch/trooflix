@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, Plus, RefreshCw, Video, Radio, X, Play, Tag, ShoppingBag } from "lucide-react";
+import { Menu, Mic, Plus, RefreshCw, Video, Radio, X, Play, Tag, ShoppingBag } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import UserMenu from "@/components/UserMenu";
 import NotificationBell from "@/components/NotificationBell";
@@ -157,6 +157,20 @@ export default function TopBar({ onMenu }: Props) {
                   <div>
                     <h4 className="font-bold text-white">Upload Video</h4>
                     <p className="text-xs text-white/50">Publish a long-form video or documentary</p>
+                  </div>
+                </Link>
+
+                <Link 
+                  href="/creator-dashboard/upload?type=podcast" 
+                  onClick={() => setShowCreateMenu(false)}
+                  className="group relative flex items-center gap-4 bg-white/[0.08] hover:bg-white/[0.12] border border-white/20 hover:border-blue-400/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center flex-shrink-0 border border-white/10">
+                    <Mic className="text-blue-400" size={24} />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-white">Upload Podcast</h4>
+                    <p className="text-xs text-white/50">Publish a video or audio podcast episode</p>
                   </div>
                 </Link>
 

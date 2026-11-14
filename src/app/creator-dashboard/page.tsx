@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { 
   Video, CheckCircle2, MessageSquare, Eye, Star, Pencil, 
-  ShoppingBag, LayoutDashboard, LayoutGrid, List, Package, Palette, Camera, Trash2, X, Radio, Inbox, Plus, Play, Lock, Shield, CreditCard
+  ShoppingBag, LayoutDashboard, LayoutGrid, List, Package, Palette, Camera, Trash2, X, Radio, Inbox, Plus, Play, Lock, Shield, CreditCard, Mic
 } from "lucide-react";
 
 import TopBar from "@/components/TopBar";
@@ -953,6 +953,21 @@ function CreatorDashboardContent() {
                     <div className="relative z-10">
                       <h4 className="font-bold text-white text-base flex items-center gap-1.5">Upload Video {userTier !== "creator" && <Lock size={12} className="text-yellow-400" />}</h4>
                       <p className="text-xs text-white/50">Publish a long-form video or long-video</p>
+                    </div>
+                  </Link>
+
+                  <Link 
+                    href="/creator-dashboard/upload?type=podcast" 
+                    onClick={() => setShowAddContentMenu(false)}
+                    className="group relative flex items-center gap-4 bg-white/[0.08] hover:bg-white/[0.12] border border-white/20 hover:border-blue-400/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
+                      <Mic className="text-blue-400" size={24} />
+                    </div>
+                    <div className="relative z-10">
+                      <h4 className="font-bold text-white text-base flex items-center gap-1.5">Upload Podcast {userTier !== "creator" && <Lock size={12} className="text-yellow-400" />}</h4>
+                      <p className="text-xs text-white/50">Publish a video or audio podcast episode</p>
                     </div>
                   </Link>
 
