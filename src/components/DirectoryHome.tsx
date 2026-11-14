@@ -422,42 +422,20 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
         </div>
       </section>
 
-      {(() => {
-        const merchItems = shopProducts.filter((p: any) => p.type?.toLowerCase() !== "book").slice(0, 10);
-        const bookItems = shopProducts.filter((p: any) => p.type?.toLowerCase() === "book").slice(0, 10);
-        return (
-          <>
-            <section>
-              <SectionHead kicker="Shop" title="Merchandise" href="/merchandise" icon={ShoppingBag} />
-              <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
-                {merchItems.map((p: any) => (
-                  <Link key={p.id} href="/merchandise" className="flex flex-col w-[148px] md:w-[180px] shrink-0 group">
-                    <div className="relative aspect-square rounded-2xl overflow-hidden bg-[#141418] ring-1 ring-white/10">
-                      <img src={p.image_url} alt="" className="w-full h-full object-cover transition duration-700 group-hover:scale-[1.04]" />
-                    </div>
-                    <p className="mt-3 text-[13px] font-semibold text-[#f3d7a1] tracking-tight">${(p.price_cents / 100).toFixed(2)}</p>
-                    <h3 className="mt-0.5 text-[13px] font-medium text-white/75 line-clamp-2 leading-snug group-hover:text-white transition">{p.name}</h3>
-                  </Link>
-                ))}
+      <section>
+        <SectionHead kicker="Shop" title="Merchandise" href="/merchandise" icon={ShoppingBag} />
+        <div className="grid grid-rows-2 grid-flow-col auto-cols-[89px] md:auto-cols-[108px] gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+          {shopProducts.slice(0, 20).map((p: any) => (
+            <Link key={p.id} href="/merchandise" className="flex flex-col w-[89px] md:w-[108px] shrink-0 group">
+              <div className="relative aspect-square rounded-xl overflow-hidden bg-[#141418] ring-1 ring-white/10">
+                <img src={p.image_url} alt="" className="w-full h-full object-cover transition duration-700 group-hover:scale-[1.04]" />
               </div>
-            </section>
-            <section>
-              <SectionHead kicker="Shop" title="Books" href="/merchandise" icon={ShoppingBag} />
-              <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
-                {bookItems.map((p: any) => (
-                  <Link key={p.id} href="/merchandise" className="flex flex-col w-[148px] md:w-[180px] shrink-0 group">
-                    <div className="relative aspect-square rounded-2xl overflow-hidden bg-[#141418] ring-1 ring-white/10">
-                      <img src={p.image_url} alt="" className="w-full h-full object-cover transition duration-700 group-hover:scale-[1.04]" />
-                    </div>
-                    <p className="mt-3 text-[13px] font-semibold text-[#f3d7a1] tracking-tight">${(p.price_cents / 100).toFixed(2)}</p>
-                    <h3 className="mt-0.5 text-[13px] font-medium text-white/75 line-clamp-2 leading-snug group-hover:text-white transition">{p.name}</h3>
-                  </Link>
-                ))}
-              </div>
-            </section>
-          </>
-        );
-      })()}
+              <p className="mt-1.5 text-[11px] font-semibold text-[#f3d7a1] tracking-tight">${(p.price_cents / 100).toFixed(2)}</p>
+              <h3 className="mt-0.5 text-[11px] font-medium text-white/75 line-clamp-2 leading-snug group-hover:text-white transition">{p.name}</h3>
+            </Link>
+          ))}
+        </div>
+      </section>
 
     </div>
   );
