@@ -181,7 +181,7 @@ export function FeaturedVideoHero({ videos, onSelect, className = "" }: { videos
   const previewSrc = video.videoUrl || video.bitchuteUrl;
 
   return (
-    <section aria-label="Featured videos" className={`relative isolate h-[min(37.2vh,348px)] min-h-[216px] max-h-[372px] overflow-hidden bg-[#08090c] md:h-[min(34vh,310px)] md:min-h-[220px] md:max-h-[310px] ${className || "-mx-4 md:-mx-10"}`}>
+    <section aria-label="Featured videos" className={`relative isolate h-[42vh] min-h-[240px] max-h-[420px] overflow-hidden bg-[#08090c] md:h-[min(34vh,310px)] md:min-h-[220px] md:max-h-[310px] ${className || "-mx-4 md:-mx-10"}`}>
       <AnimatePresence mode="wait">
         <motion.div key={video.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.7 }} className="absolute inset-0 -z-20">
           <HeroPreviewFrame src={previewSrc} poster={image} alt={video.title || ""} />

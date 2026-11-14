@@ -352,14 +352,14 @@ export default function Home() {
               </div>
               {/* MOBILE SECTION: Pills + Header + Avatars + Hero */}
               <div className="lg:hidden w-full flex flex-col relative z-10 bg-transparent overflow-hidden">
-                <div className="w-full relative z-10 px-6 pt-8 pb-16 min-h-[70vh] flex flex-col items-center justify-center text-center">
-                  <div className="absolute inset-x-0 top-8 h-72 bg-[radial-gradient(circle_at_center,rgba(229,57,69,0.2),transparent_65%)] blur-2xl pointer-events-none" />
-                  <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-64 h-64 bg-[radial-gradient(circle,rgba(255,255,255,0.08),transparent_70%)] blur-3xl pointer-events-none" />
+                <div className="w-full relative z-10 px-6 pt-4 pb-10 flex flex-col items-center justify-start text-center">
+                  <div className="absolute inset-x-0 top-4 h-56 bg-[radial-gradient(circle_at_center,rgba(229,57,69,0.2),transparent_65%)] blur-2xl pointer-events-none" />
+                  <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-56 h-56 bg-[radial-gradient(circle,rgba(255,255,255,0.08),transparent_70%)] blur-3xl pointer-events-none" />
 
-                  <h1 className="relative text-[46px] leading-[0.95] font-black tracking-[-0.05em] text-white mb-5">
+                  <h1 className="relative text-[46px] leading-[0.95] font-black tracking-[-0.05em] text-white mb-4 mt-2">
                     Create without limits.
                   </h1>
-                  <p className="relative text-[15px] text-white/60 max-w-sm mx-auto leading-relaxed mb-10">
+                  <p className="relative text-[15px] text-white/60 max-w-sm mx-auto leading-relaxed mb-8">
                     Stream, share, connect, and grow on a platform built for creators who want freedom, power, and a real home for their work.
                   </p>
 
