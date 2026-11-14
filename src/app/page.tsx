@@ -355,13 +355,9 @@ export default function Home() {
                   <div className="absolute top-56 -right-10 w-56 h-56 bg-[radial-gradient(circle,rgba(59,130,246,0.16),transparent_70%)] blur-3xl pointer-events-none" />
 
                   <div className="relative text-center mb-7">
-                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/15 bg-white/[0.06] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] mb-4">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#E53945] shadow-[0_0_12px_rgba(229,57,69,0.9)]" />
-                      <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/80">Welcome to Trooflix</span>
-                    </div>
                     <h1 className="text-[38px] leading-[0.98] font-black tracking-[-0.04em] text-white mb-3">
-                      Everything you want.
-                      <span className="block bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-[#E53945]">One powerful platform.</span>
+                      An entire ecosystem.
+                      <span className="block bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-[#E53945]">In one powerful platform.</span>
                     </h1>
                     <p className="text-[14px] text-white/60 max-w-sm mx-auto leading-relaxed">
                       Stream, create, chat, sell, and own your space — all in one cinematic Trooflix experience.
@@ -427,13 +423,9 @@ export default function Home() {
                   <div className="absolute inset-0 opacity-[0.08] pointer-events-none" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)", backgroundSize: "48px 48px", maskImage: "radial-gradient(circle at center, black, transparent 85%)" }} />
                   <div className="relative flex items-end justify-between gap-10 mb-10">
                     <div className="max-w-3xl">
-                      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/15 bg-white/[0.05] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] mb-5">
-                        <span className="w-2 h-2 rounded-full bg-[#E53945] shadow-[0_0_14px_rgba(229,57,69,1)]" />
-                        <span className="text-[11px] font-bold uppercase tracking-[0.24em] text-white/80">Welcome to Trooflix</span>
-                      </div>
                       <h1 className="text-5xl xl:text-7xl font-black tracking-[-0.05em] text-white leading-[0.95] mb-5">
-                        Everything you want.
-                        <span className="block bg-clip-text text-transparent bg-gradient-to-r from-white via-[#ffd9dc] to-[#E53945]">One unstoppable platform.</span>
+                        An entire ecosystem.
+                        <span className="block bg-clip-text text-transparent bg-gradient-to-r from-white via-[#ffd9dc] to-[#E53945]">In one powerful platform.</span>
                       </h1>
                       <p className="text-lg xl:text-xl text-white/55 leading-relaxed max-w-2xl">
                         Create, stream, watch, message, sell, and build your world — with a premium all-in-one experience made to blow people away.
