@@ -1081,73 +1081,19 @@ function CreatorEconomicsHero() {
 }
 
 function HeroLatestShortPhone() {
-  const [short, setShort] = useState<any | null>(null);
-  const [creator, setCreator] = useState<any | null>(null);
-  const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    Promise.all([getCachedVideos().catch(() => []), getCachedCreators().catch(() => [])]).then(([vData, cData]) => {
-      if (cancelled) return;
-      const all = Array.isArray(vData) ? vData : [];
-      const creators = Array.isArray(cData) ? cData : [];
-      const latest = all
-        .filter((v: any) => ["short", "reel"].includes(String(v.type || "").toLowerCase()))
-        .sort((a: any, b: any) => Number(b.id) - Number(a.id))[0];
-      if (latest) {
-        setShort(latest);
-        const c = creators.find((x: any) => String(x.id) === String(latest.creatorId)) || null;
-        setCreator(c);
-      }
-      setLoaded(true);
-    }).catch(() => { if (!cancelled) setLoaded(true); });
-    return () => { cancelled = true; };
-  }, []);
-
-  const image = short?.posterUrl || short?.backdropUrl || "";
-  const name = creator?.name || "Creator";
-  const photo = creator?.photoUrl || "";
-  const desc = short?.description || short?.title || "Watch this exclusive clip on Trooflix.";
-  const views = short?.views ?? 0;
-
-  if (!loaded || !short || !image) {
-    return (
-      <>
-        <motion.div className="absolute inset-[-10%]" animate={{ y: [0, -18, 0], scale: [1.02, 1.06, 1.02] }} transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}>
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_25%,rgba(255,255,255,0.12),transparent_30%),linear-gradient(180deg,#1a1a22_0%,#0a0a0f_55%,#050507_100%)]" />
-          <div className="absolute inset-x-8 top-16 h-40 rounded-2xl bg-gradient-to-br from-white/10 to-white/[0.03] border border-white/10" />
-          <div className="absolute inset-x-8 top-60 h-20 rounded-2xl bg-white/[0.05] border border-white/10" />
-        </motion.div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
-        <div className="absolute left-1/2 top-3 h-1.5 w-20 -translate-x-1/2 rounded-full bg-white/15" />
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex flex-col gap-3">
-          {[1,2,3].map((i)=>(<div key={i} className="h-8 w-8 rounded-full border border-white/15 bg-black/30 backdrop-blur-md" />))}
-        </div>
-        <div className="absolute bottom-5 left-4 right-4">
-          <div className="mb-2 h-2 w-28 rounded-full bg-white/25" />
-          <div className="h-2 w-40 rounded-full bg-white/15" />
-        </div>
-      </>
-    );
-  }
-
   return (
     <>
-      <img src={image} alt={short?.title || "Latest short"} className="absolute inset-0 h-full w-full object-cover" />
+      <img src="/reelpic.jpg" alt="Shorts reel preview" className="absolute inset-0 h-full w-full object-cover" />
       <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/75" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
 
       <div className="absolute left-3 right-3 bottom-3 z-20 flex flex-col gap-2">
-        <p className="text-white text-[10px] leading-snug line-clamp-2 drop-shadow-md">{desc}</p>
+        <p className="text-white text-[10px] leading-snug line-clamp-2 drop-shadow-md">Watch this exclusive clip on Trooflix.</p>
         <div className="flex items-center gap-2">
           <div className="h-6 w-6 rounded-full overflow-hidden border border-white/20 bg-[#1c1c1e] shrink-0">
-            {photo ? (
-              <img src={photo} alt={name} className="h-full w-full object-cover" />
-            ) : (
-              <div className="h-full w-full flex items-center justify-center text-[9px] font-black text-white bg-gradient-to-br from-[#E53945] to-[#8a1e26]">{String(name).charAt(0).toUpperCase()}</div>
-            )}
+            <div className="h-full w-full flex items-center justify-center text-[9px] font-black text-white bg-gradient-to-br from-[#E53945] to-[#8a1e26]">T</div>
           </div>
-          <span className="text-white text-[10px] font-semibold drop-shadow-md truncate max-w-[90px]">{name}</span>
+          <span className="text-white text-[10px] font-semibold drop-shadow-md truncate max-w-[90px]">Creator</span>
           <span className="ml-0.5 px-2 py-0.5 text-[8px] font-bold rounded-md bg-white/20 border border-white/30 text-white backdrop-blur-sm">Follow</span>
         </div>
         <div className="flex items-center justify-between gap-1 text-white/95">
@@ -1163,7 +1109,7 @@ function HeroLatestShortPhone() {
           </div>
           <div className="flex items-center gap-1 text-white/90">
             <Eye size={12} strokeWidth={2.2} />
-            <span className="text-[9px] font-extrabold tracking-tight">{views}</span>
+            <span className="text-[9px] font-extrabold tracking-tight">0</span>
           </div>
         </div>
         <div className="mt-0.5 h-[2px] w-full rounded-full bg-white/20 overflow-hidden">
