@@ -414,46 +414,50 @@ export default function Home() {
 
                 </div>
               </div>
+              {/* FEATURES HEROES (DESKTOP SIGNED-OUT) */}
+              <div className="hidden lg:block w-full">
+                {[
+                  { title: "Keep 99% of", accent: "Revenue.", desc: "A flat 1% fee. No hidden cuts, no demonetization. You earn it, you keep it.", img: "https://images.unsplash.com/photo-1621761191319-c6fb62004040?q=80&w=2000&auto=format&fit=crop" },
+                  { title: "Zero", accent: "Censorship.", desc: "No shadowbans. No algorithmic suppression. Your audience gets your content. Only 2 rules: no adult content, no AI slop.", img: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=2000&auto=format&fit=crop" },
+                  { title: "Live", accent: "Streaming.", desc: "Broadcast-quality WebRTC live streams with multi-guest support. Go live and connect in real time.", img: "https://images.unsplash.com/photo-1470229722913-7ea0a4e88db9?q=80&w=2000&auto=format&fit=crop" },
+                  { title: "Watch on", accent: "TV.", desc: "Stream your favourite podcasts and documentaries directly on your Smart TV or Fire Stick for a cinematic experience.", img: "https://images.unsplash.com/photo-1593784991095-a205069470b6?q=80&w=2000&auto=format&fit=crop" },
+                  { title: "TrooCoins", accent: "Economy.", desc: "Tip creators, buy merch, and manage your funds with our built-in wallet — all in one ecosystem.", img: "https://images.unsplash.com/photo-1621504450181-5d356f61d307?q=80&w=2000&auto=format&fit=crop" },
+                  { title: "Built-in", accent: "Storefront.", desc: "Sell merch, books, and digital goods directly on your profile and turn your audience into customers.", img: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=2000&auto=format&fit=crop" },
+                ].map((feat, i) => (
+                  <section key={i} className="relative w-full min-h-[100vh] overflow-hidden bg-[#08090c] flex items-center">
+                    <motion.img
+                      src={feat.img}
+                      alt=""
+                      className="absolute inset-0 h-full w-full object-cover"
+                      initial={{ scale: 1.08, opacity: 0.35 }}
+                      whileInView={{ scale: 1, opacity: 0.55 }}
+                      viewport={{ once: false, amount: 0.35 }}
+                      transition={{ duration: 1.2, ease: "easeOut" }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-black/15" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a0303] via-transparent to-transparent" />
+                    <motion.div
+                      className="relative z-10 w-full lg:w-1/2 px-8 xl:px-16 lg:pl-24 max-w-4xl"
+                      initial={{ opacity: 0, y: 40 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: false, amount: 0.4 }}
+                      transition={{ duration: 0.8, ease: "easeOut" }}
+                    >
+                      <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/50 mb-5">Feature {i + 1} of 6</p>
+                      <h2 className="text-[52px] xl:text-[68px] 2xl:text-[80px] font-black tracking-tighter text-white leading-[1.02] mb-6">
+                        {feat.title} <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#E53945] to-orange-500">{feat.accent}</span>
+                      </h2>
+                      <p className="text-base xl:text-lg text-white/60 leading-relaxed font-medium max-w-2xl">
+                        {feat.desc}
+                      </p>
+                    </motion.div>
+                  </section>
+                ))}
+              </div>
             </>
           )}
 
           {showingFiltered && <div className="h-20 md:h-24" />}
-
-          
-                        {/* FEATURES SHOWCASE (DESKTOP SIGNED-OUT) */}
-      <div className="hidden lg:block w-full bg-[#0a0303] py-16">
-        <div className="max-w-[1600px] mx-auto px-12 mb-8 flex items-end justify-between">
-          <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[#E53945] mb-3">Our Best Features</p>
-            <h2 className="text-4xl xl:text-5xl font-black tracking-tight text-white">Built for creators who want more</h2>
-          </div>
-          <p className="text-sm text-white/40">Swipe to explore →</p>
-        </div>
-        <div className="flex overflow-x-auto snap-x snap-mandatory gap-6 px-12 pb-4 scrollbar-hide scroll-smooth">
-          {[
-            { icon: Landmark, title: "Keep 99% of Revenue", desc: "A flat 1% fee. No hidden cuts, no demonetization. You earn it, you keep it.", img: "https://images.unsplash.com/photo-1621761191319-c6fb62004040?q=80&w=1600&auto=format&fit=crop" },
-            { icon: ShieldOff, title: "Zero Censorship", desc: "No shadowbans. No algorithmic suppression. Your audience gets your content. Only 2 rules: no adult content, no AI slop.", img: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=1600&auto=format&fit=crop" },
-            { icon: Radio, title: "Live Streaming", desc: "Broadcast-quality WebRTC live streams with multi-guest support. Go live and connect in real time.", img: "https://images.unsplash.com/photo-1470229722913-7ea0a4e88db9?q=80&w=1600&auto=format&fit=crop" },
-            { icon: Tv, title: "Watch on TV", desc: "Stream your favourite podcasts and documentaries directly on your Smart TV or Fire Stick for a cinematic experience.", img: "https://images.unsplash.com/photo-1593784991095-a205069470b6?q=80&w=1600&auto=format&fit=crop" },
-            { icon: Wallet, title: "TrooCoins Economy", desc: "Tip creators, buy merch, and manage your funds with our built-in wallet — all in one ecosystem.", img: "https://images.unsplash.com/photo-1621504450181-5d356f61d307?q=80&w=1600&auto=format&fit=crop" },
-            { icon: ShoppingBag, title: "Built-in Storefront", desc: "Sell merch, books, and digital goods directly on your profile and turn your audience into customers.", img: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=1600&auto=format&fit=crop" },
-          ].map((feat, i) => (
-            <div key={i} className="snap-center shrink-0 w-[min(88vw,1100px)] h-[70vh] min-h-[520px] relative overflow-hidden rounded-[36px] border border-white/10 bg-[#0f0f12] shadow-[0_30px_100px_rgba(0,0,0,0.55)] group">
-              <img src={feat.img} alt="" className="absolute inset-0 h-full w-full object-cover opacity-45 transition-transform duration-700 group-hover:scale-[1.03]" />
-              <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-black/20" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-              <div className="relative h-full flex flex-col justify-end p-10 xl:p-14 max-w-3xl">
-                <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 flex items-center justify-center text-[#E53945] mb-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
-                  <feat.icon size={30} />
-                </div>
-                <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/50 mb-3">Feature {i + 1} of 6</p>
-                <h3 className="text-4xl xl:text-6xl font-black tracking-tight text-white mb-4 leading-[1.02]">{feat.title}</h3>
-                <p className="text-lg xl:text-xl text-white/70 leading-relaxed max-w-2xl">{feat.desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
 
               </>)}
 
