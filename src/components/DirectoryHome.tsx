@@ -181,14 +181,13 @@ export function FeaturedVideoHero({ videos, onSelect, className = "" }: { videos
   const previewSrc = video.videoUrl || video.bitchuteUrl;
 
   return (
-    <section aria-label="Featured videos" className={`relative isolate h-[42vh] min-h-[240px] max-h-[420px] overflow-hidden bg-[#08090c] md:h-[min(34vh,310px)] md:min-h-[220px] md:max-h-[310px] ${className || "-mx-4 md:-mx-10"}`}>
+    <section aria-label="Featured videos" className={`relative isolate max-md:-mt-[env(safe-area-inset-top)] max-md:h-[calc(42vh+env(safe-area-inset-top))] max-md:min-h-[calc(240px+env(safe-area-inset-top))] max-md:max-h-[calc(420px+env(safe-area-inset-top))] h-[42vh] min-h-[240px] max-h-[420px] overflow-hidden bg-[#08090c] md:mt-0 md:h-[min(34vh,310px)] md:min-h-[220px] md:max-h-[310px] ${className || "-mx-4 md:-mx-10"}`}>
       <AnimatePresence mode="wait">
         <motion.div key={video.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.7 }} className="absolute inset-0 -z-20">
           <HeroPreviewFrame src={previewSrc} poster={image} alt={video.title || ""} />
         </motion.div>
       </AnimatePresence>
-      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-r from-[#08090c] via-[#08090c]/75 to-transparent md:via-[#08090c]/50" />
-      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-[#08090c] via-[#08090c]/20 to-transparent" />
+      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-[#08090c] via-[#08090c]/25 to-transparent" />
 
       <div className="flex h-full max-w-7xl flex-col justify-end px-5 pb-6 pt-24 md:mx-auto md:px-12 md:pb-8 md:pt-28">
         <AnimatePresence mode="wait">
