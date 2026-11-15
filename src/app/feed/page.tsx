@@ -188,8 +188,8 @@ export default function ShortsFeedPage() {
 
       {/* Shared mobile bottom action bar (always visible) */}
       {activeVideo && (
-        <div className="lg:hidden fixed inset-x-0 bottom-0 z-[260] pointer-events-auto border-t border-white/10 bg-[#070709]">
-          <div className="flex items-center justify-around px-4 pt-1 pb-[calc(env(safe-area-inset-bottom)+4px)]">
+        <div className="lg:hidden fixed inset-x-0 bottom-2 z-[260] pointer-events-auto bg-transparent">
+          <div className="flex items-center justify-around px-4 pt-1 pb-[calc(env(safe-area-inset-bottom)+10px)]">
             <div className="flex items-center justify-center min-w-0 flex-1 text-white">
               <LikeButton key={activeVideo.id} videoId={activeVideo.id} size={30} showCount={true} stacked={false} />
             </div>

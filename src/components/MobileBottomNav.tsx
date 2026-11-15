@@ -73,6 +73,7 @@ export default function MobileBottomNav() {
   const profileActive = pathname === "/creator-dashboard" || pathname.startsWith("/creator-dashboard/") || pathname.startsWith("/profile/");
 
   const isFeed = pathname === "/feed" || pathname.startsWith("/feed/");
+  if (isFeed) return null;
 
   return (
     <nav className={`lg:hidden fixed inset-x-0 z-[250] ${isFeed ? "bottom-2 border-t-0 bg-transparent" : "bottom-0 border-t border-white/10 bg-[#070709]"}`}>
