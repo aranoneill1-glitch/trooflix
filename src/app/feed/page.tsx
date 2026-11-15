@@ -260,7 +260,7 @@ export default function ShortsFeedPage() {
       </Link>
       
       {/* MOBILE VIEW */}
-      <div className="lg:hidden w-full h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide relative bg-black pb-[calc(env(safe-area-inset-bottom)+72px)]">
+      <div className="lg:hidden w-full h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide relative bg-black pb-[calc(env(safe-area-inset-bottom)+62px)]">
         {videos.map((video) => {
           const creator = creators.find((c) => String(c.id) === String(video.creatorId)) || null;
           return (
@@ -285,125 +285,45 @@ export default function ShortsFeedPage() {
           videoId={commentSheetVideoId}
           open={commentSheetVideoId !== null}
           onClose={() => setCommentSheetVideoId(null)}
-          hideComposer
         />
       </div>
 
-      {/* Mobile shorts bottom UI: comment bar + vertical actions */}
+      {/* Shared mobile bottom action bar (always visible) */}
       {activeVideo && (
-        <>
-          <div
-            className="lg:hidden fixed right-3 z-[420] pointer-events-auto flex flex-col items-center gap-4"
-            style={{ bottom: commentSheetVideoId ? "calc(75dvh + env(safe-area-inset-bottom) + 10px)" : "calc(env(safe-area-inset-bottom) + 86px)" }}
-          >
-            <div className="flex flex-col items-center text-white drop-shadow-lg">
-              <LikeButton key={activeVideo.id} videoId={activeVideo.id} size={30} showCount={true} stacked={true} />
+        <div className="lg:hidden fixed inset-x-0 bottom-2 z-[260] pointer-events-auto bg-transparent">
+          <div className="flex items-center justify-around px-4 pt-1 pb-[calc(env(safe-area-inset-bottom)+10px)]">
+            <div className="flex items-center justify-center min-w-0 flex-1 text-white">
+              <LikeButton key={activeVideo.id} videoId={activeVideo.id} size={30} showCount={true} stacked={false} />
             </div>
+
+            <button
+              onClick={() => setCommentSheetVideoId(activeVideo.id)}
+              aria-label="Open comments"
+              className="flex items-center justify-center gap-1.5 min-w-0 flex-1 text-white hover:text-white/90 transition"
+            >
+              <MessageCircle size={30} strokeWidth={2.2} className="text-white/90" />
+              <span className="text-[13px] font-extrabold tracking-tight">{(commentCounts[activeVideo.id] ?? (commentCounts as any)[String(activeVideo.id)] ?? 0) || 0}</span>
+            </button>
 
             <button
               onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: activeVideo.creatorId, videoId: activeVideo.id } }))}
               aria-label="Tip creator"
-              className="flex flex-col items-center text-white drop-shadow-lg hover:text-white/90 transition"
+              className="flex items-center justify-center min-w-0 flex-1 text-white hover:text-white/90 transition"
             >
-              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="text-white/95">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="text-white/90">
                 <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
                 <circle cx="12" cy="12" r="6.6" stroke="currentColor" strokeWidth="1.2" opacity="0.75" />
                 <path d="M10.2 5.8L9.4 3.9M13.8 5.8L14.6 3.9M10.2 18.2L9.4 20.1M13.8 18.2L14.6 20.1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.9" />
                 <text x="12" y="15" textAnchor="middle" fontSize="7.2" fontWeight="800" fill="currentColor" fontFamily="system-ui, -apple-system, sans-serif">TC</text>
               </svg>
-              <span className="text-[11px] font-bold mt-0.5">Tip</span>
             </button>
 
-            <div className="flex flex-col items-center text-white drop-shadow-lg">
-              <Eye size={28} strokeWidth={2.2} className="text-white/95" />
-              <span className="text-[11px] font-bold mt-0.5">{(viewCounts[activeVideo.id] ?? Number((activeVideo as any).views || 0)) || 0}</span>
+            <div className="flex items-center justify-center gap-1.5 min-w-0 flex-1 text-white">
+              <Eye size={30} strokeWidth={2.2} className="text-white/90" />
+              <span className="text-[13px] font-extrabold tracking-tight">{(viewCounts[activeVideo.id] ?? Number((activeVideo as any).views || 0)) || 0}</span>
             </div>
           </div>
-
-          <div
-            className="lg:hidden fixed inset-x-0 z-[420] px-3 pt-2 pointer-events-auto"
-            style={{ bottom: commentSheetVideoId ? "calc(75dvh + env(safe-area-inset-bottom) + 4px)" : "calc(env(safe-area-inset-bottom) + 12px)" }}
-          >
-            <div className="flex items-center gap-2 rounded-full bg-[#111]/85 border border-white/15 backdrop-blur-md px-3 py-1.5 shadow-lg">
-              <button
-                onClick={() => setCommentSheetVideoId(activeVideo.id)}
-                className="w-8 h-8 flex items-center justify-center text-white/80 hover:text-white shrink-0"
-                aria-label="Open comments"
-                type="button"
-              >
-                <MessageCircle size={20} />
-              </button>
-              <input
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                onFocus={() => {}}
-                placeholder={composerUser ? "Add a comment..." : "Sign in to comment"}
-                disabled={!composerUser || commentSubmitting}
-                className="flex-1 min-w-0 bg-transparent outline-none text-sm text-white placeholder:text-white/45 disabled:opacity-60"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    submitShortComment();
-                  }
-                }}
-              />
-              <button
-                type="button"
-                onClick={() => commentFileInputRef.current?.click()}
-                disabled={!composerUser || commentUploading}
-                className="w-8 h-8 flex items-center justify-center text-white/75 hover:text-white disabled:opacity-40 shrink-0"
-                aria-label="Add image"
-              >
-                {commentUploading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <ImageIcon size={18} />}
-              </button>
-              <button
-                type="button"
-                onClick={() => composerUser && setCommentGifOpen(true)}
-                disabled={!composerUser}
-                className="shrink-0 border border-white/35 rounded-md px-1.5 py-0.5 text-[10px] font-black tracking-tight text-white/80 hover:text-white hover:border-white transition disabled:opacity-40"
-                aria-label="Add GIF"
-              >
-                GIF
-              </button>
-              {commentText.trim() ? (
-                <button
-                  type="button"
-                  onClick={() => submitShortComment()}
-                  disabled={commentSubmitting || !composerUser}
-                  className="w-8 h-8 flex items-center justify-center text-red-400 hover:text-red-300 disabled:opacity-40 shrink-0"
-                  aria-label="Post comment"
-                >
-                  <Send size={16} />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setCommentSheetVideoId(activeVideo.id)}
-                  className="text-xs font-semibold text-white/60 px-1 shrink-0"
-                  aria-label="Open comments"
-                >
-                  {(commentCounts[activeVideo.id] ?? (commentCounts as any)[String(activeVideo.id)] ?? 0) || 0}
-                </button>
-              )}
-            </div>
-            <input
-              ref={commentFileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) uploadShortCommentImage(f);
-              }}
-            />
-          </div>
-
-          <GifPicker
-            open={commentGifOpen}
-            onClose={() => setCommentGifOpen(false)}
-            onPick={(url) => submitShortMedia(url)}
-          />
-        </>
+        </div>
       )}
 
       {/* DESKTOP VIEW */}
