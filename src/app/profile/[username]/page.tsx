@@ -119,6 +119,19 @@ export default function PublicProfilePage() {
               return matchesUploader || matchesCreator;
             });
           setVideos(creatorVideos);
+          const hasShorts = creatorVideos.some((v: any) => ["short", "reel"].includes(String(v.type || "").toLowerCase()));
+          const hasVideos = creatorVideos.some((v: any) => {
+            const t = String(v.type || "").toLowerCase();
+            return t !== "tweet" && t !== "short" && t !== "reel" && v.visibility !== "premium";
+          });
+          const hasPremium = creatorVideos.some((v: any) => {
+            const t = String(v.type || "").toLowerCase();
+            return v.visibility === "premium" && t !== "tweet" && t !== "short" && t !== "reel";
+          });
+          if (!hasShorts) {
+            if (hasVideos) setActiveContentTab("Videos");
+            else if (hasPremium) setActiveContentTab("Premium");
+          }
         }
       } catch (err) {}
 
