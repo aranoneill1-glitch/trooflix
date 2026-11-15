@@ -654,6 +654,7 @@ export default function Home() {
         videos={videos}
         creators={creators}
         featuredVideos={!user ? [] : showingFiltered ? [] : featuredHeroVideos.length > 0 ? featuredHeroVideos : heroPool}
+        continueWatching={!user ? [] : continueWatching}
         onVideoSelect={handleCardSelect}
       />
         <div className="hidden relative z-10 pt-0 md:pt-2 pb-32 md:pb-20 space-y-2 md:space-y-6">
