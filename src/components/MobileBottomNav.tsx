@@ -75,8 +75,8 @@ export default function MobileBottomNav() {
   const isFeed = pathname === "/feed" || pathname.startsWith("/feed/");
 
   return (
-    <nav className={`lg:hidden fixed inset-x-0 bottom-0 z-[250] border-t ${isFeed ? "border-white/10 bg-black/10 backdrop-blur-md" : "border-white/10 bg-[#070709]"}`}>
-      <div className="flex items-center justify-around px-2 pt-1 pb-[calc(env(safe-area-inset-bottom)+8px)]">
+    <nav className={`lg:hidden fixed inset-x-0 z-[250] ${isFeed ? "bottom-2 border-t-0 bg-transparent" : "bottom-0 border-t border-white/10 bg-[#070709]"}`}>
+      <div className={`flex items-center justify-around px-2 pt-1 ${isFeed ? "pb-[calc(env(safe-area-inset-bottom)+14px)]" : "pb-[calc(env(safe-area-inset-bottom)+8px)]"}`}>
         <Link href="/" className="flex flex-col items-center justify-center gap-0 min-w-0 flex-1 pt-1.5 pb-0">
           <Home size={22} className={isActive("/") ? "text-white" : "text-white/45"} />
           <span className={`text-[10px] font-medium ${isActive("/") ? "text-white" : "text-white/45"}`}>Home</span>
