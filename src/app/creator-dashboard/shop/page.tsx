@@ -347,7 +347,7 @@ function ManageShopContent() {
 
       {/* FORM MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[200] bg-black/80 flex items-center justify-center p-4">
           <div className="bg-[#1c1c1e] border border-white/10 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
             
             <div className="flex items-center justify-between p-6 border-b border-white/5">
@@ -368,7 +368,7 @@ function ManageShopContent() {
                   {imageUrl ? (
                     <>
                       <img src={imageUrl} alt="Preview" className="w-full h-full object-cover absolute inset-0" />
-                      <div className="absolute inset-0 bg-black/60 opacity-0 hover:opacity-100 flex flex-col items-center justify-center transition-opacity backdrop-blur-sm">
+                      <div className="absolute inset-0 bg-black/60 opacity-0 hover:opacity-100 flex flex-col items-center justify-center transition-opacity">
                         <ImageIcon size={24} className="text-white mb-2" />
                         <span className="text-sm font-bold text-white">Change Image</span>
                       </div>

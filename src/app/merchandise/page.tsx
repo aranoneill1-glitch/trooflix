@@ -156,7 +156,7 @@ export default function MerchandisePage() {
         
         <button
           onClick={() => router.back()}
-          className="absolute top-6 left-6 z-20 w-10 h-10 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-black/60 transition border border-white/10"
+          className="absolute top-6 left-6 z-20 w-10 h-10 bg-black/40 rounded-full flex items-center justify-center text-white hover:bg-black/60 transition border border-white/10"
         >
           <ArrowLeft size={20} />
         </button>
@@ -172,7 +172,7 @@ export default function MerchandisePage() {
           </div>
 
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full lg:w-auto">
-            <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md p-1.5 rounded-full border border-white/10">
+            <div className="flex items-center gap-2 bg-black/40 p-1.5 rounded-full border border-white/10">
               {(["Merchandise", "Books"] as const).map(tab => (
                 <button key={tab} onClick={() => setActiveTab(tab)} className={"px-5 py-2 rounded-full font-bold text-sm transition " + (activeTab === tab ? "bg-white text-black" : "text-white/70 hover:text-white hover:bg-white/10")}>{tab}</button>
               ))}
@@ -184,7 +184,7 @@ export default function MerchandisePage() {
                 placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-black/40 backdrop-blur-xl border border-white/20 rounded-full py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-white/50 focus:outline-none focus:border-[#E53945]/50 transition-all shadow-xl"
+                className="w-full bg-black/40 border border-white/20 rounded-full py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-white/50 focus:outline-none focus:border-[#E53945]/50 transition-all shadow-xl"
               />
             </div>
           </div>
@@ -259,7 +259,7 @@ export default function MerchandisePage() {
                   
                   {/* Like Button */}
                   <button 
-                    className={`absolute top-3 right-3 p-2 rounded-full shadow-md hover:scale-110 transition backdrop-blur-md ${wishlistedIds.includes(p.id) ? "bg-[#D4AF37] text-black" : "bg-black/40 text-white"}`} 
+                    className={`absolute top-3 right-3 p-2 rounded-full shadow-md hover:scale-110 transition ${wishlistedIds.includes(p.id) ? "bg-[#D4AF37] text-black" : "bg-black/40 text-white"}`} 
                     onClick={(e) => toggleWishlist(e, p.id)}
                   >
                     <Star size={16} fill={wishlistedIds.includes(p.id) ? "currentColor" : "none"} />
@@ -332,7 +332,7 @@ export default function MerchandisePage() {
       )}
 
       {selectedProduct && (
-        <div className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm" onClick={() => setSelectedProduct(null)}>
+        <div className="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center p-4" onClick={() => setSelectedProduct(null)}>
           <div className="bg-[#1c1c1e] border border-white/10 rounded-3xl w-full max-w-sm overflow-hidden flex flex-col relative shadow-2xl animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
             
             <button onClick={() => setSelectedProduct(null)} className="absolute top-3 right-3 z-10 p-1.5 bg-black/50 hover:bg-black/80 rounded-full text-white transition">

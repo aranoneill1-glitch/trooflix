@@ -340,7 +340,7 @@ export default function TVPage() {
               <button
                 data-tv-item
                 onClick={() => setSelected(hero)}
-                className="flex items-center gap-3 bg-white/20 backdrop-blur text-white font-bold px-8 py-3 rounded text-lg"
+                className="flex items-center gap-3 bg-white/20 text-white font-bold px-8 py-3 rounded text-lg"
               >
                 <Info size={22} /> More Info
               </button>
@@ -404,7 +404,7 @@ export default function TVPage() {
                   <button
                     data-tv-item
                     onClick={() => setSelected(null)}
-                    className="flex items-center gap-3 bg-white/20 backdrop-blur text-white font-bold px-8 py-3 rounded text-lg"
+                    className="flex items-center gap-3 bg-white/20 text-white font-bold px-8 py-3 rounded text-lg"
                   >
                     <X size={22} /> Close
                   </button>

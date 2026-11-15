@@ -150,14 +150,14 @@ export default function TopBar({ onMenu }: Props) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowCreateMenu(false)}
-              className="fixed inset-0 z-[300] bg-black/50 backdrop-blur-md"
+              className="fixed inset-0 z-[300] bg-black/50"
             />
             <motion.div
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed bottom-0 left-0 right-0 z-[301] bg-white/10 backdrop-blur-2xl backdrop-saturate-150 rounded-t-[32px] border-t border-white/20 p-6 pb-28 lg:max-w-md lg:mx-auto lg:rounded-[32px] lg:bottom-10 shadow-[0_-20px_60px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.18)] max-h-[85vh] overflow-y-auto"
+              className="fixed bottom-0 left-0 right-0 z-[301] bg-white/10 backdrop-saturate-150 rounded-t-[32px] border-t border-white/20 p-6 pb-28 lg:max-w-md lg:mx-auto lg:rounded-[32px] lg:bottom-10 shadow-[0_-20px_60px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.18)] max-h-[85vh] overflow-y-auto"
             >
               <div className="w-12 h-1.5 bg-white/25 rounded-full mx-auto mb-6 lg:hidden" />
               <div className="flex items-center justify-between mb-6">

@@ -92,7 +92,7 @@ export default function SearchResults({
                   </p>
                 </div>
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                  <div className="bg-white/20 backdrop-blur rounded-full p-3">
+                  <div className="bg-white/20 rounded-full p-3">
                     <Play size={22} fill="white" className="text-white" />
                   </div>
                 </div>

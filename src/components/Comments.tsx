@@ -565,7 +565,7 @@ export default function Comments({ videoId, onMetaChange, variant = "default" }:
                 <User size={18} className="text-white/50" />
               )}
             </div>
-            <div className={`flex-1 flex items-center gap-2 ${variant === "chat" ? "bg-[#1c1c1e] border border-white/10 rounded-full pl-4 pr-2 py-2" : "bg-white/10 backdrop-blur-md border border-white/20 rounded-full pl-3 md:pl-4 pr-2 py-1.5 md:py-2 focus-within:border-white/40 transition shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]"}`}>
+            <div className={`flex-1 flex items-center gap-2 ${variant === "chat" ? "bg-[#1c1c1e] border border-white/10 rounded-full pl-4 pr-2 py-2" : "bg-white/10 border border-white/20 rounded-full pl-3 md:pl-4 pr-2 py-1.5 md:py-2 focus-within:border-white/40 transition shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]"}`}>
               <textarea
                 value={text}
                 onChange={(e) => setText(e.target.value)}

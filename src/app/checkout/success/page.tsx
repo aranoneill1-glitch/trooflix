@@ -18,7 +18,7 @@ function SuccessContent() {
     <div className="min-h-screen bg-[#0a0a0c] text-white flex items-center justify-center p-4">
       <motion.div 
         initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: "spring", damping: 20, stiffness: 100 }}
-        className="max-w-md w-full bg-[#0f0f12]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 text-center shadow-[0_0_50px_-12px_rgba(34,197,94,0.3)]"
+        className="max-w-md w-full bg-[#0f0f12]/80 border border-white/10 rounded-3xl p-8 text-center shadow-[0_0_50px_-12px_rgba(34,197,94,0.3)]"
       >
         <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: "spring", stiffness: 200, damping: 15 }} className="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
           <CheckCircle2 size={48} className="text-green-400" />

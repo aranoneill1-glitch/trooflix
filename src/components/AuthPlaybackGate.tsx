@@ -17,7 +17,7 @@ export default function AuthPlaybackGate({
 
   return (
     <div
-      className="fixed inset-0 z-[999] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4"
+      className="fixed inset-0 z-[999] bg-black/95 flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div

@@ -204,7 +204,7 @@ export default function ManageContentPage() {
             </Link>
             <h1 className="text-3xl font-black tracking-tight">Manage Content</h1>
           </div>
-          <button onClick={() => setShowAddContentMenu(true)} className="flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-white font-bold text-xs sm:text-sm px-4 py-2 sm:px-5 sm:py-2.5 rounded-full transition-all whitespace-nowrap shadow-lg shrink-0">
+          <button onClick={() => setShowAddContentMenu(true)} className="flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs sm:text-sm px-4 py-2 sm:px-5 sm:py-2.5 rounded-full transition-all whitespace-nowrap shadow-lg shrink-0">
             <Plus size={16} className="text-[#E53945]" /> Upload New
           </button>
         </div>
@@ -316,13 +316,13 @@ export default function ManageContentPage() {
                   <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
                   
                   {/* Type Badge */}
-                  <div className={`absolute top-3 left-3 text-white text-[10px] font-bold px-2 py-1 rounded-md backdrop-blur-md ${video.type?.toLowerCase() === 'podcast' ? 'bg-blue-500/80' : 'bg-[#E53945]/80'}`}>
+                  <div className={`absolute top-3 left-3 text-white text-[10px] font-bold px-2 py-1 rounded-md ${video.type?.toLowerCase() === 'podcast' ? 'bg-blue-500/80' : 'bg-[#E53945]/80'}`}>
                     {video.type?.toUpperCase() || "VIDEO"}
                   </div>
 
                   {/* Duration */}
                   {video.duration && (
-                    <div className="absolute bottom-3 right-3 bg-black/80 px-2 py-0.5 rounded text-[11px] font-bold text-white backdrop-blur-sm">
+                    <div className="absolute bottom-3 right-3 bg-black/80 px-2 py-0.5 rounded text-[11px] font-bold text-white">
                       {video.duration}
                     </div>
                   )}
@@ -448,7 +448,7 @@ export default function ManageContentPage() {
 
       
       {editingVideo && (
-        <div className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[200] bg-black/80 flex items-center justify-center p-4">
           <div className="bg-[#1c1c1e] border border-white/10 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between p-6 border-b border-white/5">
               <h2 className="text-xl font-bold">Edit Video</h2>
@@ -510,14 +510,14 @@ export default function ManageContentPage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowAddContentMenu(false)}
-              className="fixed inset-0 z-[300] bg-black/50 backdrop-blur-md"
+              className="fixed inset-0 z-[300] bg-black/50"
             />
             <motion.div
               initial={{ y: "100%", opacity: 0, scale: 0.98 }}
               animate={{ y: 0, opacity: 1, scale: 1 }}
               exit={{ y: "100%", opacity: 0, scale: 0.98 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed bottom-0 left-0 right-0 z-[301] bg-white/10 backdrop-blur-2xl backdrop-saturate-150 rounded-t-[32px] border-t border-white/20 p-6 pb-28 lg:max-w-md lg:mx-auto lg:rounded-[32px] lg:bottom-10 shadow-[0_-20px_60px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.18)] max-h-[85vh] overflow-y-auto"
+              className="fixed bottom-0 left-0 right-0 z-[301] bg-white/10 backdrop-saturate-150 rounded-t-[32px] border-t border-white/20 p-6 pb-28 lg:max-w-md lg:mx-auto lg:rounded-[32px] lg:bottom-10 shadow-[0_-20px_60px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.18)] max-h-[85vh] overflow-y-auto"
             >
               <div className="w-12 h-1.5 bg-white/25 rounded-full mx-auto mb-6 lg:hidden" />
               

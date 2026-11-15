@@ -213,7 +213,7 @@ export default function ShortsFeedPage() {
 
         {/* 3. Middle: Control Dock (10%) */}
         <div className="w-[10%] h-full flex items-center justify-center shrink-0">
-          <div className="bg-[#1c1c1e]/80 backdrop-blur-xl border border-white/10 rounded-full py-6 px-3 flex flex-col items-center gap-6 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+          <div className="bg-[#1c1c1e]/80 border border-white/10 rounded-full py-6 px-3 flex flex-col items-center gap-6 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
             <button onClick={scrollUp} className="w-12 h-12 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 rounded-full transition">
               <ChevronUp size={28} />
             </button>
@@ -761,13 +761,13 @@ function MobileVideoShort({ video, creator, onViewCounted, isMuted, onToggleMute
 
       {showPlayIcon && (
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 pointer-events-none">
-          <div className="w-20 h-20 bg-black/50 backdrop-blur-md rounded-full flex items-center justify-center">
+          <div className="w-20 h-20 bg-black/50 rounded-full flex items-center justify-center">
             {isPlaying ? <Pause size={40} className="text-white" fill="currentColor" /> : <Play size={40} className="text-white ml-2" fill="currentColor" />}
           </div>
           <button
             onClick={(e) => { e.stopPropagation(); onToggleMute(); }}
             aria-label={isMuted ? "Unmute reel" : "Mute reel"}
-            className="pointer-events-auto w-12 h-12 rounded-full bg-black/50 backdrop-blur-md border border-white/15 flex items-center justify-center text-white"
+            className="pointer-events-auto w-12 h-12 rounded-full bg-black/50 border border-white/15 flex items-center justify-center text-white"
           >
             {isMuted ? <VolumeX size={22} strokeWidth={2.2} /> : <Volume2 size={22} strokeWidth={2.2} />}
           </button>
@@ -806,7 +806,7 @@ function MobileVideoShort({ video, creator, onViewCounted, isMuted, onToggleMute
           <button 
             onClick={handleFollow} 
             disabled={isSubmittingFollow}
-            className={`ml-1 px-3 py-1 text-xs font-bold rounded-md transition backdrop-blur-sm border ${isFollowing ? "bg-white/10 border-white/20 text-white" : "bg-white/20 border-white/30 text-white hover:bg-white/30"} ${isSubmittingFollow ? "opacity-50 cursor-wait" : ""}`}
+            className={`ml-1 px-3 py-1 text-xs font-bold rounded-md transition border ${isFollowing ? "bg-white/10 border-white/20 text-white" : "bg-white/20 border-white/30 text-white hover:bg-white/30"} ${isSubmittingFollow ? "opacity-50 cursor-wait" : ""}`}
           >
             {isFollowing ? "Following" : "Follow"}
           </button>

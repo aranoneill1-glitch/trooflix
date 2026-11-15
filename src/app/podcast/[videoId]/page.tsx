@@ -162,7 +162,7 @@ export default function WatchPage() {
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition flex items-center justify-center">
-                    <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center group-hover:scale-110 transition">
+                    <div className="w-20 h-20 rounded-full bg-white/20 border border-white/30 flex items-center justify-center group-hover:scale-110 transition">
                       <Play size={36} fill="white" className="text-white ml-1" />
                     </div>
                   </div>

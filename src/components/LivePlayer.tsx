@@ -110,14 +110,14 @@ export default function LivePlayer({ whepUrl, liveInputId }: { whepUrl?: string,
         
         {/* Connecting Overlay */}
         {isConnecting && (
-          <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/90 backdrop-blur-sm pointer-events-none">
+          <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/90 pointer-events-none">
             <Loader2 className="animate-spin text-[#E53945] mb-3" size={40} />
             <p className="text-white font-bold text-lg">Connecting...</p>
           </div>
         )}
 
         <div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/60 to-transparent pointer-events-none flex justify-end items-start z-10">
-          <div className="bg-black/40 backdrop-blur-md border border-white/10 text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
+          <div className="bg-black/40 border border-white/10 text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
             <Eye size={14} /> {viewers}
           </div>
         </div>

@@ -133,7 +133,7 @@ export default function MyListPage() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-0 group-hover:opacity-100 transition" />
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                    <div className="bg-white/20 backdrop-blur rounded-full p-4">
+                    <div className="bg-white/20 rounded-full p-4">
                       <Play size={28} fill="white" className="text-white" />
                     </div>
                   </div>
@@ -193,7 +193,7 @@ export default function MyListPage() {
                   </button>
                   <button
                     onClick={() => setSelected(null)}
-                    className="flex items-center gap-2 bg-white/20 backdrop-blur text-white font-semibold px-6 py-3 rounded hover:bg-white/30 transition"
+                    className="flex items-center gap-2 bg-white/20 text-white font-semibold px-6 py-3 rounded hover:bg-white/30 transition"
                   >
                     <X size={20} /> Close
                   </button>

@@ -34,7 +34,7 @@ export default function CommentSheet({ videoId, open, onClose }: Props) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[400]"
+            className="fixed inset-0 bg-black/60 z-[400]"
             onClick={onClose}
           />
 
@@ -50,7 +50,7 @@ export default function CommentSheet({ videoId, open, onClose }: Props) {
             onDragEnd={(_, info) => {
               if (info.offset.y > 120 || info.velocity.y > 500) onClose();
             }}
-            className="fixed bottom-0 left-0 right-0 h-[75dvh] bg-black/60 backdrop-blur-2xl rounded-t-3xl z-[410] flex flex-col shadow-[0_-10px_40px_rgba(0,0,0,0.5)] border-t border-white/20"
+            className="fixed bottom-0 left-0 right-0 h-[75dvh] bg-black/60 rounded-t-3xl z-[410] flex flex-col shadow-[0_-10px_40px_rgba(0,0,0,0.5)] border-t border-white/20"
             style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
           >
             {/* Drag handle */}

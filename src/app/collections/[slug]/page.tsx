@@ -133,7 +133,7 @@ function Hero({ video, label, onPlay, onMore }: { video: Video; label: string; o
           <button onClick={onPlay} className="flex items-center gap-2 bg-white text-black font-bold px-6 md:px-8 py-2.5 md:py-3 rounded hover:bg-white/80 transition">
             <Play size={20} fill="black" /> Play
           </button>
-          <button onClick={onMore} className="flex items-center gap-2 bg-white/20 backdrop-blur text-white font-semibold px-5 md:px-7 py-2.5 md:py-3 rounded hover:bg-white/30 transition">
+          <button onClick={onMore} className="flex items-center gap-2 bg-white/20 text-white font-semibold px-5 md:px-7 py-2.5 md:py-3 rounded hover:bg-white/30 transition">
             <Info size={20} /> More Info
           </button>
         </div>

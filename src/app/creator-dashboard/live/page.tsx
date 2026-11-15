@@ -440,7 +440,7 @@ export default function GoLivePage() {
       <audio ref={guestAudioRef} autoPlay className="hidden" />
 
       {showProductMenu && (
-        <div className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[9999] bg-black/80 flex items-center justify-center p-4">
           <div className="bg-[#1c1c1e] border border-white/10 rounded-3xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden shadow-2xl">
             <div className="p-4 border-b border-white/10 flex justify-between items-center bg-white/5">
               <h3 className="text-lg font-bold text-white flex items-center gap-2"><ShoppingBag size={20} className="text-[#E53945]"/> Showcase a Product</h3>
@@ -486,7 +486,7 @@ export default function GoLivePage() {
             )}
 
             {/* Top Left Overlay */}
-            <div className="absolute top-4 left-4 z-20 flex items-center gap-3 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 shadow-lg">
+            <div className="absolute top-4 left-4 z-20 flex items-center gap-3 bg-black/40 px-3 py-1.5 rounded-full border border-white/10 shadow-lg">
               <div className="w-8 h-8 rounded-full bg-[#E53945] flex items-center justify-center text-sm font-bold text-white border border-white/20">
                 {isLive ? "L" : "P"}
               </div>
@@ -503,13 +503,13 @@ export default function GoLivePage() {
 
             {/* Guest Connected Overlay */}
             {guestConnected && (
-              <div className="absolute top-4 right-4 z-20 bg-green-500/20 border border-green-500/50 text-green-400 text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-2 shadow-lg backdrop-blur-md">
+              <div className="absolute top-4 right-4 z-20 bg-green-500/20 border border-green-500/50 text-green-400 text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-2 shadow-lg">
                 <UserCheck size={14} /> {connectedGuestName || "Guest"} Connected
               </div>
             )}
 
             {/* Floating Bottom Controls (Desktop) */}
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 hidden lg:flex items-center gap-3 bg-black/60 backdrop-blur-xl border border-white/10 p-2 rounded-full shadow-2xl">
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 hidden lg:flex items-center gap-3 bg-black/60 border border-white/10 p-2 rounded-full shadow-2xl">
               <button onClick={toggleMute} className={`w-12 h-12 rounded-full flex items-center justify-center transition ${isMuted ? "bg-red-500/20 text-red-500" : "bg-white/10 hover:bg-white/20 text-white"}`}>
                 {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
               </button>

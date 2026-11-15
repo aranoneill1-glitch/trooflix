@@ -455,16 +455,16 @@ export default function ThreadPage() {
     <main className={`fixed inset-0 h-[100dvh] pt-[calc(env(safe-area-inset-top)+56px)] pb-[72px] text-white flex flex-col overflow-hidden ${profileBackdrop ? "bg-transparent" : "bg-black"}`}>
       {bgStyle && (
         <div className="fixed inset-0 z-0" style={bgStyle as any}>
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+          <div className="absolute inset-0 bg-black/60" />
         </div>
       )}
       <div className="relative z-10 flex flex-col h-full overflow-hidden">
       <TopBar />
-      <div className={`flex-shrink-0 border-b border-white/5 px-3 pt-8 md:px-6 ${profileBackdrop ? "bg-black/20 backdrop-blur-md" : "bg-black"}`}>
+      <div className={`flex-shrink-0 border-b border-white/5 px-3 pt-8 md:px-6 ${profileBackdrop ? "bg-black/20" : "bg-black"}`}>
         <div className="mx-auto w-full max-w-5xl"><CreatorStudioNav active="chat" className="mb-2" /></div>
       </div>
       {/* Header — white bar */}
-      <header className={`flex-shrink-0 border-b border-white/10 ${profileBackdrop ? "bg-black/20 backdrop-blur-md" : "bg-black"}`}>
+      <header className={`flex-shrink-0 border-b border-white/10 ${profileBackdrop ? "bg-black/20" : "bg-black"}`}>
         <div className="flex items-center gap-3 px-3 py-2.5 md:px-6">
           <button
             onClick={() => router.push("/messages")}
@@ -665,7 +665,7 @@ export default function ThreadPage() {
                             className="rounded-2xl max-w-full max-h-72 object-cover block"
                             loading="lazy"
                           />
-                          <span className="absolute bottom-2 right-2 inline-flex items-center gap-1 text-[10px] text-white bg-black/55 backdrop-blur-sm px-1.5 py-0.5 rounded-md">
+                          <span className="absolute bottom-2 right-2 inline-flex items-center gap-1 text-[10px] text-white bg-black/55 px-1.5 py-0.5 rounded-md">
                             {timeShort(m.created_at)}
                             {showTicks &&
                               (read ? (

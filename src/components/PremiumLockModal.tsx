@@ -44,7 +44,7 @@ export default function PremiumLockModal({
   const price = priceCents ? (priceCents / 100).toFixed(2) : "3.99";
 
   return (
-    <div className="fixed inset-0 z-[10001] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-[10001] bg-black/95 flex items-center justify-center p-4" onClick={onClose}>
       <div className="relative bg-gradient-to-b from-[#1c1c1e] to-[#0a0303] border border-white/20 rounded-3xl w-full max-w-md p-8 shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <button onClick={onClose} className="absolute top-4 right-4 p-2 bg-white/5 hover:bg-white/10 rounded-full transition text-white" aria-label="Close">
           <X size={18} />

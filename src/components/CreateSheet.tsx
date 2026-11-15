@@ -49,7 +49,7 @@ export default function CreateSheet({ open, onClose }: Props) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -10 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
-            className="absolute top-[110%] left-0 w-64 bg-white/10 backdrop-blur-2xl backdrop-saturate-150 border border-white/20 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.16)] overflow-hidden z-[100]"
+            className="absolute top-[110%] left-0 w-64 bg-white/10 backdrop-saturate-150 border border-white/20 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.16)] overflow-hidden z-[100]"
           >
             <div className="px-4 pt-3 pb-2">
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-white/45">Add Content</p>

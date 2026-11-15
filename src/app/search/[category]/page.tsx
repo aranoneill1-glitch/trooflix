@@ -78,7 +78,7 @@ export default function CategoryPage() {
         {/* Back Button */}
         <button 
           onClick={() => router.back()} 
-          className="absolute top-6 left-6 z-20 w-10 h-10 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-black/60 transition border border-white/10"
+          className="absolute top-6 left-6 z-20 w-10 h-10 bg-black/40 rounded-full flex items-center justify-center text-white hover:bg-black/60 transition border border-white/10"
         >
           <ArrowLeft size={20} />
         </button>
@@ -118,7 +118,7 @@ export default function CategoryPage() {
                     />
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors" />
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30">
+                      <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center border border-white/30">
                         <Play size={16} fill="white" className="ml-1 text-white" />
                       </div>
                     </div>

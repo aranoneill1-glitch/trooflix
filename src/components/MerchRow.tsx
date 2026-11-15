@@ -60,7 +60,7 @@ export default function MerchRow({ title, items }: { title: string; items: any[]
                 )}
                 
                 {/* Price Badge */}
-                <div className="absolute bottom-2 right-2 bg-black/80 backdrop-blur-md px-2 py-1 rounded-lg border border-white/10 shadow-lg">
+                <div className="absolute bottom-2 right-2 bg-black/80 px-2 py-1 rounded-lg border border-white/10 shadow-lg">
                   <span className="text-xs font-black text-green-400">
                     ${(item.price_cents / 100).toFixed(2)}
                   </span>

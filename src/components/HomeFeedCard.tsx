@@ -216,15 +216,15 @@ export default function HomeFeedCard({ video, creator, onMore, onPlay, isActive,
 
           {error && <div className="absolute inset-0 flex items-center justify-center bg-black/80"><p className="text-white/50 text-sm">Video unavailable</p></div>}
 
-          <button onClick={(e) => { e.stopPropagation(); onMore(); }} className="absolute top-3 right-3 z-20 p-1.5 rounded-full bg-black/30 text-white/90 hover:text-white backdrop-blur-sm transition"><MoreVertical size={18} /></button>
+          <button onClick={(e) => { e.stopPropagation(); onMore(); }} className="absolute top-3 right-3 z-20 p-1.5 rounded-full bg-black/30 text-white/90 hover:text-white transition"><MoreVertical size={18} /></button>
 
-          {!isPlaying && <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none"><div className="w-16 h-16 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-xl"><Play size={32} fill="white" className="text-white ml-1" /></div></div>}
+          {!isPlaying && <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none"><div className="w-16 h-16 rounded-full bg-black/50 flex items-center justify-center border border-white/20 shadow-xl"><Play size={32} fill="white" className="text-white ml-1" /></div></div>}
           
-          <div className={`absolute bottom-3 left-3 z-20 pointer-events-none transition-opacity duration-500 ${showControls ? 'opacity-100' : 'opacity-0'}`}><span className="text-[11px] font-bold text-white bg-black/60 px-1.5 py-0.5 rounded backdrop-blur-sm">{timeLeft || '0:00'}</span></div>
+          <div className={`absolute bottom-3 left-3 z-20 pointer-events-none transition-opacity duration-500 ${showControls ? 'opacity-100' : 'opacity-0'}`}><span className="text-[11px] font-bold text-white bg-black/60 px-1.5 py-0.5 rounded">{timeLeft || '0:00'}</span></div>
 
           <div className={`absolute bottom-3 right-3 flex items-center gap-2 z-20 transition-opacity duration-500 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
-            <button onClick={(e) => { e.stopPropagation(); setIsMuted(!isMuted); if(videoRef.current) videoRef.current.muted = !isMuted; handleInteraction(); }} className="w-7 h-7 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 hover:bg-black/60 transition">{isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}</button>
-            <button onClick={(e) => { e.stopPropagation(); onPlay(); }} className="w-7 h-7 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white border border-white/20 hover:bg-black/60 transition"><Maximize size={14} /></button>
+            <button onClick={(e) => { e.stopPropagation(); setIsMuted(!isMuted); if(videoRef.current) videoRef.current.muted = !isMuted; handleInteraction(); }} className="w-7 h-7 rounded-full bg-black/40 flex items-center justify-center text-white border border-white/20 hover:bg-black/60 transition">{isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}</button>
+            <button onClick={(e) => { e.stopPropagation(); onPlay(); }} className="w-7 h-7 rounded-full bg-black/40 flex items-center justify-center text-white border border-white/20 hover:bg-black/60 transition"><Maximize size={14} /></button>
           </div>
         </div>
 

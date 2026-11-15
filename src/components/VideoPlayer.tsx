@@ -271,7 +271,7 @@ export default function VideoPlayer({ src, title, videoId, onClose, onPrev, onNe
             onClick={togglePlay}
             className="absolute inset-0 flex items-center justify-center"
           >
-            <div className="bg-white/10 backdrop-blur rounded-full p-8 hover:bg-white/20 transition">
+            <div className="bg-white/10 rounded-full p-8 hover:bg-white/20 transition">
               <Play size={60} fill="white" className="text-white" />
             </div>
           </motion.button>

@@ -151,7 +151,7 @@ export default function WalletPage() {
     <main className={`min-h-screen text-white pb-24 selection:bg-[#E53945]/30 relative overflow-hidden ${profileBackdrop ? "bg-transparent" : "bg-[#050505]"}`}>
       {bgStyle ? (
         <div className="fixed inset-0 z-0" style={bgStyle as any}>
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+          <div className="absolute inset-0 bg-black/60" />
         </div>
       ) : (
         <div className="fixed top-0 left-0 w-full h-[500px] bg-gradient-to-b from-[#1c1c1e]/50 to-transparent pointer-events-none z-0" />
@@ -264,7 +264,7 @@ export default function WalletPage() {
   {/* TRANSACTION DETAIL MODAL */}
       <AnimatePresence>
         {selectedTx && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[400] bg-black/80 backdrop-blur-md flex items-center justify-center p-4" onClick={() => setSelectedTx(null)}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[400] bg-black/80 flex items-center justify-center p-4" onClick={() => setSelectedTx(null)}>
             <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }} className="bg-[#0f0f12] border border-white/10 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
               <div className="flex items-center justify-between p-5 border-b border-white/5">
                 <h2 className="text-lg font-black text-white">Transaction Receipt</h2>
@@ -351,7 +351,7 @@ export default function WalletPage() {
       {/* TOP UP MODAL */}
       <AnimatePresence>
         {showTopUp && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[400] bg-black/80 backdrop-blur-md flex items-center justify-center p-4" onClick={() => setShowTopUp(false)}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[400] bg-black/80 flex items-center justify-center p-4" onClick={() => setShowTopUp(false)}>
             <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }} className="bg-[#0f0f12] border border-white/10 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
               <div className="flex items-center justify-between p-5 border-b border-white/5">
                 <h2 className="text-lg font-black text-white">Top Up Coins</h2>
@@ -384,7 +384,7 @@ export default function WalletPage() {
       {/* SEND MODAL */}
       <AnimatePresence>
         {showSendModal && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[400] bg-black/80 backdrop-blur-md flex items-center justify-center p-4" onClick={() => setShowSendModal(false)}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[400] bg-black/80 flex items-center justify-center p-4" onClick={() => setShowSendModal(false)}>
             <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }} className="bg-[#0f0f12] border border-white/10 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
               <div className="flex items-center justify-between p-5 border-b border-white/5">
                 <h2 className="text-lg font-black text-white">Send Coins</h2>
@@ -441,7 +441,7 @@ export default function WalletPage() {
       {/* WITHDRAW MODAL */}
       <AnimatePresence>
         {showPayoutModal && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[400] bg-black/80 backdrop-blur-md flex items-center justify-center p-4" onClick={() => setShowPayoutModal(false)}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[400] bg-black/80 flex items-center justify-center p-4" onClick={() => setShowPayoutModal(false)}>
             <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }} className="bg-[#0f0f12] border border-white/10 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
               <div className="flex items-center justify-between p-5 border-b border-white/5">
                 <h2 className="text-lg font-black text-white">Withdraw</h2>
@@ -490,7 +490,7 @@ export default function WalletPage() {
       {/* DETAILS SETTINGS MODAL */}
       <AnimatePresence>
         {showDetailsModal && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[400] bg-black/80 backdrop-blur-md flex items-center justify-center p-4" onClick={() => setShowDetailsModal(false)}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[400] bg-black/80 flex items-center justify-center p-4" onClick={() => setShowDetailsModal(false)}>
             <motion.div initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }} className="bg-[#0f0f12] border border-white/10 rounded-3xl w-full max-w-sm max-h-[90vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
               <div className="flex items-center justify-between p-5 border-b border-white/5 sticky top-0 bg-[#0f0f12] z-10">
                 <h2 className="text-lg font-black text-white">Payout Settings</h2>

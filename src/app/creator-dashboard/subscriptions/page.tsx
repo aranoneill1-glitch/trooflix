@@ -142,7 +142,7 @@ export default function PremiumSettings() {
           
           {/* Stats Row */}
           <section className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
-            <div className="bg-[#0f0f12]/80 backdrop-blur-md border border-white/[0.06] rounded-2xl p-4">
+            <div className="bg-[#0f0f12]/80 border border-white/[0.06] rounded-2xl p-4">
               <div className="flex items-center gap-2 text-purple-400 mb-2">
                 <Users size={16} />
                 <span className="text-[10px] font-bold uppercase tracking-wider text-white/50">Subscribers</span>
@@ -150,7 +150,7 @@ export default function PremiumSettings() {
               <p className="text-2xl font-black">{stats.active_subscribers.toLocaleString()}</p>
             </div>
             
-            <div className="bg-[#0f0f12]/80 backdrop-blur-md border border-white/[0.06] rounded-2xl p-4">
+            <div className="bg-[#0f0f12]/80 border border-white/[0.06] rounded-2xl p-4">
               <div className="flex items-center gap-2 text-white/60 mb-2">
                 <DollarSign size={16} />
                 <span className="text-[10px] font-bold uppercase tracking-wider text-white/50">Monthly Gross</span>
@@ -158,7 +158,7 @@ export default function PremiumSettings() {
               <p className="text-2xl font-black">{dollars(stats.monthly_gross_cents)}</p>
             </div>
 
-            <div className="bg-[#0f0f12]/80 backdrop-blur-md border border-white/[0.06] rounded-2xl p-4">
+            <div className="bg-[#0f0f12]/80 border border-white/[0.06] rounded-2xl p-4">
               <div className="flex items-center gap-2 text-emerald-400 mb-2">
                 <TrendingUp size={16} />
                 <span className="text-[10px] font-bold uppercase tracking-wider text-white/50">Your 90%</span>

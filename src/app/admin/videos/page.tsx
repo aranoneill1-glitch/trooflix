@@ -232,7 +232,7 @@ export default function VideosPage() {
         <p className="text-white/50 text-sm">{editing ? `Editing: ${editing.title}` : "Add and manage videos in your catalog"}</p>
       </div>
 
-      <form onSubmit={submit} className="bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 space-y-6 mb-10 shadow-2xl">
+      <form onSubmit={submit} className="bg-[#1c1c1e]/60 border border-white/10 rounded-3xl p-6 md:p-8 space-y-6 mb-10 shadow-2xl">
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-xl font-bold">{editing ? "Edit Video" : "Add New Video"}</h2>
           {editing && (

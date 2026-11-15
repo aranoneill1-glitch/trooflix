@@ -133,7 +133,7 @@ export default function SignupPage() {
         </div>
 
         {/* Tabs */}
-        <div className="mx-auto max-w-2xl rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-2xl p-1.5 shadow-[0_20px_60px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.08)]">
+        <div className="mx-auto max-w-2xl rounded-2xl border border-white/10 bg-white/[0.04] p-1.5 shadow-[0_20px_60px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.08)]">
           <div className="grid grid-cols-3 gap-1.5">
             {PLANS.map((plan) => {
               const Icon = plan.icon;
@@ -176,7 +176,7 @@ export default function SignupPage() {
                   transition={{ duration: 0.22, ease: "easeOut" }}
                   className="overflow-hidden"
                 >
-                  <div className={`rounded-3xl border border-white/10 bg-gradient-to-b ${plan.accent} backdrop-blur-2xl ${plan.glow}`}>
+                  <div className={`rounded-3xl border border-white/10 bg-gradient-to-b ${plan.accent} ${plan.glow}`}>
                     <div className="p-5 md:p-7 border-b border-white/10">
                       <div className="flex items-start justify-between gap-4">
                         <div>

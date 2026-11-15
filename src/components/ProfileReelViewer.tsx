@@ -187,14 +187,14 @@ function VideoSlide({ video, index, isActive, author, muted, onToggleMute, onOpe
 
         {!playing && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
-             <div className="p-5 bg-black/50 rounded-full backdrop-blur text-white">
+             <div className="p-5 bg-black/50 rounded-full text-white">
                <Play size={40} fill="white" />
              </div>
           </div>
         )}
         
         <div className="absolute left-4 top-16 pointer-events-auto ui-ignore">
-           <button onClick={onToggleMute} className="p-2.5 bg-black/50 rounded-full backdrop-blur text-white">
+           <button onClick={onToggleMute} className="p-2.5 bg-black/50 rounded-full text-white">
              {muted ? <VolumeX size={20} /> : <Volume2 size={20} />}
            </button>
         </div>
@@ -286,7 +286,7 @@ export default function ProfileReelViewer({
   return (
     <div className="fixed inset-0 z-[200] bg-black flex flex-col">
       <div className="absolute top-0 left-0 right-0 z-50 p-4 pt-[env(safe-area-inset-top)] bg-gradient-to-b from-black/80 to-transparent flex justify-between items-center pointer-events-none">
-        <button onClick={onClose} className="p-2 bg-black/40 rounded-full text-white backdrop-blur pointer-events-auto">
+        <button onClick={onClose} className="p-2 bg-black/40 rounded-full text-white pointer-events-auto">
           <X size={24} />
         </button>
       </div>

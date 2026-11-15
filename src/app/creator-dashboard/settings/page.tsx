@@ -136,7 +136,7 @@ function ProfileSettingsContent() {
 
         {/* ONBOARDING BANNER (only shows during signup) */}
         {isOnboarding && (
-          <div className="mb-6 bg-white/[0.08] backdrop-blur-2xl backdrop-saturate-150 border border-white/20 rounded-2xl p-5 shadow-[0_12px_40px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.14)] animate-in fade-in slide-in-from-top-4 duration-500">
+          <div className="mb-6 bg-white/[0.08] backdrop-saturate-150 border border-white/20 rounded-2xl p-5 shadow-[0_12px_40px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.14)] animate-in fade-in slide-in-from-top-4 duration-500">
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-full bg-[#E53945]/20 border border-white/10 flex items-center justify-center shrink-0 text-2xl">
                 👋
@@ -155,7 +155,7 @@ function ProfileSettingsContent() {
         <div className="flex items-center justify-between mb-5">
           <Link
             href="/creator-dashboard"
-            className="inline-flex items-center gap-1.5 text-white/70 hover:text-white transition text-sm font-semibold px-3 py-2 rounded-full bg-white/[0.06] hover:bg-white/[0.1] border border-white/10 backdrop-blur-xl"
+            className="inline-flex items-center gap-1.5 text-white/70 hover:text-white transition text-sm font-semibold px-3 py-2 rounded-full bg-white/[0.06] hover:bg-white/[0.1] border border-white/10"
           >
             <ArrowLeft size={16} /> Back
           </Link>
@@ -163,14 +163,14 @@ function ProfileSettingsContent() {
           <div className="w-[72px]" />
         </div>
 
-        <form onSubmit={saveProfile} className="bg-white/[0.08] backdrop-blur-2xl backdrop-saturate-150 border border-white/20 rounded-3xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.14)]">
+        <form onSubmit={saveProfile} className="bg-white/[0.08] backdrop-saturate-150 border border-white/20 rounded-3xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.14)]">
           {/* Avatar Section */}
           <div className="flex flex-col items-center justify-center py-8 border-b border-white/10 bg-white/[0.02]">
             <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
               <div className="w-28 h-28 rounded-full overflow-hidden border-2 border-white/25 bg-white/5 relative z-10 flex items-center justify-center shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
                 {avatarUrl ? <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" /> : <div className="text-3xl font-black text-white/30">{displayName.charAt(0) || "?"}</div>}
               </div>
-              <div className="absolute inset-0 z-20 rounded-full bg-black/45 backdrop-blur-[1px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute inset-0 z-20 rounded-full bg-black/45] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <Camera size={24} className="text-white" />
               </div>
             </div>

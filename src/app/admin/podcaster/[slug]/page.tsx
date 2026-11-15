@@ -247,7 +247,7 @@ export default function PodcasterVideosPage() {
 
   return (
     <main className="min-h-screen bg-[#0b0b0f] text-white">
-      <div className="sticky top-0 z-50 bg-[#0b0b0f]/95 backdrop-blur border-b border-white/10">
+      <div className="sticky top-0 z-50 bg-[#0b0b0f]/95 border-b border-white/10">
         <div className="max-w-3xl mx-auto px-6 py-4 flex items-center gap-4">
           <Link href="/admin" className="text-white/70 hover:text-white text-sm whitespace-nowrap">
             ← Back to Admin

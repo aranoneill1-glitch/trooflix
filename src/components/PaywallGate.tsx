@@ -114,7 +114,7 @@ export default function PaywallGate({
 
       {/* Logged-out sign-in wall */}
       {isAnon && isLocked && !blocked && (
-        <div className="absolute inset-0 bg-black/95 backdrop-blur-sm z-40 flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-black/95 z-40 flex items-center justify-center p-4">
           <div className="max-w-md w-full text-center">
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-600/20 flex items-center justify-center">
               <Lock size={32} className="text-red-500" />
@@ -137,7 +137,7 @@ export default function PaywallGate({
 
       {/* Preview ended — Trooflix Pass upsell */}
       {blocked && !isAnon && (
-        <div className="absolute inset-0 bg-black/95 backdrop-blur-sm z-40 flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-black/95 z-40 flex items-center justify-center p-4">
           <div className="max-w-md w-full text-center">
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-600/20 flex items-center justify-center">
               <Lock size={32} className="text-red-500" />

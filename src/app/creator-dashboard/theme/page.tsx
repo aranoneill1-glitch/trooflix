@@ -166,7 +166,7 @@ export default function ProfileThemePage() {
         <button
           onClick={saveTheme}
           disabled={saving}
-          className="w-full mt-5 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 backdrop-blur-xl border border-white/20 disabled:opacity-50 text-white font-bold py-3.5 rounded-2xl transition-all shadow-[0_8px_32px_rgba(0,0,0,0.25)]"
+          className="w-full mt-5 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 border border-white/20 disabled:opacity-50 text-white font-bold py-3.5 rounded-2xl transition-all shadow-[0_8px_32px_rgba(0,0,0,0.25)]"
         >
           <Save size={18} /> {saving ? "Saving Theme…" : "Save Theme"}
         </button>

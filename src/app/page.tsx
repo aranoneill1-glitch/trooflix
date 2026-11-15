@@ -339,8 +339,8 @@ export default function Home() {
       <AnimatePresence>
         {drawerOpen && (
           <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[290]" onClick={() => setDrawerOpen(false)} />
-            <motion.aside initial={{ x: -320 }} animate={{ x: 0 }} exit={{ x: -320 }} transition={{ type: "spring", damping: 25, stiffness: 200 }} className="fixed top-0 left-0 h-screen w-[300px] bg-[#0a0a0a]/95 backdrop-blur-2xl border-r border-white/10 z-[300] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] flex flex-col shadow-2xl overflow-hidden">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/80 z-[290]" onClick={() => setDrawerOpen(false)} />
+            <motion.aside initial={{ x: -320 }} animate={{ x: 0 }} exit={{ x: -320 }} transition={{ type: "spring", damping: 25, stiffness: 200 }} className="fixed top-0 left-0 h-screen w-[300px] bg-[#0a0a0a]/95 border-r border-white/10 z-[300] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] flex flex-col shadow-2xl overflow-hidden">
               <div className="flex items-center justify-between p-6 border-b border-white/5 shrink-0">
                 <span className="text-2xl font-black tracking-tight"><span className="text-white">TROO</span><span className="text-red-600">FLIX</span></span>
                 <button onClick={() => setDrawerOpen(false)} className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition text-white/70 hover:text-white"><X size={18} /></button>
@@ -602,7 +602,7 @@ export default function Home() {
                       <motion.div className="flex items-center justify-center gap-6" initial="hidden" whileInView="visible" viewport={{ once: false, amount: 0.3 }} variants={{ visible: { transition: { staggerChildren: 0.14 } } }}>
                         {/* Shorts */}
                         <motion.div variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22,1,0.36,1] } } }} className="flex flex-col items-center shrink-0">
-                          <motion.div whileHover={{ y: -8, boxShadow: '0 30px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.08), 0 0 40px rgba(255,255,255,0.08)' }} className="group relative w-[280px] xl:w-[300px] overflow-hidden rounded-[34px] border border-white/12 bg-[#0b0b10]/80 backdrop-blur-xl shadow-[0_24px_70px_rgba(0,0,0,0.45)] transition cursor-pointer p-3">
+                          <motion.div whileHover={{ y: -8, boxShadow: '0 30px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.08), 0 0 40px rgba(255,255,255,0.08)' }} className="group relative w-[280px] xl:w-[300px] overflow-hidden rounded-[34px] border border-white/12 bg-[#0b0b10]/80 shadow-[0_24px_70px_rgba(0,0,0,0.45)] transition cursor-pointer p-3">
                             <div className="relative mx-auto aspect-[9/16] overflow-hidden rounded-[26px] border border-white/10 bg-[#050507]">
                               <HeroLatestShortPhone />
                             </div>
@@ -613,7 +613,7 @@ export default function Home() {
                         <div className="flex flex-col gap-5 w-full max-w-[320px]">
                           {/* Livestream */}
                           <motion.div variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22,1,0.36,1] } } }} className="flex flex-col items-center">
-                            <motion.div whileHover={{ y: -6, boxShadow: '0 24px 70px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08), 0 0 30px rgba(239,68,68,0.12)' }} className="group relative w-full overflow-hidden rounded-[24px] border border-white/12 bg-[#0b0b10]/80 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.4)] transition cursor-pointer">
+                            <motion.div whileHover={{ y: -6, boxShadow: '0 24px 70px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08), 0 0 30px rgba(239,68,68,0.12)' }} className="group relative w-full overflow-hidden rounded-[24px] border border-white/12 bg-[#0b0b10]/80 shadow-[0_20px_60px_rgba(0,0,0,0.4)] transition cursor-pointer">
                               <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(239,68,68,0.18),transparent_30%),linear-gradient(180deg,#15151d_0%,#09090d_100%)]" />
                               <div className="relative p-4">
                                 <div className="mb-3 flex items-center justify-between">
@@ -647,7 +647,7 @@ export default function Home() {
 
                           {/* Documentaries */}
                           <motion.div variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22,1,0.36,1] } } }} className="flex flex-col items-center">
-                            <motion.div whileHover={{ y: -6, boxShadow: '0 24px 70px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08), 0 0 30px rgba(229,57,69,0.10)' }} className="group relative w-full overflow-hidden rounded-[24px] border border-white/12 bg-[#0b0b10]/80 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.4)] transition cursor-pointer">
+                            <motion.div whileHover={{ y: -6, boxShadow: '0 24px 70px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08), 0 0 30px rgba(229,57,69,0.10)' }} className="group relative w-full overflow-hidden rounded-[24px] border border-white/12 bg-[#0b0b10]/80 shadow-[0_20px_60px_rgba(0,0,0,0.4)] transition cursor-pointer">
                               <div className="relative aspect-[16/10] overflow-hidden">
                                 <motion.div className="absolute inset-[-6%]" animate={{ scale: [1.02, 1.08, 1.02], x: [0, -12, 0] }} transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}>
                                   <img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=1800&auto=format&fit=crop" alt="" className="h-full w-full object-cover brightness-[0.7] contrast-[1.05] saturate-[0.85]" />
@@ -799,7 +799,7 @@ function MobileSignedOutShowcase() {
         <motion.div className="absolute -left-16 top-20 h-56 w-56 rounded-full bg-[#ff4d5a]/12 blur-[90px]" animate={{ y: [0, -16, 0], opacity: [0.35, 0.55, 0.35] }} transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }} />
         <motion.div className="absolute -right-10 bottom-24 h-56 w-56 rounded-full bg-[#ff6a2a]/12 blur-[90px]" animate={{ y: [0, 14, 0], opacity: [0.3, 0.5, 0.3] }} transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }} />
         <div className="relative z-10 mx-auto w-full max-w-md">
-          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-2 backdrop-blur-xl">
+          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-2">
             <span className="h-2 w-2 rounded-full bg-[#ff4d5a] shadow-[0_0_12px_rgba(229,57,69,0.9)]" />
             <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/70">What is Trooflix</span>
           </motion.div>
@@ -816,7 +816,7 @@ function MobileSignedOutShowcase() {
               { k: "Connect", v: "TrooChat & community" },
               { k: "Own", v: "TrooBank & TrooCoins" },
             ].map((item, i) => (
-              <motion.div key={item.k} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.15 + i * 0.05 }} className="rounded-2xl border border-white/10 bg-white/[0.04] p-3.5 backdrop-blur-xl">
+              <motion.div key={item.k} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.15 + i * 0.05 }} className="rounded-2xl border border-white/10 bg-white/[0.04] p-3.5">
                 <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#ffb0a8]/80 mb-1">{item.k}</div>
                 <div className="text-sm font-semibold text-white leading-snug">{item.v}</div>
               </motion.div>
@@ -824,7 +824,7 @@ function MobileSignedOutShowcase() {
           </div>
           <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }} className="flex gap-2.5">
             <a href="/signup" className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#E53945] to-[#ff6a2a] px-5 py-3.5 text-[15px] font-bold text-white shadow-[0_18px_40px_rgba(229,57,69,0.35)]">Start Creating <ArrowRight size={16} /></a>
-            <a href="/features" className="flex-1 inline-flex items-center justify-center rounded-full border border-white/15 bg-white/[0.06] px-5 py-3.5 text-[15px] font-semibold text-white/90 backdrop-blur-xl">Why Trooflix</a>
+            <a href="/features" className="flex-1 inline-flex items-center justify-center rounded-full border border-white/15 bg-white/[0.06] px-5 py-3.5 text-[15px] font-semibold text-white/90">Why Trooflix</a>
           </motion.div>
         </div>
       </section>
@@ -835,7 +835,7 @@ function MobileSignedOutShowcase() {
         <motion.h2 initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.4 }} className="text-[38px] leading-[0.98] font-black tracking-tighter text-white mb-4">Your Voice. <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff4d5a] via-[#ff6b4a] to-orange-400">Unfiltered.</span></motion.h2>
         <motion.p initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.4 }} className="text-[15px] leading-relaxed text-white/65 mb-7">Go live in broadcast quality, drop cinematic Shorts, and publish powerful documentaries — all on one platform built to amplify creators, not silence them.</motion.p>
         <div className="space-y-4">
-          <motion.div initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }} className="flex items-start gap-4 rounded-[26px] border border-white/10 bg-white/[0.04] p-4 backdrop-blur-xl">
+          <motion.div initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }} className="flex items-start gap-4 rounded-[26px] border border-white/10 bg-white/[0.04] p-4">
             <div className="w-[132px] shrink-0">
               <div className="relative aspect-[9/16] overflow-hidden rounded-[22px] border border-white/10 bg-[#050507] p-1.5">
                 <div className="relative h-full w-full overflow-hidden rounded-[18px]"><HeroLatestShortPhone /></div>
@@ -871,7 +871,7 @@ function MobileSignedOutShowcase() {
         <motion.p initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.35 }} className="mb-3 text-[10px] font-bold uppercase tracking-[0.3em] text-white/45">MONETIZATION</motion.p>
         <motion.h2 initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.35 }} className="text-[38px] leading-[0.98] font-black tracking-tighter text-white mb-4">Turn your audience <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff4d5a] via-[#ff6b4a] to-orange-400">into a business.</span></motion.h2>
         <motion.p initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.35 }} className="text-[15px] leading-relaxed text-white/65 mb-6">Subscriptions. Tips. Merchandise. Paid communities. One platform where every dollar flows directly to you — with only a 1% fee.</motion.p>
-        <div className="rounded-[26px] border border-white/10 bg-white/[0.04] p-4 backdrop-blur-xl mb-4">
+        <div className="rounded-[26px] border border-white/10 bg-white/[0.04] p-4 mb-4">
           <div className="mb-4 flex items-center justify-between"><div><div className="text-[10px] uppercase tracking-[0.16em] text-white/40 mb-1">Creator Dashboard</div><div className="text-base font-semibold text-white">Earnings overview</div></div><span className="rounded-full border border-[#ff6b4a]/30 bg-[#E53945]/10 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.14em] text-[#ffb0a8]">Live</span></div>
           <div className="grid grid-cols-3 gap-2 mb-4">
             {[{l:"Total",v:"$24,860"},{l:"Subs",v:"3,482"},{l:"Payout",v:"$2,140"}].map(x=>(<div key={x.l} className="rounded-xl border border-white/10 bg-white/[0.03] p-2.5"><div className="text-[10px] uppercase tracking-[0.14em] text-white/40 mb-1">{x.l}</div><div className="text-lg font-black text-white leading-none">{x.v}</div></div>))}
@@ -888,7 +888,7 @@ function MobileSignedOutShowcase() {
         <motion.p initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.35 }} className="mb-3 text-[10px] font-bold uppercase tracking-[0.3em] text-white/40">Trooflix Economy</motion.p>
         <motion.h2 initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.35 }} className="text-[38px] leading-[0.98] font-black tracking-tighter text-white mb-4">The creator economy, <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff4d5a] via-[#ff6b4a] to-orange-400">reimagined.</span></motion.h2>
         <motion.p initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.35 }} className="text-[15px] leading-relaxed text-white/62 mb-6">Tips, purchases, payouts, and support — connected in one native system. TrooCoins and TrooBank make value flow simply between creators and their audience.</motion.p>
-        <div className="relative rounded-[28px] border border-white/10 bg-white/[0.04] p-5 backdrop-blur-2xl overflow-hidden mb-5">
+        <div className="relative rounded-[28px] border border-white/10 bg-white/[0.04] p-5 overflow-hidden mb-5">
           <motion.div className="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-[#ff6a2a]/12 blur-3xl" animate={{ scale:[1,1.15,1], opacity:[0.4,0.7,0.4] }} transition={{ duration: 6, repeat: Infinity }} />
           {["TC","TC","TC"].map((t,i)=>(<motion.div key={i} className="absolute flex items-center justify-center rounded-full border border-[#ffb38a]/30 bg-gradient-to-br from-[#ffcf8a]/30 to-[#E53945]/20 text-[9px] font-black text-[#ffe8d6] shadow-[0_0_20px_rgba(255,106,42,0.2)]" style={{width:26+i*6,height:26+i*6,right:18+i*22,top:18+i*14}} animate={{y:[0,-8,0], rotate:[0,10,-6,0]}} transition={{duration:4+i, repeat:Infinity, ease:"easeInOut", delay:i*0.3}}>{t}</motion.div>))}
           <div className="relative flex items-center justify-between mb-4"><div><div className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">TrooBank</div><div className="text-sm text-white/55">Creator wallet</div></div><span className="rounded-full border border-[#ff6b4a]/25 bg-[#E53945]/10 px-3 py-1 text-xs font-semibold text-[#ffb0a8]">Active</span></div>
@@ -910,7 +910,7 @@ function MobileSignedOutShowcase() {
         <motion.p initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.35 }} className="mb-3 text-[10px] font-bold uppercase tracking-[0.3em] text-white/40">TrooChat</motion.p>
         <motion.h2 initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.35 }} className="text-[38px] leading-[0.98] font-black tracking-tighter text-white mb-4">Connect beyond the <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff4d5a] via-[#ff6b4a] to-orange-400">comment section.</span></motion.h2>
         <motion.p initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.35 }} className="text-[15px] leading-relaxed text-white/62 mb-6">Move from public replies to real relationships. Messages, voice notes, and calls — in one private, creator-owned space, without algorithms in the middle.</motion.p>
-        <div className="rounded-[28px] border border-white/10 bg-white/[0.04] p-4 backdrop-blur-2xl mb-5 overflow-hidden relative">
+        <div className="rounded-[28px] border border-white/10 bg-white/[0.04] p-4 mb-5 overflow-hidden relative">
           <motion.div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-[#ff4d5a]/10 blur-2xl" animate={{scale:[1,1.2,1],opacity:[0.3,0.5,0.3]}} transition={{duration:6,repeat:Infinity}} />
           <div className="mb-4 flex items-center justify-between border-b border-white/8 pb-3 relative"><div className="flex items-center gap-3"><div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#E53945] to-[#ff6a2a]" /><div><div className="text-sm font-semibold text-white">Creator Circle</div><div className="text-xs text-white/40">active now</div></div></div><div className="flex h-8 w-8 items-center justify-center rounded-full border border-[#ff6b4a]/25 bg-[#E53945]/10 text-[#ffb0a8]"><Phone size={14} /></div></div>
           <div className="space-y-3 relative">
@@ -930,10 +930,10 @@ function MobileSignedOutShowcase() {
         <motion.p initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.35 }} className="text-[15px] leading-relaxed text-white/65 mb-5">Legacy platforms can take nearly half. Trooflix flips the model: keep 99% with a flat 1% fee. No surprise cuts. No algorithm tax.</motion.p>
         <div className="mb-4 flex items-center justify-center py-2"><motion.div animate={{ textShadow: ["0 0 30px rgba(229,57,69,0.25)", "0 0 60px rgba(255,106,42,0.35)", "0 0 30px rgba(229,57,69,0.25)"] }} transition={{ duration: 4, repeat: Infinity }} className="text-[96px] font-black leading-none tracking-tighter text-white">99%</motion.div></div>
         <div className="grid grid-cols-2 gap-3 mb-4">
-          <div className="rounded-[22px] border border-[#ff6b4a]/20 bg-white/[0.06] p-4 backdrop-blur-xl"><div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#ffb0a8] mb-1">Trooflix</div><div className="text-2xl font-black text-[#ff7a5c]">${trooflixKeep.toLocaleString()}</div><div className="mt-1 text-xs text-white/55">On ${revenue.toLocaleString()}</div></div>
+          <div className="rounded-[22px] border border-[#ff6b4a]/20 bg-white/[0.06] p-4"><div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#ffb0a8] mb-1">Trooflix</div><div className="text-2xl font-black text-[#ff7a5c]">${trooflixKeep.toLocaleString()}</div><div className="mt-1 text-xs text-white/55">On ${revenue.toLocaleString()}</div></div>
           <div className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4 opacity-80"><div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/50 mb-1">Old Model</div><div className="text-2xl font-black text-white/45">${oldKeep.toLocaleString()}</div><div className="mt-1 text-xs text-white/40">On ${revenue.toLocaleString()}</div></div>
         </div>
-        <div className="mb-5 rounded-[22px] border border-white/10 bg-white/[0.04] p-4 backdrop-blur-xl">
+        <div className="mb-5 rounded-[22px] border border-white/10 bg-white/[0.04] p-4">
           <div className="mb-2 flex items-center justify-between"><span className="text-sm font-semibold text-white/80">Earnings calculator</span><span className="text-xs text-[#ff8a6a] font-semibold">+${(trooflixKeep - oldKeep).toLocaleString()}</span></div>
           <input type="range" min={1000} max={100000} step={500} value={revenue} onChange={(e)=>setRevenue(Number(e.target.value))} className="w-full accent-[#E53945]" />
           <div className="mt-2 text-sm text-white/55">${revenue.toLocaleString()} / month</div>
@@ -986,7 +986,7 @@ function TrooflixEconomyHero() {
       {coins.map((c, i) => (
         <motion.div
           key={i}
-          className="pointer-events-none absolute z-[1] flex items-center justify-center rounded-full border border-[#ffb38a]/30 bg-gradient-to-br from-[#ffcf8a]/30 via-[#ff7a4a]/25 to-[#E53945]/20 text-[10px] font-black text-[#ffe8d6] shadow-[0_0_24px_rgba(255,106,42,0.22),inset_0_1px_0_rgba(255,255,255,0.25)] backdrop-blur-sm"
+          className="pointer-events-none absolute z-[1] flex items-center justify-center rounded-full border border-[#ffb38a]/30 bg-gradient-to-br from-[#ffcf8a]/30 via-[#ff7a4a]/25 to-[#E53945]/20 text-[10px] font-black text-[#ffe8d6] shadow-[0_0_24px_rgba(255,106,42,0.22),inset_0_1px_0_rgba(255,255,255,0.25)]"
           style={{ left: c.x, top: c.y, width: c.s, height: c.s }}
           animate={{ y: [0, -18 - (i % 3) * 6, 0], x: [0, i % 2 ? 8 : -8, 0], rotate: [0, 12, -8, 0], scale: [1, 1.08, 1], opacity: [0.55, 0.95, 0.55] }}
           transition={{ duration: c.dur, delay: c.d, repeat: Infinity, ease: "easeInOut" }}
@@ -1002,9 +1002,9 @@ function TrooflixEconomyHero() {
             <motion.div className="absolute left-1/2 top-1/2 h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#ff6b4a]/15 border-dashed" animate={{ rotate: -360 }} transition={{ duration: 18, repeat: Infinity, ease: "linear" }} />
           </div>
           <div className="relative w-full max-w-[520px]">
-            <motion.div animate={{ y: [0, -10, 0], rotate: [0, 8, 0] }} transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }} className="absolute -top-4 right-8 flex h-16 w-16 items-center justify-center rounded-full border border-[#ffb38a]/35 bg-gradient-to-br from-[#ffcf8a]/35 via-[#ff7a4a]/30 to-[#E53945]/25 text-sm font-black text-[#ffe8d6] shadow-[0_0_40px_rgba(255,106,42,0.28)] backdrop-blur-xl">TC</motion.div>
-            <motion.div animate={{ y: [0, 10, 0], rotate: [0, -10, 0] }} transition={{ duration: 6.2, repeat: Infinity, ease: "easeInOut", delay: 0.6 }} className="absolute -bottom-2 left-4 flex h-12 w-12 items-center justify-center rounded-full border border-[#ffb38a]/30 bg-gradient-to-br from-[#ffcf8a]/25 to-[#E53945]/20 text-[10px] font-black text-[#ffe8d6] shadow-[0_0_28px_rgba(255,106,42,0.22)] backdrop-blur-xl">TC</motion.div>
-            <div className="rounded-[32px] border border-white/10 bg-white/[0.04] p-6 shadow-[0_40px_120px_rgba(0,0,0,0.45)] backdrop-blur-2xl relative overflow-hidden">
+            <motion.div animate={{ y: [0, -10, 0], rotate: [0, 8, 0] }} transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }} className="absolute -top-4 right-8 flex h-16 w-16 items-center justify-center rounded-full border border-[#ffb38a]/35 bg-gradient-to-br from-[#ffcf8a]/35 via-[#ff7a4a]/30 to-[#E53945]/25 text-sm font-black text-[#ffe8d6] shadow-[0_0_40px_rgba(255,106,42,0.28)]">TC</motion.div>
+            <motion.div animate={{ y: [0, 10, 0], rotate: [0, -10, 0] }} transition={{ duration: 6.2, repeat: Infinity, ease: "easeInOut", delay: 0.6 }} className="absolute -bottom-2 left-4 flex h-12 w-12 items-center justify-center rounded-full border border-[#ffb38a]/30 bg-gradient-to-br from-[#ffcf8a]/25 to-[#E53945]/20 text-[10px] font-black text-[#ffe8d6] shadow-[0_0_28px_rgba(255,106,42,0.22)]">TC</motion.div>
+            <div className="rounded-[32px] border border-white/10 bg-white/[0.04] p-6 shadow-[0_40px_120px_rgba(0,0,0,0.45)] relative overflow-hidden">
               <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-[#ff6a2a]/10 blur-3xl" />
               <div className="mb-6 flex items-center justify-between">
                 <div>
@@ -1046,7 +1046,7 @@ function TrooflixEconomyHero() {
           </motion.p>
           <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-10 flex flex-wrap gap-3">
             {["TrooCoins", "TrooBank", "Instant tips", "Seamless payouts"].map((t, i) => (
-              <motion.span key={t} className="rounded-full border border-[#ff6b4a]/25 bg-[#E53945]/10 px-4 py-2 text-sm font-medium text-white/90 backdrop-blur-md" animate={{ y: [0, -2, 0] }} transition={{ duration: 3 + i * 0.3, repeat: Infinity, ease: "easeInOut", delay: i * 0.15 }}>{t}</motion.span>
+              <motion.span key={t} className="rounded-full border border-[#ff6b4a]/25 bg-[#E53945]/10 px-4 py-2 text-sm font-medium text-white/90" animate={{ y: [0, -2, 0] }} transition={{ duration: 3 + i * 0.3, repeat: Infinity, ease: "easeInOut", delay: i * 0.15 }}>{t}</motion.span>
             ))}
           </motion.div>
 
@@ -1080,7 +1080,7 @@ function TrooChatHero() {
           </motion.p>
           <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-10 flex flex-wrap gap-3">
             {["Direct messages", "Voice notes", "Video calls", "Private & direct"].map((t) => (
-              <span key={t} className="rounded-full border border-[#ff6b4a]/25 bg-[#E53945]/10 px-4 py-2 text-sm font-medium text-white/90 backdrop-blur-md">{t}</span>
+              <span key={t} className="rounded-full border border-[#ff6b4a]/25 bg-[#E53945]/10 px-4 py-2 text-sm font-medium text-white/90">{t}</span>
             ))}
           </motion.div>
 
@@ -1088,7 +1088,7 @@ function TrooChatHero() {
 
         <motion.div initial={{ opacity: 0, x: 30 }} animate={inView ? { opacity: 1, x: 0 } : {}} transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }} className="relative flex h-[500px] items-center justify-center">
           <div className="relative w-full max-w-[520px]">
-            <div className="rounded-[32px] border border-white/10 bg-white/[0.04] p-5 shadow-[0_40px_120px_rgba(0,0,0,0.45)] backdrop-blur-2xl relative overflow-hidden">
+            <div className="rounded-[32px] border border-white/10 bg-white/[0.04] p-5 shadow-[0_40px_120px_rgba(0,0,0,0.45)] relative overflow-hidden">
               <motion.div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-[#ff4d5a]/10 blur-3xl" animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.55, 0.3] }} transition={{ duration: 6, repeat: Infinity }} />
               <div className="mb-5 flex items-center justify-between border-b border-white/8 pb-4 relative">
                 <div className="flex items-center gap-3">
@@ -1167,7 +1167,7 @@ function WatchEverywhereHero() {
           <div className="relative h-[420px] w-full max-w-[620px]">
             {/* TV */}
             <div className="absolute left-1/2 top-0 w-[460px] -translate-x-1/2">
-              <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-2.5 shadow-[0_40px_120px_rgba(0,0,0,0.6),0_0_0_1px_rgba(229,57,69,0.06)] backdrop-blur-xl">
+              <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-2.5 shadow-[0_40px_120px_rgba(0,0,0,0.6),0_0_0_1px_rgba(229,57,69,0.06)]">
                 <div className="relative aspect-[16/9] overflow-hidden rounded-[16px] bg-[#0b0b0e]">
                   <img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=1600&auto=format&fit=crop" alt="" className="absolute inset-0 h-full w-full object-cover brightness-[0.55] contrast-[1.05] saturate-[1.05]" />
                   <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,5,7,0.85)_0%,rgba(5,5,7,0.35)_40%,rgba(5,5,7,0.15)_100%),linear-gradient(180deg,rgba(5,5,7,0.2)_0%,rgba(5,5,7,0.55)_100%)]" />
@@ -1176,7 +1176,7 @@ function WatchEverywhereHero() {
                       <div className="text-[15px] font-black tracking-tight"><span className="text-white">TROO</span><span className="text-red-600">FLIX</span></div>
                       <div className="hidden items-center gap-3 text-[9px] font-medium text-white/60 md:flex"><span className="text-white">Home</span><span>Live</span><span>Shorts</span><span>Docs</span></div>
                     </div>
-                    <div className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/30 px-2 py-1 text-[8px] font-semibold uppercase tracking-[0.16em] text-white/70 backdrop-blur-md"><span className="h-1.5 w-1.5 rounded-full bg-[#ff4d5a]" /> Live</div>
+                    <div className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/30 px-2 py-1 text-[8px] font-semibold uppercase tracking-[0.16em] text-white/70"><span className="h-1.5 w-1.5 rounded-full bg-[#ff4d5a]" /> Live</div>
                   </div>
                   <div className="absolute left-5 top-[52px] max-w-[52%]">
                     <div className="mb-1.5 inline-flex items-center gap-2 rounded-full border border-red-500/30 bg-red-600/20 px-2.5 py-1 text-[8px] font-bold uppercase tracking-[0.16em] text-white">TROOFLIX ORIGINAL</div>
@@ -1184,7 +1184,7 @@ function WatchEverywhereHero() {
                     <div className="mt-1 text-[10px] leading-relaxed text-white/65">Watch the latest documentary, live sessions, and shorts — only on TROOFLIX.</div>
                     <div className="mt-3 flex items-center gap-2">
                       <div className="rounded-md bg-white px-2.5 py-1 text-[9px] font-bold text-black">Play</div>
-                      <div className="rounded-md border border-white/20 bg-white/10 px-2.5 py-1 text-[9px] font-semibold text-white backdrop-blur-sm">My List</div>
+                      <div className="rounded-md border border-white/20 bg-white/10 px-2.5 py-1 text-[9px] font-semibold text-white">My List</div>
                     </div>
                   </div>
                   <div className="absolute inset-x-5 bottom-4">
@@ -1216,7 +1216,7 @@ function WatchEverywhereHero() {
               transition={{ duration: 0.9, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
               className="absolute left-[2%] bottom-0 w-[240px]"
             >
-              <div className="rounded-t-[18px] border border-white/10 border-b-0 bg-white/[0.04] p-2 backdrop-blur-xl">
+              <div className="rounded-t-[18px] border border-white/10 border-b-0 bg-white/[0.04] p-2">
                 <div className="relative aspect-[16/10] overflow-hidden rounded-[12px] bg-[#09090d]">
                   <div className="absolute inset-x-0 top-0 h-7 border-b border-white/8 bg-[#101014]/95 flex items-center justify-between px-2.5">
                     <div className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-[#ff5f57]" /><span className="h-1.5 w-1.5 rounded-full bg-[#febc2e]" /><span className="h-1.5 w-1.5 rounded-full bg-[#28c840]" /></div>
@@ -1259,7 +1259,7 @@ function WatchEverywhereHero() {
               transition={{ duration: 0.9, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
               className="absolute right-[6%] bottom-1 w-[110px]"
             >
-              <div className="rounded-[28px] border border-white/12 bg-white/[0.05] p-1.5 shadow-[0_24px_70px_rgba(0,0,0,0.55)] backdrop-blur-xl">
+              <div className="rounded-[28px] border border-white/12 bg-white/[0.05] p-1.5 shadow-[0_24px_70px_rgba(0,0,0,0.55)]">
                 <div className="relative aspect-[9/19.5] overflow-hidden rounded-[22px] bg-[#050507]">
                   <img src="/reelpic.jpg" alt="" className="absolute inset-0 h-full w-full object-cover brightness-[0.82]" />
                   <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/80" />
@@ -1269,7 +1269,7 @@ function WatchEverywhereHero() {
                     <div className="rounded-full bg-black/35 px-1.5 py-0.5 text-[7px] font-semibold text-white/80">Shorts</div>
                   </div>
                   <div className="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2 text-white/90">
-                    <div className="h-5 w-5 rounded-full bg-white/15 backdrop-blur-sm" />
+                    <div className="h-5 w-5 rounded-full bg-white/15" />
                     <div className="h-4 w-4 rounded-full bg-white/15" />
                     <div className="h-4 w-4 rounded-full bg-[#E53945]/70" />
                   </div>
@@ -1316,7 +1316,7 @@ function MonetizationHero() {
 
       <div className="relative z-10 mx-auto grid w-full max-w-[1600px] grid-cols-[1.05fr_0.95fr] items-center gap-14 px-8 xl:px-16">
         <div className="relative h-[560px]">
-          <motion.div initial={{ opacity: 0, y: 30, scale: 0.97 }} animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}} transition={{ duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1] }} className="absolute left-0 right-8 top-8 rounded-[30px] border border-white/10 bg-white/[0.04] p-6 shadow-[0_30px_90px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-2xl overflow-hidden">
+          <motion.div initial={{ opacity: 0, y: 30, scale: 0.97 }} animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}} transition={{ duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1] }} className="absolute left-0 right-8 top-8 rounded-[30px] border border-white/10 bg-white/[0.04] p-6 shadow-[0_30px_90px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.08)] overflow-hidden">
             <motion.div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-[#ff4d5a]/10 blur-3xl" animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0.7, 0.4] }} transition={{ duration: 6, repeat: Infinity }} />
             <div className="mb-6 flex items-center justify-between relative">
               <div>
@@ -1347,7 +1347,7 @@ function MonetizationHero() {
               animate={inView ? { opacity: 1, y: [0, -4, 0], x: 0 } : {}}
               transition={{ opacity: { duration: 0.6, delay: 0.35 + i * 0.08 }, y: { duration: 4 + i * 0.3, repeat: Infinity, ease: "easeInOut", delay: 0.8 + i * 0.15 }, x: { duration: 0.6, delay: 0.35 + i * 0.08 } }}
               whileHover={{ y: -8, boxShadow: "0 18px 45px rgba(0,0,0,0.35), 0 0 0 1px rgba(229,57,69,0.18)" }}
-              className={`absolute rounded-2xl border border-white/10 bg-[rgba(255,255,255,0.04)] px-4 py-3 shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-xl ${
+              className={`absolute rounded-2xl border border-white/10 bg-[rgba(255,255,255,0.04)] px-4 py-3 shadow-[0_12px_40px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.06)] ${
                 i === 0 ? "right-0 top-0 w-[210px]" : i === 1 ? "-left-2 top-[150px] w-[190px]" : i === 2 ? "right-[-10px] top-[240px] w-[190px]" : i === 3 ? "left-4 bottom-[130px] w-[200px]" : "right-6 bottom-2 w-[220px]"
               }`}
             >
@@ -1374,7 +1374,7 @@ function MonetizationHero() {
 
           <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-10 flex flex-wrap gap-3">
             {streams.map((s) => (
-              <span key={s.label} className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-md">
+              <span key={s.label} className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-white/80">
                 <span className="text-[#ff7a5c]/90">{s.icon}</span>{s.label}
               </span>
             ))}
@@ -1422,12 +1422,12 @@ function CreatorEconomicsHero() {
 
           <div className="mb-10 flex flex-wrap gap-3">
             {["Flat 1% fee", "Predictable payouts", "No surprise cuts"].map((tag) => (
-              <span key={tag} className="rounded-full border border-[#ff6b4a]/25 bg-[#E53945]/10 px-4 py-2 text-sm font-medium text-white/85 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">{tag}</span>
+              <span key={tag} className="rounded-full border border-[#ff6b4a]/25 bg-[#E53945]/10 px-4 py-2 text-sm font-medium text-white/85 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">{tag}</span>
             ))}
           </div>
 
           <div className="mb-8 grid max-w-3xl grid-cols-2 gap-4">
-            <motion.div whileHover={{ y: -4 }} className="rounded-[26px] border border-[#ff6b4a]/20 bg-white/[0.06] p-6 backdrop-blur-2xl shadow-[0_24px_70px_rgba(0,0,0,0.28),0_0_0_1px_rgba(229,57,69,0.08),0_0_40px_rgba(229,57,69,0.08)]">
+            <motion.div whileHover={{ y: -4 }} className="rounded-[26px] border border-[#ff6b4a]/20 bg-white/[0.06] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.28),0_0_0_1px_rgba(229,57,69,0.08),0_0_40px_rgba(229,57,69,0.08)]">
               <div className="mb-3 flex items-center justify-between">
                 <span className="text-sm font-semibold uppercase tracking-[0.18em] text-[#ffb0a8]">Trooflix</span>
                 <span className="rounded-full border border-[#ff6b4a]/25 bg-[#E53945]/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-white/90">Highlighted</span>
@@ -1437,7 +1437,7 @@ function CreatorEconomicsHero() {
               <div className="mt-2 text-sm text-white/55">You keep $9,900 on $10,000</div>
             </motion.div>
 
-            <motion.div whileHover={{ y: -4 }} className="rounded-[26px] border border-white/10 bg-white/[0.03] p-6 backdrop-blur-xl opacity-80">
+            <motion.div whileHover={{ y: -4 }} className="rounded-[26px] border border-white/10 bg-white/[0.03] p-6 opacity-80">
               <div className="mb-3 flex items-center justify-between">
                 <span className="text-sm font-semibold uppercase tracking-[0.18em] text-white/55">Old Model / YouTube</span>
                 <span className="relative text-sm font-bold text-white/35">45%<span className="absolute left-[-10%] right-[-10%] top-1/2 h-[2px] -translate-y-1/2 rotate-[-12deg] bg-red-500/90" /></span>
@@ -1448,7 +1448,7 @@ function CreatorEconomicsHero() {
             </motion.div>
           </div>
 
-          <div id="earnings-calculator" className="mb-8 max-w-xl rounded-[24px] border border-white/10 bg-white/[0.04] p-5 backdrop-blur-xl">
+          <div id="earnings-calculator" className="mb-8 max-w-xl rounded-[24px] border border-white/10 bg-white/[0.04] p-5">
             <div className="mb-3 flex items-center justify-between">
               <span className="text-sm font-semibold text-white/80">Earnings calculator</span>
               <span className="text-xs uppercase tracking-[0.18em] text-white/40">Monthly revenue</span>
@@ -1489,7 +1489,7 @@ function CreatorEconomicsHero() {
             initial={{ opacity: 0, x: 40, y: 20 }}
             animate={inView ? { opacity: 1, x: 0, y: [0, -6, 0] } : { opacity: 0, x: 40, y: 20 }}
             transition={{ opacity: { duration: 0.7, delay: 0.8 }, x: { duration: 0.7, delay: 0.8 }, y: { duration: 4.5, repeat: Infinity, ease: "easeInOut", delay: 1.2 } }}
-            className="absolute bottom-8 right-0 w-[340px] rounded-2xl border border-white/15 bg-white/[0.07] p-4 shadow-[0_24px_70px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-2xl"
+            className="absolute bottom-8 right-0 w-[340px] rounded-2xl border border-white/15 bg-white/[0.07] p-4 shadow-[0_24px_70px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.12)]"
           >
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-full border border-[#ff6b4a]/40 bg-[#E53945]/20 text-[#ffb0a8]"><CheckCircle2 size={20} /></div>
@@ -1519,7 +1519,7 @@ function HeroLatestShortPhone() {
             <div className="h-full w-full flex items-center justify-center text-[9px] font-black text-white bg-gradient-to-br from-[#E53945] to-[#8a1e26]">T</div>
           </div>
           <span className="text-white text-[10px] font-semibold drop-shadow-md truncate max-w-[90px]">Creator</span>
-          <span className="ml-0.5 px-2 py-0.5 text-[8px] font-bold rounded-md bg-white/20 border border-white/30 text-white backdrop-blur-sm">Follow</span>
+          <span className="ml-0.5 px-2 py-0.5 text-[8px] font-bold rounded-md bg-white/20 border border-white/30 text-white">Follow</span>
         </div>
         <div className="flex items-center justify-between gap-1 text-white/95">
           <div className="flex items-center gap-2.5">
@@ -1728,7 +1728,7 @@ function SignedOutDesktopHero() {
                 <motion.a
                   href="/features"
                   whileHover="hover"
-                  className="group inline-flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/[0.06] px-8 py-4 text-base font-bold text-white backdrop-blur-xl transition hover:bg-white/[0.1]"
+                  className="group inline-flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/[0.06] px-8 py-4 text-base font-bold text-white transition hover:bg-white/[0.1]"
                 >
                   Why Trooflix
                   <motion.span variants={{ hover: { x: 4 } }} transition={{ type: "spring", stiffness: 300, damping: 20 }} className="inline-flex">
@@ -1952,13 +1952,13 @@ function DetailModal({ item, onClose, onPlay, creators }: { item: Video; onClose
             
             <p className="text-xs md:text-sm text-white/70 mb-3 md:mb-4">{metaParts.join(" · ")}</p>
             <div className="flex items-center gap-2 md:gap-3 flex-wrap">
-              <button onClick={() => onPlay(item)} className="flex items-center gap-2 bg-white/[0.16] backdrop-blur-2xl backdrop-saturate-150 border border-white/25 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] text-white font-bold text-sm px-4 md:px-5 py-2 md:py-2.5 rounded-xl shadow-lg hover:bg-white/30 transition-all active:scale-95"><Play size={18} fill="currentColor" /> Play</button>
+              <button onClick={() => onPlay(item)} className="flex items-center gap-2 bg-white/[0.16] backdrop-saturate-150 border border-white/25 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] text-white font-bold text-sm px-4 md:px-5 py-2 md:py-2.5 rounded-xl shadow-lg hover:bg-white/30 transition-all active:scale-95"><Play size={18} fill="currentColor" /> Play</button>
               
-              <div className="flex items-center justify-center w-[36px] h-[36px] md:w-[40px] md:h-[40px] bg-white/[0.12] backdrop-blur-2xl backdrop-saturate-150 border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.16)] rounded-xl hover:bg-white/20 transition-all text-white cursor-pointer">
+              <div className="flex items-center justify-center w-[36px] h-[36px] md:w-[40px] md:h-[40px] bg-white/[0.12] backdrop-saturate-150 border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.16)] rounded-xl hover:bg-white/20 transition-all text-white cursor-pointer">
                 <SaveButton videoId={item.id} variant="icon" size={20} />
               </div>
 
-              <div className="flex items-center gap-2 bg-[#000000]/40 backdrop-blur-md border border-white/10 rounded-xl px-2 py-1 md:py-1.5 ml-0 md:ml-2 shadow-lg">
+              <div className="flex items-center gap-2 bg-[#000000]/40 border border-white/10 rounded-xl px-2 py-1 md:py-1.5 ml-0 md:ml-2 shadow-lg">
                 {uploaderPhoto ? <img src={uploaderPhoto} alt={uploaderName} className="w-6 h-6 md:w-7 md:h-7 rounded-full object-cover border border-white/20" /> : <div className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-[10px] font-bold text-white">{uploaderInitial}</div>}
                 <div className="min-w-0 flex flex-col justify-center">
                   <p className="text-[7px] uppercase tracking-widest text-white/50 leading-none mb-0.5">Uploaded by</p>

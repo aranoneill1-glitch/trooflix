@@ -80,7 +80,7 @@ export default function PWAInstallButton() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[400] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+            className="fixed inset-0 z-[400] bg-black/80 flex items-center justify-center p-4"
             onClick={() => setShowIOSHint(false)}
           >
             <motion.div

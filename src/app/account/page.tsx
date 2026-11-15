@@ -235,7 +235,7 @@ export default function AccountPage() {
         <div className="space-y-6">
           
           {/* Hero Backdrop Section */}
-          <section className="bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 overflow-hidden w-full">
+          <section className="bg-[#1c1c1e]/60 border border-white/10 rounded-3xl p-6 md:p-8 overflow-hidden w-full">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
                 <ImageIcon size={20} className="text-white/70" />
@@ -282,7 +282,7 @@ export default function AccountPage() {
           </section>
 
           {/* Avatar Section */}
-          <section className="bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 overflow-hidden w-full">
+          <section className="bg-[#1c1c1e]/60 border border-white/10 rounded-3xl p-6 md:p-8 overflow-hidden w-full">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
                 <Camera size={20} className="text-white/70" />
@@ -321,7 +321,7 @@ export default function AccountPage() {
           </section>
 
           {/* Edit Details Section */}
-          <section className="bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 overflow-hidden w-full">
+          <section className="bg-[#1c1c1e]/60 border border-white/10 rounded-3xl p-6 md:p-8 overflow-hidden w-full">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
                 <User size={20} className="text-white/70" />
@@ -366,7 +366,7 @@ export default function AccountPage() {
           </section>
 
           {/* Username & Email Section */}
-          <section className="bg-[#1c1c1e]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 overflow-hidden w-full">
+          <section className="bg-[#1c1c1e]/60 border border-white/10 rounded-3xl p-6 md:p-8 overflow-hidden w-full">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
                 <AtSign size={20} className="text-white/70" />

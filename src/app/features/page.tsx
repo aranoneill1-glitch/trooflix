@@ -51,7 +51,7 @@ export default function FeaturesPage() {
         {/* GRID FEATURES */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-20">
           
-          <div className="bg-white/[0.08] backdrop-blur-2xl backdrop-saturate-150 border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] rounded-3xl p-8 hover:bg-white/10 transition">
+          <div className="bg-white/[0.08] backdrop-saturate-150 border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] rounded-3xl p-8 hover:bg-white/10 transition">
             <ShieldCheck size={32} className="text-[#E53945] mb-6" />
             <h3 className="text-2xl font-bold mb-3">Zero Censorship. Zero Algorithms.</h3>
             <p className="text-white/60 leading-relaxed">
@@ -59,7 +59,7 @@ export default function FeaturesPage() {
             </p>
           </div>
 
-          <div className="bg-white/[0.08] backdrop-blur-2xl backdrop-saturate-150 border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] rounded-3xl p-8 hover:bg-white/10 transition">
+          <div className="bg-white/[0.08] backdrop-saturate-150 border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] rounded-3xl p-8 hover:bg-white/10 transition">
             <Download size={32} className="text-[#E53945] mb-6" />
             <h3 className="text-2xl font-bold mb-3">1-Click YouTube Migration</h3>
             <p className="text-white/60 leading-relaxed">
@@ -67,7 +67,7 @@ export default function FeaturesPage() {
             </p>
           </div>
 
-          <div className="bg-white/[0.08] backdrop-blur-2xl backdrop-saturate-150 border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] rounded-3xl p-8 hover:bg-white/10 transition">
+          <div className="bg-white/[0.08] backdrop-saturate-150 border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] rounded-3xl p-8 hover:bg-white/10 transition">
             <Radio size={32} className="text-[#E53945] mb-6" />
             <h3 className="text-2xl font-bold mb-3">Broadcast-Quality Live</h3>
             <p className="text-white/60 leading-relaxed">
@@ -75,7 +75,7 @@ export default function FeaturesPage() {
             </p>
           </div>
 
-          <div className="bg-white/[0.08] backdrop-blur-2xl backdrop-saturate-150 border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] rounded-3xl p-8 hover:bg-white/10 transition">
+          <div className="bg-white/[0.08] backdrop-saturate-150 border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] rounded-3xl p-8 hover:bg-white/10 transition">
             <MessageSquare size={32} className="text-[#E53945] mb-6" />
             <h3 className="text-2xl font-bold mb-3">Built-in Voice & Video Calls</h3>
             <p className="text-white/60 leading-relaxed">
@@ -83,7 +83,7 @@ export default function FeaturesPage() {
             </p>
           </div>
 
-          <div className="bg-white/[0.08] backdrop-blur-2xl backdrop-saturate-150 border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] rounded-3xl p-8 hover:bg-white/10 transition">
+          <div className="bg-white/[0.08] backdrop-saturate-150 border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] rounded-3xl p-8 hover:bg-white/10 transition">
             <Store size={32} className="text-[#E53945] mb-6" />
             <h3 className="text-2xl font-bold mb-3">A Full Storefront</h3>
             <p className="text-white/60 leading-relaxed">
@@ -91,7 +91,7 @@ export default function FeaturesPage() {
             </p>
           </div>
 
-          <div className="bg-white/[0.08] backdrop-blur-2xl backdrop-saturate-150 border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] rounded-3xl p-8 hover:bg-white/10 transition">
+          <div className="bg-white/[0.08] backdrop-saturate-150 border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] rounded-3xl p-8 hover:bg-white/10 transition">
             <Zap size={32} className="text-[#E53945] mb-6" />
             <h3 className="text-2xl font-bold mb-3">Multipart Video Uploads</h3>
             <p className="text-white/60 leading-relaxed">

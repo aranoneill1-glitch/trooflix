@@ -164,30 +164,30 @@ export default function CustomVideoPlayer({ src, poster, onClose, userTier = "fr
             {/* Top Bar */}
             <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-start pointer-events-auto bg-gradient-to-b from-black/60 to-transparent">
               <div className="flex gap-4">
-                <button onClick={() => onClose ? onClose() : router.back()} className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition">
+                <button onClick={() => onClose ? onClose() : router.back()} className="w-12 h-12 rounded-full bg-black/40 border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition">
                   <X size={24} />
                 </button>
-                <button onClick={handleAirplay} className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition">
+                <button onClick={handleAirplay} className="w-12 h-12 rounded-full bg-black/40 border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition">
                   <Airplay size={24} />
                 </button>
               </div>
-              <button onClick={toggleMute} className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition">
+              <button onClick={toggleMute} className="w-12 h-12 rounded-full bg-black/40 border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition">
                 {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
               </button>
             </div>
 
             {/* Center Playback Controls */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-8 pointer-events-auto">
-              <button onClick={() => skip(-10)} className="w-16 h-16 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition">
+              <button onClick={() => skip(-10)} className="w-16 h-16 rounded-full bg-black/40 border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition">
                 <RotateCcw size={32} />
                 <span className="absolute text-[10px] font-bold mt-1">10</span>
               </button>
               
-              <button onClick={togglePlay} className="w-24 h-24 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition">
+              <button onClick={togglePlay} className="w-24 h-24 rounded-full bg-black/40 border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition">
                 {isPlaying ? <Pause size={48} fill="currentColor" /> : <Play size={48} fill="currentColor" className="ml-2" />}
               </button>
 
-              <button onClick={() => skip(10)} className="w-16 h-16 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition">
+              <button onClick={() => skip(10)} className="w-16 h-16 rounded-full bg-black/40 border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition">
                 <RotateCw size={32} />
                 <span className="absolute text-[10px] font-bold mt-1">10</span>
               </button>
@@ -199,7 +199,7 @@ export default function CustomVideoPlayer({ src, poster, onClose, userTier = "fr
                 {showSpeedMenu && (
                   <motion.div 
                     initial={{ opacity: 0, y: 10, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.9 }}
-                    className="bg-black/60 backdrop-blur-xl border border-white/10 rounded-2xl p-2 flex flex-col gap-1 mb-1"
+                    className="bg-black/60 border border-white/10 rounded-2xl p-2 flex flex-col gap-1 mb-1"
                   >
                     {[1, 1.25, 1.5, 2].map((s) => (
                       <button 
@@ -213,7 +213,7 @@ export default function CustomVideoPlayer({ src, poster, onClose, userTier = "fr
                   </motion.div>
                 )}
               </AnimatePresence>
-              <button onClick={() => { setShowSpeedMenu(!showSpeedMenu); handleInteraction(); }} className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition text-sm font-bold">
+              <button onClick={() => { setShowSpeedMenu(!showSpeedMenu); handleInteraction(); }} className="w-12 h-12 rounded-full bg-black/40 border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition text-sm font-bold">
                 {speed}x
               </button>
             </div>

@@ -59,7 +59,7 @@ export default function BookStorePage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search books, authors..."
-              className="w-full bg-[#1c1c1e]/80 backdrop-blur-md border border-white/10 rounded-full pl-11 pr-4 py-3 text-sm outline-none focus:border-amber-500 transition placeholder:text-white/30"
+              className="w-full bg-[#1c1c1e]/80 border border-white/10 rounded-full pl-11 pr-4 py-3 text-sm outline-none focus:border-amber-500 transition placeholder:text-white/30"
             />
           </div>
         </div>

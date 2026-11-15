@@ -54,7 +54,7 @@ export default function SecurityBillingPage() {
 
         <div className="space-y-6">
           {/* Security Card */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white/5 border border-white/10 rounded-2xl p-6">
             <div className="flex items-center gap-3 mb-6"><Shield className="text-[#E53945]" size={24} /><h2 className="text-lg font-bold">Change Password</h2></div>
             <form onSubmit={handlePasswordChange} className="space-y-4">
               <div><label className="block text-xs font-bold text-white/60 mb-1">New Password</label><input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#E53945]" placeholder="••••••••" /></div>
@@ -65,7 +65,7 @@ export default function SecurityBillingPage() {
           </motion.div>
 
           {/* Billing Card */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-xl">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white/5 border border-white/10 rounded-2xl p-6">
             <div className="flex items-center gap-3 mb-6"><CreditCard className="text-[#D4AF37]" size={24} /><h2 className="text-lg font-bold">Billing & Subscription</h2></div>
             {billingLoading ? <p className="text-white/50">Loading billing details...</p> : billingData?.subscription ? (
               <div className="space-y-4">

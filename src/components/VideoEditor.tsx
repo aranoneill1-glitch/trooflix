@@ -367,7 +367,7 @@ export default function VideoEditor({ file, onCancel, onApply }: Props) {
   const playPct = duration ? (currentTime / duration) * 100 : 0;
 
   return (
-    <div className="fixed inset-0 z-[500] bg-black/95 backdrop-blur-sm flex flex-col">
+    <div className="fixed inset-0 z-[500] bg-black/95 flex flex-col">
       <div className="flex items-center justify-between px-4 py-3 border-b border-white/10" style={{ paddingTop: "calc(env(safe-area-inset-top) + 12px)" }}>
         <button onClick={onCancel} disabled={exporting} className="p-2 rounded-full bg-white/5 border border-white/10 text-white/80 disabled:opacity-40">
           <X size={18} />
@@ -394,12 +394,12 @@ export default function VideoEditor({ file, onCancel, onApply }: Props) {
           ) : null}
           <button
             onClick={togglePlay}
-            className="absolute bottom-3 right-3 w-11 h-11 rounded-full bg-black/55 backdrop-blur-md border border-white/15 flex items-center justify-center text-white"
+            className="absolute bottom-3 right-3 w-11 h-11 rounded-full bg-black/55 border border-white/15 flex items-center justify-center text-white"
             aria-label={playing ? "Pause" : "Play"}
           >
             {playing ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className="ml-0.5" />}
           </button>
-          <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/55 backdrop-blur-md border border-white/10 text-[11px] font-bold text-white">
+          <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-black/55 border border-white/10 text-[11px] font-bold text-white">
             {formatTime(currentTime)} / {formatTimeShort(duration)}
           </div>
         </div>

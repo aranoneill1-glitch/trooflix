@@ -214,7 +214,7 @@ export default function MyTrooFlixContent({ embedded = false }: { embedded?: boo
                     <div className="relative aspect-video rounded-xl overflow-hidden bg-[#1c1c1e] mb-3 shadow-2xl">
                       <img src={v.posterUrl || v.backdropUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                       <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-xl">
+                        <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center border border-white/30 shadow-xl">
                           <Play size={20} fill="white" className="text-white ml-1" />
                         </div>
                       </div>

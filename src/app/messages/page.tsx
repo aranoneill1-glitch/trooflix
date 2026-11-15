@@ -211,7 +211,7 @@ export default function MessagesInbox() {
     <main className="flex flex-col text-white overflow-hidden relative" style={{ background: profileBackdrop ? "transparent" : "#000000", height: "100dvh" }}>
       {bgStyle && (
         <div className="fixed inset-0 z-0" style={bgStyle as any}>
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-md" />
+          <div className="absolute inset-0 bg-black/60" />
         </div>
       )}
       <div className="relative z-10 flex flex-col h-full overflow-hidden">
@@ -220,7 +220,7 @@ export default function MessagesInbox() {
       {/* Instagram-style header */}
       <div
         className="pt-[calc(env(safe-area-inset-top)+76px)] flex-shrink-0 border-b border-white/5"
-        style={{ background: profileBackdrop ? "rgba(0,0,0,0.25)" : "#000000", backdropFilter: profileBackdrop ? "blur(12px)" : undefined }}
+        style={{ background: profileBackdrop ? "rgba(0,0,0,0.25)" : "#000000",}}
       >
         
               <div className="mx-auto w-full max-w-5xl px-4 md:px-6"><CreatorStudioNav active="chat" className="mb-3" /></div>
@@ -228,7 +228,7 @@ export default function MessagesInbox() {
 <div className="max-w-3xl mx-auto flex items-center justify-between px-4 md:px-6 py-3">
           
           {/* Glass Pill Tabs */}
-          <div className="flex bg-white/[0.12] backdrop-blur-2xl backdrop-saturate-150 p-1 rounded-full border border-white/20 shadow-[0_8px_30px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.16)]">
+          <div className="flex bg-white/[0.12] backdrop-saturate-150 p-1 rounded-full border border-white/20 shadow-[0_8px_30px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.16)]">
             <button
               onClick={() => setActiveTab("messages")}
               className={`px-6 py-1.5 rounded-full text-sm font-bold transition-all ${activeTab === "messages" ? "bg-white text-black shadow-md" : "text-white/50 hover:text-white"}`}

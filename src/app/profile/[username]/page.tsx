@@ -373,7 +373,7 @@ export default function PublicProfilePage() {
       
       {/* Background */}
       <div className="fixed inset-0 z-0 lg:hidden" style={bgStyle}>
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+        <div className="absolute inset-0 bg-black/50" />
       </div>
       <div className="fixed inset-0 z-0 hidden lg:block bg-[#09090B]" />
 
@@ -616,7 +616,7 @@ export default function PublicProfilePage() {
                         <div key={video.id} className="bg-[#1c1c1e] border border-white/10 rounded-2xl overflow-hidden group cursor-pointer relative">
                           <div className="relative aspect-square">
                             <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-40" />
-                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-[2px]">
+                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40]">
                               <Lock size={24} className="text-[#E53945] mb-2" />
                               <span className="text-[10px] font-bold text-white uppercase tracking-wider">Premium</span>
                             </div>
@@ -745,7 +745,7 @@ export default function PublicProfilePage() {
       </div>
     
       {showSubscribeModal && (
-        <div className="fixed inset-0 z-[500] bg-black/80 backdrop-blur-md flex items-center justify-center p-4" onClick={() => setShowSubscribeModal(false)}>
+        <div className="fixed inset-0 z-[500] bg-black/80 flex items-center justify-center p-4" onClick={() => setShowSubscribeModal(false)}>
           <div className="bg-[#0f0f12] border border-white/10 rounded-3xl w-full max-w-sm p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
             <h2 className="text-xl font-black text-center mb-2">Subscribe to {displayName}</h2>
             <p className="text-white/50 text-sm text-center mb-6">Pay with TrooCoins</p>

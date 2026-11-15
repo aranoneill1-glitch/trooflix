@@ -45,7 +45,7 @@ export default function NotificationsPage() {
       <TopBar />
       
       <div className="max-w-2xl mx-auto px-4 pt-24">
-        <div className="flex items-center gap-4 mb-6 sticky top-20 z-30 bg-[#0a0303]/90 backdrop-blur-md py-2">
+        <div className="flex items-center gap-4 mb-6 sticky top-20 z-30 bg-[#0a0303]/90 py-2">
           <button onClick={() => window.history.back()} className="p-2 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition">
             <ArrowLeft size={20} />
           </button>

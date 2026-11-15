@@ -281,7 +281,7 @@ function SearchContent() {
               <input
                 ref={inputRef}
                 type="text"
-                className="w-full bg-[#1c1c1e]/80 backdrop-blur-xl text-white font-medium text-base md:text-lg placeholder:text-white/40 rounded-full py-4 md:py-5 pl-12 md:pl-16 pr-24 border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#E53945]/50 focus:border-[#E53945]/50 shadow-2xl transition-all"
+                className="w-full bg-[#1c1c1e]/80 text-white font-medium text-base md:text-lg placeholder:text-white/40 rounded-full py-4 md:py-5 pl-12 md:pl-16 pr-24 border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#E53945]/50 focus:border-[#E53945]/50 shadow-2xl transition-all"
                 placeholder="Search creators, live, shorts, videos, podcasts..."
                 value={query}
                 onFocus={() => setIsFocused(true)}
@@ -305,7 +305,7 @@ function SearchContent() {
 
               {/* Suggestions / Recent dropdown */}
               {isFocused && (query.trim().length > 0 || recentSearches.length > 0) && (
-                <div className="absolute top-full left-0 right-0 mt-3 bg-[#111114]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden text-left z-20">
+                <div className="absolute top-full left-0 right-0 mt-3 bg-[#111114]/95 border border-white/10 rounded-2xl shadow-2xl overflow-hidden text-left z-20">
                   {query.trim().length === 0 && recentSearches.length > 0 && (
                     <div className="p-2">
                       <div className="flex items-center justify-between px-3 py-2">
@@ -474,7 +474,7 @@ function SearchContent() {
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                       <div className="absolute bottom-0 left-0 p-3 md:p-6 flex items-center justify-between w-full">
                         <h3 className="text-lg md:text-2xl font-black text-white drop-shadow-lg">{cat.name}</h3>
-                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-4 group-hover:translate-x-0">
+                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-4 group-hover:translate-x-0">
                           <ChevronRight size={16} className="text-white" />
                         </div>
                       </div>
@@ -495,7 +495,7 @@ function SearchContent() {
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                       <div className="absolute bottom-0 left-0 p-3 md:p-6 flex items-center justify-between w-full">
                         <h3 className="text-lg md:text-2xl font-black text-white drop-shadow-lg">{cat.name}</h3>
-                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-4 group-hover:translate-x-0">
+                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-4 group-hover:translate-x-0">
                           <ChevronRight size={16} className="text-white" />
                         </div>
                       </div>

@@ -172,7 +172,7 @@ export default function UserMenu() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 mt-3 w-56 bg-white/10 backdrop-blur-2xl backdrop-saturate-150 border border-white/20 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.16)] overflow-hidden z-[300]"
+            className="absolute right-0 mt-3 w-56 bg-white/10 backdrop-saturate-150 border border-white/20 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.16)] overflow-hidden z-[300]"
           >
             <div className="p-4 border-b border-white/5 flex items-start justify-between gap-2">
               <div className="min-w-0 flex-1">
@@ -275,7 +275,7 @@ export default function UserMenu() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-md flex flex-col items-center justify-center min-h-[100dvh] px-6 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]"
+            className="fixed inset-0 z-[9999] bg-black/90 flex flex-col items-center justify-center min-h-[100dvh] px-6 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]"
           >
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
