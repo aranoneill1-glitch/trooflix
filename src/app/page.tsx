@@ -1002,6 +1002,16 @@ function WatchEverywhereHero() {
             <br className="hidden xl:block" />
             A seamless, cinematic experience — wherever you watch.
           </p>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={inView ? { opacity: 1 } : {}}
+            transition={{ duration: 1, delay: 0.45 }}
+            className="mt-6 flex flex-wrap items-center gap-2.5 text-sm"
+          >
+            {["Phone", "Desktop", "Smart TV", "Fire Stick"].map((item) => (
+              <span key={item} className="rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-white/45">{item}</span>
+            ))}
+          </motion.div>
         </motion.div>
 
         <motion.div
@@ -1132,16 +1142,6 @@ function WatchEverywhereHero() {
             </motion.div>
           </div>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={inView ? { opacity: 1 } : {}}
-            transition={{ duration: 1, delay: 0.45 }}
-            className="mt-6 flex flex-wrap items-center justify-center gap-2.5 text-sm"
-          >
-            {["Phone", "Desktop", "Smart TV", "Fire Stick"].map((item) => (
-              <span key={item} className="rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-white/45">{item}</span>
-            ))}
-          </motion.div>
         </motion.div>
       </div>
     </section>
