@@ -9,9 +9,10 @@ type Props = {
   videoId: number | null;
   open: boolean;
   onClose: () => void;
+  hideComposer?: boolean;
 };
 
-export default function CommentSheet({ videoId, open, onClose }: Props) {
+export default function CommentSheet({ videoId, open, onClose, hideComposer = false }: Props) {
   const [count, setCount] = useState(0);
   const [sortState, setSortState] = useState<{sort: string, setter: ((s: any) => void) | null}>({ sort: "newest", setter: null });
 
@@ -91,6 +92,7 @@ export default function CommentSheet({ videoId, open, onClose }: Props) {
             <div className="flex-1 overflow-y-auto overscroll-contain px-5 pb-6 mt-4">
               <Comments 
                 videoId={videoId} 
+                hideComposer={hideComposer}
                 onMetaChange={(c, s, setter) => {
                   setCount(c);
                   setSortState({ sort: s, setter: setter });

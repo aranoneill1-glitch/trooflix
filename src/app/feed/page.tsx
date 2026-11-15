@@ -158,7 +158,7 @@ export default function ShortsFeedPage() {
       </Link>
       
       {/* MOBILE VIEW */}
-      <div className="lg:hidden w-full h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide relative bg-black pb-[calc(env(safe-area-inset-bottom)+62px)]">
+      <div className="lg:hidden w-full h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide relative bg-black pb-[calc(env(safe-area-inset-bottom)+72px)]">
         {videos.map((video) => {
           const creator = creators.find((c) => String(c.id) === String(video.creatorId)) || null;
           return (
@@ -183,45 +183,52 @@ export default function ShortsFeedPage() {
           videoId={commentSheetVideoId}
           open={commentSheetVideoId !== null}
           onClose={() => setCommentSheetVideoId(null)}
+          hideComposer
         />
       </div>
 
-      {/* Shared mobile bottom action bar (always visible) */}
-      {activeVideo && (
-        <div className="lg:hidden fixed inset-x-0 bottom-2 z-[260] pointer-events-auto bg-transparent">
-          <div className="flex items-center justify-around px-4 pt-1 pb-[calc(env(safe-area-inset-bottom)+10px)]">
-            <div className="flex items-center justify-center min-w-0 flex-1 text-white">
-              <LikeButton key={activeVideo.id} videoId={activeVideo.id} size={30} showCount={true} stacked={false} />
+      {/* Mobile shorts bottom UI: comment bar + vertical actions */}
+      {activeVideo && commentSheetVideoId === null && (
+        <>
+          <div className="lg:hidden fixed right-3 bottom-[calc(env(safe-area-inset-bottom)+78px)] z-[260] pointer-events-auto flex flex-col items-center gap-4">
+            <div className="flex flex-col items-center text-white drop-shadow-lg">
+              <LikeButton key={activeVideo.id} videoId={activeVideo.id} size={30} showCount={true} stacked={true} />
             </div>
-
-            <button
-              onClick={() => setCommentSheetVideoId(activeVideo.id)}
-              aria-label="Open comments"
-              className="flex items-center justify-center gap-1.5 min-w-0 flex-1 text-white hover:text-white/90 transition"
-            >
-              <MessageCircle size={30} strokeWidth={2.2} className="text-white/90" />
-              <span className="text-[13px] font-extrabold tracking-tight">{(commentCounts[activeVideo.id] ?? (commentCounts as any)[String(activeVideo.id)] ?? 0) || 0}</span>
-            </button>
 
             <button
               onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: activeVideo.creatorId, videoId: activeVideo.id } }))}
               aria-label="Tip creator"
-              className="flex items-center justify-center min-w-0 flex-1 text-white hover:text-white/90 transition"
+              className="flex flex-col items-center text-white drop-shadow-lg hover:text-white/90 transition"
             >
-              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="text-white/90">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="text-white/95">
                 <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
                 <circle cx="12" cy="12" r="6.6" stroke="currentColor" strokeWidth="1.2" opacity="0.75" />
                 <path d="M10.2 5.8L9.4 3.9M13.8 5.8L14.6 3.9M10.2 18.2L9.4 20.1M13.8 18.2L14.6 20.1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.9" />
                 <text x="12" y="15" textAnchor="middle" fontSize="7.2" fontWeight="800" fill="currentColor" fontFamily="system-ui, -apple-system, sans-serif">TC</text>
               </svg>
+              <span className="text-[11px] font-bold mt-0.5">Tip</span>
             </button>
 
-            <div className="flex items-center justify-center gap-1.5 min-w-0 flex-1 text-white">
-              <Eye size={30} strokeWidth={2.2} className="text-white/90" />
-              <span className="text-[13px] font-extrabold tracking-tight">{(viewCounts[activeVideo.id] ?? Number((activeVideo as any).views || 0)) || 0}</span>
+            <div className="flex flex-col items-center text-white drop-shadow-lg">
+              <Eye size={28} strokeWidth={2.2} className="text-white/95" />
+              <span className="text-[11px] font-bold mt-0.5">{(viewCounts[activeVideo.id] ?? Number((activeVideo as any).views || 0)) || 0}</span>
             </div>
           </div>
-        </div>
+
+          <div className="lg:hidden fixed inset-x-0 bottom-0 z-[260] px-3 pb-[calc(env(safe-area-inset-bottom)+8px)] pt-2 pointer-events-auto">
+            <button
+              onClick={() => setCommentSheetVideoId(activeVideo.id)}
+              className="w-full flex items-center gap-3 rounded-full bg-white/10 border border-white/15 backdrop-blur-md px-4 h-11 text-left text-white/75 shadow-lg"
+              aria-label="Add a comment"
+            >
+              <MessageCircle size={18} className="text-white/70 shrink-0" />
+              <span className="text-sm truncate">Add a comment...</span>
+              <span className="ml-auto text-xs font-semibold text-white/60">
+                {(commentCounts[activeVideo.id] ?? (commentCounts as any)[String(activeVideo.id)] ?? 0) || 0}
+              </span>
+            </button>
+          </div>
+        </>
       )}
 
       {/* DESKTOP VIEW */}
