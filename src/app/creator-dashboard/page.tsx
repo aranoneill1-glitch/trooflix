@@ -585,7 +585,7 @@ function CreatorDashboardContent() {
               </div>
 
               {activeContentTab === "Shorts" && (
-                <div className="w-full -mx-4 sm:mx-0">
+                <div className="w-full -mx-4 lg:mx-0">
                   {videosLoading ? (
                     <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" /></div>
                   ) : filteredVideos.length === 0 ? (
