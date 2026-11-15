@@ -1170,34 +1170,7 @@ function MonetizationHero() {
       <motion.div className="pointer-events-none absolute left-1/2 top-[58%] h-px w-[70%] -translate-x-1/2 bg-gradient-to-r from-transparent via-[#ff6b4a]/30 to-transparent" animate={{ opacity: [0.2, 0.5, 0.2] }} transition={{ duration: 4, repeat: Infinity }} />
 
 
-      <div className="relative z-10 mx-auto grid w-full max-w-[1600px] grid-cols-[0.95fr_1.05fr] items-center gap-14 px-8 xl:px-16">
-        <motion.div initial="hidden" animate={inView ? "visible" : "hidden"} variants={{ visible: { transition: { staggerChildren: 0.1 } } }} className="max-w-3xl">
-          <motion.p variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-5 text-[11px] font-bold uppercase tracking-[0.34em] text-white/45">MONETIZATION</motion.p>
-          <motion.h2 variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8 } } }} className="mb-7 text-[56px] font-black leading-[0.96] tracking-tighter text-white xl:text-[74px] 2xl:text-[88px]">
-            Turn your audience<br />
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff4d5a] via-[#ff6b4a] to-orange-400">into a business.</span>
-          </motion.h2>
-          <motion.p variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-8 max-w-2xl text-lg font-medium leading-relaxed text-white/65 xl:text-xl">
-            Subscriptions. Tips. Merchandise. Paid communities.<br className="hidden xl:block" />
-            One platform where every dollar flows directly to you — with only a 1% fee.
-          </motion.p>
-
-          <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-10 flex flex-wrap gap-3">
-            {streams.map((s) => (
-              <span key={s.label} className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-md">
-                <span className="text-[#ff7a5c]/90">{s.icon}</span>{s.label}
-              </span>
-            ))}
-          </motion.div>
-
-          <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="flex flex-col items-start gap-3">
-            <motion.a href="/signup" whileHover={{ scale: 1.03, boxShadow: "0 0 0 1px rgba(255,255,255,0.1), 0 18px 45px rgba(229,57,69,0.28), 0 0 30px rgba(255,106,42,0.16)" }} whileTap={{ scale: 0.99 }} className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#E53945] to-[#ff6a2a] px-8 py-4 text-base font-bold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_18px_40px_rgba(229,57,69,0.24)]">
-              Start Building Your Business <ArrowRight size={18} />
-            </motion.a>
-            <p className="text-sm font-medium text-white/45">You own the relationship. You own the revenue.</p>
-          </motion.div>
-        </motion.div>
-
+      <div className="relative z-10 mx-auto grid w-full max-w-[1600px] grid-cols-[1.05fr_0.95fr] items-center gap-14 px-8 xl:px-16">
         <div className="relative h-[560px]">
           <motion.div initial={{ opacity: 0, y: 30, scale: 0.97 }} animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}} transition={{ duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1] }} className="absolute left-0 right-8 top-8 rounded-[30px] border border-white/10 bg-white/[0.04] p-6 shadow-[0_30px_90px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-2xl overflow-hidden">
             <motion.div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-[#ff4d5a]/10 blur-3xl" animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0.7, 0.4] }} transition={{ duration: 6, repeat: Infinity }} />
@@ -1243,6 +1216,33 @@ function MonetizationHero() {
             </motion.div>
           ))}
         </div>
+
+        <motion.div initial="hidden" animate={inView ? "visible" : "hidden"} variants={{ visible: { transition: { staggerChildren: 0.1 } } }} className="max-w-3xl">
+          <motion.p variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-5 text-[11px] font-bold uppercase tracking-[0.34em] text-white/45">MONETIZATION</motion.p>
+          <motion.h2 variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8 } } }} className="mb-7 text-[56px] font-black leading-[0.96] tracking-tighter text-white xl:text-[74px] 2xl:text-[88px]">
+            Turn your audience<br />
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff4d5a] via-[#ff6b4a] to-orange-400">into a business.</span>
+          </motion.h2>
+          <motion.p variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-8 max-w-2xl text-lg font-medium leading-relaxed text-white/65 xl:text-xl">
+            Subscriptions. Tips. Merchandise. Paid communities.<br className="hidden xl:block" />
+            One platform where every dollar flows directly to you — with only a 1% fee.
+          </motion.p>
+
+          <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-10 flex flex-wrap gap-3">
+            {streams.map((s) => (
+              <span key={s.label} className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-md">
+                <span className="text-[#ff7a5c]/90">{s.icon}</span>{s.label}
+              </span>
+            ))}
+          </motion.div>
+
+          <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="flex flex-col items-start gap-3">
+            <motion.a href="/signup" whileHover={{ scale: 1.03, boxShadow: "0 0 0 1px rgba(255,255,255,0.1), 0 18px 45px rgba(229,57,69,0.28), 0 0 30px rgba(255,106,42,0.16)" }} whileTap={{ scale: 0.99 }} className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#E53945] to-[#ff6a2a] px-8 py-4 text-base font-bold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_18px_40px_rgba(229,57,69,0.24)]">
+              Start Building Your Business <ArrowRight size={18} />
+            </motion.a>
+            <p className="text-sm font-medium text-white/45">You own the relationship. You own the revenue.</p>
+          </motion.div>
+        </motion.div>
       </div>
     </section>
   );
