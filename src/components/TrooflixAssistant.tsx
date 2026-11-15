@@ -13,28 +13,29 @@ type Action = {
   query?: string;
   tab?: "bought" | "sold";
   mediaType?: "video" | "short" | "podcast" | "documentary" | "tweet";
+  action?: string;
 };
 
 type ChatMsg = { role: "user" | "assistant"; text: string; actions?: Action[] };
 
 const QUICK_ACTIONS = [
-  { label: "Home", prompt: "go home", icon: Home },
+  { label: "Create", prompt: "open create menu", icon: Sparkles },
   { label: "Reels", prompt: "open reels", icon: Play },
+  { label: "Like this", prompt: "like this video", icon: Sparkles },
+  { label: "Comments", prompt: "open comments", icon: MessageSquare },
+  { label: "Tip", prompt: "send a tip", icon: Wallet },
   { label: "Search", prompt: "open search", icon: Search },
   { label: "Add credits", prompt: "add credits", icon: Wallet },
   { label: "Orders", prompt: "show my orders", icon: ShoppingBag },
-  { label: "Messages", prompt: "open messages", icon: MessageSquare },
   { label: "Notifications", prompt: "open notifications", icon: Bell },
-  { label: "Profile", prompt: "open my profile", icon: User },
-  { label: "Merch", prompt: "open merchandise", icon: Store },
   { label: "Dashboard", prompt: "open creator dashboard", icon: LayoutDashboard },
   { label: "Upload", prompt: "upload a video", icon: Upload },
   { label: "Go Live", prompt: "go live", icon: Radio },
-  { label: "Manage", prompt: "manage content", icon: FolderCog },
 ];
 
 function normalizeAction(a: Action): Action | null {
   if (!a || typeof a !== "object") return null;
+  if (a.type === "ui" && typeof a.action === "string") return a;
   if (a.type === "navigate" && typeof a.path === "string" && a.path.startsWith("/")) return a;
   if (a.type === "open_topup") return { type: "navigate", path: "/wallet?topup=true", label: "Add credits" };
   if (a.type === "open_orders") return { type: "navigate", path: `/orders${a.tab === "sold" ? "?tab=sold" : ""}`, label: a.tab === "sold" ? "Sold orders" : "My orders" };
@@ -89,6 +90,17 @@ export default function TrooflixAssistant() {
   const runAction = async (action: Action) => {
     const a = normalizeAction(action);
     if (!a) return;
+    if (a.type === "ui" && a.action) {
+      const act = a.action;
+      if (act === "open_create_menu") document.dispatchEvent(new CustomEvent("open-create-menu"));
+      else if (act === "close_assistant") setOpen(false);
+      else if (act === "refresh") window.location.reload();
+      else if (act === "go_back") window.history.length > 1 ? router.back() : router.push("/");
+      else if (act === "scroll_top") window.scrollTo({ top: 0, behavior: "smooth" });
+      else document.dispatchEvent(new CustomEvent("trooflix-assistant-action", { detail: { action: act } }));
+      if (act !== "close_assistant") setOpen(false);
+      return;
+    }
     if (a.type === "navigate" && a.path) {
       // If not logged in, some destinations will require auth; let app handle redirect.
       if (!userId && ["/wallet", "/orders", "/messages", "/creator-dashboard"].some(p => a.path!.startsWith(p))) {

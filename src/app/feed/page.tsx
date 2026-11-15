@@ -103,6 +103,41 @@ export default function ShortsFeedPage() {
     }
   };
 
+  useEffect(() => {
+    const ctx = activeVideo ? { id: activeVideo.id, creatorId: activeVideo.creatorId ?? null, uploaderUserId: activeVideo.uploaderUserId ?? null, title: activeVideo.title } : null;
+    (window as any).__trooflixActiveReel = ctx;
+    return () => { if ((window as any).__trooflixActiveReel?.id === ctx?.id) (window as any).__trooflixActiveReel = null; };
+  }, [activeVideo]);
+
+  useEffect(() => {
+    const onAssistant = (e: Event) => {
+      const detail = (e as CustomEvent)?.detail || {};
+      const action = detail.action || detail.type;
+      if (!action) return;
+      if (action === "open_comments" && activeVideo) { setCommentSheetVideoId(activeVideo.id); return; }
+      if (action === "close_comments") { setCommentSheetVideoId(null); return; }
+      if (action === "open_tip" && activeVideo) {
+        window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: activeVideo.creatorId, videoId: activeVideo.id } }));
+        return;
+      }
+      if ((action === "like" || action === "like_reel" || action === "toggle_like") && activeVideo) {
+        externalLike(activeVideo.id);
+        return;
+      }
+      if ((action === "share" || action === "share_reel" || action === "open_share") && activeVideo) {
+        const url = `${window.location.origin}/feed?reel=${activeVideo.id}`;
+        if (navigator.share) navigator.share({ title: activeVideo.title || "Trooflix", url }).catch(() => {});
+        else navigator.clipboard?.writeText(url).catch(() => {});
+        return;
+      }
+      if (action === "toggle_mute") { toggleMute(); return; }
+      if (action === "next_reel" || action === "scroll_down") { scrollDown(); return; }
+      if (action === "prev_reel" || action === "scroll_up") { scrollUp(); return; }
+    };
+    document.addEventListener("trooflix-assistant-action", onAssistant as EventListener);
+    return () => document.removeEventListener("trooflix-assistant-action", onAssistant as EventListener);
+  }, [activeVideo, isMuted]);
+
   if (loading) {
     return (
       <main className="h-[100dvh] bg-black flex items-center justify-center">

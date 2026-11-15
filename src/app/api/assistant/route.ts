@@ -11,6 +11,7 @@ type AssistantAction =
   | { type: "open_upload"; mediaType?: "video" | "short" | "podcast" | "documentary" | "tweet" }
   | { type: "open_search"; query?: string }
   | { type: "open_profile" }
+  | { type: "ui"; action: string; label?: string }
   | { type: "message"; text: string };
 
 function normalize(s: string) {
@@ -70,6 +71,44 @@ const COMMANDS: Cmd[] = [
 function heuristicActions(message: string): { reply: string; actions: AssistantAction[] } {
   const m = normalize(message);
 
+  // UI / contextual actions (app master)
+  if (/\b(open|show)\b.*\b(create|add content|add)\b.*\bmenu\b|\bcreate menu\b|\badd content\b/.test(m)) {
+    return { reply: "Opening the create menu.", actions: [{ type: "ui", action: "open_create_menu", label: "Open Create Menu" }] };
+  }
+  if (/\brefresh\b|\breload\b/.test(m)) {
+    return { reply: "Refreshing the app.", actions: [{ type: "ui", action: "refresh", label: "Refresh" }] };
+  }
+  if (/\bgo back\b|\bback\b/.test(m) && !/\bplayback\b/.test(m)) {
+    return { reply: "Going back.", actions: [{ type: "ui", action: "go_back", label: "Go Back" }] };
+  }
+  if (/\bscroll (to )?top\b|\btop of page\b/.test(m)) {
+    return { reply: "Scrolling to the top.", actions: [{ type: "ui", action: "scroll_top", label: "Scroll to Top" }] };
+  }
+  if (/\b(open|show)\b.*\bcomments?\b|\bcomments?\b.*\b(open|show)\b/.test(m)) {
+    return { reply: "Opening comments for the current video (if available).", actions: [{ type: "ui", action: "open_comments", label: "Open Comments" }] };
+  }
+  if (/\b(like|heart)\b.*\b(this|video|reel|short)\b|\blike this\b/.test(m)) {
+    return { reply: "Liking the current video/reel (if available).", actions: [{ type: "ui", action: "like_reel", label: "Like Current Video" }] };
+  }
+  if (/\b(tip|send tip|support)\b.*\b(creator|this|video|reel)\b|\btip creator\b/.test(m)) {
+    return { reply: "Opening tip for the current creator/video (if available).", actions: [{ type: "ui", action: "open_tip", label: "Send Tip" }] };
+  }
+  if (/\bshare\b.*\b(this|video|reel|short)\b|\bshare this\b/.test(m)) {
+    return { reply: "Sharing the current video/reel (if available).", actions: [{ type: "ui", action: "share_reel", label: "Share" }] };
+  }
+  if (/\bnext (reel|short|video)\b|\bscroll down\b|\bswipe down\b/.test(m)) {
+    return { reply: "Moving to the next reel/video.", actions: [{ type: "ui", action: "next_reel", label: "Next Reel" }] };
+  }
+  if (/\b(previous|prev) (reel|short|video)\b|\bscroll up\b|\bswipe up\b/.test(m)) {
+    return { reply: "Moving to the previous reel/video.", actions: [{ type: "ui", action: "prev_reel", label: "Previous Reel" }] };
+  }
+  if (/\b(mute|unmute|toggle mute|sound)\b/.test(m)) {
+    return { reply: "Toggling sound/mute (if available).", actions: [{ type: "ui", action: "toggle_mute", label: "Toggle Mute" }] };
+  }
+  if (/\b(close|hide)\b.*\bassistant\b/.test(m)) {
+    return { reply: "Closing assistant.", actions: [{ type: "ui", action: "close_assistant", label: "Close Assistant" }] };
+  }
+
   // Search with query extraction
   if (/\b(search|find|look for|discover)\b/.test(m)) {
     const q = message.replace(/^(please\s+)?(can you\s+)?(search|find|look for|discover)\s*(for)?\s*/i, "").trim();
@@ -89,14 +128,14 @@ function heuristicActions(message: string): { reply: string; actions: AssistantA
 
   return {
     reply: pick([
-      "I can help you navigate Trooflix. Try: home, reels, search, wallet/top up, orders, messages, notifications, profile, account, merch, creators, TV/books/movies, upgrade, apply, login/signup, or Creator Dashboard (upload, go live, manage content, shop, orders, settings, theme, subscriptions, import, fix posters, security & billing). What do you want to do?",
-      "Tell me where you want to go — e.g. “open wallet”, “go live”, “manage content”, “creator shop”, “notifications”, or “search for documentaries”.",
+      "I can control and navigate Trooflix. Try: open create menu, go live, upload, manage content, add credits, orders, messages, notifications, profile, merch, search, or on Reels try “open comments”, “like this”, “send tip”, “share this”, “next reel”, “refresh”, “go back”. What do you want to do?",
+      "I’m your app master — I can open pages/buttons and trigger actions like create menu, comments, like/tip/share on the current reel, navigation, refresh, and more. Tell me what you need.",
     ]),
     actions: [
-      { type: "navigate", path: "/", label: "Home" },
-      { type: "navigate", path: "/search", label: "Search" },
-      { type: "navigate", path: "/creator-dashboard", label: "Creator Dashboard" },
+      { type: "ui", action: "open_create_menu", label: "Open Create Menu" },
+      { type: "navigate", path: "/feed", label: "Open Reels" },
       { type: "navigate", path: "/wallet?topup=true", label: "Add Credits" },
+      { type: "navigate", path: "/creator-dashboard", label: "Creator Dashboard" },
     ],
   };
 }
@@ -135,6 +174,7 @@ Allowed actions:
 - {"type":"open_upload","mediaType":"video"|"short"|"podcast"|"documentary"|"tweet"}
 - {"type":"open_search","query":"..."}
 - {"type":"open_profile"}
+- {"type":"ui","action":"open_create_menu|close_assistant|refresh|go_back|scroll_top|open_comments|open_tip|like_reel|share_reel|next_reel|prev_reel|toggle_mute","label":"..."} (for on-screen/contextual controls; best effort depending on current page)
 
 Map user requests to these app routes/buttons/features when relevant:
 Home /, Reels/Shorts /feed, Search /search?q=..., Wallet /wallet, Top up /wallet?topup=true, Orders /orders and /orders?tab=sold, Messages /messages, Notifications /notifications, My Profile /creator-dashboard?studioTab=profile, Account /account, My List /my-list, Merchandise/Shop /merchandise, Creators /creators, TV /tv, Books /books, Movies /movies, Upgrade/Plus /upgrade, Apply /apply, Features /features, Why Trooflix /why-trooflix, Terms /terms, Login /login, Sign up /signup, Forgot password /forgot-password.
