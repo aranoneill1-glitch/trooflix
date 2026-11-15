@@ -37,6 +37,9 @@ export default function VideoEditor({ file, onCancel, onApply }: Props) {
   const [exporting, setExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
   const [thumbs, setThumbs] = useState<string[]>([]);
+  const exportingRef = useRef(false);
+
+  useEffect(() => { exportingRef.current = exporting; }, [exporting]);
 
   useEffect(() => {
     const url = URL.createObjectURL(file);
@@ -57,7 +60,8 @@ export default function VideoEditor({ file, onCancel, onApply }: Props) {
     const onTime = () => {
       const t = v.currentTime;
       setCurrentTime(t);
-      if (playing && t >= end - 0.05) {
+      // Loop preview only in normal playback, never during export recording
+      if (!exportingRef.current && playing && t >= end - 0.05) {
         v.currentTime = start;
         v.play().catch(() => {});
       }
@@ -203,6 +207,7 @@ export default function VideoEditor({ file, onCancel, onApply }: Props) {
       return;
     }
 
+    exportingRef.current = true;
     setExporting(true);
     setExportProgress(0);
     let progressTimer: any = null;
@@ -286,35 +291,44 @@ export default function VideoEditor({ file, onCancel, onApply }: Props) {
       v.muted = wasMuted;
       v.volume = prevVolume;
 
-      recorder.start(500);
+      recorder.start(250);
       if ((stream as any).__draw) (stream as any).__draw();
+      const exportStart = Math.max(0, Math.min(start, Math.max(0, duration - 0.1)));
+      const exportEnd = Math.max(exportStart + 0.1, Math.min(end, duration));
+      let exportStarted = v.currentTime >= exportStart - 0.05;
       await v.play().catch(() => { throw new Error("Could not play video for export"); });
 
       progressTimer = setInterval(() => {
-        const prog = Math.min(100, Math.max(0, ((v.currentTime - start) / Math.max(0.1, selectedDuration)) * 100));
+        const prog = Math.min(100, Math.max(0, ((v.currentTime - exportStart) / Math.max(0.1, exportEnd - exportStart)) * 100));
         setExportProgress(Math.round(prog));
       }, 200);
 
-      await new Promise<void>((resolve, reject) => {
+      await new Promise<void>((resolve) => {
+        let finished = false;
         const cleanup = () => {
           v.removeEventListener("ended", onEnded);
           if (stopCheck) clearInterval(stopCheck);
         };
-        const finish = () => { cleanup(); resolve(); };
+        const finish = () => {
+          if (finished) return;
+          finished = true;
+          cleanup();
+          resolve();
+        };
         const onEnded = () => finish();
         v.addEventListener("ended", onEnded);
         stopCheck = setInterval(() => {
-          if (v.currentTime >= end - 0.04 || v.ended) {
+          if (v.currentTime >= exportStart - 0.02) exportStarted = true;
+          if (exportStarted && (v.currentTime >= exportEnd - 0.03 || v.ended)) {
             try { v.pause(); } catch {}
             finish();
           }
-        }, 60);
+        }, 50);
         // safety timeout (real-time export + buffer)
         setTimeout(() => {
           try { v.pause(); } catch {}
           finish();
-        }, Math.max(5000, (selectedDuration + 5) * 1000));
-        // if recorder errors mid-way, reject via onerror handler above (done promise) — we still resolve stop flow
+        }, Math.max(7000, (exportEnd - exportStart + 8) * 1000));
       });
 
       if (progressTimer) clearInterval(progressTimer);
@@ -328,7 +342,8 @@ export default function VideoEditor({ file, onCancel, onApply }: Props) {
       const ext = finalType.includes("mp4") ? "mp4" : "webm";
       const outName = (file.name.replace(/\.[^.]+$/, "") || "video") + `_trimmed.${ext}`;
       const outFile = new File([blob], outName, { type: finalType });
-      onApply({ file: outFile, duration: selectedDuration, posterBlob: poster });
+      const actualExportDuration = Math.max(0.1, exportEnd - exportStart);
+      onApply({ file: outFile, duration: actualExportDuration, posterBlob: poster });
     } catch (err) {
       console.error(err);
       alert("Could not export trimmed video in this browser. Uploading original video instead. For best results, try Chrome on desktop.");
@@ -342,6 +357,7 @@ export default function VideoEditor({ file, onCancel, onApply }: Props) {
       if (stopCheck) clearInterval(stopCheck);
       try { if (recorder && recorder.state !== "inactive") recorder.stop(); } catch {}
       try { stream?.getTracks().forEach((t) => t.stop()); } catch {}
+      exportingRef.current = false;
       setExporting(false);
     }
   };
