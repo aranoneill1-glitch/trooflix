@@ -530,10 +530,6 @@ export default function Home() {
                     </a>
                   </div>
                 </div>
-
-                <div className="w-full">
-                  <FeaturedVideoHero videos={featuredHeroVideos.length > 0 ? featuredHeroVideos : heroPool} onSelect={handleCardSelect} className="-mx-0" />
-                </div>
               </div>
 
               {/* FEATURES HEROES (DESKTOP SIGNED-OUT) */}
