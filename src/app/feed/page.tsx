@@ -106,7 +106,7 @@ export default function ShortsFeedPage() {
   if (loading) {
     return (
       <main className="h-[100dvh] bg-black flex items-center justify-center">
-        <Link href="/" aria-label="Return to Home" className="fixed left-4 top-[calc(env(safe-area-inset-top)+12px)] z-[100] inline-flex h-11 w-11 items-center justify-center text-white drop-shadow-lg transition hover:scale-110">
+        <Link href="/" aria-label="Return to Home" className="fixed left-4 top-[calc(env(safe-area-inset-top)+22px)] z-[100] inline-flex h-11 w-11 items-center justify-center text-white drop-shadow-lg transition hover:scale-110">
           <ArrowLeft size={28} strokeWidth={2.5} />
         </Link>
         <div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" />
@@ -118,12 +118,12 @@ export default function ShortsFeedPage() {
 
   return (
     <main className="h-[100dvh] w-full bg-[#050505] overflow-hidden flex flex-col lg:flex-row">
-      <Link href="/" aria-label="Return to Home" className="fixed left-4 top-[calc(env(safe-area-inset-top)+12px)] z-[100] inline-flex h-11 w-11 items-center justify-center text-white drop-shadow-lg transition hover:scale-110">
+      <Link href="/" aria-label="Return to Home" className="fixed left-4 top-[calc(env(safe-area-inset-top)+22px)] z-[100] inline-flex h-11 w-11 items-center justify-center text-white drop-shadow-lg transition hover:scale-110">
         <ArrowLeft size={28} strokeWidth={2.5} />
       </Link>
       
       {/* MOBILE VIEW */}
-      <div className="lg:hidden w-full h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide relative bg-black">
+      <div className="lg:hidden w-full h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide relative bg-black pb-[calc(env(safe-area-inset-bottom)+62px)]">
         {videos.map((video) => {
           const creator = creators.find((c) => String(c.id) === String(video.creatorId)) || null;
           return (
@@ -131,12 +131,9 @@ export default function ShortsFeedPage() {
               key={video.id}
               video={video}
               creator={creator}
-              viewCount={viewCounts[video.id] ?? Number(video.views || 0)}
-              commentCount={commentCounts[video.id] ?? commentCounts[String(video.id) as any] ?? 0}
               onViewCounted={() => setViewCounts((prev) => ({ ...prev, [video.id]: (prev[video.id] ?? Number(video.views || 0)) + 1 }))}
               isMuted={isMuted}
               onToggleMute={toggleMute}
-              onOpenComments={() => setCommentSheetVideoId(video.id)}
               onSetActive={() => setActiveVideo(video)}
             />
           );
@@ -153,6 +150,44 @@ export default function ShortsFeedPage() {
           onClose={() => setCommentSheetVideoId(null)}
         />
       </div>
+
+      {/* Shared mobile bottom action bar (always visible) */}
+      {activeVideo && (
+        <div className="lg:hidden fixed inset-x-0 bottom-0 z-[260] pointer-events-auto border-t border-white/10 bg-[#070709]">
+          <div className="flex items-center justify-around px-4 pt-1 pb-[calc(env(safe-area-inset-bottom)+4px)]">
+            <div className="flex items-center justify-center min-w-0 flex-1 text-white">
+              <LikeButton key={activeVideo.id} videoId={activeVideo.id} size={30} showCount={true} stacked={false} />
+            </div>
+
+            <button
+              onClick={() => setCommentSheetVideoId(activeVideo.id)}
+              aria-label="Open comments"
+              className="flex items-center justify-center gap-1.5 min-w-0 flex-1 text-white hover:text-white/90 transition"
+            >
+              <MessageCircle size={30} strokeWidth={2.2} className="text-white/90" />
+              <span className="text-[13px] font-extrabold tracking-tight">{(commentCounts[activeVideo.id] ?? (commentCounts as any)[String(activeVideo.id)] ?? 0) || 0}</span>
+            </button>
+
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: activeVideo.creatorId, videoId: activeVideo.id } }))}
+              aria-label="Tip creator"
+              className="flex items-center justify-center min-w-0 flex-1 text-white hover:text-white/90 transition"
+            >
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="text-white/90">
+                <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+                <circle cx="12" cy="12" r="6.6" stroke="currentColor" strokeWidth="1.2" opacity="0.75" />
+                <path d="M10.2 5.8L9.4 3.9M13.8 5.8L14.6 3.9M10.2 18.2L9.4 20.1M13.8 18.2L14.6 20.1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.9" />
+                <text x="12" y="15" textAnchor="middle" fontSize="7.2" fontWeight="800" fill="currentColor" fontFamily="system-ui, -apple-system, sans-serif">TC</text>
+              </svg>
+            </button>
+
+            <div className="flex items-center justify-center gap-1.5 min-w-0 flex-1 text-white">
+              <Eye size={30} strokeWidth={2.2} className="text-white/90" />
+              <span className="text-[13px] font-extrabold tracking-tight">{(viewCounts[activeVideo.id] ?? Number((activeVideo as any).views || 0)) || 0}</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* DESKTOP VIEW */}
       <div className="hidden lg:flex w-full h-full items-center bg-[#050505] overflow-hidden">
@@ -376,7 +411,7 @@ function DesktopVideoShort({ video, isMuted, onSetActive }: { video: Video, isMu
   );
 }
 
-function MobileVideoShort({ video, creator, viewCount, commentCount, onViewCounted, isMuted, onToggleMute, onOpenComments, onSetActive }: { video: Video, creator: Creator | null, viewCount: number, commentCount: number, onViewCounted: () => void, isMuted: boolean, onToggleMute: () => void, onOpenComments: () => void, onSetActive: () => void }) {
+function MobileVideoShort({ video, creator, onViewCounted, isMuted, onToggleMute, onSetActive }: { video: Video, creator: Creator | null, onViewCounted: () => void, isMuted: boolean, onToggleMute: () => void, onSetActive: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isActive, setIsActive] = useState(false);
   const onSetActiveRef = useRef(onSetActive);
@@ -725,14 +760,21 @@ function MobileVideoShort({ video, creator, viewCount, commentCount, onViewCount
       )}
 
       {showPlayIcon && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 pointer-events-none">
           <div className="w-20 h-20 bg-black/50 backdrop-blur-md rounded-full flex items-center justify-center">
             {isPlaying ? <Pause size={40} className="text-white" fill="currentColor" /> : <Play size={40} className="text-white ml-2" fill="currentColor" />}
           </div>
+          <button
+            onClick={(e) => { e.stopPropagation(); onToggleMute(); }}
+            aria-label={isMuted ? "Unmute reel" : "Mute reel"}
+            className="pointer-events-auto w-12 h-12 rounded-full bg-black/50 backdrop-blur-md border border-white/15 flex items-center justify-center text-white"
+          >
+            {isMuted ? <VolumeX size={22} strokeWidth={2.2} /> : <Volume2 size={22} strokeWidth={2.2} />}
+          </button>
         </div>
       )}
 
-      <div className={`absolute left-4 right-4 lg:right-[80px] bottom-[calc(env(safe-area-inset-bottom)+112px)] lg:bottom-[150px] z-30 flex flex-col items-start gap-3 pointer-events-none transition-opacity duration-200 ${isActive ? "opacity-100" : "opacity-0"}`}>
+      <div className={`absolute left-4 right-4 lg:right-[80px] bottom-[calc(env(safe-area-inset-bottom)+76px)] lg:bottom-[150px] z-30 flex flex-col items-start gap-3 pointer-events-none transition-opacity duration-150 ${isActive ? "opacity-100" : "opacity-0"}`}>
         <div 
           className="text-white text-[14px] drop-shadow-md leading-snug cursor-pointer pointer-events-auto max-w-[92%]"
           onClick={toggleExpand}
@@ -770,53 +812,9 @@ function MobileVideoShort({ video, creator, viewCount, commentCount, onViewCount
           </button>
         </div>
 
-        {/* Audio kept separate from action tab */}
-        <button
-          onClick={onToggleMute}
-          aria-label={isMuted ? "Unmute reel" : "Mute reel"}
-          className="pointer-events-auto text-white hover:scale-110 active:scale-95 transition-transform p-2 rounded-full bg-black/35 backdrop-blur-md border border-white/10 focus:outline-none"
-        >
-          {isMuted ? <VolumeX size={22} strokeWidth={2.2} /> : <Volume2 size={22} strokeWidth={2.2} />}
-        </button>
       </div>
 
-      {/* Bottom action bar: like, comment, tip, views (avatar excluded) */}
-      <div className={`fixed inset-x-0 bottom-0 z-[260] lg:absolute lg:inset-x-auto lg:right-[80px] lg:bottom-[92px] lg:w-[360px] pointer-events-auto border-t border-white/10 bg-[#070709] lg:border lg:rounded-2xl transition-opacity duration-200 ${isActive ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
-        <div className="flex items-center justify-around px-4 pt-1 pb-[calc(env(safe-area-inset-bottom)+4px)] lg:pb-3">
-          <div className="flex items-center justify-center min-w-0 flex-1 text-white">
-            <LikeButton videoId={video.id} size={30} showCount={true} stacked={false} />
-          </div>
-
-          <button
-            onClick={onOpenComments}
-            aria-label="Open comments"
-            className="flex items-center justify-center gap-1.5 min-w-0 flex-1 text-white hover:text-white/90 transition"
-          >
-            <MessageCircle size={30} strokeWidth={2.2} className="text-white/90" />
-            <span className="text-[13px] font-extrabold tracking-tight">{commentCount || 0}</span>
-          </button>
-
-          <button
-            onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: video.creatorId, videoId: video.id } }))}
-            aria-label="Tip creator"
-            className="flex items-center justify-center min-w-0 flex-1 text-white hover:text-white/90 transition"
-          >
-            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="text-white/90">
-              <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
-              <circle cx="12" cy="12" r="6.6" stroke="currentColor" strokeWidth="1.2" opacity="0.75" />
-              <path d="M10.2 5.8L9.4 3.9M13.8 5.8L14.6 3.9M10.2 18.2L9.4 20.1M13.8 18.2L14.6 20.1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.9" />
-              <text x="12" y="15" textAnchor="middle" fontSize="7.2" fontWeight="800" fill="currentColor" fontFamily="system-ui, -apple-system, sans-serif">TC</text>
-            </svg>
-          </button>
-
-          <div className="flex items-center justify-center gap-1.5 min-w-0 flex-1 text-white">
-            <Eye size={30} strokeWidth={2.2} className="text-white/90" />
-            <span className="text-[13px] font-extrabold tracking-tight">{viewCount || 0}</span>
-          </div>
-        </div>
-      </div>
-
-      <div className={`absolute left-0 right-0 bottom-[calc(env(safe-area-inset-bottom)+70px)] lg:bottom-[85px] z-[255] pointer-events-none px-0 lg:px-4 transition-opacity duration-200 ${isActive ? "opacity-100" : "opacity-0"}`}>
+      <div className={`absolute left-0 right-0 bottom-[calc(env(safe-area-inset-bottom)+66px)] lg:bottom-[85px] z-[255] pointer-events-none px-0 lg:px-4 transition-opacity duration-150 ${isActive ? "opacity-100" : "opacity-0"}`}>
         <div 
           ref={progressBarRef}
           className="relative w-full h-[3px] bg-transparent cursor-pointer touch-none py-3 -my-3 pointer-events-auto"
