@@ -471,40 +471,40 @@ function CreatorDashboardContent() {
                   }}
                 />
               </div>
-              <div className="hidden lg:block mb-6 w-full">
-                <div className="min-w-0 max-w-2xl">
-                  <div className="flex items-center gap-5 mb-5">
-                    <div onClick={() => setShowAvatarMenu(true)} className="w-24 h-24 rounded-full p-[3px] bg-gradient-to-tr from-[#E53945] to-orange-500 shrink-0 cursor-pointer group relative">
-                      <div className="w-full h-full rounded-full border-4 border-[#09090B] overflow-hidden bg-[#1c1c1e] relative">
-                        {profile?.avatar_url ? <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-3xl font-bold">{displayName.charAt(0)}</div>}
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"><Camera size={24} className="text-white" /></div>
-                      </div>
-                    </div>
-                    <div className="flex min-w-0 flex-1 justify-start gap-8">
-                      <div><span className="font-bold text-white block text-xl">{formatNumber(followerCount)}</span><span className="text-white/50 text-[11px] uppercase tracking-wider">Followers</span></div>
-                      <div><span className="font-bold text-white block text-xl">{formatNumber(subscriberCount)}</span><span className="text-white/50 text-[11px] uppercase tracking-wider">Subscribers</span></div>
-                      <div><span className="font-bold text-white block text-xl">{creatorVideos.length}</span><span className="text-white/50 text-[11px] uppercase tracking-wider">Posts</span></div>
+              <div className="hidden lg:grid lg:grid-cols-3 lg:gap-10 lg:items-start mb-8 w-full">
+                <div className="flex items-start justify-start">
+                  <div onClick={() => setShowAvatarMenu(true)} className="w-44 h-44 xl:w-56 xl:h-56 rounded-full p-[4px] bg-gradient-to-tr from-[#E53945] to-orange-500 shrink-0 cursor-pointer group relative">
+                    <div className="w-full h-full rounded-full border-4 border-[#09090B] overflow-hidden bg-[#1c1c1e] relative">
+                      {profile?.avatar_url ? <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-5xl font-bold">{displayName.charAt(0)}</div>}
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"><Camera size={28} className="text-white" /></div>
                     </div>
                   </div>
-                  <div className="pl-1">
-                    <h1 className="text-2xl xl:text-3xl font-black flex min-w-0 items-center gap-2 text-white">{displayName} {profile?.verification_tick && profile.verification_tick !== "none" && <VerifiedBadge size={20} variant={profile.verification_tick as any} />}</h1>
-                    <p className="text-sm text-white/50 mt-1 mb-3">@{username}</p>
-                    <div className="flex items-center gap-4 mb-3">
-                      <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors"><InstagramIcon size={14} /><span className="text-xs font-semibold">{profile?.instagram_handle || "@instagram"}</span></a>
-                      <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors"><XIcon size={14} /><span className="text-xs font-semibold">{profile?.x_handle || "@x"}</span></a>
-                    </div>
-                    <p className="text-sm text-white/70 leading-relaxed max-w-xl">{profile?.bio || "No bio yet."}</p>
-                    <div className="mt-4 flex flex-wrap items-center gap-3">
-                      {userTier === "creator" ? (
-                        <Link href="/creator-dashboard/live" className="inline-flex items-center gap-2 rounded-full border border-[#E53945]/70 px-4 py-2 text-sm font-bold text-[#F06A72] transition hover:bg-[#E53945]/10"><Radio size={15} /> Go Live</Link>
-                      ) : (
-                        <button onClick={() => { window.location.href = "/upgrade?feature=go_live"; }} className="inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm font-bold text-white/55 transition hover:bg-white/5"><Radio size={15} /> Go Live <Lock size={11} /></button>
-                      )}
-                      <button onClick={() => profileFeatureInputRef.current?.click()} className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/20 px-4 py-2 text-sm font-bold text-white/80 backdrop-blur-sm transition hover:bg-white/10">
-                        <Pencil size={14} /> {uploadingProfileFeature ? "Uploading..." : "Change featured"}
-                      </button>
-                    </div>
+                </div>
+
+                <div className="min-w-0">
+                  <h1 className="text-3xl xl:text-4xl font-black flex min-w-0 items-center gap-2 text-white">{displayName} {profile?.verification_tick && profile.verification_tick !== "none" && <VerifiedBadge size={22} variant={profile.verification_tick as any} />}</h1>
+                  <p className="text-base text-white/50 mt-1 mb-3">@{username}</p>
+                  <div className="flex items-center gap-4 mb-4 flex-wrap">
+                    <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors"><InstagramIcon size={14} /><span className="text-xs font-semibold">{profile?.instagram_handle || "@instagram"}</span></a>
+                    <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors"><XIcon size={14} /><span className="text-xs font-semibold">{profile?.x_handle || "@x"}</span></a>
                   </div>
+                  <p className="text-sm text-white/70 leading-relaxed mb-5">{profile?.bio || "No bio yet."}</p>
+                  <div className="flex flex-wrap items-center gap-3">
+                    {userTier === "creator" ? (
+                      <Link href="/creator-dashboard/live" className="inline-flex items-center gap-2 rounded-full border border-[#E53945]/70 px-4 py-2 text-sm font-bold text-[#F06A72] transition hover:bg-[#E53945]/10"><Radio size={15} /> Go Live</Link>
+                    ) : (
+                      <button onClick={() => { window.location.href = "/upgrade?feature=go_live"; }} className="inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm font-bold text-white/55 transition hover:bg-white/5"><Radio size={15} /> Go Live <Lock size={11} /></button>
+                    )}
+                    <button onClick={() => profileFeatureInputRef.current?.click()} className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/20 px-4 py-2 text-sm font-bold text-white/80 backdrop-blur-sm transition hover:bg-white/10">
+                      <Pencil size={14} /> {uploadingProfileFeature ? "Uploading..." : "Change featured"}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-6 lg:pl-4">
+                  <div className="text-left"><span className="font-black text-white block text-3xl xl:text-4xl">{formatNumber(followerCount)}</span> <span className="text-white/50 text-xs uppercase tracking-wider font-semibold">Followers</span></div>
+                  <div className="text-left"><span className="font-black text-white block text-3xl xl:text-4xl">{formatNumber(subscriberCount)}</span> <span className="text-white/50 text-xs uppercase tracking-wider font-semibold">Subscribers</span></div>
+                  <div className="text-left"><span className="font-black text-white block text-3xl xl:text-4xl">{creatorVideos.length}</span> <span className="text-white/50 text-xs uppercase tracking-wider font-semibold">Posts</span></div>
                 </div>
               </div>
               <div className="flex flex-col mb-6 w-full lg:hidden">

@@ -399,48 +399,34 @@ export default function PublicProfilePage() {
 
           {/* CREATOR-STYLE PROFILE LAYOUT */}
           <div className="animate-in fade-in duration-300">
-<div className="flex flex-col lg:flex-row gap-8 w-full">
-<div className="flex flex-col w-full lg:w-1/2">
-            <div className="flex flex-col mb-6 w-full">
-              
-              <div className="flex items-center gap-4 w-full mb-4">
-                {/* AVATAR (Clickable if live) */}
-                <div 
+            {/* Desktop: 3-column profile header */}
+            <div className="hidden lg:grid lg:grid-cols-3 lg:gap-10 lg:items-start mb-8 w-full">
+              <div className="flex items-start justify-start">
+                <div
                   onClick={() => profile.is_live && router.push(`/live/${profile.username}`)}
-                  className={`w-24 h-24 md:w-28 md:h-28 rounded-full p-[3px] shrink-0 relative ${profile.is_live ? 'cursor-pointer bg-red-600 animate-pulse' : 'bg-gradient-to-tr from-[#E53945] to-orange-500'}`}
+                  className={`w-44 h-44 xl:w-56 xl:h-56 rounded-full p-[4px] shrink-0 relative ${profile.is_live ? 'cursor-pointer bg-red-600 animate-pulse' : 'bg-gradient-to-tr from-[#E53945] to-orange-500'}`}
                 >
                   <div className="w-full h-full rounded-full border-4 border-[#09090B] overflow-hidden bg-[#1c1c1e] relative">
                     {profile.avatar_url ? (
                       <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-3xl font-bold">{displayName.charAt(0)}</div>
+                      <div className="w-full h-full flex items-center justify-center text-5xl font-bold">{displayName.charAt(0)}</div>
                     )}
-                    
                     {profile.is_live && (
                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                        <span className="text-white text-xs font-bold bg-red-600 px-2 py-1 rounded-sm shadow-lg whitespace-nowrap">WATCH LIVE</span>
+                        <span className="text-white text-sm font-bold bg-red-600 px-3 py-1.5 rounded-sm shadow-lg whitespace-nowrap">WATCH LIVE</span>
                       </div>
                     )}
                   </div>
                 </div>
-
-                {/* STATS */}
-                <div className="flex-1 flex justify-around md:justify-start md:gap-8 px-2">
-                  <div className="text-center md:text-left"><span className="font-bold text-white block text-xl">{formatNumber(followerCount)}</span> <span className="text-white/50 text-[11px] uppercase tracking-wider">Followers</span></div>
-                  <div className="text-center md:text-left"><span className="font-bold text-white block text-xl">{formatNumber(subscriberCount)}</span> <span className="text-white/50 text-[11px] uppercase tracking-wider">Subscribers</span></div>
-                  <div className="text-center md:text-left"><span className="font-bold text-white block text-xl">{videos.length}</span> <span className="text-white/50 text-[11px] uppercase tracking-wider">Posts</span></div>
-                </div>
               </div>
 
-              {/* NAME, HANDLE, SOCIALS, BIO */}
-              <div className="px-1">
-                <div className="flex items-center gap-3 mb-1 w-full">
-                  <h1 className="text-2xl md:text-3xl font-black flex items-center gap-2 text-white">
-                    {displayName} {(profile as any).verification_tick && (profile as any).verification_tick !== "none" && <VerifiedBadge size={20} variant={(profile as any).verification_tick as any} />}
+              <div className="min-w-0">
+                <div className="flex items-center gap-3 mb-1 w-full flex-wrap">
+                  <h1 className="text-3xl xl:text-4xl font-black flex items-center gap-2 text-white">
+                    {displayName} {(profile as any).verification_tick && (profile as any).verification_tick !== "none" && <VerifiedBadge size={22} variant={(profile as any).verification_tick as any} />}
                   </h1>
-                  
-                  {/* FOLLOW BUTTON (Top Right) */}
-                  <button 
+                  <button
                     onClick={handleFollow}
                     disabled={isSubmittingFollow}
                     className={`shrink-0 flex items-center justify-center gap-1.5 font-bold px-5 py-1.5 rounded-full transition shadow-lg text-sm ${isSubmittingFollow ? "opacity-50 cursor-wait" : isFollowing ? "bg-white/10 text-white border border-white/20" : "bg-white text-black hover:bg-gray-200"}`}
@@ -448,10 +434,8 @@ export default function PublicProfilePage() {
                     <UserPlus size={16} /> {isFollowing ? "Following" : "Follow"}
                   </button>
                 </div>
-                
-                <p className="text-sm md:text-base text-white/50 mb-3">@{username}</p>
-                
-                <div className="flex items-center gap-4 mb-4">
+                <p className="text-base text-white/50 mb-3">@{username}</p>
+                <div className="flex items-center gap-4 mb-4 flex-wrap">
                   {profile.instagram_handle && (
                     <a href={`https://instagram.com/${profile.instagram_handle}`} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors">
                       <InstagramIcon size={14} />
@@ -465,35 +449,116 @@ export default function PublicProfilePage() {
                     </a>
                   )}
                 </div>
-                <p className="text-sm text-white/60 leading-relaxed">{profile.bio || "No bio yet."}</p>
+                <p className="text-sm text-white/70 leading-relaxed mb-5">{profile.bio || "No bio yet."}</p>
+                <div className="flex gap-3 w-full max-w-xl">
+                  {isSubscribed ? (
+                    <>
+                      <button onClick={handleCancelSubscription} disabled={cancelLoading} className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-red-500/20 text-red-400 font-bold py-3 rounded-full transition border border-red-500/30 disabled:opacity-50">
+                        <X size={18} /> {cancelLoading ? "Cancelling..." : "Cancel Subscription"}
+                      </button>
+                      <Link href={`/messages/${profile.user_id}`} className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-full transition border border-white/10">
+                        <MessageSquare size={18} /> Message
+                      </Link>
+                    </>
+                  ) : (
+                    <>
+                      <button onClick={() => setShowSubscribeModal(true)} className="flex-1 flex items-center justify-center gap-2 bg-[#E53945] text-white font-bold py-3 rounded-full hover:bg-[#d12e39] transition shadow-lg shadow-[#E53945]/20">
+                        <Star size={18} fill="currentColor" /> Subscribe - {subscriptionPrice}
+                      </button>
+                      <button onClick={() => setShowSubscribeModal(true)} className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-full transition border border-white/10">
+                        <MessageSquare size={18} /> Subscribe to Message
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-6 lg:pl-4">
+                <div className="text-left"><span className="font-black text-white block text-3xl xl:text-4xl">{formatNumber(followerCount)}</span> <span className="text-white/50 text-xs uppercase tracking-wider font-semibold">Followers</span></div>
+                <div className="text-left"><span className="font-black text-white block text-3xl xl:text-4xl">{formatNumber(subscriberCount)}</span> <span className="text-white/50 text-xs uppercase tracking-wider font-semibold">Subscribers</span></div>
+                <div className="text-left"><span className="font-black text-white block text-3xl xl:text-4xl">{videos.length}</span> <span className="text-white/50 text-xs uppercase tracking-wider font-semibold">Posts</span></div>
               </div>
             </div>
 
-            {/* SUBSCRIBE & MESSAGE BUTTONS */}
-            <div className="flex gap-3 mb-8 w-full">
-              {isSubscribed ? (
-                <>
-                  <button onClick={handleCancelSubscription} disabled={cancelLoading} className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-red-500/20 text-red-400 font-bold py-3 rounded-full transition border border-red-500/30 disabled:opacity-50">
-                    <X size={18} /> {cancelLoading ? "Cancelling..." : "Cancel Subscription"}
-                  </button>
-                  <Link href={`/messages/${profile.user_id}`} className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-full transition border border-white/10">
-                    <MessageSquare size={18} /> Message
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <button onClick={() => setShowSubscribeModal(true)} className="flex-1 flex items-center justify-center gap-2 bg-[#E53945] text-white font-bold py-3 rounded-full hover:bg-[#d12e39] transition shadow-lg shadow-[#E53945]/20">
-                    <Star size={18} fill="currentColor" /> Subscribe - {subscriptionPrice}
-                  </button>
-                  <button onClick={() => setShowSubscribeModal(true)} className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-full transition border border-white/10">
-                    <MessageSquare size={18} /> Subscribe to Message
-                  </button>
-                </>
-              )}
-            </div>
-
-
-            </div>
+            {/* Mobile/tablet: original profile header */}
+            <div className="lg:hidden">
+              <div className="flex flex-col mb-6 w-full">
+                <div className="flex items-center gap-4 w-full mb-4">
+                  <div
+                    onClick={() => profile.is_live && router.push(`/live/${profile.username}`)}
+                    className={`w-24 h-24 md:w-28 md:h-28 rounded-full p-[3px] shrink-0 relative ${profile.is_live ? 'cursor-pointer bg-red-600 animate-pulse' : 'bg-gradient-to-tr from-[#E53945] to-orange-500'}`}
+                  >
+                    <div className="w-full h-full rounded-full border-4 border-[#09090B] overflow-hidden bg-[#1c1c1e] relative">
+                      {profile.avatar_url ? (
+                        <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-3xl font-bold">{displayName.charAt(0)}</div>
+                      )}
+                      {profile.is_live && (
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                          <span className="text-white text-xs font-bold bg-red-600 px-2 py-1 rounded-sm shadow-lg whitespace-nowrap">WATCH LIVE</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex-1 flex justify-around md:justify-start md:gap-8 px-2">
+                    <div className="text-center md:text-left"><span className="font-bold text-white block text-xl">{formatNumber(followerCount)}</span> <span className="text-white/50 text-[11px] uppercase tracking-wider">Followers</span></div>
+                    <div className="text-center md:text-left"><span className="font-bold text-white block text-xl">{formatNumber(subscriberCount)}</span> <span className="text-white/50 text-[11px] uppercase tracking-wider">Subscribers</span></div>
+                    <div className="text-center md:text-left"><span className="font-bold text-white block text-xl">{videos.length}</span> <span className="text-white/50 text-[11px] uppercase tracking-wider">Posts</span></div>
+                  </div>
+                </div>
+                <div className="px-1">
+                  <div className="flex items-center gap-3 mb-1 w-full">
+                    <h1 className="text-2xl md:text-3xl font-black flex items-center gap-2 text-white">
+                      {displayName} {(profile as any).verification_tick && (profile as any).verification_tick !== "none" && <VerifiedBadge size={20} variant={(profile as any).verification_tick as any} />}
+                    </h1>
+                    <button
+                      onClick={handleFollow}
+                      disabled={isSubmittingFollow}
+                      className={`shrink-0 flex items-center justify-center gap-1.5 font-bold px-5 py-1.5 rounded-full transition shadow-lg text-sm ${isSubmittingFollow ? "opacity-50 cursor-wait" : isFollowing ? "bg-white/10 text-white border border-white/20" : "bg-white text-black hover:bg-gray-200"}`}
+                    >
+                      <UserPlus size={16} /> {isFollowing ? "Following" : "Follow"}
+                    </button>
+                  </div>
+                  <p className="text-sm md:text-base text-white/50 mb-3">@{username}</p>
+                  <div className="flex items-center gap-4 mb-4">
+                    {profile.instagram_handle && (
+                      <a href={`https://instagram.com/${profile.instagram_handle}`} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors">
+                        <InstagramIcon size={14} />
+                        <span className="text-xs font-semibold">{profile.instagram_handle}</span>
+                      </a>
+                    )}
+                    {profile.x_handle && (
+                      <a href={`https://x.com/${profile.x_handle}`} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors">
+                        <XIcon size={14} />
+                        <span className="text-xs font-semibold">{profile.x_handle}</span>
+                      </a>
+                    )}
+                  </div>
+                  <p className="text-sm text-white/60 leading-relaxed">{profile.bio || "No bio yet."}</p>
+                </div>
+              </div>
+              <div className="flex gap-3 mb-8 w-full">
+                {isSubscribed ? (
+                  <>
+                    <button onClick={handleCancelSubscription} disabled={cancelLoading} className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-red-500/20 text-red-400 font-bold py-3 rounded-full transition border border-red-500/30 disabled:opacity-50">
+                      <X size={18} /> {cancelLoading ? "Cancelling..." : "Cancel Subscription"}
+                    </button>
+                    <Link href={`/messages/${profile.user_id}`} className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-full transition border border-white/10">
+                      <MessageSquare size={18} /> Message
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <button onClick={() => setShowSubscribeModal(true)} className="flex-1 flex items-center justify-center gap-2 bg-[#E53945] text-white font-bold py-3 rounded-full hover:bg-[#d12e39] transition shadow-lg shadow-[#E53945]/20">
+                      <Star size={18} fill="currentColor" /> Subscribe - {subscriptionPrice}
+                    </button>
+                    <button onClick={() => setShowSubscribeModal(true)} className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-full transition border border-white/10">
+                      <MessageSquare size={18} /> Subscribe to Message
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
 {/* TABS & CONTENT */}
             <div className="flex items-center justify-between border-b border-white/10 mb-6">
