@@ -439,7 +439,7 @@ export default function Home() {
                       <div className="relative h-[420px] w-[620px]">
                         {/* TV */}
                         <div className="absolute left-1/2 top-0 w-[460px] -translate-x-1/2">
-                          <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-2.5 shadow-[0_40px_120px_rgba(0,0,0,0.6),0_0_0_1px_rgba(229,57,69,0.06)] backdrop-blur-xl">
+                          <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-2.5 shadow-[0_40px_120px_rgba(0,0,0,0.6),0_0_0_1px_rgba(229,57,69,0.06)]">
                             <div className="relative aspect-[16/9] overflow-hidden rounded-[16px] bg-[#0b0b0e]">
                               <img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=1600&auto=format&fit=crop" alt="" className="absolute inset-0 h-full w-full object-cover brightness-[0.55] contrast-[1.05] saturate-[1.05]" />
                               <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,5,7,0.85)_0%,rgba(5,5,7,0.35)_40%,rgba(5,5,7,0.15)_100%),linear-gradient(180deg,rgba(5,5,7,0.2)_0%,rgba(5,5,7,0.55)_100%)]" />
@@ -448,7 +448,7 @@ export default function Home() {
                                   <div className="text-[15px] font-black tracking-tight"><span className="text-white">TROO</span><span className="text-red-600">FLIX</span></div>
                                   <div className="hidden items-center gap-3 text-[9px] font-medium text-white/60 md:flex"><span className="text-white">Home</span><span>Live</span><span>Shorts</span><span>Docs</span></div>
                                 </div>
-                                <div className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/30 px-2 py-1 text-[8px] font-semibold uppercase tracking-[0.16em] text-white/70 backdrop-blur-md"><span className="h-1.5 w-1.5 rounded-full bg-[#ff4d5a]" /> Live</div>
+                                <div className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/30 px-2 py-1 text-[8px] font-semibold uppercase tracking-[0.16em] text-white/70"><span className="h-1.5 w-1.5 rounded-full bg-[#ff4d5a]" /> Live</div>
                               </div>
                               <div className="absolute left-5 top-[52px] max-w-[52%]">
                                 <div className="mb-1.5 inline-flex items-center gap-2 rounded-full border border-red-500/30 bg-red-600/20 px-2.5 py-1 text-[8px] font-bold uppercase tracking-[0.16em] text-white">TROOFLIX ORIGINAL</div>
@@ -456,7 +456,7 @@ export default function Home() {
                                 <div className="mt-1 text-[10px] leading-relaxed text-white/65">Watch the latest documentary, live sessions, and shorts — only on TROOFLIX.</div>
                                 <div className="mt-3 flex items-center gap-2">
                                   <div className="rounded-md bg-white px-2.5 py-1 text-[9px] font-bold text-black">Play</div>
-                                  <div className="rounded-md border border-white/20 bg-white/10 px-2.5 py-1 text-[9px] font-semibold text-white backdrop-blur-sm">My List</div>
+                                  <div className="rounded-md border border-white/20 bg-white/10 px-2.5 py-1 text-[9px] font-semibold text-white">My List</div>
                                 </div>
                               </div>
                               <div className="absolute inset-x-5 bottom-4">
@@ -483,7 +483,7 @@ export default function Home() {
 
                         {/* Laptop */}
                         <div className="absolute left-[2%] bottom-0 w-[240px]">
-                          <div className="rounded-t-[18px] border border-white/10 border-b-0 bg-white/[0.04] p-2 backdrop-blur-xl">
+                          <div className="rounded-t-[18px] border border-white/10 border-b-0 bg-white/[0.04] p-2">
                             <div className="relative aspect-[16/10] overflow-hidden rounded-[12px] bg-[#09090d]">
                               <div className="absolute inset-x-0 top-0 h-7 border-b border-white/8 bg-[#101014]/95 flex items-center justify-between px-2.5">
                                 <div className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-[#ff5f57]" /><span className="h-1.5 w-1.5 rounded-full bg-[#febc2e]" /><span className="h-1.5 w-1.5 rounded-full bg-[#28c840]" /></div>
@@ -518,7 +518,7 @@ export default function Home() {
 
                         {/* Phone */}
                         <div className="absolute right-[6%] bottom-1 w-[110px]">
-                          <div className="rounded-[28px] border border-white/12 bg-white/[0.05] p-1.5 shadow-[0_24px_70px_rgba(0,0,0,0.55)] backdrop-blur-xl">
+                          <div className="rounded-[28px] border border-white/12 bg-white/[0.05] p-1.5 shadow-[0_24px_70px_rgba(0,0,0,0.55)]">
                             <div className="relative aspect-[9/19.5] overflow-hidden rounded-[22px] bg-[#050507]">
                               <img src="/reelpic.jpg" alt="" className="absolute inset-0 h-full w-full object-cover brightness-[0.82]" />
                               <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/80" />
@@ -528,7 +528,7 @@ export default function Home() {
                                 <div className="rounded-full bg-black/35 px-1.5 py-0.5 text-[7px] font-semibold text-white/80">Shorts</div>
                               </div>
                               <div className="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2 text-white/90">
-                                <div className="h-5 w-5 rounded-full bg-white/15 backdrop-blur-sm" />
+                                <div className="h-5 w-5 rounded-full bg-white/15" />
                                 <div className="h-4 w-4 rounded-full bg-white/15" />
                                 <div className="h-4 w-4 rounded-full bg-[#E53945]/70" />
                               </div>
@@ -556,7 +556,7 @@ export default function Home() {
                     </a>
                     <a
                       href="/features"
-                      className="flex-1 min-w-0 flex items-center justify-center gap-1.5 bg-white/[0.07] border border-white/15 text-white font-bold text-[15px] px-4 py-3.5 rounded-full hover:bg-white/[0.12] transition backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] whitespace-nowrap"
+                      className="flex-1 min-w-0 flex items-center justify-center gap-1.5 bg-white/[0.07] border border-white/15 text-white font-bold text-[15px] px-4 py-3.5 rounded-full hover:bg-white/[0.12] transition shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] whitespace-nowrap"
                     >
                       Why Trooflix
                       <ArrowRight size={16} />
