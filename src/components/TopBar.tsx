@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, Mic, Plus, RefreshCw, Search, Video, Radio, X, Play, Tag, ShoppingBag } from "lucide-react";
+import { Menu, Mic, Plus, RefreshCw, Search, Video, Radio, X, Play, Tag, ShoppingBag, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import UserMenu from "@/components/UserMenu";
 import NotificationBell from "@/components/NotificationBell";
@@ -102,6 +102,16 @@ export default function TopBar({ onMenu }: Props) {
 
         <div className="ml-auto flex items-center gap-0.5 md:gap-1">
           <PWAInstallButton />
+
+          <button
+            type="button"
+            onClick={() => document.dispatchEvent(new CustomEvent("open-trooflix-assistant"))}
+            className="w-9 h-9 rounded-full flex items-center justify-center text-[#ff8a93] hover:text-white hover:bg-[#E53945]/20 transition"
+            aria-label="Open AI assistant"
+            title="Trooflix AI"
+          >
+            <Sparkles size={18} />
+          </button>
 
           {!isSearchPage && (
             <Link

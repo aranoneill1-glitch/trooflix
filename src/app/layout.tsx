@@ -1,6 +1,7 @@
 import TipModal from "@/components/TipModal";
 import PushNotificationManager from "@/components/PushNotificationManager";
 import GlobalIncomingCall from "@/components/GlobalIncomingCall";
+import TrooflixAssistant from "@/components/TrooflixAssistant";
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
@@ -109,6 +110,7 @@ export default function RootLayout({
           <div className="lg:pl-[72px] w-full min-h-screen">
             {children}
           </div>
+          <TrooflixAssistant />
           <PWAInstallPopup /> {/* <-- ADDED HERE */}
         </SearchProvider>
       </body>
