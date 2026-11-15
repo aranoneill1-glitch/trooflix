@@ -275,7 +275,7 @@ export default function UserMenu() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-md flex flex-col items-center justify-center"
+            className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-md flex flex-col items-center justify-center min-h-[100dvh] px-6 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]"
           >
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}

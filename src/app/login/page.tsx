@@ -99,7 +99,7 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-black text-white flex flex-col md:flex-row overflow-hidden">
+    <main className="min-h-[100dvh] bg-black text-white flex flex-col md:flex-row overflow-hidden pt-[env(safe-area-inset-top)] md:pt-0">
       {/* ============ INTRO OVERLAY ============ */}
       <AnimatePresence>
         {showIntro && (
@@ -129,7 +129,7 @@ export default function LoginPage() {
       </AnimatePresence>
 
       {/* ============ LEFT / TOP: BRAND + FEATURED ============ */}
-      <div className="relative md:w-1/2 h-[30vh] md:h-screen flex-shrink-0 overflow-hidden">
+      <div className="relative md:w-1/2 h-[34vh] md:h-screen flex-shrink-0 overflow-hidden">
         {/* Backdrop */}
         {featured?.posterUrl ? (
           <>
@@ -145,7 +145,7 @@ export default function LoginPage() {
         )}
 
         {/* Logo top-left (desktop) or top-left (mobile) */}
-        <div className="absolute top-0 left-0 right-0 p-6 md:p-10 z-10">
+        <div className="absolute top-0 left-0 right-0 p-6 pt-8 md:p-10 z-10">
           <Link href="/" className="text-2xl md:text-3xl font-black tracking-tight">
             <span className="text-white">TROO</span>
             <span className="text-red-600">FLIX</span>
@@ -175,7 +175,7 @@ export default function LoginPage() {
       </div>
 
       {/* ============ RIGHT: FORM ============ */}
-      <div className="flex-1 md:w-1/2 flex items-center justify-center px-6 md:px-12 py-10 md:py-0">
+      <div className="flex-1 md:w-1/2 flex items-center justify-center px-6 md:px-12 py-8 md:py-0 pb-[calc(env(safe-area-inset-bottom)+24px)]">
         <div className="w-full max-w-sm">
           <div className="mb-8">
             <p className="text-xs tracking-[0.3em] text-white/40 font-bold mb-2">
