@@ -50,7 +50,7 @@ export default function TrooflixAssistant() {
   const [sending, setSending] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMsg[]>([
-    { role: "assistant", text: "Hi, I can help you use Trooflix. Try: “add credits”, “take me to reels”, “show my orders”, or “upload a video”." }
+    { role: "assistant", text: "Hey! I’m your Trooflix assistant. Tell me what you’re in the mood to do — add credits, jump into Reels, check orders, upload something, or find a creator — and I’ll take you there." }
   ]);
   const listRef = useRef<HTMLDivElement>(null);
 
