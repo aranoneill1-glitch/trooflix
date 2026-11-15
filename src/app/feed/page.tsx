@@ -782,22 +782,18 @@ function MobileVideoShort({ video, creator, viewCount, commentCount, onViewCount
 
       {/* Bottom action bar: like, comment, tip, views (avatar excluded) */}
       <div className={`fixed inset-x-0 bottom-0 z-[260] lg:absolute lg:inset-x-auto lg:right-[80px] lg:bottom-[92px] lg:w-[360px] pointer-events-auto border-t border-white/10 bg-[#070709] lg:border lg:rounded-2xl transition-opacity duration-200 ${isActive ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
-        <div className="flex items-center justify-around px-4 pt-2 pb-[calc(env(safe-area-inset-bottom)+6px)] lg:pb-3">
+        <div className="flex items-center justify-around px-4 pt-2.5 pb-[calc(env(safe-area-inset-bottom)+8px)] lg:pb-3">
           <div className="flex items-center justify-center min-w-0 flex-1 text-white">
-            <LikeButton videoId={video.id} size={28} showCount={false} stacked={false} />
+            <LikeButton videoId={video.id} size={30} showCount={true} stacked={false} />
           </div>
 
           <button
             onClick={onOpenComments}
             aria-label="Open comments"
-            className="relative flex items-center justify-center min-w-0 flex-1 text-white hover:text-white/90 transition"
+            className="flex items-center justify-center gap-1.5 min-w-0 flex-1 text-white hover:text-white/90 transition"
           >
-            <MessageCircle size={28} strokeWidth={2.2} className="text-white/90" />
-            {commentCount > 0 && (
-              <span className="absolute -top-1.5 ml-7 min-w-[18px] h-[18px] px-1 rounded-full bg-[#E53945] text-[10px] font-bold text-white flex items-center justify-center">
-                {commentCount > 99 ? "99+" : commentCount}
-              </span>
-            )}
+            <MessageCircle size={30} strokeWidth={2.2} className="text-white/90" />
+            <span className="text-[13px] font-extrabold tracking-tight">{commentCount || 0}</span>
           </button>
 
           <button
@@ -805,7 +801,7 @@ function MobileVideoShort({ video, creator, viewCount, commentCount, onViewCount
             aria-label="Tip creator"
             className="flex items-center justify-center min-w-0 flex-1 text-white hover:text-white/90 transition"
           >
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="text-white/90">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="text-white/90">
               <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
               <circle cx="12" cy="12" r="6.6" stroke="currentColor" strokeWidth="1.2" opacity="0.75" />
               <path d="M10.2 5.8L9.4 3.9M13.8 5.8L14.6 3.9M10.2 18.2L9.4 20.1M13.8 18.2L14.6 20.1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.9" />
@@ -813,9 +809,9 @@ function MobileVideoShort({ video, creator, viewCount, commentCount, onViewCount
             </svg>
           </button>
 
-          <div className="relative flex items-center justify-center min-w-0 flex-1 text-white">
-            <Eye size={28} strokeWidth={2.2} className="text-white/90" />
-            <span className="ml-1.5 text-[12px] font-extrabold tracking-tight min-w-[14px]">{viewCount || 0}</span>
+          <div className="flex items-center justify-center gap-1.5 min-w-0 flex-1 text-white">
+            <Eye size={30} strokeWidth={2.2} className="text-white/90" />
+            <span className="text-[13px] font-extrabold tracking-tight">{viewCount || 0}</span>
           </div>
         </div>
       </div>
