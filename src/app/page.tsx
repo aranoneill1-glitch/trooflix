@@ -432,111 +432,90 @@ export default function Home() {
 
                 <div className="snap-y snap-proximity">
                 <TrooflixIntroHero />
-                {/* Main Hero: Your Voice. Unfiltered. + Watch on all platforms */}
+                {/* Page 1: Content Power / Your Voice. Unfiltered. (MAIN HERO) */}
                 <section className="relative w-full min-h-[100svh] snap-start overflow-hidden bg-[#040406] flex items-center">
                   <HeroScene3D />
                   <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#050507] to-transparent z-[2]" />
                   <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#050507] to-transparent z-[2]" />
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_30%,rgba(229,57,69,0.10),transparent_22%),radial-gradient(circle_at_82%_20%,rgba(255,106,42,0.12),transparent_24%),linear-gradient(180deg,rgba(5,5,7,0.18)_0%,rgba(2,2,3,0.42)_100%)] z-[1]" />
-                  <motion.div className="absolute -left-24 top-1/3 h-80 w-80 rounded-full bg-[#ff4d5a]/[0.08] blur-[130px] z-[1]" animate={{ x:[0,40,0], y:[0,-20,0] }} transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }} />
-                  <motion.div className="absolute right-[-4%] bottom-[8%] h-80 w-80 rounded-full bg-[#ff7a3d]/[0.08] blur-[140px] z-[1]" animate={{ x:[0,-30,0], y:[0,20,0] }} transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }} />
-
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(229,57,69,0.08),transparent_22%),radial-gradient(circle_at_80%_20%,rgba(255,106,42,0.10),transparent_24%),linear-gradient(180deg,rgba(5,5,7,0.15)_0%,rgba(2,2,3,0.35)_100%)] z-[1]" />
+                  <motion.div className="absolute -left-20 top-1/3 h-72 w-72 rounded-full bg-white/[0.04] blur-[120px] z-[1]" animate={{ x:[0,40,0], y:[0,-20,0] }} transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }} />
+                  <motion.div className="absolute right-[-5%] bottom-[10%] h-80 w-80 rounded-full bg-[#ff4d5a]/[0.08] blur-[130px] z-[1]" animate={{ x:[0,-30,0], y:[0,25,0] }} transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }} />
+                  <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent_0%,rgba(255,255,255,0.03)_45%,transparent_70%)] opacity-60 z-[1]" />
                   <div className="relative z-10 w-full max-w-[1600px] mx-auto px-8 xl:px-16 py-20">
-                    <div className="grid grid-cols-[0.92fr_1.08fr] items-center gap-10 xl:gap-14">
+                    <div className="grid grid-cols-[0.95fr_1.05fr] items-center gap-12 xl:gap-16">
                       <motion.div className="max-w-2xl" initial="hidden" whileInView="visible" viewport={{ once: false, amount: 0.35 }} variants={{ visible: { transition: { staggerChildren: 0.12 } } }}>
-                        <motion.div variants={{ hidden: { opacity: 0, y: 18 }, visible: { opacity: 1, y: 0 } }} className="mb-5 inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-                          <span className="relative flex h-2.5 w-2.5"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#ff4d5a] opacity-60" /><span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#ff4d5a] shadow-[0_0_12px_rgba(229,57,69,0.9)]" /></span>
-                          <span className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/70">Watch on all platforms</span>
-                        </motion.div>
-                        <motion.h2 variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8 } } }} className="text-[56px] xl:text-[68px] 2xl:text-[80px] font-black tracking-tighter text-white leading-[0.96] mb-6">
-                          Your Voice. <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff4d5a] via-[#ff6b4a] to-orange-400">Every screen.</span>
+                        <motion.p variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="mb-5 text-[11px] font-bold uppercase tracking-[0.34em] text-white/45">CREATE WITHOUT LIMITS</motion.p>
+                        <motion.h2 variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8 } } }} className="text-[56px] xl:text-[68px] 2xl:text-[78px] font-black tracking-tighter text-white leading-[0.98] mb-6">
+                          Your Voice. <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff4d5a] via-[#ff6b4a] to-orange-400">Unfiltered.</span>
                         </motion.h2>
-                        <motion.p variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="max-w-xl text-lg xl:text-xl text-white/68 leading-relaxed font-medium mb-8">
-                          Go live, drop Shorts, and publish documentaries — then watch seamlessly on TV, desktop, and phone. Start on one device and pick up on another, exactly where you left off.
+                        <motion.p variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="max-w-xl text-lg xl:text-xl text-white/65 leading-relaxed font-medium">
+                          Go live in broadcast quality, drop cinematic Shorts, and publish powerful documentaries — all on one platform built to amplify creators, not silence them.
                         </motion.p>
-                        <motion.div variants={{ hidden: { opacity: 0, y: 18 }, visible: { opacity: 1, y: 0 } }} className="flex flex-wrap gap-2.5 mb-8">
-                          {["Smart TV & Fire Stick", "Desktop", "Phone", "Synced progress"].map((item) => (
-                            <span key={item} className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-md">{item}</span>
-                          ))}
-                        </motion.div>
-                        <motion.div variants={{ hidden: { opacity: 0, y: 18 }, visible: { opacity: 1, y: 0 } }} className="flex items-center gap-4 flex-wrap">
-                          <motion.a href="/signup" whileHover={{ scale: 1.03, boxShadow: "0 0 0 1px rgba(255,255,255,0.12), 0 22px 55px rgba(229,57,69,0.4), 0 0 40px rgba(255,106,42,0.22)" }} whileTap={{ scale: 0.99 }} className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#E53945] to-[#ff6a2a] px-8 py-4 text-base font-bold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_18px_45px_rgba(229,57,69,0.35)]">
-                            Start Watching <ArrowRight size={18} />
-                          </motion.a>
-                          <a href="/features" className="inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-8 py-4 text-base font-semibold text-white/85 backdrop-blur-xl transition hover:bg-white/[0.08] hover:text-white">
-                            Explore Trooflix
-                          </a>
-                        </motion.div>
                       </motion.div>
 
-                      <motion.div className="relative" initial={{ opacity: 0, x: 24, scale: 0.985 }} whileInView={{ opacity: 1, x: 0, scale: 1 }} viewport={{ once: false, amount: 0.3 }} transition={{ duration: 0.9, ease: [0.22,1,0.36,1] }}>
-                        <div className="relative mx-auto h-[500px] w-full max-w-[700px]">
-                          <div className="pointer-events-none absolute left-1/2 bottom-[40px] h-20 w-[70%] -translate-x-1/2 rounded-[100%] bg-black/60 blur-3xl" />
-                          <motion.div className="pointer-events-none absolute left-1/2 top-1/2 h-[460px] w-[460px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(229,57,69,0.12),transparent_65%)]" animate={{ scale: [1, 1.06, 1], opacity: [0.5, 0.8, 0.5] }} transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }} />
-
-                          {/* TV */}
-                          <motion.div className="absolute left-1/2 top-[12px] w-[560px] -translate-x-1/2" animate={{ y: [0, -5, 0] }} transition={{ duration: 7.5, repeat: Infinity, ease: "easeInOut" }}>
-                            <div className="relative rounded-[26px] p-[9px] bg-gradient-to-b from-[#2b2d33] via-[#14161b] to-[#090a0d] shadow-[0_50px_140px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.06),inset_0_1px_0_rgba(255,255,255,0.12)]">
-                              <div className="relative aspect-[16/9] overflow-hidden rounded-[17px] bg-black ring-1 ring-white/10">
-                                <img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=1600&auto=format&fit=crop" alt="Cinematic content on TV" className="absolute inset-0 h-full w-full object-cover scale-[1.03] brightness-[0.72] contrast-[1.05] saturate-[1.05]" />
-                                <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.12),transparent_22%),radial-gradient(circle_at_70%_35%,rgba(229,57,69,0.18),transparent_30%),linear-gradient(180deg,rgba(0,0,0,0.08)_0%,rgba(0,0,0,0.18)_45%,rgba(0,0,0,0.55)_100%)]" />
-                                <div className="pointer-events-none absolute inset-y-0 left-[-20%] w-[35%] -skew-x-[18deg] bg-gradient-to-r from-transparent via-white/[0.07] to-transparent" />
-                                <div className="absolute left-5 top-5 flex items-center gap-2.5">
-                                  <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-black/35 px-2.5 py-1.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-white/75 backdrop-blur-md"><span className="h-1.5 w-1.5 rounded-full bg-[#ff4d5a] shadow-[0_0_10px_rgba(229,57,69,0.9)]" /> Now Playing</div>
-                                  <div className="rounded-full border border-white/10 bg-white/[0.06] px-2.5 py-1.5 text-[9px] font-medium text-white/70 backdrop-blur-md">Smart TV</div>
-                                </div>
-                                <div className="absolute left-5 right-5 bottom-5">
-                                  <div className="mb-2.5"><div className="text-[10px] uppercase tracking-[0.22em] text-[#ffb0a8]/80 mb-1">Trooflix Original</div><div className="text-2xl xl:text-3xl font-black tracking-[-0.03em] text-white drop-shadow-[0_8px_24px_rgba(0,0,0,0.55)]">The Untold Signal</div><div className="mt-0.5 text-xs text-white/70">Continue watching on your TV</div></div>
-                                  <div className="rounded-full bg-white/12 h-[3px] overflow-hidden"><motion.div className="h-full rounded-full bg-gradient-to-r from-[#E53945] via-[#ff5a4f] to-[#ff8a3d] shadow-[0_0_18px_rgba(229,57,69,0.45)]" animate={{ width: ["34%", "68%", "34%"] }} transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }} /></div>
-                                </div>
-                              </div>
-                              <div className="mx-auto mt-2 mb-1 h-1.5 w-1.5 rounded-full bg-[#7b7e86]/70" />
-                            </div>
-                            <div className="mx-auto -mt-1 h-5 w-24 rounded-b-2xl bg-gradient-to-b from-[#2a2d33] to-[#0d0f13] shadow-[0_12px_30px_rgba(0,0,0,0.55)]" />
-                            <div className="mx-auto mt-1 h-2 w-44 rounded-full bg-gradient-to-b from-[#16181d] to-[#090a0d] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]" />
-                          </motion.div>
-
-                          {/* Laptop */}
-                          <motion.div className="absolute left-[-6px] bottom-[18px] w-[290px]" initial={{ opacity: 0, y: 22 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.3 }} transition={{ duration: 0.9, delay: 0.2, ease: [0.22,1,0.36,1] }}>
-                            <div className="rounded-t-[20px] border border-white/10 bg-gradient-to-b from-[#353840] via-[#1a1d24] to-[#101217] p-[9px] pb-[11px] shadow-[0_35px_90px_rgba(0,0,0,0.65),inset_0_1px_0_rgba(255,255,255,0.12)]">
-                              <div className="relative aspect-[16/10] overflow-hidden rounded-[11px] bg-black ring-1 ring-white/10">
-                                <img src="/reelpic.jpg" alt="Trooflix on desktop" className="absolute inset-0 h-full w-full object-cover brightness-[0.78] contrast-[1.04]" />
-                                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,8,10,0.12),rgba(8,8,10,0.2)_40%,rgba(8,8,10,0.62))]" />
-                                <div className="absolute left-3 right-3 top-3 flex items-center justify-between">
-                                  <div className="flex gap-1.5"><span className="h-2 w-2 rounded-full bg-[#ff5f57]" /><span className="h-2 w-2 rounded-full bg-[#febc2e]" /><span className="h-2 w-2 rounded-full bg-[#28c840]" /></div>
-                                  <div className="rounded-full border border-white/10 bg-black/30 px-2.5 py-1 text-[9px] uppercase tracking-[0.16em] text-white/65 backdrop-blur-md">Desktop</div>
-                                </div>
-                                <div className="absolute left-4 right-4 bottom-4">
-                                  <div className="text-sm font-semibold text-white mb-0.5">Continue on desktop</div>
-                                  <div className="h-[3px] rounded-full bg-white/12 overflow-hidden"><motion.div className="h-full rounded-full bg-gradient-to-r from-[#E53945] to-[#ff8a3d]" animate={{ width: ["34%", "68%", "34%"] }} transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }} /></div>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="relative mx-auto -mt-[1px] h-[16px] w-[108%] -translate-x-[4%] rounded-b-[16px] rounded-t-[4px] bg-gradient-to-b from-[#cfd3da] via-[#8e939d] to-[#50545d] shadow-[0_20px_45px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.7)]"><div className="absolute left-1/2 top-[4px] h-[4px] w-16 -translate-x-1/2 rounded-full bg-black/20" /></div>
-                          </motion.div>
-
-                          {/* Phone */}
-                          <motion.div className="absolute right-[10px] bottom-[8px] w-[124px]" initial={{ opacity: 0, y: 22 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: false, amount: 0.3 }} transition={{ duration: 0.9, delay: 0.28, ease: [0.22,1,0.36,1] }}>
-                            <div className="relative rounded-[32px] border border-white/15 bg-gradient-to-b from-[#30333a] via-[#17191e] to-[#090a0d] p-[7px] shadow-[0_35px_90px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.14)]">
-                              <div className="absolute right-[-2px] top-[64px] h-9 w-[3px] rounded-l-full bg-[#5b5f68]" />
-                              <div className="absolute left-[-2px] top-[52px] h-6 w-[3px] rounded-r-full bg-[#5b5f68]" />
-                              <div className="absolute left-[-2px] top-[82px] h-10 w-[3px] rounded-r-full bg-[#5b5f68]" />
-                              <div className="relative aspect-[9/19.5] overflow-hidden rounded-[25px] bg-black ring-1 ring-white/10">
-                                <img src="/20240503-podcast-studio-with-armando-108-3.jpg.webp" alt="Trooflix on phone" className="absolute inset-0 h-full w-full object-cover brightness-[0.76] contrast-[1.05]" />
-                                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.15),rgba(0,0,0,0.08)_35%,rgba(0,0,0,0.62)_100%)]" />
-                                <div className="absolute left-1/2 top-2 h-[16px] w-[54px] -translate-x-1/2 rounded-full bg-black/90 ring-1 ring-white/10" />
-                                <div className="absolute left-3 right-3 top-9 flex items-center justify-between text-[8px] font-medium text-white/75"><span>9:41</span><span>Phone</span></div>
-                                <div className="absolute left-3 right-3 bottom-4">
-                                  <div className="text-[10px] font-semibold text-white leading-tight mb-1">Pick up here</div>
-                                  <div className="h-[3px] rounded-full bg-white/12 overflow-hidden"><motion.div className="h-full rounded-full bg-gradient-to-r from-[#E53945] to-[#ff8a3d]" animate={{ width: ["34%", "68%", "34%"] }} transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }} /></div>
-                                </div>
-                              </div>
+                      <motion.div className="flex items-center justify-center gap-6" initial="hidden" whileInView="visible" viewport={{ once: false, amount: 0.3 }} variants={{ visible: { transition: { staggerChildren: 0.14 } } }}>
+                        {/* Shorts */}
+                        <motion.div variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22,1,0.36,1] } } }} className="flex flex-col items-center shrink-0">
+                          <motion.div whileHover={{ y: -8, boxShadow: '0 30px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.08), 0 0 40px rgba(255,255,255,0.08)' }} className="group relative w-[280px] xl:w-[300px] overflow-hidden rounded-[34px] border border-white/12 bg-[#0b0b10]/80 backdrop-blur-xl shadow-[0_24px_70px_rgba(0,0,0,0.45)] transition cursor-pointer p-3">
+                            <div className="relative mx-auto aspect-[9/16] overflow-hidden rounded-[26px] border border-white/10 bg-[#050507]">
+                              <HeroLatestShortPhone />
                             </div>
                           </motion.div>
+                          <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-white/55">Shorts</p>
+                        </motion.div>
 
-                          <motion.div className="absolute right-[132px] top-[185px] flex items-center gap-2 rounded-full border border-white/10 bg-black/30 px-3 py-2 text-xs text-white/75 backdrop-blur-xl shadow-[0_12px_40px_rgba(0,0,0,0.35)]" animate={{ y: [0, -4, 0], opacity: [0.85, 1, 0.85] }} transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}>
-                            <span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#ff6b4a] opacity-60" /><span className="relative inline-flex h-2 w-2 rounded-full bg-[#ff6b4a]" /></span>
-                            Synced across devices
+                        <div className="flex flex-col gap-5 w-full max-w-[320px]">
+                          {/* Livestream */}
+                          <motion.div variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22,1,0.36,1] } } }} className="flex flex-col items-center">
+                            <motion.div whileHover={{ y: -6, boxShadow: '0 24px 70px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08), 0 0 30px rgba(239,68,68,0.12)' }} className="group relative w-full overflow-hidden rounded-[24px] border border-white/12 bg-[#0b0b10]/80 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.4)] transition cursor-pointer">
+                              <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(239,68,68,0.18),transparent_30%),linear-gradient(180deg,#15151d_0%,#09090d_100%)]" />
+                              <div className="relative p-4">
+                                <div className="mb-3 flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <span className="relative flex h-2.5 w-2.5"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-70"></span><span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.9)]"></span></span>
+                                    <span className="rounded-full border border-red-400/40 bg-red-500/15 px-2.5 py-1 text-[10px] font-black tracking-[0.18em] text-red-200">LIVE</span>
+                                  </div>
+                                  <span className="text-xs text-white/55 font-medium">8.2k watching</span>
+                                </div>
+                                <div className="relative aspect-[16/10] overflow-hidden rounded-xl border border-white/10 bg-gradient-to-br from-[#201018] via-[#120d14] to-[#070709]">
+                                  <img src="/20240503-podcast-studio-with-armando-108-3.jpg.webp" alt="Live podcast studio" className="absolute inset-0 h-full w-full object-cover" />
+                                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(255,255,255,0.08),transparent_35%),radial-gradient(circle_at_70%_70%,rgba(239,68,68,0.18),transparent_35%)]" />
+                                  <div className="absolute left-3 top-3 rounded-full border border-white/15 bg-black/30 px-2.5 py-1 text-[9px] uppercase tracking-[0.16em] text-white/70">Broadcast Studio</div>
+                                  <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/70 to-transparent" />
+                                  <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-3">
+                                    <div>
+                                      <div className="text-sm font-semibold text-white">Live Session</div>
+                                      <div className="text-[11px] text-white/50">Studio quality</div>
+                                    </div>
+                                    <div className="flex items-end gap-1 h-7">
+                                      {[7,13,18,10,22,14,9,16,12].map((h,idx)=>(
+                                        <span key={idx} className="w-1 rounded-full bg-gradient-to-t from-red-400 to-orange-300 origin-bottom" style={{ height:`${h}px`, animation:`waveBar 1s ease-in-out ${idx*0.08}s infinite` }} />
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </motion.div>
+                            <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-white/55">Livestream</p>
+                          </motion.div>
+
+                          {/* Documentaries */}
+                          <motion.div variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22,1,0.36,1] } } }} className="flex flex-col items-center">
+                            <motion.div whileHover={{ y: -6, boxShadow: '0 24px 70px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08), 0 0 30px rgba(229,57,69,0.10)' }} className="group relative w-full overflow-hidden rounded-[24px] border border-white/12 bg-[#0b0b10]/80 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.4)] transition cursor-pointer">
+                              <div className="relative aspect-[16/10] overflow-hidden">
+                                <motion.div className="absolute inset-[-6%]" animate={{ scale: [1.02, 1.08, 1.02], x: [0, -12, 0] }} transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}>
+                                  <img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=1800&auto=format&fit=crop" alt="" className="h-full w-full object-cover brightness-[0.7] contrast-[1.05] saturate-[0.85]" />
+                                </motion.div>
+                                <div className="absolute inset-x-0 top-0 h-[14%] bg-black/85" />
+                                <div className="absolute inset-x-0 bottom-0 h-[14%] bg-black/85" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/20" />
+                                <div className="absolute left-4 bottom-[18%]">
+                                  <div className="text-[10px] uppercase tracking-[0.2em] text-[#ffb0a8]/80 mb-1">Original Documentary</div>
+                                  <div className="text-lg font-black tracking-tight text-white">The Untold Signal</div>
+                                </div>
+                              </div>
+                            </motion.div>
+                            <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-white/55">Documentaries</p>
                           </motion.div>
                         </div>
                       </motion.div>
