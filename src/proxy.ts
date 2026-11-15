@@ -15,9 +15,11 @@ export async function proxy(req: NextRequest) {
   }
 
   // Videos / creators: keep hard admin gate (creators use /api/creator/videos)
+  // Allow creators to update their own videos via /api/videos/update (ownership checked in route)
   if (
     (pathname.startsWith("/api/videos") || pathname.startsWith("/api/creators")) &&
-    (req.method === "POST" || req.method === "DELETE" || req.method === "PUT")
+    (req.method === "POST" || req.method === "DELETE" || req.method === "PUT") &&
+    !pathname.startsWith("/api/videos/update")
   ) {
     if (!password || cookie !== password) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
