@@ -116,10 +116,14 @@ function ShortsMark({ size = 22 }: { size?: number; strokeWidth?: number }) {
   );
 }
 
-function SectionHead({ kicker, title, href, icon: Icon }: { kicker: string; title: string; href: string; icon: any }) {
+function SectionHead({ kicker, title, href, icon: Icon, onTitleClick }: { kicker: string; title: string; href: string; icon: any; onTitleClick?: (e: React.MouseEvent) => void }) {
   return (
     <div className="flex items-end justify-between mb-5">
-      <div className="flex min-w-0 items-center gap-3">
+      <button
+        type="button"
+        onClick={onTitleClick}
+        className="flex min-w-0 items-center gap-3 text-left"
+      >
         <span className="flex h-7 w-7 shrink-0 items-center justify-center text-[#E53945]">
           <Icon size={22} strokeWidth={2} />
         </span>
@@ -127,8 +131,8 @@ function SectionHead({ kicker, title, href, icon: Icon }: { kicker: string; titl
           <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#E53945] md:text-[11px]">{kicker}</p>
           <h2 className="text-[21px] font-black tracking-tighter text-white md:text-[28px]">{title}</h2>
         </div>
-      </div>
-      <Link href={href} className="text-[13px] font-medium text-white/45 hover:text-white transition mb-1">
+      </button>
+      <Link href={href} onClick={onTitleClick} className="text-[13px] font-medium text-white/45 hover:text-white transition mb-1">
         View all
       </Link>
     </div>
@@ -305,7 +309,7 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
       (v.uploaderUserId && c.user_id === v.uploaderUserId)
     );
     return (
-      <Link key={v.id} href="/latest" className="flex flex-col w-[260px] md:w-[300px] shrink-0 group">
+      <button key={v.id} type="button" onClick={() => onVideoSelect(v)} className="flex flex-col w-[260px] md:w-[300px] shrink-0 group text-left">
         <div className="relative aspect-video rounded-2xl overflow-hidden bg-[#141418] ring-1 ring-white/10 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]">
           <VideoPreview
             src={v.videoUrl || v.bitchuteUrl}
@@ -332,7 +336,7 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
             {creator?.name && <p className="mt-0.5 text-[13px] text-white/55 truncate">{creator.name}</p>}
           </div>
         </div>
-      </Link>
+      </button>
     );
   };
 
@@ -342,7 +346,18 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
       <FeaturedVideoHero videos={featuredVideos} onSelect={onVideoSelect} />
 
       <section>
-        <SectionHead kicker="Latest" title="Don't miss a thing" href="/latest" icon={CirclePlay} />
+        <SectionHead
+          kicker="Latest"
+          title="Don't miss a thing"
+          href="/latest"
+          icon={CirclePlay}
+          onTitleClick={(e) => {
+            if (typeof window !== "undefined" && window.innerWidth < 1024 && latestVideos[0]) {
+              e.preventDefault();
+              onVideoSelect(latestVideos[0]);
+            }
+          }}
+        />
         <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
           {latestVideos.map(renderLongFormCard)}
         </div>
