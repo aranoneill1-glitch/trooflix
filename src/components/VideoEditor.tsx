@@ -205,25 +205,13 @@ export default function VideoEditor({ file, onCancel, onApply }: Props) {
 
     setExporting(true);
     setExportProgress(0);
-    try {
-      // Try to export trimmed segment via MediaRecorder (canvas + audio when available)
-      const canvas = document.createElement("canvas");
-      canvas.width = v.videoWidth || 1280;
-      canvas.height = v.videoHeight || 720;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) throw new Error("Canvas not supported");
+    let progressTimer: any = null;
+    let stopCheck: any = null;
+    let recorder: MediaRecorder | null = null;
+    let stream: MediaStream | null = null;
 
-      const fps = 30;
-      const canvasStream = canvas.captureStream(fps);
-      // Attempt to capture audio from video element
-      let combined = canvasStream;
-      try {
-        const vs = (v as any).captureStream ? (v as any).captureStream() : null;
-        const audioTracks = vs ? vs.getAudioTracks() : [];
-        if (audioTracks && audioTracks.length > 0) {
-          combined = new MediaStream([...canvasStream.getVideoTracks(), ...audioTracks]);
-        }
-      } catch {}
+    try {
+      if (typeof MediaRecorder === "undefined") throw new Error("Video export not supported in this browser");
 
       const mimeCandidates = [
         "video/mp4;codecs=avc1.42E01E,mp4a.40.2",
@@ -234,19 +222,56 @@ export default function VideoEditor({ file, onCancel, onApply }: Props) {
       ];
       let mimeType = "";
       for (const m of mimeCandidates) {
-        if (typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported(m)) { mimeType = m; break; }
+        if (MediaRecorder.isTypeSupported(m)) { mimeType = m; break; }
       }
-      if (!mimeType) throw new Error("Video export not supported in this browser");
 
-      const chunks: BlobPart[] = [];
-      const recorder = new MediaRecorder(combined, mimeType ? { mimeType } : undefined);
+      // Prefer capturing the playing video element directly (better perf/sync than canvas redraw),
+      // especially important for longer clips (e.g. 3+ minutes).
+      try {
+        const vs = (v as any).captureStream ? (v as any).captureStream() : null;
+        if (vs && vs.getVideoTracks && vs.getVideoTracks().length > 0) {
+          stream = vs as MediaStream;
+        }
+      } catch {}
+
+      if (!stream) {
+        // Fallback: canvas redraw (more CPU intensive)
+        const canvas = document.createElement("canvas");
+        canvas.width = v.videoWidth || 1280;
+        canvas.height = v.videoHeight || 720;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) throw new Error("Canvas not supported");
+        const canvasStream = canvas.captureStream(30);
+        stream = canvasStream;
+        try {
+          const vs = (v as any).captureStream ? (v as any).captureStream() : null;
+          const audioTracks = vs ? vs.getAudioTracks() : [];
+          if (audioTracks && audioTracks.length > 0) {
+            stream = new MediaStream([...canvasStream.getVideoTracks(), ...audioTracks]);
+          }
+        } catch {}
+        // draw loop for canvas fallback
+        const draw = () => {
+          if (!stream || !(stream as any).__canvas) return;
+          try { ctx.drawImage(v, 0, 0, canvas.width, canvas.height); } catch {}
+          if (!v.paused && !v.ended && v.currentTime < end - 0.03) requestAnimationFrame(draw);
+        };
+        (stream as any).__canvas = canvas;
+        (stream as any).__draw = draw;
+      }
+
+      const chunks: Blob[] = [];
+      recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
       recorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) chunks.push(e.data); };
 
       const done = new Promise<Blob>((resolve, reject) => {
+        if (!recorder) return reject(new Error("Export failed"));
         recorder.onerror = () => reject(new Error("Export failed"));
-        recorder.onstop = () => resolve(new Blob(chunks, { type: mimeType || "video/webm" }));
+        recorder.onstop = () => resolve(new Blob(chunks, { type: mimeType || recorder?.mimeType || "video/webm" }));
       });
 
+      const wasMuted = v.muted;
+      const prevVolume = v.volume;
       v.pause();
       v.currentTime = start;
       await new Promise<void>((res) => {
@@ -254,50 +279,69 @@ export default function VideoEditor({ file, onCancel, onApply }: Props) {
         v.addEventListener("seeked", h);
       });
 
-      // Seek poster frame for thumbnail
+      // Seek poster frame for thumbnail at start of trimmed range
       const poster = await capturePoster();
 
-      recorder.start(250);
-      v.muted = false; // keep as-is; captureStream takes element audio
-      await v.play().catch(() => {});
+      // For element captureStream, keep audio audible state as needed by browser; restore after.
+      v.muted = wasMuted;
+      v.volume = prevVolume;
 
-      await new Promise<void>((resolve) => {
-        const draw = () => {
-          if (v.paused || v.ended || v.currentTime >= end - 0.03) {
-            resolve();
-            return;
-          }
-          try { ctx.drawImage(v, 0, 0, canvas.width, canvas.height); } catch {}
-          const prog = Math.min(100, Math.max(0, ((v.currentTime - start) / Math.max(0.1, selectedDuration)) * 100));
-          setExportProgress(Math.round(prog));
-          requestAnimationFrame(draw);
+      recorder.start(500);
+      if ((stream as any).__draw) (stream as any).__draw();
+      await v.play().catch(() => { throw new Error("Could not play video for export"); });
+
+      progressTimer = setInterval(() => {
+        const prog = Math.min(100, Math.max(0, ((v.currentTime - start) / Math.max(0.1, selectedDuration)) * 100));
+        setExportProgress(Math.round(prog));
+      }, 200);
+
+      await new Promise<void>((resolve, reject) => {
+        const cleanup = () => {
+          v.removeEventListener("ended", onEnded);
+          if (stopCheck) clearInterval(stopCheck);
         };
-        v.ontimeupdate = () => {
-          if (v.currentTime >= end - 0.03) {
-            v.pause();
+        const finish = () => { cleanup(); resolve(); };
+        const onEnded = () => finish();
+        v.addEventListener("ended", onEnded);
+        stopCheck = setInterval(() => {
+          if (v.currentTime >= end - 0.04 || v.ended) {
+            try { v.pause(); } catch {}
+            finish();
           }
-        };
-        v.onended = () => { resolve(); };
-        draw();
+        }, 60);
+        // safety timeout (real-time export + buffer)
+        setTimeout(() => {
+          try { v.pause(); } catch {}
+          finish();
+        }, Math.max(5000, (selectedDuration + 5) * 1000));
+        // if recorder errors mid-way, reject via onerror handler above (done promise) — we still resolve stop flow
       });
 
-      v.pause();
+      if (progressTimer) clearInterval(progressTimer);
+      setExportProgress(100);
+
       if (recorder.state !== "inactive") recorder.stop();
-      canvasStream.getTracks().forEach((t) => t.stop());
-      combined.getTracks().forEach((t) => t.stop());
+      try { stream.getTracks().forEach((t) => t.stop()); } catch {}
 
       const blob = await done;
-      const ext = (mimeType.includes("mp4") ? "mp4" : "webm");
+      const finalType = blob.type || mimeType || "video/webm";
+      const ext = finalType.includes("mp4") ? "mp4" : "webm";
       const outName = (file.name.replace(/\.[^.]+$/, "") || "video") + `_trimmed.${ext}`;
-      const outFile = new File([blob], outName, { type: blob.type || mimeType || "video/webm" });
+      const outFile = new File([blob], outName, { type: finalType });
       onApply({ file: outFile, duration: selectedDuration, posterBlob: poster });
     } catch (err) {
       console.error(err);
-      // Fallback: apply trim range metadata-less by keeping original? better to inform and keep original
-      alert("Could not export trimmed video in this browser. Uploading original video instead.");
+      alert("Could not export trimmed video in this browser. Uploading original video instead. For best results, try Chrome on desktop.");
+      try {
+        v.pause();
+      } catch {}
       const poster = await capturePoster();
       onApply({ file, duration, posterBlob: poster });
     } finally {
+      if (progressTimer) clearInterval(progressTimer);
+      if (stopCheck) clearInterval(stopCheck);
+      try { if (recorder && recorder.state !== "inactive") recorder.stop(); } catch {}
+      try { stream?.getTracks().forEach((t) => t.stop()); } catch {}
       setExporting(false);
     }
   };
@@ -411,7 +455,7 @@ export default function VideoEditor({ file, onCancel, onApply }: Props) {
             </div>
           </div>
 
-          <p className="text-[11px] text-white/45 mt-2">Tip: drag the red handles to shorten or lengthen your video. Tap the timeline to move the playhead.</p>
+          <p className="text-[11px] text-white/45 mt-2">Tip: drag the red handles to shorten or lengthen your video. Tap the timeline to move the playhead. Export runs in real time for the selected length.</p>
         </div>
 
         {exporting ? (
