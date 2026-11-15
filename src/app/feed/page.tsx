@@ -704,7 +704,7 @@ function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComment
         </div>
       )}
 
-      <div className="absolute left-4 right-4 lg:right-[80px] bottom-[calc(env(safe-area-inset-bottom)+132px)] lg:bottom-[150px] z-30 flex flex-col items-start gap-3 pointer-events-none">
+      <div className="absolute left-4 right-4 lg:right-[80px] bottom-[calc(env(safe-area-inset-bottom)+104px)] lg:bottom-[150px] z-30 flex flex-col items-start gap-3 pointer-events-none">
         <div 
           className="text-white text-[14px] drop-shadow-md leading-snug cursor-pointer pointer-events-auto max-w-[92%]"
           onClick={toggleExpand}
@@ -752,56 +752,50 @@ function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComment
         </button>
       </div>
 
-      {/* Bottom action tab: like, comment, tip, views (avatar excluded) */}
-      <div className="absolute left-3 right-3 lg:right-[80px] bottom-[calc(env(safe-area-inset-bottom)+52px)] lg:bottom-[92px] z-40 pointer-events-auto">
-        <div className="mx-auto max-w-md rounded-2xl border border-white/12 bg-black/45 backdrop-blur-xl shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
-          <div className="grid grid-cols-4 items-center px-2 py-2">
-            <div className="flex flex-col items-center justify-center gap-1 text-white">
-              <div className="h-10 flex items-center justify-center">
-                <LikeButton videoId={video.id} size={24} stacked={false} />
-              </div>
-              <span className="text-[10px] font-semibold text-white/70">Like</span>
+      {/* Bottom action bar: like, comment, tip, views (avatar excluded) */}
+      <div className="fixed inset-x-0 bottom-0 z-[260] lg:absolute lg:inset-x-auto lg:right-[80px] lg:bottom-[92px] lg:w-[360px] pointer-events-auto border-t border-white/10 bg-[#070709] lg:border lg:rounded-2xl">
+        <div className="flex items-center justify-around px-2 pt-1 pb-[calc(env(safe-area-inset-bottom)+2px)] lg:pb-2">
+          <div className="flex flex-col items-center justify-center gap-0 min-w-0 flex-1 pt-1 pb-0.5 text-white">
+            <div className="h-[22px] flex items-center justify-center">
+              <LikeButton videoId={video.id} size={22} stacked={false} />
             </div>
+            <span className="text-[10px] font-medium text-white/70">Like</span>
+          </div>
 
-            <button
-              onClick={onOpenComments}
-              aria-label="Open comments"
-              className="flex flex-col items-center justify-center gap-1 text-white hover:text-white/90 transition"
-            >
-              <div className="h-10 flex items-center justify-center">
-                <MessageCircle size={24} strokeWidth={2.2} />
-              </div>
-              <span className="text-[10px] font-semibold text-white/70">Comment</span>
-            </button>
+          <button
+            onClick={onOpenComments}
+            aria-label="Open comments"
+            className="flex flex-col items-center justify-center gap-0 min-w-0 flex-1 pt-1 pb-0.5 text-white"
+          >
+            <MessageCircle size={22} strokeWidth={2.2} className="text-white/90" />
+            <span className="text-[10px] font-medium text-white/70">Comment</span>
+          </button>
 
-            <button
-              onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: video.creatorId, videoId: video.id } }))}
-              aria-label="Tip creator"
-              className="flex flex-col items-center justify-center gap-1 text-white hover:text-white/90 transition"
-            >
-              <div className="h-10 flex items-center justify-center">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
-                  <circle cx="12" cy="12" r="6.6" stroke="currentColor" strokeWidth="1.2" opacity="0.75" />
-                  <path d="M10.2 5.8L9.4 3.9M13.8 5.8L14.6 3.9M10.2 18.2L9.4 20.1M13.8 18.2L14.6 20.1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.9" />
-                  <text x="12" y="15" textAnchor="middle" fontSize="7.2" fontWeight="800" fill="currentColor" fontFamily="system-ui, -apple-system, sans-serif">TC</text>
-                </svg>
-              </div>
-              <span className="text-[10px] font-semibold text-white/70">Tip</span>
-            </button>
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: video.creatorId, videoId: video.id } }))}
+            aria-label="Tip creator"
+            className="flex flex-col items-center justify-center gap-0 min-w-0 flex-1 pt-1 pb-0.5 text-white"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="text-white/90">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+              <circle cx="12" cy="12" r="6.6" stroke="currentColor" strokeWidth="1.2" opacity="0.75" />
+              <path d="M10.2 5.8L9.4 3.9M13.8 5.8L14.6 3.9M10.2 18.2L9.4 20.1M13.8 18.2L14.6 20.1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.9" />
+              <text x="12" y="15" textAnchor="middle" fontSize="7.2" fontWeight="800" fill="currentColor" fontFamily="system-ui, -apple-system, sans-serif">TC</text>
+            </svg>
+            <span className="text-[10px] font-medium text-white/70">Tip</span>
+          </button>
 
-            <div className="flex flex-col items-center justify-center gap-1 text-white">
-              <div className="h-10 flex items-center justify-center gap-1.5">
-                <Eye size={22} strokeWidth={2.2} />
-                <span className="text-[13px] font-extrabold tracking-tight">{(video as any).views || 0}</span>
-              </div>
-              <span className="text-[10px] font-semibold text-white/70">Views</span>
+          <div className="flex flex-col items-center justify-center gap-0 min-w-0 flex-1 pt-1 pb-0.5 text-white">
+            <div className="h-[22px] flex items-center justify-center gap-1">
+              <Eye size={20} strokeWidth={2.2} className="text-white/90" />
+              <span className="text-[11px] font-extrabold tracking-tight">{(video as any).views || 0}</span>
             </div>
+            <span className="text-[10px] font-medium text-white/70">Views</span>
           </div>
         </div>
       </div>
 
-      <div className="absolute left-0 right-0 bottom-[calc(env(safe-area-inset-bottom)+34px)] lg:bottom-[85px] z-40 pointer-events-none px-4">
+      <div className="absolute left-0 right-0 bottom-[calc(env(safe-area-inset-bottom)+62px)] lg:bottom-[85px] z-[261] pointer-events-none px-0 lg:px-4">
         <div 
           ref={progressBarRef}
           className="relative w-full h-[3px] bg-transparent cursor-pointer touch-none py-3 -my-3 pointer-events-auto"
