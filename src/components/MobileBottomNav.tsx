@@ -49,12 +49,12 @@ export default function MobileBottomNav() {
         const supabase = createClient();
         const { data } = await supabase
           .from("profiles")
-          .select("avatar_url, username")
+          .select("avatar_url")
           .eq("user_id", user.id)
           .maybeSingle();
         if (!mounted) return;
         setAvatarUrl(data?.avatar_url || null);
-        setProfileHref(data?.username ? `/profile/${data.username}` : "/creator-dashboard");
+        setProfileHref("/creator-dashboard?studioTab=profile");
       } catch {
         if (mounted) setProfileHref("/login");
       }
@@ -70,7 +70,7 @@ export default function MobileBottomNav() {
     return pathname === path || pathname.startsWith(path + "/");
   };
 
-  const profileActive = isActive(profileHref);
+  const profileActive = pathname === "/creator-dashboard" || pathname.startsWith("/creator-dashboard/") || pathname.startsWith("/profile/");
 
   return (
     <nav className="lg:hidden fixed inset-x-0 bottom-0 z-[250] border-t border-white/10 bg-[#070709]">
