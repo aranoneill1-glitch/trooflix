@@ -106,7 +106,10 @@ export default function TrooflixAssistant() {
         body: JSON.stringify({ message: msg, path: pathname }),
       });
       const data = await res.json().catch(() => ({}));
-      const reply = typeof data?.reply === "string" && data.reply ? data.reply : "I couldn't process that right now.";
+      const reply =
+        typeof data?.reply === "string" && data.reply
+          ? data.reply
+          : (typeof data?.error === "string" && data.error ? data.error : "I couldn't process that right now.");
       const actions = Array.isArray(data?.actions) ? data.actions : [];
       setMessages((prev) => [...prev, { role: "assistant", text: reply, actions }]);
 

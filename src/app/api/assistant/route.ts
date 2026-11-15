@@ -108,18 +108,25 @@ function heuristicActions(message: string): { reply: string; actions: AssistantA
 }
 
 export async function POST(req: Request) {
+  let message = "";
+  let authed = false;
   try {
     const body = await req.json().catch(() => ({}));
-    const message = String(body?.message || "").trim().slice(0, 1000);
+    message = String(body?.message || "").trim().slice(0, 1000);
     if (!message) return NextResponse.json({ error: "Missing message" }, { status: 400 });
 
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    try {
+      const supabase = await createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      authed = !!user;
+    } catch {
+      authed = false;
+    }
 
     // If no OpenAI key, use heuristic routing so core actions work immediately.
     if (!process.env.OPENAI_API_KEY) {
       const out = heuristicActions(message);
-      return NextResponse.json({ reply: out.reply, actions: out.actions, mode: "heuristic", authed: !!user });
+      return NextResponse.json({ reply: out.reply, actions: out.actions, mode: "heuristic", authed });
     }
 
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -152,16 +159,19 @@ Return ONLY valid JSON.`;
     try { parsed = JSON.parse(content); } catch { parsed = {}; }
     const reply = typeof parsed.reply === "string" && parsed.reply.trim() ? parsed.reply : "Done.";
     const actions = Array.isArray(parsed.actions) ? parsed.actions : [];
-    return NextResponse.json({ reply, actions, mode: "llm", authed: !!user });
+    if (!actions.length) {
+      const fallback = heuristicActions(message);
+      return NextResponse.json({ reply, actions: fallback.actions, mode: "llm", authed });
+    }
+    return NextResponse.json({ reply, actions, mode: "llm", authed });
   } catch (error: any) {
     console.error("/api/assistant error", error);
-    // Fallback to heuristic if LLM call fails
-    try {
-      const body = await req.clone().json().catch(() => ({}));
-      const out = heuristicActions(String(body?.message || ""));
-      return NextResponse.json({ reply: out.reply, actions: out.actions, mode: "heuristic_fallback" });
-    } catch {
-      return NextResponse.json({ error: "Assistant unavailable" }, { status: 500 });
-    }
+    const fallback = heuristicActions(message);
+    return NextResponse.json({
+      reply: fallback.reply || "I couldn't process that right now. Try asking to add credits, show orders, open reels, or upload a video.",
+      actions: fallback.actions || [],
+      mode: "heuristic_fallback",
+      authed,
+    });
   }
 }
