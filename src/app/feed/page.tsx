@@ -704,9 +704,9 @@ function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComment
         </div>
       )}
 
-      <div className="absolute left-4 right-4 lg:right-[80px] bottom-[calc(env(safe-area-inset-bottom)+64px)] lg:bottom-[105px] z-30 flex flex-col items-start gap-3 pointer-events-none">
+      <div className="absolute left-4 right-4 lg:right-[80px] bottom-[calc(env(safe-area-inset-bottom)+132px)] lg:bottom-[150px] z-30 flex flex-col items-start gap-3 pointer-events-none">
         <div 
-          className="text-white text-[14px] drop-shadow-md leading-snug cursor-pointer pointer-events-auto"
+          className="text-white text-[14px] drop-shadow-md leading-snug cursor-pointer pointer-events-auto max-w-[92%]"
           onClick={toggleExpand}
         >
           <span className={isExpanded ? "" : "line-clamp-2"}>
@@ -717,9 +717,10 @@ function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComment
           )}
         </div>
 
+        {/* Avatar/creator kept out of bottom action tab */}
         <div className="flex items-center gap-2 pointer-events-auto">
           <Link href={finalSlug ? `/profile/${finalSlug}` : "#"} className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-full overflow-hidden border border-white/20 bg-[#1c1c1e]">
+            <div className="w-9 h-9 rounded-full overflow-hidden border border-white/20 bg-[#1c1c1e]">
               {finalPhoto ? (
                 <img src={finalPhoto} alt={finalName} className="w-full h-full object-cover" />
               ) : (
@@ -741,61 +742,62 @@ function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComment
           </button>
         </div>
 
-        <div className="flex w-full items-center justify-center gap-4 sm:gap-5 pointer-events-auto">
-          <button
-            type="button"
-            onClick={() => setShowReelActions((visible) => !visible)}
-            aria-label={showReelActions ? "Hide reel controls" : "Show reel controls"}
-            className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center text-white/80 hover:text-white hover:scale-110 active:scale-95 transition-all shadow-md"
-          >
-            {showReelActions ? <ChevronLeft size={16} strokeWidth={2.5} /> : <ChevronRight size={16} strokeWidth={2.5} />}
-          </button>
-          {showReelActions && (
-            <>
-              {/* Audio Toggle */}
-              <button
-                onClick={onToggleMute}
-                aria-label={isMuted ? "Unmute reel" : "Mute reel"}
-                className="text-white hover:scale-115 active:scale-90 transition-transform p-1.5 focus:outline-none drop-shadow-[0_2px_8px_rgba(255,255,255,0.35)]"
-              >
-                {isMuted ? <VolumeX size={27} strokeWidth={2.2} /> : <Volume2 size={27} strokeWidth={2.2} />}
-              </button>
+        {/* Audio kept separate from action tab */}
+        <button
+          onClick={onToggleMute}
+          aria-label={isMuted ? "Unmute reel" : "Mute reel"}
+          className="pointer-events-auto text-white hover:scale-110 active:scale-95 transition-transform p-2 rounded-full bg-black/35 backdrop-blur-md border border-white/10 focus:outline-none"
+        >
+          {isMuted ? <VolumeX size={22} strokeWidth={2.2} /> : <Volume2 size={22} strokeWidth={2.2} />}
+        </button>
+      </div>
 
-              {/* Comments */}
-              <button
-                onClick={onOpenComments}
-                aria-label="Open comments"
-                className="text-white hover:scale-115 active:scale-90 transition-transform p-1.5 focus:outline-none drop-shadow-[0_2px_8px_rgba(255,255,255,0.35)]"
-              >
-                <MessageCircle size={27} strokeWidth={2.2} />
-              </button>
+      {/* Bottom action tab: like, comment, tip, views (avatar excluded) */}
+      <div className="absolute left-3 right-3 lg:right-[80px] bottom-[calc(env(safe-area-inset-bottom)+52px)] lg:bottom-[92px] z-40 pointer-events-auto">
+        <div className="mx-auto max-w-md rounded-2xl border border-white/12 bg-black/45 backdrop-blur-xl shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
+          <div className="grid grid-cols-4 items-center px-2 py-2">
+            <div className="flex flex-col items-center justify-center gap-1 text-white">
+              <div className="h-10 flex items-center justify-center">
+                <LikeButton videoId={video.id} size={24} stacked={false} />
+              </div>
+              <span className="text-[10px] font-semibold text-white/70">Like</span>
+            </div>
 
-              {/* Tip Creator */}
-              <button
-                onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: video.creatorId, videoId: video.id } }))}
-                aria-label="Tip creator"
-                className="text-white hover:scale-115 active:scale-90 transition-transform p-1.5 focus:outline-none drop-shadow-[0_2px_8px_rgba(255,255,255,0.35)]"
-              >
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <button
+              onClick={onOpenComments}
+              aria-label="Open comments"
+              className="flex flex-col items-center justify-center gap-1 text-white hover:text-white/90 transition"
+            >
+              <div className="h-10 flex items-center justify-center">
+                <MessageCircle size={24} strokeWidth={2.2} />
+              </div>
+              <span className="text-[10px] font-semibold text-white/70">Comment</span>
+            </button>
+
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: video.creatorId, videoId: video.id } }))}
+              aria-label="Tip creator"
+              className="flex flex-col items-center justify-center gap-1 text-white hover:text-white/90 transition"
+            >
+              <div className="h-10 flex items-center justify-center">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
                   <circle cx="12" cy="12" r="6.6" stroke="currentColor" strokeWidth="1.2" opacity="0.75" />
                   <path d="M10.2 5.8L9.4 3.9M13.8 5.8L14.6 3.9M10.2 18.2L9.4 20.1M13.8 18.2L14.6 20.1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.9" />
                   <text x="12" y="15" textAnchor="middle" fontSize="7.2" fontWeight="800" fill="currentColor" fontFamily="system-ui, -apple-system, sans-serif">TC</text>
                 </svg>
-              </button>
-
-              {/* Like Button */}
-              <div className="hover:scale-115 active:scale-90 transition-transform p-1.5">
-                <LikeButton videoId={video.id} size={27} stacked={false} />
               </div>
+              <span className="text-[10px] font-semibold text-white/70">Tip</span>
+            </button>
 
-              {/* Views */}
-              <div className="flex items-center gap-1.5 text-white/95 drop-shadow-[0_2px_8px_rgba(255,255,255,0.2)]">
-                <Eye size={20} strokeWidth={2.2} />
-                <span className="text-[12px] font-extrabold tracking-tight">{(video as any).views || 0}</span>
+            <div className="flex flex-col items-center justify-center gap-1 text-white">
+              <div className="h-10 flex items-center justify-center gap-1.5">
+                <Eye size={22} strokeWidth={2.2} />
+                <span className="text-[13px] font-extrabold tracking-tight">{(video as any).views || 0}</span>
               </div>
-            </>
-          )}
+              <span className="text-[10px] font-semibold text-white/70">Views</span>
+            </div>
+          </div>
         </div>
       </div>
 
