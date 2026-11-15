@@ -999,15 +999,15 @@ function WatchEverywhereHero() {
                   <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,5,7,0.85)_0%,rgba(5,5,7,0.35)_40%,rgba(5,5,7,0.15)_100%),linear-gradient(180deg,rgba(5,5,7,0.2)_0%,rgba(5,5,7,0.55)_100%)]" />
                   <div className="absolute inset-x-0 top-0 flex items-center justify-between px-5 pt-4">
                     <div className="flex items-center gap-4">
-                      <div className="text-[15px] font-black tracking-[-0.03em]"><span className="text-white">Troo</span><span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff4d5a] to-[#ff8a3d]">flix</span></div>
+                      <div className="text-[15px] font-black tracking-tight"><span className="text-white">TROO</span><span className="text-red-600">FLIX</span></div>
                       <div className="hidden items-center gap-3 text-[9px] font-medium text-white/60 md:flex"><span className="text-white">Home</span><span>Live</span><span>Shorts</span><span>Docs</span></div>
                     </div>
                     <div className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/30 px-2 py-1 text-[8px] font-semibold uppercase tracking-[0.16em] text-white/70 backdrop-blur-md"><span className="h-1.5 w-1.5 rounded-full bg-[#ff4d5a]" /> Live</div>
                   </div>
                   <div className="absolute left-5 top-[52px] max-w-[52%]">
-                    <div className="mb-1.5 inline-flex items-center gap-2 rounded-full border border-[#ff6b4a]/30 bg-[#E53945]/15 px-2.5 py-1 text-[8px] font-bold uppercase tracking-[0.16em] text-[#ffb0a8]">Featured Documentary</div>
+                    <div className="mb-1.5 inline-flex items-center gap-2 rounded-full border border-red-500/30 bg-red-600/20 px-2.5 py-1 text-[8px] font-bold uppercase tracking-[0.16em] text-white">TROOFLIX ORIGINAL</div>
                     <div className="text-[22px] font-black leading-[1.02] tracking-[-0.03em] text-white">The Untold Signal</div>
-                    <div className="mt-1 text-[10px] leading-relaxed text-white/65">An original Trooflix documentary. Continue watching on the big screen.</div>
+                    <div className="mt-1 text-[10px] leading-relaxed text-white/65">Watch the latest documentary, live sessions, and shorts — only on TROOFLIX.</div>
                     <div className="mt-3 flex items-center gap-2">
                       <div className="rounded-md bg-white px-2.5 py-1 text-[9px] font-bold text-black">Play</div>
                       <div className="rounded-md border border-white/20 bg-white/10 px-2.5 py-1 text-[9px] font-semibold text-white backdrop-blur-sm">My List</div>
@@ -1046,7 +1046,7 @@ function WatchEverywhereHero() {
                 <div className="relative aspect-[16/10] overflow-hidden rounded-[12px] bg-[#09090d]">
                   <div className="absolute inset-x-0 top-0 h-7 border-b border-white/8 bg-[#101014]/95 flex items-center justify-between px-2.5">
                     <div className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-[#ff5f57]" /><span className="h-1.5 w-1.5 rounded-full bg-[#febc2e]" /><span className="h-1.5 w-1.5 rounded-full bg-[#28c840]" /></div>
-                    <div className="text-[8px] font-black tracking-[-0.02em]"><span className="text-white">Troo</span><span className="text-[#ff6b4a]">flix</span></div>
+                    <div className="text-[8px] font-black tracking-tight"><span className="text-white">TROO</span><span className="text-red-600">FLIX</span></div>
                     <div className="h-3 w-10 rounded-full bg-white/10" />
                   </div>
                   <div className="absolute inset-x-0 top-7 bottom-0 p-2.5">
@@ -1091,7 +1091,7 @@ function WatchEverywhereHero() {
                   <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/80" />
                   <div className="absolute left-1/2 top-1.5 h-4 w-14 -translate-x-1/2 rounded-full bg-black/85" />
                   <div className="absolute inset-x-2.5 top-7 flex items-center justify-between">
-                    <div className="text-[8px] font-black tracking-[-0.02em]"><span className="text-white">Troo</span><span className="text-[#ff6b4a]">flix</span></div>
+                    <div className="text-[8px] font-black tracking-tight"><span className="text-white">TROO</span><span className="text-red-600">FLIX</span></div>
                     <div className="rounded-full bg-black/35 px-1.5 py-0.5 text-[7px] font-semibold text-white/80">Shorts</div>
                   </div>
                   <div className="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2 text-white/90">
