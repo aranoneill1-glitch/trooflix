@@ -2,10 +2,11 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, CheckCircle2, Image as ImageIcon, Globe, Lock, Home, User, UploadCloud, MessageSquare, ChevronRight } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Image as ImageIcon, Globe, Lock, Home, User, UploadCloud, MessageSquare, ChevronRight, Scissors } from "lucide-react";
 import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import VideoEditor from "@/components/VideoEditor";
 import { getCachedUser } from "@/lib/cache";
 import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
@@ -42,6 +43,9 @@ function UploadContent() {
   const [userTier, setUserTier] = useState<"free" | "plus" | "creator">("free");
   const [videoDuration, setVideoDuration] = useState(0);
   const [checkingTier, setCheckingTier] = useState(true);
+  const [showEditor, setShowEditor] = useState(false);
+  const [editorFile, setEditorFile] = useState<File | null>(null);
+  const [isTrimmedMedia, setIsTrimmedMedia] = useState(false);
   const totalSteps = isTweet ? 1 : isShort ? 3 : 5;
   const isAudioPodcast = isPodcast && podcastFormat === "audio";
 
@@ -291,7 +295,48 @@ function UploadContent() {
         </div>
         <div className="space-y-6">
           <div className="space-y-4">
-            {step === 1 && !isTweet && (<div><label className="block text-xs font-bold text-white/60 mb-1">{isAudioPodcast ? "Audio File *" : "Video File *"}</label><div onClick={() => document.getElementById("media-upload")?.click()} className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] transition min-h-[200px]"><UploadCloud size={32} className="text-white/50 mb-3" /><span className="text-sm font-bold text-white text-center">{mediaFile ? mediaFile.name : (isAudioPodcast ? "Tap to select audio" : "Tap to select video")}</span></div><input id="media-upload" type="file" accept={isAudioPodcast ? "audio/*" : "video/*"} onChange={(e) => { const f = e.target.files?.[0] || null; setMediaFile(f); setThumbnailFile(null); setAutoThumbnailPreview(null); if (f) generateThumbnail(f); }} className="hidden" /></div>)}
+            {step === 1 && !isTweet && (
+              <div>
+                <label className="block text-xs font-bold text-white/60 mb-1">{isAudioPodcast ? "Audio File *" : "Video File *"}</label>
+                <div onClick={() => document.getElementById("media-upload")?.click()} className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] transition min-h-[200px]">
+                  <UploadCloud size={32} className="text-white/50 mb-3" />
+                  <span className="text-sm font-bold text-white text-center">{mediaFile ? mediaFile.name : (isAudioPodcast ? "Tap to select audio" : "Tap to select video")}</span>
+                  {mediaFile && !isAudioPodcast && (
+                    <span className="mt-2 text-[11px] text-white/50">Tap to replace • {isTrimmedMedia ? "Trim applied" : "Original file"}</span>
+                  )}
+                </div>
+                <input
+                  id="media-upload"
+                  type="file"
+                  accept={isAudioPodcast ? "audio/*" : "video/*"}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0] || null;
+                    e.currentTarget.value = "";
+                    if (!f) return;
+                    if (!isAudioPodcast && f.type.startsWith("video/")) {
+                      setEditorFile(f);
+                      setShowEditor(true);
+                    } else {
+                      setMediaFile(f);
+                      setIsTrimmedMedia(false);
+                      setThumbnailFile(null);
+                      setAutoThumbnailPreview(null);
+                      if (f) generateThumbnail(f);
+                    }
+                  }}
+                  className="hidden"
+                />
+                {mediaFile && !isAudioPodcast && (
+                  <button
+                    type="button"
+                    onClick={() => { setEditorFile(mediaFile); setShowEditor(true); }}
+                    className="mt-3 w-full py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white font-bold flex items-center justify-center gap-2 transition"
+                  >
+                    <Scissors size={18} className="text-[#E53945]" /> Edit / Trim Video
+                  </button>
+                )}
+              </div>
+            )}
             
             {step === 2 && !isShort && !isTweet && (
               <div>
@@ -339,6 +384,30 @@ function UploadContent() {
           )}
         </div>
       </div>
+      <AnimatePresence>
+        {showEditor && editorFile && !isAudioPodcast && (
+          <VideoEditor
+            file={editorFile}
+            onCancel={() => { setShowEditor(false); setEditorFile(null); }}
+            onApply={({ file: outFile, duration, posterBlob }) => {
+              setMediaFile(outFile);
+              setVideoDuration(duration);
+              setIsTrimmedMedia(outFile.name !== editorFile.name || outFile.size !== editorFile.size);
+              if (posterBlob) {
+                const generatedFile = new File([posterBlob], "edited-poster.jpg", { type: posterBlob.type || "image/jpeg" });
+                setThumbnailFile(generatedFile);
+                setAutoThumbnailPreview(URL.createObjectURL(posterBlob));
+              } else {
+                setThumbnailFile(null);
+                setAutoThumbnailPreview(null);
+              }
+              setShowEditor(false);
+              setEditorFile(null);
+            }}
+          />
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {showSharePrompt && !isShort && !isTweet && (
           <><motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/60 z-[400]" onClick={() => setShowSharePrompt(false)} />
