@@ -440,7 +440,7 @@ export default function Home() {
                       <div className="relative h-[420px] w-[620px]">
                         {/* TV */}
                         <motion.div
-                          className="absolute left-1/2 top-0 w-[460px] -translate-x-1/2"
+                          className="absolute left-1/2 top-[6%] w-[460px] -translate-x-1/2 z-0"
                           initial={prefersReducedMotion ? false : { opacity: 0, scale: 1.03, filter: "blur(8px)" }}
                           animate={prefersReducedMotion ? { opacity: 1, scale: 1, filter: "blur(0px)" } : { opacity: 1, scale: 1, filter: "blur(0px)" }}
                           transition={{ duration: 1.0, ease: [0.22, 1, 0.36, 1] }}
@@ -488,7 +488,7 @@ export default function Home() {
                         </motion.div>
 
                         {/* Laptop */}
-                        <div className="absolute left-[2%] bottom-0 w-[240px]">
+                        <div className="absolute left-[2%] bottom-0 w-[240px] z-10">
                           <div className="rounded-t-[18px] border border-white/10 border-b-0 bg-white/[0.04] p-2">
                             <div className="relative aspect-[16/10] overflow-hidden rounded-[12px] bg-[#09090d]">
                               <div className="absolute inset-x-0 top-0 h-7 border-b border-white/8 bg-[#101014]/95 flex items-center justify-between px-2.5">
@@ -524,7 +524,7 @@ export default function Home() {
 
                         {/* Phone */}
                         <motion.div
-                          className="absolute right-[6%] bottom-1 w-[110px]"
+                          className="absolute right-[6%] bottom-1 w-[110px] z-20"
                           initial={prefersReducedMotion ? false : { opacity: 0, y: 14 }}
                           animate={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 1, y: [0, -4, 0] }}
                           transition={prefersReducedMotion ? { duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.15 } : { opacity: { duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.15 }, y: { duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1.1 } }}
