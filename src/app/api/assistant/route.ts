@@ -19,119 +19,84 @@ function normalize(s: string) {
 
 function pick<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length)]; }
 
+type Cmd = { id: string; patterns: RegExp[]; reply: string | string[]; actions: AssistantAction[] };
+
+const COMMANDS: Cmd[] = [
+  { id: "home", patterns: [/\bhome\b/, /\bgo home\b/, /\bmain page\b/], reply: ["Heading home.", "Taking you back to Home."], actions: [{ type: "navigate", path: "/", label: "Home" }] },
+  { id: "feed", patterns: [/\breels?\b/, /\bshorts?\b/, /\bfeed\b/, /\bswipe\b/], reply: ["Opening Reels/Shorts.", "Taking you to Reels."], actions: [{ type: "navigate", path: "/feed", label: "Open Reels" }] },
+  { id: "search", patterns: [/\bsearch\b/, /\bfind\b/, /\blook for\b/, /\bdiscover\b/, /\bexplore\b/], reply: ["Opening search.", "Let’s find something."], actions: [{ type: "navigate", path: "/search", label: "Open Search" }] },
+  { id: "wallet", patterns: [/\bwallet\b/, /\bbalance\b/], reply: ["Opening your wallet.", "Taking you to your wallet."], actions: [{ type: "navigate", path: "/wallet", label: "Open Wallet" }] },
+  { id: "topup", patterns: [/(add|buy|get|top ?up|load).*(credit|coin|troocoin)/, /\btop ?up\b/, /\bcredits?\b/, /\bcoins?\b/], reply: ["Opening wallet top-up so you can add credits.", "Let’s add TrooCoins — opening top-up."], actions: [{ type: "open_topup" }, { type: "navigate", path: "/wallet?topup=true", label: "Add Credits" }] },
+  { id: "orders", patterns: [/\b(my )?orders?\b/, /\bpurchases?\b/, /\bbought\b/, /\btrack(ing)?\b/], reply: ["Opening your orders.", "Taking you to your orders."], actions: [{ type: "open_orders", tab: "bought" }, { type: "navigate", path: "/orders", label: "My Orders" }] },
+  { id: "orders_sold", patterns: [/\bsold orders?\b/, /\bsales?\b/, /\bsold\b/], reply: ["Opening sold orders.", "Taking you to sold orders."], actions: [{ type: "open_orders", tab: "sold" }, { type: "navigate", path: "/orders?tab=sold", label: "Sold Orders" }] },
+  { id: "messages", patterns: [/\bmessages?\b/, /\binbox\b/, /\bdms?\b/, /\bchat\b/], reply: ["Opening messages.", "Taking you to your inbox."], actions: [{ type: "navigate", path: "/messages", label: "Open Messages" }] },
+  { id: "notifications", patterns: [/\bnotifications?\b/, /\bbell\b/, /\balerts?\b/], reply: ["Opening notifications.", "Checking your notifications."], actions: [{ type: "navigate", path: "/notifications", label: "Notifications" }] },
+  { id: "profile", patterns: [/\bmy profile\b/, /\bprofile\b/], reply: ["Opening your profile.", "Taking you to your profile."], actions: [{ type: "open_profile" }, { type: "navigate", path: "/creator-dashboard?studioTab=profile", label: "My Profile" }] },
+  { id: "account", patterns: [/\baccount\b/, /\bsubscription\b/, /\bmanage subscription\b/, /\baccount settings\b/], reply: ["Opening account settings.", "Taking you to your account."], actions: [{ type: "navigate", path: "/account", label: "Account" }] },
+  { id: "my_list", patterns: [/\bmy list\b/, /\bwatchlist\b/, /\bsaved\b/, /\bfavorites?\b/], reply: ["Opening My List.", "Taking you to your saved list."], actions: [{ type: "navigate", path: "/my-list", label: "My List" }] },
+  { id: "merch", patterns: [/\bmerch(andise)?\b/, /\bshop\b/, /\bstore\b/, /\bcreators market\b/, /\bmarket\b/], reply: ["Opening the Creators Market / shop.", "Taking you to merchandise."], actions: [{ type: "navigate", path: "/merchandise", label: "Merchandise" }] },
+  { id: "creators", patterns: [/\bcreators?\b/, /\bfind creators?\b/, /\bbrowse creators?\b/], reply: ["Opening creators.", "Taking you to creators."], actions: [{ type: "navigate", path: "/creators", label: "Creators" }] },
+  { id: "tv", patterns: [/\btv\b/, /\blive tv\b/], reply: ["Opening TV.", "Taking you to TV."], actions: [{ type: "navigate", path: "/tv", label: "TV" }] },
+  { id: "books", patterns: [/\bbooks?\b/], reply: ["Opening Books.", "Taking you to Books."], actions: [{ type: "navigate", path: "/books", label: "Books" }] },
+  { id: "movies", patterns: [/\bmovies?\b/], reply: ["Opening Movies.", "Taking you to Movies."], actions: [{ type: "navigate", path: "/movies", label: "Movies" }] },
+  { id: "upgrade", patterns: [/\bupgrade\b/, /\bplus\b/, /\btrooflix plus\b/, /\bpremium\b/, /\bsubscribe\b/], reply: ["Opening upgrade options.", "Taking you to Trooflix Plus/upgrade."], actions: [{ type: "navigate", path: "/upgrade", label: "Upgrade" }] },
+  { id: "apply", patterns: [/\bapply\b/, /\bbecome a creator\b/, /\bcreator application\b/], reply: ["Opening creator application.", "Taking you to apply."], actions: [{ type: "navigate", path: "/apply", label: "Apply" }] },
+  { id: "features", patterns: [/\bfeatures\b/, /\bwhat is trooflix\b/], reply: ["Opening features.", "Showing Trooflix features."], actions: [{ type: "navigate", path: "/features", label: "Features" }] },
+  { id: "why", patterns: [/\bwhy trooflix\b/, /\bwhy us\b/], reply: ["Opening Why Trooflix.", "Taking you there."], actions: [{ type: "navigate", path: "/why-trooflix", label: "Why Trooflix" }] },
+  { id: "terms", patterns: [/\bterms\b/, /\bprivacy\b/, /\bpolicy\b/], reply: ["Opening Terms.", "Taking you to terms."], actions: [{ type: "navigate", path: "/terms", label: "Terms" }] },
+  { id: "login", patterns: [/\blog ?in\b/, /\bsign ?in\b/], reply: ["Opening login.", "Taking you to sign in."], actions: [{ type: "navigate", path: "/login", label: "Log in" }] },
+  { id: "signup", patterns: [/\bsign ?up\b/, /\bregister\b/, /\bcreate account\b/], reply: ["Opening sign up.", "Taking you to create an account."], actions: [{ type: "navigate", path: "/signup", label: "Sign up" }] },
+  { id: "forgot", patterns: [/\bforgot password\b/, /\breset password\b/], reply: ["Opening password reset.", "Taking you to reset your password."], actions: [{ type: "navigate", path: "/forgot-password", label: "Forgot Password" }] },
+
+  // Creator dashboard / studio
+  { id: "dashboard", patterns: [/\bcreator dashboard\b/, /\bcreator studio\b/, /\bdashboard\b/, /\bstudio\b/], reply: ["Opening Creator Dashboard.", "Taking you to Creator Studio."], actions: [{ type: "navigate", path: "/creator-dashboard", label: "Creator Dashboard" }] },
+  { id: "upload", patterns: [/\bupload\b/, /\bpost video\b/, /\bnew video\b/, /\bcreate video\b/], reply: ["Opening upload.", "Taking you to upload."], actions: [{ type: "open_upload", mediaType: "video" }, { type: "navigate", path: "/creator-dashboard/upload", label: "Upload" }] },
+  { id: "upload_short", patterns: [/\bupload short\b/, /\bpost short\b/, /\bnew short\b/, /\bcreate short\b/, /\bupload reel\b/], reply: ["Opening short upload.", "Taking you to upload a short."], actions: [{ type: "open_upload", mediaType: "short" }, { type: "navigate", path: "/creator-dashboard/upload?type=short", label: "Upload Short" }] },
+  { id: "upload_podcast", patterns: [/\bupload podcast\b/, /\bpost podcast\b/, /\bnew podcast\b/, /\bcreate podcast\b/], reply: ["Opening podcast upload.", "Taking you to upload a podcast."], actions: [{ type: "open_upload", mediaType: "podcast" }, { type: "navigate", path: "/creator-dashboard/upload?type=podcast", label: "Upload Podcast" }] },
+  { id: "upload_doc", patterns: [/\bupload documentary\b/, /\bpost documentary\b/, /\bnew documentary\b/, /\bcreate documentary\b/], reply: ["Opening documentary upload.", "Taking you to upload a documentary."], actions: [{ type: "open_upload", mediaType: "documentary" }, { type: "navigate", path: "/creator-dashboard/upload?type=documentary", label: "Upload Documentary" }] },
+  { id: "go_live", patterns: [/\bgo live\b/, /\bstart live\b/, /\blive stream\b/, /\bstart stream\b/], reply: ["Opening Go Live.", "Taking you to start a live stream."], actions: [{ type: "navigate", path: "/creator-dashboard/live", label: "Go Live" }] },
+  { id: "manage_content", patterns: [/\bmanage content\b/, /\bmy videos\b/, /\bmy uploads\b/, /\bmanage videos\b/, /\bedit videos\b/], reply: ["Opening Manage Content.", "Taking you to manage your content."], actions: [{ type: "navigate", path: "/creator-dashboard/manage-content", label: "Manage Content" }] },
+  { id: "creator_orders", patterns: [/\bcreator orders\b/, /\bseller orders\b/, /\bshop orders\b/], reply: ["Opening creator/shop orders.", "Taking you to creator orders."], actions: [{ type: "navigate", path: "/creator-dashboard/orders", label: "Creator Orders" }] },
+  { id: "creator_shop", patterns: [/\bcreator shop\b/, /\bmy shop\b/, /\bmanage shop\b/, /\bshop settings\b/], reply: ["Opening your creator shop.", "Taking you to shop management."], actions: [{ type: "navigate", path: "/creator-dashboard/shop", label: "Creator Shop" }] },
+  { id: "customize_shop", patterns: [/\bcustomize shop\b/, /\bshop customize\b/], reply: ["Opening shop customization.", "Taking you to customize your shop."], actions: [{ type: "navigate", path: "/creator-dashboard/shop/customize", label: "Customize Shop" }] },
+  { id: "import", patterns: [/\bimport\b/, /\bimport videos\b/], reply: ["Opening import.", "Taking you to import content."], actions: [{ type: "navigate", path: "/creator-dashboard/import", label: "Import" }] },
+  { id: "fix_posters", patterns: [/\bfix posters?\b/, /\bposters?\b/, /\bthumbnails? fix\b/], reply: ["Opening Fix Posters.", "Taking you to fix posters."], actions: [{ type: "navigate", path: "/creator-dashboard/fix-posters", label: "Fix Posters" }] },
+  { id: "creator_settings", patterns: [/\bcreator settings\b/, /\bstudio settings\b/, /\bdashboard settings\b/], reply: ["Opening creator settings.", "Taking you to creator settings."], actions: [{ type: "navigate", path: "/creator-dashboard/settings", label: "Creator Settings" }] },
+  { id: "creator_theme", patterns: [/\btheme\b/, /\bcustomize theme\b/, /\bstudio theme\b/], reply: ["Opening theme settings.", "Taking you to customize your theme."], actions: [{ type: "navigate", path: "/creator-dashboard/theme", label: "Theme" }] },
+  { id: "subscriptions", patterns: [/\bsubscriptions?\b/, /\bsubscribers?\b/], reply: ["Opening subscriptions.", "Taking you to subscriptions."], actions: [{ type: "navigate", path: "/creator-dashboard/subscriptions", label: "Subscriptions" }] },
+  { id: "security_billing", patterns: [/\bsecurity\b/, /\bbilling\b/, /\bsecurity and billing\b/], reply: ["Opening security & billing.", "Taking you to security and billing."], actions: [{ type: "navigate", path: "/creator-dashboard/security-billing", label: "Security & Billing" }] },
+];
+
 function heuristicActions(message: string): { reply: string; actions: AssistantAction[] } {
   const m = normalize(message);
 
-  // Credits / wallet / top up
-  if (/(add|buy|get|top ?up|load).*(credit|coin|troocoin)|\btop ?up\b|\bwallet\b|\bcredits?\b|\bcoins?\b/.test(m)) {
-    return {
-      reply: pick([
-        "Let’s power up your wallet — opening top-up so you can add TrooCoins/credits.",
-        "On it. Taking you to your wallet to add credits.",
-        "Credits coming up — opening your wallet top-up now.",
-      ]),
-      actions: [{ type: "open_topup" }, { type: "navigate", path: "/wallet?topup=true", label: "Open Wallet (Top Up)" }],
-    };
-  }
-
-  // Orders
-  if (/\b(my )?orders?\b|\bpurchases?\b|\bbought\b|\bsold\b|\btrack(ing)?\b/.test(m)) {
-    const tab = /\bsold\b/.test(m) ? "sold" : "bought";
-    return {
-      reply: tab === "sold"
-        ? pick(["Let’s check what you’ve sold — opening your sold orders.", "Opening your sold orders now."])
-        : pick(["Let’s track down your orders — opening them now.", "Opening your orders so you can see purchases and tracking."]),
-      actions: [{ type: "open_orders", tab }, { type: "navigate", path: `/orders${tab === "sold" ? "?tab=sold" : ""}`, label: tab === "sold" ? "Sold Orders" : "My Orders" }],
-    };
-  }
-
-  // Reels / shorts / feed
-  if (/\breels?\b|\bshorts?\b|\bfeed\b|\bswipe\b/.test(m)) {
-    return {
-      reply: pick([
-        "Time for a scroll — taking you to Reels.",
-        "Let’s jump into Reels/Shorts.",
-        "Opening the Reels feed for you.",
-      ]),
-      actions: [{ type: "navigate", path: "/feed", label: "Open Reels" }],
-    };
-  }
-
-  // Upload
-  if (/\bupload\b|\bpost\b.*(video|short|podcast|documentary|tweet)|\bcreate\b.*(video|short|podcast|documentary|post)/.test(m)) {
-    let mediaType: "video" | "short" | "podcast" | "documentary" | "tweet" = "video";
-    if (/\bshort\b|\breel\b/.test(m)) mediaType = "short";
-    else if (/\bpodcast\b/.test(m)) mediaType = "podcast";
-    else if (/\bdocumentary\b|\bdoco?\b/.test(m)) mediaType = "documentary";
-    else if (/\btweet\b/.test(m)) mediaType = "tweet";
-    const qs = mediaType === "video" ? "" : `?type=${encodeURIComponent(mediaType)}`;
-    const label = mediaType === "video" ? "video" : mediaType;
-    return {
-      reply: pick([
-        `Let’s create something great — opening ${label} upload.`,
-        `Studio time. Taking you to upload your ${label}.`,
-        `Opening the upload flow for your ${label}.`,
-      ]),
-      actions: [{ type: "open_upload", mediaType: mediaType as any }, { type: "navigate", path: `/creator-dashboard/upload${qs}`, label: `Upload ${label}` }],
-    };
-  }
-
-  // Profile
-  if (/\bmy profile\b|\bprofile\b|\baccount\b/.test(m)) {
-    return {
-      reply: pick(["Taking you to your profile.", "Opening your profile now."]),
-      actions: [{ type: "open_profile" }, { type: "navigate", path: "/creator-dashboard?studioTab=profile", label: "My Profile" }],
-    };
-  }
-
-  // Messages/chat
-  if (/\bmessages?\b|\binbox\b|\bdms?\b|\bchat\b/.test(m)) {
-    return {
-      reply: pick(["Opening your messages.", "Let’s check your inbox — opening messages."]),
-      actions: [{ type: "navigate", path: "/messages", label: "Open Messages" }],
-    };
-  }
-
-  // Search
-  if (/\bsearch\b|\bfind\b|\blook for\b|\bdiscover\b/.test(m)) {
+  // Search with query extraction
+  if (/\b(search|find|look for|discover)\b/.test(m)) {
     const q = message.replace(/^(please\s+)?(can you\s+)?(search|find|look for|discover)\s*(for)?\s*/i, "").trim();
-    const path = q ? `/search?q=${encodeURIComponent(q)}` : "/search";
-    return {
-      reply: q
-        ? pick([`Let’s hunt that down — searching for “${q}”.`, `On it. Searching for “${q}”.`])
-        : pick(["Opening search — tell me what you’re in the mood for.", "Let’s discover something — opening search."]),
-      actions: [{ type: "open_search", query: q || undefined }, { type: "navigate", path, label: q ? `Search: ${q}` : "Open Search" }],
-    };
+    if (q) {
+      const path = `/search?q=${encodeURIComponent(q)}`;
+      return { reply: pick([`Searching for “${q}”.`, `Let’s find “${q}”.`]), actions: [{ type: "open_search", query: q }, { type: "navigate", path, label: `Search: ${q}` }] };
+    }
   }
 
-  // Creator dashboard / manage content
-  if (/\bmanage content\b|\bmy videos\b|\bdashboard\b|\bcreator studio\b|\bmanage\b/.test(m)) {
-    return {
-      reply: pick(["Opening Creator Dashboard so you can manage everything.", "Taking you to your Creator Dashboard."]),
-      actions: [{ type: "navigate", path: "/creator-dashboard", label: "Open Creator Dashboard" }],
-    };
+  // Prefer more specific matches first
+  const sorted = [...COMMANDS].sort((a, b) => b.id.length - a.id.length);
+  for (const cmd of sorted) {
+    if (cmd.patterns.some((p) => p.test(m))) {
+      return { reply: Array.isArray(cmd.reply) ? pick(cmd.reply) : cmd.reply, actions: cmd.actions };
+    }
   }
 
-  if (/\bwallet\b/.test(m)) {
-    return { reply: pick(["Opening your wallet.", "Taking you to your wallet."]), actions: [{ type: "navigate", path: "/wallet", label: "Open Wallet" }] };
-  }
-
-  if (/\bhome\b/.test(m)) {
-    return { reply: pick(["Heading home.", "Taking you back to Home."]), actions: [{ type: "navigate", path: "/", label: "Home" }] };
-  }
-
-  // Friendly fallback with suggestions
   return {
     reply: pick([
-      "I’ve got you. I can help you jump around Trooflix — try “add credits”, “show my orders”, “take me to reels”, “upload a short”, or “search for documentaries”. What do you want to do?",
-      "Tell me what you’re trying to do and I’ll take you there. For example: add credits, open reels, check orders, upload a video, or find creators.",
-      "I can act as your Trooflix guide: open wallet/credits, orders, reels, upload, messages, profile, dashboard, or search. What’s next?",
+      "I can help you navigate Trooflix. Try: home, reels, search, wallet/top up, orders, messages, notifications, profile, account, merch, creators, TV/books/movies, upgrade, apply, login/signup, or Creator Dashboard (upload, go live, manage content, shop, orders, settings, theme, subscriptions, import, fix posters, security & billing). What do you want to do?",
+      "Tell me where you want to go — e.g. “open wallet”, “go live”, “manage content”, “creator shop”, “notifications”, or “search for documentaries”.",
     ]),
     actions: [
-      { type: "navigate", path: "/wallet?topup=true", label: "Add credits" },
-      { type: "navigate", path: "/feed", label: "Open Reels" },
-      { type: "navigate", path: "/orders", label: "My Orders" },
-      { type: "navigate", path: "/creator-dashboard/upload", label: "Upload Video" },
+      { type: "navigate", path: "/", label: "Home" },
+      { type: "navigate", path: "/search", label: "Search" },
+      { type: "navigate", path: "/creator-dashboard", label: "Creator Dashboard" },
+      { type: "navigate", path: "/wallet?topup=true", label: "Add Credits" },
     ],
   };
 }
@@ -160,9 +125,9 @@ export async function POST(req: Request) {
 
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     const system = `You are Trooflix AI, a friendly, smart in-app assistant with personality. Help users accomplish tasks in the Trooflix app.
-Be conversational, warm, and a bit imaginative while staying helpful and clear. You can suggest ideas (what to watch, what to create, how to find things) but don't invent facts about the user's account/data.
+Be conversational, warm, and a bit imaginative while staying helpful and clear. You can suggest ideas but don't invent facts about the user's account/data.
 
-You can perform actions by returning JSON with keys: reply (string) and actions (array).
+Return ONLY valid JSON with keys: reply (string) and actions (array).
 Allowed actions:
 - {"type":"navigate","path":"/path","label":"..."}
 - {"type":"open_topup"}
@@ -170,10 +135,12 @@ Allowed actions:
 - {"type":"open_upload","mediaType":"video"|"short"|"podcast"|"documentary"|"tweet"}
 - {"type":"open_search","query":"..."}
 - {"type":"open_profile"}
-Known routes: / (home), /feed (reels/shorts), /search, /orders, /wallet (credits/troocoins/top up via /wallet?topup=true), /messages, /creator-dashboard, /creator-dashboard/upload, /creator-dashboard/manage-content. Current user's profile shortcut: /creator-dashboard?studioTab=profile or open_profile action.
-Interpret requests like "add credits", "buy coins", "take me to reels", "show my orders", "upload a video/short/podcast/documentary", "open wallet/messages/profile/dashboard", "search for ...".
-When a request maps to a feature, include at least one helpful action. If ambiguous, ask a short clarifying question and include likely actions. Keep replies concise but personable.
-Return ONLY valid JSON.`;
+
+Map user requests to these app routes/buttons/features when relevant:
+Home /, Reels/Shorts /feed, Search /search?q=..., Wallet /wallet, Top up /wallet?topup=true, Orders /orders and /orders?tab=sold, Messages /messages, Notifications /notifications, My Profile /creator-dashboard?studioTab=profile, Account /account, My List /my-list, Merchandise/Shop /merchandise, Creators /creators, TV /tv, Books /books, Movies /movies, Upgrade/Plus /upgrade, Apply /apply, Features /features, Why Trooflix /why-trooflix, Terms /terms, Login /login, Sign up /signup, Forgot password /forgot-password.
+Creator Dashboard /creator-dashboard, Upload /creator-dashboard/upload (?type=short|podcast|documentary), Go Live /creator-dashboard/live, Manage Content /creator-dashboard/manage-content, Creator Orders /creator-dashboard/orders, Creator Shop /creator-dashboard/shop, Customize Shop /creator-dashboard/shop/customize, Import /creator-dashboard/import, Fix Posters /creator-dashboard/fix-posters, Creator Settings /creator-dashboard/settings, Theme /creator-dashboard/theme, Subscriptions /creator-dashboard/subscriptions, Security & Billing /creator-dashboard/security-billing.
+
+When a request maps to a feature/button, include at least one helpful action. If ambiguous, ask a short clarifying question and include likely actions. Keep replies concise but personable.`;
 
     const completion = await openai.chat.completions.create({
       model: process.env.OPENAI_ASSISTANT_MODEL || "gpt-4o-mini",

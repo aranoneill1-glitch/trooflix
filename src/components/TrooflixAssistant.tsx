@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Bot, Send, Sparkles, X, ChevronRight, Wallet, ShoppingBag, Play, Upload, Search, User, MessageSquare, LayoutDashboard } from "lucide-react";
+import { Bot, Send, Sparkles, X, ChevronRight, Wallet, ShoppingBag, Play, Upload, Search, User, MessageSquare, LayoutDashboard, Home, Bell, Store, Radio, FolderCog } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 
 type Action = {
@@ -18,12 +18,19 @@ type Action = {
 type ChatMsg = { role: "user" | "assistant"; text: string; actions?: Action[] };
 
 const QUICK_ACTIONS = [
-  { label: "Add credits", prompt: "Add credits to my wallet", icon: Wallet },
-  { label: "My orders", prompt: "Show me my orders", icon: ShoppingBag },
-  { label: "Reels", prompt: "Take me to reels", icon: Play },
-  { label: "Upload video", prompt: "Upload a video", icon: Upload },
-  { label: "Search", prompt: "Open search", icon: Search },
-  { label: "Profile", prompt: "Take me to my profile", icon: User },
+  { label: "Home", prompt: "go home", icon: Home },
+  { label: "Reels", prompt: "open reels", icon: Play },
+  { label: "Search", prompt: "open search", icon: Search },
+  { label: "Add credits", prompt: "add credits", icon: Wallet },
+  { label: "Orders", prompt: "show my orders", icon: ShoppingBag },
+  { label: "Messages", prompt: "open messages", icon: MessageSquare },
+  { label: "Notifications", prompt: "open notifications", icon: Bell },
+  { label: "Profile", prompt: "open my profile", icon: User },
+  { label: "Merch", prompt: "open merchandise", icon: Store },
+  { label: "Dashboard", prompt: "open creator dashboard", icon: LayoutDashboard },
+  { label: "Upload", prompt: "upload a video", icon: Upload },
+  { label: "Go Live", prompt: "go live", icon: Radio },
+  { label: "Manage", prompt: "manage content", icon: FolderCog },
 ];
 
 function normalizeAction(a: Action): Action | null {
@@ -50,7 +57,7 @@ export default function TrooflixAssistant() {
   const [sending, setSending] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMsg[]>([
-    { role: "assistant", text: "Hey! I’m your Trooflix assistant. Tell me what you’re in the mood to do — add credits, jump into Reels, check orders, upload something, or find a creator — and I’ll take you there." }
+    { role: "assistant", text: "Hey! I’m your Trooflix assistant. I can take you to almost any button/page in the app — home, reels, search, wallet/credits, orders, messages, notifications, profile, account, merch, creators, TV/books/movies, upgrade, or anything in Creator Dashboard (upload, go live, manage content, shop, settings, etc.). What do you want to do?" }
   ]);
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -193,7 +200,7 @@ export default function TrooflixAssistant() {
                   <input
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    placeholder="Ask to do something... (e.g. add credits, show my orders)"
+                    placeholder="Ask anything... (e.g. go live, open merch, manage content, add credits)"
                     className="flex-1 bg-white/[0.06] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-white/35 outline-none focus:border-[#E53945]/50"
                   />
                   <button type="submit" disabled={sending || !input.trim()} className="w-10 h-10 rounded-xl bg-[#E53945] disabled:opacity-40 text-white flex items-center justify-center">
