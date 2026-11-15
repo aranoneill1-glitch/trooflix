@@ -515,11 +515,11 @@ export default function PublicProfilePage() {
                 filteredVideos.length === 0 ? (
                   <div className="py-20 text-center text-white/50">No Shorts yet.</div>
                 ) : (
-                  <div className="grid grid-cols-3 gap-[2px] pb-20 sm:gap-1">
+                  <div className="grid grid-cols-3 gap-[2px] pb-20 sm:gap-1 lg:grid-cols-6 lg:gap-3">
                     {filteredVideos.map((video) => (
-                      <Link key={video.id} href={`/feed?creator_user_id=${encodeURIComponent(profile.user_id)}${resolvedCreatorId ? `&creator_id=${resolvedCreatorId}` : ""}&reel=${video.id}`} aria-label={`Watch ${video.title}`} className="group relative aspect-[3/4] overflow-hidden bg-[#111114]">
+                      <Link key={video.id} href={`/feed?creator_user_id=${encodeURIComponent(profile.user_id)}${resolvedCreatorId ? `&creator_id=${resolvedCreatorId}` : ""}&reel=${video.id}`} aria-label={`Watch ${video.title}`} className="group relative aspect-[3/4] overflow-hidden bg-[#111114] lg:rounded-xl lg:border lg:border-white/10 lg:shadow-lg">
                         <ShortPreviewFrame src={video.videoUrl || video.bitchuteUrl} poster={video.posterUrl || video.backdropUrl} alt={video.title} />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-black/10 opacity-80" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/10 opacity-90" />
                         <Play size={17} fill="white" className="absolute right-2 top-2 text-white drop-shadow-md" />
                         <span className="absolute bottom-2 left-2 right-2 line-clamp-2 text-xs font-semibold leading-tight text-white drop-shadow-md">{video.title}</span>
                       </Link>
