@@ -74,13 +74,13 @@ export default function MobileBottomNav() {
 
   return (
     <nav className="lg:hidden fixed inset-x-0 bottom-0 z-[250] border-t border-white/10 bg-[#070709]">
-      <div className="flex items-center justify-around px-2 pt-0 pb-[env(safe-area-inset-bottom)]">
-        <Link href="/" className="flex flex-col items-center justify-center gap-0 min-w-0 flex-1 pt-1 pb-0.5">
+      <div className="flex items-center justify-around px-2 pt-1.5 pb-[env(safe-area-inset-bottom)]">
+        <Link href="/" className="flex flex-col items-center justify-center gap-0 min-w-0 flex-1 pt-0.5 pb-0.5">
           <Home size={22} className={isActive("/") ? "text-white" : "text-white/45"} />
           <span className={`text-[10px] font-medium ${isActive("/") ? "text-white" : "text-white/45"}`}>Home</span>
         </Link>
 
-        <Link href="/feed" className="flex flex-col items-center justify-center gap-0 min-w-0 flex-1 pt-1 pb-0.5">
+        <Link href="/feed" className="flex flex-col items-center justify-center gap-0 min-w-0 flex-1 pt-0.5 pb-0.5">
           <Play size={22} className={isActive("/feed") ? "text-white" : "text-white/45"} fill={isActive("/feed") ? "currentColor" : "none"} />
           <span className={`text-[10px] font-medium ${isActive("/feed") ? "text-white" : "text-white/45"}`}>Shorts</span>
         </Link>
@@ -88,7 +88,7 @@ export default function MobileBottomNav() {
         <button
           type="button"
           onClick={() => document.dispatchEvent(new CustomEvent("open-create-menu"))}
-          className="flex flex-col items-center justify-center gap-0 min-w-0 flex-1 pt-1 pb-0.5"
+          className="flex flex-col items-center justify-center gap-0 min-w-0 flex-1 pt-0.5 pb-0.5"
           aria-label="Create"
         >
           <div className="w-7 h-7 rounded-full bg-white/[0.08] border border-white/15 flex items-center justify-center">
@@ -97,12 +97,12 @@ export default function MobileBottomNav() {
           <span className="text-[10px] font-medium text-white/70">Create</span>
         </button>
 
-        <Link href="/wallet" className="flex flex-col items-center justify-center gap-0 min-w-0 flex-1 pt-1 pb-0.5">
+        <Link href="/wallet" className="flex flex-col items-center justify-center gap-0 min-w-0 flex-1 pt-0.5 pb-0.5">
           <Wallet size={22} className={isActive("/wallet") ? "text-white" : "text-white/45"} />
           <span className={`text-[10px] font-medium ${isActive("/wallet") ? "text-white" : "text-white/45"}`}>Wallet</span>
         </Link>
 
-        <Link href={profileHref} className="flex flex-col items-center justify-center gap-0 min-w-0 flex-1 pt-1 pb-0.5">
+        <Link href={profileHref} className="flex flex-col items-center justify-center gap-0 min-w-0 flex-1 pt-0.5 pb-0.5">
           <div className={`w-[22px] h-[22px] rounded-full overflow-hidden border ${profileActive ? "border-white" : "border-white/30"} bg-white/10 flex items-center justify-center`}>
             {avatarUrl ? (
               <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />

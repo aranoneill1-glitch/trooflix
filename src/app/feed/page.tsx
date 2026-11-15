@@ -782,7 +782,7 @@ function MobileVideoShort({ video, creator, viewCount, commentCount, onViewCount
 
       {/* Bottom action bar: like, comment, tip, views (avatar excluded) */}
       <div className={`fixed inset-x-0 bottom-0 z-[260] lg:absolute lg:inset-x-auto lg:right-[80px] lg:bottom-[92px] lg:w-[360px] pointer-events-auto border-t border-white/10 bg-[#070709] lg:border lg:rounded-2xl transition-opacity duration-200 ${isActive ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
-        <div className="flex items-center justify-around px-4 pt-2.5 pb-[calc(env(safe-area-inset-bottom)+8px)] lg:pb-3">
+        <div className="flex items-center justify-around px-4 pt-1 pb-[calc(env(safe-area-inset-bottom)+4px)] lg:pb-3">
           <div className="flex items-center justify-center min-w-0 flex-1 text-white">
             <LikeButton videoId={video.id} size={30} showCount={true} stacked={false} />
           </div>
