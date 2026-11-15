@@ -240,7 +240,7 @@ export function FeaturedVideoHero({ videos, onSelect, className = "", extendDesk
   const previewSrc = video.videoUrl || video.bitchuteUrl;
 
   return (
-    <section aria-label="Featured videos" className={`relative isolate h-[42vh] min-h-[240px] max-h-[420px] overflow-hidden bg-[#08090c] max-md:mx-4 max-md:mt-[calc(env(safe-area-inset-top)+3.75rem)] max-md:rounded-2xl max-md:ring-1 max-md:ring-[#E53945]/70 ${extendDesktopTop ? "md:-mt-[env(safe-area-inset-top)] md:h-[calc(100vh)] md:min-h-[700px] md:max-h-none" : "md:mt-0 md:h-[min(34vh,310px)] md:min-h-[220px] md:max-h-[310px]"} ${className || "md:-mx-10"}`}>
+    <section aria-label="Featured videos" className={`relative isolate h-[42vh] min-h-[240px] max-h-[420px] overflow-hidden bg-[#08090c] max-md:mx-2 max-md:mt-[calc(env(safe-area-inset-top)+3.75rem)] max-md:rounded-2xl max-md:ring-1 max-md:ring-[#E53945]/70 ${extendDesktopTop ? "md:-mt-[env(safe-area-inset-top)] md:h-[calc(100vh)] md:min-h-[700px] md:max-h-none" : "md:mt-0 md:h-[min(34vh,310px)] md:min-h-[220px] md:max-h-[310px]"} ${className || "md:-mx-10"}`}>
       <AnimatePresence mode="wait">
         <motion.div key={video.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.7 }} className="absolute inset-0 -z-20">
           <HeroPreviewFrame src={previewSrc} poster={image} alt={video.title || ""} />
