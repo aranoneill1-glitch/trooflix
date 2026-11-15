@@ -19,7 +19,7 @@ const PRIMARY_CATEGORIES = [
 const GENRE_CATEGORIES = [
   { name: "History", color: "bg-[#8b5cf6]/60", image: "https://unsplash.com/photos/JioCsloIYro/download?force=true&w=600" },
   { name: "Politics & Geopolitics", color: "bg-[#006450]/60", image: "https://unsplash.com/photos/2J5-T03yGQU/download?force=true&w=600" },
-  { name: "War & Conflict", color: "bg-[#E53945]/60", image: "https://images.unsplash.com/photo-1579912205439-4cef16dc975e?q=80&w=600&auto=format&fit=crop" },
+  { name: "War & Conflict", color: "bg-[#E53945]/60", image: "https://images.unsplash.com/photo-1508854710579-5cecc3a9ff17?q=80&w=600&auto=format&fit=crop" },
   { name: "True Crime & Justice", color: "bg-[#1e3264]/60", image: "https://unsplash.com/photos/yYpmCA32U_M/download?force=true&w=600" },
   { name: "Conspiracy & Mystery", color: "bg-[#7d4b96]/60", image: "https://unsplash.com/photos/BxELNNMN88Y/download?force=true&w=600" },
   { name: "Society & Culture", color: "bg-[#e86f2c]/60", image: "https://unsplash.com/photos/ehdsg7SHm6A/download?force=true&w=600" },
@@ -273,15 +273,6 @@ function SearchContent() {
         <div className="w-full max-w-[1600px] mx-auto px-4 lg:px-10 pt-20 lg:pt-32 pb-20">
 
           <div className="flex flex-col items-center justify-center text-center mb-8 lg:mb-12 pt-0 lg:pt-6">
-            <p className="text-[10px] md:text-xs tracking-[0.4em] text-white/50 font-semibold mb-2 uppercase">
-              Search Trooflix
-            </p>
-            <h1 className="text-3xl md:text-6xl font-black tracking-tight mb-3 lg:mb-4">
-              <span className="text-white">Find anything, </span><span className="text-[#E53945]">instantly</span>
-            </h1>
-            <p className="text-sm md:text-lg text-white/60 mb-6 lg:mb-8 max-w-2xl">
-              Search creators, live streams, shorts, videos, and podcasts.
-            </p>
 
             <div className="relative w-full max-w-4xl mx-auto mb-4 lg:mb-6">
               <div className="absolute inset-y-0 left-0 pl-4 md:pl-6 flex items-center pointer-events-none">
