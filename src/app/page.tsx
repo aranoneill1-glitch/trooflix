@@ -440,7 +440,7 @@ export default function Home() {
                       <div className="relative h-[420px] w-[620px]">
                         {/* TV */}
                         <motion.div
-                          className="absolute left-1/2 top-[6%] w-[460px] -translate-x-[58%] z-0"
+                          className="absolute left-1/2 top-[6%] w-[460px] -translate-x-[72%] z-0"
                           initial={prefersReducedMotion ? false : { opacity: 0, scale: 1.03, filter: "blur(8px)" }}
                           animate={prefersReducedMotion ? { opacity: 1, scale: 1, filter: "blur(0px)" } : { opacity: 1, scale: 1, filter: "blur(0px)" }}
                           transition={{ duration: 1.0, ease: [0.22, 1, 0.36, 1] }}
