@@ -383,6 +383,39 @@ export default function Home() {
         )}
       </AnimatePresence>
 
+      {!loaded && (
+        <div className="relative z-10 px-4 md:px-10 pt-[calc(env(safe-area-inset-top)+72px)] pb-20 space-y-8 animate-pulse">
+          <div className="h-[38vh] min-h-[220px] max-h-[360px] w-full rounded-2xl bg-white/[0.06] -mx-0 md:-mx-0" />
+          <div className="space-y-4">
+            <div className="h-4 w-28 rounded bg-white/[0.08]" />
+            <div className="h-8 w-64 max-w-[80%] rounded bg-white/[0.08]" />
+            <div className="flex gap-4 overflow-hidden">
+              {[0,1,2,3].map((i) => (
+                <div key={i} className="shrink-0 w-[260px] md:w-[300px]">
+                  <div className="aspect-video rounded-2xl bg-white/[0.06]" />
+                  <div className="mt-3 flex gap-3">
+                    <div className="h-9 w-9 rounded-full bg-white/[0.08]" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 w-full rounded bg-white/[0.08]" />
+                      <div className="h-3 w-2/3 rounded bg-white/[0.06]" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-4">
+            <div className="h-4 w-24 rounded bg-white/[0.08]" />
+            <div className="h-8 w-40 rounded bg-white/[0.08]" />
+            <div className="flex gap-3 overflow-hidden">
+              {[0,1,2,3,4,5].map((i) => (
+                <div key={i} className="shrink-0 w-[132px] md:w-[168px] aspect-[9/16] rounded-2xl bg-white/[0.06]" />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {loaded && (
         <>
           {!showingFiltered && (
