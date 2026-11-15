@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   },
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "black",
     title: "Trooflix",
   },
 };
@@ -37,8 +37,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#dc2626",
-  viewportFit: "cover",
+  themeColor: "#070709",
 };
 
 export default function RootLayout({
@@ -75,22 +74,7 @@ export default function RootLayout({
       <body className={`${geist.className} antialiased`}>
         
         <GlobalIncomingCall />
-        <TipModal />{typeof window !== "undefined" && (
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ("serviceWorker" in navigator) {
-                navigator.serviceWorker.getRegistrations().then(function(regs) {
-                  for (var i = 0; i < regs.length; i++) { regs[i].unregister(); }
-                });
-                caches.keys().then(function(names) {
-                  for (var i = 0; i < names.length; i++) { caches.delete(names[i]); }
-                });
-              }
-            `,
-          }}
-        />
-      )}
+        <TipModal />
         <script
           dangerouslySetInnerHTML={{
             __html: `
