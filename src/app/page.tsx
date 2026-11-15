@@ -432,6 +432,9 @@ export default function Home() {
 
                 <div className="snap-y snap-proximity">
                 <WatchEverywhereHero />
+
+                <MonetizationHero />
+
                 {/* Page 1: Content Power / Your Voice. Unfiltered. */}
                 <section className="relative w-full min-h-[100svh] snap-start overflow-hidden bg-[#040406] flex items-center">
                   <HeroScene3D />
@@ -522,8 +525,6 @@ export default function Home() {
                     </div>
                   </div>
                 </section>
-
-                <MonetizationHero />
 
                 <TrooflixEconomyHero />
 
