@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Menu, Mic, Plus, RefreshCw, Search, Video, Radio, X, Play, Tag, ShoppingBag, Sparkles } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { Menu, Mic, Plus, RefreshCw, Search, Video, Radio, X, Play, Tag, ShoppingBag, Sparkles, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import UserMenu from "@/components/UserMenu";
 import NotificationBell from "@/components/NotificationBell";
@@ -16,10 +16,14 @@ type Props = {
 
 export default function TopBar({ onMenu }: Props) {
   const pathname = usePathname();
+  const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isCreator, setIsCreator] = useState(false);
   const [showCreateMenu, setShowCreateMenu] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Check if we are on the search page
   const isSearchPage = pathname === "/search";
@@ -58,6 +62,41 @@ export default function TopBar({ onMenu }: Props) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    if (isSearchPage) {
+      setSearchOpen(true);
+      if (typeof window !== "undefined") {
+        const q = new URLSearchParams(window.location.search).get("q") || "";
+        setSearchQuery(q);
+      }
+    } else {
+      setSearchOpen(false);
+      setSearchQuery("");
+    }
+  }, [isSearchPage, pathname]);
+
+  useEffect(() => {
+    if (searchOpen) {
+      const t = setTimeout(() => searchInputRef.current?.focus(), 50);
+      return () => clearTimeout(t);
+    }
+  }, [searchOpen]);
+
+  const submitSearch = (q: string) => {
+    const trimmed = q.trim();
+    if (trimmed) router.push(`/search?q=${encodeURIComponent(trimmed)}`);
+    else router.push("/search");
+  };
+
+  const closeSearch = () => {
+    if (isSearchPage) {
+      router.push("/");
+    } else {
+      setSearchOpen(false);
+      setSearchQuery("");
+    }
+  };
+
   return (
     <>
       <div
@@ -73,82 +112,133 @@ export default function TopBar({ onMenu }: Props) {
         }`}
         style={{ top: "env(safe-area-inset-top)", WebkitTransform: "translateZ(0)", transform: "translateZ(0)" }}
       >
-        {onMenu && (
-          <button
-            onClick={onMenu}
-            className="lg:hidden text-white/90 hover:text-white transition"
-            aria-label="Open menu"
-          >
-            <Menu size={22} />
-          </button>
-        )}
-
-        {/* LOGO: Hidden on search page, visible everywhere else */}
-        {!isSearchPage && (
-          <Link href="/" className="text-[20px] md:text-[22px] font-black tracking-[-0.06em] shrink-0 leading-none" style={{ fontFamily: "inherit" }}>
-            {isMessagesPage ? (
-              <>
-                <span className="text-white">TROO</span>
-                <span className="text-red-600">CHAT</span>
-              </>
-            ) : (
-              <>
-                <span className="text-white">TROO</span>
-                <span className="text-red-600">FLIX</span>
-              </>
-            )}
-          </Link>
-        )}
-
-        <div className="ml-auto flex items-center gap-0.5 md:gap-1">
-          <PWAInstallButton />
-
-          <button
-            type="button"
-            onClick={() => document.dispatchEvent(new CustomEvent("open-trooflix-assistant"))}
-            className="w-9 h-9 rounded-full flex items-center justify-center text-[#ff8a93] hover:text-white hover:bg-[#E53945]/20 transition"
-            aria-label="Open AI assistant"
-            title="Trooflix AI"
-          >
-            <Sparkles size={18} />
-          </button>
-
-          {!isSearchPage && (
-            <Link
-              href="/search"
-              className="w-9 h-9 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition"
-              aria-label="Search"
+        {searchOpen ? (
+          <>
+            <button
+              type="button"
+              onClick={closeSearch}
+              className="w-9 h-9 rounded-full flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10 transition shrink-0"
+              aria-label={isSearchPage ? "Close search" : "Back"}
             >
-              <Search size={18} />
+              <ArrowLeft size={20} />
+            </button>
+            <form
+              className="flex-1 min-w-0"
+              onSubmit={(e) => { e.preventDefault(); submitSearch(searchQuery); }}
+            >
+              <div className="relative">
+                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+                <input
+                  ref={searchInputRef}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search Trooflix..."
+                  className="w-full h-10 bg-white/[0.08] border border-white/10 rounded-full pl-9 pr-9 text-sm text-white placeholder:text-white/40 outline-none focus:border-[#E53945]/50"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => { setSearchQuery(""); searchInputRef.current?.focus(); if (isSearchPage) router.push("/search"); }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10"
+                    aria-label="Clear search"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+            </form>
+            <div className="flex items-center gap-0.5 md:gap-1 shrink-0">
+              <button
+                type="button"
+                onClick={() => document.dispatchEvent(new CustomEvent("open-trooflix-assistant"))}
+                className="w-9 h-9 rounded-full flex items-center justify-center text-[#ff8a93] hover:text-white hover:bg-[#E53945]/20 transition"
+                aria-label="Open AI assistant"
+                title="My Little Helper"
+              >
+                <Sparkles size={18} />
+              </button>
+              <div className="flex items-center gap-2">
+                <UserMenu />
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            {onMenu && (
+              <button
+                onClick={onMenu}
+                className="lg:hidden text-white/90 hover:text-white transition"
+                aria-label="Open menu"
+              >
+                <Menu size={22} />
+              </button>
+            )}
+
+            {/* LOGO */}
+            <Link href="/" className="text-[20px] md:text-[22px] font-black tracking-[-0.06em] shrink-0 leading-none" style={{ fontFamily: "inherit" }}>
+              {isMessagesPage ? (
+                <>
+                  <span className="text-white">TROO</span>
+                  <span className="text-red-600">CHAT</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-white">TROO</span>
+                  <span className="text-red-600">FLIX</span>
+                </>
+              )}
             </Link>
-          )}
 
-          <button 
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            className="w-9 h-9 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition disabled:opacity-50"
-            aria-label="Refresh App"
-          >
-            <RefreshCw size={18} className={isRefreshing ? "animate-spin" : ""} />
-          </button>
-          <button
-            type="button"
-            onClick={() => setShowCreateMenu(true)}
-            className="lg:hidden w-9 h-9 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition"
-            aria-label="Add content"
-          >
-            <Plus size={20} />
-          </button>
-          <Link href="/merchandise" className="hidden lg:flex w-9 h-9 rounded-full items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition" aria-label="Shop">
-            <ShoppingBag size={18} />
-          </Link>
+            <div className="ml-auto flex items-center gap-0.5 md:gap-1">
+              <PWAInstallButton />
 
-          <NotificationBell hideTrigger />
+              <button
+                type="button"
+                onClick={() => document.dispatchEvent(new CustomEvent("open-trooflix-assistant"))}
+                className="w-9 h-9 rounded-full flex items-center justify-center text-[#ff8a93] hover:text-white hover:bg-[#E53945]/20 transition"
+                aria-label="Open AI assistant"
+                title="My Little Helper"
+              >
+                <Sparkles size={18} />
+              </button>
 
-          <div className="flex items-center gap-2">
-            <UserMenu />
-          </div>
-        </div>
+              <button
+                type="button"
+                onClick={() => setSearchOpen(true)}
+                className="w-9 h-9 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition"
+                aria-label="Search"
+              >
+                <Search size={18} />
+              </button>
+
+              <button 
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                className="w-9 h-9 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition disabled:opacity-50"
+                aria-label="Refresh App"
+              >
+                <RefreshCw size={18} className={isRefreshing ? "animate-spin" : ""} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowCreateMenu(true)}
+                className="lg:hidden w-9 h-9 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition"
+                aria-label="Add content"
+              >
+                <Plus size={20} />
+              </button>
+              <Link href="/merchandise" className="hidden lg:flex w-9 h-9 rounded-full items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition" aria-label="Shop">
+                <ShoppingBag size={18} />
+              </Link>
+
+              <NotificationBell hideTrigger />
+
+              <div className="flex items-center gap-2">
+                <UserMenu />
+              </div>
+            </div>
+          </>
+        )}
       </nav>
 
       {/* CREATE / ADD CONTENT BOTTOM SHEET */}

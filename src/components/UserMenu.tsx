@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, LogOut, Settings, CreditCard, LayoutDashboard, MessageCircle, Bell, ShoppingBag, Wallet } from "lucide-react";
+import { User, LogOut, Settings, CreditCard, LayoutDashboard, MessageCircle, Bell, ShoppingBag, Wallet, Sparkles } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { getCachedUser, clearUserCache } from "@/lib/cache";
 import { motion, AnimatePresence } from "framer-motion";
@@ -174,39 +174,18 @@ export default function UserMenu() {
             transition={{ duration: 0.15 }}
             className="absolute right-0 mt-3 w-56 bg-[#141419] border border-white/15 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.6)] overflow-hidden z-[300]"
           >
-            <div className="p-4 border-b border-white/10 flex items-start justify-between gap-2">
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-bold text-white truncate">{profile?.display_name || profile?.username}</p>
-                <p className="text-xs text-white/50 truncate">@{profile?.username}</p>
-                
-              <Link 
-                href="/orders"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition text-sm text-white/80 hover:text-white"
-              >
-                <ShoppingBag size={16} />
-                My Orders
-              </Link>
-              <Link 
-                href="/wallet"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition text-sm text-white/80 hover:text-white"
-              >
-                <Wallet size={16} />
-                My Wallet
-              </Link>
-
+            <div className="p-4 border-b border-white/10">
+              <p className="text-sm font-bold text-white truncate">{profile?.display_name || profile?.username}</p>
+              <p className="text-xs text-white/50 truncate">@{profile?.username}</p>
               {isCreator && (
-                  <span className="inline-block mt-2 text-[9px] font-bold text-blue-400 bg-blue-400/10 px-1.5 py-0.5 rounded-sm uppercase tracking-wider">
-                    Creator
-                  </span>
-                )}
-              </div>
-              
+                <span className="inline-block mt-2 text-[9px] font-bold text-blue-400 bg-blue-400/10 px-1.5 py-0.5 rounded-sm uppercase tracking-wider">
+                  Creator
+                </span>
+              )}
             </div>
 
             <div className="p-2">
-              {/* Notifications with push toggle */}
+              {/* Notifications with push toggle (first) */}
               <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition">
                 <button
                   onClick={() => {
@@ -233,26 +212,17 @@ export default function UserMenu() {
                 )}
               </div>
 
-              {/* My TrooFlix Hub */}
-              <Link 
-                href="/creator-dashboard"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition text-sm text-white/80 hover:text-white"
+              {/* My Little Helper (AI assistant) */}
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  document.dispatchEvent(new CustomEvent("open-trooflix-assistant"));
+                }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition text-sm text-white/80 hover:text-white"
               >
-                <LayoutDashboard size={16} />
-                My TrooFlix
-              </Link>
-
-              {isCreator && (
-                <Link 
-                  href="/creator-dashboard/settings"
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition text-sm text-white/80 hover:text-white"
-                >
-                  <Settings size={16} />
-                  Account Settings
-                </Link>
-              )}
+                <Sparkles size={16} className="text-[#ff8a93]" />
+                My Little Helper
+              </button>
 
               <div className="h-px bg-white/5 my-1" />
 
