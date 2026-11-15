@@ -37,6 +37,7 @@ export default function ShortsFeedPage() {
   const [isMuted, setIsMuted] = useState(true);
   const [commentSheetVideoId, setCommentSheetVideoId] = useState<number | null>(null);
   const [activeVideo, setActiveVideo] = useState<Video | null>(null);
+  const [viewCounts, setViewCounts] = useState<Record<number, number>>({});
   
   const videoContainerRef = useRef<HTMLDivElement>(null);
 
@@ -65,6 +66,9 @@ export default function ShortsFeedPage() {
         : sortedShorts;
       setVideos(orderedShorts);
       setCreators(Array.isArray(cData) ? cData : []);
+      const initialViews: Record<number, number> = {};
+      orderedShorts.forEach((v: any) => { initialViews[v.id] = Number(v.views || 0); });
+      setViewCounts(initialViews);
       if (orderedShorts.length > 0) {
         setActiveVideo(orderedShorts[0]);
       }
@@ -114,6 +118,8 @@ export default function ShortsFeedPage() {
               key={video.id}
               video={video}
               creator={creator}
+              viewCount={viewCounts[video.id] ?? Number(video.views || 0)}
+              onViewCounted={() => setViewCounts((prev) => ({ ...prev, [video.id]: (prev[video.id] ?? Number(video.views || 0)) + 1 }))}
               isMuted={isMuted}
               onToggleMute={toggleMute}
               onOpenComments={() => setCommentSheetVideoId(video.id)}
@@ -168,7 +174,7 @@ export default function ShortsFeedPage() {
             </button>
             <div className="flex flex-col items-center gap-1 text-white/70">
               <Eye size={24}/>
-              <span className="text-[11px] font-bold">{activeVideo?.views || 0}</span>
+              <span className="text-[11px] font-bold">{activeVideo ? (viewCounts[activeVideo.id] ?? Number((activeVideo as any).views || 0)) : 0}</span>
             </div>
             <button className="w-12 h-12 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition">
               <MessageCircle size={24}/>
@@ -356,7 +362,7 @@ function DesktopVideoShort({ video, isMuted, onSetActive }: { video: Video, isMu
   );
 }
 
-function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComments, onSetActive }: { video: Video, creator: Creator | null, isMuted: boolean, onToggleMute: () => void, onOpenComments: () => void, onSetActive: () => void }) {
+function MobileVideoShort({ video, creator, viewCount, onViewCounted, isMuted, onToggleMute, onOpenComments, onSetActive }: { video: Video, creator: Creator | null, viewCount: number, onViewCounted: () => void, isMuted: boolean, onToggleMute: () => void, onOpenComments: () => void, onSetActive: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isActive, setIsActive] = useState(false);
   const onSetActiveRef = useRef(onSetActive);
@@ -504,6 +510,10 @@ function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComment
   const finalName = creator?.name || fallbackName || "Creator";
   const finalSlug = creator?.slug || fallbackSlug;
 
+  const hasTrackedViewRef = useRef(false);
+  const onViewCountedRef = useRef(onViewCounted);
+  onViewCountedRef.current = onViewCounted;
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -525,6 +535,15 @@ function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComment
           setIsActive(true);
           current.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
           onSetActiveRef.current();
+          if (!hasTrackedViewRef.current) {
+            hasTrackedViewRef.current = true;
+            onViewCountedRef.current();
+            fetch("/api/views", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ videoId: video.id })
+            }).catch(() => {});
+          }
         } else {
           if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
           current.pause();
@@ -634,11 +653,6 @@ function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComment
           if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
           setHasError(false);
           setShowError(false);
-          fetch("/api/views", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ videoId: video.id })
-          }).catch(() => {});
         }}
         onCanPlay={() => {
           if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
@@ -788,7 +802,7 @@ function MobileVideoShort({ video, creator, isMuted, onToggleMute, onOpenComment
           <div className="flex flex-col items-center justify-center gap-0 min-w-0 flex-1 pt-1 pb-0.5 text-white">
             <div className="h-[22px] flex items-center justify-center gap-1">
               <Eye size={20} strokeWidth={2.2} className="text-white/90" />
-              <span className="text-[11px] font-extrabold tracking-tight">{(video as any).views || 0}</span>
+              <span className="text-[11px] font-extrabold tracking-tight">{viewCount || 0}</span>
             </div>
             <span className="text-[10px] font-medium text-white/70">Views</span>
           </div>

@@ -177,11 +177,11 @@ export default function LikeButton({
   useEffect(() => {
     let mounted = true;
     const onUpdate = (counts: Record<number, number>) => {
-      if (mounted) setCountState(counts[videoId] ?? 0);
+      if (mounted) setCountState((counts as any)[videoId] ?? (counts as any)[String(videoId)] ?? 0);
     };
     countListeners.add(onUpdate);
     fetchCounts().then((counts) => {
-      if (mounted) setCountState(counts[videoId] ?? 0);
+      if (mounted) setCountState((counts as any)[videoId] ?? (counts as any)[String(videoId)] ?? 0);
     });
     return () => {
       mounted = false;
