@@ -10,7 +10,7 @@ export default function WhyTrooflixPage() {
     <main className="min-h-screen bg-[#0a0303] text-white pb-32 font-sans selection:bg-[#E53945]/30">
       <TopBar />
       
-      <div className="max-w-3xl mx-auto px-4 pt-24 pb-12">
+      <div className="max-w-3xl mx-auto px-4 pt-[calc(env(safe-area-inset-top)+6rem)] pb-12">
         <Link href="/" className="inline-flex items-center gap-2 text-white/50 hover:text-white mb-8 transition text-sm font-semibold">
           <ArrowLeft size={16} /> Back
         </Link>

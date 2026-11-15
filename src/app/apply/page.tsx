@@ -145,7 +145,7 @@ export default function ApplyPage() {
     return (
       <main className="min-h-screen bg-black text-white">
         <TopBar />
-        <p className="text-white/50 py-24 text-center">Loading…</p>
+        <p className="text-white/50 py-24 pt-[calc(env(safe-area-inset-top)+6rem)] text-center">Loading…</p>
         <MobileBottomNav />
       </main>
     );

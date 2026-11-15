@@ -79,7 +79,7 @@ export default function CollectionPage() {
 
       {hero && <Hero video={hero} label={`TROOFLIX ${categoryName.toUpperCase()}`} onPlay={() => setPlaying(hero)} onMore={() => setSelected(hero)} />}
 
-      <div className={`relative z-10 ${hero ? "-mt-24 md:-mt-32" : "pt-24"} pb-24 space-y-8 md:space-y-12`}>
+      <div className={`relative z-10 ${hero ? "-mt-24 md:-mt-32" : "pt-[calc(env(safe-area-inset-top)+6rem)]"} pb-24 space-y-8 md:space-y-12`}>
         <div className="px-4 md:px-12 pt-4">
           <p className="text-xs tracking-[0.4em] text-white/50 font-semibold mb-1">
             COLLECTION
@@ -120,7 +120,7 @@ function Hero({ video, label, onPlay, onMore }: { video: Video; label: string; o
       <img src={video.backdropUrl || video.posterUrl} alt={video.title} className="absolute inset-0 w-full h-full object-cover" />
       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
       <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/20 to-transparent" />
-      <div className="relative z-10 flex flex-col justify-center h-full px-4 md:px-12 max-w-2xl pt-24 md:pt-20 pb-12 md:pb-0">
+      <div className="relative z-10 flex flex-col justify-center h-full px-4 md:px-12 max-w-2xl pt-[calc(env(safe-area-inset-top)+6rem)] md:pt-20 pb-12 md:pb-0">
         <p className="text-xs md:text-sm tracking-[0.3em] text-red-500 font-bold mb-3">{label}</p>
         <h1 className="text-4xl md:text-6xl lg:text-7xl font-black leading-[1.05] mb-4 tracking-tight">{video.title}</h1>
         <div className="flex items-center gap-3 text-sm mb-4 flex-wrap">

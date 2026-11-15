@@ -214,7 +214,7 @@ export default function AccountPage() {
     <main className="min-h-screen bg-[#050505] text-white pb-32 overflow-x-hidden w-full">
       <TopBar />
 
-      <div className="pt-28 max-w-3xl mx-auto px-4 md:px-6">
+      <div className="pt-[calc(env(safe-area-inset-top)+7rem)] max-w-3xl mx-auto px-4 md:px-6">
         
         {/* Header */}
         <div className="mb-8">

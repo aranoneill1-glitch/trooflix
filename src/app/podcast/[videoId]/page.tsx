@@ -114,7 +114,7 @@ export default function WatchPage() {
     return (
       <main className="min-h-screen bg-black text-white">
         <TopBar />
-        <div className="pt-32 text-center">
+        <div className="pt-[calc(env(safe-area-inset-top)+8rem)] text-center">
           <p className="text-white/50 mb-4">Video not found</p>
           <Link href="/search/podcasts" className="text-red-500 hover:underline">Back to Podcasts</Link>
         </div>
@@ -136,7 +136,7 @@ export default function WatchPage() {
 
       <TopBar />
 
-      <div className="pt-20 md:pt-24 max-w-7xl mx-auto px-0 md:px-8">
+      <div className="pt-[calc(env(safe-area-inset-top)+5rem)] md:pt-[calc(env(safe-area-inset-top)+6rem)] max-w-7xl mx-auto px-0 md:px-8">
         
         <button
           onClick={() => router.back()}

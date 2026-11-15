@@ -404,7 +404,7 @@ export default function PublicProfilePage() {
           <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#09090B] to-transparent" />
         </div>
         
-        <div className="relative z-10 mx-auto w-full max-w-5xl px-4 pt-24 pb-6 lg:max-w-none lg:px-10 xl:px-16 lg:pt-28">
+        <div className="relative z-10 mx-auto w-full max-w-5xl px-4 pt-[calc(env(safe-area-inset-top)+6rem)] pb-6 lg:max-w-none lg:px-10 xl:px-16 lg:pt-28">
           
           <Link href="/search" className="inline-flex items-center gap-2 text-white/50 hover:text-white mb-6 transition text-sm font-semibold">
             <ArrowLeft size={16} /> Back

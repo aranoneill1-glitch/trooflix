@@ -75,7 +75,7 @@ export default function CreatorsPage() {
     <main className="min-h-screen bg-[#050505] text-white pb-24 font-sans selection:bg-[#E53945]/30">
       <TopBar />
 
-      <div className="pt-28 md:pt-32 max-w-7xl mx-auto px-4 md:px-8">
+      <div className="pt-[calc(env(safe-area-inset-top)+7rem)] md:pt-32 max-w-7xl mx-auto px-4 md:px-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
           <div>
             <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-bold mb-3 uppercase flex items-center gap-2">

@@ -146,7 +146,7 @@ export default function MerchandisePage() {
       <TopBar />
       
                   {/* CINEMATIC HERO */}
-      <div className="relative w-full h-[40vh] md:h-[50vh]">
+      <div className="relative w-full h-[40vh] md:h-[50vh] mt-[calc(env(safe-area-inset-top)+56px)]">
         <img
           src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2000&auto=format&fit=crop"
           alt="Marketplace"

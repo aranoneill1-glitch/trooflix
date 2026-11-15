@@ -67,7 +67,7 @@ export default function MyListPage() {
     <main className="min-h-screen bg-black text-white overflow-x-hidden pb-20 lg:pb-0">
       <TopBar />
 
-      <div className="pt-24 pb-16 max-w-6xl mx-auto px-4 md:px-8">
+      <div className="pt-[calc(env(safe-area-inset-top)+6rem)] pb-16 max-w-6xl mx-auto px-4 md:px-8">
         <h1 className="text-3xl md:text-4xl font-black mb-1">My List</h1>
         <p className="text-white/50 mb-8">
           {signedIn

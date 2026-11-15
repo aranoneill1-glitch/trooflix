@@ -67,7 +67,7 @@ export default function MoviesPage() {
 
       {hero && <Hero video={hero} onPlay={() => setPlaying(hero)} onMore={() => setSelected(hero)} />}
 
-      <div className="relative z-10 -mt-24 md:-mt-32 pb-24 space-y-8 md:space-y-12">
+      <div className={`relative z-10 ${hero ? "-mt-24 md:-mt-32" : "pt-[calc(env(safe-area-inset-top)+5rem)]"} pb-24 space-y-8 md:space-y-12`}>
         {loaded && videos.length === 0 && (
           <div className="text-center py-20 text-white/50">
             <p className="text-xl mb-2">No movies yet</p>

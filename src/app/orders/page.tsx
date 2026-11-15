@@ -125,7 +125,7 @@ function OrdersContent() {
   return (
     <div className="min-h-screen bg-black text-white">
       <TopBar />
-      <div className="p-4 md:p-8 pt-24 md:pt-28 max-w-4xl mx-auto">
+      <div className="p-4 md:p-8 pt-[calc(env(safe-area-inset-top)+6rem)] md:pt-28 max-w-4xl mx-auto">
       <Link href="/profile" className="inline-flex items-center gap-1.5 text-sm text-white/50 hover:text-white mb-6 transition">
         <ChevronLeft size={16} /> Back to profile
       </Link>

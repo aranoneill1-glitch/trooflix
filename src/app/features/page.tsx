@@ -10,7 +10,7 @@ export default function FeaturesPage() {
     <main className="min-h-screen bg-[#0a0303] text-white pb-24 font-sans selection:bg-[#E53945]/30">
       <TopBar />
       
-      <div className="max-w-5xl mx-auto px-6 pt-24 md:pt-32">
+      <div className="max-w-5xl mx-auto px-6 pt-[calc(env(safe-area-inset-top)+6rem)] md:pt-32">
         <Link href="/" className="inline-flex items-center gap-2 text-white/50 hover:text-white mb-12 transition text-sm font-semibold">
           <ArrowLeft size={16} /> Back to Home
         </Link>
