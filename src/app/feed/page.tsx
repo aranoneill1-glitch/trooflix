@@ -718,7 +718,7 @@ function MobileVideoShort({ video, creator, viewCount, onViewCounted, isMuted, o
         </div>
       )}
 
-      <div className="absolute left-4 right-4 lg:right-[80px] bottom-[calc(env(safe-area-inset-bottom)+104px)] lg:bottom-[150px] z-30 flex flex-col items-start gap-3 pointer-events-none">
+      <div className={`absolute left-4 right-4 lg:right-[80px] bottom-[calc(env(safe-area-inset-bottom)+104px)] lg:bottom-[150px] z-30 flex flex-col items-start gap-3 pointer-events-none transition-opacity duration-200 ${isActive ? "opacity-100" : "opacity-0"}`}>
         <div 
           className="text-white text-[14px] drop-shadow-md leading-snug cursor-pointer pointer-events-auto max-w-[92%]"
           onClick={toggleExpand}
@@ -767,7 +767,7 @@ function MobileVideoShort({ video, creator, viewCount, onViewCounted, isMuted, o
       </div>
 
       {/* Bottom action bar: like, comment, tip, views (avatar excluded) */}
-      <div className="fixed inset-x-0 bottom-0 z-[260] lg:absolute lg:inset-x-auto lg:right-[80px] lg:bottom-[92px] lg:w-[360px] pointer-events-auto border-t border-white/10 bg-[#070709] lg:border lg:rounded-2xl">
+      <div className={`fixed inset-x-0 bottom-0 z-[260] lg:absolute lg:inset-x-auto lg:right-[80px] lg:bottom-[92px] lg:w-[360px] pointer-events-auto border-t border-white/10 bg-[#070709] lg:border lg:rounded-2xl transition-opacity duration-200 ${isActive ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
         <div className="flex items-center justify-around px-2 pt-1 pb-[calc(env(safe-area-inset-bottom)+2px)] lg:pb-2">
           <div className="flex flex-col items-center justify-center gap-0 min-w-0 flex-1 pt-1 pb-0.5 text-white">
             <div className="h-[22px] flex items-center justify-center">
@@ -809,7 +809,7 @@ function MobileVideoShort({ video, creator, viewCount, onViewCounted, isMuted, o
         </div>
       </div>
 
-      <div className="absolute left-0 right-0 bottom-[calc(env(safe-area-inset-bottom)+62px)] lg:bottom-[85px] z-[261] pointer-events-none px-0 lg:px-4">
+      <div className={`absolute left-0 right-0 bottom-[calc(env(safe-area-inset-bottom)+62px)] lg:bottom-[85px] z-[261] pointer-events-none px-0 lg:px-4 transition-opacity duration-200 ${isActive ? "opacity-100" : "opacity-0"}`}>
         <div 
           ref={progressBarRef}
           className="relative w-full h-[3px] bg-transparent cursor-pointer touch-none py-3 -my-3 pointer-events-auto"
