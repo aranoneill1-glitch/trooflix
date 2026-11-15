@@ -2,11 +2,13 @@
 import { getCachedUser, getCachedVideos, getCachedCreators } from "@/lib/cache";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Volume2, VolumeX, Heart, Eye, MessageCircle, Play, Pause, ArrowLeft, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from "lucide-react";
+import { Volume2, VolumeX, Heart, Eye, MessageCircle, Play, Pause, ArrowLeft, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Image as ImageIcon, Send } from "lucide-react";
 import LikeButton, { externalLike } from "@/components/LikeButton";
 import { motion, AnimatePresence } from "framer-motion";
 import CommentSheet from "@/components/CommentSheet";
 import Comments from "@/components/Comments";
+import GifPicker from "@/components/GifPicker";
+import { createClient } from "@/utils/supabase/client";
 
 type Video = {
   id: number;
@@ -39,6 +41,13 @@ export default function ShortsFeedPage() {
   const [activeVideo, setActiveVideo] = useState<Video | null>(null);
   const [viewCounts, setViewCounts] = useState<Record<number, number>>({});
   const [commentCounts, setCommentCounts] = useState<Record<number, number>>({});
+  const [composerUser, setComposerUser] = useState<{ id: string; email: string } | null>(null);
+  const [composerAvatar, setComposerAvatar] = useState<string | null>(null);
+  const [commentText, setCommentText] = useState("");
+  const [commentSubmitting, setCommentSubmitting] = useState(false);
+  const [commentGifOpen, setCommentGifOpen] = useState(false);
+  const [commentUploading, setCommentUploading] = useState(false);
+  const commentFileInputRef = useRef<HTMLInputElement>(null);
   
   const videoContainerRef = useRef<HTMLDivElement>(null);
 
@@ -89,6 +98,17 @@ export default function ShortsFeedPage() {
       .catch(() => {});
   }, [commentSheetVideoId]);
 
+  useEffect(() => {
+    const supabase = createClient();
+    getCachedUser().then(async (user) => {
+      if (user) {
+        setComposerUser({ id: user.id, email: user.email || "" });
+        const { data: prof } = await supabase.from("profiles").select("avatar_url").eq("user_id", user.id).single();
+        if (prof?.avatar_url) setComposerAvatar(prof.avatar_url);
+      }
+    }).catch(() => {});
+  }, []);
+
   const toggleMute = () => setIsMuted(prev => !prev);
 
   const scrollUp = () => {
@@ -100,6 +120,88 @@ export default function ShortsFeedPage() {
   const scrollDown = () => {
     if (videoContainerRef.current) {
       videoContainerRef.current.scrollBy({ top: videoContainerRef.current.clientHeight, behavior: "smooth" });
+    }
+  };
+
+  const refreshCommentCounts = () => {
+    fetch("/api/comment-counts", { cache: "no-store" })
+      .then(r => r.json())
+      .then(d => setCommentCounts(d?.counts || {}))
+      .catch(() => {});
+  };
+
+  const submitShortComment = async (value?: string) => {
+    if (!activeVideo || !composerUser || commentSubmitting) return;
+    const body = (value ?? commentText).trim();
+    if (!body) return;
+    setCommentSubmitting(true);
+    try {
+      const res = await fetch("/api/comments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          videoId: activeVideo.id,
+          userId: composerUser.id,
+          userEmail: composerUser.email,
+          text: body,
+          parentId: null,
+        }),
+      });
+      if (res.ok) {
+        setCommentText("");
+        setCommentCounts((prev) => ({ ...prev, [activeVideo.id]: (prev[activeVideo.id] ?? 0) + 1 }));
+      }
+    } catch {}
+    finally {
+      setCommentSubmitting(false);
+    }
+  };
+
+  const submitShortMedia = async (url: string) => {
+    if (!activeVideo || !composerUser) return;
+    setCommentGifOpen(false);
+    try {
+      const res = await fetch("/api/comments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          videoId: activeVideo.id,
+          userId: composerUser.id,
+          userEmail: composerUser.email,
+          text: url,
+        }),
+      });
+      if (res.ok) setCommentCounts((prev) => ({ ...prev, [activeVideo.id]: (prev[activeVideo.id] ?? 0) + 1 }));
+    } catch {}
+  };
+
+  const uploadShortCommentImage = async (file: File) => {
+    if (!composerUser) return;
+    setCommentUploading(true);
+    try {
+      const presign = await fetch("/api/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          filename: file.name,
+          contentType: file.type || "image/jpeg",
+          folder: "comment-images",
+        }),
+      });
+      if (!presign.ok) throw new Error("Upload failed");
+      const { signedUrl, publicUrl } = await presign.json();
+      const put = await fetch(signedUrl, {
+        method: "PUT",
+        headers: { "Content-Type": file.type || "image/jpeg" },
+        body: file,
+      });
+      if (!put.ok) throw new Error("Upload failed");
+      await submitShortMedia(publicUrl);
+    } catch {
+      alert("Couldn't upload image");
+    } finally {
+      setCommentUploading(false);
+      if (commentFileInputRef.current) commentFileInputRef.current.value = "";
     }
   };
 
@@ -188,9 +290,12 @@ export default function ShortsFeedPage() {
       </div>
 
       {/* Mobile shorts bottom UI: comment bar + vertical actions */}
-      {activeVideo && commentSheetVideoId === null && (
+      {activeVideo && (
         <>
-          <div className="lg:hidden fixed right-3 bottom-[calc(env(safe-area-inset-bottom)+78px)] z-[260] pointer-events-auto flex flex-col items-center gap-4">
+          <div
+            className="lg:hidden fixed right-3 z-[420] pointer-events-auto flex flex-col items-center gap-4"
+            style={{ bottom: commentSheetVideoId ? "calc(75dvh + env(safe-area-inset-bottom) + 10px)" : "calc(env(safe-area-inset-bottom) + 86px)" }}
+          >
             <div className="flex flex-col items-center text-white drop-shadow-lg">
               <LikeButton key={activeVideo.id} videoId={activeVideo.id} size={30} showCount={true} stacked={true} />
             </div>
@@ -215,19 +320,89 @@ export default function ShortsFeedPage() {
             </div>
           </div>
 
-          <div className="lg:hidden fixed inset-x-0 bottom-0 z-[260] px-3 pb-[calc(env(safe-area-inset-bottom)+8px)] pt-2 pointer-events-auto">
-            <button
-              onClick={() => setCommentSheetVideoId(activeVideo.id)}
-              className="w-full flex items-center gap-3 rounded-full bg-white/10 border border-white/15 backdrop-blur-md px-4 h-11 text-left text-white/75 shadow-lg"
-              aria-label="Add a comment"
-            >
-              <MessageCircle size={18} className="text-white/70 shrink-0" />
-              <span className="text-sm truncate">Add a comment...</span>
-              <span className="ml-auto text-xs font-semibold text-white/60">
-                {(commentCounts[activeVideo.id] ?? (commentCounts as any)[String(activeVideo.id)] ?? 0) || 0}
-              </span>
-            </button>
+          <div
+            className="lg:hidden fixed inset-x-0 z-[420] px-3 pt-2 pointer-events-auto"
+            style={{ bottom: commentSheetVideoId ? "calc(75dvh + env(safe-area-inset-bottom) + 4px)" : "calc(env(safe-area-inset-bottom) + 12px)" }}
+          >
+            <div className="flex items-center gap-2 rounded-full bg-[#111]/85 border border-white/15 backdrop-blur-md px-3 py-1.5 shadow-lg">
+              <button
+                onClick={() => setCommentSheetVideoId(activeVideo.id)}
+                className="w-8 h-8 flex items-center justify-center text-white/80 hover:text-white shrink-0"
+                aria-label="Open comments"
+                type="button"
+              >
+                <MessageCircle size={20} />
+              </button>
+              <input
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                onFocus={() => {}}
+                placeholder={composerUser ? "Add a comment..." : "Sign in to comment"}
+                disabled={!composerUser || commentSubmitting}
+                className="flex-1 min-w-0 bg-transparent outline-none text-sm text-white placeholder:text-white/45 disabled:opacity-60"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    submitShortComment();
+                  }
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => commentFileInputRef.current?.click()}
+                disabled={!composerUser || commentUploading}
+                className="w-8 h-8 flex items-center justify-center text-white/75 hover:text-white disabled:opacity-40 shrink-0"
+                aria-label="Add image"
+              >
+                {commentUploading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <ImageIcon size={18} />}
+              </button>
+              <button
+                type="button"
+                onClick={() => composerUser && setCommentGifOpen(true)}
+                disabled={!composerUser}
+                className="shrink-0 border border-white/35 rounded-md px-1.5 py-0.5 text-[10px] font-black tracking-tight text-white/80 hover:text-white hover:border-white transition disabled:opacity-40"
+                aria-label="Add GIF"
+              >
+                GIF
+              </button>
+              {commentText.trim() ? (
+                <button
+                  type="button"
+                  onClick={() => submitShortComment()}
+                  disabled={commentSubmitting || !composerUser}
+                  className="w-8 h-8 flex items-center justify-center text-red-400 hover:text-red-300 disabled:opacity-40 shrink-0"
+                  aria-label="Post comment"
+                >
+                  <Send size={16} />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setCommentSheetVideoId(activeVideo.id)}
+                  className="text-xs font-semibold text-white/60 px-1 shrink-0"
+                  aria-label="Open comments"
+                >
+                  {(commentCounts[activeVideo.id] ?? (commentCounts as any)[String(activeVideo.id)] ?? 0) || 0}
+                </button>
+              )}
+            </div>
+            <input
+              ref={commentFileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) uploadShortCommentImage(f);
+              }}
+            />
           </div>
+
+          <GifPicker
+            open={commentGifOpen}
+            onClose={() => setCommentGifOpen(false)}
+            onPick={(url) => submitShortMedia(url)}
+          />
         </>
       )}
 
