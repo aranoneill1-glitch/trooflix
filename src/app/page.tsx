@@ -388,21 +388,131 @@ export default function Home() {
           {!showingFiltered && (
             <>
               {!user && authResolved && (<>
-              <div className="lg:hidden w-full">
-                <FeaturedVideoHero videos={featuredHeroVideos.length > 0 ? featuredHeroVideos : heroPool} onSelect={handleCardSelect} className="-mx-0" />
-              </div>
-              {/* MOBILE SECTION: Pills + Header + Avatars + Hero */}
+              {/* MOBILE SIGNED-OUT */}
               <div className="lg:hidden w-full flex flex-col relative z-10 bg-transparent overflow-hidden">
-                <div className="w-full relative z-10 px-6 pt-4 pb-10 flex flex-col items-center justify-start text-center">
-                  <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-56 h-56 bg-[radial-gradient(circle,rgba(255,255,255,0.08),transparent_70%)] blur-3xl pointer-events-none" />
-
+                <div className="w-full relative z-10 px-6 pt-4 pb-6 flex flex-col items-center justify-start text-center">
                   <h1 className="relative text-[46px] leading-[0.95] font-black tracking-[-0.05em] text-white mb-4 mt-2">
                     Create without <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#E53945] to-orange-500">limits</span>.
                   </h1>
-                  <p className="relative text-[15px] text-white/60 max-w-sm mx-auto leading-relaxed mb-8">
+                  <p className="relative text-[15px] text-white/60 max-w-sm mx-auto leading-relaxed">
                     Stream, share, connect, and grow on a platform built for creators who want freedom, power, and a real home for their work.
                   </p>
+                </div>
 
+                {/* One platform. Every screen. devices (shrunk for mobile) */}
+                <div className="relative w-full overflow-hidden px-2 pb-2">
+                  <div className="mx-auto h-[300px] w-full max-w-[420px] relative">
+                    <div className="absolute left-1/2 top-0 origin-top -translate-x-1/2 scale-[0.56] sm:scale-[0.64]">
+                      <div className="relative h-[420px] w-[620px]">
+                        {/* TV */}
+                        <div className="absolute left-1/2 top-0 w-[460px] -translate-x-1/2">
+                          <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-2.5 shadow-[0_40px_120px_rgba(0,0,0,0.6),0_0_0_1px_rgba(229,57,69,0.06)] backdrop-blur-xl">
+                            <div className="relative aspect-[16/9] overflow-hidden rounded-[16px] bg-[#0b0b0e]">
+                              <img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=1600&auto=format&fit=crop" alt="" className="absolute inset-0 h-full w-full object-cover brightness-[0.55] contrast-[1.05] saturate-[1.05]" />
+                              <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,5,7,0.85)_0%,rgba(5,5,7,0.35)_40%,rgba(5,5,7,0.15)_100%),linear-gradient(180deg,rgba(5,5,7,0.2)_0%,rgba(5,5,7,0.55)_100%)]" />
+                              <div className="absolute inset-x-0 top-0 flex items-center justify-between px-5 pt-4">
+                                <div className="flex items-center gap-4">
+                                  <div className="text-[15px] font-black tracking-tight"><span className="text-white">TROO</span><span className="text-red-600">FLIX</span></div>
+                                  <div className="hidden items-center gap-3 text-[9px] font-medium text-white/60 md:flex"><span className="text-white">Home</span><span>Live</span><span>Shorts</span><span>Docs</span></div>
+                                </div>
+                                <div className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/30 px-2 py-1 text-[8px] font-semibold uppercase tracking-[0.16em] text-white/70 backdrop-blur-md"><span className="h-1.5 w-1.5 rounded-full bg-[#ff4d5a]" /> Live</div>
+                              </div>
+                              <div className="absolute left-5 top-[52px] max-w-[52%]">
+                                <div className="mb-1.5 inline-flex items-center gap-2 rounded-full border border-red-500/30 bg-red-600/20 px-2.5 py-1 text-[8px] font-bold uppercase tracking-[0.16em] text-white">TROOFLIX ORIGINAL</div>
+                                <div className="text-[22px] font-black leading-[1.02] tracking-[-0.03em] text-white">The Untold Signal</div>
+                                <div className="mt-1 text-[10px] leading-relaxed text-white/65">Watch the latest documentary, live sessions, and shorts — only on TROOFLIX.</div>
+                                <div className="mt-3 flex items-center gap-2">
+                                  <div className="rounded-md bg-white px-2.5 py-1 text-[9px] font-bold text-black">Play</div>
+                                  <div className="rounded-md border border-white/20 bg-white/10 px-2.5 py-1 text-[9px] font-semibold text-white backdrop-blur-sm">My List</div>
+                                </div>
+                              </div>
+                              <div className="absolute inset-x-5 bottom-4">
+                                <div className="mb-1.5 flex items-center justify-between text-[8px] font-semibold uppercase tracking-[0.16em] text-white/55"><span>Continue watching</span><span className="text-[#ffb0a8]/80">On TV</span></div>
+                                <div className="flex gap-2">
+                                  {[
+                                    { img: "/20240503-podcast-studio-with-armando-108-3.jpg.webp", label: "Live Session", w: "58%" },
+                                    { img: "/reelpic.jpg", label: "Creator Short", w: "34%" },
+                                    { img: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=600&auto=format&fit=crop", label: "Street Stories", w: "72%" },
+                                  ].map((c) => (
+                                    <div key={c.label} className="relative h-[54px] flex-1 overflow-hidden rounded-lg border border-white/10 bg-[#121218]">
+                                      <img src={c.img} alt="" className="absolute inset-0 h-full w-full object-cover brightness-[0.75]" />
+                                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+                                      <div className="absolute left-1.5 right-1.5 bottom-2 text-[8px] font-semibold text-white truncate">{c.label}</div>
+                                      <div className="absolute inset-x-1.5 bottom-1 h-[2px] rounded-full bg-white/20 overflow-hidden"><div className="h-full rounded-full bg-gradient-to-r from-[#E53945] to-[#ff8a3d]" style={{ width: c.w }} /></div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="mx-auto mt-2 h-5 w-24 rounded-b-[12px] bg-gradient-to-b from-[#1a1a1e] to-[#0d0d10]" />
+                        </div>
+
+                        {/* Laptop */}
+                        <div className="absolute left-[2%] bottom-0 w-[240px]">
+                          <div className="rounded-t-[18px] border border-white/10 border-b-0 bg-white/[0.04] p-2 backdrop-blur-xl">
+                            <div className="relative aspect-[16/10] overflow-hidden rounded-[12px] bg-[#09090d]">
+                              <div className="absolute inset-x-0 top-0 h-7 border-b border-white/8 bg-[#101014]/95 flex items-center justify-between px-2.5">
+                                <div className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-[#ff5f57]" /><span className="h-1.5 w-1.5 rounded-full bg-[#febc2e]" /><span className="h-1.5 w-1.5 rounded-full bg-[#28c840]" /></div>
+                                <div className="text-[8px] font-black tracking-tight"><span className="text-white">TROO</span><span className="text-red-600">FLIX</span></div>
+                                <div className="h-3 w-10 rounded-full bg-white/10" />
+                              </div>
+                              <div className="absolute inset-x-0 top-7 bottom-0 p-2.5">
+                                <div className="mb-2 flex items-center justify-between">
+                                  <div className="text-[8px] font-semibold uppercase tracking-[0.16em] text-white/45">Continue on desktop</div>
+                                  <div className="rounded-full bg-[#E53945]/15 px-1.5 py-0.5 text-[7px] font-bold text-[#ffb0a8]">For You</div>
+                                </div>
+                                <div className="relative mb-2 h-[58px] overflow-hidden rounded-lg border border-white/10">
+                                  <img src="/20240503-podcast-studio-with-armando-108-3.jpg.webp" alt="" className="absolute inset-0 h-full w-full object-cover brightness-[0.7]" />
+                                  <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/20 to-transparent" />
+                                  <div className="absolute left-2 top-2 rounded bg-red-500/80 px-1.5 py-0.5 text-[6px] font-black tracking-[0.14em] text-white">LIVE</div>
+                                  <div className="absolute left-2 bottom-2"><div className="text-[9px] font-bold text-white">Creator Live Session</div><div className="text-[7px] text-white/60">8.2k watching now</div></div>
+                                </div>
+                                <div className="grid grid-cols-3 gap-1.5">
+                                  {[{img:"/reelpic.jpg",t:"Short"},{img:"https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=400&auto=format&fit=crop",t:"Doc"},{img:"https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=400&auto=format&fit=crop",t:"Series"}].map((x)=>(
+                                    <div key={x.t} className="relative aspect-[4/5] overflow-hidden rounded-md border border-white/10">
+                                      <img src={x.img} alt="" className="absolute inset-0 h-full w-full object-cover brightness-[0.8]" />
+                                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                                      <div className="absolute left-1 bottom-1 text-[7px] font-semibold text-white">{x.t}</div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="h-2.5 rounded-b-[12px] bg-gradient-to-b from-[#242428] to-[#121215]" />
+                        </div>
+
+                        {/* Phone */}
+                        <div className="absolute right-[6%] bottom-1 w-[110px]">
+                          <div className="rounded-[28px] border border-white/12 bg-white/[0.05] p-1.5 shadow-[0_24px_70px_rgba(0,0,0,0.55)] backdrop-blur-xl">
+                            <div className="relative aspect-[9/19.5] overflow-hidden rounded-[22px] bg-[#050507]">
+                              <img src="/reelpic.jpg" alt="" className="absolute inset-0 h-full w-full object-cover brightness-[0.82]" />
+                              <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/80" />
+                              <div className="absolute left-1/2 top-1.5 h-4 w-14 -translate-x-1/2 rounded-full bg-black/85" />
+                              <div className="absolute inset-x-2.5 top-7 flex items-center justify-between">
+                                <div className="text-[8px] font-black tracking-tight"><span className="text-white">TROO</span><span className="text-red-600">FLIX</span></div>
+                                <div className="rounded-full bg-black/35 px-1.5 py-0.5 text-[7px] font-semibold text-white/80">Shorts</div>
+                              </div>
+                              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2 text-white/90">
+                                <div className="h-5 w-5 rounded-full bg-white/15 backdrop-blur-sm" />
+                                <div className="h-4 w-4 rounded-full bg-white/15" />
+                                <div className="h-4 w-4 rounded-full bg-[#E53945]/70" />
+                              </div>
+                              <div className="absolute inset-x-3 bottom-7">
+                                <div className="mb-1 flex items-center gap-1.5"><div className="h-4 w-4 rounded-full bg-gradient-to-br from-[#E53945] to-[#ff6a2a]" /><span className="text-[8px] font-semibold text-white">Creator</span></div>
+                                <div className="text-[8px] leading-snug text-white/85 line-clamp-2">Pick up this Short right where you left off.</div>
+                              </div>
+                              <div className="absolute inset-x-2 bottom-1.5 flex justify-around text-[6px] font-medium text-white/55"><span className="text-white">Home</span><span>Shorts</span><span>Live</span><span>You</span></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="w-full relative z-10 px-6 pb-6 flex flex-col items-center justify-start text-center">
                   <div className="relative flex flex-row w-full max-w-md gap-2.5">
                     <a
                       href="/signup"
@@ -419,6 +529,10 @@ export default function Home() {
                       <ArrowRight size={16} />
                     </a>
                   </div>
+                </div>
+
+                <div className="w-full">
+                  <FeaturedVideoHero videos={featuredHeroVideos.length > 0 ? featuredHeroVideos : heroPool} onSelect={handleCardSelect} className="-mx-0" />
                 </div>
               </div>
 
