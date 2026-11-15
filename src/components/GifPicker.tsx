@@ -83,15 +83,31 @@ export default function GifPicker({ open, onClose, onPick }: Props) {
 
           {/* Modal */}
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.98 }}
-            transition={{ duration: 0.2 }}
-            className="fixed left-0 right-0 bottom-0 top-20 md:top-24 md:left-auto md:right-4 md:bottom-4 md:w-[420px] z-[401] bg-[#0f0f12] border-t md:border border-white/10 rounded-t-2xl md:rounded-2xl flex flex-col overflow-hidden"
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 32, stiffness: 320 }}
+            className="fixed bottom-0 left-0 right-0 h-[75dvh] bg-black/60 rounded-t-3xl z-[401] flex flex-col shadow-[0_-10px_40px_rgba(0,0,0,0.5)] border-t border-white/20 overflow-hidden"
+            style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
           >
+            {/* Drag handle */}
+            <div className="w-full flex justify-center pt-3 pb-1 shrink-0">
+              <div className="w-10 h-1 bg-white/30 rounded-full" />
+            </div>
+
             {/* Header */}
-            <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10">
-              <div className="flex-1 flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-3 py-2 focus-within:border-white/30 transition">
+            <div className="px-5 pb-3 shrink-0 border-b border-white/10">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-base font-bold text-white">GIFs</h2>
+                <button
+                  onClick={onClose}
+                  className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition text-white/70 hover:text-white"
+                  aria-label="Close"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="flex items-center gap-2 rounded-full bg-white/10 border border-white/15 px-3 py-1.5">
                 <Search size={16} className="text-white/50 flex-shrink-0" />
                 <input
                   autoFocus
@@ -99,29 +115,23 @@ export default function GifPicker({ open, onClose, onPick }: Props) {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search GIFs"
-                  className="flex-1 bg-transparent outline-none text-sm text-white placeholder:text-white/40"
+                  className="flex-1 bg-transparent outline-none text-sm text-white placeholder:text-white/45"
                   style={{ fontSize: "16px" }}
                 />
                 {query && (
                   <button
                     onClick={() => setQuery("")}
                     className="text-white/50 hover:text-white"
+                    type="button"
                   >
                     <X size={14} />
                   </button>
                 )}
               </div>
-              <button
-                onClick={onClose}
-                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition"
-                aria-label="Close"
-              >
-                <X size={18} />
-              </button>
             </div>
 
             {/* Grid */}
-            <div className="flex-1 overflow-y-auto p-2">
+            <div className="flex-1 overflow-y-auto px-5 pb-6 mt-4">
               {loading && gifs.length === 0 && (
                 <p className="text-center text-white/50 text-sm py-12">
                   Loading…

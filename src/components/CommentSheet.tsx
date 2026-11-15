@@ -150,7 +150,7 @@ export default function CommentSheet({ videoId, open, onClose, hideComposer = fa
                   <select
                     value={sortState.sort}
                     onChange={(e) => sortState.setter && sortState.setter(e.target.value)}
-                    className="bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-xs outline-none focus:border-[#E53945]"
+                    className="bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-xs outline-none focus:border-white/30"
                   >
                     <option value="newest">For you first</option>
                     <option value="oldest">Oldest first</option>
