@@ -66,7 +66,7 @@ function isMediaUrl(text: string): boolean {
   return MEDIA_EXT.test(t);
 }
 
-export default function Comments({ videoId, onMetaChange, variant = "default", hideComposer = false }: { videoId: number, onMetaChange?: (count: number, sort: string, setSort: (s: any) => void) => void, variant?: "default" | "chat", hideComposer?: boolean }) {
+export default function Comments({ videoId, onMetaChange, variant = "default", hideComposer = false, refreshKey = 0 }: { videoId: number, onMetaChange?: (count: number, sort: string, setSort: (s: any) => void) => void, variant?: "default" | "chat", hideComposer?: boolean, refreshKey?: number }) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [likedCommentIds, setLikedCommentIds] = useState<number[]>([]);
   const [text, setText] = useState("");
@@ -106,7 +106,7 @@ export default function Comments({ videoId, onMetaChange, variant = "default", h
     if (onMetaChange) onMetaChange(comments.filter((c) => !c.parent_id).length, sort, setSort);
   }, [comments, sort]);
 
-  // Fetch comments whenever sort changes
+  // Fetch comments whenever sort/refresh changes
   useEffect(() => {
     setLoading(true);
     fetch(`/api/comments?video_id=${videoId}&sort=${sort}`)
@@ -116,7 +116,7 @@ export default function Comments({ videoId, onMetaChange, variant = "default", h
         setLoading(false);
       })
       .catch(() => setLoading(false));
-  }, [videoId, sort]);
+  }, [videoId, sort, refreshKey]);
 
   // Close menu when clicking outside
   useEffect(() => {
