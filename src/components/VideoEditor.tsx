@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Check, ChevronLeft, Pause, Play, Plus, Scissors, Subtitles, Trash2, Type, X } from "lucide-react";
+import { Check, ChevronLeft, Loader2, Pause, Play, Plus, Scissors, Sparkles, Subtitles, Trash2, Type, X } from "lucide-react";
 
 type Props = {
   file: File;
@@ -54,6 +54,8 @@ export default function VideoEditor({ file, onCancel, onApply }: Props) {
   const [subtitles, setSubtitles] = useState<SubtitleCue[]>([]);
   const [selectedCueId, setSelectedCueId] = useState<string | null>(null);
   const [subtitleDraft, setSubtitleDraft] = useState("");
+  const [transcribing, setTranscribing] = useState(false);
+  const [transcribeError, setTranscribeError] = useState<string | null>(null);
   const exportingRef = useRef(false);
 
   useEffect(() => { exportingRef.current = exporting; }, [exporting]);
@@ -237,6 +239,46 @@ export default function VideoEditor({ file, onCancel, onApply }: Props) {
       if (t >= s.start && t <= s.end) return s;
     }
     return null;
+  };
+
+  const autoDetectSubtitles = async () => {
+    if (transcribing) return;
+    setTranscribing(true);
+    setTranscribeError(null);
+    try {
+      const form = new FormData();
+      // Send selected media file for transcription
+      form.append("file", file);
+      const res = await fetch("/api/subtitles/transcribe", { method: "POST", body: form });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(typeof data?.error === "string" ? data.error : "Failed to auto-detect subtitles.");
+      }
+      const cues = Array.isArray(data?.cues) ? data.cues : [];
+      const cleaned: SubtitleCue[] = cues
+        .map((c: any) => ({
+          id: String(c?.id || uid()),
+          start: clamp(Number(c?.start) || 0, 0, duration || Number.MAX_SAFE_INTEGER),
+          end: clamp(Number(c?.end) || 0, 0, duration || Number.MAX_SAFE_INTEGER),
+          text: String(c?.text || "").trim(),
+        }))
+        .filter((c: SubtitleCue) => c.text && c.end > c.start + 0.05)
+        .sort((a: SubtitleCue, b: SubtitleCue) => a.start - b.start);
+
+      if (!cleaned.length) {
+        throw new Error("No subtitles detected. Try a clip with clearer speech.");
+      }
+
+      setSubtitles(cleaned);
+      setSelectedCueId(cleaned[0].id);
+      setSubtitleDraft(cleaned[0].text);
+      seekTo(cleaned[0].start);
+    } catch (err: any) {
+      console.error(err);
+      setTranscribeError(err?.message || "Failed to auto-detect subtitles.");
+    } finally {
+      setTranscribing(false);
+    }
   };
 
   const activePreviewCue = activeCueAt(currentTime);
@@ -551,12 +593,27 @@ export default function VideoEditor({ file, onCancel, onApply }: Props) {
 
         {mode === "subtitles" && (
           <div className="rounded-xl bg-[#121212] border border-white/10 p-3 space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-2">
               <span className="text-xs text-white/60 font-medium">Subtitles</span>
-              <button onClick={addSubtitleCue} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/15 text-xs font-semibold">
-                <Plus size={14} /> Add
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={autoDetectSubtitles}
+                  disabled={transcribing || exporting}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#0095f6]/20 hover:bg-[#0095f6]/30 text-[#7dd3fc] text-xs font-semibold disabled:opacity-40"
+                >
+                  {transcribing ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                  {transcribing ? "Detecting..." : "Auto-detect"}
+                </button>
+                <button onClick={addSubtitleCue} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/15 text-xs font-semibold">
+                  <Plus size={14} /> Add
+                </button>
+              </div>
             </div>
+            {transcribeError && (
+              <div className="text-[11px] text-red-300 bg-red-500/10 border border-red-500/20 rounded-lg px-2.5 py-2">
+                {transcribeError}
+              </div>
+            )}
 
             <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
               {subtitles.length === 0 && (
