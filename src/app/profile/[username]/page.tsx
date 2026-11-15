@@ -387,7 +387,7 @@ export default function PublicProfilePage() {
             <div className="absolute inset-0 bg-[#09090B]" />
           )}
           {/* Fade black-to-light left to right */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/55 to-black/10" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-black/20" />
           <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#09090B] to-transparent" />
         </div>
         
