@@ -334,6 +334,21 @@ function CreatorDashboardContent() {
       : { background: profile.backdrop_url }
     : { background: "#09090B" };
 
+  const heroMedia =
+    profileFeature?.mode === "custom" && profileFeature.mediaType === "video"
+      ? { type: "video" as const, src: profileFeature.mediaUrl }
+      : profileFeature?.mode === "custom" && profileFeature.mediaType === "image"
+      ? { type: "image" as const, src: profileFeature.mediaUrl }
+      : profileFeature?.mode === "video" && profileFeatureVideo
+      ? {
+          type: "video" as const,
+          src: profileFeatureVideo.videoUrl || profileFeatureVideo.bitchuteUrl,
+          poster: profileFeatureVideo.posterUrl || profileFeatureVideo.backdropUrl,
+        }
+      : profile?.backdrop_url && profile.backdrop_url.startsWith("http")
+      ? { type: "image" as const, src: profile.backdrop_url }
+      : null;
+
 
 
   
@@ -382,16 +397,43 @@ function CreatorDashboardContent() {
   };
 
   return (
-    <main className={`min-h-screen text-white pb-32 font-sans selection:bg-[#E53945]/30 relative overflow-hidden ${profile?.backdrop_url ? "bg-transparent" : "bg-[#09090B]"}`}>
+    <main className={`min-h-screen text-white pb-32 font-sans selection:bg-[#E53945]/30 relative overflow-hidden bg-[#09090B]`}>
       
+      {/* Mobile/tablet backdrop */}
       {profile?.backdrop_url && (
-        <div className="fixed inset-0 z-0" style={bgStyle}>
+        <div className="fixed inset-0 z-0 lg:hidden" style={bgStyle}>
           <div className="absolute inset-0 bg-black/60 backdrop-blur-md" />
         </div>
       )}
+      <div className="fixed inset-0 z-0 hidden lg:block bg-[#09090B]" />
 
       <div className="relative z-10">
         <TopBar />
+
+        {/* Desktop wall-to-wall featured hero behind profile info */}
+        {!isDashboardView && !showMyTrooFlix && (
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-0 hidden h-[560px] overflow-hidden lg:block xl:h-[620px]">
+            {heroMedia?.type === "video" ? (
+              <video
+                src={heroMedia.src}
+                poster={(heroMedia as any).poster}
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            ) : heroMedia?.type === "image" ? (
+              <img src={heroMedia.src} alt="" className="absolute inset-0 h-full w-full object-cover" />
+            ) : profile?.backdrop_url && !profile.backdrop_url.startsWith("http") ? (
+              <div className="absolute inset-0" style={{ background: profile.backdrop_url }} />
+            ) : (
+              <div className="absolute inset-0 bg-[#09090B]" />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/55 to-black/10" />
+            <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#09090B] to-transparent" />
+          </div>
+        )}
 
         <div className="max-w-5xl mx-auto px-4 pt-[calc(env(safe-area-inset-top)+76px)] pb-6">
           
@@ -414,8 +456,8 @@ function CreatorDashboardContent() {
 
           {!isDashboardView && !showMyTrooFlix && (
             <div className="animate-in fade-in duration-300">
-              <div className="hidden lg:grid grid-cols-[minmax(0,1fr)_minmax(360px,0.92fr)] items-center gap-8 mb-6 w-full">
-                <div className="min-w-0">
+              <div className="hidden lg:block mb-6 w-full">
+                <div className="min-w-0 max-w-2xl">
                   <div className="flex items-center gap-5 mb-5">
                     <div onClick={() => setShowAvatarMenu(true)} className="w-24 h-24 rounded-full p-[3px] bg-gradient-to-tr from-[#E53945] to-orange-500 shrink-0 cursor-pointer group relative">
                       <div className="w-full h-full rounded-full border-4 border-[#09090B] overflow-hidden bg-[#1c1c1e] relative">
@@ -423,7 +465,7 @@ function CreatorDashboardContent() {
                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"><Camera size={24} className="text-white" /></div>
                       </div>
                     </div>
-                    <div className="flex min-w-0 flex-1 justify-around gap-4">
+                    <div className="flex min-w-0 flex-1 justify-start gap-8">
                       <div><span className="font-bold text-white block text-xl">{formatNumber(followerCount)}</span><span className="text-white/50 text-[11px] uppercase tracking-wider">Followers</span></div>
                       <div><span className="font-bold text-white block text-xl">{formatNumber(subscriberCount)}</span><span className="text-white/50 text-[11px] uppercase tracking-wider">Subscribers</span></div>
                       <div><span className="font-bold text-white block text-xl">{creatorVideos.length}</span><span className="text-white/50 text-[11px] uppercase tracking-wider">Posts</span></div>
@@ -436,42 +478,17 @@ function CreatorDashboardContent() {
                       <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors"><InstagramIcon size={14} /><span className="text-xs font-semibold">{profile?.instagram_handle || "@instagram"}</span></a>
                       <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors"><XIcon size={14} /><span className="text-xs font-semibold">{profile?.x_handle || "@x"}</span></a>
                     </div>
-                    <p className="text-sm text-white/60 leading-relaxed line-clamp-2">{profile?.bio || "No bio yet."}</p>
-                    {userTier === "creator" ? (
-                      <Link href="/creator-dashboard/live" className="mt-4 inline-flex items-center gap-2 rounded-full border border-[#E53945]/70 px-4 py-2 text-sm font-bold text-[#F06A72] transition hover:bg-[#E53945]/10"><Radio size={15} /> Go Live</Link>
-                    ) : (
-                      <button onClick={() => { window.location.href = "/upgrade?feature=go_live"; }} className="mt-4 inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm font-bold text-white/55 transition hover:bg-white/5"><Radio size={15} /> Go Live <Lock size={11} /></button>
-                    )}
-                  </div>
-                </div>
-                <div
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => profileFeatureInputRef.current?.click()}
-                  onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); profileFeatureInputRef.current?.click(); } }}
-                  className="group relative aspect-video cursor-pointer overflow-hidden rounded-2xl border border-white/10 bg-[#111114] text-left shadow-[0_18px_60px_rgba(0,0,0,0.35)] focus:outline-none focus:ring-2 focus:ring-[#E53945]"
-                  aria-label="Choose a custom profile image or video"
-                >
-                  {profileFeature?.mode === "video" && profileFeatureVideo ? (
-                    <video src={profileFeatureVideo.videoUrl || profileFeatureVideo.bitchuteUrl} poster={profileFeatureVideo.posterUrl || profileFeatureVideo.backdropUrl} controls playsInline className="absolute inset-0 h-full w-full bg-black object-contain" onClick={(event) => event.stopPropagation()} />
-                  ) : profileFeature?.mode === "custom" && profileFeature.mediaType === "video" ? (
-                    <video src={profileFeature.mediaUrl} controls playsInline className="absolute inset-0 h-full w-full bg-black object-contain" onClick={(event) => event.stopPropagation()} />
-                  ) : profileFeature?.mode === "custom" && profileFeature.mediaType === "image" ? (
-                    <img src={profileFeature.mediaUrl} alt={`${displayName} profile feature`} className="absolute inset-0 h-full w-full object-cover" />
-                  ) : (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-[#241316] via-[#111114] to-[#09090B] text-white/65">
-                      <div className="grid h-12 w-12 place-items-center rounded-full border border-white/15 bg-white/[0.06]"><Plus size={22} /></div>
-                      <span className="text-sm font-semibold">Add a profile image or video</span>
+                    <p className="text-sm text-white/70 leading-relaxed max-w-xl">{profile?.bio || "No bio yet."}</p>
+                    <div className="mt-4 flex flex-wrap items-center gap-3">
+                      {userTier === "creator" ? (
+                        <Link href="/creator-dashboard/live" className="inline-flex items-center gap-2 rounded-full border border-[#E53945]/70 px-4 py-2 text-sm font-bold text-[#F06A72] transition hover:bg-[#E53945]/10"><Radio size={15} /> Go Live</Link>
+                      ) : (
+                        <button onClick={() => { window.location.href = "/upgrade?feature=go_live"; }} className="inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm font-bold text-white/55 transition hover:bg-white/5"><Radio size={15} /> Go Live <Lock size={11} /></button>
+                      )}
+                      <button onClick={() => profileFeatureInputRef.current?.click()} className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/20 px-4 py-2 text-sm font-bold text-white/80 backdrop-blur-sm transition hover:bg-white/10">
+                        <Pencil size={14} /> {uploadingProfileFeature ? "Uploading..." : "Change featured"}
+                      </button>
                     </div>
-                  )}
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent opacity-90" />
-                  <div className="pointer-events-none absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3">
-                    <div className="min-w-0">
-                      <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.18em] text-white/65">{profileFeature?.mode === "video" ? "Profile video" : profileFeature?.mediaType === "video" ? "Custom video" : profileFeature?.mediaType === "image" ? "Custom image" : "Profile feature"}</span>
-                      {profileFeature?.mode === "video" && profileFeatureVideo && <p className="truncate text-sm font-semibold text-white">{profileFeatureVideo.title}</p>}
-                      {uploadingProfileFeature && <p className="text-sm font-medium text-white">Uploading your feature…</p>}
-                    </div>
-                    {!uploadingProfileFeature && <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/20 bg-black/35 text-white backdrop-blur-sm transition group-hover:bg-[#E53945]"><Pencil size={15} /></span>}
                   </div>
                 </div>
               </div>

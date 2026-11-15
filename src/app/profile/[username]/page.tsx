@@ -289,6 +289,21 @@ export default function PublicProfilePage() {
       : { background: profile.backdrop_url }
     : { background: "#09090B" };
 
+  const heroMedia =
+    profileFeature?.mode === "custom" && profileFeature.mediaType === "video"
+      ? { type: "video" as const, src: profileFeature.mediaUrl }
+      : profileFeature?.mode === "custom" && profileFeature.mediaType === "image"
+      ? { type: "image" as const, src: profileFeature.mediaUrl }
+      : featuredVideo
+      ? {
+          type: "video" as const,
+          src: featuredVideo.videoUrl || featuredVideo.bitchuteUrl,
+          poster: featuredVideo.posterUrl || featuredVideo.backdropUrl,
+        }
+      : profile.backdrop_url && profile.backdrop_url.startsWith("http")
+      ? { type: "image" as const, src: profile.backdrop_url }
+      : null;
+
 
   // Determine if the logged-in user owns this profile
   const isOwner = currentUser && profile && currentUser.id === profile.user_id;
@@ -341,17 +356,42 @@ export default function PublicProfilePage() {
   };
 
   return (
-    <main className={`min-h-screen text-white pb-32 font-sans selection:bg-[#E53945]/30 relative overflow-hidden bg-transparent`}>
+    <main className={`min-h-screen text-white pb-32 font-sans selection:bg-[#E53945]/30 relative overflow-hidden bg-[#09090B]`}>
       
       {/* Background */}
-      <div className="fixed inset-0 z-0" style={bgStyle}>
+      <div className="fixed inset-0 z-0 lg:hidden" style={bgStyle}>
         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
       </div>
+      <div className="fixed inset-0 z-0 hidden lg:block bg-[#09090B]" />
 
       <div className="relative z-10">
         <TopBar />
+
+        {/* Desktop wall-to-wall featured hero behind profile info */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-0 hidden h-[560px] overflow-hidden lg:block xl:h-[620px]">
+          {heroMedia?.type === "video" ? (
+            <video
+              src={heroMedia.src}
+              poster={(heroMedia as any).poster}
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          ) : heroMedia?.type === "image" ? (
+            <img src={heroMedia.src} alt="" className="absolute inset-0 h-full w-full object-cover" />
+          ) : profile.backdrop_url && !profile.backdrop_url.startsWith("http") ? (
+            <div className="absolute inset-0" style={{ background: profile.backdrop_url }} />
+          ) : (
+            <div className="absolute inset-0 bg-[#09090B]" />
+          )}
+          {/* Fade black-to-light left to right */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/55 to-black/10" />
+          <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#09090B] to-transparent" />
+        </div>
         
-        <div className="max-w-5xl mx-auto px-4 pt-24 pb-6">
+        <div className="relative z-10 max-w-5xl mx-auto px-4 pt-24 pb-6 lg:pt-28">
           
           <Link href="/search" className="inline-flex items-center gap-2 text-white/50 hover:text-white mb-6 transition text-sm font-semibold">
             <ArrowLeft size={16} /> Back
@@ -454,18 +494,7 @@ export default function PublicProfilePage() {
 
 
             </div>
-<div className="hidden lg:block w-full lg:w-1/2">
-{profileFeature?.mode === "video" && featuredVideo ? (
-<video src={featuredVideo.videoUrl || featuredVideo.bitchuteUrl} poster={featuredVideo.posterUrl || featuredVideo.backdropUrl} controls playsInline className="w-full aspect-video object-cover rounded-3xl border border-white/10 shadow-2xl bg-black" />
-) : profileFeature?.mode === "custom" && profileFeature.mediaType === "video" ? (
-<video src={profileFeature.mediaUrl} controls playsInline className="w-full aspect-video object-cover rounded-3xl border border-white/10 shadow-2xl bg-black" />
-) : profileFeature?.mode === "custom" && profileFeature.mediaType === "image" ? (
-<img src={profileFeature.mediaUrl} alt={`${displayName} profile feature`} className="w-full aspect-video object-cover rounded-3xl border border-white/10 shadow-2xl bg-black" />
-) : (
-<div className="w-full aspect-video bg-black rounded-3xl border border-white/10 flex items-center justify-center text-white/30 text-sm">No profile feature set</div>
-)}
-</div>
-</div>
+            </div>
 {/* TABS & CONTENT */}
             <div className="flex items-center justify-between border-b border-white/10 mb-6">
               <div className="flex items-center gap-8">
