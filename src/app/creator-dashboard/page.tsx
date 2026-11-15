@@ -456,6 +456,21 @@ function CreatorDashboardContent() {
 
           {!isDashboardView && !showMyTrooFlix && (
             <div className="animate-in fade-in duration-300">
+              <div className="hidden lg:block">
+                <CreatorStudioNav
+                  active="profile"
+                  className="mb-6"
+                  dashboardLocked={userTier === "free"}
+                  onViewChange={(section) => {
+                    if (section === "dashboard" && userTier === "free") {
+                      window.location.href = "/upgrade?feature=dashboard";
+                      return;
+                    }
+                    setIsDashboardView(section === "dashboard");
+                    setShowMyTrooFlix(section === "mytrooflix");
+                  }}
+                />
+              </div>
               <div className="hidden lg:block mb-6 w-full">
                 <div className="min-w-0 max-w-2xl">
                   <div className="flex items-center gap-5 mb-5">
@@ -539,19 +554,21 @@ function CreatorDashboardContent() {
                 </div>
               </div>
 
-              <CreatorStudioNav
-                active="profile"
-                className="mb-8"
-                dashboardLocked={userTier === "free"}
-                onViewChange={(section) => {
-                  if (section === "dashboard" && userTier === "free") {
-                    window.location.href = "/upgrade?feature=dashboard";
-                    return;
-                  }
-                  setIsDashboardView(section === "dashboard");
-                  setShowMyTrooFlix(section === "mytrooflix");
-                }}
-              />
+              <div className="lg:hidden">
+                <CreatorStudioNav
+                  active="profile"
+                  className="mb-8"
+                  dashboardLocked={userTier === "free"}
+                  onViewChange={(section) => {
+                    if (section === "dashboard" && userTier === "free") {
+                      window.location.href = "/upgrade?feature=dashboard";
+                      return;
+                    }
+                    setIsDashboardView(section === "dashboard");
+                    setShowMyTrooFlix(section === "mytrooflix");
+                  }}
+                />
+              </div>
 
               <div className="flex items-center justify-between border-b border-white/10 mb-6">
                 <div className="flex items-center gap-8">
