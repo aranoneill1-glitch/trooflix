@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Home, Play, Wallet, User } from "lucide-react";
+import { Home, Play, Plus, Wallet, User } from "lucide-react";
 import { getCachedUser } from "@/lib/cache";
 import { createClient } from "@/utils/supabase/client";
 
@@ -85,11 +85,17 @@ export default function MobileBottomNav() {
           <span className={`text-[10px] font-medium ${isActive("/feed") ? "text-white" : "text-white/45"}`}>Shorts</span>
         </Link>
 
-        <Link href="/creator-dashboard" className="flex flex-col items-center justify-center gap-0 min-w-0 flex-1 pt-1 pb-0.5">
-          <span className="text-[12px] font-black tracking-[-0.06em] leading-none">
-            <span className="text-white">TROO</span><span className="text-[#E53945]">FLIX</span>
-          </span>
-        </Link>
+        <button
+          type="button"
+          onClick={() => document.dispatchEvent(new CustomEvent("open-create-menu"))}
+          className="flex flex-col items-center justify-center gap-0 min-w-0 flex-1 pt-1 pb-0.5"
+          aria-label="Create"
+        >
+          <div className="w-7 h-7 rounded-full bg-white/[0.08] border border-white/15 flex items-center justify-center">
+            <Plus size={18} className="text-white" />
+          </div>
+          <span className="text-[10px] font-medium text-white/70">Create</span>
+        </button>
 
         <Link href="/wallet" className="flex flex-col items-center justify-center gap-0 min-w-0 flex-1 pt-1 pb-0.5">
           <Wallet size={22} className={isActive("/wallet") ? "text-white" : "text-white/45"} />

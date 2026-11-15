@@ -31,6 +31,12 @@ export default function TopBar({ onMenu }: Props) {
   };
 
   useEffect(() => {
+    const openCreateMenu = () => setShowCreateMenu(true);
+    document.addEventListener("open-create-menu", openCreateMenu);
+    return () => document.removeEventListener("open-create-menu", openCreateMenu);
+  }, []);
+
+  useEffect(() => {
     getCachedUser().then((u) => {
       if (u) {
         fetch(`/api/profile?user_id=${u.id}`)
