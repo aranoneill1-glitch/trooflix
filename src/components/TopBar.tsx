@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, Mic, Plus, RefreshCw, Video, Radio, X, Play, Tag, ShoppingBag } from "lucide-react";
+import { Menu, Mic, Plus, RefreshCw, Search, Video, Radio, X, Play, Tag, ShoppingBag } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import UserMenu from "@/components/UserMenu";
 import NotificationBell from "@/components/NotificationBell";
@@ -98,6 +98,16 @@ export default function TopBar({ onMenu }: Props) {
 
         <div className="ml-auto flex items-center gap-0.5 md:gap-1">
           <PWAInstallButton />
+
+          {!isSearchPage && (
+            <Link
+              href="/search"
+              className="w-9 h-9 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition"
+              aria-label="Search"
+            >
+              <Search size={18} />
+            </Link>
+          )}
 
           <button 
             onClick={handleRefresh}
