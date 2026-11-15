@@ -431,7 +431,6 @@ export default function Home() {
                 `}</style>
 
                 <div className="snap-y snap-proximity">
-                <TrooflixIntroHero />
                 <WatchEverywhereHero />
                 {/* Page 1: Content Power / Your Voice. Unfiltered. */}
                 <section className="relative w-full min-h-[100svh] snap-start overflow-hidden bg-[#040406] flex items-center">
@@ -1361,88 +1360,6 @@ function CreatorEconomicsHero() {
   );
 }
 
-function TrooflixIntroHero() {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: false, amount: 0.4 });
-
-  return (
-    <section ref={ref} className="relative w-full min-h-[100svh] snap-start overflow-hidden bg-[#030304] flex items-center">
-      <HeroScene3D />
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-[#050507] to-transparent z-[2]" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#040406] to-transparent z-[2]" />
-      <div className="absolute inset-0 z-[1] bg-[radial-gradient(circle_at_20%_25%,rgba(229,57,69,0.22),transparent_22%),radial-gradient(circle_at_75%_35%,rgba(255,106,42,0.18),transparent_24%),radial-gradient(circle_at_50%_80%,rgba(229,57,69,0.10),transparent_30%)]" />
-      <motion.div className="absolute left-[8%] top-[18%] h-72 w-72 rounded-full bg-[#ff4d5a]/12 blur-[120px] z-[1]" animate={{ x: [0, 30, 0], y: [0, -20, 0], scale: [1, 1.12, 1] }} transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }} />
-      <motion.div className="absolute right-[10%] bottom-[15%] h-80 w-80 rounded-full bg-[#ff6a2a]/12 blur-[130px] z-[1]" animate={{ x: [0, -24, 0], y: [0, 18, 0], scale: [1, 1.08, 1] }} transition={{ duration: 11, repeat: Infinity, ease: "easeInOut" }} />
-      <motion.div className="pointer-events-none absolute left-1/2 top-1/2 h-[70vmin] w-[70vmin] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#ff6b4a]/10 z-[1]" animate={{ rotate: 360, scale: [1, 1.03, 1] }} transition={{ rotate: { duration: 40, repeat: Infinity, ease: "linear" }, scale: { duration: 8, repeat: Infinity, ease: "easeInOut" } }} />
-      <motion.div className="pointer-events-none absolute left-1/2 top-1/2 h-[46vmin] w-[46vmin] -translate-x-1/2 -translate-y-1/2 rounded-full border border-dashed border-[#ff6b4a]/15 z-[1]" animate={{ rotate: -360 }} transition={{ duration: 26, repeat: Infinity, ease: "linear" }} />
-
-      <div className="relative z-10 w-full max-w-[1600px] mx-auto px-8 xl:px-16 py-24">
-        <div className="grid grid-cols-[1.05fr_0.95fr] items-center gap-12 xl:gap-16">
-          <motion.div initial="hidden" animate={inView ? "visible" : "hidden"} variants={{ visible: { transition: { staggerChildren: 0.1 } } }} className="max-w-3xl">
-            <motion.div variants={{ hidden: { opacity: 0, y: 18 }, visible: { opacity: 1, y: 0 } }} className="mb-6 inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 backdrop-blur-xl">
-              <span className="h-2 w-2 rounded-full bg-[#ff4d5a] shadow-[0_0_12px_rgba(229,57,69,0.9)]" />
-              <span className="text-[11px] font-bold uppercase tracking-[0.28em] text-white/70">Creator-first platform</span>
-            </motion.div>
-
-            <motion.h1 variants={{ hidden: { opacity: 0, y: 28 }, visible: { opacity: 1, y: 0, transition: { duration: 0.9, ease: [0.22,1,0.36,1] } } }} className="text-[58px] xl:text-[78px] 2xl:text-[96px] font-black tracking-[-0.05em] leading-[0.92] text-white mb-7">
-              Trooflix is the <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff4d5a] via-[#ff6b4a] to-orange-400">creator-owned</span> home for your content.
-            </motion.h1>
-
-            <motion.p variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="max-w-2xl text-xl xl:text-2xl leading-relaxed text-white/70 font-medium mb-10">
-              Go live, share Shorts, publish documentaries, and build a real business — with direct fan support, TrooBank payouts, and <span className="text-white font-semibold">99% of your revenue</span> staying with you.
-            </motion.p>
-
-            <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="flex flex-wrap gap-3 mb-10">
-              {["Live streaming", "Shorts & documentaries", "Keep 99%", "TrooChat & community", "TrooBank & TrooCoins"].map((item, i) => (
-                <motion.span key={item} className="rounded-full border border-[#ff6b4a]/25 bg-[#E53945]/10 px-4 py-2.5 text-sm font-semibold text-white/90 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]" animate={{ y: [0, -2, 0] }} transition={{ duration: 3 + i * 0.25, repeat: Infinity, ease: "easeInOut", delay: i * 0.1 }}>
-                  {item}
-                </motion.span>
-              ))}
-            </motion.div>
-
-            <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="flex items-center gap-4 flex-wrap">
-              <motion.a href="/signup" whileHover={{ scale: 1.03, boxShadow: "0 0 0 1px rgba(255,255,255,0.12), 0 22px 55px rgba(229,57,69,0.4), 0 0 40px rgba(255,106,42,0.22)" }} whileTap={{ scale: 0.99 }} className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#E53945] to-[#ff6a2a] px-8 py-4 text-base font-bold text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08),0_18px_45px_rgba(229,57,69,0.35)]">
-                Start Creating <ArrowRight size={18} />
-              </motion.a>
-              <a href="#features" className="inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-8 py-4 text-base font-semibold text-white/85 backdrop-blur-xl transition hover:bg-white/[0.08] hover:text-white">
-                See what’s inside
-              </a>
-            </motion.div>
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0, x: 30, scale: 0.98 }} animate={inView ? { opacity: 1, x: 0, scale: 1 } : {}} transition={{ duration: 1, delay: 0.15, ease: [0.22,1,0.36,1] }} className="relative flex items-center justify-center">
-            <div className="relative w-full max-w-[560px]">
-              <motion.div className="absolute -inset-6 rounded-[40px] bg-gradient-to-r from-[#E53945]/20 via-[#ff6a2a]/10 to-transparent blur-2xl" animate={{ opacity: [0.5, 0.8, 0.5] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }} />
-              <div className="relative rounded-[32px] border border-white/10 bg-white/[0.04] p-5 shadow-[0_40px_120px_rgba(0,0,0,0.5)] backdrop-blur-2xl overflow-hidden">
-                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-                <div className="grid grid-cols-2 gap-4">
-                  {[
-                    { k: "Create", v: "Live, Shorts & Docs", d: "All your formats in one place" },
-                    { k: "Earn", v: "Keep 99%", d: "Flat 1% fee, direct payouts" },
-                    { k: "Connect", v: "TrooChat", d: "Messages, voice & video calls" },
-                    { k: "Own", v: "TrooBank", d: "TrooCoins, tips & revenue" },
-                  ].map((card, i) => (
-                    <motion.div key={card.k} className="rounded-[22px] border border-white/10 bg-gradient-to-br from-white/[0.06] to-white/[0.02] p-4 min-h-[150px] flex flex-col justify-between" animate={{ y: [0, -4, 0] }} transition={{ duration: 4 + i * 0.4, repeat: Infinity, ease: "easeInOut", delay: i * 0.2 }} whileHover={{ y: -6, borderColor: "rgba(255,107,74,0.35)", boxShadow: "0 20px 45px rgba(0,0,0,0.3), 0 0 0 1px rgba(229,57,69,0.12)" }}>
-                      <div className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#ffb0a8]/80">{card.k}</div>
-                      <div>
-                        <div className="text-xl font-black tracking-tight text-white mb-1">{card.v}</div>
-                        <div className="text-sm leading-relaxed text-white/50">{card.d}</div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-                <motion.div className="mt-4 rounded-2xl border border-[#ff6b4a]/20 bg-gradient-to-r from-[#E53945]/15 to-[#ff6a2a]/10 px-4 py-3 flex items-center justify-between" animate={{ boxShadow: ["0 0 0 rgba(229,57,69,0)", "0 0 24px rgba(229,57,69,0.12)", "0 0 0 rgba(229,57,69,0)"] }} transition={{ duration: 3, repeat: Infinity }}>
-                  <span className="text-sm font-semibold text-white/80">Built for creators, not advertisers</span>
-                  <span className="text-sm font-black text-[#ff8a6a]">No Big Tech tax</span>
-                </motion.div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </div>
-    </section>
-  );
-}
 function HeroLatestShortPhone() {
   return (
     <>
