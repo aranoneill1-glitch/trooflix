@@ -983,11 +983,30 @@ function WatchEverywhereHero() {
       <motion.div className="absolute left-[20%] top-[25%] h-64 w-64 rounded-full bg-[#ff4d5a]/10 blur-[120px]" animate={{ x: [0, 20, 0], y: [0, -12, 0], opacity: [0.25, 0.45, 0.25] }} transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }} />
       <motion.div className="pointer-events-none absolute left-[35%] top-1/2 h-px w-[30%] bg-gradient-to-r from-[#E53945]/0 via-[#ff6b4a]/40 to-[#ff6a2a]/0" animate={{ opacity: [0.15, 0.5, 0.15], scaleX: [0.9, 1.05, 0.9] }} transition={{ duration: 4, repeat: Infinity }} />
 
-      <div className="relative z-10 mx-auto grid w-full max-w-[1600px] grid-cols-[1.05fr_0.95fr] items-center gap-12 px-8 xl:px-16">
+      <div className="relative z-10 mx-auto grid w-full max-w-[1600px] grid-cols-[0.95fr_1.05fr] items-center gap-12 px-8 xl:px-16">
         <motion.div
           initial={{ opacity: 0, x: -30, y: 10 }}
           animate={inView ? { opacity: 1, x: 0, y: 0 } : {}}
           transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+          className="max-w-2xl"
+        >
+          <p className="mb-5 text-[11px] font-bold uppercase tracking-[0.32em] text-white/40">Watch everywhere</p>
+          <h2 className="text-[56px] font-black leading-[0.98] tracking-[-0.05em] text-white xl:text-[74px] 2xl:text-[88px]">
+            One platform.
+            <br />
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff4d5a] via-[#ff6b4a] to-orange-400">Every screen.</span>
+          </h2>
+          <p className="mt-6 max-w-xl text-lg xl:text-xl leading-relaxed text-white/55 font-medium">
+            Pick up where you left off on phone, desktop, or TV.
+            <br className="hidden xl:block" />
+            A seamless, cinematic experience — wherever you watch.
+          </p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, x: 30, y: 10 }}
+          animate={inView ? { opacity: 1, x: 0, y: 0 } : {}}
+          transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
           className="relative flex flex-col items-center justify-center"
         >
           <div className="relative h-[420px] w-full max-w-[620px]">
@@ -1122,25 +1141,6 @@ function WatchEverywhereHero() {
               <span key={item} className="rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-white/45">{item}</span>
             ))}
           </motion.div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, x: 30, y: 10 }}
-          animate={inView ? { opacity: 1, x: 0, y: 0 } : {}}
-          transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-          className="max-w-2xl"
-        >
-          <p className="mb-5 text-[11px] font-bold uppercase tracking-[0.32em] text-white/40">Watch everywhere</p>
-          <h2 className="text-[56px] font-black leading-[0.98] tracking-[-0.05em] text-white xl:text-[74px] 2xl:text-[88px]">
-            One platform.
-            <br />
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff4d5a] via-[#ff6b4a] to-orange-400">Every screen.</span>
-          </h2>
-          <p className="mt-6 max-w-xl text-lg xl:text-xl leading-relaxed text-white/55 font-medium">
-            Pick up where you left off on phone, desktop, or TV.
-            <br className="hidden xl:block" />
-            A seamless, cinematic experience — wherever you watch.
-          </p>
         </motion.div>
       </div>
     </section>
