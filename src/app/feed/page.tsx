@@ -76,10 +76,18 @@ export default function ShortsFeedPage() {
       setLoading(false);
       fetch("/api/comment-counts", { cache: "no-store" })
         .then(r => r.json())
-        .then(d => setCommentCounts(d.counts || {}))
+        .then(d => setCommentCounts(d?.counts || {}))
         .catch(() => {});
     }).catch(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (commentSheetVideoId !== null) return;
+    fetch("/api/comment-counts", { cache: "no-store" })
+      .then(r => r.json())
+      .then(d => setCommentCounts(d?.counts || {}))
+      .catch(() => {});
+  }, [commentSheetVideoId]);
 
   const toggleMute = () => setIsMuted(prev => !prev);
 

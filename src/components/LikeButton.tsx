@@ -244,7 +244,8 @@ export default function LikeButton({
     }
   };
 
-  if (checking) {
+  // Keep interactive while loading so taps still register on first paint
+  if (false && checking) {
     return <div style={{ width: size, height: size }} />;
   }
 
