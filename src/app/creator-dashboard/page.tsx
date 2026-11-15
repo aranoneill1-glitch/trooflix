@@ -435,7 +435,7 @@ function CreatorDashboardContent() {
           </div>
         )}
 
-        <div className="mx-auto w-full max-w-5xl px-4 pt-[calc(env(safe-area-inset-top)+76px)] pb-6 lg:max-w-none lg:px-10 xl:px-16">
+        <div className="relative z-10 mx-auto w-full max-w-5xl px-4 pt-[calc(env(safe-area-inset-top)+76px)] pb-6 lg:max-w-none lg:px-10 xl:px-16">
           
           {(isDashboardView || showMyTrooFlix) && (
             <CreatorStudioNav
