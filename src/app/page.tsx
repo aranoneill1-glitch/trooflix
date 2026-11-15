@@ -390,7 +390,7 @@ export default function Home() {
               {!user && authResolved && (<>
               {/* MOBILE SIGNED-OUT */}
               <div className="lg:hidden w-full flex flex-col relative z-10 bg-transparent overflow-hidden">
-                <div className="w-full relative z-10 px-6 pt-4 pb-6 flex flex-col items-center justify-start text-center">
+                <div className="w-full relative z-10 px-6 pt-[calc(env(safe-area-inset-top)+80px)] pb-6 flex flex-col items-center justify-start text-center">
                   <h1 className="relative text-[46px] leading-[0.95] font-black tracking-[-0.05em] text-white mb-4 mt-2">
                     Create without <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#E53945] to-orange-500">limits</span>.
                   </h1>
