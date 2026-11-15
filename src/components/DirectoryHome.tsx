@@ -262,7 +262,7 @@ export function FeaturedVideoHero({ videos, onSelect, className = "", extendDesk
         </AnimatePresence>
 
         <div className="mt-4 flex items-center gap-6">
-          <button onClick={() => onSelect(video)} className="inline-flex min-h-10 items-center gap-2 rounded-full bg-white/15 backdrop-blur-2xl backdrop-saturate-150 border border-white/25 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)]">
+          <button onClick={() => onSelect(video)} className="inline-flex min-h-10 items-center gap-2 rounded-full bg-white/20 border border-white/25 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)]">
             <Play size={14} fill="currentColor" /> Play
           </button>
         </div>
@@ -317,7 +317,7 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
             className="transition duration-700 ease-out group-hover:scale-[1.04]"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/10 pointer-events-none" />
-          <span className="absolute bottom-2.5 right-2.5 text-[11px] font-medium px-2 py-1 rounded-full bg-white/10 text-white/95 backdrop-blur-2xl backdrop-saturate-150 border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]">
+          <span className="absolute bottom-2.5 right-2.5 text-[11px] font-medium px-2 py-1 rounded-full bg-black/55 text-white/95 border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]">
             {timeAgo(v.createdAt)}
           </span>
         </div>
@@ -376,7 +376,7 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
                       loading="lazy"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/10 pointer-events-none" />
-                    <div className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-black/55 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur-md border border-white/10">
+                    <div className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-black/70 px-2.5 py-1 text-[11px] font-semibold text-white border border-white/10">
                       <Play size={12} fill="currentColor" /> Resume
                     </div>
                     {progress > 0 && (
