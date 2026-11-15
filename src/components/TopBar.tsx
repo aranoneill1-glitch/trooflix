@@ -63,15 +63,11 @@ export default function TopBar({ onMenu }: Props) {
   }, []);
 
   useEffect(() => {
-    if (isSearchPage) {
-      setSearchOpen(true);
-      if (typeof window !== "undefined") {
-        const q = new URLSearchParams(window.location.search).get("q") || "";
-        setSearchQuery(q);
-      }
-    } else {
+    if (!isSearchPage) {
       setSearchOpen(false);
       setSearchQuery("");
+    } else {
+      setSearchOpen(false);
     }
   }, [isSearchPage, pathname]);
 
@@ -133,12 +129,12 @@ export default function TopBar({ onMenu }: Props) {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search Trooflix..."
-                  className="w-full h-10 bg-white/[0.08] border border-white/10 rounded-full pl-9 pr-9 text-sm text-white placeholder:text-white/40 outline-none focus:border-[#E53945]/50"
+                  className="w-full h-10 bg-white/[0.08] border border-white/10 rounded-full pl-9 pr-9 text-sm text-white placeholder:text-white/40 outline-none focus:outline-none focus:ring-0"
                 />
                 {searchQuery && (
                   <button
                     type="button"
-                    onClick={() => { setSearchQuery(""); searchInputRef.current?.focus(); if (isSearchPage) router.push("/search"); }}
+                    onClick={() => { setSearchQuery(""); searchInputRef.current?.focus(); }}
                     className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10"
                     aria-label="Clear search"
                   >
@@ -148,15 +144,6 @@ export default function TopBar({ onMenu }: Props) {
               </div>
             </form>
             <div className="flex items-center gap-0.5 md:gap-1 shrink-0">
-              <button
-                type="button"
-                onClick={() => document.dispatchEvent(new CustomEvent("open-trooflix-assistant"))}
-                className="w-9 h-9 rounded-full flex items-center justify-center text-[#ff8a93] hover:text-white hover:bg-[#E53945]/20 transition"
-                aria-label="Open AI assistant"
-                title="My Little Helper"
-              >
-                <Sparkles size={18} />
-              </button>
               <div className="flex items-center gap-2">
                 <UserMenu />
               </div>
@@ -192,24 +179,16 @@ export default function TopBar({ onMenu }: Props) {
             <div className="ml-auto flex items-center gap-0.5 md:gap-1">
               <PWAInstallButton />
 
-              <button
-                type="button"
-                onClick={() => document.dispatchEvent(new CustomEvent("open-trooflix-assistant"))}
-                className="w-9 h-9 rounded-full flex items-center justify-center text-[#ff8a93] hover:text-white hover:bg-[#E53945]/20 transition"
-                aria-label="Open AI assistant"
-                title="My Little Helper"
-              >
-                <Sparkles size={18} />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setSearchOpen(true)}
-                className="w-9 h-9 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition"
-                aria-label="Search"
-              >
-                <Search size={18} />
-              </button>
+              {!isSearchPage && (
+                <button
+                  type="button"
+                  onClick={() => setSearchOpen(true)}
+                  className="w-9 h-9 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition"
+                  aria-label="Search"
+                >
+                  <Search size={18} />
+                </button>
+              )}
 
               <button 
                 onClick={handleRefresh}
