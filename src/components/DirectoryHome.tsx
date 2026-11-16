@@ -567,6 +567,31 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
 
       <section>
         <SectionHead title="Podcasts" href="/latest" />
+        {podcastVideos[0] && (
+          <button
+            type="button"
+            onClick={() => onVideoSelect(podcastVideos[0])}
+            className="relative mb-4 block w-full aspect-[21/9] overflow-hidden rounded-2xl bg-[#141418] text-left ring-1 ring-white/10 group"
+          >
+            <img
+              src={podcastVideos[0].posterUrl || podcastVideos[0].backdropUrl}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover transition duration-700 ease-out group-hover:scale-[1.03]"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+            <div className="absolute bottom-0 left-0 right-0 p-4 md:p-7">
+              <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-white/60 md:text-xs">
+                Latest podcast
+              </p>
+              <h3 className="max-w-2xl text-xl font-black tracking-tight text-white md:text-3xl">
+                {podcastVideos[0].title}
+              </h3>
+            </div>
+            <span className="absolute right-4 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white text-black shadow-lg transition group-hover:scale-105 md:right-7 md:h-14 md:w-14">
+              <Play size={18} fill="currentColor" />
+            </span>
+          </button>
+        )}
         <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
           {podcastVideos.map((v) => renderLongFormCard(v, true))}
         </div>
