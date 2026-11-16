@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { BookOpen, Eye, Play, ShoppingBag, Volume2, VolumeX, Maximize2 } from "lucide-react";
+import { Eye, Play, ArrowRight, Volume2, VolumeX, Maximize2 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 
@@ -324,15 +324,7 @@ function formatCountdown(seconds: number) {
 }
 
 export default function DirectoryHome({ videos, creators, featuredVideos, onVideoSelect, continueWatching = [], flushTop = false }: { videos: any[], creators: any[], featuredVideos: any[], onVideoSelect: (video: any) => void, continueWatching?: any[], flushTop?: boolean }) {
-  const [shopProducts, setShopProducts] = useState<any[]>([]);
   const [featuredIndex, setFeaturedIndex] = useState(0);
-  
-  useEffect(() => {
-    fetch("/api/products/global")
-      .then(r => r.json())
-      .then(d => setShopProducts(d.products || []))
-      .catch(() => {});
-  }, []);
 
   const latestVideos = videos.filter((v: any) => {
     const t = v.type?.toLowerCase();
@@ -621,49 +613,23 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
       </section>
 
       <section>
-        <div className="flex items-end justify-between mb-5">
-          <Link href="/merchandise" className="text-[21px] font-black tracking-tighter text-[#E53945] md:text-[28px] hover:opacity-90 transition">Store</Link>
+        <div className="flex items-end justify-between mb-2.5">
+          <Link href="/merchandise" className="text-[21px] font-black tracking-tighter text-white md:text-[28px] hover:opacity-90 transition">Store</Link>
           <Link href="/merchandise" className="text-[13px] font-medium text-white/45 hover:text-white transition mb-1">View all</Link>
         </div>
-        {(() => {
-          const merchItems = shopProducts.filter((p: any) => p.type?.toLowerCase() !== "book");
-          const bookItems = shopProducts.filter((p: any) => p.type?.toLowerCase() === "book");
-          return (
-            <div className="space-y-6">
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="flex h-6 w-6 items-center justify-center text-[#E53945]"><ShoppingBag size={16} /></span>
-                  <h3 className="text-sm font-bold text-white tracking-tight">Merchandise</h3>
-                </div>
-                <div className="flex overflow-x-auto gap-3 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
-                  {merchItems.slice(0, 20).map((p: any) => (
-                    <Link key={p.id} href="/merchandise" className="flex flex-col w-[89px] md:w-[108px] shrink-0 group">
-                      <div className="relative aspect-square rounded-xl overflow-hidden bg-[#141418] ring-1 ring-white/10">
-                        <img src={p.image_url} alt="" className="w-full h-full object-cover transition duration-700 group-hover:scale-[1.04]" />
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="flex h-6 w-6 items-center justify-center text-[#E53945]"><BookOpen size={16} /></span>
-                  <h3 className="text-sm font-bold text-white tracking-tight">Books</h3>
-                </div>
-                <div className="flex overflow-x-auto gap-3 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
-                  {bookItems.slice(0, 20).map((p: any) => (
-                    <Link key={p.id} href="/merchandise" className="flex flex-col w-[89px] md:w-[108px] shrink-0 group">
-                      <div className="relative aspect-square rounded-xl overflow-hidden bg-[#141418] ring-1 ring-white/10">
-                        <img src={p.image_url} alt="" className="w-full h-full object-cover transition duration-700 group-hover:scale-[1.04]" />
-                      </div>
-                      <p className="mt-1.5 text-[11px] font-medium text-white/80 line-clamp-2 leading-snug group-hover:text-white transition">{p.name}</p>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </div>
-          );
-        })()}
+        <Link href="/merchandise" className="relative block w-full aspect-[21/9] overflow-hidden rounded-2xl ring-1 ring-white/10 group">
+          <img
+            src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=2000&auto=format&fit=crop"
+            alt="Creator merchandise and apparel"
+            className="absolute inset-0 h-full w-full object-cover transition duration-700 ease-out group-hover:scale-[1.04]"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/35 to-black/15" />
+          <div className="absolute inset-0 flex items-center justify-center px-4">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/35 bg-white/15 px-7 py-3 text-sm font-bold text-white backdrop-blur-md shadow-xl transition group-hover:bg-white group-hover:text-black">
+              Explore the store <ArrowRight size={16} />
+            </span>
+          </div>
+        </Link>
       </section>
       </div>
 
