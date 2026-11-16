@@ -3,7 +3,7 @@ import { getCachedUser } from "@/lib/cache";
 
 import { useEffect, useState , useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { CreditCard, Wallet, ArrowLeft, UserPlus, MessageSquare, CheckCircle2, LayoutGrid, List, ShoppingBag, Star, Lock, GripVertical, X } from "lucide-react";
+import { CreditCard, Wallet, ArrowLeft, UserPlus, MessageSquare, CheckCircle2, LayoutGrid, List, ShoppingBag, Star, Lock, GripVertical, X, Film, Mic } from "lucide-react";
 import CommentSheet from "@/components/CommentSheet";
 import Comments from "@/components/Comments";
 import Link from "next/link";
@@ -580,7 +580,7 @@ export default function PublicProfilePage() {
                   <button key={tab} onClick={() => setActiveContentTab(tab)} className={`pb-3 text-sm font-bold transition-colors ${activeContentTab === tab ? "text-white border-b-2 border-[#E53945]" : "text-white/50 hover:text-white"}`}>{tab}</button>
                 ))}
               </div>
-              {activeContentTab !== "Shorts" && (
+              {activeContentTab !== "Shorts" && activeContentTab !== "Videos" && (
                 <div className="flex items-center gap-1 bg-[#1c1c1e] p-1 rounded-lg mb-2">
                   <button onClick={() => setContentView("grid")} className={`p-1.5 rounded-md transition ${contentView === "grid" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}><LayoutGrid size={16} /></button>
                   <button onClick={() => setContentView("list")} className={`p-1.5 rounded-md transition ${contentView === "list" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}><List size={16} /></button>
@@ -703,27 +703,20 @@ export default function PublicProfilePage() {
               {activeContentTab === "Videos" && (
                 <div className="w-full">
                   {filteredVideos.length === 0 ? (
-                    <div className="text-center py-20 text-white/50">No {activeContentTab.toLowerCase()} found yet.</div>
-                  ) : contentView === "grid" ? (
-                    <div className="grid grid-cols-3 gap-4">
-                      {filteredVideos.map((video) => (
-                        <div key={video.id} className="bg-[#1c1c1e] border border-white/10 rounded-2xl overflow-hidden group cursor-pointer">
-                          <div className="relative aspect-square">
-                            <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                            <div className={`absolute top-2 left-2 text-white text-[10px] font-bold px-2 py-0.5 rounded-sm ${video.type?.toLowerCase() === 'long-video' ? 'bg-blue-500' : 'bg-[#E53945]'}`}>{video.type || "VIDEO"}</div>
-                          </div>
-                          <div className="p-3 text-left"><h3 className="text-sm font-bold leading-tight line-clamp-1">{video.title}</h3></div>
-                        </div>
-                      ))}
-                    </div>
+                    <div className="text-center py-20 text-white/50">No videos found yet.</div>
                   ) : (
-                    <div className="flex flex-col gap-3">
-                      {filteredVideos.map((video) => (
-                        <div key={video.id} className="flex items-center gap-4 bg-[#1c1c1e] border border-white/10 rounded-2xl p-3 cursor-pointer hover:bg-[#242426] transition-colors">
-                          <div className="w-24 h-16 rounded-lg overflow-hidden shrink-0 relative"><img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover" /></div>
-                          <div className="flex-1 min-w-0 text-left"><h3 className="text-sm font-bold text-white truncate">{video.title}</h3></div>
-                        </div>
-                      ))}
+                    <div className="-mx-4 sm:-mx-4 lg:mx-0 grid grid-cols-3 gap-[2px] pb-20 sm:gap-1 lg:grid-cols-6 lg:gap-3">
+                      {filteredVideos.map((video) => {
+                        const isPodcast = String(video.type || "").toLowerCase() === "podcast";
+                        return (
+                          <div key={video.id} className="relative aspect-[3/4] overflow-hidden bg-[#111114] lg:rounded-xl lg:border lg:border-white/10 lg:shadow-lg cursor-pointer">
+                            <img src={video.posterUrl || video.backdropUrl} alt="" loading="lazy" className="w-full h-full object-cover" />
+                            <div className="absolute top-2 left-2 p-1.5 rounded-lg bg-black/60 backdrop-blur-sm border border-white/10 text-white shadow-md" title={isPodcast ? "Podcast" : "Long video"}>
+                              {isPodcast ? <Mic size={13} /> : <Film size={13} />}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
