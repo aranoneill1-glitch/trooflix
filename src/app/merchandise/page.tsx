@@ -161,7 +161,7 @@ export default function MerchandisePage() {
           <ArrowLeft size={20} />
         </button>
 
-        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-12 z-10 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-12 pb-2 md:pb-3 z-10 flex flex-col lg:flex-row lg:items-end justify-between gap-2">
           <div>
             <p className="text-[10px] md:text-xs tracking-[0.4em] text-[#E53945] font-semibold mb-2 uppercase">
               Explore Merchandise
@@ -193,7 +193,7 @@ export default function MerchandisePage() {
       </div>
 
       {/* SEARCH & ACTIONS ROW */}
-      <div className="max-w-7xl mx-auto px-4 md:px-8 pt-10">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 pt-2">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-10">
           
           {/* Search Bar */}
@@ -229,7 +229,7 @@ export default function MerchandisePage() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+          <div className="mx-auto grid max-w-[640px] grid-cols-3 gap-3">
             {filteredProducts.map((p) => (
               <div 
                 key={p.id} 
@@ -237,7 +237,7 @@ export default function MerchandisePage() {
                 className="group flex flex-col cursor-pointer"
               >
                 {/* Image Container */}
-                <div className="relative aspect-[4/5] w-full rounded-2xl overflow-hidden bg-[#141418] mb-3">
+                <div className="relative aspect-[4/5] w-full rounded-xl overflow-hidden bg-[#141418] mb-2">
                   <img 
                     src={p.image_url} 
                     alt={p.name} 
@@ -246,19 +246,19 @@ export default function MerchandisePage() {
                   
                   {/* Like Button */}
                   <button 
-                    className={`absolute top-3 right-3 p-2 rounded-full shadow-md hover:scale-110 transition ${wishlistedIds.includes(p.id) ? "bg-[#D4AF37] text-black" : "bg-black/40 text-white"}`} 
+                    className={`absolute top-2 right-2 p-1.5 rounded-full shadow-md hover:scale-110 transition ${wishlistedIds.includes(p.id) ? "bg-[#D4AF37] text-black" : "bg-black/40 text-white"}`} 
                     onClick={(e) => toggleWishlist(e, p.id)}
                   >
-                    <Star size={16} fill={wishlistedIds.includes(p.id) ? "currentColor" : "none"} />
+                    <Star size={12} fill={wishlistedIds.includes(p.id) ? "currentColor" : "none"} />
                   </button>
 
                   {/* Quick Add */}
-                  <div className="absolute inset-x-3 bottom-3 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                  <div className="absolute inset-x-2 bottom-2 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
                     <button 
                       onClick={(e) => { e.stopPropagation(); addToBasket(p); }}
-                      className="w-full bg-white text-black font-bold text-xs py-2.5 rounded-xl hover:bg-gray-200 transition shadow-lg flex items-center justify-center gap-1.5"
+                      className="w-full bg-white text-black font-bold text-[10px] py-1.5 rounded-lg hover:bg-gray-200 transition shadow-lg flex items-center justify-center gap-1"
                     >
-                      <Plus size={14} /> Quick Add
+                      <Plus size={11} /> Quick Add
                     </button>
                   </div>
                 </div>
@@ -266,10 +266,10 @@ export default function MerchandisePage() {
                 {/* Info */}
                 <div className="flex justify-between items-start gap-2">
                   <div className="min-w-0">
-                    <p className="text-[10px] font-bold tracking-widest text-white/40 uppercase mb-1 truncate">{p.creatorName}</p>
-                    <h3 className="text-sm font-bold text-white leading-tight truncate group-hover:text-[#E53945] transition-colors">{p.name}</h3>
+                    <p className="text-[8px] font-bold tracking-widest text-white/40 uppercase mb-0.5 truncate">{p.creatorName}</p>
+                    <h3 className="text-[11px] font-bold text-white leading-tight truncate group-hover:text-[#E53945] transition-colors">{p.name}</h3>
                   </div>
-                  <p className="text-sm font-black text-green-400 shrink-0">${(p.price_cents / 100).toFixed(2)}</p>
+                  <p className="text-[11px] font-black text-green-400 shrink-0">${(p.price_cents / 100).toFixed(2)}</p>
                 </div>
               </div>
             ))}
