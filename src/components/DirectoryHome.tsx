@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { BookOpen, CirclePlay, Clock, Eye, Film, Mic, Play, ShoppingBag, Star, UsersRound, Volume2, VolumeX, Maximize2 } from "lucide-react";
+import { BookOpen, Eye, Play, ShoppingBag, Volume2, VolumeX, Maximize2 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 
@@ -33,33 +33,14 @@ function timeAgo(dateString: string) {
   return date.toLocaleDateString();
 }
 
-function ShortsMark({ size = 22 }: { size?: number; strokeWidth?: number }) {
+function SectionHead({ title, href, onTitleClick }: { title: string; href: string; onTitleClick?: (e: React.MouseEvent) => void }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
-      <rect x="4.2" y="2.8" width="15.6" height="18.4" rx="5.2" transform="rotate(-10 12 12)" fill="#E53945" />
-      <rect x="4.2" y="2.8" width="15.6" height="18.4" rx="5.2" transform="rotate(-10 12 12)" fill="url(#shortsMarkGrad)" opacity="0.95" />
-      <path d="M10.2 8.7v6.6l5.7-3.3-5.7-3.3z" fill="white" />
-      <defs>
-        <linearGradient id="shortsMarkGrad" x1="6" y1="4" x2="18" y2="20" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#FF6B6B" />
-          <stop offset="1" stopColor="#C62828" />
-        </linearGradient>
-      </defs>
-    </svg>
-  );
-}
-
-function SectionHead({ title, href, icon: Icon, onTitleClick }: { title: string; href: string; icon: any; onTitleClick?: (e: React.MouseEvent) => void }) {
-  return (
-    <div className="flex items-end justify-between mb-5">
+    <div className="flex items-end justify-between mb-2.5">
       <button
         type="button"
         onClick={onTitleClick}
-        className="flex min-w-0 items-center gap-3 text-left"
+        className="flex min-w-0 items-center text-left"
       >
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center text-[#E53945]">
-          <Icon size={22} strokeWidth={2} />
-        </span>
         <h2 className="text-[21px] font-black tracking-tighter text-white md:text-[28px]">{title}</h2>
       </button>
       <Link href={href} onClick={onTitleClick} className="text-[13px] font-medium text-white/45 hover:text-white transition mb-1">
@@ -364,7 +345,7 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
 
       <section className="pt-[calc(env(safe-area-inset-top)+5.5rem)] md:pt-[calc(env(safe-area-inset-top)+7rem)]">
         <div className="max-w-[1600px] mx-auto px-4 md:px-10">
-          <SectionHead title="Shorts" href="/feed" icon={ShortsMark} />
+          <SectionHead title="Shorts" href="/feed" />
           <div className="flex overflow-x-auto gap-2 pb-3 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
             {shortsVideos.map((v: any) => (
               <Link key={v.id} href={`/feed?reel=${v.id}`} className="block w-[86px] md:w-[110px] shrink-0 group">
@@ -387,7 +368,7 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
 
       <section>
         <div className="max-w-[1600px] mx-auto px-4 md:px-10">
-          <SectionHead title="Featured" href="/latest" icon={Star} />
+          <SectionHead title="Featured" href="/latest" />
         </div>
         <FeaturedVideoHero
           videos={featuredVideos}
@@ -435,13 +416,8 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
       <div className="max-w-[1600px] mx-auto px-4 md:px-10 space-y-8 md:space-y-10">
       {continueWatching.length > 0 && (
         <section>
-          <div className="flex items-end justify-between mb-5">
-            <div className="flex min-w-0 items-center gap-3">
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center text-[#E53945]">
-                <Clock size={22} strokeWidth={2} />
-              </span>
-              <h2 className="text-[21px] font-black tracking-tighter text-white md:text-[28px]">Continue Watching</h2>
-            </div>
+          <div className="flex items-end justify-between mb-2.5">
+            <h2 className="text-[21px] font-black tracking-tighter text-white md:text-[28px]">Continue Watching</h2>
           </div>
           <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
             {continueWatching.map((v: any) => {
@@ -496,7 +472,6 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
         <SectionHead
           title="Don't miss a thing"
           href="/latest"
-          icon={CirclePlay}
           onTitleClick={(e) => {
             if (typeof window !== "undefined" && window.innerWidth < 1024 && latestVideos[0]) {
               e.preventDefault();
@@ -510,21 +485,21 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
       </section>
 
       <section>
-        <SectionHead title="Podcasts" href="/latest" icon={Mic} />
+        <SectionHead title="Podcasts" href="/latest" />
         <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
           {podcastVideos.map(renderLongFormCard)}
         </div>
       </section>
 
       <section>
-        <SectionHead title="Documentaries" href="/latest" icon={Film} />
+        <SectionHead title="Documentaries" href="/latest" />
         <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
           {documentaryVideos.map(renderLongFormCard)}
         </div>
       </section>
 
       <section>
-        <SectionHead title="Discover creators" href="/creators" icon={UsersRound} />
+        <SectionHead title="Discover creators" href="/creators" />
         <div className="flex overflow-x-auto gap-5 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
           {creators.slice(0, 15).map((c: any) => (
             <Link key={c.id} href={`/profile/${c.slug}`} className="flex flex-col items-center shrink-0 w-[104px] md:w-[120px] group">
