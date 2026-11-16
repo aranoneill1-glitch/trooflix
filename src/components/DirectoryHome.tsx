@@ -370,9 +370,16 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
 
         {featuredVideos.length > 0 && (
           <div className="max-w-[1600px] mx-auto px-4 md:px-10 mt-3 md:mt-4">
-            <h2 className="mb-2 text-lg font-black tracking-tight text-white md:text-2xl">
-              {featuredVideos[featuredIndex]?.title}
-            </h2>
+            <div className="mb-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <h2 className="text-base font-bold tracking-tight text-white md:text-lg">
+                {featuredVideos[featuredIndex]?.title}
+              </h2>
+              {featuredVideos[featuredIndex]?.category && (
+                <span className="text-xs font-medium text-white/45 md:text-sm">
+                  {featuredVideos[featuredIndex].category}
+                </span>
+              )}
+            </div>
             <div className="flex gap-2 md:gap-3 overflow-x-auto scrollbar-hide px-1.5 pt-1.5 pb-3">
               {featuredVideos.map((v: any, i: number) => (
                 <button
