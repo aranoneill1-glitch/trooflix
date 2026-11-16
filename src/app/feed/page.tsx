@@ -292,19 +292,19 @@ export default function ShortsFeedPage() {
 
       {/* Shared mobile bottom action bar (always visible) */}
       {activeVideo && (
-        <div className="lg:hidden fixed inset-x-0 bottom-0 z-[260] pointer-events-auto px-4 pb-[calc(env(safe-area-inset-bottom)+5px)] pt-1">
-          <div className="mx-auto flex max-w-[400px] items-center justify-around rounded-full border border-white/20 bg-white/10 px-3 py-1 backdrop-blur-2xl backdrop-saturate-150 shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
+        <div className="lg:hidden fixed inset-x-0 bottom-0 z-[260] pointer-events-auto px-4 pb-[calc(env(safe-area-inset-bottom)+10px)] pt-2">
+          <div className="mx-auto flex w-[72%] max-w-[280px] items-center justify-around rounded-full border border-white/20 bg-white/10 px-3 py-2 backdrop-blur-2xl backdrop-saturate-150 shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
             <div className="flex items-center justify-center min-w-0 flex-1 text-white">
-              <LikeButton key={activeVideo.id} videoId={activeVideo.id} size={22} showCount={true} stacked={false} />
+              <LikeButton key={activeVideo.id} videoId={activeVideo.id} size={28} showCount={true} stacked={false} />
             </div>
 
             <button
               onClick={() => setCommentSheetVideoId(activeVideo.id)}
               aria-label="Open comments"
-              className="flex items-center justify-center gap-1 min-w-0 flex-1 text-white hover:text-white/90 transition"
+              className="flex items-center justify-center gap-1.5 min-w-0 flex-1 text-white hover:text-white/90 transition"
             >
-              <MessageCircle size={22} strokeWidth={2.2} className="text-white/90" />
-              <span className="text-[11px] font-extrabold tracking-tight">{(commentCounts[activeVideo.id] ?? (commentCounts as any)[String(activeVideo.id)] ?? 0) || 0}</span>
+              <MessageCircle size={28} strokeWidth={2.2} className="text-white/90" />
+              <span className="text-[13px] font-extrabold tracking-tight">{(commentCounts[activeVideo.id] ?? (commentCounts as any)[String(activeVideo.id)] ?? 0) || 0}</span>
             </button>
 
             <button
@@ -312,7 +312,7 @@ export default function ShortsFeedPage() {
               aria-label="Tip creator"
               className="flex items-center justify-center min-w-0 flex-1 text-white hover:text-white/90 transition"
             >
-              <svg width={22} height={22} viewBox="0 0 24 24" fill="none" aria-hidden="true" className="text-white/90">
+              <svg width={28} height={28} viewBox="0 0 24 24" fill="none" aria-hidden="true" className="text-white/90">
                 <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
                 <circle cx="12" cy="12" r="6.6" stroke="currentColor" strokeWidth="1.2" opacity="0.75" />
                 <path d="M10.2 5.8L9.4 3.9M13.8 5.8L14.6 3.9M10.2 18.2L9.4 20.1M13.8 18.2L14.6 20.1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.9" />
@@ -320,9 +320,9 @@ export default function ShortsFeedPage() {
               </svg>
             </button>
 
-            <div className="flex items-center justify-center gap-1 min-w-0 flex-1 text-white">
-              <Eye size={22} strokeWidth={2.2} className="text-white/90" />
-              <span className="text-[11px] font-extrabold tracking-tight">{(viewCounts[activeVideo.id] ?? Number((activeVideo as any).views || 0)) || 0}</span>
+            <div className="flex items-center justify-center gap-1.5 min-w-0 flex-1 text-white">
+              <Eye size={28} strokeWidth={2.2} className="text-white/90" />
+              <span className="text-[13px] font-extrabold tracking-tight">{(viewCounts[activeVideo.id] ?? Number((activeVideo as any).views || 0)) || 0}</span>
             </div>
           </div>
         </div>
