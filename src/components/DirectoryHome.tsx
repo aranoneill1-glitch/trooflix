@@ -426,18 +426,29 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
 
         {featuredVideos.length > 0 && (
           <div className="max-w-[1600px] mx-auto px-4 md:px-10 mt-3 md:mt-4">
-            <div className="mb-2">
-              <h2 className="text-base font-bold tracking-tight text-white md:text-lg">
-                {featuredVideo?.title}
-              </h2>
-              <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs font-medium text-white/45 md:text-sm">
-                {featuredVideo?.category && <span>{featuredVideo.category}</span>}
-                {featuredCreator?.name && (
-                  <>
-                    {featuredVideo?.category && <span className="text-white/20">·</span>}
-                    <span>{featuredCreator.name}</span>
-                  </>
+            <div className="mb-2 flex items-stretch gap-3">
+              <div className="aspect-square h-full shrink-0 overflow-hidden rounded-full bg-white/10 ring-1 ring-white/15">
+                {featuredCreator?.photoUrl ? (
+                  <img src={featuredCreator.photoUrl} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-sm font-bold text-white/80">
+                    {(featuredCreator?.name || featuredVideo?.title || "T")[0]}
+                  </div>
                 )}
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-base font-bold tracking-tight text-white md:text-lg">
+                  {featuredVideo?.title}
+                </h2>
+                <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs font-medium text-white/45 md:text-sm">
+                  {featuredVideo?.category && <span>{featuredVideo.category}</span>}
+                  {featuredCreator?.name && (
+                    <>
+                      {featuredVideo?.category && <span className="text-white/20">·</span>}
+                      <span>{featuredCreator.name}</span>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
             <div className="flex gap-2 md:gap-3 overflow-x-auto scrollbar-hide px-1.5 pt-1.5 pb-3">
