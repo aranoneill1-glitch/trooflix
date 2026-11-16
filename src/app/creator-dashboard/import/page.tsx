@@ -77,7 +77,49 @@ export default function ImportPage() {
     });
   };
 
-  const getTitleAndType = (key: string, src: Source) => {
+  // Instagram stores captions in JSON metadata (e.g. content/posts_1.json,
+  // content/reels.json) where each media item has a "uri" pointing at the video
+  // file. Map the video filename -> caption so we can import the real caption.
+  const buildCaptionMap = (unzipped: Record<string, Uint8Array>) => {
+    const map = new Map<string, string>();
+
+    for (const [key, data] of Object.entries(unzipped)) {
+      const lowerKey = key.toLowerCase();
+      if (!lowerKey.endsWith(".json")) continue;
+      if (!/(content|post|reel|stor|caption|media)/.test(lowerKey)) continue;
+
+      try {
+        const parsed = JSON.parse(new TextDecoder().decode(data));
+        const visit = (node: any, inherited?: string) => {
+          if (!node) return;
+          if (Array.isArray(node)) { node.forEach((n) => visit(n, inherited)); return; }
+          if (typeof node !== "object") return;
+
+          const own =
+            typeof node.title === "string" && node.title.trim()
+              ? node.title
+              : typeof node.caption === "string" && node.caption.trim()
+                ? node.caption
+                : "";
+          const caption = own || inherited || "";
+          const uri = typeof node.uri === "string" ? node.uri : "";
+
+          if (caption && uri) {
+            const name = (uri.split("/").pop() || "").toLowerCase();
+            if (name && !map.has(name)) map.set(name, caption.trim());
+          }
+          Object.values(node).forEach((child) => visit(child, caption));
+        };
+        visit(parsed);
+      } catch {
+        // Ignore malformed / unrelated JSON
+      }
+    }
+
+    return map;
+  };
+
+  const getTitleAndType = (key: string, src: Source, caption = "") => {
     const fileName = key.split("/").pop() || "video.mp4";
     const base = fileName.replace(/\.[^.]+$/, "");
     if (src === "youtube") {
@@ -86,13 +128,19 @@ export default function ImportPage() {
     }
     const lower = key.toLowerCase();
     const isShort = lower.includes("/reels/") || lower.includes("/stories/");
-    let title = base.replace(/[_-]+/g, " ").trim() || "Imported Video";
-    // Clean common timestamp-like names a bit
-    if (/^\d{6,}$/.test(title.replace(/\s/g, ""))) title = isShort ? "Imported Reel" : "Imported Video";
+    const cleanCaption = caption.replace(/\s+/g, " ").trim();
+
+    let title = cleanCaption
+      ? cleanCaption.split(/[.!?\n]/)[0].trim()
+      : base.replace(/[_-]+/g, " ").trim();
+    if (!title || /^\d{6,}$/.test(title.replace(/\s/g, ""))) {
+      title = isShort ? "Imported Reel" : "Imported Video";
+    }
+
     return {
       title: title.slice(0, 120),
       type: isShort ? "short" : "long-video",
-      description: "Imported from Instagram",
+      description: cleanCaption || "Imported from Instagram",
     };
   };
 
@@ -114,6 +162,7 @@ export default function ImportPage() {
       const unzipped = unzipSync(uint8);
 
       const videoKeys = getVideoEntries(unzipped, source);
+      const captionMap = source === "instagram" ? buildCaptionMap(unzipped) : new Map<string, string>();
 
       if (videoKeys.length === 0) {
         throw new Error(
@@ -129,7 +178,8 @@ export default function ImportPage() {
         const key = videoKeys[i];
         const videoData = unzipped[key];
         const fileName = key.split("/").pop() || "video.mp4";
-        const meta = getTitleAndType(key, source);
+        const caption = captionMap.get(fileName.toLowerCase()) || "";
+        const meta = getTitleAndType(key, source, caption);
         const ext = (fileName.split(".").pop() || "mp4").toLowerCase();
         const mime = ext === "mov" ? "video/quicktime" : ext === "m4v" ? "video/x-m4v" : "video/mp4";
 
@@ -255,7 +305,7 @@ export default function ImportPage() {
                   <li className="flex gap-3"><span className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center shrink-0">1</span><p>Open Instagram → <strong>Settings and privacy</strong> → <strong>Accounts Center</strong>.</p></li>
                   <li className="flex gap-3"><span className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center shrink-0">2</span><p>Go to <strong>Your information and permissions</strong> → <strong>Download your information</strong>.</p></li>
                   <li className="flex gap-3"><span className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center shrink-0">3</span><p>Select your Instagram account and include posts/reels/videos (or all available info), then choose <strong>Download to device</strong>.</p></li>
-                  <li className="flex gap-3"><span className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center shrink-0">4</span><p>When ready, download the .zip export and upload it here. Videos found in the archive will be imported as drafts.</p></li>
+                  <li className="flex gap-3"><span className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center shrink-0">4</span><p>When ready, download the .zip export and upload it here. Videos and their captions are imported automatically.</p></li>
                 </ol>
               </>
             )}
