@@ -188,14 +188,14 @@ export default function MerchandisePage() {
                 </span>
               )}
             </button>
-            <button className="relative p-2.5 bg-black/40 border border-white/10 rounded-full hover:bg-white/10 transition text-white/70 hover:text-white">
+            <Link href="/basket" aria-label="Open basket" className="relative p-2.5 bg-black/40 border border-white/10 rounded-full hover:bg-white/10 transition text-white/70 hover:text-white">
               <ShoppingBag size={20} />
               {basket.length > 0 && (
                 <span className="absolute -top-1 -right-1 bg-[#E53945] text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-[#09090B]">
                   {basket.length}
                 </span>
               )}
-            </button>
+            </Link>
             <div className="flex items-center gap-2 bg-black/40 p-1.5 rounded-full border border-white/10">
               {(["Merchandise", "Books"] as const).map(tab => (
                 <button key={tab} onClick={() => setActiveTab(tab)} className={"px-5 py-2 rounded-full font-bold text-sm transition " + (activeTab === tab ? "bg-white text-black" : "text-white/70 hover:text-white hover:bg-white/10")}>{tab}</button>
