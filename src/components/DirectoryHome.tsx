@@ -353,14 +353,14 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
     ? `/profile/${featuredCreator.slug || featuredCreator.username}`
     : "#";
 
-  const renderLongFormCard = (v: any) => {
+  const renderLongFormCard = (v: any, compact = false) => {
     const creator = creators.find((c: any) =>
       (v.creatorId && c.id === v.creatorId) ||
       (v.uploaderUserId && c.ownerUserId === v.uploaderUserId) ||
       (v.uploaderUserId && c.user_id === v.uploaderUserId)
     );
     return (
-      <button key={v.id} type="button" onClick={() => onVideoSelect(v)} className="flex flex-col w-[260px] md:w-[300px] shrink-0 group text-left">
+      <button key={v.id} type="button" onClick={() => onVideoSelect(v)} className={`flex flex-col shrink-0 group text-left ${compact ? "w-[187px] md:w-[216px]" : "w-[260px] md:w-[300px]"}`}>
         <div className="relative aspect-video rounded-2xl overflow-hidden bg-[#141418] ring-1 ring-white/10 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]">
           <VideoPreview
             src={v.videoUrl || v.bitchuteUrl}
@@ -368,23 +368,23 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
             className="transition duration-700 ease-out group-hover:scale-[1.04]"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/10 pointer-events-none" />
-          <span className="absolute bottom-2.5 right-2.5 text-[11px] font-medium px-2 py-1 rounded-full bg-black/55 text-white/95 border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]">
+          <span className={`absolute font-medium rounded-full bg-black/55 text-white/95 border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] ${compact ? "bottom-2 right-2 text-[10px] px-1.5 py-0.5" : "bottom-2.5 right-2.5 text-[11px] px-2 py-1"}`}>
             {timeAgo(v.createdAt)}
           </span>
         </div>
-        <div className="mt-3 flex items-start gap-3">
-          <div className="w-9 h-9 rounded-full overflow-hidden bg-white/10 ring-1 ring-white/10 shrink-0">
+        <div className={`flex items-start gap-3 ${compact ? "mt-2 gap-2" : "mt-3"}`}>
+          <div className={`rounded-full overflow-hidden bg-white/10 ring-1 ring-white/10 shrink-0 ${compact ? "w-7 h-7" : "w-9 h-9"}`}>
             {creator?.photoUrl ? (
               <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-xs font-bold text-white/80">
+              <div className={`w-full h-full flex items-center justify-center font-bold text-white/80 ${compact ? "text-[10px]" : "text-xs"}`}>
                 {(creator?.name || "T")[0]}
               </div>
             )}
           </div>
           <div className="min-w-0">
-            <h3 className="text-[15px] font-medium text-white/90 leading-snug line-clamp-2 group-hover:text-white transition">{v.title}</h3>
-            {creator?.name && <p className="mt-0.5 text-[13px] text-white/55 truncate">{creator.name}</p>}
+            <h3 className={`font-medium text-white/90 leading-snug line-clamp-2 group-hover:text-white transition ${compact ? "text-[12px]" : "text-[15px]"}`}>{v.title}</h3>
+            {creator?.name && <p className={`mt-0.5 text-white/55 truncate ${compact ? "text-[11px]" : "text-[13px]"}`}>{creator.name}</p>}
           </div>
         </div>
       </button>
@@ -568,14 +568,14 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
       <section>
         <SectionHead title="Podcasts" href="/latest" />
         <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
-          {podcastVideos.map(renderLongFormCard)}
+          {podcastVideos.map((v) => renderLongFormCard(v, true))}
         </div>
       </section>
 
       <section>
         <SectionHead title="Documentaries" href="/latest" />
         <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
-          {documentaryVideos.map(renderLongFormCard)}
+          {documentaryVideos.map((v) => renderLongFormCard(v))}
         </div>
       </section>
 
