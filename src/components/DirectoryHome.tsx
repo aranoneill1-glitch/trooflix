@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { BookOpen, ChevronLeft, ChevronRight, CirclePlay, Clock, Eye, Film, Mic, Play, ShoppingBag, Star, UsersRound } from "lucide-react";
+import { BookOpen, CirclePlay, Clock, Eye, Film, Mic, Play, ShoppingBag, Star, UsersRound } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 
@@ -156,7 +156,7 @@ function HeroPreviewFrame({ src, poster, alt }: { src?: string; poster?: string;
   );
 }
 
-export function FeaturedVideoHero({ videos, onSelect, className = "", activeIndex: controlledIndex, onActiveIndexChange }: { videos: any[]; onSelect: (video: any) => void; className?: string; activeIndex?: number; onActiveIndexChange?: (index: number) => void }) {
+export function FeaturedVideoHero({ videos, className = "", activeIndex: controlledIndex, onActiveIndexChange }: { videos: any[]; className?: string; activeIndex?: number; onActiveIndexChange?: (index: number) => void }) {
   const [internalIndex, setInternalIndex] = useState(0);
   const activeIndex = controlledIndex ?? internalIndex;
   const setActiveIndex = (next: number) => {
@@ -184,39 +184,6 @@ export function FeaturedVideoHero({ videos, onSelect, className = "", activeInde
           <HeroPreviewFrame src={previewSrc} poster={image} alt={video.title || ""} />
         </motion.div>
       </AnimatePresence>
-      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-[#08090c] via-[#08090c]/25 to-transparent" />
-
-      <div className="flex h-full max-w-7xl flex-col justify-end px-5 pb-4 pt-14 md:mx-auto md:px-12 md:pb-8">
-        <AnimatePresence mode="wait">
-          <motion.div key={video.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.4 }} className="max-w-3xl">
-            <p className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.28em] text-white/65 md:text-xs"><Star size={13} className="text-[#F06A72]" /> Featured</p>
-            <h1 className="max-w-3xl text-2xl font-black leading-[0.98] tracking-[-0.055em] text-white drop-shadow-lg sm:text-3xl md:text-4xl">{video.title}</h1>
-            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/55 md:text-xs">
-              {video.category && <span>{video.category}</span>}
-              {video.year ? <span>{video.year}</span> : null}
-              {video.duration && <span>{video.duration}</span>}
-            </div>
-          </motion.div>
-        </AnimatePresence>
-
-        <div className="mt-4 flex items-center gap-6">
-          <button onClick={() => onSelect(video)} className="inline-flex min-h-10 items-center gap-2 rounded-full bg-white/20 border border-white/25 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-white/25 shadow-[0_8px_32px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.18)]">
-            <Play size={14} fill="currentColor" /> Play
-          </button>
-        </div>
-      </div>
-
-      {videos.length > 1 && (
-        <div className="absolute bottom-4 right-5 flex items-center gap-4 md:bottom-6 md:right-12">
-          <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/55">{activeIndex + 1} <span className="mx-1 text-white/25">/</span> {videos.length}</span>
-          <button aria-label="Previous featured video" onClick={() => setActiveIndex((activeIndex - 1 + videos.length) % videos.length)} className="p-1 text-white/55 transition hover:text-white">
-            <ChevronLeft size={18} />
-          </button>
-          <button aria-label="Next featured video" onClick={() => setActiveIndex((activeIndex + 1) % videos.length)} className="p-1 text-white/55 transition hover:text-white">
-            <ChevronRight size={18} />
-          </button>
-        </div>
-      )}
     </section>
   );
 }
@@ -288,13 +255,15 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
         </div>
         <FeaturedVideoHero
           videos={featuredVideos}
-          onSelect={onVideoSelect}
           activeIndex={featuredIndex}
           onActiveIndexChange={setFeaturedIndex}
         />
 
-        {featuredVideos.length > 1 && (
+        {featuredVideos.length > 0 && (
           <div className="max-w-[1600px] mx-auto px-4 md:px-10 mt-3 md:mt-4">
+            <h2 className="mb-2 text-lg font-black tracking-tight text-white md:text-2xl">
+              {featuredVideos[featuredIndex]?.title}
+            </h2>
             <div className="flex gap-2 md:gap-3 overflow-x-auto scrollbar-hide pb-2">
               {featuredVideos.map((v: any, i: number) => (
                 <button
