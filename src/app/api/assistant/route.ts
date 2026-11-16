@@ -27,15 +27,32 @@ const COMMANDS: Cmd[] = [
   { id: "feed", patterns: [/\breels?\b/, /\bshorts?\b/, /\bfeed\b/, /\bswipe\b/], reply: ["Opening Reels/Shorts.", "Taking you to Reels."], actions: [{ type: "navigate", path: "/feed", label: "Open Reels" }] },
   { id: "search", patterns: [/\bsearch\b/, /\bfind\b/, /\blook for\b/, /\bdiscover\b/, /\bexplore\b/], reply: ["Opening search.", "Let’s find something."], actions: [{ type: "navigate", path: "/search", label: "Open Search" }] },
   { id: "wallet", patterns: [/\bwallet\b/, /\bbalance\b/], reply: ["Opening your wallet.", "Taking you to your wallet."], actions: [{ type: "navigate", path: "/wallet", label: "Open Wallet" }] },
-  { id: "topup", patterns: [/(add|buy|get|top ?up|load).*(credit|coin|troocoin)/, /\btop ?up\b/, /\bcredits?\b/, /\bcoins?\b/], reply: ["Opening wallet top-up so you can add credits.", "Let’s add TrooCoins — opening top-up."], actions: [{ type: "open_topup" }, { type: "navigate", path: "/wallet?topup=true", label: "Add Credits" }] },
-  { id: "orders", patterns: [/\b(my )?orders?\b/, /\bpurchases?\b/, /\bbought\b/, /\btrack(ing)?\b/], reply: ["Opening your orders.", "Taking you to your orders."], actions: [{ type: "open_orders", tab: "bought" }, { type: "navigate", path: "/orders", label: "My Orders" }] },
-  { id: "orders_sold", patterns: [/\bsold orders?\b/, /\bsales?\b/, /\bsold\b/], reply: ["Opening sold orders.", "Taking you to sold orders."], actions: [{ type: "open_orders", tab: "sold" }, { type: "navigate", path: "/orders?tab=sold", label: "Sold Orders" }] },
-  { id: "messages", patterns: [/\bmessages?\b/, /\binbox\b/, /\bdms?\b/, /\bchat\b/], reply: ["Opening messages.", "Taking you to your inbox."], actions: [{ type: "navigate", path: "/messages", label: "Open Messages" }] },
+
+  // Credits / wallet actions (specific first)
+  { id: "add_credits", patterns: [/\badd credits?\b/, /(add|buy|get|top ?up|load).*(credit|coin|troocoin)/, /\btop ?up\b/, /\bcredits?\b/, /\bcoins?\b/], reply: ["Opening Add Credits.", "Taking you to add credits."], actions: [{ type: "open_topup" }, { type: "navigate", path: "/wallet?topup=true", label: "Add Credits" }] },
+  { id: "withdraw_credits", patterns: [/\bwithdraw credits?\b/, /\bwithdraw\b/, /\bcash ?out\b/, /\bpayout\b/], reply: ["Opening wallet for withdrawals.", "Taking you to withdraw credits."], actions: [{ type: "navigate", path: "/wallet", label: "Withdraw Credits" }] },
+  { id: "send_credits", patterns: [/\bsend credits?\b/, /\btransfer credits?\b/, /\bsend coins?\b/, /\btip credits?\b/], reply: ["Opening wallet to send credits.", "Taking you to send credits."], actions: [{ type: "navigate", path: "/wallet", label: "Send Credits" }] },
+
+  // Orders (specific before generic)
+  { id: "manage_orders", patterns: [/\bmanage orders?\b/, /\bcreator orders?\b/, /\bseller orders?\b/, /\bshop orders?\b/], reply: ["Opening Manage Orders.", "Taking you to manage orders."], actions: [{ type: "navigate", path: "/creator-dashboard/orders", label: "Manage Orders" }] },
+  { id: "orders_sold", patterns: [/\bsold orders?\b/, /\bsales\b/, /\bsold\b/], reply: ["Opening sold orders.", "Taking you to sold orders."], actions: [{ type: "open_orders", tab: "sold" }, { type: "navigate", path: "/orders?tab=sold", label: "Sold Orders" }] },
+  { id: "orders", patterns: [/\borders?\b/, /\bpurchases?\b/, /\bbought\b/, /\btrack(ing)?\b/], reply: ["Opening your orders.", "Taking you to orders."], actions: [{ type: "open_orders", tab: "bought" }, { type: "navigate", path: "/orders", label: "Orders" }] },
+
+  // Messaging
+  { id: "send_message", patterns: [/\bsend message\b/, /\bsend a message\b/, /\bnew message\b/, /\bcompose message\b/], reply: ["Opening messages to send a message.", "Taking you to send a message."], actions: [{ type: "navigate", path: "/messages", label: "Send Message" }] },
+  { id: "messages", patterns: [/\bmessages?\b/, /\binbox\b/, /\bdms?\b/, /\bchat\b/], reply: ["Opening messages.", "Taking you to your inbox."], actions: [{ type: "navigate", path: "/messages", label: "Messages" }] },
   { id: "notifications", patterns: [/\bnotifications?\b/, /\bbell\b/, /\balerts?\b/], reply: ["Opening notifications.", "Checking your notifications."], actions: [{ type: "navigate", path: "/notifications", label: "Notifications" }] },
+
+  // Profile / account / subscription
+  { id: "change_profile_picture", patterns: [/\bchange profile picture\b/, /\bchange avatar\b/, /\bupdate profile picture\b/, /\bupdate avatar\b/, /\bprofile picture\b/, /\bavatar\b/], reply: ["Opening profile so you can change your profile picture.", "Taking you to change your profile picture."], actions: [{ type: "open_profile" }, { type: "navigate", path: "/creator-dashboard?studioTab=profile", label: "Change Profile Picture" }] },
+  { id: "edit_profile", patterns: [/\bedit profile\b/, /\bupdate profile\b/], reply: ["Opening profile editor.", "Taking you to edit your profile."], actions: [{ type: "open_profile" }, { type: "navigate", path: "/creator-dashboard?studioTab=profile", label: "Edit Profile" }] },
   { id: "profile", patterns: [/\bmy profile\b/, /\bprofile\b/], reply: ["Opening your profile.", "Taking you to your profile."], actions: [{ type: "open_profile" }, { type: "navigate", path: "/creator-dashboard?studioTab=profile", label: "My Profile" }] },
-  { id: "account", patterns: [/\baccount\b/, /\bsubscription\b/, /\bmanage subscription\b/, /\baccount settings\b/], reply: ["Opening account settings.", "Taking you to your account."], actions: [{ type: "navigate", path: "/account", label: "Account" }] },
+  { id: "manage_subscription", patterns: [/\bmanage subscription\b/, /\bmanage subscriptions\b/], reply: ["Opening account to manage your subscription.", "Taking you to manage your subscription."], actions: [{ type: "navigate", path: "/account", label: "Manage Subscription" }] },
+  { id: "cancel_subscription", patterns: [/\bcancel subscription\b/, /\bunsubscribe\b/, /\bend subscription\b/], reply: ["Opening account to cancel your subscription.", "Taking you to cancel your subscription."], actions: [{ type: "navigate", path: "/account", label: "Cancel Subscription" }] },
+  { id: "change_password", patterns: [/\bchange password\b/, /\bupdate password\b/, /\bnew password\b/, /\breset password\b/, /\bforgot password\b/], reply: ["Opening password reset/change.", "Taking you to change your password."], actions: [{ type: "navigate", path: "/forgot-password", label: "Change Password" }] },
+  { id: "account", patterns: [/\baccount\b/, /\baccount settings\b/], reply: ["Opening account settings.", "Taking you to your account."], actions: [{ type: "navigate", path: "/account", label: "Account" }] },
+
   { id: "my_list", patterns: [/\bmy list\b/, /\bwatchlist\b/, /\bsaved\b/, /\bfavorites?\b/], reply: ["Opening My List.", "Taking you to your saved list."], actions: [{ type: "navigate", path: "/my-list", label: "My List" }] },
-  { id: "merch", patterns: [/\bmerch(andise)?\b/, /\bshop\b/, /\bstore\b/, /\bcreators market\b/, /\bmarket\b/], reply: ["Opening the Creators Market / shop.", "Taking you to merchandise."], actions: [{ type: "navigate", path: "/merchandise", label: "Merchandise" }] },
   { id: "creators", patterns: [/\bcreators?\b/, /\bfind creators?\b/, /\bbrowse creators?\b/], reply: ["Opening creators.", "Taking you to creators."], actions: [{ type: "navigate", path: "/creators", label: "Creators" }] },
   { id: "tv", patterns: [/\btv\b/, /\blive tv\b/], reply: ["Opening TV.", "Taking you to TV."], actions: [{ type: "navigate", path: "/tv", label: "TV" }] },
   { id: "books", patterns: [/\bbooks?\b/], reply: ["Opening Books.", "Taking you to Books."], actions: [{ type: "navigate", path: "/books", label: "Books" }] },
@@ -47,25 +64,26 @@ const COMMANDS: Cmd[] = [
   { id: "terms", patterns: [/\bterms\b/, /\bprivacy\b/, /\bpolicy\b/], reply: ["Opening Terms.", "Taking you to terms."], actions: [{ type: "navigate", path: "/terms", label: "Terms" }] },
   { id: "login", patterns: [/\blog ?in\b/, /\bsign ?in\b/], reply: ["Opening login.", "Taking you to sign in."], actions: [{ type: "navigate", path: "/login", label: "Log in" }] },
   { id: "signup", patterns: [/\bsign ?up\b/, /\bregister\b/, /\bcreate account\b/], reply: ["Opening sign up.", "Taking you to create an account."], actions: [{ type: "navigate", path: "/signup", label: "Sign up" }] },
-  { id: "forgot", patterns: [/\bforgot password\b/, /\breset password\b/], reply: ["Opening password reset.", "Taking you to reset your password."], actions: [{ type: "navigate", path: "/forgot-password", label: "Forgot Password" }] },
 
-  // Creator dashboard / studio
+  // Creator dashboard / studio (requested keywords mapped explicitly)
   { id: "dashboard", patterns: [/\bcreator dashboard\b/, /\bcreator studio\b/, /\bdashboard\b/, /\bstudio\b/], reply: ["Opening Creator Dashboard.", "Taking you to Creator Studio."], actions: [{ type: "navigate", path: "/creator-dashboard", label: "Creator Dashboard" }] },
-  { id: "upload", patterns: [/\bupload\b/, /\bpost video\b/, /\bnew video\b/, /\bcreate video\b/], reply: ["Opening upload.", "Taking you to upload."], actions: [{ type: "open_upload", mediaType: "video" }, { type: "navigate", path: "/creator-dashboard/upload", label: "Upload" }] },
-  { id: "upload_short", patterns: [/\bupload short\b/, /\bpost short\b/, /\bnew short\b/, /\bcreate short\b/, /\bupload reel\b/], reply: ["Opening short upload.", "Taking you to upload a short."], actions: [{ type: "open_upload", mediaType: "short" }, { type: "navigate", path: "/creator-dashboard/upload?type=short", label: "Upload Short" }] },
-  { id: "upload_podcast", patterns: [/\bupload podcast\b/, /\bpost podcast\b/, /\bnew podcast\b/, /\bcreate podcast\b/], reply: ["Opening podcast upload.", "Taking you to upload a podcast."], actions: [{ type: "open_upload", mediaType: "podcast" }, { type: "navigate", path: "/creator-dashboard/upload?type=podcast", label: "Upload Podcast" }] },
-  { id: "upload_doc", patterns: [/\bupload documentary\b/, /\bpost documentary\b/, /\bnew documentary\b/, /\bcreate documentary\b/], reply: ["Opening documentary upload.", "Taking you to upload a documentary."], actions: [{ type: "open_upload", mediaType: "documentary" }, { type: "navigate", path: "/creator-dashboard/upload?type=documentary", label: "Upload Documentary" }] },
-  { id: "go_live", patterns: [/\bgo live\b/, /\bstart live\b/, /\blive stream\b/, /\bstart stream\b/], reply: ["Opening Go Live.", "Taking you to start a live stream."], actions: [{ type: "navigate", path: "/creator-dashboard/live", label: "Go Live" }] },
-  { id: "manage_content", patterns: [/\bmanage content\b/, /\bmy videos\b/, /\bmy uploads\b/, /\bmanage videos\b/, /\bedit videos\b/], reply: ["Opening Manage Content.", "Taking you to manage your content."], actions: [{ type: "navigate", path: "/creator-dashboard/manage-content", label: "Manage Content" }] },
-  { id: "creator_orders", patterns: [/\bcreator orders\b/, /\bseller orders\b/, /\bshop orders\b/], reply: ["Opening creator/shop orders.", "Taking you to creator orders."], actions: [{ type: "navigate", path: "/creator-dashboard/orders", label: "Creator Orders" }] },
-  { id: "creator_shop", patterns: [/\bcreator shop\b/, /\bmy shop\b/, /\bmanage shop\b/, /\bshop settings\b/], reply: ["Opening your creator shop.", "Taking you to shop management."], actions: [{ type: "navigate", path: "/creator-dashboard/shop", label: "Creator Shop" }] },
+  { id: "upload_short", patterns: [/\bupload short\b/, /\bpost short\b/, /\bnew short\b/, /\bcreate short\b/, /\bupload reel\b/], reply: ["Opening Upload Short.", "Taking you to upload a short."], actions: [{ type: "open_upload", mediaType: "short" }, { type: "navigate", path: "/creator-dashboard/upload?type=short", label: "Upload Short" }] },
+  { id: "upload_podcast", patterns: [/\bupload podcast\b/, /\bpost podcast\b/, /\bnew podcast\b/, /\bcreate podcast\b/], reply: ["Opening Upload Podcast.", "Taking you to upload a podcast."], actions: [{ type: "open_upload", mediaType: "podcast" }, { type: "navigate", path: "/creator-dashboard/upload?type=podcast", label: "Upload Podcast" }] },
+  { id: "upload_video", patterns: [/\bupload video\b/, /\bpost video\b/, /\bnew video\b/, /\bcreate video\b/], reply: ["Opening Upload Video.", "Taking you to upload a video."], actions: [{ type: "open_upload", mediaType: "video" }, { type: "navigate", path: "/creator-dashboard/upload", label: "Upload Video" }] },
+  { id: "upload", patterns: [/\bupload\b/], reply: ["Opening upload.", "Taking you to upload."], actions: [{ type: "open_upload", mediaType: "video" }, { type: "navigate", path: "/creator-dashboard/upload", label: "Upload" }] },
+  { id: "go_live", patterns: [/\bgo live\b/, /\bstart live\b/, /\blive\b/, /\blive stream\b/, /\bstart stream\b/], reply: ["Opening Go Live.", "Taking you to go live."], actions: [{ type: "navigate", path: "/creator-dashboard/live", label: "Go Live" }] },
+  { id: "add_item", patterns: [/\badd item\b/, /\bnew item\b/, /\badd product\b/, /\bnew product\b/], reply: ["Opening shop to add an item.", "Taking you to add an item."], actions: [{ type: "navigate", path: "/creator-dashboard/shop", label: "Add Item" }] },
+  { id: "import_video", patterns: [/\bimport video\b/, /\bimport videos\b/, /\bimport\b/], reply: ["Opening Import Video.", "Taking you to import video."], actions: [{ type: "navigate", path: "/creator-dashboard/import", label: "Import Video" }] },
+  { id: "edit_video", patterns: [/\bedit video\b/, /\bedit videos\b/], reply: ["Opening Manage Videos to edit videos.", "Taking you to edit videos."], actions: [{ type: "navigate", path: "/creator-dashboard/manage-content", label: "Edit Video" }] },
+  { id: "manage_videos", patterns: [/\bmanage videos\b/, /\bmanage video\b/, /\bmanage content\b/, /\bmy videos\b/, /\bmy uploads\b/], reply: ["Opening Manage Videos.", "Taking you to manage videos."], actions: [{ type: "navigate", path: "/creator-dashboard/manage-content", label: "Manage Videos" }] },
+  { id: "manage_shop", patterns: [/\bmanage shop\b/, /\bmy shop\b/, /\bcreator shop\b/, /\bshop settings\b/], reply: ["Opening Manage Shop.", "Taking you to manage your shop."], actions: [{ type: "navigate", path: "/creator-dashboard/shop", label: "Manage Shop" }] },
+  { id: "merch", patterns: [/\bmerch(andise)?\b/, /\bshop\b/, /\bstore\b/, /\bcreators market\b/, /\bmarket\b/], reply: ["Opening the shop/merchandise.", "Taking you to merchandise."], actions: [{ type: "navigate", path: "/merchandise", label: "Merchandise" }] },
   { id: "customize_shop", patterns: [/\bcustomize shop\b/, /\bshop customize\b/], reply: ["Opening shop customization.", "Taking you to customize your shop."], actions: [{ type: "navigate", path: "/creator-dashboard/shop/customize", label: "Customize Shop" }] },
-  { id: "import", patterns: [/\bimport\b/, /\bimport videos\b/], reply: ["Opening import.", "Taking you to import content."], actions: [{ type: "navigate", path: "/creator-dashboard/import", label: "Import" }] },
+  { id: "change_theme", patterns: [/\bchange theme\b/, /\btheme\b/, /\bcustomize theme\b/, /\bstudio theme\b/], reply: ["Opening Change Theme.", "Taking you to change your theme."], actions: [{ type: "navigate", path: "/creator-dashboard/theme", label: "Change Theme" }] },
+  { id: "subscriptions", patterns: [/\bsubscriptions?\b/, /\bsubscribers?\b/], reply: ["Opening Subscriptions.", "Taking you to subscriptions."], actions: [{ type: "navigate", path: "/creator-dashboard/subscriptions", label: "Subscriptions" }] },
   { id: "fix_posters", patterns: [/\bfix posters?\b/, /\bposters?\b/, /\bthumbnails? fix\b/], reply: ["Opening Fix Posters.", "Taking you to fix posters."], actions: [{ type: "navigate", path: "/creator-dashboard/fix-posters", label: "Fix Posters" }] },
-  { id: "creator_settings", patterns: [/\bcreator settings\b/, /\bstudio settings\b/, /\bdashboard settings\b/], reply: ["Opening creator settings.", "Taking you to creator settings."], actions: [{ type: "navigate", path: "/creator-dashboard/settings", label: "Creator Settings" }] },
-  { id: "creator_theme", patterns: [/\btheme\b/, /\bcustomize theme\b/, /\bstudio theme\b/], reply: ["Opening theme settings.", "Taking you to customize your theme."], actions: [{ type: "navigate", path: "/creator-dashboard/theme", label: "Theme" }] },
-  { id: "subscriptions", patterns: [/\bsubscriptions?\b/, /\bsubscribers?\b/], reply: ["Opening subscriptions.", "Taking you to subscriptions."], actions: [{ type: "navigate", path: "/creator-dashboard/subscriptions", label: "Subscriptions" }] },
   { id: "security_billing", patterns: [/\bsecurity\b/, /\bbilling\b/, /\bsecurity and billing\b/], reply: ["Opening security & billing.", "Taking you to security and billing."], actions: [{ type: "navigate", path: "/creator-dashboard/security-billing", label: "Security & Billing" }] },
+  { id: "creator_settings", patterns: [/\bcreator settings\b/, /\bstudio settings\b/, /\bdashboard settings\b/], reply: ["Opening creator settings.", "Taking you to creator settings."], actions: [{ type: "navigate", path: "/creator-dashboard/settings", label: "Creator Settings" }] },
 ];
 
 function heuristicActions(message: string): { reply: string; actions: AssistantAction[] } {
@@ -128,14 +146,14 @@ function heuristicActions(message: string): { reply: string; actions: AssistantA
 
   return {
     reply: pick([
-      "I can control and navigate Trooflix. Try: open create menu, go live, upload, manage content, add credits, orders, messages, notifications, profile, merch, search, or on Reels try “open comments”, “like this”, “send tip”, “share this”, “next reel”, “refresh”, “go back”. What do you want to do?",
-      "I’m your app master — I can open pages/buttons and trigger actions like create menu, comments, like/tip/share on the current reel, navigation, refresh, and more. Tell me what you need.",
+      "I can do a lot in Trooflix. Try keywords like: upload video, upload podcast, upload short, go live, add item, edit profile, change theme, manage videos, edit video, import video, manage shop, orders, manage orders, subscriptions, manage subscription, change password, cancel subscription, add credits, withdraw credits, send credits, send message, change profile picture.",
+      "Tell me what you want and I’ll link you there. Keywords I understand: upload video/podcast/short, go live, add item, edit profile, change theme, manage videos, edit video, import video, manage shop, orders, manage orders, subscriptions, manage subscription, change password, cancel subscription, add credits, withdraw credits, send credits, send message, change profile picture.",
     ]),
     actions: [
-      { type: "ui", action: "open_create_menu", label: "Open Create Menu" },
-      { type: "navigate", path: "/feed", label: "Open Reels" },
+      { type: "navigate", path: "/creator-dashboard/upload", label: "Upload Video" },
+      { type: "navigate", path: "/creator-dashboard/live", label: "Go Live" },
       { type: "navigate", path: "/wallet?topup=true", label: "Add Credits" },
-      { type: "navigate", path: "/creator-dashboard", label: "Creator Dashboard" },
+      { type: "navigate", path: "/messages", label: "Send Message" },
     ],
   };
 }
