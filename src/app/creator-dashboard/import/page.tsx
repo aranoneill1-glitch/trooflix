@@ -239,54 +239,85 @@ export default function ImportPage() {
         );
       }
 
-      let count = 0;
+      const total = videoKeys.length;
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      const concurrency = Math.min(isMobile ? 2 : 3, total);
+      const records: any[] = [];
+      const perFileProgress: number[] = new Array(total).fill(0);
+      let completed = 0;
+      let failed = 0;
+      let cursor = 0;
 
-      for (let i = 0; i < videoKeys.length; i++) {
-        const key = videoKeys[i];
-        const videoData = unzipped[key];
-        const fileName = key.split("/").pop() || "video.mp4";
-        const caption = captionMap.get(fileName.toLowerCase()) || "";
-        const meta = getTitleAndType(key, source, caption);
-        const ext = (fileName.split(".").pop() || "mp4").toLowerCase();
-        const mime = ext === "mov" ? "video/quicktime" : ext === "m4v" ? "video/x-m4v" : "video/mp4";
+      const processOne = async (index: number) => {
+        try {
+          const key = videoKeys[index];
+          const videoData = unzipped[key];
+          const fileName = key.split("/").pop() || "video.mp4";
+          const caption = captionMap.get(fileName.toLowerCase()) || "";
+          const meta = getTitleAndType(key, source, caption);
+          const ext = (fileName.split(".").pop() || "mp4").toLowerCase();
+          const mime = ext === "mov" ? "video/quicktime" : ext === "m4v" ? "video/x-m4v" : "video/mp4";
 
-        const blob = new Blob([videoData], { type: mime });
-        const videoFile = new File([blob], fileName, { type: mime });
+          const blob = new Blob([videoData], { type: mime });
+          const videoFile = new File([blob], fileName, { type: mime });
 
-        // Preview image is generated from the video itself before uploading.
-        setStatus(`Generating preview ${i + 1} of ${videoKeys.length}: ${meta.title}`);
-        const thumbBlob = await captureThumbnail(blob);
-        const thumbUrl = thumbBlob ? await uploadThumbnail(thumbBlob) : null;
+          // Preview capture and video upload happen at the same time.
+          const [thumbUrl, upload] = await Promise.all([
+            captureThumbnail(blob).then((b) => (b ? uploadThumbnail(b) : null)),
+            r2MultipartUpload(videoFile, {
+              folder: "videos",
+              onProgress: (p) => {
+                perFileProgress[index] = p;
+                const sum = perFileProgress.reduce((a, b) => a + b, 0);
+                setProgress(Math.min(99, Math.round(15 + (sum / total) * 80)));
+              },
+            }),
+          ]);
 
-        setStatus(`Uploading ${i + 1} of ${videoKeys.length}: ${meta.title}`);
-        const { publicUrl } = await r2MultipartUpload(videoFile, {
-          folder: "videos",
-          onProgress: (p) => {
-            const overall = 15 + ((i / videoKeys.length) * 80) + ((p / 100) * (80 / videoKeys.length));
-            setProgress(Math.min(99, Math.round(overall)));
-          },
-        });
-
-        await fetch("/api/save-video", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
+          records.push({
             title: meta.title,
             description: meta.description,
             category: "Documentary",
             visibility: "public",
             type: meta.type,
             uploaderUserId: user.id,
-            videoUrl: publicUrl,
+            videoUrl: upload.publicUrl,
             ...(thumbUrl ? { posterUrl: thumbUrl, backdropUrl: thumbUrl } : {}),
             feed_visible: false,
-          }),
-        });
+          });
+        } catch (err) {
+          console.error("Import failed for", videoKeys[index], err);
+          failed++;
+        } finally {
+          completed++;
+          setStatus(`Processed ${completed} of ${total}`);
+        }
+      };
 
-        count++;
+      // Several files in flight at once; each file's two uploads are parallel too.
+      const workers = Array.from({ length: concurrency }, async () => {
+        while (cursor < total) {
+          const index = cursor++;
+          await processOne(index);
+        }
+      });
+      await Promise.all(workers);
+
+      if (records.length > 0) {
+        setStatus("Saving your library...");
+        const saveRes = await fetch("/api/save-video", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ uploaderUserId: user.id, videos: records }),
+        });
+        if (!saveRes.ok) {
+          const err = await saveRes.json().catch(() => ({}));
+          throw new Error(err.error || "Could not save imported videos");
+        }
       }
 
-      setImportedCount(count);
+      if (failed > 0) console.warn(`${failed} file(s) failed to import`);
+      setImportedCount(records.length);
       setProgress(100);
       setStatus("Import complete!");
       setTimeout(() => {

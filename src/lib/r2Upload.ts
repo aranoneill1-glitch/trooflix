@@ -35,18 +35,35 @@ export async function r2MultipartUpload(
     if (opts.onProgress) opts.onProgress(Math.min(99, Math.round((loaded / file.size) * 100)));
   };
 
+  // Sign all parts in one request instead of a server round-trip per chunk.
+  const partNumbers = Array.from({ length: totalParts }, (_, i) => i + 1);
+  let signedUrls: Record<number, string> = {};
+  try {
+    const batchRes = await apiFetch("/api/upload/multipart", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "sign-batch", key, uploadId, partNumbers }),
+    });
+    if (batchRes.ok) signedUrls = (await batchRes.json()).urls || {};
+  } catch {
+    // Fall back to signing parts individually below.
+  }
+
   const uploadOne = async (partNumber: number) => {
     const start = (partNumber - 1) * partSize;
     const blob = file.slice(start, Math.min(start + partSize, file.size));
     if (blob.size === 0) throw new Error(`Chunk ${partNumber} is empty.`);
 
-    const signRes = await apiFetch("/api/upload/multipart", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "sign", key, uploadId, partNumber }),
-    });
-    if (!signRes.ok) throw new Error(`Sign failed for part ${partNumber}`);
-    const { url } = await signRes.json();
+    let url = signedUrls[partNumber];
+    if (!url) {
+      const signRes = await apiFetch("/api/upload/multipart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "sign", key, uploadId, partNumber }),
+      });
+      if (!signRes.ok) throw new Error(`Sign failed for part ${partNumber}`);
+      url = (await signRes.json()).url;
+    }
 
     const etag = await putPart(url, blob, (loaded) => { partLoaded[partNumber] = loaded; report(); });
     parts.push({ PartNumber: partNumber, ETag: etag });

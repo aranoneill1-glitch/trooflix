@@ -45,6 +45,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ url });
     }
 
+    if (action === "sign-batch") {
+      const partNumbers: number[] = (body.partNumbers || [])
+        .map((n: any) => Number(n))
+        .filter((n: number) => Number.isInteger(n) && n > 0);
+      if (!partNumbers.length) return NextResponse.json({ error: "No part numbers" }, { status: 400 });
+      const urls: Record<number, string> = {};
+      await Promise.all(partNumbers.map(async (partNumber) => {
+        urls[partNumber] = await getSignedUrl(S3, new UploadPartCommand({
+          Bucket: BUCKET, Key: body.key, UploadId: body.uploadId, PartNumber: partNumber,
+        }), { expiresIn: 3600 });
+      }));
+      return NextResponse.json({ urls });
+    }
+
     if (action === "complete") {
       const parts = (body.parts as any[])
         .map((p) => ({ PartNumber: p.PartNumber, ETag: p.ETag }))
