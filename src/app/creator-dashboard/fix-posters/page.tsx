@@ -30,7 +30,6 @@ type BatchState = {
 const newItemState = (): ItemState => ({ saving: false, done: false, capturing: false });
 const newBatchState = (): BatchState => ({ running: false, done: 0, total: 0, current: "", failed: [] });
 
-// A generated /api/poster text image does not count as a real thumbnail.
 function needsThumbnail(v: any): boolean {
   const p = String(v.posterUrl || "").trim();
   return !p || p.includes("/api/poster");
@@ -90,18 +89,15 @@ export default function FixPostersPage() {
     if (s?.previewUrl?.startsWith("blob:")) URL.revokeObjectURL(s.previewUrl);
   };
 
-  // Grab a frame from the first 2 seconds so it loads fast.
-  const grabFrame = (video: any): Promise<Blob> => {
+  // Decode a frame from a source URL. Uses metadata-only preload + a 2s seek.
+  const frameFromSource = (src: string, timeoutMs = 25000): Promise<Blob> => {
     return new Promise((resolve, reject) => {
-      const source = video.videoUrl || video.bitchuteUrl;
-      if (!source) { reject(new Error("No playable video file")); return; }
-
       const el = document.createElement("video");
-      el.src = "/api/proxy-video?url=" + encodeURIComponent(source);
+      el.src = src;
       el.crossOrigin = "anonymous";
       el.muted = true;
       el.playsInline = true;
-      el.preload = "auto";
+      el.preload = "metadata";
 
       let settled = false;
       const finish = () => {
@@ -113,14 +109,12 @@ export default function FixPostersPage() {
       };
       const fail = (msg: string) => { finish(); reject(new Error(msg)); };
 
-      const timer = setTimeout(() => fail("Video took too long to load"), 30000);
+      const timer = setTimeout(() => fail("Video took too long to load"), timeoutMs);
 
       el.onloadedmetadata = () => {
         try {
-          const t = Number.isFinite(el.duration)
-            ? Math.min(2, Math.max(0.1, el.duration))
-            : 2;
-          el.currentTime = t;
+          const d = el.duration;
+          el.currentTime = Number.isFinite(d) ? Math.min(2, Math.max(0.1, d)) : 2;
         } catch {
           fail("Could not seek the video");
         }
@@ -152,56 +146,110 @@ export default function FixPostersPage() {
     });
   };
 
-  const uploadAndSave = async (video: any, blob: Blob) => {
-    const file = new File([blob], `thumb-${video.id}.jpg`, {
-      type: blob.type || "image/jpeg",
+  // Pull only the first few MB through the proxy into a same-origin blob, so
+  // decoding never depends on a long-running proxied stream or R2 CORS.
+  const grabFrame = async (video: any): Promise<Blob> => {
+    const source = video.videoUrl || video.bitchuteUrl;
+    if (!source) throw new Error("No playable video file");
+
+    const proxyUrl = "/api/proxy-video?url=" + encodeURIComponent(source);
+    let objectUrl: string | null = null;
+
+    try {
+      const res = await fetch(proxyUrl, { headers: { Range: "bytes=0-5000000" } });
+      if (res.ok || res.status === 206) {
+        const blob = await res.blob();
+        if (blob.size > 1024) objectUrl = URL.createObjectURL(blob);
+      }
+    } catch {}
+
+    try {
+      // Short timeout for the partial blob — if it can't seek, fall back fast.
+      return await frameFromSource(objectUrl || proxyUrl, objectUrl ? 8000 : 25000);
+    } catch (e) {
+      if (objectUrl) return await frameFromSource(proxyUrl);
+      throw e;
+    } finally {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    }
+  };
+
+  const uploadImage = async (blob: Blob): Promise<string> => {
+    const file = new File([blob], `thumb-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`, {
+      type: "image/jpeg",
     });
     const fd = new FormData();
     fd.append("file", file);
+    const res = await fetch("/api/upload-image", { method: "POST", body: fd });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.publicUrl) throw new Error(data.error || "Image upload failed");
+    return data.publicUrl;
+  };
 
-    const up = await fetch("/api/upload-image", { method: "POST", body: fd });
-    const upData = await up.json().catch(() => ({}));
-    if (!up.ok || !upData.publicUrl) {
-      throw new Error(upData.error || "Image upload failed");
-    }
-
-    const upd = await fetch("/api/videos/update", {
+  const updateVideos = async (updates: { id: number; posterUrl: string }[]) => {
+    if (updates.length === 0) return;
+    const res = await fetch("/api/videos/update", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: video.id, posterUrl: upData.publicUrl }),
+      body: JSON.stringify({ updates }),
     });
-    if (!upd.ok) {
-      const err = await upd.json().catch(() => ({}));
-      throw new Error(err.error || "Could not save the thumbnail");
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || "Could not save thumbnails");
     }
     invalidateVideosCache();
   };
 
-  // Batch: capture + save every missing thumbnail automatically.
+  // Batch: capture + save every missing thumbnail, several at a time.
   const captureAll = async () => {
     if (batch.running || videos.length === 0) return;
     const queue = [...videos];
-    setBatch({ running: true, done: 0, total: queue.length, current: "", failed: [] });
+    const total = queue.length;
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const concurrency = Math.min(isMobile ? 2 : 3, total);
+    const successes: { id: number; posterUrl: string }[] = [];
+    const succeededIds = new Set<number>();
+    let cursor = 0;
 
-    for (let i = 0; i < queue.length; i++) {
-      const v = queue[i];
-      setBatch((prev) => ({ ...prev, current: v.title, done: i }));
-      try {
-        const blob = await grabFrame(v);
-        await uploadAndSave(v, blob);
-        releasePreview(v.id);
-        patch(v.id, { done: true, previewUrl: undefined, blob: undefined, error: undefined });
-        setVideos((prev) => prev.filter((x) => x.id !== v.id));
-      } catch (e: any) {
-        const message = e?.message || "Failed";
-        setBatch((prev) => ({
-          ...prev,
-          failed: [...prev.failed, { title: v.title, error: message }],
-        }));
-        patch(v.id, { error: message });
+    setBatch({ running: true, done: 0, total, current: "", failed: [] });
+
+    const worker = async () => {
+      while (cursor < total) {
+        const v = queue[cursor++];
+        setBatch((prev) => ({ ...prev, current: v.title }));
+        try {
+          const blob = await grabFrame(v);
+          const posterUrl = await uploadImage(blob);
+          successes.push({ id: v.id, posterUrl });
+          succeededIds.add(v.id);
+        } catch (e: any) {
+          const message = e?.message || "Failed";
+          setBatch((prev) => ({
+            ...prev,
+            failed: [...prev.failed, { title: v.title, error: message }],
+          }));
+        } finally {
+          setBatch((prev) => ({ ...prev, done: prev.done + 1 }));
+        }
       }
-      setBatch((prev) => ({ ...prev, done: i + 1 }));
+    };
+
+    await Promise.all(Array.from({ length: concurrency }, () => worker()));
+
+    try {
+      await updateVideos(successes);
+      successes.forEach((s) => {
+        releasePreview(s.id);
+        patch(s.id, { done: true, previewUrl: undefined, blob: undefined, error: undefined });
+      });
+      setVideos((prev) => prev.filter((v) => !succeededIds.has(v.id)));
+    } catch (e: any) {
+      setBatch((prev) => ({
+        ...prev,
+        failed: [...prev.failed, { title: "Saving thumbnails", error: e?.message || "Failed" }],
+      }));
     }
+
     setBatch((prev) => ({ ...prev, running: false, current: "" }));
   };
 
@@ -236,7 +284,8 @@ export default function FixPostersPage() {
     if (!s?.blob || s.saving) return;
     patch(video.id, { saving: true, error: undefined });
     try {
-      await uploadAndSave(video, s.blob);
+      const posterUrl = await uploadImage(s.blob);
+      await updateVideos([{ id: video.id, posterUrl }]);
       releasePreview(video.id);
       patch(video.id, { saving: false, done: true, previewUrl: undefined, blob: undefined });
       setTimeout(() => setVideos((prev) => prev.filter((v) => v.id !== video.id)), 1000);
@@ -288,7 +337,6 @@ export default function FixPostersPage() {
           </div>
         ) : (
           <>
-            {/* BATCH CAPTURE ALL */}
             <div className="mb-8 bg-[#1c1c1e] border border-[#E53945]/30 rounded-2xl p-5 md:p-6 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
                 <div>
@@ -363,17 +411,11 @@ export default function FixPostersPage() {
                     <div className="flex flex-col md:flex-row gap-4">
                       <div className="w-full md:w-56 aspect-video rounded-xl overflow-hidden bg-black shrink-0 relative flex items-center justify-center">
                         {s.previewUrl ? (
-                          <img
-                            src={s.previewUrl}
-                            alt="Thumbnail preview"
-                            className="w-full h-full object-cover"
-                          />
+                          <img src={s.previewUrl} alt="Thumbnail preview" className="w-full h-full object-cover" />
                         ) : (
                           <div className="flex flex-col items-center gap-2 text-white/25">
                             <ImageIcon size={30} />
-                            <span className="text-[10px] font-semibold uppercase tracking-wider">
-                              No thumbnail yet
-                            </span>
+                            <span className="text-[10px] font-semibold uppercase tracking-wider">No thumbnail yet</span>
                           </div>
                         )}
                         {s.capturing && (
@@ -390,20 +432,14 @@ export default function FixPostersPage() {
                       </div>
 
                       <div className="flex-1 min-w-0 flex flex-col">
-                        <h2 className="text-base font-bold text-white leading-tight mb-1">
-                          {video.title}
-                        </h2>
+                        <h2 className="text-base font-bold text-white leading-tight mb-1">{video.title}</h2>
                         <p className="text-[11px] text-white/40 mb-4">
                           {video.type || "Video"}
                           {video.duration ? ` · ${video.duration}` : ""}
                         </p>
 
                         <div className="flex flex-wrap items-center gap-2">
-                          <label
-                            className={`cursor-pointer inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition ${
-                              s.saving ? "opacity-50 pointer-events-none" : ""
-                            }`}
-                          >
+                          <label className={`cursor-pointer inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition ${s.saving ? "opacity-50 pointer-events-none" : ""}`}>
                             <Upload size={15} className="text-[#E53945]" /> Upload image
                             <input
                               id={`thumb-input-${video.id}`}
@@ -420,11 +456,7 @@ export default function FixPostersPage() {
                             title={canCapture ? "Grab a frame from the video" : "No playable video file"}
                             className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 disabled:opacity-40 border border-white/20 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition"
                           >
-                            {s.capturing ? (
-                              <Loader2 size={15} className="animate-spin" />
-                            ) : (
-                              <VideoIcon size={15} className="text-blue-400" />
-                            )}
+                            {s.capturing ? <Loader2 size={15} className="animate-spin" /> : <VideoIcon size={15} className="text-blue-400" />}
                             {s.previewUrl ? "Capture again" : "Capture frame"}
                           </button>
                           {s.previewUrl && !s.done && (
@@ -434,11 +466,7 @@ export default function FixPostersPage() {
                               disabled={s.saving}
                               className="inline-flex items-center gap-2 bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold text-xs px-4 py-2 rounded-xl transition"
                             >
-                              {s.saving ? (
-                                <Loader2 size={15} className="animate-spin" />
-                              ) : (
-                                <CheckCircle2 size={15} />
-                              )}
+                              {s.saving ? <Loader2 size={15} className="animate-spin" /> : <CheckCircle2 size={15} />}
                               {s.saving ? "Saving..." : "Use this thumbnail"}
                             </button>
                           )}
@@ -450,9 +478,7 @@ export default function FixPostersPage() {
                           </p>
                         )}
                         {!s.previewUrl && !s.error && (
-                          <p className="mt-3 text-[11px] text-white/35">
-                            Pick one of the options above to preview it first.
-                          </p>
+                          <p className="mt-3 text-[11px] text-white/35">Pick one of the options above to preview it first.</p>
                         )}
                       </div>
                     </div>
