@@ -580,23 +580,32 @@ export default function PublicProfilePage() {
                   <button key={tab} onClick={() => setActiveContentTab(tab)} className={`pb-3 text-sm font-bold transition-colors ${activeContentTab === tab ? "text-white border-b-2 border-[#E53945]" : "text-white/50 hover:text-white"}`}>{tab}</button>
                 ))}
               </div>
-              {activeContentTab !== "Shorts" && activeContentTab !== "Videos" && (
-                <div className="flex items-center gap-1 mb-2">
-                  <button onClick={() => setContentView("grid")} aria-label="Grid view" className={`p-1.5 transition ${contentView === "grid" ? "text-white" : "text-white/40 hover:text-white"}`}><LayoutGrid size={18} /></button>
-                  <button onClick={() => setContentView("list")} aria-label="List view" className={`p-1.5 transition ${contentView === "list" ? "text-white" : "text-white/40 hover:text-white"}`}><List size={18} /></button>
-                </div>
-              )}
+              <div className="flex items-center gap-1 mb-2">
+                <button onClick={() => setContentView("grid")} aria-label="Grid view" className={`p-1.5 transition ${contentView === "grid" ? "text-white" : "text-white/40 hover:text-white"}`}><LayoutGrid size={18} /></button>
+                <button onClick={() => setContentView("list")} aria-label="List view" className={`p-1.5 transition ${contentView === "list" ? "text-white" : "text-white/40 hover:text-white"}`}><List size={18} /></button>
+              </div>
             </div>
 
             <div className="w-full">
               {activeContentTab === "Shorts" && (
                 filteredVideos.length === 0 ? (
                   <div className="py-20 text-center text-white/50">No Shorts yet.</div>
-                ) : (
+                ) : contentView === "grid" ? (
                   <div className="-mx-4 sm:-mx-4 lg:mx-0 grid grid-cols-3 gap-[2px] pb-20 sm:gap-1 lg:grid-cols-6 lg:gap-3">
                     {filteredVideos.map((video) => (
                       <Link key={video.id} href={`/feed?creator_user_id=${encodeURIComponent(profile.user_id)}${resolvedCreatorId ? `&creator_id=${resolvedCreatorId}` : ""}&reel=${video.id}`} aria-label={`Watch ${video.title}`} className="group relative aspect-[3/4] overflow-hidden bg-[#111114] lg:rounded-xl lg:border lg:border-white/10 lg:shadow-lg">
                         <ShortPreviewFrame src={video.videoUrl || video.bitchuteUrl} poster={video.posterUrl || video.backdropUrl} alt="" />
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2 pb-20">
+                    {filteredVideos.map((video) => (
+                      <Link key={video.id} href={`/feed?creator_user_id=${encodeURIComponent(profile.user_id)}${resolvedCreatorId ? `&creator_id=${resolvedCreatorId}` : ""}&reel=${video.id}`} className="flex items-center gap-3 bg-[#1c1c1e] border border-white/10 hover:bg-[#242426] rounded-xl p-2 transition">
+                        <div className="w-14 aspect-[3/4] rounded-lg overflow-hidden shrink-0 bg-black">
+                          <ShortPreviewFrame src={video.videoUrl || video.bitchuteUrl} poster={video.posterUrl || video.backdropUrl} alt="" />
+                        </div>
+                        <span className="text-sm font-bold text-white truncate">{video.title}</span>
                       </Link>
                     ))}
                   </div>
@@ -607,7 +616,7 @@ export default function PublicProfilePage() {
                 <div className="w-full">
                   {filteredVideos.length === 0 ? (
                     <div className="text-center py-20 text-white/50">No premium content yet.</div>
-                  ) : (
+                  ) : contentView === "grid" ? (
                     <div className="grid grid-cols-3 gap-4">
                       {filteredVideos.map((video) => (
                         <div key={video.id} className="bg-[#1c1c1e] border border-white/10 rounded-2xl overflow-hidden group cursor-pointer relative">
@@ -619,6 +628,18 @@ export default function PublicProfilePage() {
                             </div>
                           </div>
                           <div className="p-3 text-left opacity-50"><h3 className="text-sm font-bold leading-tight line-clamp-1">{video.title}</h3></div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-2 pb-20">
+                      {filteredVideos.map((video) => (
+                        <div key={video.id} className="flex items-center gap-3 bg-[#1c1c1e] border border-white/10 rounded-xl p-2 cursor-pointer hover:bg-[#242426] transition">
+                          <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 bg-black">
+                            <img src={video.posterUrl || video.backdropUrl} alt="" className="w-full h-full object-cover" />
+                          </div>
+                          <span className="text-sm font-bold text-white truncate flex-1 min-w-0">{video.title}</span>
+                          <Lock size={14} className="text-[#E53945] shrink-0" />
                         </div>
                       ))}
                     </div>
@@ -704,7 +725,7 @@ export default function PublicProfilePage() {
                 <div className="w-full">
                   {filteredVideos.length === 0 ? (
                     <div className="text-center py-20 text-white/50">No videos found yet.</div>
-                  ) : (
+                  ) : contentView === "grid" ? (
                     <div className="-mx-4 sm:-mx-4 lg:mx-0 grid grid-cols-3 gap-[2px] pb-20 sm:gap-1 lg:grid-cols-6 lg:gap-3">
                       {filteredVideos.map((video) => {
                         const isPodcast = String(video.type || "").toLowerCase() === "podcast";
@@ -714,6 +735,21 @@ export default function PublicProfilePage() {
                             <div className="absolute top-2 left-2 p-1.5 rounded-lg bg-black/60 backdrop-blur-sm border border-white/10 text-white shadow-md" title={isPodcast ? "Podcast" : "Long video"}>
                               {isPodcast ? <Mic size={13} /> : <Film size={13} />}
                             </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-2 pb-20">
+                      {filteredVideos.map((video) => {
+                        const isPodcast = String(video.type || "").toLowerCase() === "podcast";
+                        return (
+                          <div key={video.id} className="flex items-center gap-3 bg-[#1c1c1e] border border-white/10 rounded-xl p-2 cursor-pointer hover:bg-[#242426] transition">
+                            <div className="w-14 aspect-[3/4] rounded-lg overflow-hidden shrink-0 bg-black">
+                              <img src={video.posterUrl || video.backdropUrl} alt="" className="w-full h-full object-cover" />
+                            </div>
+                            <span className="text-sm font-bold text-white truncate flex-1 min-w-0">{video.title}</span>
+                            {isPodcast ? <Mic size={14} className="text-white/60 shrink-0" /> : <Film size={14} className="text-white/60 shrink-0" />}
                           </div>
                         );
                       })}
