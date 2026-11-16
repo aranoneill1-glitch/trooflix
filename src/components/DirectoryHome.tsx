@@ -374,7 +374,7 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
               );
               return (
                 <Link key={v.id} href={`/feed?reel=${v.id}`} className="flex flex-col w-[86px] md:w-[110px] shrink-0 group">
-                  <div className="relative w-full aspect-[9/16] rounded-xl overflow-hidden ring-1 ring-white/10 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]">
+                  <div className="relative w-full aspect-[9/16] rounded-md overflow-hidden ring-1 ring-white/10 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]">
                     {(v.videoUrl || v.bitchuteUrl) ? (
                       <VideoPreview
                         src={v.videoUrl || v.bitchuteUrl}
