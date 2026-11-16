@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import { getCachedUser } from "@/lib/cache";
+import { getCachedUser, invalidateVideosCache } from "@/lib/cache";
 import { motion, AnimatePresence } from "framer-motion";
 
 const CATEGORIES = ["Documentaries","Podcasts","Independent Films","Books","History","Politics & Geopolitics","War & Conflict","True Crime & Justice","Conspiracy & Mystery","Society & Culture","Business & Finance","Science & Technology","Environment & Nature","Religion & Spirituality","Ancient Civilisation","Comedy","News","Gaming","Medicine"];
@@ -137,6 +137,7 @@ export default function ManageContentPage() {
         }),
       });
       if (res.ok) {
+        invalidateVideosCache();
         setVideos(prev => prev.map(v => v.id === editingVideo.id ? { ...v, title: editTitle, description: editDescription, category: editCategory, type: editType, visibility: editVisibility } : v));
         setEditingVideo(null);
       } else {
@@ -155,6 +156,7 @@ export default function ManageContentPage() {
     try {
       const res = await fetch(`/api/user/posts?id=${videoId}&userId=${userId}`, { method: "DELETE" });
       if (res.ok) {
+        invalidateVideosCache();
         setVideos((prev) => prev.filter((v) => v.id !== videoId));
         setActiveMenuId(null);
       } else {
