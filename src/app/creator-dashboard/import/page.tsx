@@ -144,113 +144,6 @@ export default function ImportPage() {
     };
   };
 
-  // Detect an all-black / flat frame so we can keep sampling later timestamps.
-  const isBlankFrame = (ctx: CanvasRenderingContext2D, w: number, h: number) => {
-    try {
-      const data = ctx.getImageData(0, 0, Math.min(64, w), Math.min(64, h)).data;
-      let sum = 0;
-      let sumSq = 0;
-      const n = data.length / 4;
-      for (let i = 0; i < data.length; i += 4) {
-        const lum = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-        sum += lum;
-        sumSq += lum * lum;
-      }
-      const mean = sum / n;
-      const variance = sumSq / n - mean * mean;
-      return mean < 12 || variance < 60;
-    } catch {
-      return false;
-    }
-  };
-
-  // Grab a usable preview frame locally. Starts at 30s (instant for a local
-  // blob), then samples other timestamps only if that frame is blank.
-  const captureThumbnail = (blob: Blob): Promise<Blob | null> => {
-    return new Promise((resolve) => {
-      const url = URL.createObjectURL(blob);
-      const el = document.createElement("video");
-      const times = [30, 45, 60, 90, 120, 20, 10, 5, 2];
-      let done = false;
-      let idx = 0;
-      let lastBlob: Blob | null = null;
-
-      const finish = (result: Blob | null) => {
-        if (done) return;
-        done = true;
-        clearTimeout(timer);
-        try { el.pause(); } catch {}
-        try { el.removeAttribute("src"); el.load(); } catch {}
-        URL.revokeObjectURL(url);
-        resolve(result);
-      };
-
-      el.src = url;
-      el.muted = true;
-      el.playsInline = true;
-      el.preload = "auto";
-      const timer = setTimeout(() => finish(lastBlob), 45000);
-
-      el.onloadedmetadata = () => {
-        try {
-          const d = el.duration;
-          el.currentTime = Number.isFinite(d) ? Math.min(times[0], Math.max(0.1, d)) : times[0];
-        } catch {
-          finish(null);
-        }
-      };
-
-      el.onseeked = () => {
-        // Small delay so the decoded frame is actually painted before drawing.
-        setTimeout(() => {
-          if (done) return;
-          try {
-            const vw = el.videoWidth || 1280;
-            const vh = el.videoHeight || 720;
-            const scale = Math.min(1, 1280 / vw);
-            const canvas = document.createElement("canvas");
-            canvas.width = Math.round(vw * scale);
-            canvas.height = Math.round(vh * scale);
-            const ctx = canvas.getContext("2d", { willReadFrequently: true });
-            if (!ctx) { finish(lastBlob); return; }
-            ctx.drawImage(el, 0, 0, canvas.width, canvas.height);
-            const blank = isBlankFrame(ctx, canvas.width, canvas.height);
-
-            canvas.toBlob((b) => {
-              if (b) lastBlob = b;
-              if (!blank || idx >= times.length - 1) { finish(b || lastBlob); return; }
-
-              const duration = el.duration;
-              let next = times[++idx];
-              while (idx < times.length - 1 && Number.isFinite(duration) && next >= duration - 0.2) {
-                next = times[++idx];
-              }
-              if (Number.isFinite(duration) && next >= duration - 0.2) { finish(lastBlob); return; }
-              try { el.currentTime = next; } catch { finish(lastBlob); }
-            }, "image/jpeg", 0.82);
-          } catch {
-            finish(lastBlob);
-          }
-        }, 40);
-      };
-
-      el.onerror = () => finish(lastBlob);
-    });
-  };
-
-  const uploadThumbnail = async (blob: Blob): Promise<string | null> => {
-    try {
-      const file = new File([blob], `thumb-${Date.now()}.jpg`, { type: "image/jpeg" });
-      const fd = new FormData();
-      fd.append("file", file);
-      const res = await fetch("/api/upload-image", { method: "POST", body: fd });
-      const data = await res.json().catch(() => ({}));
-      return res.ok && data.publicUrl ? data.publicUrl : null;
-    } catch {
-      return null;
-    }
-  };
-
   const startImport = async () => {
     if (!file || !source) return;
     setProcessing(true);
@@ -301,18 +194,14 @@ export default function ImportPage() {
           const blob = new Blob([videoData], { type: mime });
           const videoFile = new File([blob], fileName, { type: mime });
 
-          // Preview capture and video upload happen at the same time.
-          const [thumbUrl, upload] = await Promise.all([
-            captureThumbnail(blob).then((b) => (b ? uploadThumbnail(b) : null)),
-            r2MultipartUpload(videoFile, {
-              folder: "videos",
-              onProgress: (p) => {
-                perFileProgress[index] = p;
-                const sum = perFileProgress.reduce((a, b) => a + b, 0);
-                setProgress(Math.min(99, Math.round(15 + (sum / total) * 80)));
-              },
-            }),
-          ]);
+          const upload = await r2MultipartUpload(videoFile, {
+            folder: "videos",
+            onProgress: (p) => {
+              perFileProgress[index] = p;
+              const sum = perFileProgress.reduce((a, b) => a + b, 0);
+              setProgress(Math.min(99, Math.round(15 + (sum / total) * 80)));
+            },
+          });
 
           records.push({
             title: meta.title,
@@ -322,7 +211,6 @@ export default function ImportPage() {
             type: meta.type,
             uploaderUserId: user.id,
             videoUrl: upload.publicUrl,
-            ...(thumbUrl ? { posterUrl: thumbUrl, backdropUrl: thumbUrl } : {}),
             feed_visible: false,
           });
         } catch (err) {
@@ -448,7 +336,7 @@ export default function ImportPage() {
                   <li className="flex gap-3"><span className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center shrink-0">1</span><p>Open Instagram → <strong>Settings and privacy</strong> → <strong>Accounts Center</strong>.</p></li>
                   <li className="flex gap-3"><span className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center shrink-0">2</span><p>Go to <strong>Your information and permissions</strong> → <strong>Download your information</strong>.</p></li>
                   <li className="flex gap-3"><span className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center shrink-0">3</span><p>Select your Instagram account and include posts/reels/videos (or all available info), then choose <strong>Download to device</strong>.</p></li>
-                  <li className="flex gap-3"><span className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center shrink-0">4</span><p>When ready, download the .zip export and upload it here. Captions and preview images are generated automatically.</p></li>
+                  <li className="flex gap-3"><span className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center shrink-0">4</span><p>When ready, download the .zip export and upload it here. Videos and their captions are imported automatically.</p></li>
                 </ol>
               </>
             )}

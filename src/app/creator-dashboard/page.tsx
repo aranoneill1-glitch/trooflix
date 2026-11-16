@@ -1,5 +1,5 @@
 "use client";
-import { ChevronRight , Tag, MoreVertical , Download, Sparkles, Wallet , MessageCircle } from "lucide-react";
+import { ChevronRight , Tag, MoreVertical , Download, Wallet , MessageCircle } from "lucide-react";
 
 import { useEffect, useState, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
@@ -821,14 +821,6 @@ function CreatorDashboardContent() {
               <div className="flex items-center text-sm font-bold text-[#E53945]">Open Tool <ChevronRight size={16} className="ml-1" /></div>
             </Link>
 
-            <Link href="/creator-dashboard/fix-posters" className="bg-white/[0.03] border border-white/10 rounded-3xl hover:bg-white/[0.08] p-6 group hover:border-orange-500/50 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-              <div className="w-12 h-12 rounded-2xl bg-orange-500/20 flex items-center justify-center mb-6">
-                <Sparkles className="text-orange-400" size={24} />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">Auto-Fix Posters</h3>
-              <p className="text-sm text-white/50">Grab frames from your videos to use as posters.</p>
-            </Link>
-
             <Link href="/creator-dashboard/settings" className="bg-white/[0.03] border border-white/10 rounded-3xl hover:bg-white/[0.08] p-6 group hover:border-blue-500/50 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
               <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center mb-6">
                 <Pencil className="text-blue-400" size={24} />
@@ -1249,12 +1241,6 @@ function CreatorDashboardContent() {
                   className="w-full py-4 text-center font-bold text-white bg-white/5 hover:bg-white/10 rounded-xl transition"
                 >
                   Edit
-                </button>
-                <button
-                  onClick={() => { const v = selectedVideoAction; setSelectedVideoAction(null); window.location.href = `/creator-dashboard/fix-posters?video=${v.id}`; }}
-                  className="w-full py-4 text-center font-bold text-white bg-white/5 hover:bg-white/10 rounded-xl transition"
-                >
-                  Change preview
                 </button>
                 <button
                   onClick={() => deleteVideo(selectedVideoAction)}
