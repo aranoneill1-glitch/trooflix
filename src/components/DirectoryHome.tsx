@@ -6,14 +6,62 @@ import { BookOpen, Eye, Play, ShoppingBag, Volume2, VolumeX, Maximize2 } from "l
 import { AnimatePresence, motion } from "framer-motion";
 
 
-function VideoPreview({ poster, className }: { src?: string, poster?: string, className?: string }) {
-  // Shelf cards show the poster image only — no autoplaying video preview.
+function VideoPreview({ src, poster, className, playable = false, showMute = false }: { src?: string; poster?: string; className?: string; playable?: boolean; showMute?: boolean }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [inView, setInView] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [muted, setMuted] = useState(true);
+
+  useEffect(() => {
+    if (!playable || !containerRef.current) return;
+    if (typeof IntersectionObserver === "undefined") { setInView(true); return; }
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { rootMargin: "100px", threshold: 0.15 }
+    );
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [playable]);
+
+  useEffect(() => {
+    if (!playable || !inView) return;
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = muted;
+    v.play().then(() => setIsPlaying(true)).catch(() => {});
+    return () => { v.pause(); setIsPlaying(false); };
+  }, [playable, inView, muted]);
+
   return (
-    <div className="absolute inset-0">
+    <div ref={containerRef} className="absolute inset-0">
       {poster ? (
         <img src={poster} alt="" className={`absolute inset-0 w-full h-full object-cover ${className || ""}`} loading="lazy" />
       ) : (
         <div className="absolute inset-0 bg-white/5" />
+      )}
+      {playable && src && inView && (
+        <video
+          ref={videoRef}
+          src={src}
+          muted={muted}
+          playsInline
+          loop
+          preload="metadata"
+          onPlaying={() => setIsPlaying(true)}
+          onPause={() => setIsPlaying(false)}
+          className={`${className || ""} absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${isPlaying ? "opacity-100" : "opacity-0"}`}
+        />
+      )}
+      {showMute && src && (
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); setMuted((m) => !m); }}
+          aria-label={muted ? "Unmute preview" : "Mute preview"}
+          className="absolute bottom-1.5 right-1.5 z-10 flex h-6 w-6 items-center justify-center rounded-full border border-white/20 bg-black/60 text-white backdrop-blur-sm transition hover:bg-black/80"
+        >
+          {muted ? <VolumeX size={12} /> : <Volume2 size={12} />}
+        </button>
       )}
     </div>
   );
@@ -481,20 +529,24 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
         />
         <div className="flex overflow-x-auto gap-3 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
           {latestVideos.map((v: any) => (
-            <button
+            <div
               key={v.id}
-              type="button"
+              role="button"
+              tabIndex={0}
               onClick={() => onVideoSelect(v)}
-              className="block w-[130px] md:w-[160px] shrink-0 group text-left"
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onVideoSelect(v); } }}
+              className="block w-[130px] md:w-[160px] shrink-0 group text-left cursor-pointer"
             >
-              <div className="relative w-full aspect-[9/16] rounded-md overflow-hidden ring-1 ring-white/10 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]">
+              <div className="relative w-full aspect-[9/16] rounded-2xl overflow-hidden ring-1 ring-white/10 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]">
                 <VideoPreview
                   src={v.videoUrl || v.bitchuteUrl}
                   poster={v.posterUrl || v.backdropUrl}
                   className="transition duration-700 ease-out group-hover:scale-[1.04]"
+                  playable
+                  showMute
                 />
               </div>
-            </button>
+            </div>
           ))}
         </div>
       </section>
