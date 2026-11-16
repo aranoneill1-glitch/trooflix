@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { BookOpen, CirclePlay, Clock, Eye, Film, Mic, Play, ShoppingBag, Star, UsersRound } from "lucide-react";
+import { BookOpen, CirclePlay, Clock, Eye, Film, Mic, Play, ShoppingBag, Star, UsersRound, Volume2, VolumeX, Maximize2 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 
 
@@ -164,28 +164,122 @@ export function FeaturedVideoHero({ videos, className = "", activeIndex: control
     else setInternalIndex(next);
   };
 
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [playing, setPlaying] = useState(false);
+  const [muted, setMuted] = useState(true);
+  const [remaining, setRemaining] = useState(0);
+
   useEffect(() => {
-    if (videos.length < 2) return;
+    setPlaying(false);
+    setMuted(true);
+    setRemaining(0);
+    const el = videoRef.current;
+    if (el) { try { el.pause(); } catch {} }
+  }, [videoId(videos, activeIndex)]);
+
+  useEffect(() => {
+    if (videos.length < 2 || playing) return;
     const timer = window.setInterval(() => {
       setActiveIndex((activeIndex + 1) % videos.length);
     }, 9000);
     return () => window.clearInterval(timer);
-  }, [videos.length, activeIndex]);
+  }, [videos.length, activeIndex, playing]);
 
   if (!videos.length) return null;
   const video = videos[activeIndex % videos.length];
   const image = video.posterUrl || video.backdropUrl;
   const previewSrc = video.videoUrl || video.bitchuteUrl;
+  const canPlay = !!previewSrc;
+
+  const startPlayback = () => {
+    if (!canPlay) return;
+    setPlaying(true);
+    const el = videoRef.current;
+    if (!el) return;
+    el.muted = muted;
+    const attempt = el.play();
+    if (attempt && typeof attempt.catch === "function") attempt.catch(() => {});
+  };
 
   return (
-    <section aria-label="Featured videos" className={`relative isolate w-screen left-1/2 -translate-x-1/2 aspect-video overflow-hidden bg-[#08090c] md:mt-0 ${className}`}>
-      <AnimatePresence mode="wait">
-        <motion.div key={video.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.7 }} className="absolute inset-0 -z-20">
-          <HeroPreviewFrame src={previewSrc} poster={image} alt={video.title || ""} />
-        </motion.div>
-      </AnimatePresence>
+    <section
+      aria-label="Featured videos"
+      onClick={playing ? undefined : startPlayback}
+      className={`relative isolate w-screen left-1/2 -translate-x-1/2 aspect-video overflow-hidden bg-[#08090c] md:mt-0 ${canPlay && !playing ? "cursor-pointer" : ""} ${className}`}
+    >
+      <img
+        src={image}
+        alt=""
+        className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${playing ? "opacity-0" : "opacity-100"}`}
+      />
+      <video
+        ref={videoRef}
+        src={playing ? previewSrc : undefined}
+        poster={image}
+        muted={muted}
+        playsInline
+        preload="none"
+        onLoadedMetadata={(e) => setRemaining(e.currentTarget.duration || 0)}
+        onTimeUpdate={(e) => {
+          const el = e.currentTarget;
+          setRemaining(Math.max(0, Math.floor((el.duration || 0) - el.currentTime)));
+        }}
+        onEnded={() => setPlaying(false)}
+        className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${playing ? "opacity-100" : "opacity-0"}`}
+      />
+
+      {playing && (
+        <>
+          <span className="absolute bottom-3 left-4 z-10 text-xs font-bold tabular-nums text-white drop-shadow-md md:bottom-5 md:left-8 md:text-sm">
+            {formatCountdown(remaining)}
+          </span>
+
+          <div className="absolute bottom-3 right-4 z-10 flex flex-col items-end gap-2 md:bottom-5 md:right-8">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setMuted((m) => {
+                  const next = !m;
+                  if (videoRef.current) videoRef.current.muted = next;
+                  return next;
+                });
+              }}
+              aria-label={muted ? "Unmute" : "Mute"}
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-black/45 text-white backdrop-blur-md transition hover:bg-black/65"
+            >
+              {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                const el = videoRef.current;
+                if (!el) return;
+                const request = (el as any).requestFullscreen || (el as any).webkitRequestFullscreen;
+                if (request) request.call(el).catch?.(() => {});
+              }}
+              aria-label="Fullscreen"
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/45 text-white backdrop-blur-md transition hover:bg-black/65"
+            >
+              <Maximize2 size={17} />
+            </button>
+          </div>
+        </>
+      )}
     </section>
   );
+}
+
+function videoId(videos: any[], index: number) {
+  return videos.length ? videos[index % videos.length]?.id : null;
+}
+
+function formatCountdown(seconds: number) {
+  if (!Number.isFinite(seconds) || seconds <= 0) return "0:00";
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
 export default function DirectoryHome({ videos, creators, featuredVideos, onVideoSelect, continueWatching = [], flushTop = false }: { videos: any[], creators: any[], featuredVideos: any[], onVideoSelect: (video: any) => void, continueWatching?: any[], flushTop?: boolean }) {
