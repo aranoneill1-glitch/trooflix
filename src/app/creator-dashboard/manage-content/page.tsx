@@ -6,7 +6,7 @@ import Link from "next/link";
 import { 
   Plus, Search, Video, Mic, Eye, Heart, 
   MoreVertical, Pencil, Trash2, Play, LayoutGrid, List, 
-  FileText, Crown, Clock, Globe, Lock, ChevronLeft, X, Radio, Star, Sparkles
+  FileText, Crown, Clock, Globe, Lock, ChevronLeft, X, Radio, Star, Sparkles, Image as ImageIcon
 } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
@@ -113,6 +113,18 @@ export default function ManageContentPage() {
     return type !== "short" && type !== "reel" && type !== "tweet" && video.visibility !== "premium" && video.is_premium !== true;
   };
 
+  // A generated /api/poster text image is not a real thumbnail.
+  const isRealImage = (url?: string) => {
+    const u = String(url || "").trim();
+    return !!u && !u.includes("/api/poster");
+  };
+  const posterSrcFor = (video: VideoType) => {
+    if (isRealImage(video.posterUrl)) return video.posterUrl;
+    if (isRealImage(video.backdropUrl)) return video.backdropUrl;
+    return null;
+  };
+  const missingThumbnails = videos.filter((v) => !posterSrcFor(v)).length;
+
   const saveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSavingEdit(true);
@@ -206,13 +218,42 @@ export default function ManageContentPage() {
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <Link href="/creator-dashboard/fix-posters" className="flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs sm:text-sm px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-full transition-all whitespace-nowrap">
-              <Sparkles size={16} className="text-[#E53945]" /> Auto-Fix Posters
+              <Sparkles size={16} className="text-[#E53945]" /> Pick Thumbnails
+              {missingThumbnails > 0 && (
+                <span className="ml-0.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-[#E53945] text-[10px] font-black text-white">
+                  {missingThumbnails}
+                </span>
+              )}
             </Link>
             <button onClick={() => setShowAddContentMenu(true)} className="flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs sm:text-sm px-4 py-2 sm:px-5 sm:py-2.5 rounded-full transition-all whitespace-nowrap shadow-lg shrink-0">
               <Plus size={16} className="text-[#E53945]" /> Upload New
             </button>
           </div>
         </div>
+
+        {/* THUMBNAIL GENERATOR — top call-to-action */}
+        <Link
+          href="/creator-dashboard/fix-posters"
+          className="relative block mb-8 overflow-hidden rounded-3xl border border-[#E53945]/30 bg-gradient-to-br from-[#E53945]/15 via-[#1c1c1e] to-[#1c1c1e] p-5 sm:p-6 hover:border-[#E53945]/60 transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+        >
+          <div className="absolute -right-10 -top-10 w-40 h-40 bg-[#E53945]/10 rounded-full blur-2xl group-hover:scale-125 transition-transform duration-700" />
+          <div className="relative flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-[#E53945]/20 border border-[#E53945]/30 flex items-center justify-center shrink-0">
+              <ImageIcon size={24} className="text-[#E53945]" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h2 className="text-base sm:text-lg font-black text-white">Thumbnail Generator</h2>
+              <p className="text-xs sm:text-sm text-white/55 mt-0.5">
+                {missingThumbnails > 0
+                  ? `${missingThumbnails} of your videos ${missingThumbnails === 1 ? "doesn't" : "don't"} have a real thumbnail. Generate or upload one now.`
+                  : "All your videos have thumbnails. Open the generator to replace any of them anytime."}
+              </p>
+            </div>
+            <span className="inline-flex items-center gap-2 bg-[#E53945] text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-xl group-hover:bg-[#d12e39] transition shrink-0">
+              <Sparkles size={16} /> {missingThumbnails > 0 ? "Generate thumbnails" : "Open generator"}
+            </span>
+          </div>
+        </Link>
 
         {/* STATS BAR */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
@@ -317,8 +358,17 @@ export default function ManageContentPage() {
                 
                 {/* Thumbnail */}
                 <div className="relative aspect-video bg-black rounded-t-2xl overflow-hidden">
-                  <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
+                  {posterSrcFor(video) ? (
+                    <img src={posterSrcFor(video) as string} alt={video.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  ) : (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-[#242428] to-[#121214]">
+                      <ImageIcon size={28} className="text-white/30" />
+                      <Link href={`/creator-dashboard/fix-posters?video=${video.id}`} onClick={(e) => e.stopPropagation()} className="text-[11px] font-bold text-[#F06A72] hover:text-white transition">
+                        Pick thumbnail
+                      </Link>
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors pointer-events-none" />
                   
                   {/* Type Badge */}
                   <div className={`absolute top-3 left-3 text-white text-[10px] font-bold px-2 py-1 rounded-md ${video.type?.toLowerCase() === 'podcast' ? 'bg-blue-500/80' : 'bg-[#E53945]/80'}`}>
@@ -368,6 +418,9 @@ export default function ManageContentPage() {
                           <button onClick={() => openEditModal(video)} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-white hover:bg-white/10 transition text-left">
                             <Pencil size={14} /> Edit
                           </button>
+                          <Link href={`/creator-dashboard/fix-posters?video=${video.id}`} onClick={() => setActiveMenuId(null)} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-white hover:bg-white/10 transition text-left">
+                            <ImageIcon size={14} /> Pick Thumbnail
+                          </Link>
                           {canBeProfileFeature(video) && <button onClick={() => setAsProfileFeature(video)} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-white hover:bg-white/10 transition text-left"><Star size={14} /> Set as profile feature</button>}
                           <button className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-white hover:bg-white/10 transition text-left">
                             <Eye size={14} /> View
@@ -392,7 +445,14 @@ export default function ManageContentPage() {
                 
                 {/* Thumbnail */}
                 <div className="w-24 md:w-32 aspect-video rounded-lg overflow-hidden bg-black shrink-0 relative">
-                  <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover" />
+                  {posterSrcFor(video) ? (
+                    <img src={posterSrcFor(video) as string} alt={video.title} className="w-full h-full object-cover" />
+                  ) : (
+                    <Link href={`/creator-dashboard/fix-posters?video=${video.id}`} className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-gradient-to-br from-[#242428] to-[#121214]" title="Pick a thumbnail">
+                      <ImageIcon size={20} className="text-white/30" />
+                      <span className="text-[9px] font-bold text-[#F06A72] leading-tight text-center px-1">Pick<br />thumb</span>
+                    </Link>
+                  )}
                   <div className={`absolute top-1 left-1 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-sm ${video.type?.toLowerCase() === 'podcast' ? 'bg-blue-500' : 'bg-[#E53945]'}`}>
                     {video.type || "VIDEO"}
                   </div>
@@ -430,6 +490,9 @@ export default function ManageContentPage() {
                         <button onClick={() => openEditModal(video)} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-white hover:bg-white/10 transition text-left">
                           <Pencil size={14} /> Edit
                         </button>
+                        <Link href={`/creator-dashboard/fix-posters?video=${video.id}`} onClick={() => setActiveMenuId(null)} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-white hover:bg-white/10 transition text-left">
+                          <ImageIcon size={14} /> Pick Thumbnail
+                        </Link>
                         {canBeProfileFeature(video) && <button onClick={() => setAsProfileFeature(video)} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-white hover:bg-white/10 transition text-left"><Star size={14} /> Set as profile feature</button>}
                         <button onClick={() => handleDelete(video.id)} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 transition text-left">
                           <Trash2 size={14} /> Delete

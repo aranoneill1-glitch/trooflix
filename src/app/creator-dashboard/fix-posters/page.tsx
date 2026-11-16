@@ -1,210 +1,364 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
-import { ArrowLeft, Image as ImageIcon, CheckCircle2, Loader2, Sparkles } from "lucide-react";
+import {
+  ArrowLeft, Image as ImageIcon, CheckCircle2, Loader2, Sparkles,
+  Upload, Video as VideoIcon, AlertCircle,
+} from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import { getCachedUser } from "@/lib/cache";
+import { getCachedUser, invalidateVideosCache } from "@/lib/cache";
+
+type ItemState = {
+  previewUrl?: string;
+  blob?: Blob;
+  saving: boolean;
+  done: boolean;
+  error?: string;
+  capturing: boolean;
+};
+
+const newItemState = (): ItemState => ({ saving: false, done: false, capturing: false });
+
+// A generated /api/poster text image does not count as a real thumbnail.
+function needsThumbnail(v: any): boolean {
+  const p = String(v.posterUrl || "").trim();
+  return !p || p.includes("/api/poster");
+}
 
 export default function FixPostersPage() {
   const [videos, setVideos] = useState<any[]>([]);
+  const [states, setStates] = useState<Record<number, ItemState>>({});
   const [loading, setLoading] = useState(true);
-  const [processing, setProcessing] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [currentTitle, setCurrentTitle] = useState("");
-  const [results, setResults] = useState<{ id: number, success: boolean }[]>([]);
+  const [focusId, setFocusId] = useState<string | null>(null);
+  const statesRef = useRef<Record<number, ItemState>>({});
+  statesRef.current = states;
 
   useEffect(() => {
-    async function load() {
+    const focus = new URLSearchParams(window.location.search).get("video");
+    setFocusId(focus);
+
+    (async () => {
       const user = await getCachedUser();
-      if (!user) return;
-      
-      const res = await fetch("/api/videos");
-      const data = await res.json();
-      
-      // Filter for videos uploaded by this user that have a videoUrl (skip external links)
-      const myVids = Array.isArray(data) ? data.filter((v: any) => 
-        String(v.uploaderUserId) === String(user.id) && (v.videoUrl || v.bitchuteUrl)
-      ) : [];
-      
-      setVideos(myVids);
-      setLoading(false);
-    }
-    load();
+      if (!user) { setLoading(false); return; }
+      try {
+        const res = await fetch("/api/videos", { cache: "no-store" });
+        const data = await res.json();
+        const mine = Array.isArray(data)
+          ? data.filter((v: any) =>
+              String(v.uploaderUserId) === String(user.id) && needsThumbnail(v)
+            )
+          : [];
+        if (focus) {
+          mine.sort((a: any, b: any) =>
+            (String(a.id) === String(focus) ? -1 : 0) -
+            (String(b.id) === String(focus) ? -1 : 0)
+          );
+        }
+        setVideos(mine);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    })();
+
+    return () => {
+      Object.values(statesRef.current).forEach((s) => {
+        if (s?.previewUrl?.startsWith("blob:")) URL.revokeObjectURL(s.previewUrl);
+      });
+    };
   }, []);
 
-  const generatePoster = async (video: any) => {
-    return new Promise<void>((resolve, reject) => {
-      let isFinished = false;
-      
-      const proxyUrl = "/api/proxy-video?url=" + encodeURIComponent(video.videoUrl || video.bitchuteUrl);
-      
-      const vid = document.createElement("video");
-      vid.src = proxyUrl;
-      vid.crossOrigin = "anonymous"; 
-      vid.muted = true;
-      vid.playsInline = true;
-      vid.preload = "auto"; // Force the browser to fetch metadata
+  const patch = useCallback((id: number, next: Partial<ItemState>) => {
+    setStates((prev) => ({ ...prev, [id]: { ...(prev[id] || newItemState()), ...next } }));
+  }, []);
 
-      // 120 second timeout for large files
-      const timeout = setTimeout(() => {
-        if (!isFinished) { isFinished = true; reject(new Error("Timeout (120s) - Video file is too large to process.")); }
-      }, 120000);
-
-      vid.onloadedmetadata = () => {
-        clearTimeout(timeout);
-        const seekTime = Math.min(90, vid.duration / 2) || 1;
-        try { vid.currentTime = seekTime; } catch {}
-      };
-
-      vid.onseeked = async () => {
-        try {
-          const canvas = document.createElement("canvas");
-          canvas.width = vid.videoWidth || 1280;
-          canvas.height = vid.videoHeight || 720;
-          const ctx = canvas.getContext("2d");
-          if (!ctx) throw new Error("Canvas context failed");
-
-          ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
-
-          canvas.toBlob(async (blob) => {
-            if (!blob) {
-              if (!isFinished) { isFinished = true; reject(new Error("Canvas toBlob failed.")); }
-              return;
-            }
-
-            try {
-              const file = new File([blob], "auto-poster.jpg", { type: "image/jpeg" });
-              const formData = new FormData();
-              formData.append("file", file);
-
-              const uploadRes = await fetch("/api/upload-image", {
-                method: "POST",
-                body: formData,
-              });
-
-              if (!uploadRes.ok) throw new Error(`Upload failed (${uploadRes.status})`);
-              const uploadData = await uploadRes.json();
-              const publicUrl = uploadData.publicUrl;
-
-              if (!publicUrl) throw new Error("Upload returned no publicUrl");
-
-              const updateRes = await fetch("/api/videos/update", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ id: video.id, posterUrl: publicUrl }),
-              });
-
-              if (!updateRes.ok) throw new Error(`DB update failed (${updateRes.status})`);
-
-              if (!isFinished) { isFinished = true; resolve(); }
-            } catch (err: any) {
-              if (!isFinished) { isFinished = true; reject(err); }
-            }
-          }, "image/jpeg", 0.85);
-        } catch (e: any) {
-          if (!isFinished) { isFinished = true; reject(e); }
-        }
-      };
-
-      vid.onerror = () => {
-        clearTimeout(timeout);
-        if (!isFinished) { isFinished = true; reject(new Error("Video failed to load via proxy.")); }
-      };
-    });
+  const releasePreview = (id: number) => {
+    const s = statesRef.current[id];
+    if (s?.previewUrl?.startsWith("blob:")) URL.revokeObjectURL(s.previewUrl);
   };
 
-  const startBatch = async () => {
-    setProcessing(true);
-    setResults([]);
-    
-    const newResults: { id: number, success: boolean }[] = [];
-    
-    for (let i = 0; i < videos.length; i++) {
-      const v = videos[i];
-      setCurrentTitle(v.title);
-      setProgress(Math.round(((i) / videos.length) * 100));
-      
-      try {
-        await generatePoster(v);
-        newResults.push({ id: v.id, success: true });
-      } catch (e: any) {
-        console.error("Failed for", v.title, e);
-        alert(`Failed on "${v.title}": ${e.message}`);
-        newResults.push({ id: v.id, success: false });
-      }
+  const onPickFile = (video: any, file?: File) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      patch(video.id, { error: "Please choose an image file." });
+      return;
     }
-    
-    setResults(newResults);
-    setProgress(100);
-    setProcessing(false);
-    setCurrentTitle("");
+    releasePreview(video.id);
+    const url = URL.createObjectURL(file);
+    patch(video.id, { previewUrl: url, blob: file, error: undefined, done: false });
+  };
+
+  const captureFrame = (video: any) => {
+    const source = video.videoUrl || video.bitchuteUrl;
+    if (!source) {
+      patch(video.id, { error: "No playable video file — upload an image instead." });
+      return;
+    }
+    patch(video.id, { capturing: true, error: undefined });
+
+    const el = document.createElement("video");
+    el.src = "/api/proxy-video?url=" + encodeURIComponent(source);
+    el.crossOrigin = "anonymous";
+    el.muted = true;
+    el.playsInline = true;
+    el.preload = "auto";
+
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      try { el.pause(); } catch {}
+      try { el.removeAttribute("src"); el.load(); } catch {}
+    };
+    const fail = (msg: string) => {
+      finish();
+      patch(video.id, { capturing: false, error: msg });
+    };
+
+    const timer = setTimeout(
+      () => fail("Video took too long to load. Upload an image instead."),
+      120000
+    );
+
+    el.onloadedmetadata = () => {
+      try {
+        const t =
+          Number.isFinite(el.duration) && el.duration > 2
+            ? Math.min(90, el.duration / 2)
+            : 0.1;
+        el.currentTime = t;
+      } catch {
+        fail("Could not seek the video. Upload an image instead.");
+      }
+    };
+
+    el.onseeked = () => {
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = el.videoWidth || 1280;
+        canvas.height = el.videoHeight || 720;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) throw new Error("Canvas unavailable");
+        ctx.drawImage(el, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(
+          (blob) => {
+            finish();
+            if (!blob) {
+              patch(video.id, {
+                capturing: false,
+                error: "Could not grab a frame. Upload an image instead.",
+              });
+              return;
+            }
+            releasePreview(video.id);
+            const url = URL.createObjectURL(blob);
+            patch(video.id, {
+              capturing: false,
+              previewUrl: url,
+              blob,
+              error: undefined,
+              done: false,
+            });
+          },
+          "image/jpeg",
+          0.85
+        );
+      } catch (e: any) {
+        fail(e?.message || "Frame capture failed.");
+      }
+    };
+
+    el.onerror = () => fail("Video failed to load. Upload an image instead.");
+  };
+
+  const saveThumbnail = async (video: any) => {
+    const s = statesRef.current[video.id];
+    if (!s?.blob || s.saving) return;
+    patch(video.id, { saving: true, error: undefined });
+    try {
+      const file = new File([s.blob], `thumb-${video.id}.jpg`, {
+        type: s.blob.type || "image/jpeg",
+      });
+      const fd = new FormData();
+      fd.append("file", file);
+
+      const up = await fetch("/api/upload-image", { method: "POST", body: fd });
+      const upData = await up.json().catch(() => ({}));
+      if (!up.ok || !upData.publicUrl) {
+        throw new Error(upData.error || "Image upload failed");
+      }
+
+      const upd = await fetch("/api/videos/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: video.id, posterUrl: upData.publicUrl }),
+      });
+      if (!upd.ok) {
+        const err = await upd.json().catch(() => ({}));
+        throw new Error(err.error || "Could not save the thumbnail");
+      }
+
+      invalidateVideosCache();
+      releasePreview(video.id);
+      patch(video.id, { saving: false, done: true, previewUrl: undefined, blob: undefined });
+      setTimeout(() => setVideos((prev) => prev.filter((v) => v.id !== video.id)), 1000);
+    } catch (e: any) {
+      patch(video.id, { saving: false, error: e?.message || "Save failed" });
+    }
   };
 
   return (
     <main className="min-h-screen bg-[#0a0303] text-white pb-24 font-sans">
       <TopBar />
       <div className="max-w-3xl mx-auto px-4 pt-[calc(env(safe-area-inset-top)+6rem)]">
-        
-        <Link href="/creator-dashboard" className="inline-flex items-center gap-2 text-white/50 hover:text-white mb-8 transition text-sm font-semibold">
-          <ArrowLeft size={16} /> Back to Dashboard
+        <Link
+          href="/creator-dashboard/manage-content"
+          className="inline-flex items-center gap-2 text-white/50 hover:text-white mb-8 transition text-sm font-semibold"
+        >
+          <ArrowLeft size={16} /> Back to Manage Videos
         </Link>
 
         <div className="text-center mb-10">
           <div className="w-16 h-16 mx-auto mb-4 bg-[#E53945]/20 rounded-2xl flex items-center justify-center">
             <Sparkles size={32} className="text-[#E53945]" />
           </div>
-          <h1 className="text-3xl font-black mb-2">Auto-Fix Posters</h1>
-          <p className="text-sm text-white/60">
-            We will scan your existing videos, grab a high-quality frame at the 90-second mark, and set it as the poster.
+          <h1 className="text-3xl font-black mb-2">Pick Thumbnails</h1>
+          <p className="text-sm text-white/60 max-w-md mx-auto">
+            These videos don&apos;t have a real thumbnail yet. Upload an image or grab a
+            frame from the video, preview it, then save.
           </p>
+          {focusId && (
+            <p className="mt-3 text-xs text-[#F06A72] font-semibold">
+              One video was highlighted from Manage Videos.
+            </p>
+          )}
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" /></div>
+          <div className="flex justify-center py-20">
+            <Loader2 className="w-8 h-8 animate-spin text-[#E53945]" />
+          </div>
         ) : videos.length === 0 ? (
           <div className="text-center py-20 bg-[#1c1c1e] border border-white/10 rounded-2xl">
-            <p className="text-white/50">No videos need posters.</p>
+            <CheckCircle2 size={40} className="mx-auto text-green-500 mb-3" />
+            <p className="text-white font-bold">All set — every video has a thumbnail.</p>
           </div>
         ) : (
-          <div className="bg-[#1c1c1e] border border-white/10 rounded-2xl p-6 md:p-8">
-            <div className="flex items-center justify-between mb-6">
-              <p className="text-sm text-white/70">Found <strong className="text-white">{videos.length}</strong> videos to process.</p>
-              <button 
-                onClick={startBatch} 
-                disabled={processing}
-                className="bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold px-6 py-2.5 rounded-xl transition"
-              >
-                {processing ? "Processing..." : "Start Batch"}
-              </button>
-            </div>
-
-            {processing && (
-              <div className="mb-6 p-4 bg-black/40 rounded-xl border border-white/5">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs text-white/60 truncate max-w-[80%]">{currentTitle}</p>
-                  <p className="text-xs font-bold text-[#E53945]">{progress}%</p>
-                </div>
-                <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-                  <div className="h-full bg-[#E53945] transition-all duration-300" style={{ width: progress + "%" }} />
-                </div>
-              </div>
-            )}
-
-            {results.length > 0 && (
-              <div className="space-y-2 max-h-64 overflow-y-auto">
-                {results.map((r, i) => {
-                  const v = videos.find(vid => vid.id === r.id);
-                  return (
-                    <div key={i} className="flex items-center justify-between text-xs p-2 bg-black/20 rounded border border-white/5">
-                      <span className="text-white/70 truncate max-w-[70%]">{v?.title}</span>
-                      {r.success ? <CheckCircle2 size={14} className="text-green-500" /> : <span className="text-red-500">Failed</span>}
+          <div className="space-y-4">
+            {videos.map((video) => {
+              const s = states[video.id] || newItemState();
+              const focused = focusId !== null && String(video.id) === String(focusId);
+              const canCapture = !!(video.videoUrl || video.bitchuteUrl);
+              return (
+                <div
+                  key={video.id}
+                  className={`bg-[#1c1c1e] border rounded-2xl p-4 md:p-5 shadow-[0_8px_32px_rgba(0,0,0,0.4)] ${
+                    focused ? "border-[#E53945]" : "border-white/10"
+                  }`}
+                >
+                  <div className="flex flex-col md:flex-row gap-4">
+                    <div className="w-full md:w-56 aspect-video rounded-xl overflow-hidden bg-black shrink-0 relative flex items-center justify-center">
+                      {s.previewUrl ? (
+                        <img
+                          src={s.previewUrl}
+                          alt="Thumbnail preview"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex flex-col items-center gap-2 text-white/25">
+                          <ImageIcon size={30} />
+                          <span className="text-[10px] font-semibold uppercase tracking-wider">
+                            No thumbnail yet
+                          </span>
+                        </div>
+                      )}
+                      {s.capturing && (
+                        <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
+                          <Loader2 size={26} className="animate-spin text-[#E53945]" />
+                        </div>
+                      )}
+                      {s.done && (
+                        <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center gap-2">
+                          <CheckCircle2 size={30} className="text-green-500" />
+                          <span className="text-xs font-bold text-green-400">Saved</span>
+                        </div>
+                      )}
                     </div>
-                  );
-                })}
-              </div>
-            )}
+
+                    <div className="flex-1 min-w-0 flex flex-col">
+                      <h2 className="text-base font-bold text-white leading-tight mb-1">
+                        {video.title}
+                      </h2>
+                      <p className="text-[11px] text-white/40 mb-4">
+                        {video.type || "Video"}
+                        {video.duration ? ` · ${video.duration}` : ""}
+                      </p>
+
+                      <div className="flex flex-wrap items-center gap-2">
+                        <label
+                          className={`cursor-pointer inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition ${
+                            s.saving ? "opacity-50 pointer-events-none" : ""
+                          }`}
+                        >
+                          <Upload size={15} className="text-[#E53945]" /> Upload image
+                          <input
+                            id={`thumb-input-${video.id}`}
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => onPickFile(video, e.target.files?.[0])}
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => captureFrame(video)}
+                          disabled={!canCapture || s.capturing || s.saving}
+                          title={canCapture ? "Grab a frame from the video" : "No playable video file"}
+                          className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 disabled:opacity-40 border border-white/20 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition"
+                        >
+                          {s.capturing ? (
+                            <Loader2 size={15} className="animate-spin" />
+                          ) : (
+                            <VideoIcon size={15} className="text-blue-400" />
+                          )}
+                          {s.previewUrl ? "Capture again" : "Capture from video"}
+                        </button>
+                        {s.previewUrl && !s.done && (
+                          <button
+                            type="button"
+                            onClick={() => saveThumbnail(video)}
+                            disabled={s.saving}
+                            className="inline-flex items-center gap-2 bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold text-xs px-4 py-2 rounded-xl transition"
+                          >
+                            {s.saving ? (
+                              <Loader2 size={15} className="animate-spin" />
+                            ) : (
+                              <CheckCircle2 size={15} />
+                            )}
+                            {s.saving ? "Saving..." : "Use this thumbnail"}
+                          </button>
+                        )}
+                      </div>
+
+                      {s.error && (
+                        <p className="mt-3 flex items-start gap-1.5 text-[11px] text-red-400">
+                          <AlertCircle size={14} className="shrink-0 mt-0.5" /> {s.error}
+                        </p>
+                      )}
+                      {!s.previewUrl && !s.error && (
+                        <p className="mt-3 text-[11px] text-white/35">
+                          Pick one of the options above to preview it first.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
