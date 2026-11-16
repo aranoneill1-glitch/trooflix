@@ -389,22 +389,37 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
 
       <section className="pt-[calc(env(safe-area-inset-top)+5.5rem)] md:pt-[calc(env(safe-area-inset-top)+7rem)]">
         <div className="max-w-[1600px] mx-auto px-4 md:px-10">
-          <SectionHead title="Shorts" href="/feed" icon={Clapperboard} />
-          <div className="flex overflow-x-auto gap-2 pb-3 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
-            {shortsVideos.map((v: any) => (
-              <Link key={v.id} href={`/feed?reel=${v.id}`} className="block w-[86px] md:w-[110px] shrink-0 group">
-                <div className="relative w-full aspect-[9/16] rounded-md overflow-hidden ring-1 ring-white/10 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]">
-                  {(v.videoUrl || v.bitchuteUrl) ? (
-                    <VideoPreview
-                      src={v.videoUrl || v.bitchuteUrl}
-                      poster={v.posterUrl || v.backdropUrl}
-                      className="transition duration-700 ease-out group-hover:scale-[1.04]"
-                    />
-                  ) : (
-                    <img src={v.posterUrl || v.backdropUrl} alt="" className="absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:scale-[1.04]" />
-                  )}
+          <SectionHead
+            title="Don't miss a thing"
+            href="/latest"
+            icon={Play}
+            onTitleClick={(e) => {
+              if (typeof window !== "undefined" && window.innerWidth < 1024 && latestVideos[0]) {
+                e.preventDefault();
+                onVideoSelect(latestVideos[0]);
+              }
+            }}
+          />
+          <div className="flex overflow-x-auto gap-3 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+            {latestVideos.map((v: any) => (
+              <div
+                key={v.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => onVideoSelect(v)}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onVideoSelect(v); } }}
+                className="block w-[130px] md:w-[160px] shrink-0 group text-left cursor-pointer"
+              >
+                <div className="relative w-full aspect-[9/16] rounded-2xl overflow-hidden ring-1 ring-white/10 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]">
+                  <VideoPreview
+                    src={v.videoUrl || v.bitchuteUrl}
+                    poster={v.posterUrl || v.backdropUrl}
+                    className="transition duration-700 ease-out group-hover:scale-[1.04]"
+                    playable
+                    showMute
+                  />
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         </div>
@@ -468,6 +483,29 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
         )}
       </section>
 
+      <section>
+        <div className="max-w-[1600px] mx-auto px-4 md:px-10">
+          <SectionHead title="Shorts" href="/feed" icon={Clapperboard} />
+          <div className="flex overflow-x-auto gap-2 pb-3 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+            {shortsVideos.map((v: any) => (
+              <Link key={v.id} href={`/feed?reel=${v.id}`} className="block w-[86px] md:w-[110px] shrink-0 group">
+                <div className="relative w-full aspect-[9/16] rounded-md overflow-hidden ring-1 ring-white/10 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]">
+                  {(v.videoUrl || v.bitchuteUrl) ? (
+                    <VideoPreview
+                      src={v.videoUrl || v.bitchuteUrl}
+                      poster={v.posterUrl || v.backdropUrl}
+                      className="transition duration-700 ease-out group-hover:scale-[1.04]"
+                    />
+                  ) : (
+                    <img src={v.posterUrl || v.backdropUrl} alt="" className="absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:scale-[1.04]" />
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <div className="max-w-[1600px] mx-auto px-4 md:px-10 space-y-8 md:space-y-10">
       {continueWatching.length > 0 && (
         <section>
@@ -525,42 +563,6 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
           </div>
         </section>
       )}
-
-      <section>
-        <SectionHead
-          title="Don't miss a thing"
-          href="/latest"
-          icon={Play}
-          onTitleClick={(e) => {
-            if (typeof window !== "undefined" && window.innerWidth < 1024 && latestVideos[0]) {
-              e.preventDefault();
-              onVideoSelect(latestVideos[0]);
-            }
-          }}
-        />
-        <div className="flex overflow-x-auto gap-3 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
-          {latestVideos.map((v: any) => (
-            <div
-              key={v.id}
-              role="button"
-              tabIndex={0}
-              onClick={() => onVideoSelect(v)}
-              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onVideoSelect(v); } }}
-              className="block w-[130px] md:w-[160px] shrink-0 group text-left cursor-pointer"
-            >
-              <div className="relative w-full aspect-[9/16] rounded-2xl overflow-hidden ring-1 ring-white/10 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]">
-                <VideoPreview
-                  src={v.videoUrl || v.bitchuteUrl}
-                  poster={v.posterUrl || v.backdropUrl}
-                  className="transition duration-700 ease-out group-hover:scale-[1.04]"
-                  playable
-                  showMute
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
 
       <section>
         <SectionHead title="Podcasts" href="/latest" icon={Headphones} />
