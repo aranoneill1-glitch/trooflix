@@ -49,7 +49,7 @@ function ShortsMark({ size = 22 }: { size?: number; strokeWidth?: number }) {
   );
 }
 
-function SectionHead({ kicker, title, href, icon: Icon, onTitleClick }: { kicker: string; title: string; href: string; icon: any; onTitleClick?: (e: React.MouseEvent) => void }) {
+function SectionHead({ title, href, icon: Icon, onTitleClick }: { title: string; href: string; icon: any; onTitleClick?: (e: React.MouseEvent) => void }) {
   return (
     <div className="flex items-end justify-between mb-5">
       <button
@@ -60,10 +60,7 @@ function SectionHead({ kicker, title, href, icon: Icon, onTitleClick }: { kicker
         <span className="flex h-7 w-7 shrink-0 items-center justify-center text-[#E53945]">
           <Icon size={22} strokeWidth={2} />
         </span>
-        <div className="min-w-0">
-          <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#E53945] md:text-[11px]">{kicker}</p>
-          <h2 className="text-[21px] font-black tracking-tighter text-white md:text-[28px]">{title}</h2>
-        </div>
+        <h2 className="text-[21px] font-black tracking-tighter text-white md:text-[28px]">{title}</h2>
       </button>
       <Link href={href} onClick={onTitleClick} className="text-[13px] font-medium text-white/45 hover:text-white transition mb-1">
         View all
@@ -360,7 +357,7 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
 
       <section className="pt-[calc(env(safe-area-inset-top)+5.5rem)] md:pt-[calc(env(safe-area-inset-top)+7rem)]">
         <div className="max-w-[1600px] mx-auto px-4 md:px-10">
-          <SectionHead kicker="Spotlight" title="Featured" href="/latest" icon={Star} />
+          <SectionHead title="Featured" href="/latest" icon={Star} />
         </div>
         <FeaturedVideoHero
           videos={featuredVideos}
@@ -409,10 +406,7 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
               <span className="flex h-7 w-7 shrink-0 items-center justify-center text-[#E53945]">
                 <Clock size={22} strokeWidth={2} />
               </span>
-              <div className="min-w-0">
-                <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#E53945] md:text-[11px]">Pick up where you left off</p>
-                <h2 className="text-[21px] font-black tracking-tighter text-white md:text-[28px]">Continue Watching</h2>
-              </div>
+              <h2 className="text-[21px] font-black tracking-tighter text-white md:text-[28px]">Continue Watching</h2>
             </div>
           </div>
           <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
@@ -466,7 +460,6 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
 
       <section>
         <SectionHead
-          kicker="Latest"
           title="Don't miss a thing"
           href="/latest"
           icon={CirclePlay}
@@ -483,7 +476,7 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
       </section>
 
       <section>
-        <SectionHead kicker="Clips" title="Shorts" href="/feed" icon={ShortsMark} />
+        <SectionHead title="Shorts" href="/feed" icon={ShortsMark} />
         <div className="flex overflow-x-auto gap-3 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
           {shortsVideos.map((v: any) => {
             const creator = creators.find((c: any) =>
@@ -527,21 +520,21 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
       </section>
 
       <section>
-        <SectionHead kicker="Audio" title="Podcasts" href="/latest" icon={Mic} />
+        <SectionHead title="Podcasts" href="/latest" icon={Mic} />
         <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
           {podcastVideos.map(renderLongFormCard)}
         </div>
       </section>
 
       <section>
-        <SectionHead kicker="Films" title="Documentaries" href="/latest" icon={Film} />
+        <SectionHead title="Documentaries" href="/latest" icon={Film} />
         <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
           {documentaryVideos.map(renderLongFormCard)}
         </div>
       </section>
 
       <section>
-        <SectionHead kicker="People" title="Discover creators" href="/creators" icon={UsersRound} />
+        <SectionHead title="Discover creators" href="/creators" icon={UsersRound} />
         <div className="flex overflow-x-auto gap-5 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
           {creators.slice(0, 15).map((c: any) => (
             <Link key={c.id} href={`/profile/${c.slug}`} className="flex flex-col items-center shrink-0 w-[104px] md:w-[120px] group">
