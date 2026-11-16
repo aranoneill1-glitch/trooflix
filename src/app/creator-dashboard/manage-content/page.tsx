@@ -40,7 +40,7 @@ export default function ManageContentPage() {
 
   // UI States
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<"All" | "Videos" | "Podcasts" | "Documentaries" | "Premium" | "Drafts">("All");
+  const [activeTab, setActiveTab] = useState<"All" | "Shorts" | "Long Videos">("All");
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [activeMenuId, setActiveMenuId] = useState<number | null>(null);
   const [editingVideo, setEditingVideo] = useState<any>(null);
@@ -176,23 +176,15 @@ export default function ManageContentPage() {
       // 1. Search Filter
       if (searchQuery && !v.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
       
-      // 2. Tab Filter
-      const t = v.type?.toLowerCase();
-      if (activeTab === "Videos") return t !== "tweet" && t !== "short" && t !== "podcast" && t !== "documentary" && v.visibility !== "premium";
-      if (activeTab === "Podcasts") return t === "podcast";
-      if (activeTab === "Documentaries") return t === "documentary";
-      if (activeTab === "Premium") return v.visibility === "premium" || v.is_premium === true; // Or however you flag premium
-      if (activeTab === "Drafts") return false; // Placeholder if you add draft logic
+      // 2. Tab Filter — shorts/reels vs everything else
+      const t = String(v.type || "").toLowerCase();
+      const isShort = t === "short" || t === "reel";
+      if (activeTab === "Shorts") return isShort;
+      if (activeTab === "Long Videos") return !isShort;
       
       return true; // "All"
     });
   }, [videos, searchQuery, activeTab]);
-
-  // Stats Calculation
-  const totalViews = videos.reduce((sum, v) => sum + (v.viewCount || 0), 0);
-  const totalLikes = videos.reduce((sum, v) => sum + (v.likeCount || 0), 0);
-  const totalPodcasts = videos.filter(v => v.type?.toLowerCase() === "podcast").length;
-  const totalDocumentaries = videos.filter(v => v.type?.toLowerCase() === "documentary").length;
 
   if (loading) {
     return (
@@ -255,59 +247,10 @@ export default function ManageContentPage() {
           </div>
         </Link>
 
-        {/* STATS BAR */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
-          <div className="bg-[#1c1c1e] border border-white/5 rounded-2xl p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#E53945]/10 flex items-center justify-center text-[#E53945]">
-              <Video size={18} />
-            </div>
-            <div>
-              <p className="text-xs text-white/50 font-semibold uppercase">Total Videos</p>
-              <p className="text-xl font-black">{videos.length}</p>
-            </div>
-          </div>
-          <div className="bg-[#1c1c1e] border border-white/5 rounded-2xl p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400">
-              <Mic size={18} />
-            </div>
-            <div>
-              <p className="text-xs text-white/50 font-semibold uppercase">Podcasts</p>
-              <p className="text-xl font-black">{totalPodcasts}</p>
-            </div>
-          </div>
-          <div className="bg-[#1c1c1e] border border-white/5 rounded-2xl p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-violet-500/10 flex items-center justify-center text-violet-400">
-              <Video size={18} />
-            </div>
-            <div>
-              <p className="text-xs text-white/50 font-semibold uppercase">Documentaries</p>
-              <p className="text-xl font-black">{totalDocumentaries}</p>
-            </div>
-          </div>
-          <div className="bg-[#1c1c1e] border border-white/5 rounded-2xl p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400">
-              <Eye size={18} />
-            </div>
-            <div>
-              <p className="text-xs text-white/50 font-semibold uppercase">Total Views</p>
-              <p className="text-xl font-black">{totalViews.toLocaleString()}</p>
-            </div>
-          </div>
-          <div className="bg-[#1c1c1e] border border-white/5 rounded-2xl p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-pink-500/10 flex items-center justify-center text-pink-400">
-              <Heart size={18} />
-            </div>
-            <div>
-              <p className="text-xs text-white/50 font-semibold uppercase">Total Likes</p>
-              <p className="text-xl font-black">{totalLikes.toLocaleString()}</p>
-            </div>
-          </div>
-        </div>
-
         {/* CONTROLS */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-1 bg-[#1c1c1e] p-1 rounded-xl overflow-x-auto scrollbar-hide">
-            {(["All", "Videos", "Podcasts", "Documentaries", "Premium", "Drafts"] as const).map((tab) => (
+            {(["All", "Shorts", "Long Videos"] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
