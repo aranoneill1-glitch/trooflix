@@ -26,6 +26,18 @@ export default function CommentSheet({ videoId, open, onClose, hideComposer = fa
   const [gifOpen, setGifOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const commentBarRef = useRef<HTMLFormElement>(null);
+  const [commentBarHeight, setCommentBarHeight] = useState(44);
+
+  useEffect(() => {
+    if (!open) return;
+    const measure = () => {
+      if (commentBarRef.current) setCommentBarHeight(commentBarRef.current.offsetHeight);
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -167,8 +179,16 @@ export default function CommentSheet({ videoId, open, onClose, hideComposer = fa
                 </div>
               </div>
 
+              <GifPicker
+                open={gifOpen}
+                onClose={() => setGifOpen(false)}
+                onPick={(url) => submitMedia(url)}
+                compact
+                barHeight={commentBarHeight}
+              />
+
               {/* Comment bar in header section */}
-              <form onSubmit={submitText} className="mt-3 flex items-center gap-2 rounded-full bg-white/10 border border-white/15 px-3 py-1.5">
+              <form ref={commentBarRef} onSubmit={submitText} className="mt-3 flex items-center gap-2 rounded-full bg-white/10 border border-white/15 px-3 py-1.5">
                 <input
                   value={text}
                   onChange={(e) => setText(e.target.value)}
@@ -215,7 +235,6 @@ export default function CommentSheet({ videoId, open, onClose, hideComposer = fa
                   }}
                 />
               </form>
-              <GifPicker open={gifOpen} onClose={() => setGifOpen(false)} onPick={(url) => submitMedia(url)} />
             </div>
 
             {/* Scrollable body — reuse existing Comments component */}

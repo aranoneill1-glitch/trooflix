@@ -17,9 +17,11 @@ type Props = {
   open: boolean;
   onClose: () => void;
   onPick: (gifUrl: string) => void;
+  compact?: boolean;
+  barHeight?: number;
 };
 
-export default function GifPicker({ open, onClose, onPick }: Props) {
+export default function GifPicker({ open, onClose, onPick, compact = false, barHeight = 44 }: Props) {
   const [query, setQuery] = useState("");
   const [gifs, setGifs] = useState<Gif[]>([]);
   const [loading, setLoading] = useState(false);
@@ -55,7 +57,7 @@ export default function GifPicker({ open, onClose, onPick }: Props) {
 
   // Lock body scroll
   useEffect(() => {
-    if (!open) return;
+    if (!open || compact) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const onKey = (e: KeyboardEvent) => {
@@ -66,7 +68,56 @@ export default function GifPicker({ open, onClose, onPick }: Props) {
       document.body.style.overflow = prev;
       window.removeEventListener("keydown", onKey);
     };
-  }, [open, onClose]);
+  }, [open, onClose, compact]);
+
+  if (compact) {
+    return (
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ y: barHeight, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: barHeight, opacity: 0 }}
+            transition={{ type: "spring", damping: 30, stiffness: 330 }}
+            className="overflow-hidden rounded-xl border border-white/15 bg-[#1c1c1e] shadow-[0_-8px_24px_rgba(0,0,0,0.4)]"
+            style={{ height: barHeight }}
+          >
+            <div className="flex h-full items-center gap-2 overflow-x-auto scrollbar-hide px-2">
+              <div className="flex h-7 shrink-0 items-center gap-1.5 rounded-full bg-white/10 px-2">
+                <Search size={13} className="text-white/50" />
+                <input
+                  autoFocus
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="GIFs"
+                  className="w-16 bg-transparent text-xs text-white outline-none placeholder:text-white/40"
+                  style={{ fontSize: "16px" }}
+                />
+              </div>
+              {loading && gifs.length === 0 && (
+                <span className="shrink-0 text-[11px] text-white/45">Loading…</span>
+              )}
+              {error && <span className="shrink-0 text-[11px] text-red-400">{error}</span>}
+              {!loading && gifs.length === 0 && !error && (
+                <span className="shrink-0 text-[11px] text-white/45">
+                  {query ? "No results" : "Type to search"}
+                </span>
+              )}
+              {gifs.map((g) => (
+                <button
+                  key={g.id}
+                  onClick={() => { onPick(g.full); onClose(); }}
+                  className="h-8 w-12 shrink-0 overflow-hidden rounded-md transition hover:opacity-80"
+                >
+                  <img src={g.preview} alt={g.title} className="h-full w-full object-cover" />
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    );
+  }
 
   return (
     <AnimatePresence>
