@@ -426,8 +426,8 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
 
         {featuredVideos.length > 0 && (
           <div className="max-w-[1600px] mx-auto px-4 md:px-10 mt-3 md:mt-4">
-            <div className="mb-2 flex items-stretch gap-3">
-              <div className="aspect-square h-full shrink-0 overflow-hidden rounded-full bg-white/10 ring-1 ring-white/15">
+            <div className="mb-2 flex items-center gap-3">
+              <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-white/10 ring-1 ring-white/15 md:h-12 md:w-12">
                 {featuredCreator?.photoUrl ? (
                   <img src={featuredCreator.photoUrl} alt="" className="h-full w-full object-cover" />
                 ) : (
