@@ -173,7 +173,7 @@ export function FeaturedVideoHero({ videos, onSelect, className = "" }: { videos
   const previewSrc = video.videoUrl || video.bitchuteUrl;
 
   return (
-    <section aria-label="Featured videos" className={`relative isolate h-[100dvh] min-h-[520px] w-screen left-1/2 -translate-x-1/2 overflow-hidden bg-[#08090c] md:mt-0 ${className}`}>
+    <section aria-label="Featured videos" className={`relative isolate w-screen left-1/2 -translate-x-1/2 aspect-video overflow-hidden bg-[#08090c] md:mt-0 ${className}`}>
       <AnimatePresence mode="wait">
         <motion.div key={video.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.7 }} className="absolute inset-0 -z-20">
           <HeroPreviewFrame src={previewSrc} poster={image} alt={video.title || ""} />
@@ -181,7 +181,7 @@ export function FeaturedVideoHero({ videos, onSelect, className = "" }: { videos
       </AnimatePresence>
       <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-[#08090c] via-[#08090c]/25 to-transparent" />
 
-      <div className="flex h-full max-w-7xl flex-col justify-end px-5 pb-16 pt-[calc(env(safe-area-inset-top)+6rem)] md:mx-auto md:px-12 md:pb-24">
+      <div className="flex h-full max-w-7xl flex-col justify-end px-5 pb-4 pt-14 md:mx-auto md:px-12 md:pb-8">
         <AnimatePresence mode="wait">
           <motion.div key={video.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.4 }} className="max-w-3xl">
             <p className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.28em] text-white/65 md:text-xs"><Star size={13} className="text-[#F06A72]" /> Featured</p>
