@@ -276,7 +276,7 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
   return (
     <div className={`relative z-10 ${flushTop ? "pt-0" : "pt-0 md:pt-0"} pb-32 md:pb-16`}>
 
-      <section>
+      <section className="pt-[calc(env(safe-area-inset-top)+5.5rem)] md:pt-[calc(env(safe-area-inset-top)+7rem)]">
         <div className="max-w-[1600px] mx-auto px-4 md:px-10">
           <SectionHead kicker="Spotlight" title="Featured" href="/latest" icon={Star} />
         </div>
