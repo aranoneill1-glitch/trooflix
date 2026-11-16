@@ -193,12 +193,21 @@ export function FeaturedVideoHero({ videos, className = "", activeIndex: control
 
   const startPlayback = () => {
     if (!canPlay) return;
-    setPlaying(true);
     const el = videoRef.current;
+    setPlaying(true);
     if (!el) return;
     el.muted = muted;
-    const attempt = el.play();
-    if (attempt && typeof attempt.catch === "function") attempt.catch(() => {});
+    try {
+      const attempt = el.play();
+      if (attempt && typeof attempt.catch === "function") {
+        attempt.catch(() => {
+          // Autoplay may still be blocked — retry silently muted.
+          el.muted = true;
+          setMuted(true);
+          el.play().catch(() => {});
+        });
+      }
+    } catch {}
   };
 
   return (
@@ -214,7 +223,7 @@ export function FeaturedVideoHero({ videos, className = "", activeIndex: control
       />
       <video
         ref={videoRef}
-        src={playing ? previewSrc : undefined}
+        src={previewSrc}
         poster={image}
         muted={muted}
         playsInline
@@ -256,8 +265,14 @@ export function FeaturedVideoHero({ videos, className = "", activeIndex: control
                 e.stopPropagation();
                 const el = videoRef.current;
                 if (!el) return;
-                const request = (el as any).requestFullscreen || (el as any).webkitRequestFullscreen;
-                if (request) request.call(el).catch?.(() => {});
+                const webkitEl = el as any;
+                if (typeof webkitEl.webkitEnterFullscreen === "function") {
+                  webkitEl.webkitEnterFullscreen();
+                  return;
+                }
+                if (typeof el.requestFullscreen === "function") {
+                  el.requestFullscreen().catch(() => {});
+                }
               }}
               aria-label="Fullscreen"
               className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-black/45 text-white backdrop-blur-md transition hover:bg-black/65"
