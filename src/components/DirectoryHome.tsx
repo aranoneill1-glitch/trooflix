@@ -156,7 +156,7 @@ function HeroPreviewFrame({ src, poster, alt }: { src?: string; poster?: string;
   );
 }
 
-export function FeaturedVideoHero({ videos, onSelect, className = "", extendDesktopTop = false }: { videos: any[]; onSelect: (video: any) => void; className?: string; extendDesktopTop?: boolean }) {
+export function FeaturedVideoHero({ videos, onSelect, className = "" }: { videos: any[]; onSelect: (video: any) => void; className?: string }) {
   const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
@@ -173,7 +173,7 @@ export function FeaturedVideoHero({ videos, onSelect, className = "", extendDesk
   const previewSrc = video.videoUrl || video.bitchuteUrl;
 
   return (
-    <section aria-label="Featured videos" className={`relative isolate h-[42vh] min-h-[240px] max-h-[420px] overflow-hidden bg-[#08090c] max-md:mx-2 max-md:mt-[calc(env(safe-area-inset-top)+3.75rem)] max-md:rounded-2xl max-md:ring-1 max-md:ring-[#E53945]/70 ${extendDesktopTop ? "md:-mt-[env(safe-area-inset-top)] md:h-[calc(100vh)] md:min-h-[700px] md:max-h-none" : "md:mt-0 md:h-[min(34vh,310px)] md:min-h-[220px] md:max-h-[310px]"} ${className || "md:-mx-10"}`}>
+    <section aria-label="Featured videos" className={`relative isolate h-[100dvh] min-h-[520px] w-screen left-1/2 -translate-x-1/2 overflow-hidden bg-[#08090c] md:mt-0 ${className}`}>
       <AnimatePresence mode="wait">
         <motion.div key={video.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.7 }} className="absolute inset-0 -z-20">
           <HeroPreviewFrame src={previewSrc} poster={image} alt={video.title || ""} />
@@ -181,7 +181,7 @@ export function FeaturedVideoHero({ videos, onSelect, className = "", extendDesk
       </AnimatePresence>
       <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-[#08090c] via-[#08090c]/25 to-transparent" />
 
-      <div className={`flex h-full max-w-7xl flex-col justify-end px-5 pb-6 pt-24 md:mx-auto md:px-12 md:pb-8 ${extendDesktopTop ? "md:pt-[calc(env(safe-area-inset-top)+6rem)]" : "md:pt-28"}`}>
+      <div className="flex h-full max-w-7xl flex-col justify-end px-5 pb-16 pt-[calc(env(safe-area-inset-top)+6rem)] md:mx-auto md:px-12 md:pb-24">
         <AnimatePresence mode="wait">
           <motion.div key={video.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.4 }} className="max-w-3xl">
             <p className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.28em] text-white/65 md:text-xs"><Star size={13} className="text-[#F06A72]" /> Featured</p>
@@ -274,10 +274,16 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
   };
 
   return (
-    <div className={`relative z-10 ${flushTop ? "pt-0" : "pt-0 md:pt-0"} pb-32 md:pb-16 max-w-[1600px] mx-auto px-4 md:px-10 space-y-8 md:space-y-10`}>
+    <div className={`relative z-10 ${flushTop ? "pt-0" : "pt-0 md:pt-0"} pb-32 md:pb-16`}>
 
-      <FeaturedVideoHero videos={featuredVideos} onSelect={onVideoSelect} />
+      <section>
+        <div className="max-w-[1600px] mx-auto px-4 md:px-10">
+          <SectionHead kicker="Spotlight" title="Featured" href="/latest" icon={Star} />
+        </div>
+        <FeaturedVideoHero videos={featuredVideos} onSelect={onVideoSelect} />
+      </section>
 
+      <div className="max-w-[1600px] mx-auto px-4 md:px-10 space-y-8 md:space-y-10">
       {continueWatching.length > 0 && (
         <section>
           <div className="flex items-end justify-between mb-5">
@@ -477,6 +483,7 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
           );
         })()}
       </section>
+      </div>
 
     </div>
   );

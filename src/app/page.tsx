@@ -44,7 +44,7 @@ import MerchRow from "@/components/MerchRow";
 import SaveButton from "@/components/SaveButton";
 import LikeButton from "@/components/LikeButton";
 import SearchResults from "@/components/SearchResults";
-import DirectoryHome, { FeaturedVideoHero } from "@/components/DirectoryHome";
+import DirectoryHome from "@/components/DirectoryHome";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import TextOverlayRenderer from "@/components/TextOverlay";
 import CommentSheet from "@/components/CommentSheet";
