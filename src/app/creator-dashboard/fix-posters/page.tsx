@@ -89,8 +89,33 @@ export default function FixPostersPage() {
     if (s?.previewUrl?.startsWith("blob:")) URL.revokeObjectURL(s.previewUrl);
   };
 
-  // Decode a frame from a source URL. Uses metadata-only preload + a 2s seek.
-  const frameFromSource = (src: string, timeoutMs = 25000): Promise<Blob> => {
+  const isBlankFrame = (ctx: CanvasRenderingContext2D, w: number, h: number) => {
+    try {
+      const data = ctx.getImageData(0, 0, Math.min(64, w), Math.min(64, h)).data;
+      let sum = 0;
+      let sumSq = 0;
+      const n = data.length / 4;
+      for (let i = 0; i < data.length; i += 4) {
+        const lum = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+        sum += lum;
+        sumSq += lum * lum;
+      }
+      const mean = sum / n;
+      const variance = sumSq / n - mean * mean;
+      return mean < 12 || variance < 60;
+    } catch {
+      return false;
+    }
+  };
+
+  // Decode a usable frame from a source URL. Samples several timestamps and
+  // skips blank frames (many long videos start with a black intro).
+  const frameFromSource = (
+    src: string,
+    timeoutMs = 25000,
+    times: number[] = [2, 5, 10, 20, 30, 45, 60, 90, 120],
+    requireNonBlank = false
+  ): Promise<Blob> => {
     return new Promise((resolve, reject) => {
       const el = document.createElement("video");
       el.src = src;
@@ -100,6 +125,10 @@ export default function FixPostersPage() {
       el.preload = "metadata";
 
       let settled = false;
+      let idx = 0;
+      let lastBlob: Blob | null = null;
+      let lastBlank = true;
+
       const finish = () => {
         if (settled) return;
         settled = true;
@@ -108,41 +137,62 @@ export default function FixPostersPage() {
         try { el.removeAttribute("src"); el.load(); } catch {}
       };
       const fail = (msg: string) => { finish(); reject(new Error(msg)); };
+      const succeed = () => {
+        finish();
+        if (requireNonBlank && lastBlank) { reject(new Error("Only blank frames found")); return; }
+        if (lastBlob) resolve(lastBlob);
+        else reject(new Error("Could not grab a frame"));
+      };
 
-      const timer = setTimeout(() => fail("Video took too long to load"), timeoutMs);
+      const timer = setTimeout(() => {
+        if (lastBlob && !lastBlank) succeed();
+        else fail("Video took too long to load");
+      }, timeoutMs);
 
       el.onloadedmetadata = () => {
         try {
           const d = el.duration;
-          el.currentTime = Number.isFinite(d) ? Math.min(2, Math.max(0.1, d)) : 2;
+          el.currentTime = Number.isFinite(d) ? Math.min(times[0], Math.max(0.1, d)) : times[0];
         } catch {
           fail("Could not seek the video");
         }
       };
 
       el.onseeked = () => {
-        try {
-          const canvas = document.createElement("canvas");
-          canvas.width = el.videoWidth || 1280;
-          canvas.height = el.videoHeight || 720;
-          const ctx = canvas.getContext("2d");
-          if (!ctx) throw new Error("Canvas unavailable");
-          ctx.drawImage(el, 0, 0, canvas.width, canvas.height);
-          canvas.toBlob(
-            (blob) => {
-              finish();
-              if (blob) resolve(blob);
-              else reject(new Error("Could not grab a frame"));
-            },
-            "image/jpeg",
-            0.85
-          );
-        } catch (e: any) {
-          fail(e?.message || "Frame capture failed");
-        }
+        setTimeout(() => {
+          if (settled) return;
+          try {
+            const canvas = document.createElement("canvas");
+            canvas.width = el.videoWidth || 1280;
+            canvas.height = el.videoHeight || 720;
+            const ctx = canvas.getContext("2d", { willReadFrequently: true });
+            if (!ctx) { succeed(); return; }
+            ctx.drawImage(el, 0, 0, canvas.width, canvas.height);
+            const blank = isBlankFrame(ctx, canvas.width, canvas.height);
+            lastBlank = blank;
+
+            canvas.toBlob((blob) => {
+              if (blob) lastBlob = blob;
+              if (!blank || idx >= times.length - 1) { succeed(); return; }
+              const duration = el.duration;
+              let next = times[++idx];
+              while (idx < times.length - 1 && Number.isFinite(duration) && next >= duration - 0.2) {
+                next = times[++idx];
+              }
+              if (Number.isFinite(duration) && next >= duration - 0.2) { succeed(); return; }
+              try { el.currentTime = next; } catch { succeed(); }
+            }, "image/jpeg", 0.85);
+          } catch (e: any) {
+            if (lastBlob && !lastBlank) succeed();
+            else fail(e?.message || "Frame capture failed");
+          }
+        }, 40);
       };
 
-      el.onerror = () => fail("Video failed to load");
+      el.onerror = () => {
+        if (lastBlob && !lastBlank) succeed();
+        else fail("Video failed to load");
+      };
     });
   };
 
@@ -164,10 +214,16 @@ export default function FixPostersPage() {
     } catch {}
 
     try {
-      // Short timeout for the partial blob — if it can't seek, fall back fast.
-      return await frameFromSource(objectUrl || proxyUrl, objectUrl ? 8000 : 25000);
+      // Partial blob only has a few MB — try early timestamps, and fall back
+      // to the full source if every frame there is blank or unreachable.
+      return await frameFromSource(
+        objectUrl || proxyUrl,
+        objectUrl ? 8000 : 25000,
+        objectUrl ? [2, 5] : [2, 5, 10, 20, 30, 45, 60, 90, 120],
+        !!objectUrl
+      );
     } catch (e) {
-      if (objectUrl) return await frameFromSource(proxyUrl);
+      if (objectUrl) return await frameFromSource(proxyUrl, 25000, [2, 5, 10, 20, 30, 45, 60, 90, 120], true);
       throw e;
     } finally {
       if (objectUrl) URL.revokeObjectURL(objectUrl);
@@ -393,7 +449,7 @@ export default function FixPostersPage() {
             </div>
 
             <h2 className="text-xs font-bold tracking-[0.2em] text-white/40 uppercase mb-4">
-              Or pick one manually
+              Or choose one manually
             </h2>
 
             <div className="space-y-4">
@@ -478,7 +534,7 @@ export default function FixPostersPage() {
                           </p>
                         )}
                         {!s.previewUrl && !s.error && (
-                          <p className="mt-3 text-[11px] text-white/35">Pick one of the options above to preview it first.</p>
+                          <p className="mt-3 text-[11px] text-white/35">Choose an option above to preview it first.</p>
                         )}
                       </div>
                     </div>

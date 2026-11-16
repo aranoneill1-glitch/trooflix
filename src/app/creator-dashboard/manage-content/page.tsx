@@ -218,7 +218,7 @@ export default function ManageContentPage() {
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <Link href="/creator-dashboard/fix-posters" className="flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs sm:text-sm px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-full transition-all whitespace-nowrap">
-              <Sparkles size={16} className="text-[#E53945]" /> Pick Thumbnails
+              <Sparkles size={16} className="text-[#E53945]" /> Generate Thumbnails
               {missingThumbnails > 0 && (
                 <span className="ml-0.5 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-[#E53945] text-[10px] font-black text-white">
                   {missingThumbnails}
@@ -364,7 +364,7 @@ export default function ManageContentPage() {
                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-[#242428] to-[#121214]">
                       <ImageIcon size={28} className="text-white/30" />
                       <Link href={`/creator-dashboard/fix-posters?video=${video.id}`} onClick={(e) => e.stopPropagation()} className="text-[11px] font-bold text-[#F06A72] hover:text-white transition">
-                        Pick thumbnail
+                        Generate
                       </Link>
                     </div>
                   )}
@@ -419,7 +419,7 @@ export default function ManageContentPage() {
                             <Pencil size={14} /> Edit
                           </button>
                           <Link href={`/creator-dashboard/fix-posters?video=${video.id}`} onClick={() => setActiveMenuId(null)} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-white hover:bg-white/10 transition text-left">
-                            <ImageIcon size={14} /> Pick Thumbnail
+                            <ImageIcon size={14} /> Generate Thumbnail
                           </Link>
                           {canBeProfileFeature(video) && <button onClick={() => setAsProfileFeature(video)} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-white hover:bg-white/10 transition text-left"><Star size={14} /> Set as profile feature</button>}
                           <button className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-white hover:bg-white/10 transition text-left">
@@ -450,7 +450,7 @@ export default function ManageContentPage() {
                   ) : (
                     <Link href={`/creator-dashboard/fix-posters?video=${video.id}`} className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-gradient-to-br from-[#242428] to-[#121214]" title="Pick a thumbnail">
                       <ImageIcon size={20} className="text-white/30" />
-                      <span className="text-[9px] font-bold text-[#F06A72] leading-tight text-center px-1">Pick<br />thumb</span>
+                      <span className="text-[9px] font-bold text-[#F06A72] leading-tight text-center px-1">Generate<br />preview</span>
                     </Link>
                   )}
                   <div className={`absolute top-1 left-1 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-sm ${video.type?.toLowerCase() === 'podcast' ? 'bg-blue-500' : 'bg-[#E53945]'}`}>
@@ -491,7 +491,7 @@ export default function ManageContentPage() {
                           <Pencil size={14} /> Edit
                         </button>
                         <Link href={`/creator-dashboard/fix-posters?video=${video.id}`} onClick={() => setActiveMenuId(null)} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-white hover:bg-white/10 transition text-left">
-                          <ImageIcon size={14} /> Pick Thumbnail
+                          <ImageIcon size={14} /> Generate Thumbnail
                         </Link>
                         {canBeProfileFeature(video) && <button onClick={() => setAsProfileFeature(video)} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-white hover:bg-white/10 transition text-left"><Star size={14} /> Set as profile feature</button>}
                         <button onClick={() => handleDelete(video.id)} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 transition text-left">

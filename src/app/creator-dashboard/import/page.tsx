@@ -144,13 +144,36 @@ export default function ImportPage() {
     };
   };
 
-  // Grab a preview frame from the first 2 seconds of the video locally.
-  // Never blocks the import — returns null on any failure.
+  // Detect an all-black / flat frame so we can keep sampling later timestamps.
+  const isBlankFrame = (ctx: CanvasRenderingContext2D, w: number, h: number) => {
+    try {
+      const data = ctx.getImageData(0, 0, Math.min(64, w), Math.min(64, h)).data;
+      let sum = 0;
+      let sumSq = 0;
+      const n = data.length / 4;
+      for (let i = 0; i < data.length; i += 4) {
+        const lum = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+        sum += lum;
+        sumSq += lum * lum;
+      }
+      const mean = sum / n;
+      const variance = sumSq / n - mean * mean;
+      return mean < 12 || variance < 60;
+    } catch {
+      return false;
+    }
+  };
+
+  // Grab a usable preview frame locally. Tries 2s, 5s, 10s, 20s, 30s and keeps
+  // sampling until it finds a frame that isn't blank. Never blocks the import.
   const captureThumbnail = (blob: Blob): Promise<Blob | null> => {
     return new Promise((resolve) => {
       const url = URL.createObjectURL(blob);
       const el = document.createElement("video");
+      const times = [2, 5, 10, 20, 30, 45, 60, 90, 120];
       let done = false;
+      let idx = 0;
+      let lastBlob: Blob | null = null;
 
       const finish = (result: Blob | null) => {
         if (done) return;
@@ -166,35 +189,52 @@ export default function ImportPage() {
       el.muted = true;
       el.playsInline = true;
       el.preload = "auto";
-      const timer = setTimeout(() => finish(null), 20000);
+      const timer = setTimeout(() => finish(lastBlob), 45000);
 
       el.onloadedmetadata = () => {
         try {
           const d = el.duration;
-          el.currentTime = Number.isFinite(d) ? Math.min(2, Math.max(0.1, d)) : 2;
+          el.currentTime = Number.isFinite(d) ? Math.min(times[0], Math.max(0.1, d)) : times[0];
         } catch {
           finish(null);
         }
       };
 
       el.onseeked = () => {
-        try {
-          const vw = el.videoWidth || 1280;
-          const vh = el.videoHeight || 720;
-          const scale = Math.min(1, 1280 / vw);
-          const canvas = document.createElement("canvas");
-          canvas.width = Math.round(vw * scale);
-          canvas.height = Math.round(vh * scale);
-          const ctx = canvas.getContext("2d");
-          if (!ctx) { finish(null); return; }
-          ctx.drawImage(el, 0, 0, canvas.width, canvas.height);
-          canvas.toBlob((b) => finish(b || null), "image/jpeg", 0.82);
-        } catch {
-          finish(null);
-        }
+        // Small delay so the decoded frame is actually painted before drawing.
+        setTimeout(() => {
+          if (done) return;
+          try {
+            const vw = el.videoWidth || 1280;
+            const vh = el.videoHeight || 720;
+            const scale = Math.min(1, 1280 / vw);
+            const canvas = document.createElement("canvas");
+            canvas.width = Math.round(vw * scale);
+            canvas.height = Math.round(vh * scale);
+            const ctx = canvas.getContext("2d", { willReadFrequently: true });
+            if (!ctx) { finish(lastBlob); return; }
+            ctx.drawImage(el, 0, 0, canvas.width, canvas.height);
+            const blank = isBlankFrame(ctx, canvas.width, canvas.height);
+
+            canvas.toBlob((b) => {
+              if (b) lastBlob = b;
+              if (!blank || idx >= times.length - 1) { finish(b || lastBlob); return; }
+
+              const duration = el.duration;
+              let next = times[++idx];
+              while (idx < times.length - 1 && Number.isFinite(duration) && next >= duration - 0.2) {
+                next = times[++idx];
+              }
+              if (Number.isFinite(duration) && next >= duration - 0.2) { finish(lastBlob); return; }
+              try { el.currentTime = next; } catch { finish(lastBlob); }
+            }, "image/jpeg", 0.82);
+          } catch {
+            finish(lastBlob);
+          }
+        }, 40);
       };
 
-      el.onerror = () => finish(null);
+      el.onerror = () => finish(lastBlob);
     });
   };
 
