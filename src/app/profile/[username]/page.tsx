@@ -581,9 +581,9 @@ export default function PublicProfilePage() {
                 ))}
               </div>
               {activeContentTab !== "Shorts" && activeContentTab !== "Videos" && (
-                <div className="flex items-center gap-1 bg-[#1c1c1e] p-1 rounded-lg mb-2">
-                  <button onClick={() => setContentView("grid")} className={`p-1.5 rounded-md transition ${contentView === "grid" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}><LayoutGrid size={16} /></button>
-                  <button onClick={() => setContentView("list")} className={`p-1.5 rounded-md transition ${contentView === "list" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}><List size={16} /></button>
+                <div className="flex items-center gap-1 mb-2">
+                  <button onClick={() => setContentView("grid")} aria-label="Grid view" className={`p-1.5 transition ${contentView === "grid" ? "text-white" : "text-white/40 hover:text-white"}`}><LayoutGrid size={18} /></button>
+                  <button onClick={() => setContentView("list")} aria-label="List view" className={`p-1.5 transition ${contentView === "list" ? "text-white" : "text-white/40 hover:text-white"}`}><List size={18} /></button>
                 </div>
               )}
             </div>
