@@ -144,6 +144,73 @@ export default function ImportPage() {
     };
   };
 
+  // Grab a preview frame from the first 2 seconds of the video locally.
+  // Never blocks the import — returns null on any failure.
+  const captureThumbnail = (blob: Blob): Promise<Blob | null> => {
+    return new Promise((resolve) => {
+      const url = URL.createObjectURL(blob);
+      const el = document.createElement("video");
+      let done = false;
+
+      const finish = (result: Blob | null) => {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        try { el.pause(); } catch {}
+        try { el.removeAttribute("src"); el.load(); } catch {}
+        URL.revokeObjectURL(url);
+        resolve(result);
+      };
+
+      el.src = url;
+      el.muted = true;
+      el.playsInline = true;
+      el.preload = "auto";
+      const timer = setTimeout(() => finish(null), 20000);
+
+      el.onloadedmetadata = () => {
+        try {
+          const d = el.duration;
+          el.currentTime = Number.isFinite(d) ? Math.min(2, Math.max(0.1, d)) : 2;
+        } catch {
+          finish(null);
+        }
+      };
+
+      el.onseeked = () => {
+        try {
+          const vw = el.videoWidth || 1280;
+          const vh = el.videoHeight || 720;
+          const scale = Math.min(1, 1280 / vw);
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.round(vw * scale);
+          canvas.height = Math.round(vh * scale);
+          const ctx = canvas.getContext("2d");
+          if (!ctx) { finish(null); return; }
+          ctx.drawImage(el, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob((b) => finish(b || null), "image/jpeg", 0.82);
+        } catch {
+          finish(null);
+        }
+      };
+
+      el.onerror = () => finish(null);
+    });
+  };
+
+  const uploadThumbnail = async (blob: Blob): Promise<string | null> => {
+    try {
+      const file = new File([blob], `thumb-${Date.now()}.jpg`, { type: "image/jpeg" });
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/upload-image", { method: "POST", body: fd });
+      const data = await res.json().catch(() => ({}));
+      return res.ok && data.publicUrl ? data.publicUrl : null;
+    } catch {
+      return null;
+    }
+  };
+
   const startImport = async () => {
     if (!file || !source) return;
     setProcessing(true);
@@ -183,11 +250,15 @@ export default function ImportPage() {
         const ext = (fileName.split(".").pop() || "mp4").toLowerCase();
         const mime = ext === "mov" ? "video/quicktime" : ext === "m4v" ? "video/x-m4v" : "video/mp4";
 
-        setStatus(`Uploading ${i + 1} of ${videoKeys.length}: ${meta.title}`);
-
         const blob = new Blob([videoData], { type: mime });
         const videoFile = new File([blob], fileName, { type: mime });
 
+        // Preview image is generated from the video itself before uploading.
+        setStatus(`Generating preview ${i + 1} of ${videoKeys.length}: ${meta.title}`);
+        const thumbBlob = await captureThumbnail(blob);
+        const thumbUrl = thumbBlob ? await uploadThumbnail(thumbBlob) : null;
+
+        setStatus(`Uploading ${i + 1} of ${videoKeys.length}: ${meta.title}`);
         const { publicUrl } = await r2MultipartUpload(videoFile, {
           folder: "videos",
           onProgress: (p) => {
@@ -207,6 +278,7 @@ export default function ImportPage() {
             type: meta.type,
             uploaderUserId: user.id,
             videoUrl: publicUrl,
+            ...(thumbUrl ? { posterUrl: thumbUrl, backdropUrl: thumbUrl } : {}),
             feed_visible: false,
           }),
         });
@@ -305,7 +377,7 @@ export default function ImportPage() {
                   <li className="flex gap-3"><span className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center shrink-0">1</span><p>Open Instagram → <strong>Settings and privacy</strong> → <strong>Accounts Center</strong>.</p></li>
                   <li className="flex gap-3"><span className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center shrink-0">2</span><p>Go to <strong>Your information and permissions</strong> → <strong>Download your information</strong>.</p></li>
                   <li className="flex gap-3"><span className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center shrink-0">3</span><p>Select your Instagram account and include posts/reels/videos (or all available info), then choose <strong>Download to device</strong>.</p></li>
-                  <li className="flex gap-3"><span className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center shrink-0">4</span><p>When ready, download the .zip export and upload it here. Videos and their captions are imported automatically.</p></li>
+                  <li className="flex gap-3"><span className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center shrink-0">4</span><p>When ready, download the .zip export and upload it here. Captions and preview images are generated automatically.</p></li>
                 </ol>
               </>
             )}
