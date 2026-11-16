@@ -6,82 +6,15 @@ import { BookOpen, ChevronLeft, ChevronRight, CirclePlay, Clock, Eye, Film, Mic,
 import { AnimatePresence, motion } from "framer-motion";
 
 
-function VideoPreview({ src, poster, className }: { src: string, poster?: string, className?: string }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const startTimeRef = useRef<number>(0);
-  const [inView, setInView] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    if (typeof IntersectionObserver === "undefined") {
-      setInView(true);
-      return;
-    }
-    const observer = new IntersectionObserver(
-      ([entry]) => setInView(entry.isIntersecting),
-      { rootMargin: "120px 0px", threshold: 0.15 }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    if (!inView) {
-      setIsPlaying(false);
-      if (videoRef.current) {
-        try { videoRef.current.pause(); } catch {}
-        try { videoRef.current.removeAttribute("src"); videoRef.current.load(); } catch {}
-      }
-    }
-  }, [inView]);
-
-  const handleLoadedMetadata = () => {
-    if (videoRef.current) {
-      const duration = videoRef.current.duration || 0;
-      let seekTime = Math.min(30, duration * 0.1);
-      if (duration < 15) seekTime = 0;
-      
-      startTimeRef.current = seekTime;
-      try { videoRef.current.currentTime = seekTime; } catch {}
-      videoRef.current.play().catch(() => {});
-    }
-  };
-
-  const handleTimeUpdate = () => {
-    if (videoRef.current) {
-      const current = videoRef.current.currentTime;
-      const start = startTimeRef.current;
-      if (current > start + 7) {
-        try { videoRef.current.currentTime = start; } catch {}
-      }
-    }
-  };
-
+function VideoPreview({ poster, className }: { src?: string, poster?: string, className?: string }) {
+  // Shelf cards show the poster image only — no autoplaying video preview.
   return (
-    <div ref={containerRef} className="absolute inset-0">
+    <div className="absolute inset-0">
       {poster ? (
-        <img src={poster} alt="" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+        <img src={poster} alt="" className={`absolute inset-0 w-full h-full object-cover ${className || ""}`} loading="lazy" />
       ) : (
         <div className="absolute inset-0 bg-white/5" />
       )}
-      {inView && src ? (
-        <video
-          ref={videoRef}
-          src={src}
-          autoPlay
-          muted
-          playsInline
-          preload="metadata"
-          onLoadedMetadata={handleLoadedMetadata}
-          onTimeUpdate={handleTimeUpdate}
-          onPlaying={() => setIsPlaying(true)}
-          onPause={() => setIsPlaying(false)}
-          className={`${className || ""} absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${isPlaying ? "opacity-100" : "opacity-0"}`}
-        />
-      ) : null}
     </div>
   );
 }

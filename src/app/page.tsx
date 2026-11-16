@@ -1761,79 +1761,20 @@ function SignedOutDesktopHero() {
 }
 
 function HeroVideoCard({ video, onMore, isMobile, inColumn, fullBleed }: { video: Video, onMore: (v: Video) => void, isMobile: boolean, inColumn?: boolean, fullBleed?: boolean }) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [muted, setMuted] = useState(true);
-  const [duration, setDuration] = useState(0);
-
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    const onMeta = () => {
-      const dur = v.duration || 0;
-      setDuration(dur);
-      try {
-        // Seek to 5 min or middle
-        const seekTime = Math.min(300, dur / 2);
-        if (seekTime > 0) v.currentTime = seekTime;
-        v.play().catch(() => {});
-      } catch {}
-    };
-    v.addEventListener("loadedmetadata", onMeta);
-    return () => v.removeEventListener("loadedmetadata", onMeta);
-  }, [video.id]);
-
-  const toggleMute = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (videoRef.current) {
-      videoRef.current.muted = !videoRef.current.muted;
-      setMuted(videoRef.current.muted);
-    }
-  };
-
-  const formatTime = (secs: number) => {
-    if (!secs || isNaN(secs)) return "0:00";
-    const m = Math.floor(secs / 60);
-    const s = Math.floor(secs % 60);
-    return `${m}:${s.toString().padStart(2, "0")}`;
-  };
-
+  // Show the poster image only — no autoplaying video preview on the homepage.
   return (
     <div className={fullBleed ? "absolute inset-0 w-full h-full" : `w-full mx-auto ${inColumn ? "" : isMobile ? "px-4 pb-6 mt-2" : "max-w-[1600px] px-4 md:px-12 mt-4 mb-8"}`}>
-      <section 
+      <section
         onClick={() => onMore(video)}
         className={`relative w-full ${fullBleed ? "h-full" : inColumn ? "aspect-video min-h-[420px]" : isMobile ? "aspect-video min-h-[220px]" : "h-[45vh] min-h-[420px]"} ${fullBleed ? "" : "rounded-2xl"} overflow-hidden bg-[#1c1c1e] ${fullBleed ? "" : "shadow-2xl"} cursor-pointer group`}
       >
-        {/* Always show the image fallback behind the video */}
-        <img 
-          src={video.posterUrl || video.backdropUrl} 
-          alt={video.title} 
-          className="absolute inset-0 w-full h-full object-cover" 
+        <img
+          src={video.posterUrl || video.backdropUrl}
+          alt={video.title}
+          className="absolute inset-0 w-full h-full object-cover"
+          loading="lazy"
         />
-        
-        {(video.videoUrl || video.bitchuteUrl) && (
-          <video
-            ref={videoRef}
-            src={video.videoUrl || video.bitchuteUrl || ""}
-            autoPlay
-            muted={muted}
-            loop
-            playsInline
-            onPlaying={(e) => e.currentTarget.classList.remove("opacity-0")}
-            className="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-700"
-          />
-        )}
-        
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-
-        <div className="absolute bottom-0 left-0 right-0 p-4 flex items-center justify-between z-20">
-          <span className="text-white text-xs font-semibold tabular-nums drop-shadow-md">
-            {formatTime(duration)}
-          </span>
-
-          <button onClick={toggleMute} className="p-1.5 text-white/90 hover:text-white drop-shadow-md">
-            {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
-          </button>
-        </div>
       </section>
     </div>
   );

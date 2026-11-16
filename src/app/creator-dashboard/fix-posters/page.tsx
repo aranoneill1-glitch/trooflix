@@ -121,15 +121,15 @@ export default function FixPostersPage() {
 
     const timer = setTimeout(
       () => fail("Video took too long to load. Upload an image instead."),
-      120000
+      30000
     );
 
     el.onloadedmetadata = () => {
       try {
-        const t =
-          Number.isFinite(el.duration) && el.duration > 2
-            ? Math.min(90, el.duration / 2)
-            : 0.1;
+        // Grab a frame from the first 2 seconds so it loads fast.
+        const t = Number.isFinite(el.duration)
+          ? Math.min(2, Math.max(0.1, el.duration))
+          : 2;
         el.currentTime = t;
       } catch {
         fail("Could not seek the video. Upload an image instead.");
@@ -229,7 +229,7 @@ export default function FixPostersPage() {
           <h1 className="text-3xl font-black mb-2">Pick Thumbnails</h1>
           <p className="text-sm text-white/60 max-w-md mx-auto">
             These videos don&apos;t have a real thumbnail yet. Upload an image or grab a
-            frame from the video, preview it, then save.
+            frame from the first 2 seconds, preview it, then save.
           </p>
           {focusId && (
             <p className="mt-3 text-xs text-[#F06A72] font-semibold">
