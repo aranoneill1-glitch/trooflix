@@ -156,16 +156,21 @@ function HeroPreviewFrame({ src, poster, alt }: { src?: string; poster?: string;
   );
 }
 
-export function FeaturedVideoHero({ videos, onSelect, className = "" }: { videos: any[]; onSelect: (video: any) => void; className?: string }) {
-  const [activeIndex, setActiveIndex] = useState(0);
+export function FeaturedVideoHero({ videos, onSelect, className = "", activeIndex: controlledIndex, onActiveIndexChange }: { videos: any[]; onSelect: (video: any) => void; className?: string; activeIndex?: number; onActiveIndexChange?: (index: number) => void }) {
+  const [internalIndex, setInternalIndex] = useState(0);
+  const activeIndex = controlledIndex ?? internalIndex;
+  const setActiveIndex = (next: number) => {
+    if (onActiveIndexChange) onActiveIndexChange(next);
+    else setInternalIndex(next);
+  };
 
   useEffect(() => {
     if (videos.length < 2) return;
     const timer = window.setInterval(() => {
-      setActiveIndex((index) => (index + 1) % videos.length);
+      setActiveIndex((activeIndex + 1) % videos.length);
     }, 9000);
     return () => window.clearInterval(timer);
-  }, [videos.length]);
+  }, [videos.length, activeIndex]);
 
   if (!videos.length) return null;
   const video = videos[activeIndex % videos.length];
@@ -204,10 +209,10 @@ export function FeaturedVideoHero({ videos, onSelect, className = "" }: { videos
       {videos.length > 1 && (
         <div className="absolute bottom-4 right-5 flex items-center gap-4 md:bottom-6 md:right-12">
           <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/55">{activeIndex + 1} <span className="mx-1 text-white/25">/</span> {videos.length}</span>
-          <button aria-label="Previous featured video" onClick={() => setActiveIndex((index) => (index - 1 + videos.length) % videos.length)} className="p-1 text-white/55 transition hover:text-white">
+          <button aria-label="Previous featured video" onClick={() => setActiveIndex((activeIndex - 1 + videos.length) % videos.length)} className="p-1 text-white/55 transition hover:text-white">
             <ChevronLeft size={18} />
           </button>
-          <button aria-label="Next featured video" onClick={() => setActiveIndex((index) => (index + 1) % videos.length)} className="p-1 text-white/55 transition hover:text-white">
+          <button aria-label="Next featured video" onClick={() => setActiveIndex((activeIndex + 1) % videos.length)} className="p-1 text-white/55 transition hover:text-white">
             <ChevronRight size={18} />
           </button>
         </div>
@@ -218,6 +223,7 @@ export function FeaturedVideoHero({ videos, onSelect, className = "" }: { videos
 
 export default function DirectoryHome({ videos, creators, featuredVideos, onVideoSelect, continueWatching = [], flushTop = false }: { videos: any[], creators: any[], featuredVideos: any[], onVideoSelect: (video: any) => void, continueWatching?: any[], flushTop?: boolean }) {
   const [shopProducts, setShopProducts] = useState<any[]>([]);
+  const [featuredIndex, setFeaturedIndex] = useState(0);
   
   useEffect(() => {
     fetch("/api/products/global")
@@ -280,7 +286,34 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
         <div className="max-w-[1600px] mx-auto px-4 md:px-10">
           <SectionHead kicker="Spotlight" title="Featured" href="/latest" icon={Star} />
         </div>
-        <FeaturedVideoHero videos={featuredVideos} onSelect={onVideoSelect} />
+        <FeaturedVideoHero
+          videos={featuredVideos}
+          onSelect={onVideoSelect}
+          activeIndex={featuredIndex}
+          onActiveIndexChange={setFeaturedIndex}
+        />
+
+        {featuredVideos.length > 1 && (
+          <div className="max-w-[1600px] mx-auto px-4 md:px-10 mt-3 md:mt-4">
+            <div className="flex gap-2 md:gap-3 overflow-x-auto scrollbar-hide pb-2">
+              {featuredVideos.map((v: any, i: number) => (
+                <button
+                  key={v.id}
+                  type="button"
+                  onClick={() => setFeaturedIndex(i)}
+                  aria-label={`Show featured: ${v.title}`}
+                  className={`relative shrink-0 w-[150px] md:w-[220px] aspect-video overflow-hidden rounded-xl ring-1 transition-all ${
+                    i === featuredIndex
+                      ? "ring-2 ring-[#E53945] opacity-100"
+                      : "ring-white/10 opacity-60 hover:opacity-100"
+                  }`}
+                >
+                  <img src={v.posterUrl || v.backdropUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </section>
 
       <div className="max-w-[1600px] mx-auto px-4 md:px-10 space-y-8 md:space-y-10">
