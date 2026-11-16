@@ -171,21 +171,22 @@ export default function MerchandisePage() {
             </h1>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full lg:w-auto">
+          <div className="flex items-center gap-3">
+            <button className="p-2.5 bg-black/40 border border-white/10 rounded-full hover:bg-white/10 transition text-white/70 hover:text-white">
+              <Heart size={20} />
+            </button>
+            <button className="relative p-2.5 bg-black/40 border border-white/10 rounded-full hover:bg-white/10 transition text-white/70 hover:text-white">
+              <ShoppingBag size={20} />
+              {basket.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-[#E53945] text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-[#09090B]">
+                  {basket.length}
+                </span>
+              )}
+            </button>
             <div className="flex items-center gap-2 bg-black/40 p-1.5 rounded-full border border-white/10">
               {(["Merchandise", "Books"] as const).map(tab => (
                 <button key={tab} onClick={() => setActiveTab(tab)} className={"px-5 py-2 rounded-full font-bold text-sm transition " + (activeTab === tab ? "bg-white text-black" : "text-white/70 hover:text-white hover:bg-white/10")}>{tab}</button>
               ))}
-            </div>
-            <div className="relative w-full sm:w-64">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-white/60" size={16} />
-              <input
-                type="text"
-                placeholder="Search..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-black/40 border border-white/20 rounded-full py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-white/50 focus:outline-none focus:border-[#E53945]/50 transition-all shadow-xl"
-              />
             </div>
           </div>
         </div>
@@ -208,23 +209,9 @@ export default function MerchandisePage() {
             />
           </div>
           
-          {/* Right Icons */}
-          <div className="flex items-center gap-4 shrink-0">
-             <div className="text-xs font-bold text-white/40 uppercase tracking-widest hidden md:block mr-2">
-               {filteredProducts.length} Items
-             </div>
-             
-             <button className="p-2.5 bg-[#0f0f12] border border-white/10 rounded-full hover:bg-white/10 transition text-white/70 hover:text-white">
-               <Heart size={20} />
-             </button>
-             <button className="relative p-2.5 bg-[#0f0f12] border border-white/10 rounded-full hover:bg-white/10 transition text-white/70 hover:text-white">
-               <ShoppingBag size={20} />
-               {basket.length > 0 && (
-                 <span className="absolute -top-1 -right-1 bg-[#E53945] text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-[#09090B]">
-                   {basket.length}
-                 </span>
-               )}
-             </button>
+          {/* Item count */}
+          <div className="text-xs font-bold text-white/40 uppercase tracking-widest hidden md:block">
+            {filteredProducts.length} Items
           </div>
         </div>
 
