@@ -314,6 +314,13 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
   const podcastVideos = videos.filter((v: any) => v.type?.toLowerCase() === "podcast").slice(0, 8);
   const documentaryVideos = videos.filter((v: any) => v.type?.toLowerCase() === "documentary").slice(0, 8);
 
+  const featuredVideo = featuredVideos[featuredIndex % Math.max(featuredVideos.length, 1)];
+  const featuredCreator = featuredVideo ? creators.find((c: any) =>
+    (featuredVideo.creatorId && c.id === featuredVideo.creatorId) ||
+    (featuredVideo.uploaderUserId && c.ownerUserId === featuredVideo.uploaderUserId) ||
+    (featuredVideo.uploaderUserId && c.user_id === featuredVideo.uploaderUserId)
+  ) : null;
+
   const renderLongFormCard = (v: any) => {
     const creator = creators.find((c: any) =>
       (v.creatorId && c.id === v.creatorId) ||
@@ -367,15 +374,19 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
 
         {featuredVideos.length > 0 && (
           <div className="max-w-[1600px] mx-auto px-4 md:px-10 mt-3 md:mt-4">
-            <div className="mb-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <div className="mb-2">
               <h2 className="text-base font-bold tracking-tight text-white md:text-lg">
-                {featuredVideos[featuredIndex]?.title}
+                {featuredVideo?.title}
               </h2>
-              {featuredVideos[featuredIndex]?.category && (
-                <span className="text-xs font-medium text-white/45 md:text-sm">
-                  {featuredVideos[featuredIndex].category}
-                </span>
-              )}
+              <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs font-medium text-white/45 md:text-sm">
+                {featuredVideo?.category && <span>{featuredVideo.category}</span>}
+                {featuredCreator?.name && (
+                  <>
+                    {featuredVideo?.category && <span className="text-white/20">·</span>}
+                    <span>{featuredCreator.name}</span>
+                  </>
+                )}
+              </div>
             </div>
             <div className="flex gap-2 md:gap-3 overflow-x-auto scrollbar-hide px-1.5 pt-1.5 pb-3">
               {featuredVideos.map((v: any, i: number) => (
