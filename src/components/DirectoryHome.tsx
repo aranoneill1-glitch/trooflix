@@ -373,7 +373,7 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
             <h2 className="mb-2 text-lg font-black tracking-tight text-white md:text-2xl">
               {featuredVideos[featuredIndex]?.title}
             </h2>
-            <div className="flex gap-2 md:gap-3 overflow-x-auto scrollbar-hide pt-1.5 pb-3">
+            <div className="flex gap-2 md:gap-3 overflow-x-auto scrollbar-hide px-1.5 pt-1.5 pb-3">
               {featuredVideos.map((v: any, i: number) => (
                 <button
                   key={v.id}
@@ -382,7 +382,7 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
                   aria-label={`Show featured: ${v.title}`}
                   className={`relative shrink-0 w-[150px] md:w-[220px] aspect-video overflow-hidden rounded-xl ring-1 transition-all ${
                     i === featuredIndex
-                      ? "ring-2 ring-white opacity-100"
+                      ? "ring-1 ring-white opacity-100"
                       : "ring-white/10 opacity-60 hover:opacity-100"
                   }`}
                 >
