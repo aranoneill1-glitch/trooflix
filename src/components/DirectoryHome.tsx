@@ -241,7 +241,7 @@ export function FeaturedVideoHero({ videos, className = "", activeIndex: control
     <section
       aria-label="Featured videos"
       onClick={playing ? undefined : startPlayback}
-      className={`relative isolate w-screen left-1/2 -translate-x-1/2 aspect-video overflow-hidden bg-[#08090c] md:mt-0 ${canPlay && !playing ? "cursor-pointer" : ""} ${className}`}
+      className={`relative isolate left-1/2 -translate-x-1/2 w-[88vw] h-[56.25vw] max-h-[240px] rounded-sm overflow-hidden bg-[#08090c] shadow-[0_18px_50px_-24px_rgba(0,0,0,0.9)] md:mt-0 md:w-screen md:h-auto md:aspect-video md:max-h-none md:rounded-none md:shadow-none ${canPlay && !playing ? "cursor-pointer" : ""} ${className}`}
     >
       <img
         src={image}
