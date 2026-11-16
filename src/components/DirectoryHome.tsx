@@ -349,6 +349,9 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
     (featuredVideo.uploaderUserId && c.ownerUserId === featuredVideo.uploaderUserId) ||
     (featuredVideo.uploaderUserId && c.user_id === featuredVideo.uploaderUserId)
   ) : null;
+  const featuredCreatorHref = featuredCreator?.slug || featuredCreator?.username
+    ? `/profile/${featuredCreator.slug || featuredCreator.username}`
+    : "#";
 
   const renderLongFormCard = (v: any) => {
     const creator = creators.find((c: any) =>
@@ -427,15 +430,15 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
         {featuredVideos.length > 0 && (
           <div className="max-w-[1600px] mx-auto px-4 md:px-10 mt-3 md:mt-4">
             <div className="mb-2 flex items-center gap-3">
-              <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-white/10 ring-1 ring-white/15 md:h-12 md:w-12">
+              <Link href={featuredCreatorHref} className="h-9 w-9 shrink-0 overflow-hidden rounded-full bg-white/10 ring-1 ring-white/15 transition hover:ring-white/40 md:h-11 md:w-11">
                 {featuredCreator?.photoUrl ? (
                   <img src={featuredCreator.photoUrl} alt="" className="h-full w-full object-cover" />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center text-sm font-bold text-white/80">
+                  <div className="flex h-full w-full items-center justify-center text-xs font-bold text-white/80">
                     {(featuredCreator?.name || featuredVideo?.title || "T")[0]}
                   </div>
                 )}
-              </div>
+              </Link>
               <div className="min-w-0">
                 <h2 className="text-base font-bold tracking-tight text-white md:text-lg">
                   {featuredVideo?.title}
@@ -445,7 +448,7 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
                   {featuredCreator?.name && (
                     <>
                       {featuredVideo?.category && <span className="text-white/20">·</span>}
-                      <span>{featuredCreator.name}</span>
+                      <Link href={featuredCreatorHref} className="transition hover:text-white">{featuredCreator.name}</Link>
                     </>
                   )}
                 </div>
