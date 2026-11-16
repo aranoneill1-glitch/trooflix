@@ -482,8 +482,8 @@ function CreatorDashboardContent() {
                 </div>
 
                 <div className="min-w-0">
-                  <h1 className="text-3xl xl:text-4xl font-black flex min-w-0 items-center gap-2 text-white">{displayName} {profile?.verification_tick && profile.verification_tick !== "none" && <VerifiedBadge size={22} variant={profile.verification_tick as any} />}</h1>
-                  <p className="text-base text-white/50 mt-1 mb-3">@{username}</p>
+                  <h1 className="text-3xl xl:text-4xl font-black flex min-w-0 items-center gap-2 text-white"><Link href={`/profile/${username}`} className="hover:text-[#F06A72] transition-colors">{displayName}</Link> {profile?.verification_tick && profile.verification_tick !== "none" && <VerifiedBadge size={22} variant={profile.verification_tick as any} />}</h1>
+                  <p className="text-base text-white/50 mt-1 mb-3"><Link href={`/profile/${username}`} className="hover:text-white transition-colors">@{username}</Link></p>
                   <div className="flex items-center gap-4 mb-4 flex-wrap">
                     <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors"><InstagramIcon size={14} /><span className="text-xs font-semibold">{profile?.instagram_handle || "@instagram"}</span></a>
                     <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors"><XIcon size={14} /><span className="text-xs font-semibold">{profile?.x_handle || "@x"}</span></a>
@@ -537,14 +537,14 @@ function CreatorDashboardContent() {
 
                 <div className="px-1">
                   <div className="flex items-center justify-between gap-3 mb-1">
-                    <h1 className="text-2xl md:text-3xl font-black flex min-w-0 items-center gap-2 text-white">{displayName} {profile?.verification_tick && profile.verification_tick !== "none" && <VerifiedBadge size={20} variant={profile.verification_tick as any} />}</h1>
+                    <h1 className="text-2xl md:text-3xl font-black flex min-w-0 items-center gap-2 text-white"><Link href={`/profile/${username}`} className="hover:text-[#F06A72] transition-colors">{displayName}</Link> {profile?.verification_tick && profile.verification_tick !== "none" && <VerifiedBadge size={20} variant={profile.verification_tick as any} />}</h1>
                     {userTier === "creator" ? (
                       <Link href="/creator-dashboard/live" className="mr-2 inline-flex shrink-0 items-center gap-2 rounded-full border border-[#E53945]/70 px-3.5 py-2 text-xs font-bold text-[#F06A72] transition hover:bg-[#E53945]/10 sm:px-4 sm:text-sm"><Radio size={15} /> Go Live</Link>
                     ) : (
                       <button onClick={() => { window.location.href = "/upgrade?feature=go_live"; }} className="mr-2 inline-flex shrink-0 items-center gap-2 rounded-full border border-white/20 px-3.5 py-2 text-xs font-bold text-white/55 transition hover:bg-white/5 sm:px-4 sm:text-sm"><Radio size={15} /> Go Live <Lock size={11} /></button>
                     )}
                   </div>
-                  <p className="text-sm md:text-base text-white/50 mb-3">@{username}</p>
+                  <p className="text-sm md:text-base text-white/50 mb-3"><Link href={`/profile/${username}`} className="hover:text-white transition-colors">@{username}</Link></p>
                   
                   <div className="flex items-center gap-4 mb-4">
                     <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors"><InstagramIcon size={14} /><span className="text-xs font-semibold">{profile?.instagram_handle || "@instagram"}</span></a>
