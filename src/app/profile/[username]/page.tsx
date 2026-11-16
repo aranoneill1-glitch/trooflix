@@ -602,7 +602,7 @@ export default function PublicProfilePage() {
                   <div className="flex flex-col gap-2 pb-20">
                     {filteredVideos.map((video) => (
                       <Link key={video.id} href={`/feed?creator_user_id=${encodeURIComponent(profile.user_id)}${resolvedCreatorId ? `&creator_id=${resolvedCreatorId}` : ""}&reel=${video.id}`} className="flex items-center gap-3 bg-[#1c1c1e] border border-white/10 hover:bg-[#242426] rounded-xl p-2 transition">
-                        <div className="w-14 aspect-[3/4] rounded-lg overflow-hidden shrink-0 bg-black">
+                        <div className="relative w-14 aspect-[3/4] rounded-lg overflow-hidden shrink-0 bg-black">
                           <ShortPreviewFrame src={video.videoUrl || video.bitchuteUrl} poster={video.posterUrl || video.backdropUrl} alt="" />
                         </div>
                         <span className="text-sm font-bold text-white truncate">{video.title}</span>
@@ -745,7 +745,7 @@ export default function PublicProfilePage() {
                         const isPodcast = String(video.type || "").toLowerCase() === "podcast";
                         return (
                           <div key={video.id} className="flex items-center gap-3 bg-[#1c1c1e] border border-white/10 rounded-xl p-2 cursor-pointer hover:bg-[#242426] transition">
-                            <div className="w-14 aspect-[3/4] rounded-lg overflow-hidden shrink-0 bg-black">
+                            <div className="relative w-14 aspect-[3/4] rounded-lg overflow-hidden shrink-0 bg-black">
                               <img src={video.posterUrl || video.backdropUrl} alt="" className="w-full h-full object-cover" />
                             </div>
                             <span className="text-sm font-bold text-white truncate flex-1 min-w-0">{video.title}</span>

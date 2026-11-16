@@ -600,7 +600,7 @@ function CreatorDashboardContent() {
                     <div className="flex flex-col gap-2 pb-20">
                       {filteredVideos.map((video) => (
                         <Link key={video.id} href={`/feed?creator_user_id=${encodeURIComponent(user.id)}${video.creatorId ? `&creator_id=${video.creatorId}` : ""}&reel=${video.id}`} className="flex items-center gap-3 bg-white/[0.06] border border-white/10 hover:bg-white/10 rounded-xl p-2 transition">
-                          <div className="w-14 aspect-[3/4] rounded-lg overflow-hidden shrink-0 bg-black">
+                          <div className="relative w-14 aspect-[3/4] rounded-lg overflow-hidden shrink-0 bg-black">
                             <ShortPreviewFrame src={video.videoUrl || video.bitchuteUrl} poster={video.posterUrl || video.backdropUrl} alt="" />
                           </div>
                           <span className="text-sm font-bold text-white truncate">{video.title}</span>
@@ -630,7 +630,7 @@ function CreatorDashboardContent() {
                     <div className="flex flex-col gap-2 pb-20">
                       {filteredVideos.map((video) => (
                         <div key={video.id} className="flex items-center gap-3 bg-white/[0.06] border border-white/10 rounded-xl p-2 cursor-pointer hover:bg-white/10 transition">
-                          <div className="w-14 aspect-[3/4] rounded-lg overflow-hidden shrink-0 bg-black">
+                          <div className="relative w-14 aspect-[3/4] rounded-lg overflow-hidden shrink-0 bg-black">
                             <img src={video.posterUrl || video.backdropUrl} alt="" className="w-full h-full object-cover" />
                           </div>
                           <span className="text-sm font-bold text-white truncate flex-1 min-w-0">{video.title}</span>
@@ -727,7 +727,7 @@ function CreatorDashboardContent() {
                         const isPodcast = String(video.type || "").toLowerCase() === "podcast";
                         return (
                           <div key={video.id} className="flex items-center gap-3 bg-white/[0.06] border border-white/10 rounded-xl p-2 cursor-pointer hover:bg-white/10 transition">
-                            <div className="w-14 aspect-[3/4] rounded-lg overflow-hidden shrink-0 bg-black">
+                            <div className="relative w-14 aspect-[3/4] rounded-lg overflow-hidden shrink-0 bg-black">
                               <img src={video.posterUrl || video.backdropUrl} alt="" className="w-full h-full object-cover" />
                             </div>
                             <span className="text-sm font-bold text-white truncate flex-1 min-w-0">{video.title}</span>
