@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --background: #070709;
+  --background: #08090c;
   --foreground: #f4f4f5;
   --accent: #e53945;
 }
@@ -17,9 +17,7 @@ html {
 
 body {
   min-height: 100vh;
-  background:
-    radial-gradient(ellipse 68% 34% at 50% -12%, rgba(229, 57, 69, 0.13), transparent 72%),
-    var(--background);
+  background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist), Geist, Inter, Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
