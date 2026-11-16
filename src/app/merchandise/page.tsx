@@ -6,7 +6,7 @@ import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import { ArrowLeft, ShoppingBag, Search, Star, X, Plus, ArrowRight, Heart } from "lucide-react";
+import { ArrowLeft, ShoppingBag, Search, X, Plus, ArrowRight, Heart } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 
 export default function MerchandisePage() {
@@ -20,6 +20,7 @@ export default function MerchandisePage() {
   const [creatorProfiles, setCreatorProfiles] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null);
   const [wishlistedIds, setWishlistedIds] = useState<number[]>([]);
+  const [showWishlist, setShowWishlist] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -138,8 +139,11 @@ export default function MerchandisePage() {
     } else if (activeTab === "Books") {
       result = result.filter(p => p.type?.toLowerCase() === 'book');
     }
+    if (showWishlist) {
+      result = result.filter(p => wishlistedIds.includes(p.id));
+    }
     return result;
-  }, [products, searchQuery, activeTab]);
+  }, [products, searchQuery, activeTab, showWishlist, wishlistedIds]);
 
   return (
     <main className="min-h-screen bg-[#09090B] text-white pb-24 lg:pb-20 font-sans selection:bg-[#E53945]/30">
@@ -172,8 +176,17 @@ export default function MerchandisePage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <button className="p-2.5 bg-black/40 border border-white/10 rounded-full hover:bg-white/10 transition text-white/70 hover:text-white">
-              <Heart size={20} />
+            <button
+              onClick={() => setShowWishlist((v) => !v)}
+              aria-label="Show wishlist"
+              className={`relative p-2.5 border rounded-full transition ${showWishlist ? "bg-[#E53945]/20 border-[#E53945] text-[#F06A72]" : "bg-black/40 border-white/10 text-white/70 hover:bg-white/10 hover:text-white"}`}
+            >
+              <Heart size={20} fill={showWishlist ? "currentColor" : "none"} />
+              {wishlistedIds.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-[#E53945] text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-[#09090B]">
+                  {wishlistedIds.length}
+                </span>
+              )}
             </button>
             <button className="relative p-2.5 bg-black/40 border border-white/10 rounded-full hover:bg-white/10 transition text-white/70 hover:text-white">
               <ShoppingBag size={20} />
@@ -246,10 +259,10 @@ export default function MerchandisePage() {
                   
                   {/* Like Button */}
                   <button 
-                    className={`absolute top-2 right-2 p-1.5 rounded-full shadow-md hover:scale-110 transition ${wishlistedIds.includes(p.id) ? "bg-[#D4AF37] text-black" : "bg-black/40 text-white"}`} 
+                    className={`absolute top-2 right-2 p-1.5 rounded-full shadow-md hover:scale-110 transition ${wishlistedIds.includes(p.id) ? "bg-[#E53945] text-white" : "bg-black/40 text-white"}`} 
                     onClick={(e) => toggleWishlist(e, p.id)}
                   >
-                    <Star size={12} fill={wishlistedIds.includes(p.id) ? "currentColor" : "none"} />
+                    <Heart size={12} fill={wishlistedIds.includes(p.id) ? "currentColor" : "none"} />
                   </button>
 
                   {/* Quick Add */}
