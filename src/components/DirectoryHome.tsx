@@ -364,6 +364,52 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
 
       <section className="pt-[calc(env(safe-area-inset-top)+5.5rem)] md:pt-[calc(env(safe-area-inset-top)+7rem)]">
         <div className="max-w-[1600px] mx-auto px-4 md:px-10">
+          <SectionHead title="Shorts" href="/feed" icon={ShortsMark} />
+          <div className="flex overflow-x-auto gap-2 pb-3 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+            {shortsVideos.map((v: any) => {
+              const creator = creators.find((c: any) =>
+                (v.creatorId && c.id === v.creatorId) ||
+                (v.uploaderUserId && c.ownerUserId === v.uploaderUserId) ||
+                (v.uploaderUserId && c.user_id === v.uploaderUserId)
+              );
+              return (
+                <Link key={v.id} href={`/feed?reel=${v.id}`} className="flex flex-col w-[86px] md:w-[110px] shrink-0 group">
+                  <div className="relative w-full aspect-[9/16] rounded-xl overflow-hidden ring-1 ring-white/10 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]">
+                    {(v.videoUrl || v.bitchuteUrl) ? (
+                      <VideoPreview
+                        src={v.videoUrl || v.bitchuteUrl}
+                        poster={v.posterUrl || v.backdropUrl}
+                        className="transition duration-700 ease-out group-hover:scale-[1.04]"
+                      />
+                    ) : (
+                      <img src={v.posterUrl || v.backdropUrl} alt="" className="absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:scale-[1.04]" />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-black/20 pointer-events-none" />
+                    <div className="absolute bottom-0 left-0 right-0 p-1.5">
+                      <p className="flex items-center gap-0.5 text-[9px] font-medium text-white/80"><Eye size={10} strokeWidth={2} />{v.views || 0}</p>
+                    </div>
+                  </div>
+                  <div className="mt-1.5 flex items-center gap-1.5 min-w-0">
+                    <div className="w-5 h-5 rounded-full overflow-hidden bg-white/10 ring-1 ring-white/10 shrink-0">
+                      {creator?.photoUrl ? (
+                        <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-[8px] font-bold text-white/80">
+                          {(creator?.name || "T")[0]}
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-[10px] font-medium text-white/80 truncate group-hover:text-white transition">{creator?.name || "Creator"}</p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div className="max-w-[1600px] mx-auto px-4 md:px-10">
           <SectionHead title="Featured" href="/latest" icon={Star} />
         </div>
         <FeaturedVideoHero
@@ -483,50 +529,6 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
         />
         <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
           {latestVideos.map(renderLongFormCard)}
-        </div>
-      </section>
-
-      <section>
-        <SectionHead title="Shorts" href="/feed" icon={ShortsMark} />
-        <div className="flex overflow-x-auto gap-3 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
-          {shortsVideos.map((v: any) => {
-            const creator = creators.find((c: any) =>
-              (v.creatorId && c.id === v.creatorId) ||
-              (v.uploaderUserId && c.ownerUserId === v.uploaderUserId) ||
-              (v.uploaderUserId && c.user_id === v.uploaderUserId)
-            );
-            return (
-              <Link key={v.id} href={`/feed?reel=${v.id}`} className="flex flex-col w-[132px] md:w-[168px] shrink-0 group">
-                <div className="relative w-full aspect-[9/16] rounded-2xl overflow-hidden ring-1 ring-white/10 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]">
-                  {(v.videoUrl || v.bitchuteUrl) ? (
-                    <VideoPreview
-                      src={v.videoUrl || v.bitchuteUrl}
-                      poster={v.posterUrl || v.backdropUrl}
-                      className="transition duration-700 ease-out group-hover:scale-[1.04]"
-                    />
-                  ) : (
-                    <img src={v.posterUrl || v.backdropUrl} alt="" className="absolute inset-0 w-full h-full object-cover transition duration-700 group-hover:scale-[1.04]" />
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-black/20 pointer-events-none" />
-                  <div className="absolute bottom-0 left-0 right-0 p-3">
-                    <p className="flex items-center gap-1 text-[11px] font-medium text-white/80"><Eye size={13} strokeWidth={2} />{v.views || 0}</p>
-                  </div>
-                </div>
-                <div className="mt-2.5 flex items-center gap-2 min-w-0">
-                  <div className="w-7 h-7 rounded-full overflow-hidden bg-white/10 ring-1 ring-white/10 shrink-0">
-                    {creator?.photoUrl ? (
-                      <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-white/80">
-                        {(creator?.name || "T")[0]}
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-[12px] font-medium text-white/80 truncate group-hover:text-white transition">{creator?.name || "Creator"}</p>
-                </div>
-              </Link>
-            );
-          })}
         </div>
       </section>
 
