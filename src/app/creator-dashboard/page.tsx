@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { 
   Video, CheckCircle2, MessageSquare, Eye, Star, Pencil, 
-  ShoppingBag, LayoutDashboard, LayoutGrid, List, Package, Palette, Camera, Trash2, X, Radio, Inbox, Plus, Play, Lock, Shield, CreditCard, Mic
+  ShoppingBag, LayoutDashboard, LayoutGrid, List, Package, Palette, Camera, Trash2, X, Radio, Inbox, Plus, Play, Lock, Shield, CreditCard, Mic, Film
 } from "lucide-react";
 
 import TopBar from "@/components/TopBar";
@@ -576,7 +576,7 @@ function CreatorDashboardContent() {
                     <button key={tab} onClick={() => setActiveContentTab(tab)} className={`pb-3 text-sm font-bold transition-colors ${activeContentTab === tab ? "text-white border-b-2 border-[#E53945]" : "text-white/50 hover:text-white"}`}>{tab}</button>
                   ))}
                 </div>
-                {activeContentTab !== "Shorts" && (
+                {activeContentTab !== "Shorts" && activeContentTab !== "Videos" && (
                   <div className="flex items-center gap-1 bg-white/10 p-1 rounded-full border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.4)] mb-2">
                     <button onClick={() => setContentView("grid")} className={`p-1.5 rounded-full transition ${contentView === "grid" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}><LayoutGrid size={16} /></button>
                     <button onClick={() => setContentView("list")} className={`p-1.5 rounded-full transition ${contentView === "list" ? "bg-white text-black shadow-sm" : "text-white/50 hover:text-white"}`}><List size={16} /></button>
@@ -594,10 +594,7 @@ function CreatorDashboardContent() {
                     <div className="grid grid-cols-3 gap-[2px] pb-20 lg:grid-cols-6 lg:gap-3">
                       {filteredVideos.map((video) => (
                         <Link key={video.id} href={`/feed?creator_user_id=${encodeURIComponent(user.id)}${video.creatorId ? `&creator_id=${video.creatorId}` : ""}&reel=${video.id}`} aria-label={`Watch ${video.title}`} className="group relative aspect-[3/4] overflow-hidden bg-[#111114] lg:rounded-xl lg:border lg:border-white/10 lg:shadow-lg">
-                          <ShortPreviewFrame src={video.videoUrl || video.bitchuteUrl} poster={video.posterUrl || video.backdropUrl} alt={video.title} />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/10 opacity-90" />
-                          <Play size={17} fill="white" className="absolute right-2 top-2 text-white drop-shadow-md" />
-                          <span className="absolute bottom-2 left-2 right-2 line-clamp-2 text-xs font-semibold leading-tight text-white drop-shadow-md">{video.title}</span>
+                          <ShortPreviewFrame src={video.videoUrl || video.bitchuteUrl} poster={video.posterUrl || video.backdropUrl} alt="" />
                         </Link>
                       ))}
                     </div>
@@ -691,27 +688,20 @@ function CreatorDashboardContent() {
                   {videosLoading ? (
                     <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" /></div>
                   ) : filteredVideos.length === 0 ? (
-                    <div className="text-center py-20 text-white/50">No {activeContentTab.toLowerCase()} found yet.</div>
-                  ) : contentView === "grid" ? (
-                    <div className="grid grid-cols-3 gap-4">
-                      {filteredVideos.map((video) => (
-                        <div key={video.id} className="bg-white/[0.08] backdrop-saturate-150 border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] rounded-2xl overflow-hidden group cursor-pointer shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-                          <div className="relative aspect-square">
-                            <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                            <div className={`absolute top-2 left-2 text-white text-[10px] font-bold px-2 py-0.5 rounded-sm ${video.type?.toLowerCase() === 'long-video' ? 'bg-blue-500' : 'bg-[#E53945]'}`}>{video.type || "VIDEO"}</div>
-                          </div>
-                          <div className="p-3 text-left"><h3 className="text-sm font-bold leading-tight line-clamp-1">{video.title}</h3></div>
-                        </div>
-                      ))}
-                    </div>
+                    <div className="text-center py-20 text-white/50">No videos found yet.</div>
                   ) : (
-                    <div className="flex flex-col gap-3">
-                      {filteredVideos.map((video) => (
-                        <div key={video.id} className="flex items-center gap-4 bg-white/[0.08] backdrop-saturate-150 border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] rounded-2xl p-3 cursor-pointer hover:bg-white/10 transition-colors shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-                          <div className="w-24 h-16 rounded-lg overflow-hidden shrink-0 relative"><img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover" /></div>
-                          <div className="flex-1 min-w-0 text-left"><h3 className="text-sm font-bold text-white truncate">{video.title}</h3></div>
-                        </div>
-                      ))}
+                    <div className="grid grid-cols-3 gap-[2px] pb-20 lg:grid-cols-6 lg:gap-3">
+                      {filteredVideos.map((video) => {
+                        const isPodcast = String(video.type || "").toLowerCase() === "podcast";
+                        return (
+                          <div key={video.id} className="relative aspect-[3/4] overflow-hidden bg-[#111114] lg:rounded-xl lg:border lg:border-white/10 lg:shadow-lg cursor-pointer">
+                            <img src={video.posterUrl || video.backdropUrl} alt="" loading="lazy" className="w-full h-full object-cover" />
+                            <div className="absolute top-2 left-2 p-1.5 rounded-lg bg-black/60 backdrop-blur-sm border border-white/10 text-white shadow-md" title={isPodcast ? "Podcast" : "Long video"}>
+                              {isPodcast ? <Mic size={13} /> : <Film size={13} />}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
