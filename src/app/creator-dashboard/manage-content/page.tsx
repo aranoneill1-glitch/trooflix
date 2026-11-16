@@ -6,7 +6,7 @@ import Link from "next/link";
 import { 
   Plus, Search, Video, Mic, Eye, Heart, 
   MoreVertical, Pencil, Trash2, Play, LayoutGrid, List, 
-  FileText, Crown, Clock, Globe, Lock, ChevronLeft, X, Radio, Star
+  FileText, Crown, Clock, Globe, Lock, ChevronLeft, X, Radio, Star, Sparkles
 } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
@@ -197,16 +197,21 @@ export default function ManageContentPage() {
       <div className="max-w-5xl mx-auto px-4 pt-[calc(env(safe-area-inset-top)+6rem)] pb-6">
         
         {/* HEADER */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-8 gap-3">
           <div>
             <Link href="/creator-dashboard" className="inline-flex items-center gap-1.5 text-sm text-white/50 hover:text-white mb-2 transition">
               <ChevronLeft size={16} /> Back to Dashboard
             </Link>
             <h1 className="text-3xl font-black tracking-tight">Manage Content</h1>
           </div>
-          <button onClick={() => setShowAddContentMenu(true)} className="flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs sm:text-sm px-4 py-2 sm:px-5 sm:py-2.5 rounded-full transition-all whitespace-nowrap shadow-lg shrink-0">
-            <Plus size={16} className="text-[#E53945]" /> Upload New
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <Link href="/creator-dashboard/fix-posters" className="flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs sm:text-sm px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-full transition-all whitespace-nowrap">
+              <Sparkles size={16} className="text-[#E53945]" /> Auto-Fix Posters
+            </Link>
+            <button onClick={() => setShowAddContentMenu(true)} className="flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs sm:text-sm px-4 py-2 sm:px-5 sm:py-2.5 rounded-full transition-all whitespace-nowrap shadow-lg shrink-0">
+              <Plus size={16} className="text-[#E53945]" /> Upload New
+            </button>
+          </div>
         </div>
 
         {/* STATS BAR */}
