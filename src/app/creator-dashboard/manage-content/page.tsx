@@ -73,6 +73,13 @@ export default function ManageContentPage() {
             : [];
           setVideos(myVideos);
           setLoading(false);
+
+          // Deep link from the profile long-press "Edit" action.
+          const editId = new URLSearchParams(window.location.search).get("edit");
+          if (editId) {
+            const target = myVideos.find((v: any) => String(v.id) === String(editId));
+            if (target) openEditModal(target);
+          }
         })
         .catch(() => setLoading(false));
     });
