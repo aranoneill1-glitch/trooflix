@@ -583,13 +583,13 @@ function CreatorDashboardContent() {
               </div>
 
               {activeContentTab === "Shorts" && (
-                <div className="w-full -mx-4 lg:-mx-10 xl:-mx-16">
+                <div className="w-full">
                   {videosLoading ? (
                     <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" /></div>
                   ) : filteredVideos.length === 0 ? (
                     <div className="text-center py-20 text-white/50">No Shorts yet.</div>
                   ) : contentView === "grid" ? (
-                    <div className="grid grid-cols-3 gap-[2px] pb-20 lg:grid-cols-6 lg:gap-3">
+                    <div className="-mx-4 sm:-mx-4 lg:mx-0 grid grid-cols-3 gap-[2px] pb-20 sm:gap-1 lg:grid-cols-6 lg:gap-3">
                       {filteredVideos.map((video) => (
                         <Link key={video.id} href={`/feed?creator_user_id=${encodeURIComponent(user.id)}${video.creatorId ? `&creator_id=${video.creatorId}` : ""}&reel=${video.id}`} aria-label={`Watch ${video.title}`} className="group relative aspect-[3/4] overflow-hidden bg-[#111114] lg:rounded-xl lg:border lg:border-white/10 lg:shadow-lg">
                           <ShortPreviewFrame src={video.videoUrl || video.bitchuteUrl} poster={video.posterUrl || video.backdropUrl} alt="" />
@@ -597,7 +597,7 @@ function CreatorDashboardContent() {
                       ))}
                     </div>
                   ) : (
-                    <div className="flex flex-col gap-2 px-4 pb-20 lg:px-10 xl:px-16">
+                    <div className="flex flex-col gap-2 pb-20">
                       {filteredVideos.map((video) => (
                         <Link key={video.id} href={`/feed?creator_user_id=${encodeURIComponent(user.id)}${video.creatorId ? `&creator_id=${video.creatorId}` : ""}&reel=${video.id}`} className="flex items-center gap-3 bg-white/[0.06] border border-white/10 hover:bg-white/10 rounded-xl p-2 transition">
                           <div className="w-14 aspect-[3/4] rounded-lg overflow-hidden shrink-0 bg-black">
@@ -612,11 +612,11 @@ function CreatorDashboardContent() {
               )}
 
               {activeContentTab === "Premium" && (
-                <div className="w-full -mx-4 lg:-mx-10 xl:-mx-16">
+                <div className="w-full">
                   {filteredVideos.length === 0 ? (
                     <div className="text-center py-20 text-white/50">No premium content yet.</div>
                   ) : contentView === "grid" ? (
-                    <div className="grid grid-cols-3 gap-[2px] pb-20 lg:grid-cols-6 lg:gap-3">
+                    <div className="-mx-4 sm:-mx-4 lg:mx-0 grid grid-cols-3 gap-[2px] pb-20 sm:gap-1 lg:grid-cols-6 lg:gap-3">
                       {filteredVideos.map((video) => (
                         <div key={video.id} className="relative aspect-[3/4] overflow-hidden bg-[#111114] lg:rounded-xl lg:border lg:border-white/10 lg:shadow-lg cursor-pointer">
                           <img src={video.posterUrl || video.backdropUrl} alt="" loading="lazy" className="w-full h-full object-cover" />
@@ -627,7 +627,7 @@ function CreatorDashboardContent() {
                       ))}
                     </div>
                   ) : (
-                    <div className="flex flex-col gap-2 px-4 pb-20 lg:px-10 xl:px-16">
+                    <div className="flex flex-col gap-2 pb-20">
                       {filteredVideos.map((video) => (
                         <div key={video.id} className="flex items-center gap-3 bg-white/[0.06] border border-white/10 rounded-xl p-2 cursor-pointer hover:bg-white/10 transition">
                           <div className="w-14 aspect-[3/4] rounded-lg overflow-hidden shrink-0 bg-black">
@@ -702,13 +702,13 @@ function CreatorDashboardContent() {
               )}
 
               {activeContentTab === "Videos" && (
-                <div className="w-full -mx-4 lg:-mx-10 xl:-mx-16">
+                <div className="w-full">
                   {videosLoading ? (
                     <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" /></div>
                   ) : filteredVideos.length === 0 ? (
                     <div className="text-center py-20 text-white/50">No videos found yet.</div>
                   ) : contentView === "grid" ? (
-                    <div className="grid grid-cols-3 gap-[2px] pb-20 lg:grid-cols-6 lg:gap-3">
+                    <div className="-mx-4 sm:-mx-4 lg:mx-0 grid grid-cols-3 gap-[2px] pb-20 sm:gap-1 lg:grid-cols-6 lg:gap-3">
                       {filteredVideos.map((video) => {
                         const isPodcast = String(video.type || "").toLowerCase() === "podcast";
                         return (
@@ -722,7 +722,7 @@ function CreatorDashboardContent() {
                       })}
                     </div>
                   ) : (
-                    <div className="flex flex-col gap-2 px-4 pb-20 lg:px-10 xl:px-16">
+                    <div className="flex flex-col gap-2 pb-20">
                       {filteredVideos.map((video) => {
                         const isPodcast = String(video.type || "").toLowerCase() === "podcast";
                         return (
