@@ -164,13 +164,13 @@ export default function ImportPage() {
     }
   };
 
-  // Grab a usable preview frame locally. Tries 2s, 5s, 10s, 20s, 30s and keeps
-  // sampling until it finds a frame that isn't blank. Never blocks the import.
+  // Grab a usable preview frame locally. Starts at 30s (instant for a local
+  // blob), then samples other timestamps only if that frame is blank.
   const captureThumbnail = (blob: Blob): Promise<Blob | null> => {
     return new Promise((resolve) => {
       const url = URL.createObjectURL(blob);
       const el = document.createElement("video");
-      const times = [2, 5, 10, 20, 30, 45, 60, 90, 120];
+      const times = [30, 45, 60, 90, 120, 20, 10, 5, 2];
       let done = false;
       let idx = 0;
       let lastBlob: Blob | null = null;

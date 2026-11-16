@@ -113,7 +113,7 @@ export default function FixPostersPage() {
   const frameFromSource = (
     src: string,
     timeoutMs = 25000,
-    times: number[] = [2, 5, 10, 20, 30, 45, 60, 90, 120],
+    times: number[] = [30, 45, 60, 90, 120, 20, 10, 5, 2],
     requireNonBlank = false
   ): Promise<Blob> => {
     return new Promise((resolve, reject) => {
@@ -196,38 +196,20 @@ export default function FixPostersPage() {
     });
   };
 
-  // Pull only the first few MB through the proxy into a same-origin blob, so
-  // decoding never depends on a long-running proxied stream or R2 CORS.
+  // Seek straight to 30s. The browser uses HTTP Range requests, so it only
+  // fetches the bytes around that timestamp — the first 30s are never loaded.
   const grabFrame = async (video: any): Promise<Blob> => {
     const source = video.videoUrl || video.bitchuteUrl;
     if (!source) throw new Error("No playable video file");
-
     const proxyUrl = "/api/proxy-video?url=" + encodeURIComponent(source);
-    let objectUrl: string | null = null;
 
-    try {
-      const res = await fetch(proxyUrl, { headers: { Range: "bytes=0-5000000" } });
-      if (res.ok || res.status === 206) {
-        const blob = await res.blob();
-        if (blob.size > 1024) objectUrl = URL.createObjectURL(blob);
-      }
-    } catch {}
-
-    try {
-      // Partial blob only has a few MB — try early timestamps, and fall back
-      // to the full source if every frame there is blank or unreachable.
-      return await frameFromSource(
-        objectUrl || proxyUrl,
-        objectUrl ? 8000 : 25000,
-        objectUrl ? [2, 5] : [2, 5, 10, 20, 30, 45, 60, 90, 120],
-        !!objectUrl
-      );
-    } catch (e) {
-      if (objectUrl) return await frameFromSource(proxyUrl, 25000, [2, 5, 10, 20, 30, 45, 60, 90, 120], true);
-      throw e;
-    } finally {
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
-    }
+    // Start at 30s, then keep looking if that frame turns out to be blank.
+    return frameFromSource(
+      proxyUrl,
+      30000,
+      [30, 45, 60, 90, 120, 20, 10, 5, 2],
+      true
+    );
   };
 
   const uploadImage = async (blob: Blob): Promise<string> => {
@@ -370,7 +352,7 @@ export default function FixPostersPage() {
           <h1 className="text-3xl font-black mb-2">Thumbnail Generator</h1>
           <p className="text-sm text-white/60 max-w-md mx-auto">
             Generate a thumbnail for every video that doesn&apos;t have one — a frame from
-            the first 2 seconds is grabbed and saved automatically.
+            around the 30-second mark is grabbed and saved automatically.
           </p>
           {focusId && (
             <p className="mt-3 text-xs text-[#F06A72] font-semibold">
