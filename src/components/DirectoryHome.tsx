@@ -479,8 +479,23 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
             }
           }}
         />
-        <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
-          {latestVideos.map(renderLongFormCard)}
+        <div className="flex overflow-x-auto gap-3 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+          {latestVideos.map((v: any) => (
+            <button
+              key={v.id}
+              type="button"
+              onClick={() => onVideoSelect(v)}
+              className="block w-[130px] md:w-[160px] shrink-0 group text-left"
+            >
+              <div className="relative w-full aspect-[9/16] rounded-md overflow-hidden ring-1 ring-white/10 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]">
+                <VideoPreview
+                  src={v.videoUrl || v.bitchuteUrl}
+                  poster={v.posterUrl || v.backdropUrl}
+                  className="transition duration-700 ease-out group-hover:scale-[1.04]"
+                />
+              </div>
+            </button>
+          ))}
         </div>
       </section>
 
