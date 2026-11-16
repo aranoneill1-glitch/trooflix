@@ -293,7 +293,15 @@ export default function ShortsFeedPage() {
       {/* Shared mobile bottom action bar (always visible) */}
       {activeVideo && (
         <div className="lg:hidden fixed inset-x-0 bottom-0 z-[260] pointer-events-auto px-4 pb-[calc(env(safe-area-inset-bottom)+10px)] pt-2">
-          <div className="mx-auto flex w-[72%] max-w-[280px] items-center justify-around rounded-full border border-white/20 bg-white/10 px-3 py-2 backdrop-blur-2xl backdrop-saturate-150 shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
+          <div className="mx-auto flex w-[86%] max-w-[340px] items-center justify-around rounded-full border border-white/20 bg-white/10 px-3 py-2 backdrop-blur-2xl backdrop-saturate-150 shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
+            <button
+              onClick={toggleMute}
+              aria-label={isMuted ? "Unmute reel" : "Mute reel"}
+              className="flex items-center justify-center min-w-0 flex-1 text-white hover:text-white/90 transition"
+            >
+              {isMuted ? <VolumeX size={26} strokeWidth={2.2} /> : <Volume2 size={26} strokeWidth={2.2} />}
+            </button>
+
             <div className="flex items-center justify-center min-w-0 flex-1 text-white">
               <LikeButton key={activeVideo.id} videoId={activeVideo.id} size={28} showCount={true} stacked={false} />
             </div>
@@ -926,17 +934,10 @@ function MobileVideoShort({ video, creator, onViewCounted, isMuted, onToggleMute
       )}
 
       {showPlayIcon && (
-        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 pointer-events-none">
+        <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
           <div className="w-20 h-20 bg-black/50 rounded-full flex items-center justify-center">
             {isPlaying ? <Pause size={40} className="text-white" fill="currentColor" /> : <Play size={40} className="text-white ml-2" fill="currentColor" />}
           </div>
-          <button
-            onClick={(e) => { e.stopPropagation(); onToggleMute(); }}
-            aria-label={isMuted ? "Unmute reel" : "Mute reel"}
-            className="pointer-events-auto w-12 h-12 rounded-full bg-black/50 border border-white/15 flex items-center justify-center text-white"
-          >
-            {isMuted ? <VolumeX size={22} strokeWidth={2.2} /> : <Volume2 size={22} strokeWidth={2.2} />}
-          </button>
         </div>
       )}
 
