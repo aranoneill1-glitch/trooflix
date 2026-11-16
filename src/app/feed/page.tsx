@@ -39,6 +39,7 @@ export default function ShortsFeedPage() {
   const [isMuted, setIsMuted] = useState(true);
   const [commentSheetVideoId, setCommentSheetVideoId] = useState<number | null>(null);
   const [activeVideo, setActiveVideo] = useState<Video | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
   const [viewCounts, setViewCounts] = useState<Record<number, number>>({});
   const [commentCounts, setCommentCounts] = useState<Record<number, number>>({});
   const [composerUser, setComposerUser] = useState<{ id: string; email: string } | null>(null);
@@ -261,17 +262,18 @@ export default function ShortsFeedPage() {
       
       {/* MOBILE VIEW */}
       <div className="lg:hidden w-full h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide relative bg-black pb-[calc(env(safe-area-inset-bottom)+62px)]">
-        {videos.map((video) => {
+        {videos.map((video, index) => {
           const creator = creators.find((c) => String(c.id) === String(video.creatorId)) || null;
           return (
             <MobileVideoShort
               key={video.id}
               video={video}
               creator={creator}
+              shouldLoad={Math.abs(index - activeIndex) <= 1}
               onViewCounted={() => setViewCounts((prev) => ({ ...prev, [video.id]: (prev[video.id] ?? Number(video.views || 0)) + 1 }))}
               isMuted={isMuted}
               onToggleMute={toggleMute}
-              onSetActive={() => setActiveVideo(video)}
+              onSetActive={() => { setActiveVideo(video); setActiveIndex(index); }}
             />
           );
         })}
@@ -335,12 +337,13 @@ export default function ShortsFeedPage() {
           ref={videoContainerRef}
           className="w-[35%] h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide flex flex-col items-end shrink-0"
         >
-          {videos.map((video) => (
+          {videos.map((video, index) => (
             <DesktopVideoShort
               key={video.id}
               video={video}
+              shouldLoad={Math.abs(index - activeIndex) <= 1}
               isMuted={isMuted}
-              onSetActive={() => setActiveVideo(video)}
+              onSetActive={() => { setActiveVideo(video); setActiveIndex(index); }}
             />
           ))}
         </div>
@@ -421,7 +424,7 @@ export default function ShortsFeedPage() {
   );
 }
 
-function DesktopVideoShort({ video, isMuted, onSetActive }: { video: Video, isMuted: boolean, onSetActive: () => void }) {
+function DesktopVideoShort({ video, isMuted, onSetActive, shouldLoad = true }: { video: Video, isMuted: boolean, onSetActive: () => void, shouldLoad?: boolean }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isActive, setIsActive] = useState(false);
@@ -512,12 +515,16 @@ function DesktopVideoShort({ video, isMuted, onSetActive }: { video: Video, isMu
             <video
               ref={videoRef}
               data-short-player
-              src={video.videoUrl || video.bitchuteUrl}
+              src={shouldLoad ? (video.videoUrl || video.bitchuteUrl) : undefined}
               poster={video.posterUrl}
               loop
               playsInline
               muted={isMuted || !isActive}
-              preload="auto"
+              preload={shouldLoad ? "auto" : "none"}
+              onCanPlay={() => {
+                const v = videoRef.current;
+                if (v && isActive && v.paused) v.play().catch(() => {});
+              }}
               className="w-full h-full object-cover cursor-pointer"
               onClick={handleVideoClick}
             />
@@ -548,7 +555,7 @@ function DesktopVideoShort({ video, isMuted, onSetActive }: { video: Video, isMu
   );
 }
 
-function MobileVideoShort({ video, creator, onViewCounted, isMuted, onToggleMute, onSetActive }: { video: Video, creator: Creator | null, onViewCounted: () => void, isMuted: boolean, onToggleMute: () => void, onSetActive: () => void }) {
+function MobileVideoShort({ video, creator, onViewCounted, isMuted, onToggleMute, onSetActive, shouldLoad = true }: { video: Video, creator: Creator | null, onViewCounted: () => void, isMuted: boolean, onToggleMute: () => void, onSetActive: () => void, shouldLoad?: boolean }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isActive, setIsActive] = useState(false);
   const onSetActiveRef = useRef(onSetActive);
@@ -556,6 +563,7 @@ function MobileVideoShort({ video, creator, onViewCounted, isMuted, onToggleMute
   onSetActiveRef.current = onSetActive;
   isMutedRef.current = isMuted;
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isBuffering, setIsBuffering] = useState(false);
   const [progress, setProgress] = useState(0);
   const progressBarRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -760,6 +768,13 @@ function MobileVideoShort({ video, creator, onViewCounted, isMuted, onToggleMute
     videoRef.current.muted = isMuted || !isActive;
   }, [isMuted, isActive]);
 
+  // When a nearby reel becomes loadable, start it if it's the active one.
+  useEffect(() => {
+    if (!shouldLoad || !isActive) return;
+    const v = videoRef.current;
+    if (v && v.paused) v.play().catch(() => {});
+  }, [shouldLoad, isActive]);
+
   const requestRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -830,25 +845,33 @@ function MobileVideoShort({ video, creator, onViewCounted, isMuted, onToggleMute
       <video
         ref={videoRef}
         data-short-player
-        src={videoSrc}
+        src={shouldLoad ? videoSrc : undefined}
+        poster={video.posterUrl}
         loop
         playsInline
         muted={isMuted || !isActive}
-        preload="auto"
+        preload={shouldLoad ? "auto" : "none"}
+        onLoadStart={() => { if (isActive) setIsBuffering(true); }}
+        onWaiting={() => { if (isActive) setIsBuffering(true); }}
         onLoadedData={() => {
           if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
           setHasError(false);
           setShowError(false);
+          setIsBuffering(false);
         }}
         onCanPlay={() => {
           if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
           setHasError(false);
           setShowError(false);
+          setIsBuffering(false);
+          const v = videoRef.current;
+          if (v && isActive && v.paused) v.play().catch(() => {});
         }}
         onPlaying={() => {
           if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
           setHasError(false);
           setShowError(false);
+          setIsBuffering(false);
           setIsPlaying(true);
         }}
         onPause={() => setIsPlaying(false)}
@@ -867,6 +890,12 @@ function MobileVideoShort({ video, creator, onViewCounted, isMuted, onToggleMute
         className="w-full h-full object-cover cursor-pointer"
         onClick={handleVideoTap}
       />
+
+      {isActive && isBuffering && !hasError && (
+        <div className="absolute inset-0 z-[15] flex items-center justify-center pointer-events-none">
+          <div className="w-10 h-10 border-[3px] border-white/25 border-t-white rounded-full animate-spin" />
+        </div>
+      )}
 
       <AnimatePresence>
         {floatingHearts.map((h) => (

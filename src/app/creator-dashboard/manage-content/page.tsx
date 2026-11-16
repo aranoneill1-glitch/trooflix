@@ -245,12 +245,12 @@ export default function ManageContentPage() {
               <h2 className="text-base sm:text-lg font-black text-white">Thumbnail Generator</h2>
               <p className="text-xs sm:text-sm text-white/55 mt-0.5">
                 {missingThumbnails > 0
-                  ? `${missingThumbnails} of your videos ${missingThumbnails === 1 ? "doesn't" : "don't"} have a real thumbnail. Generate or upload one now.`
+                  ? `${missingThumbnails} of your videos ${missingThumbnails === 1 ? "doesn't" : "don't"} have a real thumbnail. Capture them all in one tap.`
                   : "All your videos have thumbnails. Open the generator to replace any of them anytime."}
               </p>
             </div>
             <span className="inline-flex items-center gap-2 bg-[#E53945] text-white font-bold text-xs sm:text-sm px-5 py-2.5 rounded-xl group-hover:bg-[#d12e39] transition shrink-0">
-              <Sparkles size={16} /> {missingThumbnails > 0 ? "Generate thumbnails" : "Open generator"}
+              <Sparkles size={16} /> {missingThumbnails > 0 ? "Capture all thumbnails" : "Open generator"}
             </span>
           </div>
         </Link>
