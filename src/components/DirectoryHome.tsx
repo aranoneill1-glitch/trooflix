@@ -514,10 +514,10 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
       <section>
         <div className="max-w-[1600px] mx-auto px-4 md:px-10">
           <SectionHead title="Shorts" href="/feed" icon={Clapperboard} />
-          <div className="overflow-x-auto scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0 pb-3">
-            <div className="grid grid-flow-col grid-rows-3 auto-cols-[86px] gap-1.5 md:auto-cols-[110px] md:gap-2 w-max">
+          <div className="overflow-x-auto scrollbar-hide pb-3">
+            <div className="flex flex-col flex-wrap gap-1.5 h-[474px] md:gap-2 md:h-[606px]">
               {shortsVideos.map((v: any) => (
-                <Link key={v.id} href={`/feed?reel=${v.id}`} className="block aspect-[9/16] overflow-hidden rounded-md ring-1 ring-white/10 group">
+                <Link key={v.id} href={`/feed?reel=${v.id}`} className="block w-[86px] h-[153px] shrink-0 overflow-hidden rounded-md ring-1 ring-white/10 group md:w-[110px] md:h-[196px]">
                   <VideoPreview
                     src={v.videoUrl || v.bitchuteUrl}
                     poster={v.posterUrl || v.backdropUrl}
