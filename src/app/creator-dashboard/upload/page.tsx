@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, CheckCircle2, Image as ImageIcon, Globe, Lock, Home, User, UploadCloud, MessageSquare, ChevronRight, Scissors } from "lucide-react";
 import Link from "next/link";
@@ -103,6 +103,15 @@ function UploadContent() {
     if (longFormType === "Podcast" && category === "History") setCategory("Podcasts");
     if (longFormType === "Documentary" && (category === "History" || category === "Podcasts")) setCategory("Documentaries");
   }, [longFormType, category]);
+
+  // Open the native camera roll immediately for media upload types.
+  const autoPickedRef = useRef(false);
+  useEffect(() => {
+    if (checkingTier || isTweet || autoPickedRef.current) return;
+    autoPickedRef.current = true;
+    const t = setTimeout(() => document.getElementById("media-upload")?.click(), 150);
+    return () => clearTimeout(t);
+  }, [checkingTier, isTweet]);
 
   const uploadToSupabase = async (file: File, label: string) => {
     if (file.size === 0) throw new Error(label + " is 0 bytes. On iPhone, wait for iCloud download first.");
