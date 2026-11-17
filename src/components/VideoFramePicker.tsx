@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { X, Play, Pause, Check, Loader2, Image as ImageIcon } from "lucide-react";
+import { X, Play, Pause, Check, Loader2, Image as ImageIcon, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 
 type Props = {
   src: string;
@@ -20,10 +20,64 @@ function formatTime(seconds: number) {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
+function clampPan(x: number, y: number, zoomLevel: number, width: number, height: number) {
+  const maxX = (width * (zoomLevel - 1)) / 2;
+  const maxY = (height * (zoomLevel - 1)) / 2;
+  return {
+    x: Math.min(Math.max(x, -maxX), maxX),
+    y: Math.min(Math.max(y, -maxY), maxY),
+  };
+}
+
+function getCrop(video: HTMLVideoElement, container: HTMLDivElement, zoomLevel: number, panX: number, panY: number) {
+  const vw = video.videoWidth;
+  const vh = video.videoHeight;
+  if (!vw || !vh) return null;
+
+  const rect = container.getBoundingClientRect();
+  const cw = rect.width;
+  const ch = rect.height;
+  if (!cw || !ch) return null;
+
+  const aspect = vw / vh;
+  let contentW: number, contentH: number, offX = 0, offY = 0;
+  if (cw / ch > aspect) {
+    contentH = ch;
+    contentW = ch * aspect;
+    offX = (cw - contentW) / 2;
+  } else {
+    contentW = cw;
+    contentH = cw / aspect;
+    offY = (ch - contentH) / 2;
+  }
+
+  const cx = cw / 2;
+  const cy = ch / 2;
+  const visibleLeft = cx + (-cx - panX) / zoomLevel;
+  const visibleTop = cy + (-cy - panY) / zoomLevel;
+  const visibleW = cw / zoomLevel;
+  const visibleH = ch / zoomLevel;
+
+  const sx = ((visibleLeft - offX) / contentW) * vw;
+  const sy = ((visibleTop - offY) / contentH) * vh;
+  const sw = (visibleW / contentW) * vw;
+  const sh = (visibleH / contentH) * vh;
+
+  const nx = Math.min(Math.max(sx, 0), vw - 1);
+  const ny = Math.min(Math.max(sy, 0), vh - 1);
+  return { sx: nx, sy: ny, sw: Math.min(sw, vw - nx), sh: Math.min(sh, vh - ny) };
+}
+
 export default function VideoFramePicker({ src, title, onClose, onPick, onUploadImage }: Props) {
   const proxySrc = "/api/proxy-video?url=" + encodeURIComponent(src);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const dragRef = useRef<{ startX: number; startY: number; panX: number; panY: number } | null>(null);
+  const pinchRef = useRef<{ distance: number; zoom: number } | null>(null);
+  const activePointers = useRef<Map<number, { x: number; y: number }>>(new Map());
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
   const [duration, setDuration] = useState(0);
   const [current, setCurrent] = useState(0);
   const [playing, setPlaying] = useState(false);
@@ -122,18 +176,43 @@ export default function VideoFramePicker({ src, title, onClose, onPick, onUpload
     setCurrent(time);
   };
 
+  const setZoomLevel = (next: number) => {
+    const z = Math.min(4, Math.max(1, next));
+    setZoom(z);
+    const rect = containerRef.current?.getBoundingClientRect();
+    setPan((p) => clampPan(p.x, p.y, z, rect?.width || 300, rect?.height || 500));
+  };
+
+  const resetZoom = () => {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  };
+
   const captureCurrentFrame = () => {
     const v = videoRef.current;
-    if (!v || working) return;
+    const container = containerRef.current;
+    if (!v || !container || working) return;
     setWorking(true);
     setError("");
     try {
+      const crop = getCrop(v, container, zoom, pan.x, pan.y);
+      if (!crop) throw new Error("Video not ready yet.");
+
+      const targetAspect = crop.sw / crop.sh;
+      const maxSide = 1280;
+      let width = maxSide;
+      let height = Math.round(maxSide / targetAspect);
+      if (height > maxSide) {
+        height = maxSide;
+        width = Math.round(maxSide * targetAspect);
+      }
+
       const canvas = document.createElement("canvas");
-      canvas.width = v.videoWidth || 720;
-      canvas.height = v.videoHeight || 1280;
+      canvas.width = Math.max(1, width);
+      canvas.height = Math.max(1, height);
       const ctx = canvas.getContext("2d");
       if (!ctx) throw new Error("Canvas unavailable");
-      ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
+      ctx.drawImage(v, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, canvas.width, canvas.height);
       canvas.toBlob(
         (blob) => {
           setWorking(false);
@@ -141,12 +220,56 @@ export default function VideoFramePicker({ src, title, onClose, onPick, onUpload
           else setError("Could not capture this frame. Try another one.");
         },
         "image/jpeg",
-        0.85
+        0.88
       );
     } catch (e: any) {
       setWorking(false);
       setError(e?.message || "Could not capture this frame.");
     }
+  };
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    activePointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+    if (activePointers.current.size === 2) {
+      const pts = Array.from(activePointers.current.values());
+      pinchRef.current = {
+        distance: Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y),
+        zoom,
+      };
+      dragRef.current = null;
+      return;
+    }
+    if (zoom <= 1) return;
+    dragRef.current = { startX: e.clientX, startY: e.clientY, panX: pan.x, panY: pan.y };
+  };
+
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (activePointers.current.has(e.pointerId)) {
+      activePointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    }
+    if (activePointers.current.size === 2 && pinchRef.current) {
+      const pts = Array.from(activePointers.current.values());
+      const distance = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+      setZoomLevel((pinchRef.current.zoom * distance) / pinchRef.current.distance);
+      return;
+    }
+    const drag = dragRef.current;
+    if (!drag) return;
+    const rect = containerRef.current?.getBoundingClientRect();
+    setPan(clampPan(
+      drag.panX + (e.clientX - drag.startX),
+      drag.panY + (e.clientY - drag.startY),
+      zoom,
+      rect?.width || 300,
+      rect?.height || 500
+    ));
+  };
+
+  const onPointerUp = (e: React.PointerEvent) => {
+    activePointers.current.delete(e.pointerId);
+    dragRef.current = null;
+    pinchRef.current = null;
   };
 
   return (
@@ -166,7 +289,15 @@ export default function VideoFramePicker({ src, title, onClose, onPick, onUpload
       </div>
 
       {/* Video */}
-      <div className="relative flex-1 min-h-0 flex items-center justify-center bg-black overflow-hidden">
+      <div
+        ref={containerRef}
+        className="relative flex-1 min-h-0 flex items-center justify-center bg-black overflow-hidden touch-none"
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+        onWheel={(e) => setZoomLevel(zoom + (e.deltaY < 0 ? 0.25 : -0.25))}
+      >
         <video
           ref={videoRef}
           src={proxySrc}
@@ -178,8 +309,9 @@ export default function VideoFramePicker({ src, title, onClose, onPick, onUpload
           onTimeUpdate={(e) => setCurrent(e.currentTarget.currentTime)}
           onEnded={() => setPlaying(false)}
           className="h-full max-h-full w-full object-contain"
+          style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})` }}
         />
-        {!playing && (
+        {!playing && zoom <= 1 && (
           <button
             onClick={togglePlay}
             aria-label="Play"
@@ -190,15 +322,36 @@ export default function VideoFramePicker({ src, title, onClose, onPick, onUpload
             </span>
           </button>
         )}
+        {!playing && zoom > 1 && (
+          <button onClick={togglePlay} aria-label="Play" className="absolute bottom-3 left-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md">
+            <Play size={16} fill="currentColor" className="ml-0.5" />
+          </button>
+        )}
         {playing && (
-          <button onClick={togglePlay} aria-label="Pause" className="absolute bottom-3 left-3 flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md">
+          <button onClick={togglePlay} aria-label="Pause" className="absolute bottom-3 left-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md">
             <Pause size={18} fill="currentColor" />
           </button>
         )}
+        <div className="pointer-events-none absolute right-3 top-3 rounded-full bg-black/60 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur-md">
+          {zoom.toFixed(1)}x
+        </div>
       </div>
 
       {/* Scrubber + filmstrip */}
       <div className="shrink-0 border-t border-white/10 bg-[#111114] px-4 py-3">
+        <div className="mb-2 flex items-center gap-2">
+          <button onClick={() => setZoomLevel(zoom - 0.25)} aria-label="Zoom out" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20">
+            <ZoomOut size={15} />
+          </button>
+          <button onClick={() => setZoomLevel(zoom + 0.25)} aria-label="Zoom in" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20">
+            <ZoomIn size={15} />
+          </button>
+          <button onClick={resetZoom} aria-label="Reset zoom" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20">
+            <RotateCcw size={14} />
+          </button>
+          <span className="text-[10px] text-white/40 whitespace-nowrap">Pinch / drag to zoom &amp; pan</span>
+        </div>
+
         <div className="mb-2 flex items-center gap-3">
           <span className="text-[11px] font-semibold tabular-nums text-white/60 w-10">{formatTime(current)}</span>
           <input
