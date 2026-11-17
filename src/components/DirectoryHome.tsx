@@ -259,7 +259,7 @@ export function FeaturedVideoHero({ videos, className = "", activeIndex: control
     <section
       aria-label="Featured videos"
       onClick={playing ? undefined : startPlayback}
-      className={`relative isolate left-1/2 -translate-x-1/2 w-[92vw] h-[56.25vw] max-h-[240px] rounded-2xl overflow-hidden bg-[#08090c] ring-1 ring-white/10 md:mt-0 md:w-screen md:h-auto md:aspect-video md:max-h-none md:rounded-none md:ring-0 ${canPlay && !playing ? "cursor-pointer" : ""} ${className}`}
+      className={`relative isolate left-1/2 -translate-x-1/2 w-[92vw] h-[56.25vw] max-h-[240px] rounded-2xl overflow-hidden bg-[#08090c] md:mt-0 md:w-screen md:h-auto md:aspect-video md:max-h-none md:rounded-none ${canPlay && !playing ? "cursor-pointer" : ""} ${className}`}
     >
       <img
         src={image}
@@ -372,7 +372,7 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
     );
     return (
       <button key={v.id} type="button" onClick={() => onVideoSelect(v)} className={`flex flex-col shrink-0 group text-left ${compact ? "w-[187px] md:w-[216px]" : "w-[260px] md:w-[300px]"}`}>
-        <div className="relative aspect-video rounded-2xl overflow-hidden bg-[#141418] ring-1 ring-white/10 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]">
+        <div className="relative aspect-video rounded-2xl overflow-hidden bg-[#141418] shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]">
           <VideoPreview
             src={v.videoUrl || v.bitchuteUrl}
             poster={v.posterUrl || v.backdropUrl}
@@ -439,7 +439,7 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
                 onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onVideoSelect(v); } }}
                 className="block w-[162px] md:w-[204px] shrink-0 group text-left cursor-pointer"
               >
-                <div className="relative w-full aspect-video rounded-2xl overflow-hidden ring-1 ring-white/10 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]">
+                <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]">
                   <VideoPreview
                     src={v.videoUrl || v.bitchuteUrl}
                     poster={v.posterUrl || v.backdropUrl}
@@ -498,10 +498,10 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
                   type="button"
                   onClick={() => setFeaturedIndex(i)}
                   aria-label={`Show featured: ${v.title}`}
-                  className={`relative shrink-0 w-[150px] md:w-[220px] aspect-video overflow-hidden rounded-xl ring-1 transition-all ${
+                  className={`relative shrink-0 w-[150px] md:w-[220px] aspect-video overflow-hidden rounded-xl transition-all ${
                     i === featuredIndex
-                      ? "ring-1 ring-white opacity-100"
-                      : "ring-white/10 opacity-60 hover:opacity-100"
+                      ? "opacity-100"
+                      : "opacity-60 hover:opacity-100"
                   }`}
                 >
                   <img src={v.posterUrl || v.backdropUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
@@ -555,7 +555,7 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
               );
               return (
                 <button key={v.id} type="button" onClick={() => onVideoSelect(v)} className="flex flex-col w-[260px] md:w-[300px] shrink-0 group text-left">
-                  <div className="relative aspect-video rounded-2xl overflow-hidden bg-[#141418] ring-1 ring-white/10 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]">
+                  <div className="relative aspect-video rounded-2xl overflow-hidden bg-[#141418] shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]">
                     <img
                       src={v.posterUrl || v.backdropUrl}
                       alt={v.title || ""}
@@ -600,7 +600,7 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
           <button
             type="button"
             onClick={() => onVideoSelect(podcastVideos[0])}
-            className="relative mb-4 block w-full aspect-[21/9] overflow-hidden rounded-2xl bg-[#141418] text-left ring-1 ring-white/10 group"
+            className="relative mb-4 block w-full aspect-[21/9] overflow-hidden rounded-2xl bg-[#141418] text-left group"
           >
             <img
               src={podcastVideos[0].posterUrl || podcastVideos[0].backdropUrl}
@@ -640,7 +640,7 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
           </Link>
           <Link href="/merchandise" className="text-[13px] font-medium text-white/45 hover:text-white transition mb-1">View all</Link>
         </div>
-        <Link href="/merchandise" className="relative block w-full aspect-[21/9] overflow-hidden rounded-2xl ring-1 ring-white/10 group">
+        <Link href="/merchandise" className="relative block w-full aspect-[21/9] overflow-hidden rounded-2xl group">
           <img
             src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=2000&auto=format&fit=crop"
             alt="Creator merchandise and apparel"
