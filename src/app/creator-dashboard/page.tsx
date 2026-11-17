@@ -20,6 +20,7 @@ import { GripVertical } from "lucide-react";
 import CreatorStudioNav from "@/components/CreatorStudioNav";
 import ShortPreviewFrame from "@/components/ShortPreviewFrame";
 import AppleVideoPlayer from "@/components/AppleVideoPlayer";
+import VideoFramePicker from "@/components/VideoFramePicker";
 
 
 const InstagramIcon = ({ size = 16 }: { size?: number }) => (
@@ -87,10 +88,10 @@ function CreatorDashboardContent() {
   const videoPressTimer = useRef<NodeJS.Timeout | null>(null);
   const longPressFired = useRef(false);
   const [selectedVideoAction, setSelectedVideoAction] = useState<any>(null);
-  const previewInputRef = useRef<HTMLInputElement>(null);
   const [uploadingPreview, setUploadingPreview] = useState(false);
   const [previewError, setPreviewError] = useState("");
   const [playingVideo, setPlayingVideo] = useState<any>(null);
+  const [framePickerVideo, setFramePickerVideo] = useState<any>(null);
   const [isReordering, setIsReordering] = useState(false);
   const [selectedMerchItem, setSelectedMerchItem] = useState<any>(null);
   const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
@@ -412,21 +413,10 @@ function CreatorDashboardContent() {
   const startPreviewChange = (video: any) => {
     setPreviewError("");
     setSelectedVideoAction(null);
-    if (previewInputRef.current) {
-      (previewInputRef.current as any).__videoId = video.id;
-      previewInputRef.current.click();
-    }
+    setFramePickerVideo(video);
   };
 
-  const handlePreviewFile = async (file?: File) => {
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      setPreviewError("Please choose an image file.");
-      return;
-    }
-    const videoId = (previewInputRef.current as any)?.__videoId;
-    if (!videoId) return;
-
+  const uploadPreviewBlob = async (videoId: number, blob: Blob, filename: string, contentType: string) => {
     setUploadingPreview(true);
     setPreviewError("");
     try {
@@ -441,15 +431,15 @@ function CreatorDashboardContent() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ filename: file.name, contentType: file.type, folder: "thumbnails" }),
+        body: JSON.stringify({ filename, contentType, folder: "thumbnails" }),
       });
       if (!signRes.ok) throw new Error("Could not start preview upload.");
       const { signedUrl, publicUrl } = await signRes.json();
 
       const putRes = await fetch(signedUrl, {
         method: "PUT",
-        headers: { "Content-Type": file.type },
-        body: file,
+        headers: { "Content-Type": contentType },
+        body: blob,
       });
       if (!putRes.ok) throw new Error("Could not upload preview image.");
 
@@ -469,8 +459,14 @@ function CreatorDashboardContent() {
       alert(e?.message || "Could not change preview.");
     } finally {
       setUploadingPreview(false);
-      if (previewInputRef.current) previewInputRef.current.value = "";
     }
+  };
+
+  const handleFramePick = async (blob: Blob) => {
+    if (!framePickerVideo) return;
+    const id = framePickerVideo.id;
+    setFramePickerVideo(null);
+    await uploadPreviewBlob(id, blob, `preview-${id}.jpg`, blob.type || "image/jpeg");
   };
 
   const handleDelete = async (id: number) => {
@@ -1306,12 +1302,6 @@ function CreatorDashboardContent() {
             >
               <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mb-4" />
               <p className="text-center text-sm font-bold text-white truncate mb-5 px-4">{selectedVideoAction.title || "Video"}</p>
-              {uploadingPreview && (
-                <p className="mb-3 flex items-center justify-center gap-2 text-xs text-white/60">
-                  <Loader2 size={14} className="animate-spin" /> Uploading preview…
-                </p>
-              )}
-              {previewError && <p className="mb-3 text-center text-xs text-red-400">{previewError}</p>}
               <div className="flex flex-col gap-2">
                 <button
                   onClick={() => { const v = selectedVideoAction; setSelectedVideoAction(null); window.location.href = `/creator-dashboard/manage-content?edit=${v.id}`; }}
@@ -1338,6 +1328,23 @@ function CreatorDashboardContent() {
         )}
       </AnimatePresence>
 
+        {framePickerVideo && (
+          <VideoFramePicker
+            src={framePickerVideo.videoUrl || framePickerVideo.bitchuteUrl || ""}
+            title={framePickerVideo.title}
+            onClose={() => setFramePickerVideo(null)}
+            onPick={handleFramePick}
+          />
+        )}
+
+        {uploadingPreview && (
+          <div className="fixed inset-0 z-[600] flex items-center justify-center bg-black/70">
+            <div className="flex items-center gap-3 rounded-2xl bg-[#1c1c1e] border border-white/10 px-6 py-4 text-sm font-bold text-white">
+              <Loader2 size={18} className="animate-spin text-[#E53945]" /> Saving preview…
+            </div>
+          </div>
+        )}
+
         {playingVideo && (
           <AppleVideoPlayer
             src={playingVideo.videoUrl ?? playingVideo.bitchuteUrl ?? ""}
@@ -1348,14 +1355,6 @@ function CreatorDashboardContent() {
             isPremium={playingVideo.visibility === "premium"}
           />
         )}
-
-        <input
-          ref={previewInputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(e) => handlePreviewFile(e.target.files?.[0])}
-        />
 
         <MobileBottomNav />
       </div>
