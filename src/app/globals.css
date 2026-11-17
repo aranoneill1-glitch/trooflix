@@ -13,6 +13,8 @@ html {
   scroll-behavior: smooth;
   scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
   scrollbar-width: thin;
+  overscroll-behavior-y: none;
+  background: var(--background);
 }
 
 body {
@@ -22,6 +24,7 @@ body {
   font-family: var(--font-geist), Geist, Inter, Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  overscroll-behavior-y: none;
 }
 
 ::selection {
