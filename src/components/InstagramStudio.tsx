@@ -87,6 +87,7 @@ export default function InstagramStudio({ file, onCancel, onApply }: Props) {
   const [selectedOverlayId, setSelectedOverlayId] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
+  const [thumbs, setThumbs] = useState<string[]>([]);
   const [previewLoading, setPreviewLoading] = useState(false);
 
   const [edit, setEdit] = useState<EditState>({
@@ -100,7 +101,9 @@ export default function InstagramStudio({ file, onCancel, onApply }: Props) {
   const audioElRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
-  const deviceInputRef = useRef<HTMLInputElement>(null);
+  const textTrackRef = useRef<HTMLDivElement>(null);
+  const audioTrackRef = useRef<HTMLDivElement>(null);
+  const [dragTextClip, setDragTextClip] = useState<{ id: string; mode: "start" | "end" | "move"; startX: number; s: number; e: number } | null>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
   const rafRef = useRef<number | null>(null);
   const exportingRef = useRef(false);
@@ -202,6 +205,43 @@ export default function InstagramStudio({ file, onCancel, onApply }: Props) {
     v.addEventListener("loadedmetadata", onMeta);
     return () => v.removeEventListener("loadedmetadata", onMeta);
   }, [phase, edit.video.uri]);
+
+  // Build a real thumbnail strip for the video timeline
+  useEffect(() => {
+    if (!edit.video.uri || !(edit.video.trimEnd > 0)) return;
+    let cancelled = false;
+    const v = document.createElement("video");
+    v.src = edit.video.uri;
+    v.muted = true;
+    v.playsInline = true;
+    v.preload = "auto";
+    const count = 18;
+    const out: string[] = new Array(count).fill("");
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    const grab = (i: number) => new Promise<void>(resolve => {
+      if (cancelled || !ctx) return resolve();
+      const t = (edit.video.trimEnd * i) / Math.max(1, count - 1);
+      const done = () => {
+        try {
+          const w = 80;
+          const h = Math.max(45, Math.round((v.videoHeight / Math.max(1, v.videoWidth)) * w));
+          canvas.width = w; canvas.height = h;
+          ctx.drawImage(v, 0, 0, w, h);
+          out[i] = canvas.toDataURL("image/jpeg", 0.45);
+        } catch {}
+        v.removeEventListener("seeked", done);
+        resolve();
+      };
+      v.addEventListener("seeked", done);
+      try { v.currentTime = Math.min(edit.video.trimEnd - 0.01, Math.max(0, t)); } catch { v.removeEventListener("seeked", done); resolve(); }
+      setTimeout(() => { v.removeEventListener("seeked", done); resolve(); }, 2500);
+    });
+    v.onloadedmetadata = async () => {
+      for (let i = 0; i < count; i++) { if (cancelled) break; await grab(i); if (!cancelled) setThumbs([...out]); }
+    };
+    return () => { cancelled = true; v.src = ""; };
+  }, [edit.video.uri, edit.video.trimEnd]);
 
   const togglePlay = () => {
     const v = videoRef.current;
@@ -452,17 +492,43 @@ export default function InstagramStudio({ file, onCancel, onApply }: Props) {
     return Array.from({ length: n }, (_, i) => 18 + Math.abs(Math.sin(i * 1.7) * Math.cos(i * 0.43)) * 60);
   }, []);
 
-  const pxToTime = (clientX: number) => {
-    const el = timelineRef.current;
+  const timeAt = (clientX: number, el: HTMLElement | null) => {
     if (!el || !duration) return 0;
     const r = el.getBoundingClientRect();
     return clamp((clientX - r.left) / r.width, 0, 1) * duration;
   };
+  const pxToTime = (clientX: number) => timeAt(clientX, timelineRef.current);
   const onTimelineDown = (e: React.PointerEvent) => {
-    const t = pxToTime(e.clientX);
-    seek(t);
+    haptic();
+    seek(timeAt(e.clientX, e.currentTarget as HTMLElement));
     (e.currentTarget as any).setPointerCapture?.(e.pointerId);
   };
+
+  useEffect(() => {
+    if (!dragTextClip) return;
+    const onMove = (ev: PointerEvent) => {
+      const track = textTrackRef.current;
+      if (!track) return;
+      const rect = track.getBoundingClientRect();
+      const t = timeAt(ev.clientX, track);
+      const dx = ((ev.clientX - dragTextClip.startX) / Math.max(1, rect.width)) * duration;
+      setEdit(prev => ({
+        ...prev,
+        textOverlays: prev.textOverlays.map(o => {
+          if (o.id !== dragTextClip.id) return o;
+          if (dragTextClip.mode === "start") return { ...o, startTime: clamp(t, 0, o.endTime - 0.3) };
+          if (dragTextClip.mode === "end") return { ...o, endTime: clamp(t, o.startTime + 0.3, duration) };
+          const len = dragTextClip.e - dragTextClip.s;
+          const ns = clamp(dragTextClip.s + dx, 0, Math.max(0, duration - len));
+          return { ...o, startTime: ns, endTime: ns + len };
+        }),
+      }));
+    };
+    const onUp = () => setDragTextClip(null);
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    return () => { window.removeEventListener("pointermove", onMove); window.removeEventListener("pointerup", onUp); };
+  }, [dragTextClip, duration]);
 
   // Editor screen
   return (
@@ -606,10 +672,10 @@ export default function InstagramStudio({ file, onCancel, onApply }: Props) {
           animate={{ y: 0 }}
           exit={{ y: "100%" }}
           transition={{ type: "spring", damping: 26, stiffness: 320, mass: 0.9 }}
-          className="shrink-0 bg-[#1c1c1e] border-t border-white/10 px-3 py-3 max-h-[42vh] overflow-y-auto rounded-t-2xl"
+          className="shrink-0 bg-[#101012] border-t border-white/10 px-3 py-3 max-h-[48vh] overflow-y-auto rounded-t-2xl"
         >
           <div className="w-9 h-1 bg-white/25 rounded-full mx-auto mb-2" />
-          <div className="flex justify-between items-center mb-2.5">
+          <div className="flex justify-between items-center mb-3">
             <button onClick={() => { haptic(); setPanelOpen(false); }} className="text-white/45 active:opacity-60"><ChevronDown size={18} strokeWidth={1.4} /></button>
             <span className="text-[11px] font-medium text-white/70">Timeline</span>
             <button
@@ -621,37 +687,105 @@ export default function InstagramStudio({ file, onCancel, onApply }: Props) {
               className="text-[11px] font-medium text-white/70 flex items-center gap-1 active:opacity-60"><Scissors size={14} strokeWidth={1.4} /> Split</button>
           </div>
 
-          <div
-            ref={timelineRef}
-            onPointerDown={onTimelineDown}
-            className="relative h-11 rounded-md overflow-hidden bg-white/[0.05] touch-none select-none"
-          >
-            <div className="absolute inset-0 flex opacity-60">
-              {Array.from({ length: 18 }, (_, i) => <div key={i} className="flex-1 bg-white/[0.04]" />)}
+          {/* VIDEO TRACK */}
+          <div className="flex items-center gap-2">
+            <span className="w-5 shrink-0 text-center text-[10px] text-white/30">▣</span>
+            <div
+              ref={timelineRef}
+              onPointerDown={onTimelineDown}
+              className="relative flex-1 h-[52px] rounded-lg overflow-hidden bg-white/[0.04] touch-none select-none ring-1 ring-white/[0.06]"
+            >
+              <div className="absolute inset-0 flex opacity-70">
+                {(thumbs.length ? thumbs : Array.from({ length: 18 }).map(() => "")).map((t: string, i: number) => (
+                  <div key={i} className="flex-1 h-full border-r border-black/20 last:border-r-0 bg-white/[0.03]">
+                    {t ? <img src={t} alt="" className="w-full h-full object-cover opacity-85" /> : null}
+                  </div>
+                ))}
+              </div>
+              <div className="absolute inset-y-0 left-0 bg-black/75 backdrop-blur-[1px]" style={{ width: `${(edit.video.trimStart / duration) * 100}%` }} />
+              <div className="absolute inset-y-0 right-0 bg-black/75 backdrop-blur-[1px]" style={{ width: `${(1 - edit.video.trimEnd / duration) * 100}%` }} />
+              <div className="absolute inset-y-0 border-y-2 border-white/95 rounded-sm" style={{ left: `${(edit.video.trimStart / duration) * 100}%`, width: `${((edit.video.trimEnd - edit.video.trimStart) / duration) * 100}%` }} />
+              {edit.video.cuts.map((c, i) => <div key={i} className="absolute inset-y-0 w-[2px] bg-white/70 z-10" style={{ left: `${(c / duration) * 100}%` }} />)}
+              {(["trimStart", "trimEnd"] as const).map(h => (
+                <div key={h} className="absolute inset-y-0 w-6 -ml-3 flex items-center justify-center z-30" style={{ left: `${(edit.video[h] / duration) * 100}%` }}
+                  onPointerDown={e => {
+                    haptic(); e.stopPropagation();
+                    const move = (ev: PointerEvent) => {
+                      const t = pxToTime(ev.clientX);
+                      setEdit(prev => ({ ...prev, video: { ...prev.video, [h]: h === "trimStart" ? Math.min(t, prev.video.trimEnd - 0.5) : Math.max(t, prev.video.trimStart + 0.5) } }));
+                    };
+                    const up = () => { window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up); };
+                    window.addEventListener("pointermove", move);
+                    window.addEventListener("pointerup", up);
+                  }}
+                >
+                  <div className="w-[6px] h-9 bg-white rounded-full shadow-[0_1px_6px_rgba(0,0,0,0.5)] flex flex-col items-center justify-center gap-[2px]">
+                    <span className="w-[2px] h-2 rounded-full bg-black/30" />
+                    <span className="w-[2px] h-2 rounded-full bg-black/30" />
+                  </div>
+                </div>
+              ))}
+              <div className="absolute inset-y-0 w-[2px] bg-white z-20 shadow-[0_0_6px_rgba(0,0,0,0.5)]" style={{ left: `${((videoRef.current?.currentTime || 0) / duration) * 100}%` }} />
             </div>
-            <div className="absolute inset-y-0 left-0 bg-black/70" style={{ width: `${(edit.video.trimStart / duration) * 100}%` }} />
-            <div className="absolute inset-y-0 right-0 bg-black/70" style={{ width: `${(1 - edit.video.trimEnd / duration) * 100}%` }} />
-            <div className="absolute inset-y-0 border-y border-white/80" style={{ left: `${(edit.video.trimStart / duration) * 100}%`, width: `${((edit.video.trimEnd - edit.video.trimStart) / duration) * 100}%` }} />
-            {edit.video.cuts.map((c, i) => <div key={i} className="absolute inset-y-0 w-px bg-white/50 z-10" style={{ left: `${(c / duration) * 100}%` }} />)}
-            {edit.textOverlays.map(o => <div key={o.id} className="absolute bottom-0 h-1 bg-white/45 z-10 pointer-events-none" style={{ left: `${(o.startTime / duration) * 100}%`, width: `${((o.endTime - o.startTime) / duration) * 100}%` }} />)}
-            <div className="absolute inset-y-0 w-[1.5px] bg-white z-20" style={{ left: `${((videoRef.current?.currentTime || 0) / duration) * 100}%` }} />
-            {(["trimStart", "trimEnd"] as const).map(h => (
-              <div key={h} className="absolute inset-y-0 w-5 -ml-2.5 flex items-center justify-center z-30" style={{ left: `${(edit.video[h] / duration) * 100}%` }}
-                onPointerDown={e => {
-                  haptic();
-                  e.stopPropagation();
-                  const move = (ev: PointerEvent) => {
-                    const t = pxToTime(ev.clientX);
-                    setEdit(prev => ({ ...prev, video: { ...prev.video, [h]: h === "trimStart" ? Math.min(t, prev.video.trimEnd - 0.5) : Math.max(t, prev.video.trimStart + 0.5) } }));
-                  };
-                  const up = () => { window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up); };
-                  window.addEventListener("pointermove", move);
-                  window.addEventListener("pointerup", up);
-                }}
-              ><div className="w-[3px] h-7 bg-white rounded-full shadow-sm" /></div>
-            ))}
           </div>
-          <div className="flex justify-between text-[9px] text-white/35 mt-1"><span>0:00</span><span>{fmt(duration)}</span></div>
+
+          {/* TEXT TRACK — its own timeline */}
+          <div className="flex items-center gap-2 mt-2">
+            <span className="w-5 shrink-0 text-center text-[10px] text-white/30 font-serif font-bold">A</span>
+            <div
+              ref={textTrackRef}
+              onPointerDown={e => seek(timeAt(e.clientX, e.currentTarget as HTMLElement))}
+              className="relative flex-1 h-[36px] rounded-lg overflow-hidden bg-white/[0.035] ring-1 ring-white/[0.05] touch-none select-none"
+            >
+              <div className="absolute inset-0 flex">
+                {Array.from({ length: 18 }, (_, i) => <div key={i} className="flex-1 border-r border-white/[0.04] last:border-r-0" />)}
+              </div>
+              {edit.textOverlays.length === 0 && (
+                <span className="absolute inset-0 flex items-center justify-center text-[10px] text-white/20">Add text to see its timeline</span>
+              )}
+              {edit.textOverlays.map(o => {
+                const left = (o.startTime / duration) * 100;
+                const width = ((o.endTime - o.startTime) / duration) * 100;
+                const active = selectedOverlayId === o.id;
+                return (
+                  <div
+                    key={o.id}
+                    onPointerDown={e => { haptic(); e.stopPropagation(); setSelectedOverlayId(o.id); setDragTextClip({ id: o.id, mode: "move", startX: e.clientX, s: o.startTime, e: o.endTime }); }}
+                    className={`absolute top-[5px] bottom-[5px] rounded-md flex items-center px-2 cursor-grab active:cursor-grabbing transition-shadow ${active ? "bg-white/25 ring-1 ring-white/60 shadow-[0_2px_10px_rgba(0,0,0,0.4)]" : "bg-white/[0.12] ring-1 ring-white/15"}`}
+                    style={{ left: `${left}%`, width: `${width}%` }}
+                  >
+                    <span
+                      onPointerDown={e => { haptic(); e.stopPropagation(); setDragTextClip({ id: o.id, mode: "start", startX: e.clientX, s: o.startTime, e: o.endTime }); }}
+                      className="absolute left-0 top-0 bottom-0 w-2.5 rounded-l-md bg-white/25 hover:bg-white/40"
+                    />
+                    <span className="flex-1 min-w-0 text-center text-[9px] text-white/90 font-medium truncate pointer-events-none">{o.text}</span>
+                    <span
+                      onPointerDown={e => { haptic(); e.stopPropagation(); setDragTextClip({ id: o.id, mode: "end", startX: e.clientX, s: o.startTime, e: o.endTime }); }}
+                      className="absolute right-0 top-0 bottom-0 w-2.5 rounded-r-md bg-white/25 hover:bg-white/40"
+                    />
+                  </div>
+                );
+              })}
+              <div className="absolute inset-y-0 w-[2px] bg-white/90 z-20" style={{ left: `${((videoRef.current?.currentTime || 0) / duration) * 100}%` }} />
+            </div>
+          </div>
+
+          {/* AUDIO TRACK */}
+          <div className="flex items-center gap-2 mt-2">
+            <span className="w-5 shrink-0 text-center text-white/30"><Music2 size={11} strokeWidth={1.4} className="mx-auto" /></span>
+            <div ref={audioTrackRef} onPointerDown={e => seek(timeAt(e.clientX, e.currentTarget as HTMLElement))} className="relative flex-1 h-[28px] rounded-lg overflow-hidden bg-white/[0.035] ring-1 ring-white/[0.05] touch-none select-none">
+              {edit.audioOverlay ? (
+                <div className="absolute inset-y-0 left-0 right-0 flex items-center gap-[2px] px-1 opacity-60">
+                  {waveform.map((h, i) => <span key={i} className="flex-1 rounded-full bg-white/40" style={{ height: `${h}%` }} />)}
+                </div>
+              ) : (
+                <span className="absolute inset-0 flex items-center justify-center text-[10px] text-white/20">No audio overlay</span>
+              )}
+              <div className="absolute inset-y-0 w-[2px] bg-white/90 z-20" style={{ left: `${((videoRef.current?.currentTime || 0) / duration) * 100}%` }} />
+            </div>
+          </div>
+
+          <div className="flex justify-between text-[9px] text-white/30 mt-1.5 pl-7"><span>0:00</span><span>{fmt(duration)}</span></div>
 
           {/* Text clips — minimal IG-style rows */}
           {edit.textOverlays.length > 0 && (
