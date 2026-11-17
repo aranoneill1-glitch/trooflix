@@ -8,6 +8,7 @@ import {
 import { getCachedUser, getCachedVideos } from "@/lib/cache";
 
 type Props = {
+  file: File;
   onCancel: () => void;
   onApply: (result: { file: File; duration: number; posterBlob?: Blob | null }) => void;
 };
@@ -68,8 +69,8 @@ function fontCss(id: string, size: number) {
   return `${f.weight} ${size}px ${f.css}`;
 }
 
-export default function InstagramStudio({ onCancel, onApply }: Props) {
-  const [phase, setPhase] = useState<"picker" | "editor">("picker");
+export default function InstagramStudio({ file, onCancel, onApply }: Props) {
+  const [phase, setPhase] = useState<"picker" | "editor">("editor");
   const [library, setLibrary] = useState<LibraryVideo[]>([]);
   const [loadingLibrary, setLoadingLibrary] = useState(true);
   const [panelOpen, setPanelOpen] = useState(false);
@@ -125,6 +126,27 @@ export default function InstagramStudio({ onCancel, onApply }: Props) {
     setLoadingLibrary(false);
   }, []);
   useEffect(() => { void loadLibrary(); }, [loadLibrary]);
+
+  // Open the picked video straight into the 9:16 editor.
+  useEffect(() => {
+    const url = URL.createObjectURL(file);
+    sourceFileRef.current = file;
+    const probe = document.createElement("video");
+    probe.preload = "metadata";
+    probe.src = url;
+    const done = () => {
+      const d = isFinite(probe.duration) ? probe.duration : 0;
+      setEdit({
+        video: { uri: url, name: file.name || "video.mp4", trimStart: 0, trimEnd: d || 15, cuts: [] },
+        audioOverlay: null,
+        textOverlays: [],
+      });
+    };
+    probe.addEventListener("loadedmetadata", done, { once: true });
+    probe.addEventListener("error", done, { once: true });
+    const timer = setTimeout(done, 4000);
+    return () => { clearTimeout(timer); probe.src = ""; };
+  }, [file]);
 
   const proxyUrl = (url: string) => url.startsWith("/") ? url : `/api/proxy-video?url=${encodeURIComponent(url)}`;
 
@@ -437,39 +459,6 @@ export default function InstagramStudio({ onCancel, onApply }: Props) {
     seek(t);
     (e.currentTarget as any).setPointerCapture?.(e.pointerId);
   };
-
-  // Picker screen
-  if (phase === "picker") {
-    return (
-      <div className="fixed inset-0 z-[600] bg-[#08080a] text-white flex flex-col">
-        <div className="flex items-center justify-between px-4 h-14 shrink-0 border-b border-white/10" style={{ paddingTop: "env(safe-area-inset-top)" }}>
-          <button onClick={onCancel} className="p-1" aria-label="Cancel"><X size={22} /></button>
-          <span className="font-bold text-sm">Camera Roll</span>
-          <span className="w-6" />
-        </div>
-        <div className="flex-1 overflow-y-auto px-1 py-1">
-          <p className="text-[10px] uppercase tracking-widest text-white/40 px-2 py-2">Recent videos</p>
-          <div className="grid grid-cols-3 gap-[2px]">
-            <button onClick={() => deviceInputRef.current?.click()} className="aspect-square bg-white/5 flex flex-col items-center justify-center gap-1 text-white/60">
-              <Plus size={22} />
-              <span className="text-[9px] font-semibold">Device</span>
-            </button>
-            {library.map(v => (
-              <button key={v.id} onClick={() => void openVideo({ uri: proxyUrl(v.videoUrl), name: `${v.title.replace(/[^\w\s-]/g, "").trim() || "video"}.mp4` })} className="relative aspect-square bg-white/5 overflow-hidden">
-                {v.posterUrl ? <img src={v.posterUrl} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" /> : <Play size={20} className="absolute inset-0 m-auto text-white/30" />}
-                <span className="absolute bottom-1 right-1 text-[9px] bg-black/60 px-1 rounded">{(v as any).duration || ""}</span>
-              </button>
-            ))}
-          </div>
-          {!loadingLibrary && library.length === 0 && (
-            <p className="text-center text-xs text-white/40 py-10">No videos yet — choose one from your device.</p>
-          )}
-        </div>
-        <input ref={deviceInputRef} type="file" accept="video/*" className="hidden" onChange={e => { onDeviceFile(e.target.files?.[0]); e.currentTarget.value = ""; }} />
-        {previewLoading && <div className="absolute inset-0 bg-black/70 flex items-center justify-center"><Loader2 className="animate-spin" size={30} /></div>}
-      </div>
-    );
-  }
 
   // Editor screen
   return (

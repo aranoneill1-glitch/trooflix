@@ -329,7 +329,7 @@ function UploadContent() {
                 {mediaFile && !isAudioPodcast && (
                   <button
                     type="button"
-                    onClick={() => { setEditorFile(mediaFile); setShowEditor(true); }}
+                    onClick={() => { setShowEditor(true); }}
                     className="mt-3 w-full py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white font-bold flex items-center justify-center gap-2 transition"
                   >
                     <Scissors size={18} className="text-[#E53945]" /> Edit / Trim Video
@@ -385,8 +385,9 @@ function UploadContent() {
         </div>
       </div>
       <AnimatePresence>
-        {showEditor && !isAudioPodcast && (
+        {showEditor && !isAudioPodcast && editorFile && (
           <InstagramStudio
+            file={editorFile}
             onCancel={() => { setShowEditor(false); setEditorFile(null); }}
             onApply={({ file: outFile, duration, posterBlob }) => {
               setMediaFile(outFile);
