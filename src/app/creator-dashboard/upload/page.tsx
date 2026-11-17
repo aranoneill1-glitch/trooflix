@@ -6,7 +6,7 @@ import { ArrowLeft, CheckCircle2, Image as ImageIcon, Globe, Lock, Home, User, U
 import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import VideoEditor from "@/components/VideoEditor";
+import InstagramStudio from "@/components/InstagramStudio";
 import { getCachedUser } from "@/lib/cache";
 import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
@@ -385,14 +385,13 @@ function UploadContent() {
         </div>
       </div>
       <AnimatePresence>
-        {showEditor && editorFile && !isAudioPodcast && (
-          <VideoEditor
-            file={editorFile}
+        {showEditor && !isAudioPodcast && (
+          <InstagramStudio
             onCancel={() => { setShowEditor(false); setEditorFile(null); }}
             onApply={({ file: outFile, duration, posterBlob }) => {
               setMediaFile(outFile);
               setVideoDuration(duration);
-              setIsTrimmedMedia(outFile.name !== editorFile.name || outFile.size !== editorFile.size);
+              setIsTrimmedMedia(true);
               if (posterBlob) {
                 const generatedFile = new File([posterBlob], "edited-poster.jpg", { type: posterBlob.type || "image/jpeg" });
                 setThumbnailFile(generatedFile);
