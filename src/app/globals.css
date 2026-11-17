@@ -30,12 +30,18 @@ body {
 }
 
 /* Prevent iOS native image/video callouts on long-pressable media cards */
-.no-image-callout img,
-.no-image-callout video {
+.no-image-callout,
+.no-image-callout * {
   -webkit-touch-callout: none !important;
-  -webkit-user-select: none;
-  user-select: none;
+  -webkit-user-select: none !important;
+  user-select: none !important;
   pointer-events: none;
+}
+
+.no-image-callout a,
+.no-image-callout button,
+.no-image-callout [role="button"] {
+  pointer-events: auto;
 }
 
 :focus-visible {
