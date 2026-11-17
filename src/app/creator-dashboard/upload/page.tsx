@@ -7,6 +7,7 @@ import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import InstagramStudio from "@/components/InstagramStudio";
+import { takePendingUpload } from "@/lib/quickUpload";
 import { getCachedUser } from "@/lib/cache";
 import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
@@ -104,14 +105,17 @@ function UploadContent() {
     if (longFormType === "Documentary" && (category === "History" || category === "Podcasts")) setCategory("Documentaries");
   }, [longFormType, category]);
 
-  // Open the native camera roll immediately for media upload types.
-  const autoPickedRef = useRef(false);
+  // A file picked from the previous screen's user gesture opens the editor directly.
+  const pendingConsumed = useRef(false);
   useEffect(() => {
-    if (checkingTier || isTweet || autoPickedRef.current) return;
-    autoPickedRef.current = true;
-    const t = setTimeout(() => document.getElementById("media-upload")?.click(), 150);
-    return () => clearTimeout(t);
-  }, [checkingTier, isTweet]);
+    if (pendingConsumed.current || checkingTier) return;
+    pendingConsumed.current = true;
+    const pending = takePendingUpload();
+    if (pending?.file) {
+      setEditorFile(pending.file);
+      setShowEditor(true);
+    }
+  }, [checkingTier]);
 
   const uploadToSupabase = async (file: File, label: string) => {
     if (file.size === 0) throw new Error(label + " is 0 bytes. On iPhone, wait for iCloud download first.");

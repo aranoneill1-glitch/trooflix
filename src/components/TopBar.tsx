@@ -9,6 +9,7 @@ import UserMenu from "@/components/UserMenu";
 import NotificationBell from "@/components/NotificationBell";
 import PWAInstallButton from "@/components/PWAInstallButton";
 import { getCachedUser, getCachedVideos, getSyncCachedVideos, onVideosChange } from "@/lib/cache";
+import { pickMedia, setPendingUpload } from "@/lib/quickUpload";
 
 type Props = {
   onMenu?: () => void;
@@ -280,9 +281,9 @@ export default function TopBar({ onMenu }: Props) {
               </div>
               
               <div className="flex flex-col gap-3">
-                <Link 
-                  href="/creator-dashboard/upload" 
-                  onClick={() => setShowCreateMenu(false)}
+                <button
+                  type="button"
+                  onClick={() => { setShowCreateMenu(false); pickMedia("video/*", (f) => { setPendingUpload(f, "video/*"); router.push("/creator-dashboard/upload"); }); }}
                   className="group relative flex items-center gap-4 bg-[#1d1d24] hover:bg-[#24242d] border border-white/10 hover:border-white/20 p-4 rounded-2xl transition-all duration-300 overflow-hidden"
                 >
                   <div className="w-12 h-12 rounded-xl bg-[#E53945]/20 flex items-center justify-center flex-shrink-0 border border-white/10">
@@ -292,11 +293,11 @@ export default function TopBar({ onMenu }: Props) {
                     <h4 className="font-bold text-white">Upload Video</h4>
                     <p className="text-xs text-white/50">Publish a long-form video or documentary</p>
                   </div>
-                </Link>
+                </button>
 
-                <Link 
-                  href="/creator-dashboard/upload?type=podcast" 
-                  onClick={() => setShowCreateMenu(false)}
+                <button
+                  type="button"
+                  onClick={() => { setShowCreateMenu(false); pickMedia("video/*,audio/*", (f) => { setPendingUpload(f, f.type.startsWith("audio/") ? "audio/*" : "video/*"); router.push("/creator-dashboard/upload?type=podcast"); }); }}
                   className="group relative flex items-center gap-4 bg-[#1d1d24] hover:bg-[#24242d] border border-white/10 hover:border-blue-400/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden"
                 >
                   <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center flex-shrink-0 border border-white/10">
@@ -306,11 +307,11 @@ export default function TopBar({ onMenu }: Props) {
                     <h4 className="font-bold text-white">Upload Podcast</h4>
                     <p className="text-xs text-white/50">Publish a video or audio podcast episode</p>
                   </div>
-                </Link>
+                </button>
 
-                <Link 
-                  href="/creator-dashboard/upload?type=short" 
-                  onClick={() => setShowCreateMenu(false)}
+                <button
+                  type="button"
+                  onClick={() => { setShowCreateMenu(false); pickMedia("video/*", (f) => { setPendingUpload(f, "video/*"); router.push("/creator-dashboard/upload?type=short"); }); }}
                   className="group relative flex items-center gap-4 bg-[#1d1d24] hover:bg-[#24242d] border border-white/10 hover:border-blue-400/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden"
                 >
                   <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center flex-shrink-0 border border-white/10">
@@ -320,7 +321,7 @@ export default function TopBar({ onMenu }: Props) {
                     <h4 className="font-bold text-white">Upload Short</h4>
                     <p className="text-xs text-white/50">Visible on shorts page and your profile</p>
                   </div>
-                </Link>
+                </button>
 
                 <Link 
                   href="/creator-dashboard/live"

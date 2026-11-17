@@ -11,6 +11,7 @@ import {
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { getCachedUser, invalidateVideosCache } from "@/lib/cache";
+import { pickMedia, setPendingUpload } from "@/lib/quickUpload";
 import { motion, AnimatePresence } from "framer-motion";
 
 const CATEGORIES = ["Documentaries","Podcasts","Independent Films","Books","History","Politics & Geopolitics","War & Conflict","True Crime & Justice","Conspiracy & Mystery","Society & Culture","Business & Finance","Science & Technology","Environment & Nature","Religion & Spirituality","Ancient Civilisation","Comedy","News","Gaming","Medicine"];
@@ -484,7 +485,7 @@ export default function ManageContentPage() {
               
               <div className="flex flex-col gap-3">
                 <button 
-                  onClick={() => { setShowAddContentMenu(false); router.push("/creator-dashboard/upload"); }}
+                  onClick={() => { setShowAddContentMenu(false); pickMedia("video/*", (f) => { setPendingUpload(f, "video/*"); router.push("/creator-dashboard/upload"); }); }}
                   className="group relative flex items-center gap-4 bg-white/[0.08] hover:bg-white/[0.12] border border-white/20 hover:border-white/25 p-4 rounded-2xl transition-all duration-300 overflow-hidden text-left w-full shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#E53945]/5 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -498,7 +499,7 @@ export default function ManageContentPage() {
                 </button>
 
                 <button 
-                  onClick={() => { setShowAddContentMenu(false); router.push("/creator-dashboard/upload?type=podcast"); }}
+                  onClick={() => { setShowAddContentMenu(false); pickMedia("video/*,audio/*", (f) => { setPendingUpload(f, f.type.startsWith("audio/") ? "audio/*" : "video/*"); router.push("/creator-dashboard/upload?type=podcast"); }); }}
                   className="group relative flex items-center gap-4 bg-white/[0.08] hover:bg-white/[0.12] border border-white/20 hover:border-blue-400/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden text-left w-full shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
                 >
                   <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center flex-shrink-0">
@@ -511,7 +512,7 @@ export default function ManageContentPage() {
                 </button>
 
                 <button 
-                  onClick={() => { setShowAddContentMenu(false); router.push("/creator-dashboard/upload?type=documentary"); }}
+                  onClick={() => { setShowAddContentMenu(false); pickMedia("video/*", (f) => { setPendingUpload(f, "video/*"); router.push("/creator-dashboard/upload?type=documentary"); }); }}
                   className="group relative flex items-center gap-4 bg-white/[0.08] hover:bg-white/[0.12] border border-white/20 hover:border-violet-400/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden text-left w-full shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
                 >
                   <div className="w-12 h-12 rounded-xl bg-violet-500/20 flex items-center justify-center flex-shrink-0">
@@ -524,7 +525,7 @@ export default function ManageContentPage() {
                 </button>
 
                 <button 
-                  onClick={() => { setShowAddContentMenu(false); router.push("/creator-dashboard/upload?type=short"); }}
+                  onClick={() => { setShowAddContentMenu(false); pickMedia("video/*", (f) => { setPendingUpload(f, "video/*"); router.push("/creator-dashboard/upload?type=short"); }); }}
                   className="group relative flex items-center gap-4 bg-white/[0.08] hover:bg-white/[0.12] border border-white/20 hover:border-blue-400/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden text-left w-full shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />

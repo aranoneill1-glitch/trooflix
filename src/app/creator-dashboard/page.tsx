@@ -2,7 +2,7 @@
 import { ChevronRight , Tag, MoreVertical , Download, Wallet , MessageCircle } from "lucide-react";
 
 import { useEffect, useState, Suspense, useRef } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { 
   Video, CheckCircle2, MessageSquare, Eye, Star, Pencil, 
@@ -18,6 +18,7 @@ import MyTrooFlixContent from "@/components/MyTrooFlixContent";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
 import { GripVertical } from "lucide-react";
 import CreatorStudioNav from "@/components/CreatorStudioNav";
+import { pickMedia, setPendingUpload } from "@/lib/quickUpload";
 import ShortPreviewFrame from "@/components/ShortPreviewFrame";
 import AppleVideoPlayer from "@/components/AppleVideoPlayer";
 import VideoFramePicker from "@/components/VideoFramePicker";
@@ -32,6 +33,7 @@ const XIcon = ({ size = 16 }: { size?: number }) => (
 );
 
 function CreatorDashboardContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const isPublicView = searchParams.get('view') === 'public';
   const studioTab = searchParams.get("studioTab");
@@ -1088,9 +1090,9 @@ function CreatorDashboardContent() {
                 </div>
                 
                 <div className="flex flex-col gap-3">
-                  <Link 
-                    href="/creator-dashboard/upload" 
-                    onClick={() => setShowAddContentMenu(false)}
+                  <button
+                    type="button"
+                    onClick={() => { setShowAddContentMenu(false); pickMedia("video/*", (f) => { setPendingUpload(f, "video/*"); router.push("/creator-dashboard/upload"); }); }}
                     className="group relative flex items-center gap-4 bg-white/[0.08] hover:bg-white/[0.12] border border-white/20 hover:border-white/25 p-4 rounded-2xl transition-all duration-300 overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -1102,11 +1104,11 @@ function CreatorDashboardContent() {
                       <h4 className="font-bold text-white text-base flex items-center gap-1.5">Upload Video {userTier !== "creator" && <Lock size={12} className="text-yellow-400" />}</h4>
                       <p className="text-xs text-white/50">Publish a long-form video or long-video</p>
                     </div>
-                  </Link>
+                  </button>
 
-                  <Link 
-                    href="/creator-dashboard/upload?type=podcast" 
-                    onClick={() => setShowAddContentMenu(false)}
+                  <button
+                    type="button"
+                    onClick={() => { setShowAddContentMenu(false); pickMedia("video/*,audio/*", (f) => { setPendingUpload(f, f.type.startsWith("audio/") ? "audio/*" : "video/*"); router.push("/creator-dashboard/upload?type=podcast"); }); }}
                     className="group relative flex items-center gap-4 bg-white/[0.08] hover:bg-white/[0.12] border border-white/20 hover:border-blue-400/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -1117,11 +1119,11 @@ function CreatorDashboardContent() {
                       <h4 className="font-bold text-white text-base flex items-center gap-1.5">Upload Podcast {userTier !== "creator" && <Lock size={12} className="text-yellow-400" />}</h4>
                       <p className="text-xs text-white/50">Publish a video or audio podcast episode</p>
                     </div>
-                  </Link>
+                  </button>
 
-                  <Link 
-                    href="/creator-dashboard/upload?type=short" 
-                    onClick={() => setShowAddContentMenu(false)}
+                  <button
+                    type="button"
+                    onClick={() => { setShowAddContentMenu(false); pickMedia("video/*", (f) => { setPendingUpload(f, "video/*"); router.push("/creator-dashboard/upload?type=short"); }); }}
                     className="group relative flex items-center gap-4 bg-white/[0.08] hover:bg-white/[0.12] border border-white/20 hover:border-blue-400/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -1133,7 +1135,7 @@ function CreatorDashboardContent() {
                       <h4 className="font-bold text-white text-base">Upload Short</h4>
                       <p className="text-xs text-white/50">Publish to the Shorts feed and your profile</p>
                     </div>
-                  </Link>
+                  </button>
                   
                   <Link 
                     href={userTier === "creator" ? "/creator-dashboard/live" : "/upgrade?feature=go_live"}
