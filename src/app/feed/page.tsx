@@ -292,7 +292,7 @@ export default function ShortsFeedPage() {
 
       {/* Shared mobile bottom action bar (always visible) */}
       {activeVideo && (
-        <div className="lg:hidden fixed inset-x-0 bottom-0 z-[260] pointer-events-auto px-4 pb-[calc(env(safe-area-inset-bottom)+10px)] pt-2">
+        <div className="lg:hidden fixed inset-x-0 bottom-0 z-[260] pointer-events-auto px-4 pb-[calc(env(safe-area-inset-bottom)+18px)] pt-2">
           <div className="mx-auto flex w-[86%] max-w-[340px] items-center justify-around rounded-full border border-white/20 bg-white/10 px-3 py-2 backdrop-blur-2xl backdrop-saturate-150 shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
             <button
               onClick={toggleMute}
@@ -941,7 +941,7 @@ function MobileVideoShort({ video, creator, onViewCounted, isMuted, onToggleMute
         </div>
       )}
 
-      <div className={`absolute left-4 right-4 lg:right-[80px] bottom-[calc(env(safe-area-inset-bottom)+76px)] lg:bottom-[150px] z-30 flex flex-col items-start gap-3 pointer-events-none transition-opacity duration-150 ${isActive ? "opacity-100" : "opacity-0"}`}>
+      <div className={`absolute left-4 right-4 lg:right-[80px] bottom-[calc(env(safe-area-inset-bottom)+84px)] lg:bottom-[150px] z-30 flex flex-col items-start gap-3 pointer-events-none transition-opacity duration-150 ${isActive ? "opacity-100" : "opacity-0"}`}>
         <div 
           className="text-white text-[14px] drop-shadow-md leading-snug cursor-pointer pointer-events-auto max-w-[92%]"
           onClick={toggleExpand}
@@ -981,7 +981,7 @@ function MobileVideoShort({ video, creator, onViewCounted, isMuted, onToggleMute
 
       </div>
 
-      <div className={`absolute left-0 right-0 bottom-[calc(env(safe-area-inset-bottom)+66px)] lg:bottom-[85px] z-[255] pointer-events-none px-0 lg:px-4 transition-opacity duration-150 ${isActive ? "opacity-100" : "opacity-0"}`}>
+      <div className={`absolute left-0 right-0 bottom-[calc(env(safe-area-inset-bottom)+74px)] lg:bottom-[85px] z-[255] pointer-events-none px-0 lg:px-4 transition-opacity duration-150 ${isActive ? "opacity-100" : "opacity-0"}`}>
         <div 
           ref={progressBarRef}
           className="relative w-full h-[3px] bg-transparent cursor-pointer touch-none py-3 -my-3 pointer-events-auto"
