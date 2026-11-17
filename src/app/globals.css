@@ -29,6 +29,15 @@ body {
   color: #fff;
 }
 
+/* Prevent iOS native image/video callouts on long-pressable media cards */
+.no-image-callout img,
+.no-image-callout video {
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none;
+  user-select: none;
+  pointer-events: none;
+}
+
 :focus-visible {
   outline: 2px solid rgba(229, 57, 69, 0.9);
   outline-offset: 3px;
