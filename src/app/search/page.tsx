@@ -268,7 +268,7 @@ function SearchContent() {
       <TopBar />
 
       <div className="fixed top-0 left-0 w-full h-[500px] bg-gradient-to-b from-[#1c1c1e]/50 to-transparent pointer-events-none z-0" />
-      <div className="fixed bottom-0 left-0 right-0 h-32 bg-[#09090B] z-[85] lg:hidden pointer-events-none" />
+      <div className="fixed bottom-0 left-0 right-0 h-32 bg-[#09090B]/85 backdrop-blur-xl z-[85] lg:hidden pointer-events-none" />
 
       <div className="relative z-10">
         <div className="w-full max-w-[1600px] mx-auto px-4 lg:px-10 pt-[calc(env(safe-area-inset-top)+5rem)] lg:pt-32 pb-20">

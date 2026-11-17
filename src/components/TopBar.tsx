@@ -118,9 +118,11 @@ export default function TopBar({ onMenu }: Props) {
       />
       <nav
         className={`fixed left-0 lg:left-[72px] right-0 z-[200] flex items-center gap-3 px-4 md:px-6 h-[56px] pt-1 transition-colors duration-300 ${
-          scrolled
-            ? "bg-[#070709] border-b border-white/[0.06]"
-            : "bg-[#070709] border-b border-white/[0.04]"
+          isSearchPage
+            ? "bg-[#09090B]/85 backdrop-blur-xl border-b border-white/10"
+            : scrolled
+              ? "bg-[#070709] border-b border-white/[0.06]"
+              : "bg-[#070709] border-b border-white/[0.04]"
         }`}
         style={{ top: "env(safe-area-inset-top)", WebkitTransform: "translateZ(0)", transform: "translateZ(0)" }}
       >
