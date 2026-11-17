@@ -3,7 +3,7 @@ import { getCachedUser } from "@/lib/cache";
 
 import { useEffect, useState , useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { CreditCard, Wallet, ArrowLeft, UserPlus, MessageSquare, CheckCircle2, LayoutGrid, List, ShoppingBag, Star, Lock, GripVertical, X, Film, Mic } from "lucide-react";
+import { CreditCard, Wallet, UserPlus, MessageSquare, CheckCircle2, LayoutGrid, List, ShoppingBag, Star, Lock, GripVertical, X, Film, Mic } from "lucide-react";
 import CommentSheet from "@/components/CommentSheet";
 import Comments from "@/components/Comments";
 import Link from "next/link";
@@ -404,11 +404,7 @@ export default function PublicProfilePage() {
           <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#09090B] to-transparent" />
         </div>
         
-        <div className="relative z-10 mx-auto w-full max-w-5xl px-4 pt-[calc(env(safe-area-inset-top)+6rem)] pb-6 lg:max-w-none lg:px-10 xl:px-16 lg:pt-28">
-          
-          <Link href="/search" className="inline-flex items-center gap-2 text-white/50 hover:text-white mb-6 transition text-sm font-semibold">
-            <ArrowLeft size={16} /> Back
-          </Link>
+        <div className="relative z-10 mx-auto w-full max-w-5xl px-4 pt-[calc(env(safe-area-inset-top)+4rem)] pb-6 lg:max-w-none lg:px-10 xl:px-16 lg:pt-28">
 
           {/* CREATOR-STYLE PROFILE LAYOUT */}
           <div className="animate-in fade-in duration-300">
