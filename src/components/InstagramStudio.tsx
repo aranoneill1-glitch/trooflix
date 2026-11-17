@@ -6,6 +6,7 @@ import {
   Scissors, Sparkles, Trash2, Type, X,
 } from "lucide-react";
 import { getCachedUser, getCachedVideos } from "@/lib/cache";
+import { motion, AnimatePresence } from "framer-motion";
 
 type Props = {
   file: File;
@@ -56,6 +57,9 @@ const FONTS = [
 const COLORS = ["#ffffff", "#000000", "#ff3b5c", "#ffd93d", "#4ade80", "#60a5fa", "#c084fc", "#ff8a3d"];
 const BOX_COLORS = ["rgba(0,0,0,0.7)", "rgba(255,255,255,0.85)", "rgba(229,57,69,0.8)", "rgba(96,165,250,0.8)"];
 
+function haptic(ms = 10) {
+  try { (navigator as any).vibrate?.(ms); } catch {}
+}
 function clamp(n: number, min: number, max: number) { return Math.min(max, Math.max(min, n)); }
 function uid() { return Math.random().toString(36).slice(2, 10); }
 function fmt(s: number) {
@@ -497,74 +501,105 @@ export default function InstagramStudio({ file, onCancel, onApply }: Props) {
           <audio ref={audioElRef} src={edit.audioOverlay?.sourceUri || undefined} className="hidden" />
 
           {/* Text overlays */}
-          {edit.textOverlays.map(o => (
-            <div
-              key={o.id}
-              onPointerDown={e => onOverlayDown(e, o)}
-              onPointerMove={onOverlayMove}
-              onPointerUp={onOverlayUp}
-              onPointerCancel={onOverlayUp}
-              className={`absolute select-none touch-none whitespace-pre ${selectedOverlayId === o.id ? "outline outline-1 outline-white/40" : ""}`}
-              style={{
-                left: `${o.x * 100}%`, top: `${o.y * 100}%`,
-                transform: `translate(-50%, -50%) scale(${o.scale}) rotate(${o.rotation}deg)`,
-                font: fontCss(o.font, 18), color: o.color,
-                background: o.hasBox ? o.boxColor : "transparent",
-                padding: o.hasBox ? "4px 8px" : 0,
-              }}
-            >
-              {o.text}
-            </div>
-          ))}
+          {edit.textOverlays.map(o => {
+            const selected = selectedOverlayId === o.id;
+            return (
+              <div
+                key={o.id}
+                onPointerDown={e => { haptic(); onOverlayDown(e, o); }}
+                onPointerMove={onOverlayMove}
+                onPointerUp={onOverlayUp}
+                onPointerCancel={onOverlayUp}
+                className="absolute select-none touch-none whitespace-pre z-20"
+                style={{
+                  left: `${o.x * 100}%`, top: `${o.y * 100}%`,
+                  transform: `translate(-50%, -50%) scale(${o.scale}) rotate(${o.rotation}deg)`,
+                  font: fontCss(o.font, 18), color: o.color,
+                  background: o.hasBox ? o.boxColor : "transparent",
+                  padding: o.hasBox ? "4px 8px" : 0,
+                  outline: selected ? "1px solid rgba(255,255,255,0.9)" : "none",
+                  outlineOffset: selected ? "7px" : 0,
+                }}
+              >
+                {o.text}
+                {selected && (
+                  <>
+                    <span className="absolute -top-[11px] -left-[11px] w-1.5 h-1.5 rounded-full bg-white border border-black/30" />
+                    <span className="absolute -top-[11px] -right-[11px] w-1.5 h-1.5 rounded-full bg-white border border-black/30" />
+                    <span className="absolute -bottom-[11px] -left-[11px] w-1.5 h-1.5 rounded-full bg-white border border-black/30" />
+                    <span className="absolute -bottom-[11px] -right-[11px] w-1.5 h-1.5 rounded-full bg-white border border-black/30" />
+                  </>
+                )}
+              </div>
+            );
+          })}
 
-          <button onClick={togglePlay} className="absolute inset-0 flex items-center justify-center" aria-label="Play/Pause">
-            <span className="text-white/0"><Play size={1} /></span>
-          </button>
+
           <div className="absolute top-2 left-2 text-[10px] bg-black/50 px-2 py-0.5 rounded pointer-events-none">{fmt(videoRef.current?.currentTime || 0)}</div>
         </div>
       </div>
 
-      {/* Text composer (Screen 4) */}
-      {textComposerOpen && (
-        <div className="shrink-0 border-t border-white/10 bg-[#0c0c0e] px-3 py-2">
-          <div className="flex gap-2 items-center overflow-x-auto pb-2">
-            <button onClick={() => setTextComposerOpen(false)} className="p-1.5 rounded bg-white/10" title="Font"><Type size={16} /></button>
-            <select value={selectedFont} onChange={e => { setSelectedFont(e.target.value); if (selectedOverlayId) updateOverlay({ font: e.target.value }); }} className="bg-white/10 rounded px-2 py-1.5 text-xs outline-none">
-              {FONTS.map(f => <option key={f.id} value={f.id}>{f.label}</option>)}
-            </select>
-            <div className="flex gap-1">
-              {COLORS.map(c => <button key={c} onClick={() => { setSelectedColor(c); if (selectedOverlayId) updateOverlay({ color: c }); }} className="w-6 h-6 rounded-full border border-white/20" style={{ background: c }} />)}
+      {/* Text composer (Screen 4) — IG font / color / box order, ease-out rise */}
+      <AnimatePresence>
+        {textComposerOpen && (
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+            className="shrink-0 border-t border-white/10 bg-[#0c0c0e] px-3 py-2"
+          >
+            <div className="flex gap-2.5 items-center overflow-x-auto pb-2.5 scrollbar-hide">
+              <button onClick={() => { haptic(); document.getElementById("ig-font-select")?.click(); }} className="w-8 h-8 shrink-0 flex items-center justify-center rounded-md border border-white/20 text-white text-[15px] font-serif font-bold active:opacity-60" title="Font">Aa</button>
+              <select id="ig-font-select" value={selectedFont} onChange={e => { haptic(); setSelectedFont(e.target.value); if (selectedOverlayId) updateOverlay({ font: e.target.value }); }} className="hidden">
+                {FONTS.map(f => <option key={f.id} value={f.id}>{f.label}</option>)}
+              </select>
+              <div className="flex gap-1.5 shrink-0">
+                {COLORS.map(c => (
+                  <button key={c} onClick={() => { haptic(); setSelectedColor(c); if (selectedOverlayId) updateOverlay({ color: c }); }} className={`w-6 h-6 rounded-full border-2 active:scale-90 transition-transform ${selectedColor === c ? "border-white" : "border-white/20"}`} style={{ background: c }} />
+                ))}
+              </div>
+              <button onClick={() => { haptic(); setHasBox(v => { if (selectedOverlayId) updateOverlay({ hasBox: !v }); return !v; }); }} className={`w-8 h-8 shrink-0 flex items-center justify-center rounded-md border active:opacity-60 text-[13px] font-bold ${hasBox ? "bg-white text-black border-white" : "border-white/20 text-white"}`} title="Background box">A▣</button>
             </div>
-            <button onClick={() => { setHasBox(v => { if (selectedOverlayId) updateOverlay({ hasBox: !v }); return !v; }); }} className={`px-2 py-1.5 rounded text-[10px] font-bold ${hasBox ? "bg-white text-black" : "bg-white/10"}`} title="Background box">A▣</button>
-          </div>
-          <div className="flex gap-2">
-            <input autoFocus value={draftText} onChange={e => setDraftText(e.target.value)} placeholder="Type a caption…" className="flex-1 bg-white/10 rounded-lg px-3 py-2.5 text-sm outline-none" />
-            <button onClick={addTextOverlay} className="px-4 rounded-lg bg-[#0095f6] text-sm font-bold">Done</button>
+            <div className="flex gap-2 items-center">
+              <input autoFocus value={draftText} onChange={e => setDraftText(e.target.value)} onKeyDown={e => { if (e.key === "Enter") addTextOverlay(); }} placeholder="Type a caption…" className="flex-1 bg-white/10 rounded-full px-4 py-2.5 text-sm text-white placeholder:text-white/40 outline-none" />
+              <button onClick={() => { haptic(); addTextOverlay(); }} className="shrink-0 text-[#0095f6] text-sm font-bold active:opacity-60">Done</button>
+            </div>
+            <p className="text-[10px] text-white/35 text-center mt-1.5">Drag text to move · pinch to resize &amp; rotate</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Bottom toolbar (Screen 2) — IG: Audio + Text only */}
+      {!textComposerOpen && !panelOpen && (
+        <div className="shrink-0 bg-black" style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 8px)" }}>
+          <button onClick={() => { haptic(); setPanelOpen(true); }} className="mx-auto flex flex-col items-center gap-0.5 pt-1.5 pb-1 text-white/45 active:opacity-60" aria-label="Open timeline">
+            <ChevronDown size={16} className="rotate-180" />
+          </button>
+          <div className="flex items-start justify-center gap-16 pt-1">
+            <button onClick={() => { haptic(); setAudioPickerOpen(true); }} className="flex flex-col items-center gap-1.5 min-w-[64px] text-white active:opacity-60 active:scale-95 transition-transform">
+              <Music2 size={25} strokeWidth={1.8} />
+              <span className="text-[10px] font-medium">Audio</span>
+            </button>
+            <button onClick={() => { haptic(); setTextComposerOpen(true); }} className="flex flex-col items-center gap-1.5 min-w-[64px] text-white active:opacity-60 active:scale-95 transition-transform">
+              <span className="text-[25px] leading-[25px] font-serif font-bold">Aa</span>
+              <span className="text-[10px] font-medium">Text</span>
+            </button>
           </div>
         </div>
       )}
 
-      {/* Bottom toolbar (Screen 2) */}
-      {!textComposerOpen && (
-        <div className="shrink-0 flex items-center justify-around border-t border-white/10 py-2" style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 4px)" }}>
-          <button onClick={() => setAudioPickerOpen(true)} className="flex flex-col items-center gap-1 min-w-[90px]">
-            <Music2 size={22} />
-            <span className="text-[10px] font-semibold">Audio</span>
-          </button>
-          <button onClick={() => setTextComposerOpen(true)} className="flex flex-col items-center gap-1 min-w-[90px]">
-            <Type size={22} />
-            <span className="text-[10px] font-semibold">Text</span>
-          </button>
-          <button onClick={() => setPanelOpen(v => !v)} className="flex flex-col items-center gap-1 min-w-[90px]">
-            <Scissors size={22} />
-            <span className="text-[10px] font-semibold">Timeline</span>
-          </button>
-        </div>
-      )}
-
-      {/* Timeline panel (Screen 5) */}
+      {/* Timeline panel (Screen 5) — spring pull-up with slight overshoot */}
+      <AnimatePresence>
       {panelOpen && !textComposerOpen && (
-        <div className="shrink-0 bg-[#0c0c0e] border-t border-white/10 px-3 py-3 max-h-[42vh] overflow-y-auto">
+        <motion.div
+          initial={{ y: "100%" }}
+          animate={{ y: 0 }}
+          exit={{ y: "100%" }}
+          transition={{ type: "spring", damping: 26, stiffness: 320, mass: 0.9 }}
+          className="shrink-0 bg-[#1c1c1e] border-t border-white/10 px-3 py-3 max-h-[42vh] overflow-y-auto rounded-t-2xl"
+        >
+          <div className="w-9 h-1 bg-white/25 rounded-full mx-auto mb-2" />
           <div className="flex justify-between items-center mb-2">
             <button onClick={() => setPanelOpen(false)} className="text-white/50"><ChevronDown size={18} /></button>
             <span className="text-xs font-bold">Timeline</span>
@@ -649,8 +684,9 @@ export default function InstagramStudio({ file, onCancel, onApply }: Props) {
               <button onClick={() => setAudioPickerOpen(true)} className="w-full py-2 rounded bg-white/5 border border-white/10 text-[11px] font-semibold flex items-center justify-center gap-1"><Music2 size={13} /> Add audio from another video</button>
             )}
           </div>
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
       {/* Audio picker (Screen 3) */}
       {audioPickerOpen && (
