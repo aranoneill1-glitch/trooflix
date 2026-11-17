@@ -2,9 +2,8 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  Check, ChevronLeft, ChevronRight, Loader2, Pause, Play, Plus, Scissors,
-  Sparkles, Subtitles, Trash2, Type, X, Music2, Gauge, SlidersHorizontal,
-  Smile, Square, Circle, ZoomIn, ZoomOut, Undo2, Redo2, Volume2, Image as ImageIcon,
+  Check, ChevronLeft, Loader2, Pause, Play, Scissors, Type, Smile,
+  Pencil, SlidersHorizontal, Sparkles, Trash2, X, RotateCcw,
 } from "lucide-react";
 
 type Props = {
@@ -13,54 +12,75 @@ type Props = {
   onApply: (result: { file: File; duration: number; posterBlob?: Blob | null }) => void;
 };
 
-type SubtitleCue = { id: string; start: number; end: number; text: string };
 type Overlay = {
   id: string;
   kind: "text" | "emoji" | "shape";
   text: string;
   x: number;
   y: number;
+  scale: number;
+  rotation: number;
   color: string;
-  size: number;
+  fontId: string;
   bg: boolean;
   shape: "rect" | "circle" | null;
   start: number;
   end: number;
 };
 
-type Tool = "trim" | "text" | "filters" | "audio" | "speed" | "stickers" | "subtitles";
+type Stroke = { color: string; width: number; points: { x: number; y: number }[] };
 
-const FILTERS = [
-  { id: "none", label: "Original", css: "" },
-  { id: "cinematic", label: "Cinematic", css: "contrast(1.15) saturate(0.88) sepia(0.08)" },
-  { id: "vibrant", label: "Vibrant", css: "saturate(1.45) contrast(1.08)" },
-  { id: "mono", label: "Mono", css: "grayscale(1) contrast(1.12)" },
-  { id: "vintage", label: "Vintage", css: "sepia(0.38) saturate(0.82) contrast(0.95)" },
-  { id: "noir", label: "Noir", css: "grayscale(1) contrast(1.35) brightness(0.9)" },
-  { id: "warm", label: "Warm", css: "sepia(0.18) saturate(1.2) hue-rotate(-6deg)" },
-  { id: "cool", label: "Cool", css: "saturate(1.1) hue-rotate(168deg) contrast(1.05)" },
+type Tool = "trim" | "text" | "stickers" | "draw" | "filter" | "adjust" | "captions";
+type Caption = { id: string; start: number; end: number; text: string };
+
+const FONTS = [
+  { id: "default", label: "Default", css: "700", family: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" },
+  { id: "modern", label: "Modern", css: "800", family: "'Helvetica Neue', Helvetica, Arial, sans-serif" },
+  { id: "typewriter", label: "Typewriter", css: "600", family: "'Courier New', Courier, monospace" },
+  { id: "serif", label: "Serif", css: "700", family: "Georgia, 'Times New Roman', serif" },
+  { id: "neon", label: "Neon", css: "800", family: "Impact, 'Arial Black', sans-serif" },
+  { id: "handwriting", label: "Handwriting", css: "600", family: "'Comic Sans MS', 'Segoe Print', cursive" },
+  { id: "bold", label: "Bold", css: "900", family: "'Arial Black', Impact, sans-serif" },
+  { id: "italic", label: "Italic", css: "italic 700", family: "Georgia, serif" },
 ];
 
-const EMOJIS = ["❤️", "🔥", "✨", "😂", "😍", "👏", "💯", "🎉", "👀", "💜", "⭐", "🚀", "🌊", "🎵", "💥", "🥹", "🙌", "😎", "💪", "🫶"];
+const FILTERS = [
+  { id: "normal", label: "Normal", css: "" },
+  { id: "clarendon", label: "Clarendon", css: "contrast(1.2) saturate(1.35)" },
+  { id: "gingham", label: "Gingham", css: "contrast(0.9) saturate(1.05) sepia(0.1)" },
+  { id: "moon", label: "Moon", css: "grayscale(1) contrast(1.1) brightness(1.1)" },
+  { id: "lark", label: "Lark", css: "contrast(1.05) saturate(1.2) brightness(1.05)" },
+  { id: "earlybird", label: "Earlybird", css: "sepia(0.25) contrast(1.1) saturate(1.1)" },
+  { id: "juno", label: "Juno", css: "saturate(1.4) contrast(1.05) sepia(0.1)" },
+  { id: "aden", label: "Aden", css: "sepia(0.2) contrast(0.95) brightness(1.1)" },
+  { id: "lofi", label: "Lo-fi", css: "saturate(0.7) contrast(1.2)" },
+  { id: "vintage", label: "Vintage", css: "sepia(0.45) contrast(0.9) saturate(0.8)" },
+  { id: "nashionville", label: "Nashville", css: "sepia(0.2) saturate(1.2) contrast(1.05) hue-rotate(-8deg)" },
+  { id: "vesper", label: "Vesper", css: "grayscale(0.6) contrast(1.25) saturate(0.7)" },
+];
+
+const COLORS = ["#ffffff", "#000000", "#ff3b5c", "#ffd93d", "#4ade80", "#60a5fa", "#c084fc", "#ff8a3d"];
+const EMOJIS = ["❤️", "🔥", "✨", "😂", "😍", "👏", "💯", "🎉", "👀", "💜", "⭐", "🚀", "🌊", "🎵", "💥", "🥹", "🙌", "😎", "💪", "🫶", "😭", "🤣", "😇", "🥰"];
 
 function clamp(n: number, min: number, max: number) { return Math.min(max, Math.max(min, n)); }
 function uid() { return Math.random().toString(36).slice(2, 10); }
-function fmt(seconds: number) {
-  if (!isFinite(seconds) || seconds < 0) seconds = 0;
-  const m = Math.floor(seconds / 60);
-  const s = Math.floor(seconds % 60);
-  const d = Math.floor((seconds % 1) * 10);
-  return `${m}:${String(s).padStart(2, "0")}.${d}`;
+function fmt(s: number) {
+  if (!isFinite(s) || s < 0) s = 0;
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return `${m}:${String(sec).padStart(2, "0")}`;
 }
 
 export default function VideoEditor({ file, onCancel, onApply }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const musicRef = useRef<HTMLAudioElement>(null);
-  const musicInputRef = useRef<HTMLInputElement>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number | null>(null);
   const exportingRef = useRef(false);
+  const pinchRef = useRef<{ distance: number; scale: number; rotation: number; cx: number; cy: number; r0: number } | null>(null);
+  const pointersRef = useRef<Map<number, { x: number; y: number }>>(new Map());
+  const dragRef = useRef<{ startX: number; startY: number; x: number; y: number } | null>(null);
+  const drawingRef = useRef(false);
 
   const [src, setSrc] = useState("");
   const [duration, setDuration] = useState(0);
@@ -73,39 +93,21 @@ export default function VideoEditor({ file, onCancel, onApply }: Props) {
   const [exporting, setExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
   const [thumbs, setThumbs] = useState<string[]>([]);
-  const [zoom, setZoom] = useState(1);
 
-  // Text / stickers
   const [overlays, setOverlays] = useState<Overlay[]>([]);
-  const [selectedOverlayId, setSelectedOverlayId] = useState<string | null>(null);
-  const [dragOverlayId, setDragOverlayId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [textDraft, setTextDraft] = useState("");
-
-  // Filters
-  const [filterId, setFilterId] = useState("none");
+  const [fontPickerOpen, setFontPickerOpen] = useState(false);
+  const [filterId, setFilterId] = useState("normal");
+  const [filterStrength, setFilterStrength] = useState(1);
   const [brightness, setBrightness] = useState(1);
   const [contrast, setContrast] = useState(1);
   const [saturate, setSaturate] = useState(1);
-
-  // Audio
-  const [musicSrc, setMusicSrc] = useState("");
-  const [musicName, setMusicName] = useState("");
-  const [musicVolume, setMusicVolume] = useState(0.5);
-  const [originalVolume, setOriginalVolume] = useState(1);
-
-  // Speed / reverse
-  const [speed, setSpeed] = useState(1);
-  const [reversed, setReversed] = useState(false);
-
-  // Subtitles
-  const [subtitles, setSubtitles] = useState<SubtitleCue[]>([]);
-  const [selectedCueId, setSelectedCueId] = useState<string | null>(null);
-  const [subtitleDraft, setSubtitleDraft] = useState("");
-  const [transcribing, setTranscribing] = useState(false);
-  const [transcribeError, setTranscribeError] = useState<string | null>(null);
-
-  const [undoStack, setUndoStack] = useState<Overlay[][]>([]);
-  const [redoStack, setRedoStack] = useState<Overlay[][]>([]);
+  const [strokes, setStrokes] = useState<Stroke[]>([]);
+  const [drawColor, setDrawColor] = useState("#ffffff");
+  const [drawWidth, setDrawWidth] = useState(6);
+  const [captions, setCaptions] = useState<Caption[]>([]);
+  const [captionText, setCaptionText] = useState("");
 
   useEffect(() => { exportingRef.current = exporting; }, [exporting]);
 
@@ -120,18 +122,12 @@ export default function VideoEditor({ file, onCancel, onApply }: Props) {
     if (!v) return;
     const onLoaded = () => {
       const d = isFinite(v.duration) ? v.duration : 0;
-      setDuration(d);
-      setStart(0);
-      setEnd(d);
-      setCurrentTime(0);
+      setDuration(d); setStart(0); setEnd(d); setCurrentTime(0);
     };
     const onTime = () => {
       const t = v.currentTime;
       setCurrentTime(t);
-      if (!exportingRef.current && playing && t >= end - 0.05) {
-        v.currentTime = start;
-        v.play().catch(() => {});
-      }
+      if (!exportingRef.current && playing && t >= end - 0.05) { v.currentTime = start; v.play().catch(() => {}); }
     };
     const onPlay = () => setPlaying(true);
     const onPause = () => setPlaying(false);
@@ -147,27 +143,22 @@ export default function VideoEditor({ file, onCancel, onApply }: Props) {
     };
   }, [src, start, end, playing]);
 
-  useEffect(() => { if (videoRef.current) videoRef.current.playbackRate = speed; }, [speed]);
-
-  // Thumbnail filmstrip
   useEffect(() => {
     if (!src || !duration || duration <= 0) return;
     let cancelled = false;
     const video = document.createElement("video");
-    video.src = src;
-    video.muted = true;
-    video.playsInline = true;
+    video.src = src; video.muted = true; video.playsInline = true;
     const count = 14;
     const out: string[] = new Array(count).fill("");
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
-    const captureAt = (i: number) => new Promise<void>((resolve) => {
+    const capture = (i: number) => new Promise<void>((resolve) => {
       if (cancelled || !ctx) return resolve();
       const t = duration * (i / Math.max(1, count - 1));
       const onSeeked = () => {
         try {
-          const w = 120;
-          const h = Math.max(68, Math.round((video.videoHeight / Math.max(1, video.videoWidth)) * w));
+          const w = 110;
+          const h = Math.max(60, Math.round((video.videoHeight / Math.max(1, video.videoWidth)) * w));
           canvas.width = w; canvas.height = h;
           ctx.drawImage(video, 0, 0, w, h);
           out[i] = canvas.toDataURL("image/jpeg", 0.45);
@@ -177,105 +168,87 @@ export default function VideoEditor({ file, onCancel, onApply }: Props) {
       };
       video.addEventListener("seeked", onSeeked);
       try { video.currentTime = Math.min(duration - 0.01, Math.max(0, t)); } catch { video.removeEventListener("seeked", onSeeked); resolve(); }
+      setTimeout(() => { video.removeEventListener("seeked", onSeeked); resolve(); }, 2500);
     });
     video.onloadedmetadata = async () => {
-      for (let i = 0; i < count; i++) {
-        if (cancelled) break;
-        await captureAt(i);
-        if (!cancelled) setThumbs([...out]);
-      }
+      for (let i = 0; i < count; i++) { if (cancelled) break; await capture(i); if (!cancelled) setThumbs([...out]); }
     };
     return () => { cancelled = true; };
   }, [src, duration]);
 
-  const filterCss = useMemo(() => {
-    const preset = FILTERS.find(f => f.id === filterId)?.css || "";
-    return `brightness(${brightness}) contrast(${contrast}) saturate(${saturate}) ${preset}`.trim();
+  const filterPresent = filterId !== "normal";
+  const cssFilter = useMemo(() => {
+    const base = FILTERS.find(f => f.id === filterId)?.css || "";
+    const bits = [`brightness(${brightness})`, `contrast(${contrast})`, `saturate(${saturate})`];
+    if (base) bits.push(base);
+    return bits.join(" ");
   }, [filterId, brightness, contrast, saturate]);
 
-  const activeOverlays = useCallback((t: number) =>
-    overlays.filter(o => o.text.trim() || o.kind === "shape")
-      .filter(o => t >= o.start && t <= o.end),
-  [overlays]);
-
-  const activeCueAt = useCallback((t: number) => {
-    for (let i = subtitles.length - 1; i >= 0; i--) {
-      const s = subtitles[i];
-      if (t >= s.start && t <= s.end && s.text.trim()) return s;
-    }
+  const activeOverlays = useCallback((t: number) => overlays.filter(o => (o.text.trim() || o.kind === "shape") && t >= o.start && t <= o.end), [overlays]);
+  const activeCaption = useCallback((t: number) => {
+    for (let i = captions.length - 1; i >= 0; i--) if (t >= captions[i].start && t <= captions[i].end && captions[i].text.trim()) return captions[i];
     return null;
-  }, [subtitles]);
+  }, [captions]);
 
-  // Canvas draw loop (preview)
-  useEffect(() => {
-    const v = videoRef.current;
-    const canvas = canvasRef.current;
-    if (!v || !canvas || !src) return;
-    const draw = () => {
-      try {
-        const w = canvas.width;
-        const h = canvas.height;
-        const ctx = canvas.getContext("2d");
-        if (ctx && v.readyState >= 2) {
-          ctx.clearRect(0, 0, w, h);
-          ctx.filter = filterCss;
-          ctx.drawImage(v, 0, 0, w, h);
-          ctx.filter = "none";
-          drawOverlays(ctx, w, h, v.currentTime);
-          const cue = activeCueAt(v.currentTime);
-          if (cue) drawCaption(ctx, w, h, cue.text);
-        }
-      } catch {}
-      if (!exportingRef.current) rafRef.current = requestAnimationFrame(draw);
-    };
-    rafRef.current = requestAnimationFrame(draw);
-    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
-  }, [src, filterCss, overlays, subtitles]);
+  const fontFor = (id: string) => FONTS.find(f => f.id === id) || FONTS[0];
 
   const drawOverlays = (ctx: CanvasRenderingContext2D, w: number, h: number, t: number) => {
     for (const o of activeOverlays(t)) {
       ctx.save();
-      const px = o.x * w;
-      const py = o.y * h;
-      const size = Math.max(10, o.size * h);
+      ctx.translate(o.x * w, o.y * h);
+      ctx.rotate((o.rotation * Math.PI) / 180);
+      ctx.scale(o.scale, o.scale);
+      const font = fontFor(o.fontId);
+      const size = (o.kind === "emoji" ? 0.12 : 0.075) * h;
       if (o.kind === "shape" && o.shape) {
         ctx.fillStyle = o.color;
-        if (o.shape === "circle") {
-          ctx.beginPath();
-          ctx.arc(px, py, size / 2, 0, Math.PI * 2);
-          ctx.fill();
-        } else {
-          ctx.fillRect(px - size / 2, py - size / 2, size, size * 0.62);
-        }
+        if (o.shape === "circle") { ctx.beginPath(); ctx.arc(0, 0, size / 2, 0, Math.PI * 2); ctx.fill(); }
+        else ctx.fillRect(-size / 2, -size / 2, size, size * 0.62);
       } else {
-        ctx.font = `800 ${size}px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif`;
+        ctx.font = `${font.css} ${size}px ${font.family}`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        const metrics = ctx.measureText(o.text);
-        const tw = Math.min(w * 0.9, metrics.width + size * 0.7);
-        const th = size * 1.45;
+        const m = ctx.measureText(o.text);
+        const tw = Math.min(w * 0.92, m.width + size * 0.7);
+        const th = size * 1.5;
         if (o.bg) {
           ctx.fillStyle = "rgba(0,0,0,0.55)";
-          const r = 10;
+          const r = 8;
           ctx.beginPath();
-          ctx.moveTo(px - tw / 2 + r, py - th / 2);
-          ctx.lineTo(px + tw / 2 - r, py - th / 2);
-          ctx.quadraticCurveTo(px + tw / 2, py - th / 2, px + tw / 2, py - th / 2 + r);
-          ctx.lineTo(px + tw / 2, py + th / 2 - r);
-          ctx.quadraticCurveTo(px + tw / 2, py + th / 2, px + tw / 2 - r, py + th / 2);
-          ctx.lineTo(px - tw / 2 + r, py + th / 2);
-          ctx.quadraticCurveTo(px - tw / 2, py + th / 2, px - tw / 2, py + th / 2 - r);
-          ctx.lineTo(px - tw / 2, py - th / 2 + r);
-          ctx.quadraticCurveTo(px - tw / 2, py - th / 2, px - tw / 2 + r, py - th / 2);
+          ctx.moveTo(-tw / 2 + r, -th / 2);
+          ctx.lineTo(tw / 2 - r, -th / 2);
+          ctx.quadraticCurveTo(tw / 2, -th / 2, tw / 2, -th / 2 + r);
+          ctx.lineTo(tw / 2, th / 2 - r);
+          ctx.quadraticCurveTo(tw / 2, th / 2, tw / 2 - r, th / 2);
+          ctx.lineTo(-tw / 2 + r, th / 2);
+          ctx.quadraticCurveTo(-tw / 2, th / 2, -tw / 2, th / 2 - r);
+          ctx.lineTo(-tw / 2, -th / 2 + r);
+          ctx.quadraticCurveTo(-tw / 2, -th / 2, -tw / 2 + r, -th / 2);
           ctx.closePath();
           ctx.fill();
         }
-        ctx.lineWidth = Math.max(2, size * 0.07);
-        ctx.strokeStyle = "rgba(0,0,0,0.75)";
-        ctx.strokeText(o.text, px, py);
+        ctx.lineWidth = Math.max(2, size * 0.08);
+        ctx.strokeStyle = "rgba(0,0,0,0.7)";
+        ctx.strokeText(o.text, 0, 0);
         ctx.fillStyle = o.color;
-        ctx.fillText(o.text, px, py);
+        ctx.fillText(o.text, 0, 0);
       }
+      ctx.restore();
+    }
+  };
+
+  const drawStrokes = (ctx: CanvasRenderingContext2D, w: number, h: number, t: number) => {
+    for (const s of strokes) {
+      if (!s.points.length) continue;
+      ctx.save();
+      ctx.strokeStyle = s.color;
+      ctx.lineWidth = s.width;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.beginPath();
+      s.points.forEach((p, i) => { if (i === 0) ctx.moveTo(p.x * w, p.y * h); else ctx.lineTo(p.x * w, p.y * h); });
+      if (s.points.length === 1) { ctx.lineTo(s.points[0].x * w + 0.5, s.points[0].y * h + 0.5); }
+      ctx.stroke();
       ctx.restore();
     }
   };
@@ -283,200 +256,256 @@ export default function VideoEditor({ file, onCancel, onApply }: Props) {
   const drawCaption = (ctx: CanvasRenderingContext2D, w: number, h: number, text: string) => {
     const lines = text.split("\n").map(l => l.trim()).filter(Boolean).slice(0, 3);
     if (!lines.length) return;
-    const fontSize = Math.max(18, Math.round(h * 0.045));
-    ctx.font = `700 ${fontSize}px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    const lh = fontSize * 1.25;
+    const fs = Math.max(18, Math.round(h * 0.045));
+    ctx.font = `700 ${fs}px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif`;
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    const lh = fs * 1.25;
     const blockH = lines.length * lh;
-    const cy = h * 0.82;
-    const maxW = Math.max(...lines.map(l => ctx.measureText(l).width));
-    const boxW = Math.min(w * 0.9, maxW + fontSize);
-    const boxH = blockH + fontSize * 0.6;
-    const yTop = cy - boxH / 2;
+    const cy = h * 0.84;
+    const mw = Math.max(...lines.map(l => ctx.measureText(l).width));
+    const bw = Math.min(w * 0.9, mw + fs);
     ctx.fillStyle = "rgba(0,0,0,0.5)";
-    ctx.fillRect((w - boxW) / 2, yTop, boxW, boxH);
+    ctx.fillRect((w - bw) / 2, cy - blockH / 2 - fs * 0.3, bw, blockH + fs * 0.6);
     ctx.fillStyle = "#fff";
-    lines.forEach((line, i) => ctx.fillText(line, w / 2, cy - blockH / 2 + lh * (i + 0.5)));
+    lines.forEach((l, i) => ctx.fillText(l, w / 2, cy - blockH / 2 + lh * (i + 0.5)));
   };
+
+  useEffect(() => {
+    const v = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!v || !canvas || !src) return;
+    const draw = () => {
+      try {
+        const ctx = canvas.getContext("2d");
+        if (ctx && v.readyState >= 2) {
+          const w = canvas.width, h = canvas.height;
+          ctx.clearRect(0, 0, w, h);
+          ctx.filter = cssFilter;
+          ctx.drawImage(v, 0, 0, w, h);
+          ctx.filter = "none";
+          drawOverlays(ctx, w, h, v.currentTime);
+          drawStrokes(ctx, w, h, v.currentTime);
+          const cap = activeCaption(v.currentTime);
+          if (cap) drawCaption(ctx, w, h, cap.text);
+        }
+      } catch {}
+      if (!exportingRef.current) rafRef.current = requestAnimationFrame(draw);
+    };
+    rafRef.current = requestAnimationFrame(draw);
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  }, [src, cssFilter, overlays, strokes, captions]);
 
   const togglePlay = () => {
     const v = videoRef.current;
     if (!v) return;
-    if (v.paused) {
-      if (v.currentTime < start || v.currentTime >= end - 0.05) v.currentTime = start;
-      v.play().catch(() => {});
-    } else v.pause();
+    if (v.paused) { if (v.currentTime < start || v.currentTime >= end - 0.05) v.currentTime = start; v.play().catch(() => {}); }
+    else v.pause();
   };
+  const seekTo = (t: number) => { const nt = clamp(t, 0, duration); setCurrentTime(nt); if (videoRef.current) videoRef.current.currentTime = nt; };
 
-  const seekTo = (t: number) => {
-    const v = videoRef.current;
-    const nt = clamp(t, 0, duration);
-    setCurrentTime(nt);
-    if (v) v.currentTime = nt;
+  const pxToTime = (clientX: number) => {
+    const el = timelineRef.current;
+    if (!el || duration <= 0) return 0;
+    const r = el.getBoundingClientRect();
+    return clamp((clientX - r.left) / r.width, 0, 1) * duration;
   };
-
-  const pxToTime = (clientX: number, el?: HTMLDivElement) => {
-    const target = el || timelineRef.current;
-    if (!target || duration <= 0) return 0;
-    const rect = target.getBoundingClientRect();
-    const ratio = clamp((clientX - rect.left) / rect.width, 0, 1);
-    return ratio * duration / zoom;
-  };
-
   useEffect(() => {
     if (!dragging) return;
     const onMove = (e: PointerEvent) => {
       const t = pxToTime(e.clientX);
       const gap = Math.min(0.4, duration * 0.02);
-      if (dragging === "start") {
-        const ns = Math.min(t, end - gap);
-        setStart(Math.max(0, ns));
-        if (videoRef.current) videoRef.current.currentTime = Math.max(0, ns);
-      } else if (dragging === "end") {
-        const ne = Math.max(t, start + gap);
-        setEnd(Math.min(duration, ne));
-        if (videoRef.current) videoRef.current.currentTime = Math.min(duration, ne);
-      } else if (dragging === "playhead") {
-        const nt = clamp(t, start, end);
-        setCurrentTime(nt);
-        if (videoRef.current) videoRef.current.currentTime = nt;
-      }
+      if (dragging === "start") { setStart(Math.min(t, end - gap)); if (videoRef.current) videoRef.current.currentTime = Math.min(t, end - gap); }
+      else if (dragging === "end") { setEnd(Math.max(t, start + gap)); if (videoRef.current) videoRef.current.currentTime = Math.max(t, start + gap); }
+      else { const nt = clamp(t, start, end); setCurrentTime(nt); if (videoRef.current) videoRef.current.currentTime = nt; }
     };
     const onUp = () => setDragging(null);
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
-    return () => {
-      window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", onUp);
-    };
-  }, [dragging, start, end, duration, zoom]);
+    return () => { window.removeEventListener("pointermove", onMove); window.removeEventListener("pointerup", onUp); };
+  }, [dragging, start, end, duration]);
 
-  // Overlay dragging on canvas
-  const onCanvasPointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+  // Canvas gestures: drag / pinch / rotate overlays, or draw
+  const onCanvasDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
     const nx = (e.clientX - rect.left) / rect.width;
     const ny = (e.clientY - rect.top) / rect.height;
-    const candidates = activeOverlays(videoRef.current?.currentTime || 0).reverse();
-    const hit = candidates.find(o => Math.abs(o.x - nx) < 0.16 && Math.abs(o.y - ny) < 0.16);
+    pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    (e.currentTarget as any).setPointerCapture?.(e.pointerId);
+
+    if (tool === "draw") {
+      drawingRef.current = true;
+      setStrokes(prev => [...prev, { color: drawColor, width: drawWidth, points: [{ x: nx, y: ny }] }]);
+      return;
+    }
+
+    if (pointersRef.current.size === 2 && selectedId) {
+      const pts = Array.from(pointersRef.current.values());
+      const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+      const angle = Math.atan2(pts[1].y - pts[0].y, pts[1].x - pts[0].x);
+      const sel = overlays.find(o => o.id === selectedId);
+      pinchRef.current = { distance: dist, scale: sel?.scale || 1, rotation: sel?.rotation || 0, cx: nx, cy: ny, r0: angle };
+      dragRef.current = null;
+      return;
+    }
+
+    const t = videoRef.current?.currentTime || 0;
+    const hit = activeOverlays(t).slice().reverse().find(o => Math.abs(o.x - nx) < 0.18 && Math.abs(o.y - ny) < 0.18);
     if (hit) {
-      setSelectedOverlayId(hit.id);
-      setDragOverlayId(hit.id);
-      (e.currentTarget as any).setPointerCapture?.(e.pointerId);
+      setSelectedId(hit.id);
+      dragRef.current = { startX: e.clientX, startY: e.clientY, x: hit.x, y: hit.y };
+    } else {
+      setSelectedId(null);
     }
   };
-  const onCanvasPointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (!dragOverlayId) return;
+  const onCanvasMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
-    const nx = clamp((e.clientX - rect.left) / rect.width, 0.05, 0.95);
-    const ny = clamp((e.clientY - rect.top) / rect.height, 0.05, 0.95);
-    setOverlays(prev => prev.map(o => o.id === dragOverlayId ? { ...o, x: nx, y: ny } : o));
-  };
-  const onCanvasPointerUp = () => setDragOverlayId(null);
+    const nx = clamp((e.clientX - rect.left) / rect.width, 0, 1);
+    const ny = clamp((e.clientY - rect.top) / rect.height, 0, 1);
+    if (pointersRef.current.has(e.pointerId)) pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
-  const pushHistory = () => {
-    setUndoStack(prev => [...prev.slice(-19), overlays.map(o => ({ ...o }))]);
-    setRedoStack([]);
+    if (drawingRef.current) {
+      setStrokes(prev => {
+        if (!prev.length) return prev;
+        const copy = [...prev];
+        const last = copy[copy.length - 1];
+        copy[copy.length - 1] = { ...last, points: [...last.points, { x: nx, y: ny }] };
+        return copy;
+      });
+      return;
+    }
+
+    if (pointersRef.current.size === 2 && pinchRef.current && selectedId) {
+      const pts = Array.from(pointersRef.current.values());
+      const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].x);
+      const angle = Math.atan2(pts[1].y - pts[0].y, pts[1].x - pts[0].x);
+      const scale = clamp((pinchRef.current.scale * dist) / Math.max(1, pinchRef.current.distance), 0.4, 3);
+      const rotation = pinchRef.current.rotation + ((angle - pinchRef.current.r0) * 180) / Math.PI;
+      setOverlays(prev => prev.map(o => o.id === selectedId ? { ...o, scale, rotation } : o));
+      return;
+    }
+
+    const d = dragRef.current;
+    if (d && selectedId) {
+      setOverlays(prev => prev.map(o => o.id === selectedId
+        ? { ...o, x: clamp(d.x + (e.clientX - d.startX) / rect.width, 0.03, 0.97), y: clamp(d.y + (e.clientY - d.startY) / rect.height, 0.03, 0.97) }
+        : o));
+    }
   };
-  const undo = () => {
-    const prev = undoStack[undoStack.length - 1];
-    if (!prev) return;
-    setRedoStack(r => [...r, overlays.map(o => ({ ...o }))]);
-    setOverlays(prev);
-    setUndoStack(s => s.slice(0, -1));
-  };
-  const redo = () => {
-    const next = redoStack[redoStack.length - 1];
-    if (!next) return;
-    setUndoStack(s => [...s, overlays.map(o => ({ ...o }))]);
-    setOverlays(next);
-    setRedoStack(s => s.slice(0, -1));
-  };
+  const onCanvasUp = () => { drawRef.current = null; pointersRef.current.clear(); pinchRef.current = null; drawingRef.current = false; };
+  const drawRef = useRef<null>(null);
 
   const addOverlay = (kind: Overlay["kind"], text: string, shape: Overlay["shape"] = null) => {
-    pushHistory();
     const t = clamp(videoRef.current?.currentTime || currentTime, start, Math.max(start, end - 0.5));
     const o: Overlay = {
-      id: uid(), kind, text, x: 0.5, y: 0.5,
-      color: "#ffffff", size: kind === "emoji" ? 0.11 : 0.07,
-      bg: kind === "text", shape,
+      id: uid(), kind, text, x: 0.5, y: 0.5, scale: 1, rotation: 0,
+      color: "#ffffff", fontId: "default", bg: kind === "text", shape,
       start: t, end: Math.min(end, t + 3),
     };
     setOverlays(prev => [...prev, o]);
-    setSelectedOverlayId(o.id);
+    setSelectedId(o.id);
   };
+  const updateSelected = (patch: Partial<Overlay>) => setOverlays(prev => prev.map(o => o.id === selectedId ? { ...o, ...patch } : o));
+  const deleteSelected = () => { setOverlays(prev => prev.filter(o => o.id !== selectedId)); setStrokes([]); setSelectedId(null); };
 
-  const updateSelectedOverlay = (patch: Partial<Overlay>) => {
-    setOverlays(prev => prev.map(o => o.id === selectedOverlayId ? { ...o, ...patch } : o));
-  };
+  const exportVideo = async () => {
+    const v = videoRef.current;
+    if (!v || duration <= 0) return;
+    const hasEdits = start > 0.05 || end < duration - 0.05 || overlays.length > 0 || strokes.length > 0 ||
+      captions.length > 0 || filterPresent || brightness !== 1 || contrast !== 1 || saturate !== 1;
 
-  const deleteSelectedOverlay = () => {
-    if (!selectedOverlayId) return;
-    pushHistory();
-    setOverlays(prev => prev.filter(o => o.id !== selectedOverlayId));
-    setSelectedOverlayId(null);
-  };
+    if (!hasEdits) { onApply({ file, duration, posterBlob: await capturePoster() }); return; }
 
-  // Audio
-  const onMusicFile = (f?: File) => {
-    if (!f) return;
-    if (musicSrc) URL.revokeObjectURL(musicSrc);
-    const url = URL.createObjectURL(f);
-    setMusicSrc(url);
-    setMusicName(f.name);
-    if (musicRef.current) { musicRef.current.src = url; musicRef.current.loop = true; }
-  };
+    exportingRef.current = true;
+    setExporting(true);
+    setExportProgress(0);
+    let recorder: MediaRecorder | null = null;
+    let stream: MediaStream | null = null;
+    let raf: number | null = null;
+    let timer: any = null;
 
-  // Subtitles
-  const selectedCue = subtitles.find(s => s.id === selectedCueId) || null;
-  const addSubtitleCue = () => {
-    const t = clamp(currentTime || start, start, Math.max(start, end - 0.5));
-    const cue: SubtitleCue = { id: uid(), start: t, end: Math.min(end, t + 2.5), text: "" };
-    setSubtitles(prev => [...prev, cue].sort((a, b) => a.start - b.start));
-    setSelectedCueId(cue.id);
-    setSubtitleDraft("");
-    setTool("subtitles");
-  };
-  const updateSelectedCue = (patch: Partial<SubtitleCue>) => {
-    if (!selectedCueId) return;
-    setSubtitles(prev => prev.map(s => s.id === selectedCueId ? { ...s, ...patch } : s).sort((a, b) => a.start - b.start));
-  };
-  const deleteSelectedCue = () => {
-    if (!selectedCueId) return;
-    setSubtitles(prev => prev.filter(s => s.id !== selectedCueId));
-    setSelectedCueId(null);
-  };
-  const autoDetectSubtitles = async () => {
-    if (transcribing) return;
-    setTranscribing(true);
-    setTranscribeError(null);
     try {
-      const form = new FormData();
-      form.append("file", file);
-      const res = await fetch("/api/subtitles/transcribe", { method: "POST", body: form });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(typeof data?.error === "string" ? data.error : "Failed to detect subtitles.");
-      const cues: SubtitleCue[] = (Array.isArray(data?.cues) ? data.cues : [])
-        .map((c: any) => ({
-          id: String(c?.id || uid()),
-          start: clamp(Number(c?.start) || 0, 0, duration),
-          end: clamp(Number(c?.end) || 0, 0, duration),
-          text: String(c?.text || "").trim(),
-        }))
-        .filter((c: SubtitleCue) => c.text && c.end > c.start + 0.05)
-        .sort((a: SubtitleCue, b: SubtitleCue) => a.start - b.start);
-      if (!cues.length) throw new Error("No speech detected. Try a clip with clearer audio.");
-      setSubtitles(cues);
-      setSelectedCueId(cues[0].id);
-      seekTo(cues[0].start);
-    } catch (e: any) {
-      setTranscribeError(e?.message || "Failed to detect subtitles.");
+      if (typeof MediaRecorder === "undefined") throw new Error("Export not supported");
+      const mimes = ["video/mp4;codecs=avc1.42E01E,mp4a.40.2", "video/mp4", "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"];
+      let mime = "";
+      for (const m of mimes) if (MediaRecorder.isTypeSupported(m)) { mime = m; break; }
+
+      const canvas = document.createElement("canvas");
+      const cw = Math.min(1080, v.videoWidth || 720);
+      canvas.width = cw;
+      canvas.height = Math.round(cw * ((v.videoHeight || 1280) / (v.videoWidth || 720)));
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("Canvas not supported");
+
+      const vs = (v as any).captureStream ? (v as any).captureStream() : null;
+      const audioTracks = vs && vs.getAudioTracks ? vs.getAudioTracks() : [];
+      const cstream = canvas.captureStream(30);
+      stream = new MediaStream([...cstream.getVideoTracks(), ...audioTracks]);
+
+      const chunks: Blob[] = [];
+      recorder = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+      recorder.ondataavailable = e => { if (e.data?.size) chunks.push(e.data); };
+      const done = new Promise<Blob>((resolve, reject) => {
+        if (!recorder) return reject(new Error("Export failed"));
+        recorder!.onerror = () => reject(new Error("Export failed"));
+        recorder!.onstop = () => resolve(new Blob(chunks, { type: mime || recorder!.mimeType || "video/webm" }));
+      });
+
+      const poster = await capturePoster();
+      const es = Math.max(0, Math.min(start, Math.max(0, duration - 0.1)));
+      const ee = Math.max(es + 0.1, Math.min(end, duration));
+      v.pause();
+      v.currentTime = es;
+      await new Promise<void>(res => { const h = () => { v.removeEventListener("seeked", h); res(); }; v.addEventListener("seeked", h); setTimeout(res, 1500); });
+
+      const draw = () => {
+        try {
+          const w = canvas.width, h = canvas.height;
+          ctx.clearRect(0, 0, w, h);
+          ctx.filter = cssFilter;
+          ctx.drawImage(v, 0, 0, w, h);
+          ctx.filter = "none";
+          drawOverlays(ctx, w, h, v.currentTime);
+          drawStrokes(ctx, w, h, v.currentTime);
+          const cap = activeCaption(v.currentTime);
+          if (cap) drawCaption(ctx, w, h, cap.text);
+        } catch {}
+        if (!v.paused && !v.ended && v.currentTime < ee - 0.02) raf = requestAnimationFrame(draw);
+      };
+      recorder.start(250);
+      draw();
+      await v.play().catch(() => { throw new Error("Could not play for export"); });
+      timer = setInterval(() => setExportProgress(Math.round(clamp(((v.currentTime - es) / Math.max(0.1, ee - es)) * 100, 0, 100))), 200);
+      await new Promise<void>(resolve => {
+        let fin = false;
+        const finish = () => { if (fin) return; fin = true; v.removeEventListener("ended", onEnded); clearInterval(stop); resolve(); };
+        const onEnded = () => finish();
+        v.addEventListener("ended", onEnded);
+        const stop = setInterval(() => { if (v.currentTime >= ee - 0.03 || v.ended) { try { v.pause(); } catch {} finish(); } }, 60);
+        setTimeout(() => { try { v.pause(); } catch {} finish(); }, Math.max(8000, (ee - es + 8) * 1000));
+      });
+      if (timer) clearInterval(timer);
+      setExportProgress(100);
+      if (recorder.state !== "inactive") recorder.stop();
+      const blob = await done;
+      const type = blob.type || mime || "video/webm";
+      const ext = type.includes("mp4") ? "mp4" : "webm";
+      const name = (file.name.replace(/\.[^.]+$/, "") || "video") + "_edited." + ext;
+      onApply({ file: new File([blob], name, { type }), duration: ee - es, posterBlob: poster });
+    } catch (e) {
+      console.error(e);
+      alert("Could not export with edits in this browser. Uploading original video instead. Chrome on desktop works best.");
+      onApply({ file, duration, posterBlob: await capturePoster() });
     } finally {
-      setTranscribing(false);
+      if (raf) cancelAnimationFrame(raf);
+      if (timer) clearInterval(timer);
+      try { if (recorder && recorder.state !== "inactive") recorder.stop(); } catch {}
+      try { stream?.getTracks().forEach(t => t.stop()); } catch {}
+      exportingRef.current = false;
+      setExporting(false);
     }
   };
 
@@ -484,591 +513,198 @@ export default function VideoEditor({ file, onCancel, onApply }: Props) {
     const v = videoRef.current;
     if (!v) return null;
     try {
-      const canvas = document.createElement("canvas");
-      canvas.width = v.videoWidth || 1280;
-      canvas.height = v.videoHeight || 720;
-      const ctx = canvas.getContext("2d");
+      const c = document.createElement("canvas");
+      c.width = v.videoWidth || 720; c.height = v.videoHeight || 1280;
+      const ctx = c.getContext("2d");
       if (!ctx) return null;
-      ctx.filter = filterCss;
-      ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
-      ctx.filter = "none";
-      drawOverlays(ctx, canvas.width, canvas.height, v.currentTime);
-      const cue = activeCueAt(v.currentTime);
-      if (cue) drawCaption(ctx, canvas.width, canvas.height, cue.text);
-      return await new Promise(res => canvas.toBlob(res, "image/jpeg", 0.85));
+      ctx.filter = cssFilter; ctx.drawImage(v, 0, 0, c.width, c.height); ctx.filter = "none";
+      drawOverlays(ctx, c.width, c.height, v.currentTime);
+      drawStrokes(ctx, c.width, c.height, v.currentTime);
+      const cap = activeCaption(v.currentTime);
+      if (cap) drawCaption(ctx, c.width, c.height, cap.text);
+      return await new Promise(res => c.toBlob(res, "image/jpeg", 0.85));
     } catch { return null; }
   };
 
-  // Capture reversed frame sequence (JPEG blobs) for short clips
-  const captureReverseFrames = async (): Promise<Blob[]> => {
-    const v = videoRef.current;
-    if (!v) return [];
-    const span = Math.min(end - start, 10);
-    const fps = 15;
-    const frames: Blob[] = [];
-    const canvas = document.createElement("canvas");
-    const scale = Math.min(1, 720 / Math.max(1, v.videoWidth));
-    canvas.width = Math.max(2, Math.round((v.videoWidth || 720) * scale));
-    canvas.height = Math.max(2, Math.round((v.videoHeight || 1280) * scale));
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return frames;
-    const count = Math.max(2, Math.floor(span * fps));
-
-    for (let i = 0; i < count; i++) {
-      const t = start + (i / count) * span;
-      await new Promise<void>((resolve) => {
-        const onSeeked = () => resolve();
-        v.addEventListener("seeked", onSeeked, { once: true });
-        try { v.currentTime = t; } catch { resolve(); }
-        setTimeout(resolve, 1200);
-      });
-      ctx.filter = filterCss;
-      ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
-      ctx.filter = "none";
-      drawOverlays(ctx, canvas.width, canvas.height, v.currentTime);
-      const cue = activeCueAt(v.currentTime);
-      if (cue) drawCaption(ctx, canvas.width, canvas.height, cue.text);
-      const blob = await new Promise<Blob | null>(res => canvas.toBlob(res, "image/jpeg", 0.75));
-      if (blob) frames.push(blob);
-    }
-    return frames;
-  };
-
-  const buildAudioMix = async (ctx: AudioContext, v: HTMLVideoElement): Promise<MediaStreamAudioDestinationNode> => {
-    const dest = ctx.createMediaStreamDestination();
-    try {
-      const vs = (v as any).captureStream ? (v as any).captureStream() : null;
-      const tracks = vs && vs.getAudioTracks ? vs.getAudioTracks() : [];
-      if (tracks.length) {
-        const source = ctx.createMediaStreamSource(new MediaStream(tracks as MediaStreamTrack[]));
-        const gain = ctx.createGain();
-        gain.gain.value = originalVolume;
-        source.connect(gain).connect(dest);
-      }
-    } catch {}
-    try {
-      const m = musicRef.current;
-      if (m && musicSrc) {
-        const ms = (m as any).captureStream ? (m as any).captureStream() : null;
-        const tracks = ms && ms.getAudioTracks ? ms.getAudioTracks() : [];
-        if (tracks.length) {
-          const source = ctx.createMediaStreamSource(new MediaStream(tracks as MediaStreamTrack[]));
-          const gain = ctx.createGain();
-          gain.gain.value = musicVolume;
-          source.connect(gain).connect(dest);
-        }
-      }
-    } catch {}
-    return dest;
-  };
-
-  const exportVideo = async () => {
-    const v = videoRef.current;
-    const displayCanvas = canvasRef.current;
-    if (!v || !displayCanvas || duration <= 0) return;
-
-    const hasEdits = start > 0.05 || end < duration - 0.05 || overlays.length > 0 ||
-      subtitles.length > 0 || filterId !== "none" || brightness !== 1 || contrast !== 1 ||
-      saturate !== 1 || speed !== 1 || reversed || !!musicSrc;
-
-    if (!hasEdits) {
-      onApply({ file, duration, posterBlob: await capturePoster() });
-      return;
-    }
-
-    exportingRef.current = true;
-    setExporting(true);
-    setExportProgress(0);
-    let recorder: MediaRecorder | null = null;
-    let stream: MediaStream | null = null;
-    let audioCtx: AudioContext | null = null;
-    let rafId: number | null = null;
-    let progressTimer: any = null;
-
-    try {
-      if (typeof MediaRecorder === "undefined") throw new Error("Export not supported in this browser.");
-      const candidates = [
-        "video/mp4;codecs=avc1.42E01E,mp4a.40.2", "video/mp4",
-        "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm",
-      ];
-      let mime = "";
-      for (const m of candidates) { if (MediaRecorder.isTypeSupported(m)) { mime = m; break; } }
-
-      const outCanvas = document.createElement("canvas");
-      const cw = Math.min(1280, v.videoWidth || 720);
-      outCanvas.width = cw;
-      outCanvas.height = Math.round(cw * ((v.videoHeight || 1280) / (v.videoWidth || 720)));
-      const octx = outCanvas.getContext("2d");
-      if (!octx) throw new Error("Canvas not supported.");
-
-      const chunks: Blob[] = [];
-      let done: Promise<Blob>;
-
-      if (reversed) {
-        const frames = await captureReverseFrames();
-        if (!frames.length) throw new Error("Could not capture reversed frames.");
-
-        const audioEl = musicRef.current;
-        if (audioEl && musicSrc) { audioEl.currentTime = 0; await audioEl.play().catch(() => {}); }
-        audioCtx = new AudioContext();
-        const dest = await buildAudioMix(audioCtx, v);
-        const canvasStream = outCanvas.captureStream(15);
-        stream = new MediaStream([...canvasStream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
-        recorder = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
-        recorder.ondataavailable = e => { if (e.data?.size) chunks.push(e.data); };
-        done = new Promise<Blob>((resolve, reject) => {
-          if (!recorder) return reject(new Error("Export failed"));
-          recorder!.onerror = () => reject(new Error("Export failed"));
-          recorder!.onstop = () => resolve(new Blob(chunks, { type: mime || recorder!.mimeType || "video/webm" }));
-        });
-
-        const bitmaps = await Promise.all(frames.map(b => createImageBitmap(b)));
-        recorder.start(250);
-        let i = 0;
-        const total = bitmaps.length;
-        const step = () => {
-          if (i >= total) { recorder && recorder.state !== "inactive" && recorder.stop(); return; }
-          const bmp = bitmaps[total - 1 - i];
-          octx.drawImage(bmp, 0, 0, outCanvas.width, outCanvas.height);
-          setExportProgress(Math.round((i / total) * 100));
-          i++;
-          rafId = requestAnimationFrame(step);
-        };
-        step();
-        await done;
-        bitmaps.forEach(b => b.close());
-      } else {
-        const canvasStream = outCanvas.captureStream(30);
-        audioCtx = new AudioContext();
-        const dest = await buildAudioMix(audioCtx, v);
-        stream = new MediaStream([...canvasStream.getVideoTracks(), ...dest.stream.getAudioTracks()]);
-        recorder = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
-        recorder.ondataavailable = e => { if (e.data?.size) chunks.push(e.data); };
-        done = new Promise<Blob>((resolve, reject) => {
-          if (!recorder) return reject(new Error("Export failed"));
-          recorder!.onerror = () => reject(new Error("Export failed"));
-          recorder!.onstop = () => resolve(new Blob(chunks, { type: mime || recorder!.mimeType || "video/webm" }));
-        });
-
-        const poster = await capturePoster();
-        const exportStart = Math.max(0, Math.min(start, Math.max(0, duration - 0.1)));
-        const exportEnd = Math.max(exportStart + 0.1, Math.min(end, duration));
-        v.pause();
-        v.currentTime = exportStart;
-        await new Promise<void>(res => { const h = () => { v.removeEventListener("seeked", h); res(); }; v.addEventListener("seeked", h); setTimeout(res, 1500); });
-        v.playbackRate = speed;
-
-        const draw = () => {
-          try {
-            octx.clearRect(0, 0, outCanvas.width, outCanvas.height);
-            octx.filter = filterCss;
-            octx.drawImage(v, 0, 0, outCanvas.width, outCanvas.height);
-            octx.filter = "none";
-            drawOverlays(octx, outCanvas.width, outCanvas.height, v.currentTime);
-            const cue = activeCueAt(v.currentTime);
-            if (cue) drawCaption(octx, outCanvas.width, outCanvas.height, cue.text);
-          } catch {}
-          if (!v.paused && !v.ended && v.currentTime < exportEnd - 0.02) rafId = requestAnimationFrame(draw);
-        };
-
-        const audioEl = musicRef.current;
-        if (audioEl && musicSrc) { audioEl.currentTime = (exportStart * speed) % (audioEl.duration || 1); await audioEl.play().catch(() => {}); }
-        recorder.start(250);
-        draw();
-        await v.play().catch(() => { throw new Error("Could not play for export."); });
-
-        progressTimer = setInterval(() => {
-          const p = clamp(((v.currentTime - exportStart) / Math.max(0.1, exportEnd - exportStart)) * 100, 0, 100);
-          setExportProgress(Math.round(p));
-        }, 200);
-
-        await new Promise<void>((resolve) => {
-          let finished = false;
-          const finish = () => { if (finished) return; finished = true; v.removeEventListener("ended", onEnded); clearInterval(stopCheck); resolve(); };
-          const onEnded = () => finish();
-          v.addEventListener("ended", onEnded);
-          const stopCheck = setInterval(() => { if (v.currentTime >= exportEnd - 0.03 || v.ended) { try { v.pause(); } catch {} finish(); } }, 60);
-          setTimeout(() => { try { v.pause(); } catch {} finish(); }, Math.max(8000, ((exportEnd - exportStart) / speed + 8) * 1000));
-        });
-
-        if (progressTimer) clearInterval(progressTimer);
-        setExportProgress(100);
-        if (recorder.state !== "inactive") recorder.stop();
-        try { if (audioEl) audioEl.pause(); } catch {}
-        const blob = await done;
-        const finalType = blob.type || mime || "video/webm";
-        const ext = finalType.includes("mp4") ? "mp4" : "webm";
-        const outName = (file.name.replace(/\.[^.]+$/, "") || "video") + "_edited." + ext;
-        const effectiveDuration = (exportEnd - exportStart) / speed;
-        onApply({ file: new File([blob], outName, { type: finalType }), duration: effectiveDuration, posterBlob: poster });
-        return;
-      }
-
-      const blob = await done;
-      const finalType = blob.type || mime || "video/webm";
-      const ext = finalType.includes("mp4") ? "mp4" : "webm";
-      const outName = (file.name.replace(/\.[^.]+$/, "") || "video") + "_edited." + ext;
-      const poster = await capturePoster();
-      onApply({
-        file: new File([blob], outName, { type: finalType }),
-        duration: reversed ? (end - start) : (end - start) / speed,
-        posterBlob: poster,
-      });
-    } catch (e) {
-      console.error(e);
-      alert("Could not export all edits in this browser — uploading the original video instead. Try Chrome on desktop for full editing support.");
-      onApply({ file, duration, posterBlob: await capturePoster() });
-    } finally {
-      if (progressTimer) clearInterval(progressTimer);
-      if (rafId) cancelAnimationFrame(rafId);
-      try { if (recorder && recorder.state !== "inactive") recorder.stop(); } catch {}
-      try { stream?.getTracks().forEach(t => t.stop()); } catch {}
-      try { void audioCtx?.close(); } catch {}
-      try { musicRef.current?.pause(); } catch {}
-      exportingRef.current = false;
-      setExporting(false);
-      if (videoRef.current) videoRef.current.playbackRate = speed;
-    }
-  };
-
-  const selectedOverlay = overlays.find(o => o.id === selectedOverlayId) || null;
+  const selected = overlays.find(o => o.id === selectedId) || null;
   const span = Math.max(0.1, end - start);
-  const startPct = duration ? (start / duration) * 100 : 0;
-  const endPct = duration ? (end / duration) * 100 : 100;
-  const playPct = duration ? (currentTime / duration) * 100 : 0;
-  const timelineDuration = duration / zoom;
+  const sp = duration ? (start / duration) * 100 : 0;
+  const ep = duration ? (end / duration) * 100 : 100;
+  const pp = duration ? (currentTime / duration) * 100 : 0;
 
   const TOOLS: { id: Tool; label: string; icon: any }[] = [
     { id: "trim", label: "Trim", icon: Scissors },
     { id: "text", label: "Text", icon: Type },
-    { id: "filters", label: "Filters", icon: SlidersHorizontal },
-    { id: "audio", label: "Audio", icon: Music2 },
-    { id: "speed", label: "Speed", icon: Gauge },
     { id: "stickers", label: "Stickers", icon: Smile },
-    { id: "subtitles", label: "Captions", icon: Subtitles },
+    { id: "draw", label: "Draw", icon: Pencil },
+    { id: "filter", label: "Filter", icon: Sparkles },
+    { id: "adjust", label: "Adjust", icon: SlidersHorizontal },
+    { id: "captions", label: "Captions", icon: Type },
   ];
 
   return (
-    <div className="fixed inset-0 z-[500] bg-[#060608] text-white flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between px-3 md:px-5 h-[54px] shrink-0 border-b border-white/10" style={{ paddingTop: "env(safe-area-inset-top)" }}>
-        <div className="flex items-center gap-2">
-          <button onClick={onCancel} disabled={exporting} className="w-9 h-9 flex items-center justify-center text-white/80 hover:text-white disabled:opacity-40" aria-label="Close editor">
-            <X size={24} />
+    <div className="fixed inset-0 z-[500] bg-black text-white flex flex-col">
+      {/* Top bar */}
+      <div className="flex items-center justify-between px-3 h-[56px] shrink-0" style={{ paddingTop: "env(safe-area-inset-top)" }}>
+        <button onClick={onCancel} disabled={exporting} className="w-10 h-10 flex items-center justify-center disabled:opacity-40" aria-label="Back"><ChevronLeft size={28} /></button>
+        <span className="text-sm font-semibold">Edit</span>
+        <button onClick={exportVideo} disabled={exporting || duration <= 0} className="h-8 px-5 rounded-lg bg-[#0095f6] hover:bg-[#1aa3ff] text-sm font-bold disabled:opacity-40 flex items-center gap-1.5">
+          {exporting ? <Loader2 size={14} className="animate-spin" /> : null}
+          {exporting ? "Saving" : "Next"}
+        </button>
+      </div>
+
+      {/* Preview */}
+      <div className="flex-1 min-h-0 flex items-center justify-center px-3">
+        <div className="relative w-full max-w-[400px] aspect-[9/16] max-h-[48vh] bg-[#111] overflow-hidden rounded-sm">
+          <canvas
+            ref={canvasRef}
+            width={720}
+            height={1280}
+            className="w-full h-full object-contain touch-none"
+            onPointerDown={onCanvasDown}
+            onPointerMove={onCanvasMove}
+            onPointerUp={onCanvasUp}
+            onPointerCancel={onCanvasUp}
+          />
+          <video ref={videoRef} src={src} playsInline preload="auto" className="hidden" />
+          <button onClick={togglePlay} className="absolute inset-0 flex items-center justify-center" aria-label={playing ? "Pause" : "Play"}>
+            <span className={`w-14 h-14 rounded-full bg-black/35 flex items-center justify-center transition-opacity ${playing ? "opacity-0" : "opacity-100"}`}>
+              {playing ? <Pause size={26} fill="white" /> : <Play size={28} fill="white" className="ml-1" />}
+            </span>
           </button>
-          <span className="font-black text-sm tracking-tight">TrooStudio</span>
-          <span className="hidden md:inline text-[10px] text-white/35 uppercase tracking-widest">Pro Editor</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <button onClick={undo} disabled={!undoStack.length} className="p-2 text-white/60 hover:text-white disabled:opacity-25" aria-label="Undo"><Undo2 size={17} /></button>
-          <button onClick={redo} disabled={!redoStack.length} className="p-2 text-white/60 hover:text-white disabled:opacity-25" aria-label="Redo"><Redo2 size={17} /></button>
-          <button onClick={exportVideo} disabled={exporting || duration <= 0} className="ml-1 h-9 px-5 rounded-lg bg-[#0095f6] hover:bg-[#1aa3ff] text-sm font-bold disabled:opacity-40 flex items-center gap-2">
-            {exporting ? <Loader2 size={15} className="animate-spin" /> : <Check size={16} />}
-            {exporting ? "Exporting" : "Export"}
-          </button>
+          <div className="absolute top-2 left-2 text-[10px] font-semibold bg-black/45 px-2 py-0.5 rounded">{fmt(currentTime)}</div>
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 flex flex-col lg:flex-row">
-        {/* Preview */}
-        <div className="flex-1 min-h-0 flex items-center justify-center p-3 lg:p-6 bg-[#060608]">
-          <div className="relative w-full max-w-[420px] lg:max-w-[480px] aspect-[9/16] max-h-[46vh] lg:max-h-[68vh] bg-black overflow-hidden rounded-lg">
-            <canvas
-              ref={canvasRef}
-              width={720}
-              height={1280}
-              className="w-full h-full object-contain touch-none"
-              onPointerDown={onCanvasPointerDown}
-              onPointerMove={onCanvasPointerMove}
-              onPointerUp={onCanvasPointerUp}
-              onPointerCancel={onCanvasPointerUp}
-            />
-            <video ref={videoRef} src={src} playsInline preload="auto" className="hidden" />
-            <audio ref={musicRef} src={musicSrc || undefined} className="hidden" />
+      {/* Tool options */}
+      <div className="shrink-0 h-[112px] border-t border-white/10 bg-black px-3 py-2 overflow-y-auto">
+        {tool === "trim" && <p className="text-xs text-white/50 text-center pt-8">Drag the white handles on the timeline below to trim your video.</p>}
 
-            <button onClick={togglePlay} className="absolute inset-0 flex items-center justify-center" aria-label={playing ? "Pause" : "Play"}>
-              <span className={`w-14 h-14 rounded-full bg-black/40 backdrop-blur flex items-center justify-center transition-opacity ${playing ? "opacity-0" : "opacity-100"}`}>
-                {playing ? <Pause size={26} fill="white" /> : <Play size={28} fill="white" className="ml-1" />}
-              </span>
-            </button>
-            <div className="absolute top-2 left-2 text-[10px] font-semibold bg-black/50 px-2 py-1 rounded">{fmt(currentTime)} / {fmt(duration)}</div>
-            {reversed && <div className="absolute top-2 right-2 text-[10px] font-bold bg-[#0095f6] px-2 py-1 rounded">REVERSE</div>}
-            {speed !== 1 && <div className="absolute bottom-2 right-2 text-[10px] font-bold bg-black/50 px-2 py-1 rounded">{speed}x</div>}
+        {tool === "text" && (
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <input value={textDraft} onChange={e => setTextDraft(e.target.value)} placeholder="Type a caption…" className="flex-1 min-w-0 bg-white/10 rounded-lg px-3 py-2 text-sm outline-none" />
+              <button onClick={() => { addOverlay("text", textDraft.trim() || "Your text"); setTextDraft(""); }} className="px-3 rounded-lg bg-white text-black text-xs font-bold">Add</button>
+            </div>
+            <div className="flex gap-2 items-center overflow-x-auto pb-1">
+              <button onClick={() => setFontPickerOpen(true)} className="shrink-0 w-9 h-9 rounded-md bg-white/10 text-sm font-bold">Aa</button>
+              <div className="flex gap-1.5">
+                {COLORS.map(c => <button key={c} onClick={() => selected ? updateSelected({ color: c }) : null} className="w-6 h-6 rounded-full border border-white/20 shrink-0" style={{ background: c }} />)}
+              </div>
+              {selected && (
+                <>
+                  <button onClick={() => updateSelected({ bg: !selected.bg })} className={`shrink-0 px-2 py-1 rounded text-[10px] font-semibold ${selected.bg ? "bg-white text-black" : "bg-white/10"}`}>BG</button>
+                  <button onClick={deleteSelected} className="shrink-0 text-red-400"><Trash2 size={15} /></button>
+                </>
+              )}
+            </div>
+            <p className="text-[10px] text-white/40">Drag text on the video. Pinch with two fingers to resize and rotate.</p>
           </div>
-        </div>
+        )}
 
-        {/* Tool panel */}
-        <div className="w-full lg:w-[330px] shrink-0 border-t lg:border-t-0 lg:border-l border-white/10 bg-[#0b0b0e] flex flex-col max-h-[38vh] lg:max-h-none">
-          <div className="flex-1 overflow-y-auto p-4">
-            {/* TRIM */}
-            {tool === "trim" && (
-              <div className="space-y-4">
-                <h3 className="text-sm font-bold">Trim clip</h3>
-                <div className="rounded-xl bg-white/5 border border-white/10 p-3">
-                  <div className="flex justify-between text-xs mb-2">
-                    <span className="text-white/50">Keep</span>
-                    <span className="font-bold">{fmt(span)}</span>
-                  </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => { setStart(0); seekTo(0); }} className="text-[11px] px-2 py-1 bg-white/10 rounded">Start 0</button>
-                    <button onClick={() => { setEnd(duration); seekTo(duration); }} className="text-[11px] px-2 py-1 bg-white/10 rounded">End max</button>
-                  </div>
-                </div>
-                <div className="rounded-xl bg-white/5 border border-white/10 p-3 space-y-3">
-                  <h4 className="text-xs font-bold text-white/70">Timeline zoom</h4>
-                  <div className="flex items-center gap-2">
-                    <ZoomOut size={14} className="text-white/40" />
-                    <input type="range" min={1} max={6} step={0.5} value={zoom} onChange={e => setZoom(parseFloat(e.target.value))} className="flex-1" />
-                    <ZoomIn size={14} className="text-white/40" />
-                  </div>
-                  <p className="text-[10px] text-white/35">Drag the white handles on the timeline below. Snaps to 0.1s.</p>
-                </div>
+        {fontPickerOpen && (
+          <div className="fixed inset-0 z-[600] bg-black/85 flex items-end" onClick={() => setFontPickerOpen(false)}>
+            <div className="w-full bg-[#161616] rounded-t-2xl p-4 max-h-[70vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+              <div className="flex justify-between items-center mb-4"><h3 className="font-bold">Font style</h3><button onClick={() => setFontPickerOpen(false)}><X size={20} /></button></div>
+              <div className="grid grid-cols-2 gap-2">
+                {FONTS.map(f => (
+                  <button key={f.id} onClick={() => { if (selectedId) updateSelected({ fontId: f.id }); setFontPickerOpen(false); }} className={`p-4 rounded-xl bg-white/5 border ${selected?.fontId === f.id ? "border-white" : "border-white/10"}`}>
+                    <span className="text-xl text-white" style={{ font: `${f.css} 20px ${f.family}` }}>Aa</span>
+                    <span className="block text-[10px] text-white/45 mt-1">{f.label}</span>
+                  </button>
+                ))}
               </div>
-            )}
-
-            {/* TEXT */}
-            {tool === "text" && (
-              <div className="space-y-4">
-                <h3 className="text-sm font-bold">Text overlays</h3>
-                <div className="flex gap-2">
-                  <input value={textDraft} onChange={e => setTextDraft(e.target.value)} placeholder="Type text…" className="flex-1 min-w-0 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0095f6]" />
-                  <button onClick={() => { addOverlay("text", textDraft.trim() || "Your text"); setTextDraft(""); }} className="px-3 rounded-lg bg-[#0095f6] text-sm font-bold"><Plus size={16} /></button>
-                </div>
-                <div className="space-y-2">
-                  {overlays.filter(o => o.kind === "text").map(o => (
-                    <button key={o.id} onClick={() => { setSelectedOverlayId(o.id); seekTo(o.start); }} className={`w-full text-left px-3 py-2 rounded-lg border text-xs ${selectedOverlayId === o.id ? "bg-white/10 border-white/30" : "bg-white/5 border-white/10"}`}>
-                      <span className="font-semibold">{o.text}</span>
-                      <span className="block text-white/40 text-[10px]">{fmt(o.start)} – {fmt(o.end)}</span>
-                    </button>
-                  ))}
-                  {!overlays.some(o => o.kind === "text") && <p className="text-[11px] text-white/35">No text yet. Add one, then drag it on the preview.</p>}
-                </div>
-                {selectedOverlay && (
-                  <div className="space-y-3 rounded-xl bg-white/5 border border-white/10 p-3">
-                    <input value={selectedOverlay.text} onChange={e => updateSelectedOverlay({ text: e.target.value })} className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm outline-none" />
-                    <div className="flex items-center gap-2 flex-wrap">
-                      {["#ffffff", "#000000", "#ff3b5c", "#ffd93d", "#4ade80", "#60a5fa", "#c084fc"].map(c => (
-                        <button key={c} onClick={() => updateSelectedOverlay({ color: c })} className={`w-6 h-6 rounded-full border-2 ${selectedOverlay.color === c ? "border-white" : "border-transparent"}`} style={{ background: c }} />
-                      ))}
-                    </div>
-                    <label className="flex items-center justify-between text-xs text-white/60">
-                      Size <span>{Math.round(selectedOverlay.size * 100)}</span>
-                      <input type="range" min={0.03} max={0.2} step={0.005} value={selectedOverlay.size} onChange={e => updateSelectedOverlay({ size: parseFloat(e.target.value) })} className="w-32" />
-                    </label>
-                    <label className="flex items-center gap-2 text-xs text-white/60">
-                      <input type="checkbox" checked={selectedOverlay.bg} onChange={e => updateSelectedOverlay({ bg: e.target.checked })} /> Background box
-                    </label>
-                    <button onClick={deleteSelectedOverlay} className="flex items-center gap-1 text-xs text-red-400"><Trash2 size={13} /> Delete text</button>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* FILTERS */}
-            {tool === "filters" && (
-              <div className="space-y-4">
-                <h3 className="text-sm font-bold">Filters & color</h3>
-                <div className="grid grid-cols-2 gap-2">
-                  {FILTERS.map(f => (
-                    <button key={f.id} onClick={() => setFilterId(f.id)} className={`px-3 py-2 rounded-lg text-xs font-semibold border ${filterId === f.id ? "bg-[#0095f6]/25 border-[#0095f6] text-white" : "bg-white/5 border-white/10 text-white/60"}`}>
-                      {f.label}
-                    </button>
-                  ))}
-                </div>
-                <div className="space-y-3 rounded-xl bg-white/5 border border-white/10 p-3">
-                  {([["Brightness", brightness, setBrightness, 0.4, 1.8], ["Contrast", contrast, setContrast, 0.4, 2], ["Saturation", saturate, setSaturate, 0, 2.5]] as const).map(([label, val, setter, min, max]) => (
-                    <label key={label as string} className="block text-xs text-white/60">
-                      <div className="flex justify-between"><span>{label}</span><span>{Number(val).toFixed(2)}</span></div>
-                      <input type="range" min={min} max={max} step={0.05} value={val} onChange={e => setter(parseFloat(e.target.value))} className="w-full mt-1" />
-                    </label>
-                  ))}
-                  <button onClick={() => { setBrightness(1); setContrast(1); setSaturate(1); setFilterId("none"); }} className="text-[11px] text-[#7dd3fc]">Reset adjustments</button>
-                </div>
-              </div>
-            )}
-
-            {/* AUDIO */}
-            {tool === "audio" && (
-              <div className="space-y-4">
-                <h3 className="text-sm font-bold">Music & audio</h3>
-                <button onClick={() => musicInputRef.current?.click()} className="w-full py-3 rounded-xl border border-dashed border-white/20 bg-white/5 text-sm font-semibold flex items-center justify-center gap-2 hover:bg-white/10">
-                  <Music2 size={16} /> {musicName || "Add music track"}
-                </button>
-                <input ref={musicInputRef} type="file" accept="audio/*" className="hidden" onChange={e => onMusicFile(e.target.files?.[0])} />
-                {musicSrc && (
-                  <div className="space-y-3 rounded-xl bg-white/5 border border-white/10 p-3">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="truncate max-w-[180px]">{musicName}</span>
-                      <button onClick={() => { setMusicSrc(""); setMusicName(""); }} className="text-red-400"><Trash2 size={13} /></button>
-                    </div>
-                    <label className="block text-xs text-white/60">Music volume <span>{Math.round(musicVolume * 100)}%</span>
-                      <input type="range" min={0} max={1} step={0.05} value={musicVolume} onChange={e => setMusicVolume(parseFloat(e.target.value))} className="w-full mt-1" />
-                    </label>
-                  </div>
-                )}
-                <label className="block text-xs text-white/60">Original audio <span>{Math.round(originalVolume * 100)}%</span>
-                  <input type="range" min={0} max={1} step={0.05} value={originalVolume} onChange={e => setOriginalVolume(parseFloat(e.target.value))} className="w-full mt-1" />
-                </label>
-                <p className="text-[10px] text-white/35">Music is mixed into the exported video.</p>
-              </div>
-            )}
-
-            {/* SPEED */}
-            {tool === "speed" && (
-              <div className="space-y-4">
-                <h3 className="text-sm font-bold">Speed & direction</h3>
-                <div className="grid grid-cols-4 gap-2">
-                  {[0.25, 0.5, 1, 2].map(s => (
-                    <button key={s} onClick={() => setSpeed(s)} className={`py-2 rounded-lg text-xs font-bold border ${speed === s ? "bg-[#0095f6]/25 border-[#0095f6]" : "bg-white/5 border-white/10 text-white/60"}`}>{s}x</button>
-                  ))}
-                </div>
-                <input type="range" min={0.25} max={3} step={0.25} value={speed} onChange={e => setSpeed(parseFloat(e.target.value))} className="w-full" />
-                <button onClick={() => setReversed(v => !v)} className={`w-full py-3 rounded-xl text-sm font-bold border flex items-center justify-center gap-2 ${reversed ? "bg-[#0095f6]/25 border-[#0095f6]" : "bg-white/5 border-white/10"}`}>
-                  <Undo2 size={16} /> {reversed ? "Reverse ON" : "Reverse video"}
-                </button>
-                <p className="text-[10px] text-white/35">Reverse works on clips up to 10 seconds. Export time may be longer.</p>
-              </div>
-            )}
-
-            {/* STICKERS */}
-            {tool === "stickers" && (
-              <div className="space-y-4">
-                <h3 className="text-sm font-bold">Stickers & shapes</h3>
-                <div className="grid grid-cols-5 gap-2">
-                  {EMOJIS.map(e => (
-                    <button key={e} onClick={() => addOverlay("emoji", e)} className="aspect-square rounded-lg bg-white/5 border border-white/10 text-xl hover:bg-white/10">{e}</button>
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  <button onClick={() => addOverlay("shape", "", "rect")} className="flex-1 py-2 rounded-lg bg-white/5 border border-white/10 text-xs flex items-center justify-center gap-2"><Square size={14} /> Square</button>
-                  <button onClick={() => addOverlay("shape", "", "circle")} className="flex-1 py-2 rounded-lg bg-white/5 border border-white/10 text-xs flex items-center justify-center gap-2"><Circle size={14} /> Circle</button>
-                </div>
-                {selectedOverlay && (
-                  <div className="space-y-3 rounded-xl bg-white/5 border border-white/10 p-3">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      {["#ffffff", "#ff3b5c", "#ffd93d", "#4ade80", "#60a5fa", "#c084fc"].map(c => (
-                        <button key={c} onClick={() => updateSelectedOverlay({ color: c })} className={`w-6 h-6 rounded-full border-2 ${selectedOverlay.color === c ? "border-white" : "border-transparent"}`} style={{ background: c }} />
-                      ))}
-                    </div>
-                    <label className="block text-xs text-white/60">Size
-                      <input type="range" min={0.04} max={0.3} step={0.01} value={selectedOverlay.size} onChange={e => updateSelectedOverlay({ size: parseFloat(e.target.value) })} className="w-full mt-1" />
-                    </label>
-                    <button onClick={deleteSelectedOverlay} className="text-xs text-red-400 flex items-center gap-1"><Trash2 size={13} /> Delete</button>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* SUBTITLES */}
-            {tool === "subtitles" && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="text-sm font-bold">Captions</h3>
-                  <div className="flex gap-2">
-                    <button onClick={autoDetectSubtitles} disabled={transcribing} className="text-[11px] px-2 py-1.5 rounded-full bg-[#0095f6]/20 text-[#7dd3fc] flex items-center gap-1 disabled:opacity-40">
-                      {transcribing ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />} Auto-detect
-                    </button>
-                    <button onClick={addSubtitleCue} className="text-[11px] px-2 py-1.5 rounded-full bg-white/10 flex items-center gap-1"><Plus size={12} /> Add</button>
-                  </div>
-                </div>
-                {transcribeError && <p className="text-[11px] text-red-300">{transcribeError}</p>}
-                <div className="space-y-2">
-                  {subtitles.map((s, i) => (
-                    <button key={s.id} onClick={() => { setSelectedCueId(s.id); seekTo(s.start); }} className={`w-full text-left px-3 py-2 rounded-lg border text-xs ${selectedCueId === s.id ? "bg-white/10 border-white/30" : "bg-white/5 border-white/10"}`}>
-                      <span className="text-white/40">#{i + 1}</span> {s.text || "(empty)"}
-                      <span className="block text-white/35 text-[10px]">{fmt(s.start)} – {fmt(s.end)}</span>
-                    </button>
-                  ))}
-                  {!subtitles.length && <p className="text-[11px] text-white/35">Add captions manually or auto-detect speech.</p>}
-                </div>
-                {selectedCue && (
-                  <div className="space-y-2 rounded-xl bg-white/5 border border-white/10 p-3">
-                    <textarea rows={3} value={selectedCue.text} onChange={e => setSubtitles(prev => prev.map(s => s.id === selectedCue.id ? { ...s, text: e.target.value } : s))} className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm outline-none resize-none" />
-                    <div className="flex justify-between text-[11px] text-white/50">
-                      <span>{fmt(selectedCue.start)}</span><span>{fmt(selectedCue.end)}</span>
-                    </div>
-                    <input type="range" min={start} max={end} step={0.1} value={selectedCue.start} onChange={e => updateSelectedCue({ start: parseFloat(e.target.value) })} className="w-full" />
-                    <input type="range" min={start} max={end} step={0.1} value={selectedCue.end} onChange={e => updateSelectedCue({ end: parseFloat(e.target.value) })} className="w-full" />
-                    <button onClick={deleteSelectedCue} className="text-xs text-red-400 flex items-center gap-1"><Trash2 size={13} /> Delete</button>
-                  </div>
-                )}
-              </div>
-            )}
+            </div>
           </div>
-        </div>
+        )}
+
+        {tool === "stickers" && (
+          <div className="grid grid-cols-10 gap-1.5 py-2">
+            {EMOJIS.map(e => <button key={e} onClick={() => addOverlay("emoji", e)} className="text-xl">{e}</button>)}
+          </div>
+        )}
+
+        {tool === "draw" && (
+          <div className="space-y-2">
+            <div className="flex gap-2">{COLORS.map(c => <button key={c} onClick={() => setDrawColor(c)} className={`w-7 h-7 rounded-full border-2 ${drawColor === c ? "border-white" : "border-transparent"}`} style={{ background: c }} />)}</div>
+            <div className="flex items-center gap-2"><span className="text-[10px] text-white/50">Size</span><input type="range" min={2} max={24} value={drawWidth} onChange={e => setDrawWidth(parseInt(e.target.value))} className="flex-1" /></div>
+            <div className="flex justify-between"><button onClick={() => setStrokes([])} className="text-[11px] text-red-400 flex items-center gap-1"><Trash2 size={12} /> Clear</button><button onClick={() => setStrokes(prev => prev.slice(0, -1))} className="text-[11px] text-white/60 flex items-center gap-1"><RotateCcw size={12} /> Undo stroke</button></div>
+          </div>
+        )}
+
+        {tool === "filter" && (
+          <div className="space-y-2">
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {FILTERS.map(f => (
+                <button key={f.id} onClick={() => setFilterId(f.id)} className={`shrink-0 flex flex-col items-center gap-1 w-16 ${filterId === f.id ? "text-white" : "text-white/45"}`}>
+                  <span className="w-14 h-14 rounded-md bg-white/10 overflow-hidden flex items-center justify-center text-[9px] font-bold border border-white/10">{f.label.slice(0, 5)}</span>
+                  <span className="text-[9px] truncate w-full text-center">{f.label}</span>
+                </button>
+              ))}
+            </div>
+            {filterPresent && <div className="flex items-center gap-2"><span className="text-[10px] text-white/50">Strength</span><input type="range" min={0} max={1} step={0.05} value={filterStrength} onChange={e => setFilterStrength(parseFloat(e.target.value))} className="flex-1" /></div>}
+          </div>
+        )}
+
+        {tool === "adjust" && (
+          <div className="space-y-2">
+            {([["Brightness", brightness, setBrightness], ["Contrast", contrast, setContrast], ["Saturation", saturate, setSaturate]] as const).map(([label, val, setter]) => (
+              <label key={label as string} className="flex items-center gap-2 text-[11px] text-white/60"><span className="w-20">{label}</span><input type="range" min={0.3} max={2} step={0.05} value={val} onChange={e => setter(parseFloat(e.target.value))} className="flex-1" /><span className="w-8 text-right">{Number(val).toFixed(1)}</span></label>
+            ))}
+            <button onClick={() => { setBrightness(1); setContrast(1); setSaturate(1); }} className="text-[10px] text-[#7dd3fc]">Reset</button>
+          </div>
+        )}
+
+        {tool === "captions" && (
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <input value={captionText} onChange={e => setCaptionText(e.target.value)} placeholder="Caption text…" className="flex-1 bg-white/10 rounded-lg px-3 py-2 text-sm outline-none" />
+              <button onClick={() => { const t = currentTime; setCaptions(prev => [...prev, { id: uid(), start: t, end: Math.min(end, t + 3), text: captionText.trim() || "Caption" }]); setCaptionText(""); }} className="px-3 rounded-lg bg-white text-black text-xs font-bold">Add</button>
+            </div>
+            <div className="flex gap-2 overflow-x-auto">{captions.map(c => <button key={c.id} onClick={() => seekTo(c.start)} className={`shrink-0 px-3 py-1.5 rounded-full text-[11px] ${c.text.slice(0, 18)}`}>{c.text.slice(0, 18)}</button>)}</div>
+          </div>
+        )}
+      </div>
+
+      {/* Tool bar */}
+      <div className="shrink-0 flex justify-around border-t border-white/10 py-1.5" style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 4px)" }}>
+        {TOOLS.map(t => { const Icon = t.icon; return (
+          <button key={t.id} onClick={() => setTool(t.id)} className={`flex flex-col items-center gap-0.5 min-w-[52px] ${tool === t.id ? "text-white" : "text-white/45"}`}>
+            <Icon size={19} />
+            <span className="text-[9px] font-medium">{t.label}</span>
+          </button>
+        ); })}
       </div>
 
       {/* Timeline */}
-      <div className="shrink-0 border-t border-white/10 bg-[#08080a] px-3 py-2" style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 6px)" }}>
-        <div className="flex items-center gap-2 mb-2 overflow-x-auto scrollbar-hide">
-          {TOOLS.map(t => {
-            const Icon = t.icon;
-            return (
-              <button key={t.id} onClick={() => setTool(t.id)} className={`flex flex-col items-center gap-0.5 min-w-[58px] px-1 py-1.5 rounded-lg ${tool === t.id ? "bg-white/10 text-white" : "text-white/45 hover:text-white/80"}`}>
-                <Icon size={18} />
-                <span className="text-[9px] font-semibold">{t.label}</span>
-              </button>
-            );
-          })}
-        </div>
-
+      <div className="shrink-0 px-3 pb-2">
         <div
           ref={timelineRef}
-          className="relative h-12 rounded-md overflow-hidden bg-black/50 border border-white/10 touch-none select-none"
+          className="relative h-11 rounded-sm overflow-hidden bg-black/50 border border-white/10 touch-none select-none"
           onPointerDown={(e) => {
             const t = pxToTime(e.clientX);
-            const ds = Math.abs(t - start);
-            const de = Math.abs(t - end);
-            const dp = Math.abs(t - currentTime);
-            const target = ds < 0.35 ? "start" : de < 0.35 ? "end" : "playhead";
-            setDragging(dp < ds && dp < de && target === "playhead" ? "playhead" : target);
+            const target = Math.abs(t - start) < 0.35 ? "start" : Math.abs(t - end) < 0.35 ? "end" : "playhead";
+            setDragging(target);
             (e.currentTarget as any).setPointerCapture?.(e.pointerId);
-            if (target !== "start" && target !== "end") seekTo(t);
+            if (target === "playhead") seekTo(t);
           }}
         >
-          <div className="absolute inset-0 flex" style={{ width: `${zoom * 100}%` }}>
-            {(thumbs.length ? thumbs : Array.from({ length: 14 }).map(() => "")).map((t, i) => (
-              <div key={i} className="flex-1 h-full border-r border-black/40 bg-white/5 overflow-hidden">
-                {t ? <img src={t} alt="" className="w-full h-full object-cover opacity-80" /> : null}
-              </div>
-            ))}
+          <div className="absolute inset-0 flex">
+            {(thumbs.length ? thumbs : Array.from({ length: 14 }).map(() => "")).map((t, i) => <div key={i} className="flex-1 h-full border-r border-black/40 bg-white/5">{t ? <img src={t} alt="" className="w-full h-full object-cover opacity-80" /> : null}</div>)}
           </div>
-          <div className="absolute inset-y-0 left-0 bg-black/60" style={{ width: `${startPct}%` }} />
-          <div className="absolute inset-y-0 right-0 bg-black/60" style={{ width: `${100 - endPct}%` }} />
-          <div className="absolute inset-y-0 border-y-2 border-white" style={{ left: `${startPct}%`, width: `${endPct - startPct}%` }} />
-          {(["start", "end"] as const).map((h) => (
-            <div key={h} className="absolute inset-y-0 w-4 -ml-2 flex items-center justify-center cursor-ew-resize z-20" style={{ left: h === "start" ? `${startPct}%` : `${endPct}%` }} onPointerDown={(e) => { e.stopPropagation(); setDragging(h); }}>
-              <div className="w-2.5 h-8 rounded-sm bg-white" />
-            </div>
-          ))}
-          <div className="absolute inset-y-0 w-[2px] bg-[#0095f6] z-10" style={{ left: `${playPct}%` }} />
-
-          {/* Overlay clips */}
-          {overlays.map(o => (
-            <div key={o.id} className="absolute bottom-0 h-2 bg-[#c084fc]/80 z-10 pointer-events-none" style={{ left: `${(o.start / duration) * 100}%`, width: `${((o.end - o.start) / duration) * 100}%` }} />
-          ))}
-          {subtitles.map(s => (
-            <div key={s.id} className="absolute top-0 h-1.5 bg-[#4ade80]/80 z-10 pointer-events-none" style={{ left: `${(s.start / duration) * 100}%`, width: `${((s.end - s.start) / duration) * 100}%` }} />
-          ))}
+          <div className="absolute inset-y-0 left-0 bg-black/60" style={{ width: `${sp}%` }} />
+          <div className="absolute inset-y-0 right-0 bg-black/60" style={{ width: `${100 - ep}%` }} />
+          <div className="absolute inset-y-0 border-y-2 border-white" style={{ left: `${sp}%`, width: `${ep - sp}%` }} />
+          {(["start", "end"] as const).map(h => <div key={h} className="absolute inset-y-0 w-4 -ml-2 flex items-center justify-center z-20" style={{ left: h === "start" ? `${sp}%` : `${ep}%` }} onPointerDown={(e) => { e.stopPropagation(); setDragging(h); }}><div className="w-2 h-8 bg-white rounded-sm" /></div>)}
+          <div className="absolute inset-y-0 w-[2px] bg-white z-10" style={{ left: `${pp}%` }} />
+          {overlays.map(o => <div key={o.id} className="absolute bottom-0 h-2 bg-[#c084fc] z-10 pointer-events-none" style={{ left: `${(o.start / duration) * 100}%`, width: `${((o.end - o.start) / duration) * 100}%` }} />)}
+          {captions.map(c => <div key={c.id} className="absolute top-0 h-1.5 bg-[#4ade80] z-10 pointer-events-none" style={{ left: `${(c.start / duration) * 100}%`, width: `${((c.end - c.start) / duration) * 100}%` }} />)}
         </div>
-        <div className="flex justify-between text-[9px] text-white/35 mt-1">
-          <span>0:00</span>
-          <span>{fmt(timelineDuration)}</span>
-        </div>
+        <div className="flex justify-between text-[9px] text-white/35 mt-1"><span>0:00</span><span>{fmt(duration)}</span></div>
       </div>
 
-      {exporting && (
-        <div className="absolute inset-0 z-[600] bg-black/80 flex items-center justify-center">
-          <div className="w-72 rounded-2xl bg-[#121216] border border-white/10 p-5">
-            <p className="text-sm font-bold mb-1">Rendering your masterpiece…</p>
-            <p className="text-[11px] text-white/45 mb-4">Burning filters, text, music and effects</p>
-            <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-              <div className="h-full bg-[#0095f6] transition-all" style={{ width: `${exportProgress}%` }} />
-            </div>
-            <p className="text-right text-xs font-bold mt-2">{exportProgress}%</p>
-          </div>
-        </div>
-      )}
+      {exporting && <div className="absolute inset-0 z-[700] bg-black/80 flex items-center justify-center"><div className="w-64 text-center"><p className="text-sm font-bold mb-3">Saving your video…</p><div className="h-1.5 bg-white/10 rounded-full overflow-hidden"><div className="h-full bg-[#0095f6]" style={{ width: `${exportProgress}%` }} /></div><p className="text-xs mt-2">{exportProgress}%</p></div></div>}
     </div>
   );
 }
