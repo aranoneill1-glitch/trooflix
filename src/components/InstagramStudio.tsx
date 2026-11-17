@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { getCachedUser, getCachedVideos } from "@/lib/cache";
 import { motion, AnimatePresence } from "framer-motion";
+import { Muxer, ArrayBufferTarget } from "mp4-muxer";
 
 type Props = {
   file: File;
@@ -286,8 +287,188 @@ export default function InstagramStudio({ file, onCancel, onApply }: Props) {
     }
   };
 
-  // Export with trim/cuts, burned-in text and mixed audio
+  // Single source of truth for drawing a frame — used by WebCodecs export.
+  const renderFrame = (ctx: CanvasRenderingContext2D, videoEl: HTMLVideoElement, t: number) => {
+    const w = ctx.canvas.width;
+    const h = ctx.canvas.height;
+    ctx.clearRect(0, 0, w, h);
+    try { ctx.drawImage(videoEl, 0, 0, w, h); } catch {}
+    drawText(ctx, w, h, t);
+  };
+
+  const seekVideo = (v: HTMLVideoElement, t: number) => new Promise<void>((resolve) => {
+    let done = false;
+    const finish = () => { if (!done) { done = true; v.removeEventListener("seeked", finish); resolve(); } };
+    v.addEventListener("seeked", finish);
+    try { v.currentTime = t; } catch { finish(); }
+    setTimeout(finish, 1200);
+  });
+
+  const cutsSorted = () => [...edit.video.cuts].sort((a, b) => a - b);
+  const cutTarget = (t: number) => {
+    const cuts = cutsSorted();
+    for (let i = 0; i + 1 < cuts.length; i += 2) if (t >= cuts[i] && t < cuts[i + 1]) return cuts[i + 1];
+    if (cuts.length % 2 === 1 && t >= cuts[cuts.length - 1]) return edit.video.trimEnd;
+    return null;
+  };
+
+  // WebCodecs + mp4-muxer export. Returns false when unsupported so caller falls back.
+  const exportWithWebCodecs = async (): Promise<Blob | null> => {
+    if (typeof VideoEncoder === "undefined" || typeof AudioEncoder === "undefined") return null;
+    const v = videoRef.current;
+    if (!v || !v.videoWidth) return null;
+
+    const fps = 30;
+    const width = Math.min(1080, v.videoWidth || 720);
+    const height = Math.round(width * ((v.videoHeight || 1280) / (v.videoWidth || 720)));
+    let codec = "";
+    for (const c of ["avc1.42001f", "avc1.42E01E", "vp09.00.10.08"]) {
+      try {
+        const r = await VideoEncoder.isConfigSupported({ codec: c, width, height, bitrate: 4_000_000, framerate: fps });
+        if (r.supported) { codec = c; break; }
+      } catch {}
+    }
+    if (!codec) return null;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width; canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+
+    const target = new ArrayBufferTarget();
+    const muxer = new Muxer({
+      target,
+      video: { codec: codec.startsWith("avc") ? "avc" : "vp9", width, height, frameRate: fps },
+      audio: { codec: "aac", numberOfChannels: 2, sampleRate: 48000 },
+      fastStart: "in-memory",
+    });
+
+    let encodeError: any = null;
+    const encoder = new VideoEncoder({
+      output: (chunk, meta) => muxer.addVideoChunk(chunk, meta),
+      error: (e) => { encodeError = e; },
+    });
+    encoder.configure({ codec, width, height, bitrate: 4_000_000, framerate: fps, latencyMode: "quality" });
+
+    // Capture the live audio mix (original + overlay) while frames render.
+    const audioCtx = new AudioContext();
+    await audioCtx.resume();
+    const audioDest = audioCtx.createMediaStreamDestination();
+    try {
+      const vs = (v as any).captureStream ? (v as any).captureStream() : null;
+      const tracks = vs?.getAudioTracks?.() || [];
+      if (tracks.length) audioCtx.createMediaStreamSource(new MediaStream(tracks)).connect(audioDest);
+    } catch {}
+    const overlayEl = audioElRef.current;
+    if (edit.audioOverlay && overlayEl) {
+      try {
+        overlayEl.currentTime = edit.audioOverlay.startOffset;
+        await audioCtx.resume();
+        audioCtx.createMediaElementSource(overlayEl).connect(audioDest);
+        await overlayEl.play().catch(() => {});
+      } catch {}
+    }
+    const audioRecorder = new MediaRecorder(audioDest.stream);
+    const audioChunks: Blob[] = [];
+    audioRecorder.ondataavailable = e => { if (e.data?.size) audioChunks.push(e.data); };
+    const audioDone = new Promise<Blob>(resolve => { audioRecorder.onstop = () => resolve(new Blob(audioChunks)); });
+    audioRecorder.start();
+
+    let posterBlob: Blob | null = null;
+    try {
+      const pc = document.createElement("canvas");
+      pc.width = width; pc.height = height;
+      const pctx = pc.getContext("2d");
+      if (pctx) { pctx.drawImage(v, 0, 0, width, height); drawText(pctx, width, height, v.currentTime); posterBlob = await new Promise(r => pc.toBlob(r, "image/jpeg", 0.85)); }
+    } catch {}
+
+    v.pause();
+    const totalFrames = Math.max(1, Math.floor(trimSpan * fps));
+    for (let i = 0; i < totalFrames; i++) {
+      let t = edit.video.trimStart + i / fps;
+      const skip = cutTarget(t);
+      if (skip !== null) t = skip;
+      if (t >= edit.video.trimEnd) break;
+      await seekVideo(v, t);
+      renderFrame(ctx, v, t);
+      const frame = new VideoFrame(canvas, { timestamp: Math.round((i * 1e6) / fps) });
+      encoder.encode(frame, { keyFrame: i % 60 === 0 });
+      frame.close();
+      if (encoder.encodeQueueSize > 2) await encoder.flush();
+      if (encodeError) throw encodeError;
+      setExportProgress(Math.round(((i + 1) / totalFrames) * 70));
+    }
+    await encoder.flush();
+    if (encoder.state !== "closed") encoder.close();
+
+    audioRecorder.stop();
+    const audioBlob = await audioDone;
+    try { overlayEl?.pause(); } catch {}
+    void audioCtx.close();
+
+    // Decode captured audio, trim to export length, encode AAC chunks.
+    const audioCodec = "mp4a.40.2";
+    const audioSupported = await AudioEncoder.isConfigSupported({ codec: audioCodec, sampleRate: 48000, numberOfChannels: 2, bitrate: 128000 }).catch(() => ({ supported: false }));
+    if (audioSupported.supported && audioBlob.size > 0) {
+      const arrayBuf = await audioBlob.arrayBuffer();
+      const decodeCtx = new AudioContext();
+      const decoded = await decodeCtx.decodeAudioData(arrayBuf).catch(() => null);
+      void decodeCtx.close();
+      if (decoded) {
+        const rate = 48000;
+        const maxFrames = Math.min(decoded.length, Math.floor(trimSpan * rate));
+        const audioEncoder = new AudioEncoder({
+          output: (chunk, meta) => muxer.addAudioChunk(chunk, meta),
+          error: (e) => { encodeError = e; },
+        });
+        audioEncoder.configure({ codec: audioCodec, sampleRate: rate, numberOfChannels: 2, bitrate: 128000 });
+        const chunk = 1024;
+        const left = decoded.getChannelData(0);
+        const right = decoded.numberOfChannels > 1 ? decoded.getChannelData(1) : left;
+        for (let off = 0; off < maxFrames; off += chunk) {
+          const len = Math.min(chunk, maxFrames - off);
+          const data = new Float32Array(len * 2);
+          data.set(left.subarray(off, off + len), 0);
+          data.set(right.subarray(off, off + len), len);
+          const ad = new AudioData({ format: "f32-planar", sampleRate: rate, numberOfFrames: len, numberOfChannels: 2, timestamp: Math.round((off / rate) * 1e6), data });
+          audioEncoder.encode(ad);
+          ad.close();
+        }
+        await audioEncoder.flush();
+        if (audioEncoder.state !== "closed") audioEncoder.close();
+      }
+    }
+
+    muxer.finalize();
+    setExportProgress(100);
+    onApply({
+      file: new File([target.buffer], (edit.video.name.replace(/\.[^.]+$/, "") || "video") + "_edited.mp4", { type: "video/mp4" }),
+      duration: trimSpan,
+      posterBlob,
+    });
+    return new Blob([target.buffer], { type: "video/mp4" });
+  };
+
+  // Publish: hardware-accelerated WebCodecs first, MediaRecorder fallback.
   const publish = async () => {
+    if (!edit.video.uri || exportingRef.current) return;
+    exportingRef.current = true;
+    setExporting(true);
+    setExportProgress(0);
+    try {
+      const result = await exportWithWebCodecs();
+      if (result) return;
+    } catch (e) {
+      console.warn("WebCodecs export failed — falling back to MediaRecorder", e);
+    } finally {
+      exportingRef.current = false;
+      setExporting(false);
+    }
+    await publishWithMediaRecorder();
+  };
+
+  // Fallback export: canvas captureStream + MediaRecorder
+  const publishWithMediaRecorder = async () => {
     const v = videoRef.current;
     if (!v || !edit.video.uri) return;
     exportingRef.current = true;
