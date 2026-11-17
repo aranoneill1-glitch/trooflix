@@ -23,7 +23,7 @@ const tabs = [
 export default function CreatorStudioNav({ active, onViewChange, dashboardLocked = false, className = "mb-5" }: Props) {
   return (
     <div className={`sticky z-[150] ${className}`} style={{ top: "calc(env(safe-area-inset-top) + 56px)" }}>
-      <nav aria-label="Creator studio" className="rounded-full border border-[#E53945] bg-[#09090B] p-1 shadow-none sm:p-1.5">
+      <nav aria-label="Creator studio" className="rounded-full border border-white/25 bg-[#09090B] p-1 shadow-none sm:p-1.5">
         <div className="flex w-full items-stretch gap-0.5 overflow-x-auto scrollbar-hide">
           {tabs.map((tab) => {
           const selected = active === tab.id;
