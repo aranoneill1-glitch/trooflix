@@ -514,16 +514,20 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
       <section>
         <div className="max-w-[1600px] mx-auto px-4 md:px-10">
           <SectionHead title="Shorts" href="/feed" icon={Clapperboard} />
-          <div className="overflow-x-auto scrollbar-hide pb-3">
-            <div className="flex flex-col flex-wrap gap-1.5 h-[474px] md:gap-2 md:h-[606px]">
-              {shortsVideos.map((v: any) => (
-                <Link key={v.id} href={`/feed?reel=${v.id}`} className="block w-[86px] h-[153px] shrink-0 overflow-hidden rounded-md ring-1 ring-white/10 group md:w-[110px] md:h-[196px]">
-                  <VideoPreview
-                    src={v.videoUrl || v.bitchuteUrl}
-                    poster={v.posterUrl || v.backdropUrl}
-                    className="transition duration-700 ease-out group-hover:scale-[1.04]"
-                  />
-                </Link>
+          <div className="w-full overflow-x-auto scrollbar-hide pb-3">
+            <div className="flex w-max gap-1.5 md:gap-2">
+              {Array.from({ length: Math.ceil(shortsVideos.length / 3) }, (_, col) => (
+                <div key={col} className="flex flex-col gap-1.5 md:gap-2">
+                  {shortsVideos.slice(col * 3, col * 3 + 3).map((v: any) => (
+                    <Link key={v.id} href={`/feed?reel=${v.id}`} className="block w-[86px] h-[153px] shrink-0 overflow-hidden rounded-md ring-1 ring-white/10 group md:w-[110px] md:h-[196px]">
+                      <VideoPreview
+                        src={v.videoUrl || v.bitchuteUrl}
+                        poster={v.posterUrl || v.backdropUrl}
+                        className="transition duration-700 ease-out group-hover:scale-[1.04]"
+                      />
+                    </Link>
+                  ))}
+                </div>
               ))}
             </div>
           </div>
