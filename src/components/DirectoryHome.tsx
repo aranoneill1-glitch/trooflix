@@ -13,8 +13,13 @@ function VideoPreview({ src, poster, className, playable = false, showMute = fal
   const [isPlaying, setIsPlaying] = useState(false);
   const [muted, setMuted] = useState(true);
 
+  // A generated /api/poster SVG is not a real thumbnail. When that's the only
+  // poster, show the video's own first frame instead so a card never looks empty.
+  const isPlaceholder = !poster || poster.includes("/api/poster");
+  const needsObserver = playable || isPlaceholder;
+
   useEffect(() => {
-    if (!playable || !containerRef.current) return;
+    if (!needsObserver || !containerRef.current) return;
     if (typeof IntersectionObserver === "undefined") { setInView(true); return; }
     const observer = new IntersectionObserver(
       ([entry]) => setInView(entry.isIntersecting),
@@ -22,7 +27,7 @@ function VideoPreview({ src, poster, className, playable = false, showMute = fal
     );
     observer.observe(containerRef.current);
     return () => observer.disconnect();
-  }, [playable]);
+  }, [needsObserver]);
 
   useEffect(() => {
     if (!playable || !inView) return;
@@ -35,12 +40,24 @@ function VideoPreview({ src, poster, className, playable = false, showMute = fal
 
   return (
     <div ref={containerRef} className="absolute inset-0">
-      {poster ? (
+      {poster && !isPlaceholder ? (
         <img src={poster} alt="" className={`absolute inset-0 w-full h-full object-cover ${className || ""}`} loading="lazy" />
       ) : (
-        <div className="absolute inset-0 bg-white/5" />
+        <div className="absolute inset-0 bg-[#141418]" />
       )}
-      {playable && src && inView && (
+
+      {/* Fallback: render the video's first frame as the card preview. */}
+      {isPlaceholder && src && inView && (
+        <video
+          src={`${src}#t=0.1`}
+          muted
+          playsInline
+          preload="metadata"
+          className={`${className || ""} absolute inset-0 h-full w-full object-cover`}
+        />
+      )}
+
+      {playable && src && inView && !isPlaceholder && (
         <video
           ref={videoRef}
           src={src}
@@ -53,7 +70,7 @@ function VideoPreview({ src, poster, className, playable = false, showMute = fal
           className={`${className || ""} absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${isPlaying ? "opacity-100" : "opacity-0"}`}
         />
       )}
-      {showMute && src && (
+      {showMute && src && !isPlaceholder && (
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); setMuted((m) => !m); }}
