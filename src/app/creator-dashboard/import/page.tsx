@@ -20,6 +20,7 @@ function InstagramIcon({ size = 24, className = "" }: { size?: number; className
   );
 }
 import { unzipSync } from "fflate";
+import { createClient } from "@/utils/supabase/client";
 import { getCachedUser } from "@/lib/cache";
 import { r2MultipartUpload } from "@/lib/r2Upload";
 import TopBar from "@/components/TopBar";
@@ -144,6 +145,94 @@ export default function ImportPage() {
     };
   };
 
+  // Sample several timestamps and skip black frames so every import gets a real preview.
+  const captureThumbnail = (blob: Blob): Promise<Blob | null> => {
+    return new Promise((resolve) => {
+      const url = URL.createObjectURL(blob);
+      const el = document.createElement("video");
+      const times = [2, 5, 10, 20, 30, 45, 60, 90];
+      let done = false;
+      let idx = 0;
+      let last: Blob | null = null;
+
+      const finish = (result: Blob | null) => {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        try { el.pause(); } catch {}
+        try { el.removeAttribute("src"); el.load(); } catch {}
+        URL.revokeObjectURL(url);
+        resolve(result);
+      };
+
+      el.src = url;
+      el.muted = true;
+      el.playsInline = true;
+      el.preload = "auto";
+      const timer = setTimeout(() => finish(last), 30000);
+
+      el.onloadedmetadata = () => {
+        try {
+          const d = el.duration;
+          el.currentTime = Number.isFinite(d) ? Math.min(times[0], Math.max(0.1, d)) : times[0];
+        } catch { finish(null); }
+      };
+
+      el.onseeked = () => {
+        setTimeout(() => {
+          if (done) return;
+          try {
+            const canvas = document.createElement("canvas");
+            canvas.width = el.videoWidth || 720;
+            canvas.height = el.videoHeight || 1280;
+            const ctx = canvas.getContext("2d", { willReadFrequently: true });
+            if (!ctx) { finish(null); return; }
+            ctx.drawImage(el, 0, 0, canvas.width, canvas.height);
+
+            const sample = ctx.getImageData(0, 0, Math.min(48, canvas.width), Math.min(48, canvas.height)).data;
+            let sum = 0, sumSq = 0;
+            const n = sample.length / 4;
+            for (let i = 0; i < sample.length; i += 4) {
+              const lum = 0.299 * sample[i] + 0.587 * sample[i + 1] + 0.114 * sample[i + 2];
+              sum += lum;
+              sumSq += lum * lum;
+            }
+            const mean = sum / n;
+            const variance = sumSq / n - mean * mean;
+            const blank = mean < 12 || variance < 60;
+
+            canvas.toBlob((b) => {
+              if (b) last = b;
+              if (!blank || idx >= times.length - 1) { finish(b || last); return; }
+              const duration = el.duration;
+              let next = times[++idx];
+              while (idx < times.length - 1 && Number.isFinite(duration) && next >= duration - 0.2) next = times[++idx];
+              if (Number.isFinite(duration) && next >= duration - 0.2) { finish(last); return; }
+              try { el.currentTime = next; } catch { finish(last); }
+            }, "image/jpeg", 0.82);
+          } catch { finish(last); }
+        }, 40);
+      };
+
+      el.onerror = () => finish(last);
+    });
+  };
+
+  const uploadThumbnail = async (blob: Blob, token: string): Promise<string | null> => {
+    try {
+      const file = new File([blob], `preview-${Date.now()}.jpg`, { type: "image/jpeg" });
+      const signRes = await fetch("/api/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ filename: file.name, contentType: "image/jpeg", folder: "thumbnails" }),
+      });
+      if (!signRes.ok) return null;
+      const { signedUrl, publicUrl } = await signRes.json();
+      const putRes = await fetch(signedUrl, { method: "PUT", headers: { "Content-Type": "image/jpeg" }, body: file });
+      return putRes.ok ? publicUrl : null;
+    } catch { return null; }
+  };
+
   const startImport = async () => {
     if (!file || !source) return;
     setProcessing(true);
@@ -153,6 +242,8 @@ export default function ImportPage() {
     try {
       const user = await getCachedUser();
       if (!user) throw new Error("Not logged in");
+      const { data: { session } } = await createClient().auth.getSession();
+      const token = session?.access_token;
 
       const arrayBuffer = await file.arrayBuffer();
       const uint8 = new Uint8Array(arrayBuffer);
@@ -194,6 +285,12 @@ export default function ImportPage() {
           const blob = new Blob([videoData], { type: mime });
           const videoFile = new File([blob], fileName, { type: mime });
 
+          let thumbUrl: string | null = null;
+          if (token) {
+            const thumbBlob = await captureThumbnail(blob);
+            if (thumbBlob) thumbUrl = await uploadThumbnail(thumbBlob, token);
+          }
+
           const upload = await r2MultipartUpload(videoFile, {
             folder: "videos",
             onProgress: (p) => {
@@ -211,6 +308,7 @@ export default function ImportPage() {
             type: meta.type,
             uploaderUserId: user.id,
             videoUrl: upload.publicUrl,
+            ...(thumbUrl ? { posterUrl: thumbUrl, backdropUrl: thumbUrl } : {}),
             feed_visible: false,
           });
         } catch (err) {
