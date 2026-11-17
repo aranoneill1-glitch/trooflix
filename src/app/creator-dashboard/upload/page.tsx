@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, CheckCircle2, Image as ImageIcon, Globe, Lock, Home, User, UploadCloud, MessageSquare, ChevronRight, Scissors } from "lucide-react";
 import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import InstagramStudio from "@/components/InstagramStudio";
-import { takePendingUpload } from "@/lib/quickUpload";
 import { getCachedUser } from "@/lib/cache";
 import { createClient } from "@/utils/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
@@ -104,18 +103,6 @@ function UploadContent() {
     if (longFormType === "Podcast" && category === "History") setCategory("Podcasts");
     if (longFormType === "Documentary" && (category === "History" || category === "Podcasts")) setCategory("Documentaries");
   }, [longFormType, category]);
-
-  // A file picked from the previous screen's user gesture opens the editor directly.
-  const pendingConsumed = useRef(false);
-  useEffect(() => {
-    if (pendingConsumed.current || checkingTier) return;
-    pendingConsumed.current = true;
-    const pending = takePendingUpload();
-    if (pending?.file) {
-      setEditorFile(pending.file);
-      setShowEditor(true);
-    }
-  }, [checkingTier]);
 
   const uploadToSupabase = async (file: File, label: string) => {
     if (file.size === 0) throw new Error(label + " is 0 bytes. On iPhone, wait for iCloud download first.");
