@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import UserMenu from "@/components/UserMenu";
 import NotificationBell from "@/components/NotificationBell";
 import PWAInstallButton from "@/components/PWAInstallButton";
-import { getCachedUser } from "@/lib/cache";
+import { getCachedUser, getCachedVideos, getSyncCachedVideos, onVideosChange } from "@/lib/cache";
 
 type Props = {
   onMenu?: () => void;
@@ -24,6 +24,22 @@ export default function TopBar({ onMenu }: Props) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!searchOpen) return;
+    const refresh = (list: any[]) => {
+      const q = searchQuery.trim().toLowerCase();
+      const base = Array.isArray(list) ? list : [];
+      setSearchResults(q
+        ? base.filter((v: any) => String(v.title || "").toLowerCase().includes(q)).slice(0, 30)
+        : base.slice().sort((a: any, b: any) => b.id - a.id).slice(0, 30));
+    };
+    refresh(getSyncCachedVideos() || []);
+    getCachedVideos().then(refresh).catch(() => {});
+    const off = onVideosChange(refresh);
+    return () => { off(); };
+  }, [searchOpen, searchQuery]);
 
   // Check if we are on the search page
   const isSearchPage = pathname === "/search";
@@ -212,6 +228,30 @@ export default function TopBar({ onMenu }: Props) {
           </>
         )}
       </nav>
+
+      {/* INSTAGRAM-STYLE SEARCH RESULTS GRID */}
+      {searchOpen && !isSearchPage && (
+        <div className="fixed left-0 lg:left-[72px] right-0 z-[199] bg-[#070709] border-b border-white/[0.08] max-h-[70vh] overflow-y-auto" style={{ top: "calc(env(safe-area-inset-top) + 56px)" }}>
+          <div className="px-4 md:px-6 py-4">
+            {searchResults.length === 0 ? (
+              <p className="text-center text-sm text-white/40 py-8">No videos found.</p>
+            ) : (
+              <div className="grid grid-cols-3 gap-1 md:gap-2">
+                {searchResults.map((v: any) => (
+                  <button
+                    key={v.id}
+                    type="button"
+                    onClick={() => { setSearchOpen(false); setSearchQuery(""); router.push(`/podcast/${v.id}`); }}
+                    className="relative aspect-[3/4] overflow-hidden bg-[#141418]"
+                  >
+                    <img src={v.posterUrl || v.backdropUrl} alt={v.title || ""} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* CREATE / ADD CONTENT BOTTOM SHEET */}
       <AnimatePresence>
