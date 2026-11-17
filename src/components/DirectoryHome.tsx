@@ -514,18 +514,18 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
       <section>
         <div className="max-w-[1600px] mx-auto px-4 md:px-10">
           <SectionHead title="Shorts" href="/feed" icon={Clapperboard} />
-          <div className="flex overflow-x-auto gap-2 pb-3 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
-            {shortsVideos.map((v: any) => (
-              <Link key={v.id} href={`/feed?reel=${v.id}`} className="block w-[86px] md:w-[110px] shrink-0 group">
-                <div className="relative w-full aspect-[9/16] rounded-md overflow-hidden ring-1 ring-white/10 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]">
+          <div className="overflow-x-auto scrollbar-hide pb-3 -mx-4 px-4 md:mx-0 md:px-0">
+            <div className="grid grid-flow-col grid-rows-3 auto-cols-[86px] gap-1.5 md:auto-cols-[110px] md:gap-2">
+              {shortsVideos.map((v: any) => (
+                <Link key={v.id} href={`/feed?reel=${v.id}`} className="block w-full aspect-[9/16] rounded-md overflow-hidden ring-1 ring-white/10 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)] group">
                   <VideoPreview
                     src={v.videoUrl || v.bitchuteUrl}
                     poster={v.posterUrl || v.backdropUrl}
                     className="transition duration-700 ease-out group-hover:scale-[1.04]"
                   />
-                </div>
-              </Link>
-            ))}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </section>
