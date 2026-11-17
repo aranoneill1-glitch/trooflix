@@ -6,13 +6,13 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { 
   Video, CheckCircle2, MessageSquare, Eye, Star, Pencil, 
-  ShoppingBag, LayoutDashboard, LayoutGrid, List, Package, Palette, Camera, Trash2, X, Radio, Inbox, Plus, Play, Lock, Shield, CreditCard, Mic, Film
+  ShoppingBag, LayoutDashboard, LayoutGrid, List, Package, Palette, Camera, Trash2, X, Radio, Inbox, Plus, Play, Lock, Shield, CreditCard, Mic, Film, Image as ImageIcon, Loader2
 } from "lucide-react";
 
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import VerifiedBadge from "@/components/VerifiedBadge";
-import { getCachedUser, clearUserCache, getCachedVideos, getCachedProducts } from "@/lib/cache";
+import { getCachedUser, clearUserCache, getCachedVideos, getCachedProducts, invalidateVideosCache } from "@/lib/cache";
 import { createClient } from "@/utils/supabase/client";
 import MyTrooFlixContent from "@/components/MyTrooFlixContent";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
@@ -86,6 +86,9 @@ function CreatorDashboardContent() {
   const videoPressTimer = useRef<NodeJS.Timeout | null>(null);
   const longPressFired = useRef(false);
   const [selectedVideoAction, setSelectedVideoAction] = useState<any>(null);
+  const previewInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingPreview, setUploadingPreview] = useState(false);
+  const [previewError, setPreviewError] = useState("");
   const [isReordering, setIsReordering] = useState(false);
   const [selectedMerchItem, setSelectedMerchItem] = useState<any>(null);
   const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
@@ -399,6 +402,62 @@ function CreatorDashboardContent() {
       setSelectedVideoAction(null);
     } catch (e: any) {
       alert(e.message || "Could not delete this video.");
+    }
+  };
+
+  const startPreviewChange = (video: any) => {
+    setPreviewError("");
+    setSelectedVideoAction(null);
+    if (previewInputRef.current) {
+      (previewInputRef.current as any).__videoId = video.id;
+      previewInputRef.current.click();
+    }
+  };
+
+  const handlePreviewFile = async (file?: File) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setPreviewError("Please choose an image file.");
+      return;
+    }
+    const videoId = (previewInputRef.current as any)?.__videoId;
+    if (!videoId) return;
+
+    setUploadingPreview(true);
+    setPreviewError("");
+    try {
+      const signRes = await fetch("/api/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filename: file.name, contentType: file.type, folder: "thumbnails" }),
+      });
+      if (!signRes.ok) throw new Error("Could not start preview upload.");
+      const { signedUrl, publicUrl } = await signRes.json();
+
+      const putRes = await fetch(signedUrl, {
+        method: "PUT",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+      if (!putRes.ok) throw new Error("Could not upload preview image.");
+
+      const updRes = await fetch("/api/videos/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: videoId, posterUrl: publicUrl, backdropUrl: publicUrl }),
+      });
+      if (!updRes.ok) throw new Error("Could not save preview.");
+
+      invalidateVideosCache();
+      setCreatorVideos((prev) =>
+        prev.map((v) => v.id === videoId ? { ...v, posterUrl: publicUrl, backdropUrl: publicUrl } : v)
+      );
+    } catch (e: any) {
+      setPreviewError(e?.message || "Could not change preview.");
+      alert(e?.message || "Could not change preview.");
+    } finally {
+      setUploadingPreview(false);
+      if (previewInputRef.current) previewInputRef.current.value = "";
     }
   };
 
@@ -1235,12 +1294,24 @@ function CreatorDashboardContent() {
             >
               <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mb-4" />
               <p className="text-center text-sm font-bold text-white truncate mb-5 px-4">{selectedVideoAction.title || "Video"}</p>
+              {uploadingPreview && (
+                <p className="mb-3 flex items-center justify-center gap-2 text-xs text-white/60">
+                  <Loader2 size={14} className="animate-spin" /> Uploading preview…
+                </p>
+              )}
+              {previewError && <p className="mb-3 text-center text-xs text-red-400">{previewError}</p>}
               <div className="flex flex-col gap-2">
                 <button
                   onClick={() => { const v = selectedVideoAction; setSelectedVideoAction(null); window.location.href = `/creator-dashboard/manage-content?edit=${v.id}`; }}
                   className="w-full py-4 text-center font-bold text-white bg-white/5 hover:bg-white/10 rounded-xl transition"
                 >
                   Edit
+                </button>
+                <button
+                  onClick={() => startPreviewChange(selectedVideoAction)}
+                  className="w-full py-4 text-center font-bold text-white bg-white/5 hover:bg-white/10 rounded-xl transition flex items-center justify-center gap-2"
+                >
+                  <ImageIcon size={16} /> Adjust preview
                 </button>
                 <button
                   onClick={() => deleteVideo(selectedVideoAction)}
@@ -1254,6 +1325,14 @@ function CreatorDashboardContent() {
           </>
         )}
       </AnimatePresence>
+
+        <input
+          ref={previewInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => handlePreviewFile(e.target.files?.[0])}
+        />
 
         <MobileBottomNav />
       </div>
