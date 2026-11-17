@@ -227,7 +227,7 @@ export default function TopBar({ onMenu }: Props) {
 
       {/* INSTAGRAM-STYLE SEARCH RESULTS GRID */}
       {searchOpen && !isSearchPage && (
-        <div className="fixed left-0 lg:left-[72px] right-0 z-[199] bg-[#070709] border-b border-white/[0.08] max-h-[70vh] overflow-y-auto" style={{ top: "calc(env(safe-area-inset-top) + 56px)" }}>
+        <div className="fixed inset-x-0 bottom-0 z-[199] bg-[#09090B] overflow-y-auto" style={{ top: "calc(env(safe-area-inset-top) + 56px)", paddingBottom: "calc(env(safe-area-inset-bottom) + 72px)" }}>
           <div className="px-4 md:px-6 py-4">
             {searchResults.length === 0 ? (
               <p className="text-center text-sm text-white/40 py-8">No videos found.</p>
