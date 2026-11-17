@@ -117,7 +117,7 @@ export default function TopBar({ onMenu }: Props) {
         aria-hidden="true"
       />
       <nav
-        className="fixed left-0 lg:left-[72px] right-0 z-[200] flex items-start gap-3 px-4 md:px-6 h-[50px] pt-1.5 transition-colors duration-300 bg-[#09090B]/35 backdrop-blur-xl backdrop-saturate-150"
+        className="fixed left-0 lg:left-[72px] right-0 z-[200] flex items-center gap-3 px-4 md:px-6 h-[56px] pt-1 transition-colors duration-300 bg-[#09090B]/35 backdrop-blur-xl backdrop-saturate-150"
         style={{ top: "env(safe-area-inset-top)", WebkitTransform: "translateZ(0)", transform: "translateZ(0)" }}
       >
         {searchOpen ? (
