@@ -331,8 +331,8 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
     const t = v.type?.toLowerCase();
     const hasVideo = !!(v.videoUrl || v.bitchuteUrl);
     return hasVideo && t !== "short" && t !== "tweet" && t !== "reel";
-  }).slice(0, 8);
-  const shortsVideos = videos.filter((v: any) => v.type?.toLowerCase() === "short" || v.type?.toLowerCase() === "reel").slice(0, 10);
+  }).slice(0, 50);
+  const shortsVideos = videos.filter((v: any) => v.type?.toLowerCase() === "short" || v.type?.toLowerCase() === "reel").slice(0, 50);
   const podcastVideos = videos.filter((v: any) => v.type?.toLowerCase() === "podcast").slice(0, 8);
   const documentaryVideos = videos.filter((v: any) => v.type?.toLowerCase() === "documentary").slice(0, 8);
 
