@@ -520,11 +520,12 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
               {Array.from({ length: Math.ceil(shortsVideos.length / 3) }, (_, col) => (
                 <div key={col} className="flex flex-col gap-1.5 md:gap-2 shrink-0">
                   {shortsVideos.slice(col * 3, col * 3 + 3).map((v: any) => (
-                    <Link key={v.id} href={`/feed?reel=${v.id}`} className="relative block w-[86px] h-[115px] md:w-[110px] md:h-[147px] overflow-hidden bg-[#111114] rounded-xl border border-white/10 shadow-lg group">
+                    <Link key={v.id} href={`/feed?reel=${v.id}`} className="relative block w-[86px] h-[115px] md:w-[110px] md:h-[147px] overflow-hidden bg-[#111114] group">
                       <ShortPreviewFrame
                         src={v.videoUrl || v.bitchuteUrl}
                         poster={v.posterUrl || v.backdropUrl}
                         alt=""
+                        autoplay={v.id % 3 === 0}
                       />
                     </Link>
                   ))}
