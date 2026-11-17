@@ -449,7 +449,7 @@ export default function InstagramStudio({ file, onCancel, onApply }: Props) {
     return new Blob([target.buffer], { type: "video/mp4" });
   };
 
-  // Publish: hardware-accelerated WebCodecs first, MediaRecorder fallback.
+  // Hand edited video back to the upload flow: WebCodecs first, MediaRecorder fallback.
   const publish = async () => {
     if (!edit.video.uri || exportingRef.current) return;
     exportingRef.current = true;
@@ -720,7 +720,7 @@ export default function InstagramStudio({ file, onCancel, onApply }: Props) {
         <span className="text-sm font-semibold">New video</span>
         <button onClick={publish} disabled={exporting} className="flex items-center gap-1 text-sm font-bold text-[#0095f6] disabled:opacity-40">
           {exporting ? <Loader2 size={14} className="animate-spin" /> : <Check size={18} />}
-          {exporting ? "Saving" : "Publish"}
+          {exporting ? "Saving" : "Next"}
         </button>
       </div>
 
@@ -1045,8 +1045,8 @@ export default function InstagramStudio({ file, onCancel, onApply }: Props) {
       {exporting && (
         <div className="absolute inset-0 z-[800] bg-black/85 flex items-center justify-center">
           <div className="w-64 text-center">
-            <p className="text-sm font-bold mb-1">Publishing…</p>
-            <p className="text-[10px] text-white/45 mb-4">Applying trim, cuts, audio and text</p>
+            <p className="text-sm font-bold mb-1">Preparing your video…</p>
+            <p className="text-[10px] text-white/45 mb-4">Applying trim, cuts, audio and text — then back to upload</p>
             <div className="h-1.5 bg-white/10 rounded-full overflow-hidden"><div className="h-full bg-[#0095f6]" style={{ width: `${exportProgress}%` }} /></div>
             <p className="text-xs mt-2">{exportProgress}%</p>
           </div>
