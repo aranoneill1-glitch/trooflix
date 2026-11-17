@@ -47,10 +47,10 @@ type EditState = {
 };
 
 const FONTS = [
-  { id: "Inter", label: "Inter", css: "'Inter', Arial, sans-serif", weight: 800 },
+  { id: "Inter", label: "Classic", css: "'Inter', Arial, sans-serif", weight: 800 },
   { id: "Georgia", label: "Serif", css: "Georgia, 'Times New Roman', serif", weight: 700 },
   { id: "Courier", label: "Typewriter", css: "'Courier New', Courier, monospace", weight: 700 },
-  { id: "Impact", label: "Impact", css: "Impact, 'Arial Black', sans-serif", weight: 400 },
+  { id: "Impact", label: "Neon", css: "Impact, 'Arial Black', sans-serif", weight: 400 },
   { id: "Comic", label: "Handwriting", css: "'Comic Sans MS', cursive", weight: 700 },
   { id: "ArialBlack", label: "Bold", css: "'Arial Black', Arial, sans-serif", weight: 900 },
 ];
@@ -549,23 +549,32 @@ export default function InstagramStudio({ file, onCancel, onApply }: Props) {
             transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
             className="shrink-0 border-t border-white/10 bg-[#0c0c0e] px-3 py-2"
           >
-            <div className="flex gap-2.5 items-center overflow-x-auto pb-2.5 scrollbar-hide">
-              <button onClick={() => { haptic(); document.getElementById("ig-font-select")?.click(); }} className="w-8 h-8 shrink-0 flex items-center justify-center rounded-md border border-white/20 text-white text-[15px] font-serif font-bold active:opacity-60" title="Font">Aa</button>
-              <select id="ig-font-select" value={selectedFont} onChange={e => { haptic(); setSelectedFont(e.target.value); if (selectedOverlayId) updateOverlay({ font: e.target.value }); }} className="hidden">
-                {FONTS.map(f => <option key={f.id} value={f.id}>{f.label}</option>)}
-              </select>
-              <div className="flex gap-1.5 shrink-0">
+            {/* IG-style horizontal font carousel above the keyboard */}
+            <div className="flex gap-5 items-center overflow-x-auto pb-3 scrollbar-hide">
+              {FONTS.map(f => (
+                <button
+                  key={f.id}
+                  onClick={() => { haptic(); setSelectedFont(f.id); if (selectedOverlayId) updateOverlay({ font: f.id }); }}
+                  className={`shrink-0 flex flex-col items-center gap-1 active:opacity-60 transition-opacity ${selectedFont === f.id ? "text-white" : "text-white/50"}`}
+                >
+                  <span className="text-[21px] leading-6" style={{ font: `${f.weight} 21px ${f.css}` }}>Aa</span>
+                  <span className="text-[9px] font-medium">{f.label}</span>
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-3 items-center overflow-x-auto pb-2.5 scrollbar-hide">
+              <div className="flex gap-2 shrink-0">
                 {COLORS.map(c => (
-                  <button key={c} onClick={() => { haptic(); setSelectedColor(c); if (selectedOverlayId) updateOverlay({ color: c }); }} className={`w-6 h-6 rounded-full border-2 active:scale-90 transition-transform ${selectedColor === c ? "border-white" : "border-white/20"}`} style={{ background: c }} />
+                  <button key={c} onClick={() => { haptic(); setSelectedColor(c); if (selectedOverlayId) updateOverlay({ color: c }); }} className={`w-5 h-5 rounded-full border active:scale-90 transition-transform ${selectedColor === c ? "border-2 border-white" : "border border-white/20"}`} style={{ background: c }} />
                 ))}
               </div>
-              <button onClick={() => { haptic(); setHasBox(v => { if (selectedOverlayId) updateOverlay({ hasBox: !v }); return !v; }); }} className={`w-8 h-8 shrink-0 flex items-center justify-center rounded-md border active:opacity-60 text-[13px] font-bold ${hasBox ? "bg-white text-black border-white" : "border-white/20 text-white"}`} title="Background box">A▣</button>
+              <span className="w-px h-5 bg-white/10 shrink-0" />
+              <button onClick={() => { haptic(); setHasBox(v => { if (selectedOverlayId) updateOverlay({ hasBox: !v }); return !v; }); }} className={`shrink-0 flex items-center gap-1 text-[11px] font-medium active:opacity-60 ${hasBox ? "text-white" : "text-white/50"}`} title="Background box"><span className="text-[15px] font-serif">A▣</span> Box</button>
             </div>
             <div className="flex gap-2 items-center">
-              <input autoFocus value={draftText} onChange={e => setDraftText(e.target.value)} onKeyDown={e => { if (e.key === "Enter") addTextOverlay(); }} placeholder="Type a caption…" className="flex-1 bg-white/10 rounded-full px-4 py-2.5 text-sm text-white placeholder:text-white/40 outline-none" />
-              <button onClick={() => { haptic(); addTextOverlay(); }} className="shrink-0 text-[#0095f6] text-sm font-bold active:opacity-60">Done</button>
+              <input autoFocus value={draftText} onChange={e => setDraftText(e.target.value)} onKeyDown={e => { if (e.key === "Enter") addTextOverlay(); }} placeholder="Type a caption…" className="flex-1 bg-white/[0.08] border border-white/10 rounded-full px-4 py-2.5 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/20" />
+              <button onClick={() => { haptic(); addTextOverlay(); }} className="shrink-0 text-[#0095f6] text-sm font-semibold active:opacity-60">Done</button>
             </div>
-            <p className="text-[10px] text-white/35 text-center mt-1.5">Drag text to move · pinch to resize &amp; rotate</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -574,11 +583,11 @@ export default function InstagramStudio({ file, onCancel, onApply }: Props) {
       {!textComposerOpen && !panelOpen && (
         <div className="shrink-0 bg-black" style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 8px)" }}>
           <button onClick={() => { haptic(); setPanelOpen(true); }} className="mx-auto flex flex-col items-center gap-0.5 pt-1.5 pb-1 text-white/45 active:opacity-60" aria-label="Open timeline">
-            <ChevronDown size={16} className="rotate-180" />
+            <ChevronDown size={16} strokeWidth={1.4} className="rotate-180" />
           </button>
           <div className="flex items-start justify-center gap-16 pt-1">
             <button onClick={() => { haptic(); setAudioPickerOpen(true); }} className="flex flex-col items-center gap-1.5 min-w-[64px] text-white active:opacity-60 active:scale-95 transition-transform">
-              <Music2 size={25} strokeWidth={1.8} />
+              <Music2 size={24} strokeWidth={1.4} />
               <span className="text-[10px] font-medium">Audio</span>
             </button>
             <button onClick={() => { haptic(); setTextComposerOpen(true); }} className="flex flex-col items-center gap-1.5 min-w-[64px] text-white active:opacity-60 active:scale-95 transition-transform">
@@ -600,34 +609,36 @@ export default function InstagramStudio({ file, onCancel, onApply }: Props) {
           className="shrink-0 bg-[#1c1c1e] border-t border-white/10 px-3 py-3 max-h-[42vh] overflow-y-auto rounded-t-2xl"
         >
           <div className="w-9 h-1 bg-white/25 rounded-full mx-auto mb-2" />
-          <div className="flex justify-between items-center mb-2">
-            <button onClick={() => setPanelOpen(false)} className="text-white/50"><ChevronDown size={18} /></button>
-            <span className="text-xs font-bold">Timeline</span>
+          <div className="flex justify-between items-center mb-2.5">
+            <button onClick={() => { haptic(); setPanelOpen(false); }} className="text-white/45 active:opacity-60"><ChevronDown size={18} strokeWidth={1.4} /></button>
+            <span className="text-[11px] font-medium text-white/70">Timeline</span>
             <button
               onClick={() => {
+                haptic();
                 const t = clamp(videoRef.current?.currentTime || 0, 0, duration);
                 setEdit(prev => ({ ...prev, video: { ...prev.video, cuts: [...prev.video.cuts, t].sort((a, b) => a - b) } }));
               }}
-              className="text-[11px] font-bold text-[#0095f6] flex items-center gap-1"><Scissors size={13} /> Split</button>
+              className="text-[11px] font-medium text-white/70 flex items-center gap-1 active:opacity-60"><Scissors size={14} strokeWidth={1.4} /> Split</button>
           </div>
 
           <div
             ref={timelineRef}
             onPointerDown={onTimelineDown}
-            className="relative h-12 rounded-sm overflow-hidden bg-black/60 border border-white/10 touch-none select-none"
+            className="relative h-11 rounded-md overflow-hidden bg-white/[0.05] touch-none select-none"
           >
-            <div className="absolute inset-0 flex opacity-70">
-              {Array.from({ length: 16 }, (_, i) => <div key={i} className="flex-1 border-r border-black/50 bg-white/5" />)}
+            <div className="absolute inset-0 flex opacity-60">
+              {Array.from({ length: 18 }, (_, i) => <div key={i} className="flex-1 bg-white/[0.04]" />)}
             </div>
-            <div className="absolute inset-y-0 left-0 bg-black/65" style={{ width: `${(edit.video.trimStart / duration) * 100}%` }} />
-            <div className="absolute inset-y-0 right-0 bg-black/65" style={{ width: `${(1 - edit.video.trimEnd / duration) * 100}%` }} />
-            <div className="absolute inset-y-0 border-y-2 border-white" style={{ left: `${(edit.video.trimStart / duration) * 100}%`, width: `${((edit.video.trimEnd - edit.video.trimStart) / duration) * 100}%` }} />
-            {edit.video.cuts.map((c, i) => <div key={i} className="absolute inset-y-0 w-[2px] bg-[#ff3b5c] z-10" style={{ left: `${(c / duration) * 100}%` }} />)}
-            {edit.textOverlays.map(o => <div key={o.id} className="absolute bottom-0 h-2 bg-[#c084fc] z-10 pointer-events-none" style={{ left: `${(o.startTime / duration) * 100}%`, width: `${((o.endTime - o.startTime) / duration) * 100}%` }} />)}
-            <div className="absolute inset-y-0 w-[2px] bg-[#0095f6] z-20" style={{ left: `${((videoRef.current?.currentTime || 0) / duration) * 100}%` }} />
+            <div className="absolute inset-y-0 left-0 bg-black/70" style={{ width: `${(edit.video.trimStart / duration) * 100}%` }} />
+            <div className="absolute inset-y-0 right-0 bg-black/70" style={{ width: `${(1 - edit.video.trimEnd / duration) * 100}%` }} />
+            <div className="absolute inset-y-0 border-y border-white/80" style={{ left: `${(edit.video.trimStart / duration) * 100}%`, width: `${((edit.video.trimEnd - edit.video.trimStart) / duration) * 100}%` }} />
+            {edit.video.cuts.map((c, i) => <div key={i} className="absolute inset-y-0 w-px bg-white/50 z-10" style={{ left: `${(c / duration) * 100}%` }} />)}
+            {edit.textOverlays.map(o => <div key={o.id} className="absolute bottom-0 h-1 bg-white/45 z-10 pointer-events-none" style={{ left: `${(o.startTime / duration) * 100}%`, width: `${((o.endTime - o.startTime) / duration) * 100}%` }} />)}
+            <div className="absolute inset-y-0 w-[1.5px] bg-white z-20" style={{ left: `${((videoRef.current?.currentTime || 0) / duration) * 100}%` }} />
             {(["trimStart", "trimEnd"] as const).map(h => (
-              <div key={h} className="absolute inset-y-0 w-4 -ml-2 flex items-center justify-center z-30 bg-white/20" style={{ left: `${(edit.video[h] / duration) * 100}%` }}
+              <div key={h} className="absolute inset-y-0 w-5 -ml-2.5 flex items-center justify-center z-30" style={{ left: `${(edit.video[h] / duration) * 100}%` }}
                 onPointerDown={e => {
+                  haptic();
                   e.stopPropagation();
                   const move = (ev: PointerEvent) => {
                     const t = pxToTime(ev.clientX);
@@ -637,76 +648,84 @@ export default function InstagramStudio({ file, onCancel, onApply }: Props) {
                   window.addEventListener("pointermove", move);
                   window.addEventListener("pointerup", up);
                 }}
-              ><div className="w-1.5 h-7 bg-white rounded-sm" /></div>
+              ><div className="w-[3px] h-7 bg-white rounded-full shadow-sm" /></div>
             ))}
           </div>
           <div className="flex justify-between text-[9px] text-white/35 mt-1"><span>0:00</span><span>{fmt(duration)}</span></div>
 
-          {/* Text track */}
-          <div className="mt-3">
-            <p className="text-[10px] text-white/40 uppercase tracking-wider mb-1">Text clips</p>
-            {edit.textOverlays.length === 0 && <p className="text-[10px] text-white/25">No text overlays yet.</p>}
-            <div className="space-y-1">
+          {/* Text clips — minimal IG-style rows */}
+          {edit.textOverlays.length > 0 && (
+            <div className="mt-2.5 space-y-1">
               {edit.textOverlays.map(o => (
-                <div key={o.id} className="flex items-center gap-2 bg-white/5 rounded px-2 py-1.5">
-                  <button onClick={() => setSelectedOverlayId(o.id)} className="flex-1 text-left text-[11px] truncate">{o.text}</button>
-                  <span className="text-[9px] text-white/40">{fmt(o.startTime)}–{fmt(o.endTime)}</span>
-                  <button onClick={() => setEdit(prev => ({ ...prev, textOverlays: prev.textOverlays.filter(x => x.id !== o.id) }))} className="text-red-400"><Trash2 size={12} /></button>
+                <div key={o.id} className="flex items-center gap-2 px-1 py-1">
+                  <button onClick={() => { haptic(); setSelectedOverlayId(o.id); }} className="flex-1 text-left text-[11px] text-white/75 truncate active:opacity-60">{o.text}</button>
+                  <span className="text-[9px] text-white/30">{fmt(o.startTime)}–{fmt(o.endTime)}</span>
+                  <button onClick={() => setEdit(prev => ({ ...prev, textOverlays: prev.textOverlays.filter(x => x.id !== o.id) }))} className="text-white/30 active:text-white/70"><X size={13} strokeWidth={1.4} /></button>
                 </div>
               ))}
             </div>
-          </div>
+          )}
 
-          {/* Audio track */}
-          <div className="mt-3">
-            <p className="text-[10px] text-white/40 uppercase tracking-wider mb-1">Audio overlay</p>
-            {edit.audioOverlay ? (
-              <div className="bg-white/5 rounded p-2 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] truncate max-w-[60%]">{edit.audioOverlay.label}</span>
-                  <button onClick={() => setEdit(prev => ({ ...prev, audioOverlay: null }))} className="text-red-400"><Trash2 size={13} /></button>
-                </div>
-                <div className="flex items-end gap-[2px] h-8">
-                  {waveform.map((h, i) => <span key={i} className="flex-1 bg-[#0095f6]/70 rounded-sm" style={{ height: `${h}%` }} />)}
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-white/45 w-12">Volume</span>
-                  <input type="range" min={0} max={1} step={0.05} value={edit.audioOverlay.volume} onChange={e => setEdit(prev => prev.audioOverlay ? ({ ...prev, audioOverlay: { ...prev.audioOverlay, volume: parseFloat(e.target.value) } }) : prev)} className="flex-1" />
-                  <span className="text-[10px] w-8 text-right">{Math.round(edit.audioOverlay.volume * 100)}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-white/45 w-12">Offset</span>
-                  <input type="range" min={0} max={Math.max(1, duration)} step={0.1} value={edit.audioOverlay.startOffset} onChange={e => setEdit(prev => prev.audioOverlay ? ({ ...prev, audioOverlay: { ...prev.audioOverlay, startOffset: parseFloat(e.target.value) } }) : prev)} className="flex-1" />
-                  <span className="text-[10px] w-8 text-right">{fmt(edit.audioOverlay.startOffset)}</span>
-                </div>
+          {/* Audio track — minimal */}
+          {edit.audioOverlay ? (
+            <div className="mt-2 space-y-1.5 px-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-white/70 truncate max-w-[65%]">{edit.audioOverlay.label}</span>
+                <button onClick={() => { haptic(); setEdit(prev => ({ ...prev, audioOverlay: null })); }} className="text-white/30 active:text-white/70"><X size={13} strokeWidth={1.4} /></button>
               </div>
-            ) : (
-              <button onClick={() => setAudioPickerOpen(true)} className="w-full py-2 rounded bg-white/5 border border-white/10 text-[11px] font-semibold flex items-center justify-center gap-1"><Music2 size={13} /> Add audio from another video</button>
-            )}
-          </div>
+              <div className="flex items-end gap-[2px] h-7 opacity-60">
+                {waveform.map((h, i) => <span key={i} className="flex-1 bg-white/50 rounded-full" style={{ height: `${h}%` }} />)}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-white/35 w-10">Volume</span>
+                <input type="range" min={0} max={1} step={0.05} value={edit.audioOverlay.volume} onChange={e => setEdit(prev => prev.audioOverlay ? ({ ...prev, audioOverlay: { ...prev.audioOverlay, volume: parseFloat(e.target.value) } }) : prev)} className="flex-1" />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-white/35 w-10">Offset</span>
+                <input type="range" min={0} max={Math.max(1, duration)} step={0.1} value={edit.audioOverlay.startOffset} onChange={e => setEdit(prev => prev.audioOverlay ? ({ ...prev, audioOverlay: { ...prev.audioOverlay, startOffset: parseFloat(e.target.value) } }) : prev)} className="flex-1" />
+              </div>
+            </div>
+          ) : (
+            <button onClick={() => { haptic(); setAudioPickerOpen(true); }} className="mt-2 w-full py-2 text-[11px] font-medium text-white/50 flex items-center justify-center gap-1.5 active:opacity-60"><Music2 size={14} strokeWidth={1.4} /> Add audio</button>
+          )}
         </motion.div>
       )}
       </AnimatePresence>
 
-      {/* Audio picker (Screen 3) */}
-      {audioPickerOpen && (
-        <div className="absolute inset-0 z-[700] bg-[#08080a] flex flex-col">
-          <div className="flex items-center justify-between px-4 h-14 border-b border-white/10" style={{ paddingTop: "env(safe-area-inset-top)" }}>
-            <button onClick={() => setAudioPickerOpen(false)}><X size={22} /></button>
-            <span className="font-bold text-sm">Choose a sound</span>
-            <button onClick={() => audioInputRef.current?.click()} className="text-[#0095f6] text-xs font-bold">Audio file</button>
-          </div>
-          <div className="flex-1 overflow-y-auto grid grid-cols-3 gap-[2px] p-[2px] content-start">
-            {library.map(v => (
-              <button key={v.id} onClick={() => void applyAudio(proxyUrl(v.videoUrl), v.title)} className="relative aspect-square bg-white/5 overflow-hidden">
-                {v.posterUrl ? <img src={v.posterUrl} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" /> : <Music2 size={20} className="m-auto text-white/30" />}
-                <span className="absolute bottom-1 left-1 right-1 text-[9px] truncate bg-black/60 px-1">{v.title}</span>
-              </button>
-            ))}
-          </div>
-          <input ref={audioInputRef} type="file" accept="audio/*,video/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) void applyAudio(URL.createObjectURL(f), f.name); e.currentTarget.value = ""; }} />
-        </div>
-      )}
+      {/* Audio picker (Screen 3) — IG bottom sheet */}
+      <AnimatePresence>
+        {audioPickerOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setAudioPickerOpen(false)}
+              className="absolute inset-0 z-[690] bg-black/70"
+            />
+            <motion.div
+              initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 30, stiffness: 330, mass: 0.9 }}
+              className="absolute bottom-0 left-0 right-0 z-[700] h-[68vh] bg-[#1c1c1e] rounded-t-2xl flex flex-col overflow-hidden"
+              style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+            >
+              <div className="w-9 h-1 bg-white/25 rounded-full mx-auto mt-2 mb-1 shrink-0" />
+              <div className="flex items-center justify-between px-4 py-2.5 shrink-0">
+                <button onClick={() => { haptic(); setAudioPickerOpen(false); }} className="text-white/70 active:opacity-60"><X size={20} strokeWidth={1.4} /></button>
+                <span className="text-[13px] font-semibold text-white/90">Choose a sound</span>
+                <button onClick={() => audioInputRef.current?.click()} className="text-[#0095f6] text-xs font-semibold active:opacity-60">Audio file</button>
+              </div>
+              <div className="flex-1 overflow-y-auto grid grid-cols-3 gap-[2px] p-[2px] content-start">
+                {library.map(v => (
+                  <button key={v.id} onClick={() => { haptic(); void applyAudio(proxyUrl(v.videoUrl), v.title); }} className="relative aspect-square bg-white/5 overflow-hidden active:opacity-70">
+                    {v.posterUrl ? <img src={v.posterUrl} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" /> : <Music2 size={20} strokeWidth={1.4} className="m-auto text-white/30" />}
+                    <span className="absolute bottom-1 left-1 right-1 text-[9px] truncate bg-black/60 px-1">{v.title}</span>
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {exporting && (
         <div className="absolute inset-0 z-[800] bg-black/85 flex items-center justify-center">
