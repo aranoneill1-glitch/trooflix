@@ -107,10 +107,10 @@ function SectionHead({ title, href, icon: Icon, onTitleClick }: { title: string;
         onClick={onTitleClick}
         className="flex min-w-0 items-center gap-2.5 text-left"
       >
-        <Icon className="h-[21px] w-[21px] shrink-0 text-white/90 md:h-7 md:w-7" strokeWidth={1.5} />
-        <h2 className="text-[21px] font-black tracking-tighter text-white md:text-[28px]">{title}</h2>
+        <Icon className="h-[21px] w-[21px] shrink-0 text-[#111114]/90 md:h-7 md:w-7" strokeWidth={1.5} />
+        <h2 className="text-[21px] font-black tracking-tighter text-[#111114] md:text-[28px]">{title}</h2>
       </button>
-      <Link href={href} onClick={onTitleClick} className="text-[13px] font-medium text-white/45 hover:text-white transition mb-1">
+      <Link href={href} onClick={onTitleClick} className="text-[13px] font-medium text-[#111114]/45 hover:text-[#111114] transition mb-1">
         View all
       </Link>
     </div>
@@ -388,14 +388,14 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
             {creator?.photoUrl ? (
               <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" />
             ) : (
-              <div className={`w-full h-full flex items-center justify-center font-bold text-white/80 ${compact ? "text-[10px]" : "text-xs"}`}>
+              <div className={`w-full h-full flex items-center justify-center font-bold text-[#111114]/70 ${compact ? "text-[10px]" : "text-xs"}`}>
                 {(creator?.name || "T")[0]}
               </div>
             )}
           </div>
           <div className="min-w-0">
-            <h3 className={`font-medium text-white/90 leading-snug line-clamp-2 group-hover:text-white transition ${compact ? "text-[12px]" : "text-[15px]"}`}>{v.title}</h3>
-            {creator?.name && <p className={`mt-0.5 text-white/55 truncate ${compact ? "text-[11px]" : "text-[13px]"}`}>{creator.name}</p>}
+            <h3 className={`font-medium text-[#111114]/90 leading-snug line-clamp-2 group-hover:text-black transition ${compact ? "text-[12px]" : "text-[15px]"}`}>{v.title}</h3>
+            {creator?.name && <p className={`mt-0.5 text-[#111114]/55 truncate ${compact ? "text-[11px]" : "text-[13px]"}`}>{creator.name}</p>}
           </div>
         </div>
       </button>
@@ -412,7 +412,7 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
               <Link key={c.id} href={`/profile/${c.slug}`} aria-label={c.name} className="shrink-0 group">
                 <div className="p-[2px] rounded-full bg-gradient-to-b from-white/40 to-white/5 group-hover:from-[#E53945] group-hover:to-orange-400 transition duration-300">
                   <div className="w-[55px] h-[55px] md:w-[65px] md:h-[65px] rounded-full overflow-hidden bg-[#141418] ring-2 ring-[#070709]">
-                    {c.photoUrl ? <img src={c.photoUrl} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-base font-semibold text-white/70">{c.name?.[0]}</div>}
+                    {c.photoUrl ? <img src={c.photoUrl} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-base font-semibold text-[#111114]/70">{c.name?.[0]}</div>}
                   </div>
                 </div>
               </Link>
@@ -471,21 +471,21 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
                 {featuredCreator?.photoUrl ? (
                   <img src={featuredCreator.photoUrl} alt="" className="h-full w-full object-cover" />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center text-xs font-bold text-white/80">
+                  <div className="flex h-full w-full items-center justify-center text-xs font-bold text-[#111114]/80">
                     {(featuredCreator?.name || featuredVideo?.title || "T")[0]}
                   </div>
                 )}
               </Link>
               <div className="min-w-0">
-                <h2 className="text-base font-bold tracking-tight text-white md:text-lg">
+                <h2 className="text-base font-bold tracking-tight text-[#111114] md:text-lg">
                   {featuredVideo?.title}
                 </h2>
-                <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs font-medium text-white/45 md:text-sm">
+                <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs font-medium text-[#111114]/45 md:text-sm">
                   {featuredVideo?.category && <span>{featuredVideo.category}</span>}
                   {featuredCreator?.name && (
                     <>
-                      {featuredVideo?.category && <span className="text-white/20">·</span>}
-                      <Link href={featuredCreatorHref} className="transition hover:text-white">{featuredCreator.name}</Link>
+                      {featuredVideo?.category && <span className="text-[#111114]/25">·</span>}
+                      <Link href={featuredCreatorHref} className="transition hover:text-black">{featuredCreator.name}</Link>
                     </>
                   )}
                 </div>
@@ -541,8 +541,8 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
         <section>
           <div className="flex items-end justify-between mb-2.5">
             <div className="flex items-center gap-2.5">
-              <History className="h-[21px] w-[21px] shrink-0 text-white/90 md:h-7 md:w-7" strokeWidth={1.5} />
-              <h2 className="text-[21px] font-black tracking-tighter text-white md:text-[28px]">Continue Watching</h2>
+              <History className="h-[21px] w-[21px] shrink-0 text-[#111114]/90 md:h-7 md:w-7" strokeWidth={1.5} />
+              <h2 className="text-[21px] font-black tracking-tighter text-[#111114] md:text-[28px]">Continue Watching</h2>
             </div>
           </div>
           <div className="flex overflow-x-auto gap-4 pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
@@ -577,14 +577,14 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
                       {creator?.photoUrl ? (
                         <img src={creator.photoUrl} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-xs font-bold text-white/80">
+                        <div className="w-full h-full flex items-center justify-center text-xs font-bold text-[#111114]/80">
                           {(creator?.name || "T")[0]}
                         </div>
                       )}
                     </div>
                     <div className="min-w-0">
-                      <h3 className="text-[15px] font-medium text-white/90 leading-snug line-clamp-2 group-hover:text-white transition">{v.title}</h3>
-                      {creator?.name && <p className="mt-0.5 text-[13px] text-white/55 truncate">{creator.name}</p>}
+                      <h3 className="text-[15px] font-medium text-[#111114]/90 leading-snug line-clamp-2 group-hover:text-black transition">{v.title}</h3>
+                      {creator?.name && <p className="mt-0.5 text-[13px] text-[#111114]/55 truncate">{creator.name}</p>}
                     </div>
                   </div>
                 </button>
@@ -635,10 +635,10 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
 
       <section>
         <div className="flex items-end justify-between mb-2.5">
-          <Link href="/merchandise" className="flex items-center gap-2.5 text-[21px] font-black tracking-tighter text-white hover:opacity-90 transition md:text-[28px]">
-            <ShoppingBag className="h-[21px] w-[21px] shrink-0 text-white/90 md:h-7 md:w-7" strokeWidth={1.5} /> Store
+          <Link href="/merchandise" className="flex items-center gap-2.5 text-[21px] font-black tracking-tighter text-[#111114] hover:opacity-90 transition md:text-[28px]">
+            <ShoppingBag className="h-[21px] w-[21px] shrink-0 text-[#111114]/90 md:h-7 md:w-7" strokeWidth={1.5} /> Store
           </Link>
-          <Link href="/merchandise" className="text-[13px] font-medium text-white/45 hover:text-white transition mb-1">View all</Link>
+          <Link href="/merchandise" className="text-[13px] font-medium text-[#111114]/45 hover:text-[#111114] transition mb-1">View all</Link>
         </div>
         <Link href="/merchandise" className="relative block w-full aspect-[21/9] overflow-hidden rounded-2xl ring-1 ring-white/10 group">
           <img
