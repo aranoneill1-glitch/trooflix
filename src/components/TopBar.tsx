@@ -42,7 +42,6 @@ export default function TopBar({ onMenu }: Props) {
   }, [searchOpen, searchQuery]);
 
   // Check if we are on the search page
-  const isHomePage = pathname === "/";
   const isSearchPage = pathname === "/search";
   const isMessagesPage = pathname === "/messages";
 
@@ -113,12 +112,12 @@ export default function TopBar({ onMenu }: Props) {
   return (
     <>
       <div
-        className={`fixed top-0 left-0 lg:left-[72px] right-0 z-[200] ${isHomePage ? "bg-[#FAFAFA]/35 backdrop-blur-xl" : "bg-[#09090B]/35 backdrop-blur-xl"}`}
+        className="fixed top-0 left-0 lg:left-[72px] right-0 z-[200] bg-[#09090B]/35 backdrop-blur-xl"
         style={{ height: "env(safe-area-inset-top)", WebkitTransform: "translateZ(0)", transform: "translateZ(0)" }}
         aria-hidden="true"
       />
       <nav
-        className={`fixed left-0 lg:left-[72px] right-0 z-[200] flex items-center gap-3 px-4 md:px-6 h-[56px] pt-1 transition-colors duration-300 ${isHomePage ? "bg-[#FAFAFA]/35 backdrop-blur-xl backdrop-saturate-150" : "bg-[#09090B]/35 backdrop-blur-xl backdrop-saturate-150"}`}
+        className="fixed left-0 lg:left-[72px] right-0 z-[200] flex items-center gap-3 px-4 md:px-6 h-[56px] pt-1 transition-colors duration-300 bg-[#09090B]/35 backdrop-blur-xl backdrop-saturate-150"
         style={{ top: "env(safe-area-inset-top)", WebkitTransform: "translateZ(0)", transform: "translateZ(0)" }}
       >
         {searchOpen ? (
@@ -183,7 +182,7 @@ export default function TopBar({ onMenu }: Props) {
                 </>
               ) : (
                 <>
-                  <span className={isHomePage ? "text-black" : "text-white"}>TROO</span>
+                  <span className="text-white">TROO</span>
                   <span className="text-red-600">FLIX</span>
                 </>
               )}
@@ -196,7 +195,7 @@ export default function TopBar({ onMenu }: Props) {
                 <button
                   type="button"
                   onClick={() => setSearchOpen(true)}
-                  className={`w-9 h-9 rounded-full flex items-center justify-center transition ${isHomePage ? "text-black/70 hover:text-black hover:bg-black/5" : "text-white/70 hover:text-white hover:bg-white/10"}`}
+                  className="w-9 h-9 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition"
                   aria-label="Search"
                 >
                   <Search size={18} />
@@ -206,13 +205,13 @@ export default function TopBar({ onMenu }: Props) {
               <button 
                 onClick={handleRefresh}
                 disabled={isRefreshing}
-                className={`w-9 h-9 rounded-full flex items-center justify-center transition disabled:opacity-50 ${isHomePage ? "text-black/70 hover:text-black hover:bg-black/5" : "text-white/70 hover:text-white hover:bg-white/10"}`}
+                className="w-9 h-9 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition disabled:opacity-50"
                 aria-label="Refresh App"
               >
                 <RefreshCw size={18} className={isRefreshing ? "animate-spin" : ""} />
               </button>
 
-              <Link href="/merchandise" className={`hidden lg:flex w-9 h-9 rounded-full items-center justify-center transition ${isHomePage ? "text-black/70 hover:text-black hover:bg-black/5" : "text-white/70 hover:text-white hover:bg-white/10"}`} aria-label="Shop">
+              <Link href="/merchandise" className="hidden lg:flex w-9 h-9 rounded-full items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition" aria-label="Shop">
                 <ShoppingBag size={18} />
               </Link>
 
