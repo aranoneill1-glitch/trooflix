@@ -35,13 +35,7 @@ body {
   -webkit-touch-callout: none !important;
   -webkit-user-select: none !important;
   user-select: none !important;
-  pointer-events: none;
-}
-
-.no-image-callout a,
-.no-image-callout button,
-.no-image-callout [role="button"] {
-  pointer-events: auto;
+  -webkit-user-drag: none;
 }
 
 :focus-visible {
