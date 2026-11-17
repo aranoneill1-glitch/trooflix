@@ -437,9 +437,9 @@ export default function DirectoryHome({ videos, creators, featuredVideos, onVide
                 tabIndex={0}
                 onClick={() => onVideoSelect(v)}
                 onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onVideoSelect(v); } }}
-                className="block w-[130px] md:w-[160px] shrink-0 group text-left cursor-pointer"
+                className="block w-[190px] md:w-[240px] shrink-0 group text-left cursor-pointer"
               >
-                <div className="relative w-full aspect-[9/16] rounded-2xl overflow-hidden ring-1 ring-white/10 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]">
+                <div className="relative w-full aspect-video rounded-2xl overflow-hidden ring-1 ring-white/10 shadow-[0_18px_40px_-24px_rgba(0,0,0,0.9)]">
                   <VideoPreview
                     src={v.videoUrl || v.bitchuteUrl}
                     poster={v.posterUrl || v.backdropUrl}
