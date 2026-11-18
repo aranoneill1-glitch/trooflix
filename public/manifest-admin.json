@@ -27,6 +27,8 @@
       "type": "image/png"
     }
   ],
-  "categories": ["productivity"],
+  "categories": [
+    "productivity"
+  ],
   "lang": "en"
 }
