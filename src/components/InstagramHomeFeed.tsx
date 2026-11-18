@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { Headphones, Heart, Maximize2, MessageCircle, MoreHorizontal, Play, Send, ShoppingBag, Volume2, VolumeX } from "lucide-react";
 import LikeButton from "@/components/LikeButton";
 import CommentSheet from "@/components/CommentSheet";
@@ -238,19 +239,42 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
   return (
     <div className="pb-24">
       {showWelcome && (
-        <div className="px-5 pt-[calc(env(safe-area-inset-top)+68px)] pb-4 text-center">
-          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#F06A72] mb-2">Welcome to Trooflix</p>
-          <h1 className="text-2xl font-black tracking-tight text-white mb-1">Say goodbye to censorship and hello to freedom.</h1>
-          <p className="text-xs text-white/45 mb-4">Watch, create and get paid for what you love.</p>
-          <div className="flex items-center justify-center gap-2">
-            <Link href="/login" className="rounded-full bg-white px-6 py-2.5 text-sm font-bold text-black hover:bg-white/90 transition">Sign in</Link>
-            <Link href="/signup" className="rounded-full border border-white/25 px-6 py-2.5 text-sm font-bold text-white hover:bg-white/10 transition">Sign up</Link>
+        <section className="relative overflow-hidden bg-[#040406] px-5 pt-[calc(env(safe-area-inset-top)+4.5rem)] pb-8 border-b border-white/[0.06]">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(229,57,69,0.18),transparent_28%),radial-gradient(circle_at_80%_30%,rgba(255,106,42,0.12),transparent_26%),radial-gradient(circle_at_50%_85%,rgba(229,57,69,0.10),transparent_32%)]" />
+          <div className="relative z-10 mx-auto w-full max-w-md">
+            <motion.h1 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-center text-[40px] leading-[0.95] font-black tracking-[-0.05em] text-white mb-5">
+              Watch everywhere
+            </motion.h1>
+
+            <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.05 }} className="relative h-[300px] mb-6">
+              <div className="absolute left-1/2 top-0 w-[92%] -translate-x-1/2 rounded-[20px] border border-white/10 bg-white/[0.04] p-2 shadow-[0_30px_80px_rgba(0,0,0,0.5)]">
+                <div className="relative aspect-[16/9] overflow-hidden rounded-[14px] bg-[#0b0b0e]">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_45%_30%,rgba(229,57,69,0.16),transparent_35%),linear-gradient(180deg,#1a1a20_0%,#0b0b0e_100%)]" />
+                  <div className="absolute left-4 top-4"><div className="mb-1 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/25 px-2 py-1 text-[8px] font-semibold uppercase tracking-[0.16em] text-white/60"><span className="h-1.5 w-1.5 rounded-full bg-[#ff4d5a]" /> Now Playing</div><div className="text-sm font-black text-white">Cinematic Documentary</div></div>
+                  <div className="absolute inset-x-4 bottom-4 h-[2px] rounded-full bg-white/10 overflow-hidden"><motion.div className="h-full rounded-full bg-gradient-to-r from-[#E53945] to-[#ff8a3d]" animate={{width:["30%","68%","30%"]}} transition={{duration:8, repeat:Infinity, ease:"easeInOut"}} /></div>
+                </div>
+              </div>
+              <div className="absolute left-2 bottom-2 w-[44%] rounded-t-[14px] border border-white/10 border-b-0 bg-white/[0.04] p-1.5"><div className="relative aspect-[16/10] overflow-hidden rounded-[10px] bg-[#0b0b0e]"><div className="absolute inset-0 bg-[linear-gradient(180deg,#17171c_0%,#0b0b0e_100%)]" /><div className="absolute left-2.5 top-2.5 text-[9px] text-white/55">Desktop</div><div className="absolute inset-x-2.5 bottom-2.5 h-[2px] rounded-full bg-white/10 overflow-hidden"><motion.div className="h-full rounded-full bg-gradient-to-r from-[#E53945] to-[#ff8a3d]" animate={{width:["30%","68%","30%"]}} transition={{duration:8, repeat:Infinity, ease:"easeInOut"}} /></div></div><div className="h-2 rounded-b-[10px] bg-gradient-to-b from-[#242428] to-[#121215]" /></div>
+              <div className="absolute right-6 bottom-0 w-[72px] rounded-[22px] border border-white/12 bg-white/[0.05] p-1 shadow-[0_20px_50px_rgba(0,0,0,0.5)]"><div className="relative aspect-[9/19.5] overflow-hidden rounded-[18px] bg-[#0b0b0e]"><div className="absolute inset-0 bg-[linear-gradient(180deg,#17171c_0%,#0b0b0e_100%)]" /><div className="absolute left-1/2 top-1 h-3 w-9 -translate-x-1/2 rounded-full bg-black/85" /><div className="absolute inset-x-2 top-7 text-[8px] text-white/50 text-center">Phone</div><div className="absolute inset-x-2 bottom-4 h-[2px] rounded-full bg-white/10 overflow-hidden"><motion.div className="h-full rounded-full bg-gradient-to-r from-[#E53945] to-[#ff8a3d]" animate={{width:["30%","68%","30%"]}} transition={{duration:8, repeat:Infinity, ease:"easeInOut"}} /></div></div></div>
+            </motion.div>
+
+            <motion.h2 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1 }} className="text-center text-[34px] leading-[1.02] font-black tracking-[-0.04em] text-white mb-3">
+              Say goodbye to censorship and hello to freedom.
+            </motion.h2>
+            <motion.p initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.15 }} className="text-center text-[18px] leading-relaxed text-white/70 font-medium mb-5">
+              Watch, create and get paid for what you love.
+            </motion.p>
+
+            <div className="flex items-center justify-center gap-2">
+              <Link href="/login" className="rounded-full bg-white px-6 py-2.5 text-sm font-bold text-black hover:bg-white/90 transition">Sign in</Link>
+              <Link href="/signup" className="rounded-full border border-white/25 px-6 py-2.5 text-sm font-bold text-white hover:bg-white/10 transition">Sign up</Link>
+            </div>
           </div>
-        </div>
+        </section>
       )}
 
       {/* Main-type pills + categories dropdown — below the fixed top bar */}
-      <div className={`px-3 pb-3 border-b border-white/[0.06] ${showWelcome ? "pt-1" : "pt-[calc(env(safe-area-inset-top)+68px)]"}`}>
+      <div className={`px-3 pb-3 border-b border-white/[0.06] ${showWelcome ? "pt-3" : "pt-[calc(env(safe-area-inset-top)+68px)]"}`}>
         <div className="flex gap-2 overflow-x-auto scrollbar-hide">
           {MAIN_TYPES.map(t => (
             <button
