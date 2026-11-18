@@ -15,7 +15,7 @@ const FEATURES: { label: string; free: boolean; plus: boolean; creator: boolean 
   { label: "Like, comment & share", free: true, plus: true, creator: true },
   { label: "Send direct messages", free: true, plus: true, creator: true },
   { label: "Buy merch & books", free: true, plus: true, creator: true },
-  { label: "Upload Shorts (≤3 min)", free: true, plus: true, creator: true },
+  { label: "Upload Shorts (≤10 min)", free: true, plus: true, creator: true },
   { label: "3-min long-form previews", free: true, plus: false, creator: false },
   { label: "Unlimited long-form viewing", free: false, plus: true, creator: true },
   { label: "Upload Shorts (any length)", free: false, plus: true, creator: true },
@@ -164,7 +164,7 @@ export default function UpgradePage() {
               "3-min long-form previews",
               "Like, comment & send DMs",
               "Buy merch & books",
-              "Upload Shorts (≤3 min)",
+              "Upload Shorts (≤10 min)",
             ]}
             isCurrent={currentTier === "free"}
             ctaLabel={currentTier === "free" ? "Your current plan" : "Downgrade to Free"}

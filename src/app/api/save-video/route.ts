@@ -59,8 +59,8 @@ export async function POST(req: Request) {
         const durStr = String(item.duration || "0:00");
         const parts = durStr.split(":");
         const totalSeconds = (parseInt(parts[0]) || 0) * 60 + (parseInt(parts[1]) || 0);
-        if (userTier === "free" && totalSeconds > 180) {
-          return NextResponse.json({ error: "Free accounts can only upload Shorts up to 3 minutes. Upgrade to Creator for unlimited length." }, { status: 403 });
+        if (userTier === "free" && totalSeconds > 600) {
+          return NextResponse.json({ error: "Free accounts can only upload Shorts up to 10 minutes. Upgrade to Creator for unlimited length." }, { status: 403 });
         }
         if (userTier === "plus" && totalSeconds > 1200) {
           return NextResponse.json({ error: "Plus accounts can only upload Shorts up to 20 minutes. Upgrade to Creator for unlimited." }, { status: 403 });
