@@ -580,23 +580,15 @@ export default function PublicProfilePage() {
 {/* TABS & CONTENT */}
             <div className="flex items-center justify-between border-b border-white/10 mb-4">
               <div className="flex items-center gap-6 sm:gap-8">
-                {([
-                  { id: "Videos", icon: Video, label: "Videos" },
-                  { id: "Audio", icon: Music, label: "Audio" },
-                  { id: "Premium", icon: Lock, label: "Premium" },
-                  { id: "Shop", icon: ShoppingBag, label: "Shop" },
-                ] as const).map((tab) => {
-                  const Icon = tab.icon;
-                  const active = activeContentTab === tab.id;
+                {(["Videos", "Audio", "Premium", "Shop"] as const).map((tab) => {
+                  const active = activeContentTab === tab;
                   return (
                     <button
-                      key={tab.id}
-                      onClick={() => setActiveContentTab(tab.id)}
-                      aria-label={tab.label}
-                      title={tab.label}
-                      className={`pb-3 transition-colors border-b-2 ${active ? "text-white border-[#E53945]" : "text-white/45 hover:text-white border-transparent"}`}
+                      key={tab}
+                      onClick={() => setActiveContentTab(tab)}
+                      className={`pb-3 text-sm font-bold transition-colors border-b-2 ${active ? "text-white border-[#E53945]" : "text-white/50 hover:text-white border-transparent"}`}
                     >
-                      <Icon size={22} />
+                      {tab}
                     </button>
                   );
                 })}

@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { 
   Video, CheckCircle2, MessageSquare, Eye, Star, Pencil, 
-  ShoppingBag, LayoutDashboard, LayoutGrid, List, Package, Palette, Camera, Trash2, X, Radio, Inbox, Plus, Play, Lock, Shield, CreditCard, Mic, Film, Image as ImageIcon, Loader2
+  ShoppingBag, LayoutDashboard, LayoutGrid, List, Package, Palette, Camera, Trash2, X, Radio, Inbox, Plus, Play, Lock, Shield, CreditCard, Mic, Film, Music, Image as ImageIcon, Loader2
 } from "lucide-react";
 
 import TopBar from "@/components/TopBar";
@@ -80,7 +80,8 @@ function CreatorDashboardContent() {
   }, [isPublicView, studioTab]);
   
   const [contentView, setContentView] = useState<"grid" | "list">("grid");
-  const [activeContentTab, setActiveContentTab] = useState<"Shorts" | "Videos" | "Premium" | "Shop">("Shorts");
+  const [activeContentTab, setActiveContentTab] = useState<"Videos" | "Audio" | "Premium" | "Shop">("Videos");
+  const [videoFilter, setVideoFilter] = useState<"all" | "shorts">("all");
   const [creatorVideos, setCreatorVideos] = useState<any[]>([]);
   const [merch, setMerch] = useState<any[]>([]);
   const [videosLoading, setVideosLoading] = useState(true);
@@ -317,16 +318,20 @@ function CreatorDashboardContent() {
 
   const filteredVideos = creatorVideos.filter(v => {
     const type = (v.type || "").toLowerCase();
+    const isAudio = ["audio", "music", "audiobook", "song", "track", "podcast-audio"].includes(type);
+    const isShort = type === "short" || type === "reel";
+    const isPremium = v.visibility === "premium";
 
-    if (activeContentTab === "Shorts") {
-      return type === "short" || type === "reel";
+    if (activeContentTab === "Audio") {
+      return isAudio && !isPremium;
     }
-    
     if (activeContentTab === "Videos") {
-      return type !== "tweet" && type !== "short" && type !== "reel" && v.visibility !== "premium";
+      if (type === "tweet" || isPremium || isAudio) return false;
+      if (videoFilter === "shorts") return isShort;
+      return !isShort;
     }
     if (activeContentTab === "Premium") {
-      return v.visibility === "premium" && type !== "tweet" && type !== "short" && type !== "reel";
+      return isPremium && type !== "tweet";
     }
     return true;
   });
@@ -674,41 +679,75 @@ function CreatorDashboardContent() {
                 />
               </div>
 
-              <div className="flex items-center justify-between border-b border-white/10 mb-6">
-                <div className="flex items-center gap-8">
-                  {(["Shorts", "Videos", "Premium", "Shop"] as const).map((tab) => (
-                    <button key={tab} onClick={() => setActiveContentTab(tab)} className={`pb-3 text-sm font-bold transition-colors ${activeContentTab === tab ? "text-white border-b-2 border-[#E53945]" : "text-white/50 hover:text-white"}`}>{tab}</button>
-                  ))}
+              <div className="flex items-center justify-between border-b border-white/10 mb-4">
+                <div className="flex items-center gap-6 sm:gap-8">
+                  {(["Videos", "Audio", "Premium", "Shop"] as const).map((tab) => {
+                    const active = activeContentTab === tab;
+                    return (
+                      <button key={tab} onClick={() => setActiveContentTab(tab)} className={`pb-3 text-sm font-bold transition-colors border-b-2 ${active ? "text-white border-[#E53945]" : "text-white/50 hover:text-white border-transparent"}`}>
+                        {tab}
+                      </button>
+                    );
+                  })}
                 </div>
                 <div className="flex items-center gap-1 mb-2">
-                    <button onClick={() => setContentView("grid")} aria-label="Grid view" className={`p-1.5 transition ${contentView === "grid" ? "text-white" : "text-white/40 hover:text-white"}`}><LayoutGrid size={18} /></button>
-                    <button onClick={() => setContentView("list")} aria-label="List view" className={`p-1.5 transition ${contentView === "list" ? "text-white" : "text-white/40 hover:text-white"}`}><List size={18} /></button>
-                  </div>
+                  <button onClick={() => setContentView("grid")} aria-label="Grid view" className={`p-1.5 transition ${contentView === "grid" ? "text-white" : "text-white/40 hover:text-white"}`}><LayoutGrid size={18} /></button>
+                  <button onClick={() => setContentView("list")} aria-label="List view" className={`p-1.5 transition ${contentView === "list" ? "text-white" : "text-white/40 hover:text-white"}`}><List size={18} /></button>
+                </div>
               </div>
 
-              {activeContentTab === "Shorts" && (
+              {activeContentTab === "Videos" && (
+                <div className="flex items-center gap-2 mb-5">
+                  {([
+                    { id: "all", label: "All" },
+                    { id: "shorts", label: "Shorts" },
+                  ] as const).map((pill) => (
+                    <button
+                      key={pill.id}
+                      onClick={() => setVideoFilter(pill.id)}
+                      className={`px-3.5 py-1.5 rounded-full text-xs font-bold border transition ${videoFilter === pill.id ? "bg-white text-black border-white" : "bg-white/5 text-white/70 border-white/10 hover:text-white hover:border-white/20"}`}
+                    >
+                      {pill.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {activeContentTab === "Audio" && (
                 <div className="w-full">
-                  {videosLoading ? (
-                    <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" /></div>
-                  ) : filteredVideos.length === 0 ? (
-                    <div className="text-center py-20 text-white/50">No Shorts yet.</div>
+                  {filteredVideos.length === 0 ? (
+                    <div className="text-center py-20 text-white/50">No audio yet.</div>
                   ) : contentView === "grid" ? (
-                    <div className="no-image-callout -mx-4 sm:-mx-4 lg:mx-0 grid grid-cols-3 gap-[2px] pb-20 sm:gap-1 lg:grid-cols-6 lg:gap-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 pb-20">
                       {filteredVideos.map((video) => (
-                        <Link key={video.id} href={`/feed?creator_user_id=${encodeURIComponent(user.id)}${video.creatorId ? `&creator_id=${video.creatorId}` : ""}&reel=${video.id}`} aria-label={`Watch ${video.title}`} onClick={(e) => handleVideoCardClick(e, video)} onContextMenu={(e) => { e.preventDefault(); setSelectedVideoAction(video); }} onPointerDown={() => startVideoPress(video)} onPointerUp={cancelVideoPress} onPointerLeave={cancelVideoPress} onPointerCancel={cancelVideoPress} className="group relative aspect-[3/4] overflow-hidden bg-[#111114] lg:rounded-xl lg:border lg:border-white/10 lg:shadow-lg">
-                          <ShortPreviewFrame src={video.videoUrl || video.bitchuteUrl} poster={video.posterUrl || video.backdropUrl} alt="" />
-                        </Link>
+                        <div key={video.id} onClick={(e) => handleVideoCardClick(e, video)} onContextMenu={(e) => { e.preventDefault(); setSelectedVideoAction(video); }} onPointerDown={() => startVideoPress(video)} onPointerUp={cancelVideoPress} onPointerLeave={cancelVideoPress} onPointerCancel={cancelVideoPress} className="bg-white/[0.06] border border-white/10 rounded-2xl overflow-hidden cursor-pointer hover:bg-white/10 transition">
+                          <div className="relative aspect-square bg-black/40">
+                            {video.posterUrl || video.backdropUrl ? (
+                              <img src={video.posterUrl || video.backdropUrl} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center"><Music size={28} className="text-white/30" /></div>
+                            )}
+                            <div className="absolute top-2 left-2 p-1.5 rounded-lg bg-black/60 border border-white/10 text-white"><Music size={13} /></div>
+                          </div>
+                          <div className="p-3">
+                            <h3 className="text-sm font-bold text-white line-clamp-2">{video.title}</h3>
+                            <p className="text-[11px] text-white/45 mt-1 capitalize">{String(video.type || "audio")}</p>
+                          </div>
+                        </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="no-image-callout flex flex-col gap-2 pb-20">
+                    <div className="flex flex-col gap-2 pb-20">
                       {filteredVideos.map((video) => (
-                        <Link key={video.id} href={`/feed?creator_user_id=${encodeURIComponent(user.id)}${video.creatorId ? `&creator_id=${video.creatorId}` : ""}&reel=${video.id}`} onClick={(e) => handleVideoCardClick(e, video)} onContextMenu={(e) => { e.preventDefault(); setSelectedVideoAction(video); }} onPointerDown={() => startVideoPress(video)} onPointerUp={cancelVideoPress} onPointerLeave={cancelVideoPress} onPointerCancel={cancelVideoPress} className="flex items-center gap-3 bg-white/[0.06] border border-white/10 hover:bg-white/10 rounded-xl p-2 transition">
-                          <div className="relative w-14 aspect-[3/4] rounded-lg overflow-hidden shrink-0 bg-black">
-                            <ShortPreviewFrame src={video.videoUrl || video.bitchuteUrl} poster={video.posterUrl || video.backdropUrl} alt="" />
+                        <div key={video.id} onClick={(e) => handleVideoCardClick(e, video)} onContextMenu={(e) => { e.preventDefault(); setSelectedVideoAction(video); }} onPointerDown={() => startVideoPress(video)} onPointerUp={cancelVideoPress} onPointerLeave={cancelVideoPress} onPointerCancel={cancelVideoPress} className="flex items-center gap-3 bg-white/[0.06] border border-white/10 rounded-xl p-3 cursor-pointer hover:bg-white/10 transition">
+                          <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-black/40 flex items-center justify-center">
+                            {video.posterUrl || video.backdropUrl ? <img src={video.posterUrl || video.backdropUrl} alt="" className="w-full h-full object-cover" /> : <Music size={16} className="text-white/40" />}
                           </div>
-                          <span className="text-sm font-bold text-white truncate">{video.title}</span>
-                        </Link>
+                          <div className="min-w-0 flex-1">
+                            <div className="text-sm font-bold text-white truncate">{video.title}</div>
+                            <div className="text-[11px] text-white/45 capitalize">{String(video.type || "audio")}</div>
+                          </div>
+                        </div>
                       ))}
                     </div>
                   )}
@@ -810,7 +849,28 @@ function CreatorDashboardContent() {
                   {videosLoading ? (
                     <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" /></div>
                   ) : filteredVideos.length === 0 ? (
-                    <div className="text-center py-20 text-white/50">No videos found yet.</div>
+                    <div className="text-center py-20 text-white/50">{videoFilter === "shorts" ? "No Shorts yet." : "No videos found yet."}</div>
+                  ) : videoFilter === "shorts" ? (
+                    contentView === "grid" ? (
+                      <div className="no-image-callout -mx-4 sm:-mx-4 lg:mx-0 grid grid-cols-3 gap-[2px] pb-20 sm:gap-1 lg:grid-cols-6 lg:gap-3">
+                        {filteredVideos.map((video) => (
+                          <Link key={video.id} href={`/feed?creator_user_id=${encodeURIComponent(user.id)}${video.creatorId ? `&creator_id=${video.creatorId}` : ""}&reel=${video.id}`} aria-label={`Watch ${video.title}`} onClick={(e) => handleVideoCardClick(e, video)} onContextMenu={(e) => { e.preventDefault(); setSelectedVideoAction(video); }} onPointerDown={() => startVideoPress(video)} onPointerUp={cancelVideoPress} onPointerLeave={cancelVideoPress} onPointerCancel={cancelVideoPress} className="group relative aspect-[3/4] overflow-hidden bg-[#111114] lg:rounded-xl lg:border lg:border-white/10 lg:shadow-lg">
+                            <ShortPreviewFrame src={video.videoUrl || video.bitchuteUrl} poster={video.posterUrl || video.backdropUrl} alt="" />
+                          </Link>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="no-image-callout flex flex-col gap-2 pb-20">
+                        {filteredVideos.map((video) => (
+                          <Link key={video.id} href={`/feed?creator_user_id=${encodeURIComponent(user.id)}${video.creatorId ? `&creator_id=${video.creatorId}` : ""}&reel=${video.id}`} onClick={(e) => handleVideoCardClick(e, video)} onContextMenu={(e) => { e.preventDefault(); setSelectedVideoAction(video); }} onPointerDown={() => startVideoPress(video)} onPointerUp={cancelVideoPress} onPointerLeave={cancelVideoPress} onPointerCancel={cancelVideoPress} className="flex items-center gap-3 bg-white/[0.06] border border-white/10 hover:bg-white/10 rounded-xl p-2 transition">
+                            <div className="relative w-14 aspect-[3/4] rounded-lg overflow-hidden shrink-0 bg-black">
+                              <ShortPreviewFrame src={video.videoUrl || video.bitchuteUrl} poster={video.posterUrl || video.backdropUrl} alt="" />
+                            </div>
+                            <span className="text-sm font-bold text-white truncate">{video.title}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    )
                   ) : contentView === "grid" ? (
                     <div className="no-image-callout -mx-4 sm:-mx-4 lg:mx-0 grid grid-cols-3 gap-[2px] pb-20 sm:gap-1 lg:grid-cols-6 lg:gap-3">
                       {filteredVideos.map((video) => {
