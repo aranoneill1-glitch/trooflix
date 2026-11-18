@@ -38,27 +38,16 @@ function timeAgo(date: any) {
   return `${Math.floor(days / 7)}w ago`;
 }
 
-function PostMedia({ video, onOpen, onLike }: { video: any; onOpen: () => void; onLike: () => void }) {
+function PostMedia({ video, onOpen, onLike, isActive }: { video: any; onOpen: () => void; onLike: () => void; isActive: boolean }) {
   const ref = useRef<HTMLVideoElement>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const [inView, setInView] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(false);
   const lastTap = useRef(0);
 
   useEffect(() => {
-    const el = wrapRef.current;
-    if (!el) return;
-    if (typeof IntersectionObserver === "undefined") { setInView(true); return; }
-    const o = new IntersectionObserver(([e]) => setInView(e.isIntersecting), { rootMargin: "150px", threshold: 0.2 });
-    o.observe(el);
-    return () => o.disconnect();
-  }, []);
-
-  useEffect(() => {
     const v = ref.current;
     if (!v) return;
-    if (inView) {
+    if (isActive) {
       // Browsers block autoplay with sound — fall back to muted, then let the
       // user unmute with the speaker button (a real user gesture).
       v.play().then(() => setPlaying(true)).catch(() => {
@@ -66,15 +55,19 @@ function PostMedia({ video, onOpen, onLike }: { video: any; onOpen: () => void; 
         setMuted(true);
         v.play().then(() => setPlaying(true)).catch(() => {});
       });
-    } else { v.pause(); setPlaying(false); }
-  }, [inView]);
+    } else {
+      v.pause();
+      v.currentTime = 0;
+      setPlaying(false);
+    }
+  }, [isActive]);
 
   const src = video.videoUrl || video.bitchuteUrl;
 
   return (
-    <div ref={wrapRef} className="relative w-full aspect-[4/5] bg-black overflow-hidden">
+    <div className="relative w-full aspect-[4/5] bg-black overflow-hidden">
       <img src={video.posterUrl || video.backdropUrl} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
-      {src && inView && (
+      {src && (
         <video
           ref={ref}
           src={src}
@@ -122,6 +115,8 @@ export default function InstagramHomeFeed({ videos, creators, categories, onCate
   const [sheetVideo, setSheetVideo] = useState<number | null>(null);
   const [saved, setSaved] = useState<number[]>([]);
   const [likedLocal, setLikedLocal] = useState<number[]>([]);
+  const [activeId, setActiveId] = useState<number | null>(null);
+  const postRefs = useRef<Map<number, HTMLElement>>(new Map());
 
   const posts: Post[] = useMemo(() => {
     const usable = videos.filter((v: any) => (v.videoUrl || v.bitchuteUrl) && v.type?.toLowerCase() !== "tweet");
@@ -135,6 +130,28 @@ export default function InstagramHomeFeed({ videos, creators, categories, onCate
   }, [videos, creators, commentCounts]);
 
   useEffect(() => {
+    const nodes = Array.from(postRefs.current.values());
+    if (!nodes.length) return;
+    if (typeof IntersectionObserver === "undefined") { setActiveId(posts[0]?.video.id ?? null); return; }
+    const observer = new IntersectionObserver((entries) => {
+      // The post whose center is closest to the viewport center wins.
+      const center = window.innerHeight / 2;
+      let bestId: number | null = null;
+      let bestDistance = Infinity;
+      entries.forEach((entry) => {
+        const id = Number((entry.target as HTMLElement).dataset.postId);
+        if (!entry.isIntersecting) return;
+        const rect = entry.boundingClientRect;
+        const distance = Math.abs(rect.top + rect.height / 2 - center);
+        if (distance < bestDistance) { bestDistance = distance; bestId = id; }
+      });
+      if (bestId !== null) setActiveId(bestId);
+    }, { rootMargin: "-20% 0px -20% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] });
+    nodes.forEach(n => observer.observe(n));
+    return () => observer.disconnect();
+  }, [posts]);
+
+  useEffect(() => {
     fetch("/api/comment-counts", { cache: "no-store" })
       .then(r => r.json())
       .then(d => setCommentCounts(d?.counts || {}))
@@ -145,8 +162,8 @@ export default function InstagramHomeFeed({ videos, creators, categories, onCate
 
   return (
     <div className="pb-24">
-      {/* Category circles */}
-      <div className="flex gap-3 overflow-x-auto scrollbar-hide px-3 py-3 border-b border-white/[0.06]">
+      {/* Category circles — start below the fixed top bar */}
+      <div className="flex gap-3 overflow-x-auto scrollbar-hide px-3 pb-3 pt-[calc(env(safe-area-inset-top)+68px)] border-b border-white/[0.06]">
         {categories.map((cat) => (
           <button key={cat} onClick={() => { haptic(); onCategory(cat); }} className="flex w-[64px] shrink-0 flex-col items-center gap-1.5 active:opacity-70">
             <span className="rounded-full bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] p-[2px]">
@@ -165,7 +182,12 @@ export default function InstagramHomeFeed({ videos, creators, categories, onCate
           const name = creator?.name || "Trooflix Creator";
           const avatar = creator?.photoUrl;
           return (
-            <article key={video.id} className="pb-3">
+            <article
+              key={video.id}
+              data-post-id={video.id}
+              ref={(el) => { if (el) postRefs.current.set(video.id, el); else postRefs.current.delete(video.id); }}
+              className="pb-3"
+            >
               <header className="flex items-center gap-2.5 px-3 py-2.5">
                 <Link href={creator?.slug ? `/profile/${creator.slug}` : "#"} className="h-8 w-8 shrink-0 overflow-hidden rounded-full bg-gradient-to-tr from-[#f09433] to-[#dc2743] p-[1.5px]">
                   <span className="block h-full w-full overflow-hidden rounded-full border-2 border-[#08090c]">
@@ -181,6 +203,7 @@ export default function InstagramHomeFeed({ videos, creators, categories, onCate
 
               <PostMedia
                 video={video}
+                isActive={activeId === video.id}
                 onOpen={() => onVideoSelect(video)}
                 onLike={() => setLikedLocal(prev => prev.includes(video.id) ? prev : [...prev, video.id])}
               />
