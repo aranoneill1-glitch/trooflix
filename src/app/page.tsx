@@ -441,7 +441,13 @@ export default function Home() {
             />
           </div>
           <div className="lg:hidden">
-            <InstagramHomeFeed videos={videos} creators={creators} onVideoSelect={handleCardSelect} />
+            <InstagramHomeFeed
+              videos={videos}
+              creators={creators}
+              categories={CATEGORIES}
+              onCategory={(cat) => { setActiveCategory(cat); setActiveTab("Home"); setDrawerOpen(false); }}
+              onVideoSelect={handleCardSelect}
+            />
           </div>
         </>
       )}

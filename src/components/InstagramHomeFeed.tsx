@@ -9,6 +9,8 @@ import CommentSheet from "@/components/CommentSheet";
 type Props = {
   videos: any[];
   creators: any[];
+  categories: string[];
+  onCategory: (category: string) => void;
   onVideoSelect: (video: any) => void;
 };
 
@@ -115,7 +117,7 @@ function PostMedia({ video, onOpen, onLike }: { video: any; onOpen: () => void; 
   );
 }
 
-export default function InstagramHomeFeed({ videos, creators, onVideoSelect }: Props) {
+export default function InstagramHomeFeed({ videos, creators, categories, onCategory, onVideoSelect }: Props) {
   const [commentCounts, setCommentCounts] = useState<Record<number, number>>({});
   const [sheetVideo, setSheetVideo] = useState<number | null>(null);
   const [saved, setSaved] = useState<number[]>([]);
@@ -140,23 +142,20 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect }: P
   }, []);
 
   const toggleSave = (id: number) => setSaved(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
-  const storyCreators = creators.slice(0, 20);
 
   return (
     <div className="pb-24">
-      {/* Stories tray */}
-      <div className="flex gap-4 overflow-x-auto scrollbar-hide px-3 py-3 border-b border-white/[0.06]">
-        {storyCreators.map((c: any) => (
-          <Link key={c.id} href={c.slug ? `/profile/${c.slug}` : "#"} className="flex w-[64px] shrink-0 flex-col items-center gap-1.5">
+      {/* Category circles */}
+      <div className="flex gap-3 overflow-x-auto scrollbar-hide px-3 py-3 border-b border-white/[0.06]">
+        {categories.map((cat) => (
+          <button key={cat} onClick={() => { haptic(); onCategory(cat); }} className="flex w-[64px] shrink-0 flex-col items-center gap-1.5 active:opacity-70">
             <span className="rounded-full bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] p-[2px]">
-              <span className="block rounded-full border-2 border-[#08090c] p-[1px]">
-                <span className="block h-[54px] w-[54px] overflow-hidden rounded-full bg-[#1c1c1e]">
-                  {c.photoUrl ? <img src={c.photoUrl} alt="" className="h-full w-full object-cover" /> : <span className="flex h-full w-full items-center justify-center text-lg font-bold text-white/70">{c.name?.[0]}</span>}
-                </span>
+              <span className="flex h-[54px] w-[54px] items-center justify-center rounded-full border-2 border-[#08090c] bg-[#1c1c1e] px-1 text-center text-[10px] font-bold leading-tight text-white">
+                {cat}
               </span>
             </span>
-            <span className="w-full truncate text-center text-[10px] text-white/75">{c.name?.split(" ")[0]}</span>
-          </Link>
+            <span className="w-full truncate text-center text-[10px] text-white/60">Explore</span>
+          </button>
         ))}
       </div>
 
