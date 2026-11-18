@@ -444,6 +444,7 @@ export default function Home() {
               videos={videos}
               creators={creators}
               onVideoSelect={handleCardSelect}
+              showWelcome={!user}
             />
           </div>
         </>

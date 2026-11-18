@@ -13,6 +13,7 @@ type Props = {
   videos: any[];
   creators: any[];
   onVideoSelect: (video: any) => void;
+  showWelcome?: boolean;
 };
 
 type Post = {
@@ -129,7 +130,7 @@ function PostMedia({ video, onOpen, onLike, isActive }: { video: any; onOpen: ()
   );
 }
 
-export default function InstagramHomeFeed({ videos, creators, onVideoSelect }: Props) {
+export default function InstagramHomeFeed({ videos, creators, onVideoSelect, showWelcome = false }: Props) {
   const [commentCounts, setCommentCounts] = useState<Record<number, number>>({});
   const [sheetVideo, setSheetVideo] = useState<number | null>(null);
   const [saved, setSaved] = useState<number[]>([]);
@@ -186,8 +187,20 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect }: P
 
   return (
     <div className="pb-24">
+      {showWelcome && (
+        <div className="px-5 pt-[calc(env(safe-area-inset-top)+68px)] pb-4 text-center">
+          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#F06A72] mb-2">Welcome to Trooflix</p>
+          <h1 className="text-2xl font-black tracking-tight text-white mb-1">Creation freedom starts here.</h1>
+          <p className="text-xs text-white/45 mb-4">Watch, create and get paid for what you love.</p>
+          <div className="flex items-center justify-center gap-2">
+            <Link href="/login" className="rounded-full bg-white px-6 py-2.5 text-sm font-bold text-black hover:bg-white/90 transition">Sign in</Link>
+            <Link href="/signup" className="rounded-full border border-white/25 px-6 py-2.5 text-sm font-bold text-white hover:bg-white/10 transition">Sign up</Link>
+          </div>
+        </div>
+      )}
+
       {/* Main-type pills + categories dropdown — below the fixed top bar */}
-      <div className="px-3 pb-3 pt-[calc(env(safe-area-inset-top)+68px)] border-b border-white/[0.06]">
+      <div className={`px-3 pb-3 border-b border-white/[0.06] ${showWelcome ? "pt-1" : "pt-[calc(env(safe-area-inset-top)+68px)]"}`}>
         <div className="flex gap-2 overflow-x-auto scrollbar-hide">
           {MAIN_TYPES.map(t => (
             <button
