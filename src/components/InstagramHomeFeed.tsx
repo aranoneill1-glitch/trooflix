@@ -48,19 +48,44 @@ function PostMedia({ video, onOpen, onLike, isActive }: { video: any; onOpen: ()
     const v = ref.current;
     if (!v) return;
     if (isActive) {
-      // Browsers block autoplay with sound — fall back to muted, then let the
-      // user unmute with the speaker button (a real user gesture).
-      v.play().then(() => setPlaying(true)).catch(() => {
-        v.muted = true;
-        setMuted(true);
-        v.play().then(() => setPlaying(true)).catch(() => {});
-      });
+      // Autoplay with sound is blocked by browsers. Start muted, then unmute
+      // on the next real user tap (see handleTap) — that gesture allows sound.
+      v.muted = true;
+      setMuted(true);
+      v.play().then(() => setPlaying(true)).catch(() => {});
     } else {
       v.pause();
-      v.currentTime = 0;
+      try { v.currentTime = 0; } catch {}
+      v.muted = true;
+      setMuted(true);
       setPlaying(false);
     }
   }, [isActive]);
+
+  const handleTap = () => {
+    const v = ref.current;
+    if (!v) { onOpen(); return; }
+    const now = Date.now();
+    if (now - lastTap.current < 300) { onLike(); lastTap.current = 0; return; }
+    lastTap.current = now;
+    // First tap on an active, muted clip turns the sound on (user gesture).
+    if (isActive && v.muted) {
+      v.muted = false;
+      setMuted(false);
+      if (v.paused) v.play().catch(() => {});
+      return;
+    }
+    if (v.paused) v.play().catch(() => {});
+    else v.pause();
+  };
+
+  const toggleMute = () => {
+    const v = ref.current;
+    if (!v) return;
+    const next = !v.muted;
+    v.muted = next;
+    setMuted(next);
+  };
 
   const src = video.videoUrl || video.bitchuteUrl;
 
@@ -83,18 +108,11 @@ function PostMedia({ video, onOpen, onLike, isActive }: { video: any; onOpen: ()
       <button
         className="absolute inset-0"
         aria-label="Play or pause"
-        onClick={() => {
-          const now = Date.now();
-          if (now - lastTap.current < 300) { onLike(); lastTap.current = 0; return; }
-          lastTap.current = now;
-          const v = ref.current;
-          if (v) { if (v.paused) v.play().catch(() => {}); else v.pause(); }
-          else onOpen();
-        }}
+        onClick={handleTap}
       />
       {src && (
         <button
-          onClick={(e) => { e.stopPropagation(); setMuted(m => !m); }}
+          onClick={(e) => { e.stopPropagation(); toggleMute(); }}
           aria-label={muted ? "Unmute" : "Mute"}
           className="absolute bottom-3 right-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur-md"
         >
