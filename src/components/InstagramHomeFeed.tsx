@@ -141,6 +141,34 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
 
+  // Remember where the user was so returning from the full-screen shorts
+  // player restores the exact scroll position and active filter.
+  const openShortsPlayer = (id: number) => {
+    try {
+      sessionStorage.setItem("trooflix:feedReturn", JSON.stringify({
+        scrollY: window.scrollY,
+        activeType,
+        activeCategory,
+      }));
+    } catch {}
+    window.location.href = `/feed?reel=${id}`;
+  };
+
+  useEffect(() => {
+    let saved: { scrollY?: number; activeType?: MainType | null; activeCategory?: string | null } | null = null;
+    try { saved = JSON.parse(sessionStorage.getItem("trooflix:feedReturn") || "null"); } catch {}
+    if (saved) {
+      if (saved.activeType !== undefined) setActiveType(saved.activeType ?? null);
+      if (saved.activeCategory !== undefined) setActiveCategory(saved.activeCategory ?? null);
+      try { sessionStorage.removeItem("trooflix:feedReturn"); } catch {}
+      const y = Number(saved.scrollY) || 0;
+      const restore = () => window.scrollTo({ top: y, behavior: "instant" as ScrollBehavior });
+      requestAnimationFrame(() => requestAnimationFrame(restore));
+      const t = setTimeout(restore, 400);
+      return () => clearTimeout(t);
+    }
+  }, []);
+
   const posts: Post[] = useMemo(() => {
     let usable = videos.filter((v: any) => (v.videoUrl || v.bitchuteUrl) && v.type?.toLowerCase() !== "tweet");
     if (activeType) usable = usable.filter((v: any) => normalizeMainType(v) === activeType);
@@ -326,7 +354,7 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
                 </button>
                 <button onClick={() => { if (navigator.share) navigator.share({ title: video.title, url: window.location.href }).catch(() => {}); }} aria-label="Share" className="text-white active:opacity-60"><Send size={23} strokeWidth={1.7} /></button>
                 <button
-                  onClick={() => { haptic(); window.location.href = `/feed?reel=${video.id}`; }}
+                  onClick={() => { haptic(); openShortsPlayer(video.id); }}
                   aria-label="Open shorts player"
                   className="ml-auto text-white active:opacity-60"
                 >
