@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { Headphones, Heart, Maximize2, MessageCircle, MoreHorizontal, Play, Send, ShoppingBag, Volume2, VolumeX } from "lucide-react";
 import LikeButton from "@/components/LikeButton";
 import CommentSheet from "@/components/CommentSheet";
-import { GoldCoin } from "@/components/TipModal";
+
 import { ChevronDown, X as XIcon } from "lucide-react";
 import { MAIN_TYPES, SUB_CATEGORIES, normalizeMainType, type MainType } from "@/lib/videoTypes";
 
@@ -512,9 +512,14 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
                 <button
                   onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: video.creatorId || video.uploaderUserId, videoId: video.id } }))}
                   aria-label="Tip creator"
-                  className="active:opacity-60"
+                  className="active:opacity-60 text-white"
                 >
-                  <GoldCoin size={23} />
+                  <svg width={23} height={23} viewBox="0 0 24 24" fill="none" aria-hidden="true" className="text-white/90">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
+                    <circle cx="12" cy="12" r="6.6" stroke="currentColor" strokeWidth="1.2" opacity="0.75" />
+                    <path d="M10.2 5.8L9.4 3.9M13.8 5.8L14.6 3.9M10.2 18.2L9.4 20.1M13.8 18.2L14.6 20.1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.9" />
+                    <text x="12" y="15" textAnchor="middle" fontSize="7.2" fontWeight="800" fill="currentColor" fontFamily="system-ui, -apple-system, sans-serif">TC</text>
+                  </svg>
                 </button>
                 <button onClick={() => { if (navigator.share) navigator.share({ title: video.title, url: window.location.href }).catch(() => {}); }} aria-label="Share" className="text-white active:opacity-60"><Send size={23} strokeWidth={1.7} /></button>
                 <button
