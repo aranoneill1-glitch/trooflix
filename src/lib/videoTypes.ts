@@ -8,9 +8,9 @@ export const MAIN_TYPES: { id: MainType; label: string }[] = [
   { id: "podcast", label: "Podcasts" },
   { id: "documentary", label: "Documentaries" },
   { id: "film", label: "Films" },
+  { id: "short", label: "Shorts" },
   { id: "live", label: "Live" },
   { id: "other", label: "Other" },
-  // Shorts live in the bottom nav, not in the homepage pills.
 ];
 
 export const SUB_CATEGORIES = [
