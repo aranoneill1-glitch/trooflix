@@ -57,12 +57,13 @@ function UploadContent() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [checking, setChecking] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    getCachedUser().then(() => setChecking(false)).catch(() => setChecking(false));
-  }, []);
+    getCachedUser().then((u) => {
+      if (!u) router.replace("/login");
+    }).catch(() => router.replace("/login"));
+  }, [router]);
 
   useEffect(() => {
     if (!mediaFile) { setVideoDuration(0); return; }

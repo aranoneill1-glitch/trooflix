@@ -484,7 +484,7 @@ export default function ManageContentPage() {
               
               <div className="flex flex-col gap-3">
                 <button 
-                  onClick={() => { setShowAddContentMenu(false); router.push("/creator-dashboard/upload"); }}
+                  onClick={async () => { const u = await getCachedUser(); if (!u) { router.push("/login"); return; } setShowAddContentMenu(false); router.push("/creator-dashboard/upload"); }}
                   className="group relative flex items-center gap-4 bg-white/[0.08] hover:bg-white/[0.12] border border-white/20 hover:border-white/25 p-4 rounded-2xl transition-all duration-300 overflow-hidden text-left w-full shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#E53945]/5 opacity-0 group-hover:opacity-100 transition-opacity" />

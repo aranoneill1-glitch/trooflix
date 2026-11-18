@@ -1088,9 +1088,9 @@ function CreatorDashboardContent() {
                 </div>
                 
                 <div className="flex flex-col gap-3">
-                  <Link 
-                    href="/creator-dashboard/upload" 
-                    onClick={() => setShowAddContentMenu(false)}
+                  <Link
+                    href="/creator-dashboard/upload"
+                    onClick={async () => { const u = await getCachedUser(); if (!u) { window.location.href = "/login"; return; } setShowAddContentMenu(false); }}
                     className="group relative flex items-center gap-4 bg-white/[0.08] hover:bg-white/[0.12] border border-white/20 hover:border-white/25 p-4 rounded-2xl transition-all duration-300 overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />

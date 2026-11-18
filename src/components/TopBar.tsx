@@ -51,7 +51,11 @@ export default function TopBar({ onMenu }: Props) {
   };
 
   useEffect(() => {
-    const openCreateMenu = () => setShowCreateMenu(true);
+    const openCreateMenu = async () => {
+      const u = await getCachedUser();
+      if (!u) { router.push("/login"); return; }
+      setShowCreateMenu(true);
+    };
     document.addEventListener("open-create-menu", openCreateMenu);
     return () => document.removeEventListener("open-create-menu", openCreateMenu);
   }, []);
@@ -277,8 +281,8 @@ export default function TopBar({ onMenu }: Props) {
               
               <div className="flex flex-col gap-3">
                 <Link 
-                  href="/creator-dashboard/upload" 
-                  onClick={() => setShowCreateMenu(false)}
+                  href="/creator-dashboard/upload"
+                  onClick={async () => { const u = await getCachedUser(); if (!u) { router.push("/login"); return; } setShowCreateMenu(false); }}
                   className="group relative flex items-center gap-4 bg-[#1d1d24] hover:bg-[#24242d] border border-white/10 hover:border-white/20 p-4 rounded-2xl transition-all duration-300 overflow-hidden"
                 >
                   <div className="w-12 h-12 rounded-xl bg-[#E53945]/20 flex items-center justify-center flex-shrink-0 border border-white/10">
