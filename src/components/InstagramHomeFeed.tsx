@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Bookmark, Heart, MessageCircle, MoreHorizontal, Play, Send, ShoppingBag, Volume2, VolumeX } from "lucide-react";
+import { Bookmark, Headphones, Heart, MessageCircle, MoreHorizontal, Play, Send, ShoppingBag, Volume2, VolumeX } from "lucide-react";
 import LikeButton from "@/components/LikeButton";
 import CommentSheet from "@/components/CommentSheet";
 import { GoldCoin } from "@/components/TipModal";
@@ -217,6 +217,26 @@ export default function InstagramHomeFeed({ videos, creators, categories, onCate
                     </div>
                     <span className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-[#E53945] px-4 py-2 text-xs font-bold text-white">
                       <ShoppingBag size={14} /> Visit store
+                    </span>
+                  </div>
+                </Link>
+              </article>
+            )}
+            {index === 8 && (
+              <article className="px-4 py-6">
+                <Link href="/latest?category=Podcasts" className="block overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1c1c1e] to-[#0d0d10]">
+                  <div className="relative aspect-[16/9] overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=1200&auto=format&fit=crop" alt="Podcast studio" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    <span className="absolute bottom-3 left-4 text-xl font-black tracking-tight text-white">Podcasts</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 p-4">
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-white">Listen to the voices</p>
+                      <p className="text-xs text-white/50">Conversations worth your time.</p>
+                    </div>
+                    <span className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-[#E53945] px-4 py-2 text-xs font-bold text-white">
+                      <Headphones size={14} /> Explore podcasts
                     </span>
                   </div>
                 </Link>
