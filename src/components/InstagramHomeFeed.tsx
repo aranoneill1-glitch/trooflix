@@ -55,6 +55,7 @@ if (typeof window !== "undefined") {
 function PostMedia({ video, onOpen, onLike, isActive }: { video: any; onOpen: () => void; onLike: () => void; isActive: boolean }) {
   const ref = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
+  const [userPaused, setUserPaused] = useState(false);
   const [muted, setMuted] = useState(feedMuted);
   const lastTap = useRef(0);
 
@@ -69,6 +70,7 @@ function PostMedia({ video, onOpen, onLike, isActive }: { video: any; onOpen: ()
     if (!v) return;
     v.muted = muted;
     if (isActive) {
+      if (userPaused) { v.pause(); return; }
       // Browsers block autoplay with sound; if unmuted playback is rejected,
       // fall back to muted just for this clip until the next user gesture.
       v.play().then(() => setPlaying(true)).catch(() => {
@@ -80,7 +82,7 @@ function PostMedia({ video, onOpen, onLike, isActive }: { video: any; onOpen: ()
       try { v.currentTime = 0; } catch {}
       setPlaying(false);
     }
-  }, [isActive, muted]);
+  }, [isActive, muted, userPaused]);
 
   const handleTap = () => {
     const v = ref.current;
@@ -94,8 +96,13 @@ function PostMedia({ video, onOpen, onLike, isActive }: { video: any; onOpen: ()
       if (v.paused) v.play().catch(() => {});
       return;
     }
-    if (v.paused) v.play().catch(() => {});
-    else v.pause();
+    if (v.paused) {
+      setUserPaused(false);
+      v.play().catch(() => {});
+    } else {
+      setUserPaused(true);
+      v.pause();
+    }
   };
 
   const toggleMute = () => {
@@ -136,7 +143,7 @@ function PostMedia({ video, onOpen, onLike, isActive }: { video: any; onOpen: ()
           {muted ? <VolumeX size={15} /> : <Volume2 size={15} />}
         </button>
       )}
-      {!playing && (
+      {userPaused && (
         <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <Play size={44} fill="white" className="text-white/80 drop-shadow-lg" />
         </span>
