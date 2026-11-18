@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Home, Play, Plus, Wallet, User } from "lucide-react";
+import { Home, Search, Plus, Wallet, User } from "lucide-react";
 import { getCachedUser } from "@/lib/cache";
 import { createClient } from "@/utils/supabase/client";
 
@@ -83,9 +83,9 @@ export default function MobileBottomNav() {
           <span className={`text-[10px] font-medium ${isActive("/") ? "text-white" : "text-white/45"}`}>Home</span>
         </Link>
 
-        <Link href="/feed" className="flex flex-col items-center justify-center gap-0 min-w-0 flex-1 pt-1.5 pb-0">
-          <Play size={22} className={isActive("/feed") ? "text-white" : "text-white/45"} fill={isActive("/feed") ? "currentColor" : "none"} />
-          <span className={`text-[10px] font-medium ${isActive("/feed") ? "text-white" : "text-white/45"}`}>Shorts</span>
+        <Link href="/search" className="flex flex-col items-center justify-center gap-0 min-w-0 flex-1 pt-1.5 pb-0">
+          <Search size={22} strokeWidth={1.7} className={isActive("/search") ? "text-white" : "text-white/45"} />
+          <span className={`text-[10px] font-medium ${isActive("/search") ? "text-white" : "text-white/45"}`}>Search</span>
         </Link>
 
         <button
