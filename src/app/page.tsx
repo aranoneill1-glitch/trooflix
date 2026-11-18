@@ -45,6 +45,7 @@ import SaveButton from "@/components/SaveButton";
 import LikeButton from "@/components/LikeButton";
 import SearchResults from "@/components/SearchResults";
 import DirectoryHome from "@/components/DirectoryHome";
+import InstagramHomeFeed from "@/components/InstagramHomeFeed";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import TextOverlayRenderer from "@/components/TextOverlay";
 import CommentSheet from "@/components/CommentSheet";
@@ -419,13 +420,30 @@ export default function Home() {
 
       {loaded && (
         <>
-      <DirectoryHome
-        videos={videos}
-        creators={creators}
-        featuredVideos={showingFiltered ? [] : featuredHeroVideos.length > 0 ? featuredHeroVideos : heroPool}
-        continueWatching={!user ? [] : continueWatching}
-        onVideoSelect={handleCardSelect}
-      />
+      {showingFiltered ? (
+        <DirectoryHome
+          videos={videos}
+          creators={creators}
+          featuredVideos={[]}
+          continueWatching={[]}
+          onVideoSelect={handleCardSelect}
+        />
+      ) : (
+        <>
+          <div className="hidden lg:block">
+            <DirectoryHome
+              videos={videos}
+              creators={creators}
+              featuredVideos={featuredHeroVideos.length > 0 ? featuredHeroVideos : heroPool}
+              continueWatching={!user ? [] : continueWatching}
+              onVideoSelect={handleCardSelect}
+            />
+          </div>
+          <div className="lg:hidden">
+            <InstagramHomeFeed videos={videos} creators={creators} onVideoSelect={handleCardSelect} />
+          </div>
+        </>
+      )}
         <div className="hidden relative z-10 pt-0 md:pt-2 pb-32 md:pb-20 space-y-2 md:space-y-6">
             {filtered && <SearchResults search={search} videos={videos} creators={creators} onVideoClick={setSelected} />}
 
