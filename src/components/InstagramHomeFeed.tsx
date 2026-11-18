@@ -251,23 +251,142 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
 
   const toggleSave = (id: number) => setSaved(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
 
+  const heroContent = useMemo(() => {
+    const usable = (videos || []).filter((v: any) => v?.posterUrl || v?.backdropUrl || v?.title);
+    const long = usable.find((v: any) => !["short", "reel"].includes(String(v?.type || "").toLowerCase())) || usable[0] || null;
+    const short = usable.find((v: any) => ["short", "reel"].includes(String(v?.type || "").toLowerCase())) || usable[1] || usable[0] || null;
+    const picks = usable.slice(0, 6);
+    const creator = long ? (creators || []).find((c: any) => String(c?.id) === String(long?.creatorId) || String(c?.user_id) === String(long?.uploaderUserId) || String(c?.ownerUserId) === String(long?.uploaderUserId)) : (creators || [])[0];
+    return { long, short, picks, creator };
+  }, [videos, creators]);
+
   return (
     <div className="pb-24">
       {showWelcome && (
-        <section className="relative overflow-hidden bg-[#040406] px-5 pt-[calc(env(safe-area-inset-top)+5rem)] pb-10 border-b border-white/[0.06]">
+        <section className="relative overflow-hidden bg-[#040406] px-5 pt-[calc(env(safe-area-inset-top)+4.5rem)] pb-8 border-b border-white/[0.06]">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(229,57,69,0.18),transparent_28%),radial-gradient(circle_at_80%_30%,rgba(255,106,42,0.12),transparent_26%),radial-gradient(circle_at_50%_85%,rgba(229,57,69,0.10),transparent_32%)]" />
-          <div className="relative z-10 mx-auto w-full max-w-md text-center">
-            <motion.h1 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-[40px] leading-[0.98] font-black tracking-[-0.05em] text-white mb-4">
-              Goodbye censorship, hello freedom
+          <div className="relative z-10 mx-auto w-full max-w-md">
+            <motion.h1 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-center text-[36px] leading-[0.95] font-black tracking-[-0.05em] text-white mb-4">
+              Watch everywhere
             </motion.h1>
 
-            <motion.p initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.08 }} className="text-[18px] leading-relaxed text-white/70 font-medium mb-7">
+            <div className="relative h-[75px] mb-5">
+              <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.05 }} className="absolute inset-x-0 top-0 h-[150px] scale-50 origin-top">
+                {/* TV */}
+                <div className="absolute left-1/2 top-0 w-[52%] -translate-x-1/2">
+                  <div className="rounded-[10px] border border-[#2b2f36] bg-gradient-to-b from-[#1a1d22] to-[#0b0d10] p-[5px] shadow-[0_18px_45px_rgba(0,0,0,0.65),inset_0_1px_0_rgba(255,255,255,0.08)]">
+                    <div className="relative aspect-[16/9] overflow-hidden rounded-[6px] bg-black ring-1 ring-white/10">
+                      {heroContent.long?.backdropUrl || heroContent.long?.posterUrl ? (
+                        <img src={heroContent.long.backdropUrl || heroContent.long.posterUrl} alt="" className="absolute inset-0 h-full w-full object-cover brightness-[0.72] saturate-[1.05]" />
+                      ) : (
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,#2a1012,transparent_35%),linear-gradient(180deg,#151922_0%,#07080b_100%)]" />
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/25 to-black/10" />
+                      <div className="absolute inset-x-0 top-0 h-5 bg-gradient-to-b from-black/70 to-transparent flex items-center justify-between px-2">
+                        <div className="text-[6px] font-black tracking-tight"><span className="text-white">TROO</span><span className="text-[#E53945]">FLIX</span></div>
+                        <div className="flex items-center gap-1 text-[4px] text-white/70"><span>Home</span><span>Live</span><span>Shorts</span></div>
+                      </div>
+                      <div className="absolute left-2 top-6 right-[45%]">
+                        <div className="inline-flex items-center rounded-full bg-[#E53945]/90 px-1.5 py-[1px] text-[4px] font-bold uppercase tracking-[0.12em] text-white mb-1">Featured</div>
+                        <div className="text-[7px] font-black leading-tight text-white line-clamp-2">{heroContent.long?.title || "Cinematic Documentary"}</div>
+                        <div className="mt-1 flex gap-1">
+                          <div className="rounded-[3px] bg-white px-1.5 py-[2px] text-[4px] font-bold text-black">Play</div>
+                          <div className="rounded-[3px] border border-white/30 bg-black/30 px-1.5 py-[2px] text-[4px] font-semibold text-white">Info</div>
+                        </div>
+                      </div>
+                      <div className="absolute right-1.5 bottom-1.5 left-[38%] flex gap-1">
+                        {(heroContent.picks.slice(1, 4).length ? heroContent.picks.slice(1, 4) : [null, null, null]).map((v: any, i: number) => (
+                          <div key={i} className="relative flex-1 aspect-[16/10] overflow-hidden rounded-[3px] border border-white/15 bg-white/5">
+                            {(v?.posterUrl || v?.backdropUrl) ? <img src={v.posterUrl || v.backdropUrl} alt="" className="absolute inset-0 h-full w-full object-cover" /> : null}
+                          </div>
+                        ))}
+                      </div>
+                      <div className="absolute inset-x-2 bottom-1 h-[2px] rounded-full bg-white/15 overflow-hidden"><motion.div className="h-full rounded-full bg-gradient-to-r from-[#E53945] to-[#ff8a3d]" animate={{width:["30%","70%","30%"]}} transition={{duration:8, repeat:Infinity, ease:"easeInOut"}} /></div>
+                      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.10)_0%,rgba(255,255,255,0)_22%,rgba(255,255,255,0)_100%)]" />
+                    </div>
+                  </div>
+                  <div className="mx-auto mt-[3px] h-[7px] w-[18%] rounded-b-[6px] bg-gradient-to-b from-[#2a2e35] to-[#111318] shadow-[0_4px_10px_rgba(0,0,0,0.5)]" />
+                  <div className="mx-auto h-[3px] w-[34%] rounded-full bg-[#1a1d22]" />
+                </div>
+
+                {/* Laptop */}
+                <div className="absolute left-[6%] bottom-[2px] w-[24%]">
+                  <div className="rounded-t-[8px] border border-[#3a3f47] border-b-0 bg-gradient-to-b from-[#c9ced6] to-[#9aa3af] p-[3px] shadow-[0_14px_30px_rgba(0,0,0,0.55)]">
+                    <div className="relative aspect-[16/10] overflow-hidden rounded-[5px] bg-[#0b0d11] ring-1 ring-black/40">
+                      <div className="absolute inset-x-0 top-0 h-3 bg-[#11141a] border-b border-white/10 flex items-center px-1 gap-1">
+                        <span className="h-[3px] w-[3px] rounded-full bg-[#ff5f57]" /><span className="h-[3px] w-[3px] rounded-full bg-[#febc2e]" /><span className="h-[3px] w-[3px] rounded-full bg-[#28c840]" />
+                        <div className="ml-auto h-[5px] w-8 rounded-full bg-white/10" />
+                      </div>
+                      <div className="absolute inset-x-0 top-3 bottom-0 p-1 bg-[#07090d]">
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="text-[4px] font-black"><span className="text-white">TROO</span><span className="text-[#E53945]">FLIX</span></div>
+                          <div className="flex gap-1 text-[3px] text-white/50"><span>Home</span><span>Creators</span></div>
+                        </div>
+                        <div className="grid grid-cols-3 gap-[3px]">
+                          {(heroContent.picks.slice(0, 3).length ? heroContent.picks.slice(0, 3) : [null, null, null]).map((v: any, i: number) => (
+                            <div key={i} className="relative aspect-[16/10] overflow-hidden rounded-[2px] bg-white/5 border border-white/10">
+                              {(v?.posterUrl || v?.backdropUrl) ? <img src={v.posterUrl || v.backdropUrl} alt="" className="absolute inset-0 h-full w-full object-cover" /> : null}
+                              <div className="absolute inset-x-0 bottom-0 h-2 bg-gradient-to-t from-black/80 to-transparent" />
+                            </div>
+                          ))}
+                        </div>
+                        <div className="mt-1 space-y-[2px]">
+                          {[heroContent.picks[3], heroContent.picks[4]].map((v: any, i: number) => (
+                            <div key={i} className="flex items-center gap-1">
+                              <div className="h-[7px] w-[12px] rounded-[2px] bg-white/10 overflow-hidden relative">{(v?.posterUrl || v?.backdropUrl) ? <img src={v.posterUrl || v.backdropUrl} alt="" className="absolute inset-0 h-full w-full object-cover" /> : null}</div>
+                              <div className="flex-1 h-[3px] rounded-full bg-white/15 overflow-hidden"><div className="h-full w-2/3 bg-white/30 rounded-full" /></div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(110deg,rgba(255,255,255,0.12)_0%,rgba(255,255,255,0)_28%)]" />
+                    </div>
+                  </div>
+                  <div className="h-[5px] rounded-b-[6px] bg-gradient-to-b from-[#d7dce4] to-[#8e97a3] border-x border-b border-[#7f8894]" />
+                </div>
+
+                {/* Phone */}
+                <div className="absolute right-[8%] bottom-0 w-[13%]">
+                  <div className="rounded-[14px] border border-[#4a4f58] bg-gradient-to-b from-[#2a2e35] to-[#0f1115] p-[3px] shadow-[0_16px_35px_rgba(0,0,0,0.65),inset_0_1px_0_rgba(255,255,255,0.08)]">
+                    <div className="relative aspect-[9/19.5] overflow-hidden rounded-[11px] bg-black ring-1 ring-white/10">
+                      {(heroContent.short?.posterUrl || heroContent.short?.backdropUrl || heroContent.long?.posterUrl) ? (
+                        <img src={heroContent.short?.posterUrl || heroContent.short?.backdropUrl || heroContent.long?.posterUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                      ) : (
+                        <div className="absolute inset-0 bg-[linear-gradient(180deg,#1b1020_0%,#090a0f_100%)]" />
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/70" />
+                      <div className="absolute left-1/2 top-[3px] h-[5px] w-[45%] -translate-x-1/2 rounded-full bg-black border border-white/10" />
+                      <div className="absolute right-[5px] top-[22%] flex flex-col items-center gap-[5px]">
+                        <div className="h-[8px] w-[8px] rounded-full bg-white/20 border border-white/20" />
+                        <div className="h-[7px] w-[7px] rounded-full bg-white/20 border border-white/20" />
+                        <div className="h-[7px] w-[7px] rounded-full bg-white/20 border border-white/20" />
+                      </div>
+                      <div className="absolute left-[5px] right-[12px] bottom-[10px]">
+                        <div className="flex items-center gap-1 mb-[2px]">
+                          <div className="h-[6px] w-[6px] rounded-full bg-white/30 overflow-hidden relative">{heroContent.creator?.photoUrl ? <img src={heroContent.creator.photoUrl} alt="" className="absolute inset-0 h-full w-full object-cover" /> : null}</div>
+                          <div className="h-[2px] w-8 rounded-full bg-white/70" />
+                        </div>
+                        <div className="h-[2px] w-full rounded-full bg-white/40 mb-[2px]" />
+                        <div className="h-[2px] w-2/3 rounded-full bg-white/30" />
+                      </div>
+                      <div className="absolute inset-x-[6px] bottom-[4px] h-[2px] rounded-full bg-white/20 overflow-hidden"><motion.div className="h-full rounded-full bg-[#E53945]" animate={{width:["25%","65%","25%"]}} transition={{duration:7, repeat:Infinity, ease:"easeInOut"}} /></div>
+                      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.16)_0%,rgba(255,255,255,0)_26%)]" />
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+
+            <motion.h2 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1 }} className="text-center text-[34px] leading-[1.02] font-black tracking-[-0.04em] text-white mb-3">
+              Create freely. Own your voice.
+            </motion.h2>
+            <motion.p initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.15 }} className="text-center text-[18px] leading-relaxed text-white/70 font-medium mb-5">
               Watch, create and get paid for what you love.
             </motion.p>
 
-            <div className="flex items-center justify-center gap-3">
-              <Link href="/login" className="rounded-full bg-white/10 backdrop-blur-xl border border-white/20 px-6 py-2.5 text-sm font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_8px_24px_rgba(0,0,0,0.25)] hover:bg-white/15 transition">Sign in</Link>
-              <Link href="/signup" className="rounded-full bg-white/10 backdrop-blur-xl border border-white/20 px-6 py-2.5 text-sm font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_8px_24px_rgba(0,0,0,0.25)] hover:bg-white/15 transition">Sign up</Link>
+            <div className="flex items-center justify-center gap-2">
+              <Link href="/login" className="rounded-full bg-white px-6 py-2.5 text-sm font-bold text-black hover:bg-white/90 transition">Sign in</Link>
+              <Link href="/signup" className="rounded-full border border-white/25 px-6 py-2.5 text-sm font-bold text-white hover:bg-white/10 transition">Sign up</Link>
             </div>
           </div>
         </section>
