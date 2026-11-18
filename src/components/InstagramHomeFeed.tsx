@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Bookmark, Gift, Heart, MessageCircle, MoreHorizontal, Play, Send, Volume2, VolumeX } from "lucide-react";
+import { Bookmark, Heart, MessageCircle, MoreHorizontal, Play, Send, ShoppingBag, Volume2, VolumeX } from "lucide-react";
 import LikeButton from "@/components/LikeButton";
 import CommentSheet from "@/components/CommentSheet";
+import { GoldCoin } from "@/components/TipModal";
 
 type Props = {
   videos: any[];
@@ -196,12 +197,32 @@ export default function InstagramHomeFeed({ videos, creators, categories, onCate
 
       {/* Posts */}
       <div className="divide-y divide-white/[0.06]">
-        {posts.map(({ video, creator, commentCount }) => {
+        {posts.map(({ video, creator, commentCount }, index) => {
           const name = creator?.name || "Trooflix Creator";
           const avatar = creator?.photoUrl;
           return (
+            <React.Fragment key={video.id}>
+            {index === 4 && (
+              <article className="px-4 py-6">
+                <Link href="/merchandise" className="block overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1c1c1e] to-[#0d0d10]">
+                  <div className="relative aspect-[16/9] overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=1200&auto=format&fit=crop" alt="Trooflix merch" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    <span className="absolute bottom-3 left-4 text-xl font-black tracking-tight text-white">Creators Market</span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3 p-4">
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-white">Wear the movement</p>
+                      <p className="text-xs text-white/50">Merch from your favourite creators.</p>
+                    </div>
+                    <span className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-[#E53945] px-4 py-2 text-xs font-bold text-white">
+                      <ShoppingBag size={14} /> Visit store
+                    </span>
+                  </div>
+                </Link>
+              </article>
+            )}
             <article
-              key={video.id}
               data-post-id={video.id}
               ref={(el) => { if (el) postRefs.current.set(video.id, el); else postRefs.current.delete(video.id); }}
               className="pb-3"
@@ -232,9 +253,9 @@ export default function InstagramHomeFeed({ videos, creators, categories, onCate
                 <button
                   onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: video.creatorId || video.uploaderUserId, videoId: video.id } }))}
                   aria-label="Tip creator"
-                  className="text-[#ffd93d] active:opacity-60"
+                  className="active:opacity-60"
                 >
-                  <Gift size={23} strokeWidth={1.7} />
+                  <GoldCoin size={23} />
                 </button>
                 <button onClick={() => { if (navigator.share) navigator.share({ title: video.title, url: window.location.href }).catch(() => {}); }} aria-label="Share" className="text-white active:opacity-60"><Send size={23} strokeWidth={1.7} /></button>
                 <button onClick={() => toggleSave(video.id)} aria-label="Save" className={`ml-auto active:opacity-60 ${saved.includes(video.id) ? "text-[#ffd93d]" : "text-white"}`}><Bookmark size={23} strokeWidth={1.7} fill={saved.includes(video.id) ? "currentColor" : "none"} /></button>
@@ -251,6 +272,7 @@ export default function InstagramHomeFeed({ videos, creators, categories, onCate
                 <p className="mt-1 text-[10px] uppercase tracking-wide text-white/30">{timeAgo(video.createdAt)}</p>
               </div>
             </article>
+            </React.Fragment>
           );
         })}
       </div>

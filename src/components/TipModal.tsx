@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Gift, Sparkles, Loader2 } from "lucide-react";
 import { getCachedUser } from "@/lib/cache";
 
-const GoldCoin = ({ size = 28 }: { size?: number }) => (
+export const GoldCoin = ({ size = 28 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 40 40" fill="none">
     <circle cx="20" cy="20" r="18" fill="url(#gold-coin-grad)" stroke="#FFF3B0" strokeWidth="1.5" />
     <circle cx="20" cy="20" r="14" fill="none" stroke="#9A7B1C" strokeWidth="1.5" strokeDasharray="2 2" />
