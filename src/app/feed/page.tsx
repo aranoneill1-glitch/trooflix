@@ -37,6 +37,7 @@ export default function ShortsFeedPage() {
   const [creators, setCreators] = useState<Creator[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
+  const [initialSeek, setInitialSeek] = useState<{ id: number; t: number; playing: boolean } | null>(null);
   const [commentSheetVideoId, setCommentSheetVideoId] = useState<number | null>(null);
   const [activeVideo, setActiveVideo] = useState<Video | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -57,6 +58,14 @@ export default function ShortsFeedPage() {
     const requestedReelId = params.get("reel");
     const requestedCreatorUserId = params.get("creator_user_id");
     const requestedCreatorId = params.get("creator_id");
+    const mutedParam = params.get("muted");
+    const tParam = Number(params.get("t") || "0");
+    const playingParam = params.get("playing");
+    if (mutedParam === "0") setIsMuted(false);
+    else if (mutedParam === "1") setIsMuted(true);
+    if (requestedReelId && Number.isFinite(tParam) && tParam >= 0) {
+      setInitialSeek({ id: Number(requestedReelId), t: tParam, playing: playingParam === "1" });
+    }
     Promise.all([
       getCachedVideos().catch(() => []),
       getCachedCreators().catch(() => []),
@@ -277,6 +286,8 @@ export default function ShortsFeedPage() {
               isMuted={isMuted}
               onToggleMute={toggleMute}
               onSetActive={() => { setActiveVideo(video); setActiveIndex(index); }}
+              initialSeek={initialSeek?.id === Number(video.id) ? initialSeek : null}
+              onInitialSeekApplied={() => setInitialSeek((prev) => (prev?.id === Number(video.id) ? null : prev))}
             />
           );
         })}
@@ -355,6 +366,8 @@ export default function ShortsFeedPage() {
               shouldLoad={Math.abs(index - activeIndex) <= 1}
               isMuted={isMuted}
               onSetActive={() => { setActiveVideo(video); setActiveIndex(index); }}
+              initialSeek={initialSeek?.id === Number(video.id) ? initialSeek : null}
+              onInitialSeekApplied={() => setInitialSeek((prev) => (prev?.id === Number(video.id) ? null : prev))}
             />
           ))}
         </div>
@@ -435,14 +448,34 @@ export default function ShortsFeedPage() {
   );
 }
 
-function DesktopVideoShort({ video, isMuted, onSetActive, shouldLoad = true }: { video: Video, isMuted: boolean, onSetActive: () => void, shouldLoad?: boolean }) {
+function DesktopVideoShort({ video, isMuted, onSetActive, shouldLoad = true, initialSeek = null, onInitialSeekApplied }: { video: Video, isMuted: boolean, onSetActive: () => void, shouldLoad?: boolean, initialSeek?: { id: number; t: number; playing: boolean } | null, onInitialSeekApplied?: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isActive, setIsActive] = useState(false);
   const onSetActiveRef = useRef(onSetActive);
   const isMutedRef = useRef(isMuted);
+  const initialSeekRef = useRef(initialSeek);
+  const initialSeekAppliedRef = useRef(false);
+  const pendingInitialSeekRef = useRef(false);
   onSetActiveRef.current = onSetActive;
   isMutedRef.current = isMuted;
+  initialSeekRef.current = initialSeek;
+
+  const applyInitialSeekIfNeeded = () => {
+    const current = videoRef.current;
+    const seek = initialSeekRef.current;
+    if (!current || !seek || initialSeekAppliedRef.current) return false;
+    const ready = current.readyState >= 1 && Number.isFinite(current.duration) && current.duration > 0;
+    if (!ready) { pendingInitialSeekRef.current = true; return false; }
+    try {
+      const t = Math.max(0, Math.min(seek.t, Math.max(0, current.duration - 0.05)));
+      current.currentTime = t;
+    } catch {}
+    pendingInitialSeekRef.current = false;
+    initialSeekAppliedRef.current = true;
+    onInitialSeekApplied?.();
+    return true;
+  };
 
   const [floatingHearts, setFloatingHearts] = useState<{ id: number; x: number; y: number }[]>([]);
   const lastTapRef = useRef<number>(0);
@@ -486,10 +519,22 @@ function DesktopVideoShort({ video, isMuted, onSetActive, shouldLoad = true }: {
               try { player.currentTime = 0; } catch {}
             }
           });
-          try { current.currentTime = 0; } catch {}
+          const seek = initialSeekRef.current;
+          const shouldApplyInitial = !!seek && !initialSeekAppliedRef.current;
+          if (shouldApplyInitial) {
+            pendingInitialSeekRef.current = true;
+          } else {
+            try { current.currentTime = 0; } catch {}
+          }
           current.muted = isMutedRef.current;
           setIsActive(true);
-          current.play().catch(() => {});
+          if (shouldApplyInitial) {
+            applyInitialSeekIfNeeded();
+            if (seek?.playing) current.play().catch(() => {});
+            else current.play().catch(() => {});
+          } else {
+            current.play().catch(() => {});
+          }
           onSetActiveRef.current();
         } else {
           current.pause();
@@ -532,7 +577,11 @@ function DesktopVideoShort({ video, isMuted, onSetActive, shouldLoad = true }: {
               playsInline
               muted={isMuted || !isActive}
               preload={shouldLoad ? "auto" : "none"}
+              onLoadedMetadata={() => {
+                if (pendingInitialSeekRef.current) applyInitialSeekIfNeeded();
+              }}
               onCanPlay={() => {
+                if (pendingInitialSeekRef.current) applyInitialSeekIfNeeded();
                 const v = videoRef.current;
                 if (v && isActive && v.paused) v.play().catch(() => {});
               }}
@@ -566,13 +615,33 @@ function DesktopVideoShort({ video, isMuted, onSetActive, shouldLoad = true }: {
   );
 }
 
-function MobileVideoShort({ video, creator, onViewCounted, isMuted, onToggleMute, onSetActive, shouldLoad = true }: { video: Video, creator: Creator | null, onViewCounted: () => void, isMuted: boolean, onToggleMute: () => void, onSetActive: () => void, shouldLoad?: boolean }) {
+function MobileVideoShort({ video, creator, onViewCounted, isMuted, onToggleMute, onSetActive, shouldLoad = true, initialSeek = null, onInitialSeekApplied }: { video: Video, creator: Creator | null, onViewCounted: () => void, isMuted: boolean, onToggleMute: () => void, onSetActive: () => void, shouldLoad?: boolean, initialSeek?: { id: number; t: number; playing: boolean } | null, onInitialSeekApplied?: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isActive, setIsActive] = useState(false);
   const onSetActiveRef = useRef(onSetActive);
   const isMutedRef = useRef(isMuted);
+  const initialSeekRef = useRef(initialSeek);
+  const initialSeekAppliedRef = useRef(false);
+  const pendingInitialSeekRef = useRef(false);
   onSetActiveRef.current = onSetActive;
   isMutedRef.current = isMuted;
+  initialSeekRef.current = initialSeek;
+
+  const applyInitialSeekIfNeeded = () => {
+    const current = videoRef.current;
+    const seek = initialSeekRef.current;
+    if (!current || !seek || initialSeekAppliedRef.current) return false;
+    const ready = current.readyState >= 1 && Number.isFinite(current.duration) && current.duration > 0;
+    if (!ready) { pendingInitialSeekRef.current = true; return false; }
+    try {
+      const t = Math.max(0, Math.min(seek.t, Math.max(0, current.duration - 0.05)));
+      current.currentTime = t;
+    } catch {}
+    pendingInitialSeekRef.current = false;
+    initialSeekAppliedRef.current = true;
+    onInitialSeekApplied?.();
+    return true;
+  };
   const [isPlaying, setIsPlaying] = useState(false);
   const [isBuffering, setIsBuffering] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -735,9 +804,16 @@ function MobileVideoShort({ video, creator, onViewCounted, isMuted, onToggleMute
           if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
           setHasError(false);
           setShowError(false);
-          try { current.currentTime = 0; } catch {}
+          const seek = initialSeekRef.current;
+          const shouldApplyInitial = !!seek && !initialSeekAppliedRef.current;
+          if (shouldApplyInitial) {
+            pendingInitialSeekRef.current = true;
+          } else {
+            try { current.currentTime = 0; } catch {}
+          }
           current.muted = isMutedRef.current;
           setIsActive(true);
+          if (shouldApplyInitial) applyInitialSeekIfNeeded();
           current.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
           onSetActiveRef.current();
           if (!hasTrackedViewRef.current) {
@@ -870,11 +946,15 @@ function MobileVideoShort({ video, creator, onViewCounted, isMuted, onToggleMute
           setShowError(false);
           setIsBuffering(false);
         }}
+        onLoadedMetadata={() => {
+          if (pendingInitialSeekRef.current) applyInitialSeekIfNeeded();
+        }}
         onCanPlay={() => {
           if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
           setHasError(false);
           setShowError(false);
           setIsBuffering(false);
+          if (pendingInitialSeekRef.current) applyInitialSeekIfNeeded();
           const v = videoRef.current;
           if (v && isActive && v.paused) v.play().catch(() => {});
         }}

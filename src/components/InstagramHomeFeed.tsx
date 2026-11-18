@@ -53,7 +53,7 @@ if (typeof window !== "undefined") {
   try { feedMuted = localStorage.getItem("trooflix:feedMuted") !== "0"; } catch {}
 }
 
-function PostMedia({ video, onOpen, onLike, isActive }: { video: any; onOpen: () => void; onLike: () => void; isActive: boolean }) {
+function PostMedia({ video, onOpen, onLike, isActive, onRegister }: { video: any; onOpen: () => void; onLike: () => void; isActive: boolean; onRegister?: (id: number, el: HTMLVideoElement | null) => void }) {
   const ref = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
   const [userPaused, setUserPaused] = useState(false);
@@ -65,6 +65,11 @@ function PostMedia({ video, onOpen, onLike, isActive }: { video: any; onOpen: ()
     feedMuteListeners.add(fn);
     return () => { feedMuteListeners.delete(fn); };
   }, []);
+
+  useEffect(() => {
+    onRegister?.(video.id, ref.current);
+    return () => onRegister?.(video.id, null);
+  }, [onRegister, video.id, video.videoUrl, video.bitchuteUrl]);
 
   useEffect(() => {
     const v = ref.current;
@@ -163,6 +168,11 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
   const [activeType, setActiveType] = useState<MainType | null>(null);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const mediaRefs = useRef<Map<number, HTMLVideoElement | null>>(new Map());
+  const registerMedia = React.useCallback((id: number, el: HTMLVideoElement | null) => {
+    if (el) mediaRefs.current.set(id, el);
+    else mediaRefs.current.delete(id);
+  }, []);
 
   // Remember where the user was so returning from the full-screen shorts
   // player restores the exact scroll position and active filter.
@@ -174,7 +184,12 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
         activeCategory,
       }));
     } catch {}
-    window.location.href = `/feed?reel=${id}`;
+    const el = mediaRefs.current.get(id);
+    const t = el && Number.isFinite(el.currentTime) ? Math.max(0, el.currentTime) : 0;
+    const muted = el ? (el.muted ? 1 : 0) : (feedMuted ? 1 : 0);
+    const playing = el && !el.paused ? 1 : 0;
+    const params = new URLSearchParams({ reel: String(id), t: t.toFixed(3), muted: String(muted), playing: String(playing) });
+    window.location.href = `/feed?${params.toString()}`;
   };
 
   useEffect(() => {
@@ -488,6 +503,7 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
                 isActive={activeId === video.id}
                 onOpen={() => onVideoSelect(video)}
                 onLike={() => setLikedLocal(prev => prev.includes(video.id) ? prev : [...prev, video.id])}
+                onRegister={registerMedia}
               />
 
               <div className="flex items-center gap-4 px-3 pt-2.5">
