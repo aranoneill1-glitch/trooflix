@@ -40,29 +40,47 @@ function timeAgo(date: any) {
   return `${Math.floor(days / 7)}w ago`;
 }
 
+// Global preference: once the user unmutes, every video in the feed stays unmuted.
+let feedMuted = true;
+const feedMuteListeners = new Set<(muted: boolean) => void>();
+function setFeedMuted(muted: boolean) {
+  feedMuted = muted;
+  try { localStorage.setItem("trooflix:feedMuted", muted ? "1" : "0"); } catch {}
+  feedMuteListeners.forEach(fn => fn(muted));
+}
+if (typeof window !== "undefined") {
+  try { feedMuted = localStorage.getItem("trooflix:feedMuted") !== "0"; } catch {}
+}
+
 function PostMedia({ video, onOpen, onLike, isActive }: { video: any; onOpen: () => void; onLike: () => void; isActive: boolean }) {
   const ref = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
-  const [muted, setMuted] = useState(false);
+  const [muted, setMuted] = useState(feedMuted);
   const lastTap = useRef(0);
+
+  useEffect(() => {
+    const fn = (m: boolean) => setMuted(m);
+    feedMuteListeners.add(fn);
+    return () => { feedMuteListeners.delete(fn); };
+  }, []);
 
   useEffect(() => {
     const v = ref.current;
     if (!v) return;
+    v.muted = muted;
     if (isActive) {
-      // Autoplay with sound is blocked by browsers. Start muted, then unmute
-      // on the next real user tap (see handleTap) — that gesture allows sound.
-      v.muted = true;
-      setMuted(true);
-      v.play().then(() => setPlaying(true)).catch(() => {});
+      // Browsers block autoplay with sound; if unmuted playback is rejected,
+      // fall back to muted just for this clip until the next user gesture.
+      v.play().then(() => setPlaying(true)).catch(() => {
+        if (!v.muted) { v.muted = true; setMuted(true); }
+        v.play().then(() => setPlaying(true)).catch(() => {});
+      });
     } else {
       v.pause();
       try { v.currentTime = 0; } catch {}
-      v.muted = true;
-      setMuted(true);
       setPlaying(false);
     }
-  }, [isActive]);
+  }, [isActive, muted]);
 
   const handleTap = () => {
     const v = ref.current;
@@ -70,10 +88,9 @@ function PostMedia({ video, onOpen, onLike, isActive }: { video: any; onOpen: ()
     const now = Date.now();
     if (now - lastTap.current < 300) { onLike(); lastTap.current = 0; return; }
     lastTap.current = now;
-    // First tap on an active, muted clip turns the sound on (user gesture).
+    // First tap on an active, muted clip turns sound on globally (user gesture).
     if (isActive && v.muted) {
-      v.muted = false;
-      setMuted(false);
+      setFeedMuted(false);
       if (v.paused) v.play().catch(() => {});
       return;
     }
@@ -84,9 +101,7 @@ function PostMedia({ video, onOpen, onLike, isActive }: { video: any; onOpen: ()
   const toggleMute = () => {
     const v = ref.current;
     if (!v) return;
-    const next = !v.muted;
-    v.muted = next;
-    setMuted(next);
+    setFeedMuted(!feedMuted);
   };
 
   const src = video.videoUrl || video.bitchuteUrl;
