@@ -2,7 +2,8 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, CheckCircle2, UploadCloud, ChevronRight, Loader2, Image as ImageIcon, X } from "lucide-react";
+import { ArrowLeft, CheckCircle2, UploadCloud, ChevronRight, X } from "lucide-react";
+import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { getCachedUser } from "@/lib/cache";
@@ -58,10 +59,18 @@ function UploadContent() {
   const [success, setSuccess] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
+  const [tier, setTier] = useState<"free" | "plus" | "creator">("free");
 
   useEffect(() => {
-    getCachedUser().then((u) => {
-      if (!u) router.replace("/login");
+    getCachedUser().then(async (u) => {
+      if (!u) { router.replace("/login"); return; }
+      try {
+        const r = await fetch(`/api/profile?user_id=${u.id}`, { cache: "no-store" });
+        const d = await r.json();
+        const raw = String(d.profile?.tier || "free").toLowerCase();
+        if (["creator", "podcaster", "pro"].includes(raw)) setTier("creator");
+        else if (["plus", "pass", "troopass"].includes(raw)) setTier("plus");
+      } catch {}
     }).catch(() => router.replace("/login"));
   }, [router]);
 
@@ -194,12 +203,18 @@ function UploadContent() {
             <h1 className="text-2xl font-black mb-1">Main category</h1>
             <p className="text-sm text-white/50 mb-6">What kind of video is this?</p>
             <div className="grid grid-cols-2 gap-3">
-              {MAIN_TYPES.map(t => (
+              {MAIN_TYPES.filter(t => tier === "creator" || t.id === "short").map(t => (
                 <button key={t.id} onClick={() => setMainType(t.id)} className={`p-5 rounded-2xl border text-left transition ${mainType === t.id ? "bg-[#E53945]/15 border-[#E53945] text-white" : "bg-[#1c1c1e] border-white/10 text-white/60 hover:border-white/25"}`}>
                   <span className="text-base font-bold">{t.label}</span>
+                  {tier !== "creator" && t.id !== "short" && <span className="block text-[11px] text-white/30 mt-1">Creator only</span>}
                 </button>
               ))}
             </div>
+            {tier !== "creator" && (
+              <Link href="/upgrade" className="block mt-4 text-center text-xs text-[#F06A72] font-semibold">
+                Upgrade to Creator to upload videos, podcasts, films and documentaries →
+              </Link>
+            )}
           </div>
         )}
 

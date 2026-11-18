@@ -43,23 +43,24 @@ export async function POST(req: Request) {
     if (items.length === 0) return NextResponse.json({ error: "No videos provided" }, { status: 400 });
 
     for (const item of items) {
-      const uploadType = item.type || "long-video";
-      const isTweet = uploadType === "Tweet";
-      const isShort = uploadType === "Short";
+      const rawType = String(item.type || "long-video");
+      const uploadType = rawType.toLowerCase().trim();
+      const isTweet = uploadType === "tweet";
+      const isShort = ["short", "reel", "shorts", "reels"].includes(uploadType);
       const isLongForm = !isTweet && !isShort;
 
       if (isTweet && userTier !== "creator") {
         return NextResponse.json({ error: "Only Creator tier can post Tweets. Upgrade required." }, { status: 403 });
       }
       if (isLongForm && userTier !== "creator") {
-        return NextResponse.json({ error: "Only Creator tier can upload long-form videos. Upgrade required." }, { status: 403 });
+        return NextResponse.json({ error: "Free accounts can only upload Shorts. Upgrade to Creator to upload videos, podcasts, films and documentaries." }, { status: 403 });
       }
       if (isShort) {
-        const durStr = item.duration || "0:00";
+        const durStr = String(item.duration || "0:00");
         const parts = durStr.split(":");
         const totalSeconds = (parseInt(parts[0]) || 0) * 60 + (parseInt(parts[1]) || 0);
         if (userTier === "free" && totalSeconds > 180) {
-          return NextResponse.json({ error: "Free accounts can only upload Shorts up to 3 minutes. Upgrade to Plus." }, { status: 403 });
+          return NextResponse.json({ error: "Free accounts can only upload Shorts up to 3 minutes. Upgrade to Creator for unlimited length." }, { status: 403 });
         }
         if (userTier === "plus" && totalSeconds > 1200) {
           return NextResponse.json({ error: "Plus accounts can only upload Shorts up to 20 minutes. Upgrade to Creator for unlimited." }, { status: 403 });
