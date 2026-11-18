@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, CheckCircle2, UploadCloud, ChevronRight, X } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ArrowLeft, CheckCircle2, UploadCloud, ChevronRight, X, Music } from "lucide-react";
 import Link from "next/link";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
@@ -11,6 +11,13 @@ import { createClient } from "@/utils/supabase/client";
 import { r2MultipartUpload } from "@/lib/r2Upload";
 import { motion } from "framer-motion";
 import { MAIN_TYPES, SUB_CATEGORIES, type MainType } from "@/lib/videoTypes";
+
+const AUDIO_TYPES = [
+  { id: "song", label: "Song" },
+  { id: "podcast-audio", label: "Audio Podcast" },
+  { id: "audiobook", label: "Audiobook" },
+  { id: "audio", label: "Audio" },
+] as const;
 
 function generateThumbnail(file: File): Promise<Blob | null> {
   return new Promise(resolve => {
@@ -46,13 +53,16 @@ function generateThumbnail(file: File): Promise<Blob | null> {
 
 function UploadContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isAudio = searchParams.get("kind") === "audio";
 
   const [step, setStep] = useState(1);
   const [mediaFile, setMediaFile] = useState<File | null>(null);
-  const [videoDuration, setVideoDuration] = useState(0);
+  const [mediaDuration, setMediaDuration] = useState(0);
   const [thumbnailBlob, setThumbnailBlob] = useState<Blob | null>(null);
   const [description, setDescription] = useState("");
   const [mainType, setMainType] = useState<MainType>("other");
+  const [audioType, setAudioType] = useState<string>("song");
   const [subCategory, setSubCategory] = useState("");
   const [customCategory, setCustomCategory] = useState("");
   const [loading, setLoading] = useState(false);
@@ -75,20 +85,27 @@ function UploadContent() {
   }, [router]);
 
   useEffect(() => {
-    if (!mediaFile) { setVideoDuration(0); return; }
-    const el = document.createElement("video");
-    el.preload = "metadata";
+    if (!mediaFile) { setMediaDuration(0); return; }
     const url = URL.createObjectURL(mediaFile);
+    const el = document.createElement(isAudio ? "audio" : "video");
+    el.preload = "metadata";
     el.onloadedmetadata = () => {
-      setVideoDuration(isFinite(el.duration) ? el.duration : 0);
+      setMediaDuration(isFinite((el as HTMLMediaElement).duration) ? (el as HTMLMediaElement).duration : 0);
       URL.revokeObjectURL(url);
     };
     el.onerror = () => URL.revokeObjectURL(url);
     el.src = url;
-  }, [mediaFile]);
+  }, [mediaFile, isAudio]);
 
   const onPick = async (f?: File) => {
     if (!f) return;
+    if (isAudio) {
+      if (!f.type.startsWith("audio/")) { setError("Please choose an audio file."); return; }
+      setError("");
+      setMediaFile(f);
+      setThumbnailBlob(null);
+      return;
+    }
     if (!f.type.startsWith("video/")) { setError("Please choose a video file."); return; }
     setError("");
     setMediaFile(f);
@@ -96,8 +113,10 @@ function UploadContent() {
   };
 
   const next = () => {
-    if (step === 1 && !mediaFile) { setError("Please choose a video first."); return; }
+    if (step === 1 && !mediaFile) { setError(isAudio ? "Please choose an audio file first." : "Please choose a video first."); return; }
     if (step === 2 && !description.trim()) { setError("Please write a description."); return; }
+    if (step === 3 && !isAudio && !mainType) { setError("Please choose a main category."); return; }
+    if (step === 3 && isAudio && !audioType) { setError("Please choose an audio type."); return; }
     if (step === 4 && !(subCategory || customCategory.trim())) { setError("Please choose or enter a category."); return; }
     setError("");
     if (step < 4) setStep(step + 1);
@@ -115,37 +134,39 @@ function UploadContent() {
       const supabase = createClient();
       const { data: profile } = await supabase.from("profiles").select("creator_id").eq("user_id", user.id).maybeSingle();
 
-      const folder = "videos";
-      const videoRes = await r2MultipartUpload(mediaFile, { folder, onProgress: p => setProgress(Math.round(p / 2)) });
+      const folder = isAudio ? "audio" : "videos";
+      const mediaRes = await r2MultipartUpload(mediaFile, { folder, onProgress: p => setProgress(Math.round(p / (isAudio ? 1 : 2))) });
       let posterUrl = "";
-      if (thumbnailBlob) {
+      if (!isAudio && thumbnailBlob) {
         const tf = new File([thumbnailBlob], "poster.jpg", { type: "image/jpeg" });
         const tRes = await r2MultipartUpload(tf, { folder: "thumbnails", onProgress: p => setProgress(50 + Math.round(p / 2)) });
         posterUrl = tRes.publicUrl;
       }
 
       setProgress(100);
+      const typeToSave = isAudio ? audioType : mainType;
       const res = await fetch("/api/save-video", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: description.trim().split("\n")[0].slice(0, 80) || "Untitled",
           description: description.trim(),
-          type: mainType,
+          type: typeToSave,
           category: customCategory.trim() || subCategory,
           creatorId: profile?.creator_id || null,
           uploaderUserId: user.id,
-          videoUrl: videoRes.publicUrl,
+          videoUrl: mediaRes.publicUrl,
           posterUrl,
           backdropUrl: posterUrl,
           visibility: "public",
           feed_visible: true,
-          duration: videoDuration > 0 ? Math.floor(videoDuration / 60) + ":" + String(Math.floor(videoDuration % 60)).padStart(2, "0") : "",
+          duration: mediaDuration > 0 ? Math.floor(mediaDuration / 60) + ":" + String(Math.floor(mediaDuration % 60)).padStart(2, "0") : "",
         }),
       });
-      if (!res.ok) throw new Error("Could not save your video.");
+      const saveData = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(saveData?.error || `Could not save your ${isAudio ? "audio" : "video"}.`);
       setSuccess(true);
-      setTimeout(() => router.push("/"), 1800);
+      setTimeout(() => router.push(isAudio ? "/creator-dashboard?studioTab=profile" : "/"), 1800);
     } catch (e: any) {
       setError(e?.message || "Upload failed. Please try again.");
       setLoading(false);
@@ -158,8 +179,8 @@ function UploadContent() {
         <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-20 h-20 bg-[#1ed760]/20 rounded-full flex items-center justify-center mb-6">
           <CheckCircle2 size={40} className="text-[#1ed760]" />
         </motion.div>
-        <h1 className="text-2xl font-bold mb-2">Video published</h1>
-        <p className="text-white/50 text-sm">Taking you home…</p>
+        <h1 className="text-2xl font-bold mb-2">{isAudio ? "Audio published" : "Video published"}</h1>
+        <p className="text-white/50 text-sm">{isAudio ? "Taking you to your profile…" : "Taking you home…"}</p>
       </main>
     );
   }
@@ -178,42 +199,62 @@ function UploadContent() {
 
         {step === 1 && (
           <div>
-            <h1 className="text-2xl font-black mb-1">Upload video</h1>
-            <p className="text-sm text-white/50 mb-6">Choose a video from your camera roll.</p>
-            <div onClick={() => document.getElementById("upload-video-input")?.click()} className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-2xl p-10 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] transition min-h-[240px]">
-              {thumbnailBlob ? (
+            <h1 className="text-2xl font-black mb-1">{isAudio ? "Upload audio" : "Upload video"}</h1>
+            <p className="text-sm text-white/50 mb-6">{isAudio ? "Choose an audio file from your device." : "Choose a video from your camera roll."}</p>
+            <div onClick={() => document.getElementById("upload-media-input")?.click()} className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-2xl p-10 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] transition min-h-[240px]">
+              {!isAudio && thumbnailBlob ? (
                 <img src={URL.createObjectURL(thumbnailBlob)} alt="Video preview" className="max-h-[160px] rounded-lg mb-3" />
-              ) : <UploadCloud size={40} className="text-white/50 mb-3" />}
-              <span className="text-sm font-bold text-white text-center">{mediaFile ? mediaFile.name : "Tap to choose a video"}</span>
+              ) : isAudio && mediaFile ? (
+                <Music size={40} className="text-[#E53945] mb-3" />
+              ) : (
+                <UploadCloud size={40} className="text-white/50 mb-3" />
+              )}
+              <span className="text-sm font-bold text-white text-center">{mediaFile ? mediaFile.name : (isAudio ? "Tap to choose an audio file" : "Tap to choose a video")}</span>
+              {isAudio && <span className="text-xs text-white/40 mt-2">Song, audio podcast, audiobook & more</span>}
             </div>
-            <input id="upload-video-input" type="file" accept="video/*" className="hidden" onChange={e => { void onPick(e.target.files?.[0]); e.target.value = ""; }} />
+            <input id="upload-media-input" type="file" accept={isAudio ? "audio/*" : "video/*"} className="hidden" onChange={e => { void onPick(e.target.files?.[0]); e.target.value = ""; }} />
           </div>
         )}
 
         {step === 2 && (
           <div>
             <h1 className="text-2xl font-black mb-1">Description</h1>
-            <p className="text-sm text-white/50 mb-6">Tell people what this video is about.</p>
-            <textarea value={description} onChange={e => setDescription(e.target.value)} rows={6} placeholder="Write a caption..." className="w-full bg-[#1c1c1e] border border-white/10 rounded-2xl p-4 text-white placeholder:text-white/30 outline-none focus:border-[#E53945] resize-none" autoFocus />
+            <p className="text-sm text-white/50 mb-6">{isAudio ? "Tell people what this audio is about." : "Tell people what this video is about."}</p>
+            <textarea value={description} onChange={e => setDescription(e.target.value)} rows={6} placeholder={isAudio ? "Write a title or description..." : "Write a caption..."} className="w-full bg-[#1c1c1e] border border-white/10 rounded-2xl p-4 text-white placeholder:text-white/30 outline-none focus:border-[#E53945] resize-none" autoFocus />
           </div>
         )}
 
         {step === 3 && (
           <div>
-            <h1 className="text-2xl font-black mb-1">Main category</h1>
-            <p className="text-sm text-white/50 mb-6">What kind of video is this?</p>
-            <div className="grid grid-cols-2 gap-3">
-              {MAIN_TYPES.filter(t => tier === "creator" || t.id === "short").map(t => (
-                <button key={t.id} onClick={() => setMainType(t.id)} className={`p-5 rounded-2xl border text-left transition ${mainType === t.id ? "bg-[#E53945]/15 border-[#E53945] text-white" : "bg-[#1c1c1e] border-white/10 text-white/60 hover:border-white/25"}`}>
-                  <span className="text-base font-bold">{t.label}</span>
-                  {tier !== "creator" && t.id !== "short" && <span className="block text-[11px] text-white/30 mt-1">Creator only</span>}
-                </button>
-              ))}
-            </div>
-            {tier !== "creator" && (
-              <Link href="/upgrade" className="block mt-4 text-center text-xs text-[#F06A72] font-semibold">
-                Upgrade to Creator to upload videos, podcasts, films and documentaries →
-              </Link>
+            <h1 className="text-2xl font-black mb-1">{isAudio ? "Audio type" : "Main category"}</h1>
+            <p className="text-sm text-white/50 mb-6">{isAudio ? "What kind of audio is this?" : "What kind of video is this?"}</p>
+            {isAudio ? (
+              <div className="grid grid-cols-2 gap-3">
+                {AUDIO_TYPES.map(t => (
+                  <button key={t.id} onClick={() => setAudioType(t.id)} className={`p-5 rounded-2xl border text-left transition ${audioType === t.id ? "bg-[#E53945]/15 border-[#E53945] text-white" : "bg-[#1c1c1e] border-white/10 text-white/60 hover:border-white/25"}`}>
+                    <span className="text-base font-bold">{t.label}</span>
+                    {t.id === "song" && <span className="block text-[11px] text-white/40 mt-1">Music / single / track</span>}
+                    {t.id === "podcast-audio" && <span className="block text-[11px] text-white/40 mt-1">Podcast episode or show</span>}
+                    {t.id === "audiobook" && <span className="block text-[11px] text-white/40 mt-1">Book or chapter</span>}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  {MAIN_TYPES.filter(t => tier === "creator" || t.id === "short").map(t => (
+                    <button key={t.id} onClick={() => setMainType(t.id)} className={`p-5 rounded-2xl border text-left transition ${mainType === t.id ? "bg-[#E53945]/15 border-[#E53945] text-white" : "bg-[#1c1c1e] border-white/10 text-white/60 hover:border-white/25"}`}>
+                      <span className="text-base font-bold">{t.label}</span>
+                      {tier !== "creator" && t.id !== "short" && <span className="block text-[11px] text-white/30 mt-1">Creator only</span>}
+                    </button>
+                  ))}
+                </div>
+                {tier !== "creator" && (
+                  <Link href="/upgrade" className="block mt-4 text-center text-xs text-[#F06A72] font-semibold">
+                    Upgrade to Creator to upload videos, podcasts, films and documentaries →
+                  </Link>
+                )}
+              </>
             )}
           </div>
         )}
@@ -243,7 +284,7 @@ function UploadContent() {
           </div>
         ) : (
           <button onClick={next} className="mt-8 w-full bg-[#E53945] hover:bg-[#d12e39] text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition">
-            {step === 4 ? "Publish video" : "Continue"} <ChevronRight size={18} />
+            {step === 4 ? (isAudio ? "Publish audio" : "Publish video") : "Continue"} <ChevronRight size={18} />
           </button>
         )}
       </div>
