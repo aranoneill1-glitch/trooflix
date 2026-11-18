@@ -64,7 +64,10 @@ export default function ShortsFeedPage() {
       const all = Array.isArray(vData) ? vData : [];
       const shortsOnly = all.filter((v: any) => {
         const isShort = ["short", "reel"].includes(String(v.type || "").toLowerCase());
-        if (!isShort) return false;
+        // A specific reel id (e.g. from the home feed fullscreen button) can be
+        // any video type — always include the requested one.
+        const isRequested = requestedReelId && String(v.id) === requestedReelId;
+        if (!isShort && !isRequested) return false;
         if (!requestedCreatorUserId && !requestedCreatorId) return true;
         const matchesCreatorUser = requestedCreatorUserId && String(v.uploaderUserId || "") === requestedCreatorUserId;
         const matchesCreatorId = requestedCreatorId && String(v.creatorId || "") === requestedCreatorId;

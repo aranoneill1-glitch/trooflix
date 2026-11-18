@@ -326,13 +326,8 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
                 </button>
                 <button onClick={() => { if (navigator.share) navigator.share({ title: video.title, url: window.location.href }).catch(() => {}); }} aria-label="Share" className="text-white active:opacity-60"><Send size={23} strokeWidth={1.7} /></button>
                 <button
-                  onClick={() => {
-                    const el = document.querySelector<HTMLElement>(`[data-post-id="${video.id}"] video`);
-                    if (!el) return;
-                    const req = (el as any).requestFullscreen || (el as any).webkitRequestFullscreen;
-                    if (req) req.call(el).catch(() => {});
-                  }}
-                  aria-label="Fullscreen"
+                  onClick={() => { haptic(); window.location.href = `/feed?reel=${video.id}`; }}
+                  aria-label="Open shorts player"
                   className="ml-auto text-white active:opacity-60"
                 >
                   <Maximize2 size={23} strokeWidth={1.7} />
