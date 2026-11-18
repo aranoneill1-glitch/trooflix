@@ -240,7 +240,7 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
       {showWelcome && (
         <div className="px-5 pt-[calc(env(safe-area-inset-top)+68px)] pb-4 text-center">
           <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#F06A72] mb-2">Welcome to Trooflix</p>
-          <h1 className="text-2xl font-black tracking-tight text-white mb-1">Creation freedom starts here.</h1>
+          <h1 className="text-2xl font-black tracking-tight text-white mb-1">Say goodbye to censorship and hello to freedom.</h1>
           <p className="text-xs text-white/45 mb-4">Watch, create and get paid for what you love.</p>
           <div className="flex items-center justify-center gap-2">
             <Link href="/login" className="rounded-full bg-white px-6 py-2.5 text-sm font-bold text-black hover:bg-white/90 transition">Sign in</Link>
