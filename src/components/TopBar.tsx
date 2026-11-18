@@ -286,35 +286,7 @@ export default function TopBar({ onMenu }: Props) {
                   </div>
                   <div>
                     <h4 className="font-bold text-white">Upload Video</h4>
-                    <p className="text-xs text-white/50">Publish a long-form video or documentary</p>
-                  </div>
-                </Link>
-
-                <Link 
-                  href="/creator-dashboard/upload?type=podcast" 
-                  onClick={() => setShowCreateMenu(false)}
-                  className="group relative flex items-center gap-4 bg-[#1d1d24] hover:bg-[#24242d] border border-white/10 hover:border-blue-400/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden"
-                >
-                  <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center flex-shrink-0 border border-white/10">
-                    <Mic className="text-blue-400" size={24} />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-white">Upload Podcast</h4>
-                    <p className="text-xs text-white/50">Publish a video or audio podcast episode</p>
-                  </div>
-                </Link>
-
-                <Link 
-                  href="/creator-dashboard/upload?type=short" 
-                  onClick={() => setShowCreateMenu(false)}
-                  className="group relative flex items-center gap-4 bg-[#1d1d24] hover:bg-[#24242d] border border-white/10 hover:border-blue-400/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden"
-                >
-                  <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center flex-shrink-0 border border-white/10">
-                    <Play className="text-blue-400" size={24} />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-white">Upload Short</h4>
-                    <p className="text-xs text-white/50">Visible on shorts page and your profile</p>
+                    <p className="text-xs text-white/50">Video, podcast, film or documentary</p>
                   </div>
                 </Link>
 
@@ -341,7 +313,7 @@ export default function TopBar({ onMenu }: Props) {
                     <Tag className="text-purple-400" size={24} />
                   </div>
                   <div>
-                    <h4 className="font-bold text-white">Add an Item</h4>
+                    <h4 className="font-bold text-white">Upload Merch</h4>
                     <p className="text-xs text-white/50">Add an item to your store</p>
                   </div>
                 </Link>

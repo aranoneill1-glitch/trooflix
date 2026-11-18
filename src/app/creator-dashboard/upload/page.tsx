@@ -1,387 +1,241 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, CheckCircle2, Image as ImageIcon, Globe, Lock, Home, User, UploadCloud, MessageSquare, ChevronRight } from "lucide-react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, CheckCircle2, UploadCloud, ChevronRight, Loader2, Image as ImageIcon, X } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { getCachedUser } from "@/lib/cache";
 import { createClient } from "@/utils/supabase/client";
-import { motion, AnimatePresence } from "framer-motion";
 import { r2MultipartUpload } from "@/lib/r2Upload";
+import { motion } from "framer-motion";
+import { MAIN_TYPES, SUB_CATEGORIES, type MainType } from "@/lib/videoTypes";
 
-const CATEGORIES = ["Documentaries","Podcasts","long-videos","Independent Films","Books","History","Politics & Geopolitics","War & Conflict","True Crime & Justice","Conspiracy & Mystery","Society & Culture","Business & Finance","Science & Technology","Environment & Nature","Religion & Spirituality","Ancient Civilisation","Comedy","News","Gaming","Medicine"];
+function generateThumbnail(file: File): Promise<Blob | null> {
+  return new Promise(resolve => {
+    const url = URL.createObjectURL(file);
+    const v = document.createElement("video");
+    v.muted = true;
+    v.playsInline = true;
+    v.preload = "auto";
+    v.src = url;
+    const done = () => {
+      try {
+        const c = document.createElement("canvas");
+        c.width = v.videoWidth || 720;
+        c.height = v.videoHeight || 1280;
+        const ctx = c.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(v, 0, 0, c.width, c.height);
+          c.toBlob(b => { URL.revokeObjectURL(url); resolve(b); }, "image/jpeg", 0.82);
+          return;
+        }
+      } catch {}
+      URL.revokeObjectURL(url);
+      resolve(null);
+    };
+    v.addEventListener("seeked", done, { once: true });
+    v.addEventListener("error", () => { URL.revokeObjectURL(url); resolve(null); }, { once: true });
+    v.onloadedmetadata = () => {
+      try { v.currentTime = Math.min(2, Math.max(0.1, (v.duration || 3) / 2)); } catch { done(); }
+    };
+    setTimeout(done, 8000);
+  });
+}
 
 function UploadContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const typeParam = (searchParams.get("type") || "").toLowerCase();
-  const isShort = typeParam === "short";
-  const isTweet = typeParam === "tweet";
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [longFormType, setLongFormType] = useState<"long-video" | "Podcast" | "Documentary">(
-    typeParam === "podcast" ? "Podcast" : typeParam === "documentary" ? "Documentary" : "long-video"
-  );
-  const isPodcast = !isShort && !isTweet && longFormType === "Podcast";
-  const isDocumentary = !isShort && !isTweet && longFormType === "Documentary";
-  const [podcastFormat, setPodcastFormat] = useState<"video" | "audio">("video");
-  const [category, setCategory] = useState(typeParam === "podcast" ? "Podcasts" : typeParam === "documentary" ? "Documentaries" : "History");
-  const [visibility, setVisibility] = useState<"public" | "premium">("public");
+  const [step, setStep] = useState(1);
   const [mediaFile, setMediaFile] = useState<File | null>(null);
-  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
-  const [autoThumbnailPreview, setAutoThumbnailPreview] = useState<string | null>(null);
+  const [videoDuration, setVideoDuration] = useState(0);
+  const [thumbnailBlob, setThumbnailBlob] = useState<Blob | null>(null);
+  const [description, setDescription] = useState("");
+  const [mainType, setMainType] = useState<MainType>("other");
+  const [subCategory, setSubCategory] = useState("");
+  const [customCategory, setCustomCategory] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [showSharePrompt, setShowSharePrompt] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [uploadStatus, setUploadStatus] = useState("");
-  const [step, setStep] = useState(1);
-  const [userTier, setUserTier] = useState<"free" | "plus" | "creator">("free");
-  const [videoDuration, setVideoDuration] = useState(0);
-  const [checkingTier, setCheckingTier] = useState(true);
-  const totalSteps = isTweet ? 1 : isShort ? 3 : 5;
-  const isAudioPodcast = isPodcast && podcastFormat === "audio";
+  const [progress, setProgress] = useState(0);
+  const [checking, setChecking] = useState(true);
+  const [error, setError] = useState("");
 
-  // Fetch user tier on mount
   useEffect(() => {
-    getCachedUser().then(async (u) => {
-      if (!u) { setCheckingTier(false); return; }
-      try {
-        const r = await fetch("/api/profile?user_id=" + u.id);
-        const d = await r.json();
-        const rawTier = String(d.profile?.tier || "free").toLowerCase();
-        const normalized: "free" | "plus" | "creator" =
-          (rawTier === "creator" || rawTier === "creator" || rawTier === "pro") ? "creator" :
-          (rawTier === "plus" || rawTier === "pass" || rawTier === "troopass") ? "plus" :
-          "free";
-        setUserTier(normalized);
-      } catch { setUserTier("free"); }
-      setCheckingTier(false);
-    });
+    getCachedUser().then(() => setChecking(false)).catch(() => setChecking(false));
   }, []);
 
-  // Extract media duration when file is picked
   useEffect(() => {
     if (!mediaFile) { setVideoDuration(0); return; }
-    const isAudio = mediaFile.type.startsWith("audio/") || (isPodcast && podcastFormat === "audio");
-    const el = document.createElement(isAudio ? "audio" : "video") as HTMLMediaElement;
+    const el = document.createElement("video");
     el.preload = "metadata";
+    const url = URL.createObjectURL(mediaFile);
     el.onloadedmetadata = () => {
-      const dur = isFinite((el as any).duration) ? (el as any).duration : 0;
-      setVideoDuration(dur);
-      URL.revokeObjectURL(el.src);
+      setVideoDuration(isFinite(el.duration) ? el.duration : 0);
+      URL.revokeObjectURL(url);
     };
-    el.onerror = () => setVideoDuration(0);
-    el.src = URL.createObjectURL(mediaFile);
-  }, [mediaFile, isPodcast, podcastFormat]);
+    el.onerror = () => URL.revokeObjectURL(url);
+    el.src = url;
+  }, [mediaFile]);
 
-  useEffect(() => {
-    if (!isPodcast) setPodcastFormat("video");
-  }, [isPodcast]);
-
-  // Hard gate: Redirect if this upload type isn't allowed for their tier
-  useEffect(() => {
-    if (checkingTier) return;
-    if (isTweet && userTier !== "creator") {
-      alert("Only Creator tier can post Tweets. Redirecting you to upgrade...");
-      router.push("/upgrade");
-    }
-    if (!isShort && !isTweet && userTier !== "creator") {
-      alert("Only Creator tier can upload long-form videos. Redirecting you to upgrade...");
-      router.push("/upgrade");
-    }
-  }, [userTier, isShort, isTweet, checkingTier, router]);
-
-  useEffect(() => {
-    if (longFormType === "Podcast" && category === "History") setCategory("Podcasts");
-    if (longFormType === "Documentary" && (category === "History" || category === "Podcasts")) setCategory("Documentaries");
-  }, [longFormType, category]);
-
-  const uploadToSupabase = async (file: File, label: string) => {
-    if (file.size === 0) throw new Error(label + " is 0 bytes. On iPhone, wait for iCloud download first.");
-    setUploadStatus("Uploading " + label + "...");
-    setUploadProgress(0);
-    const folder = label === "Thumbnail" ? "thumbnails" : "videos";
-    const { publicUrl } = await r2MultipartUpload(file, {
-      folder,
-      onProgress: (p) => setUploadProgress(p),
-    });
-    return publicUrl;
+  const onPick = async (f?: File) => {
+    if (!f) return;
+    if (!f.type.startsWith("video/")) { setError("Please choose a video file."); return; }
+    setError("");
+    setMediaFile(f);
+    setThumbnailBlob(await generateThumbnail(f));
   };
 
-  const handleNext = () => {
-    if (step === 1) {
-      if (!isTweet && !mediaFile) return alert("Please select a video file.");
-      if (isTweet && !description.trim()) return alert("Please write your tweet.");
-      // Free tier short must be under 3 minutes
-      if (isShort && userTier === "free" && videoDuration > 180) {
-        return alert("Free accounts can only upload Shorts up to 3 minutes long. Upgrade to Plus for unlimited Shorts length.");
-      }
-      if (isShort && userTier === "plus" && videoDuration > 1200) {
-        return alert("Plus accounts can only upload Shorts up to 20 minutes long. Upgrade to Creator for unlimited.");
-      }
-    }
-    if (step === 2) {
-      if (isShort && !title.trim()) return alert("Please enter a title.");
-      if (!isShort && !thumbnailFile) return alert("Please select a thumbnail.");
-    }
-    if (step === 3) {
-      if (isShort && !description.trim()) return alert("Please enter a description.");
-      if (!isShort && !title.trim()) return alert("Please enter a title.");
-    }
-    if (step === 4 && !description.trim()) return alert("Please enter a description.");
-    
-    if (step < totalSteps) {
-      setStep(step + 1);
-    } else {
-      if (isTweet || isShort) publishContent(true);
-      else setShowSharePrompt(true);
-    }
+  const next = () => {
+    if (step === 1 && !mediaFile) { setError("Please choose a video first."); return; }
+    if (step === 2 && !description.trim()) { setError("Please write a description."); return; }
+    if (step === 4 && !(subCategory || customCategory.trim())) { setError("Please choose or enter a category."); return; }
+    setError("");
+    if (step < 4) setStep(step + 1);
+    else void publish();
   };
 
-  const publishContent = async (shareToFeed: boolean) => {
-    setShowSharePrompt(false);
+  const publish = async () => {
+    if (!mediaFile) return;
     setLoading(true);
+    setProgress(0);
+    setError("");
     try {
       const user = await getCachedUser();
       if (!user) throw new Error("Not logged in");
       const supabase = createClient();
-      let creatorId = null;
-      try {
-        const { data: profile } = await supabase.from("profiles").select("creator_id").eq("user_id", user.id).maybeSingle();
-        if (profile) creatorId = profile.creator_id;
-      } catch (err) {
-        console.warn("Profile fetch failed, proceeding with userId only", err);
+      const { data: profile } = await supabase.from("profiles").select("creator_id").eq("user_id", user.id).maybeSingle();
+
+      const folder = "videos";
+      const videoRes = await r2MultipartUpload(mediaFile, { folder, onProgress: p => setProgress(Math.round(p / 2)) });
+      let posterUrl = "";
+      if (thumbnailBlob) {
+        const tf = new File([thumbnailBlob], "poster.jpg", { type: "image/jpeg" });
+        const tRes = await r2MultipartUpload(tf, { folder: "thumbnails", onProgress: p => setProgress(50 + Math.round(p / 2)) });
+        posterUrl = tRes.publicUrl;
       }
 
-      const thumbUrl = (!isTweet && !isShort && thumbnailFile) ? await uploadToSupabase(thumbnailFile, "Thumbnail") : "";
-      const mediaUrl = (!isTweet && mediaFile) ? await uploadToSupabase(mediaFile, "Video") : "";
-
-      setUploadStatus("Saving...");
-      setUploadProgress(100);
-
+      setProgress(100);
       const res = await fetch("/api/save-video", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: isTweet ? "Tweet" : title,
-          description,
-          type: isTweet ? "Tweet" : (isShort ? "Short" : longFormType),
-          creatorId: creatorId || null,
+          title: description.trim().split("\n")[0].slice(0, 80) || "Untitled",
+          description: description.trim(),
+          type: mainType,
+          category: customCategory.trim() || subCategory,
+          creatorId: profile?.creator_id || null,
           uploaderUserId: user.id,
-          videoUrl: mediaUrl,
-          posterUrl: thumbUrl,
-          category: isTweet ? "Tweets" : (isShort ? "Shorts" : category),
-          visibility: isTweet ? "public" : (isShort ? "public" : visibility),
-          feed_visible: isTweet ? true : (isShort ? false : shareToFeed),
+          videoUrl: videoRes.publicUrl,
+          posterUrl,
+          backdropUrl: posterUrl,
+          visibility: "public",
+          feed_visible: true,
           duration: videoDuration > 0 ? Math.floor(videoDuration / 60) + ":" + String(Math.floor(videoDuration % 60)).padStart(2, "0") : "",
         }),
       });
-
-      if (!res.ok) throw new Error("Failed to save data");
+      if (!res.ok) throw new Error("Could not save your video.");
       setSuccess(true);
-      setTimeout(() => router.push(isTweet ? "/" : (isShort ? "/feed" : "/creator-dashboard")), 2200);
-    } catch (err: any) {
-      console.error(err);
-      alert("Upload failed: " + err.message);
+      setTimeout(() => router.push("/"), 1800);
+    } catch (e: any) {
+      setError(e?.message || "Upload failed. Please try again.");
       setLoading(false);
     }
   };
 
   if (success) {
     return (
-      <main className="min-h-screen bg-[#0a0303] text-white flex flex-col items-center justify-center px-4">
+      <main className="min-h-screen bg-[#09090B] text-white flex flex-col items-center justify-center px-4">
         <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-20 h-20 bg-[#1ed760]/20 rounded-full flex items-center justify-center mb-6">
           <CheckCircle2 size={40} className="text-[#1ed760]" />
         </motion.div>
-        <h1 className="text-2xl font-bold mb-2">{isTweet ? "Tweet Published" : (isShort ? "Short Published" : (isAudioPodcast ? "Audio Podcast Published" : isPodcast ? "Video Podcast Published" : "Video Published"))}</h1>
-        <p className="text-white/50 text-sm">Redirecting...</p>
+        <h1 className="text-2xl font-bold mb-2">Video published</h1>
+        <p className="text-white/50 text-sm">Taking you home…</p>
       </main>
     );
   }
 
-  const generateThumbnail = (file: File) => {
-    if (file.type.startsWith("audio/")) return;
-    const video = document.createElement("video");
-    video.src = URL.createObjectURL(file);
-    video.muted = true;
-    video.playsInline = true;
-    video.crossOrigin = "anonymous";
-    video.preload = "metadata";
-
-    video.onloadedmetadata = () => {
-      // Seek to 90 seconds, or halfway if the video is shorter
-      const dur = video.duration || 0;
-      const seekTime = Math.min(90, dur / 2) || 1;
-      try { video.currentTime = seekTime; } catch {}
-    };
-
-    video.onseeked = () => {
-      try {
-        const canvas = document.createElement("canvas");
-        canvas.width = video.videoWidth || 1280;
-        canvas.height = video.videoHeight || 720;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        canvas.toBlob((blob) => {
-          if (blob) {
-            const generatedFile = new File([blob], "auto-poster.jpg", { type: "image/jpeg" });
-            setThumbnailFile(generatedFile);
-            setAutoThumbnailPreview(URL.createObjectURL(blob));
-          }
-          URL.revokeObjectURL(video.src);
-        }, "image/jpeg", 0.85);
-      } catch (e) {
-        console.error("Auto-thumbnail generation failed:", e);
-      }
-    };
-  };
-
   return (
-    <main className="min-h-screen bg-[#0a0303] text-white pb-32 font-sans">
+    <main className="min-h-screen bg-[#09090B] text-white pb-32 font-sans">
       <TopBar />
-      <div className="max-w-2xl mx-auto px-4 pt-[calc(env(safe-area-inset-top)+6rem)]">
-        <div className="flex items-center gap-4 mb-8">
-          <Link href="/creator-dashboard" className="p-2 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 transition"><ArrowLeft size={20} /></Link>
-          <div><h1 className="text-2xl font-bold">{isTweet ? "Add a Tweet" : (isShort ? "Upload Short" : (isPodcast ? "Upload Podcast" : isDocumentary ? "Upload Documentary" : "Upload Video"))}</h1>
-          <p className="text-sm text-white/50">Step {step} of {totalSteps}</p></div>
+      <div className="max-w-xl mx-auto px-4 pt-[calc(env(safe-area-inset-top)+5rem)]">
+        <div className="flex items-center justify-between mb-8">
+          <button onClick={() => step > 1 ? setStep(step - 1) : router.back()} className="p-2 text-white/70 hover:text-white"><ArrowLeft size={24} /></button>
+          <div className="flex gap-1.5">
+            {[1, 2, 3, 4].map(n => <span key={n} className={`h-1.5 w-6 rounded-full ${n <= step ? "bg-[#E53945]" : "bg-white/15"}`} />)}
+          </div>
+          <span className="w-10 text-right text-xs text-white/40">{step}/4</span>
         </div>
 
-        {!isShort && !isTweet && (
-          <div className="flex items-center gap-2 mb-4 bg-[#1c1c1e] p-1 rounded-xl border border-white/10">
-            {([
-              { value: "long-video", label: "Video" },
-              { value: "Podcast", label: "Podcast" },
-              { value: "Documentary", label: "Documentary" },
-            ] as const).map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => setLongFormType(opt.value)}
-                className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition ${longFormType === opt.value ? "bg-white text-black" : "text-white/60 hover:text-white"}`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        )}
-        {isPodcast && (
-          <div className="flex items-center gap-2 mb-6 bg-[#1c1c1e] p-1 rounded-xl border border-white/10">
-            {([
-              { value: "video", label: "Video Podcast" },
-              { value: "audio", label: "Audio Podcast" },
-            ] as const).map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => { setPodcastFormat(opt.value); setMediaFile(null); setVideoDuration(0); setThumbnailFile(null); setAutoThumbnailPreview(null); }}
-                className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition ${podcastFormat === opt.value ? "bg-blue-500 text-white" : "text-white/60 hover:text-white"}`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        )}
-        <div className="w-full h-1 bg-white/10 rounded-full mb-8 overflow-hidden">
-          <div className="h-full bg-[#E53945] transition-all duration-300" style={{ width: `${((step - 1) / (totalSteps - 1)) * 100}%` }} />
-        </div>
-        <div className="space-y-6">
-          <div className="space-y-4">
-            {step === 1 && !isTweet && (
-              <div>
-                <label className="block text-xs font-bold text-white/60 mb-1">{isAudioPodcast ? "Audio File *" : "Video File *"}</label>
-                <div onClick={() => document.getElementById("media-upload")?.click()} className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] transition min-h-[200px]">
-                  <UploadCloud size={32} className="text-white/50 mb-3" />
-                  <span className="text-sm font-bold text-white text-center">{mediaFile ? mediaFile.name : (isAudioPodcast ? "Tap to select audio" : "Tap to select video")}</span>
-                </div>
-                <input
-                  id="media-upload"
-                  type="file"
-                  accept={isAudioPodcast ? "audio/*" : "video/*"}
-                  onChange={(e) => {
-                    const f = e.target.files?.[0] || null;
-                    e.currentTarget.value = "";
-                    if (!f) return;
-                    setMediaFile(f);
-                    setThumbnailFile(null);
-                    setAutoThumbnailPreview(null);
-                    generateThumbnail(f);
-                  }}
-                  className="hidden"
-                />
-              </div>
-            )}
-            
-            {step === 2 && !isShort && !isTweet && (
-              <div>
-                <label className="block text-xs font-bold text-white/60 mb-1 flex items-center gap-2">
-                  {isAudioPodcast ? "Cover Image" : "Thumbnail"} {autoThumbnailPreview && <span className="bg-green-500/20 text-green-400 text-[9px] px-1.5 py-0.5 rounded">AUTO</span>}
-                </label>
-                {autoThumbnailPreview ? (
-                  <div className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-4 flex flex-col items-center justify-center">
-                    <img src={autoThumbnailPreview} alt="Auto thumbnail" className="w-full max-w-[280px] aspect-video object-cover rounded-lg shadow-md mb-3" />
-                    <button type="button" onClick={() => document.getElementById("thumb-upload")?.click()} className="text-xs text-[#E53945] hover:underline font-semibold">Upload Custom Instead</button>
-                  </div>
-                ) : (
-                  <div onClick={() => document.getElementById("thumb-upload")?.click()} className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] transition min-h-[200px]">
-                    <ImageIcon size={32} className="text-white/50 mb-3" />
-                    <span className="text-sm font-bold text-white text-center">{thumbnailFile ? thumbnailFile.name : "Tap to select thumbnail"}</span>
-                  </div>
-                )}
-                <input id="thumb-upload" type="file" accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) { setThumbnailFile(f); setAutoThumbnailPreview(null); } }} className="hidden" />
-              </div>
-            )}
-
-            {((isShort && step === 2) || (!isShort && !isTweet && step === 3)) && (<div><label className="block text-xs font-bold text-white/60 mb-1">Title *</label><input required type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#E53945]" placeholder="Name your video..." /></div>)}
-
-            {((isTweet && step === 1) || (isShort && step === 3) || (!isShort && !isTweet && step === 4)) && (<div><label className="block text-xs font-bold text-white/60 mb-1">{isTweet ? "What is on your mind?" : "Description"} *</label><textarea required value={description} onChange={e => setDescription(e.target.value)} className={"w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#E53945] resize-none " + (isTweet ? "h-40" : "h-24")} placeholder={isTweet ? "Write your tweet..." : "Write a description..."} /></div>)}
-
-            {step === 5 && !isShort && !isTweet && (<><div><label className="block text-xs font-bold text-white/60 mb-1">Category *</label><select required value={category} onChange={(e) => setCategory(e.target.value)} className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-3 text-white focus:outline-none focus:border-[#E53945] appearance-none">{CATEGORIES.map(cat => (<option key={cat} value={cat}>{cat}</option>))}</select></div>
-            <div className="mt-4"><label className="block text-xs font-bold text-white/60 mb-1">Visibility *</label><div className="grid grid-cols-2 gap-2"><button type="button" onClick={() => setVisibility("public")} className={"flex flex-col items-center gap-1.5 p-3 rounded-xl border transition " + (visibility === "public" ? "bg-[#E53945]/10 border-[#E53945] text-[#E53945]" : "bg-white/5 border-white/10 text-white/50")}><Globe size={18} /><span className="text-[10px] font-bold uppercase">Public</span></button><button type="button" onClick={() => setVisibility("premium")} className={"flex flex-col items-center gap-1.5 p-3 rounded-xl border transition " + (visibility === "premium" ? "bg-[#D4AF37]/10 border-[#D4AF37] text-[#D4AF37]" : "bg-white/5 border-white/10 text-white/50")}><Lock size={18} /><span className="text-[10px] font-bold uppercase">Premium</span></button></div></div></>)}
-          </div>
-
-          {loading ? (
-            <div className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl p-4 flex flex-col gap-3"><div className="flex items-center justify-between"><span className="text-sm font-bold text-white">{uploadStatus}</span><span className="text-sm font-black text-[#E53945]">{uploadProgress}%</span></div><div className="w-full h-2 bg-black rounded-full overflow-hidden"><div className="h-full bg-[#E53945] transition-all duration-300" style={{ width: uploadProgress + "%" }} /></div></div>
-          ) : (
-            <div className="flex gap-3 pt-4">
-              {step > 1 && (
-                <button type="button" onClick={() => setStep(step - 1)} className="py-4 px-6 bg-white/5 border border-white/10 text-white font-bold rounded-xl hover:bg-white/10 transition">Back</button>
-              )}
-              <button type="button" onClick={handleNext} className="flex-1 bg-[#E53945] hover:bg-[#d12e39] text-white font-bold py-4 rounded-xl transition flex items-center justify-center gap-2">
-                {step === totalSteps ? (
-                  <>{isTweet ? <MessageSquare size={20} /> : <UploadCloud size={20} />} Publish {isTweet ? "Tweet" : (isShort ? "Short" : "Video")}</>
-                ) : (
-                  <>Next <ChevronRight size={20} /></>
-                )}
-              </button>
+        {step === 1 && (
+          <div>
+            <h1 className="text-2xl font-black mb-1">Upload video</h1>
+            <p className="text-sm text-white/50 mb-6">Choose a video from your camera roll.</p>
+            <div onClick={() => document.getElementById("upload-video-input")?.click()} className="w-full bg-[#1c1c1e] border border-dashed border-white/20 rounded-2xl p-10 flex flex-col items-center justify-center cursor-pointer hover:border-[#E53945] transition min-h-[240px]">
+              {thumbnailBlob ? (
+                <img src={URL.createObjectURL(thumbnailBlob)} alt="Video preview" className="max-h-[160px] rounded-lg mb-3" />
+              ) : <UploadCloud size={40} className="text-white/50 mb-3" />}
+              <span className="text-sm font-bold text-white text-center">{mediaFile ? mediaFile.name : "Tap to choose a video"}</span>
             </div>
-          )}
-        </div>
-      </div>
-      <AnimatePresence>
-        {showSharePrompt && !isShort && !isTweet && (
-          <><motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/60 z-[400]" onClick={() => setShowSharePrompt(false)} />
-          <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} className="fixed bottom-0 left-0 right-0 bg-[#0a0303] rounded-t-3xl border-t border-white/10 z-[410] p-6 pb-10" style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 24px)" }}>
-            <div className="w-10 h-1 bg-white/30 rounded-full mx-auto mb-5" /><h3 className="text-xl font-black text-center mb-2">Share to Home Feed?</h3><p className="text-sm text-white/50 text-center mb-6">Where should this video be visible?</p>
-            <div className="flex flex-col gap-3"><button onClick={() => publishContent(true)} className="flex items-center gap-4 p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-left"><div className="w-12 h-12 rounded-full bg-[#E53945]/20 flex items-center justify-center shrink-0"><Home className="text-[#E53945]" size={22} /></div><div><h4 className="font-bold text-white">Yes — Share to Home Feed</h4><p className="text-xs text-white/50">Visible on homepage and profile.</p></div></button>
-            <button onClick={() => publishContent(false)} className="flex items-center gap-4 p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-left"><div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center shrink-0"><User className="text-white" size={22} /></div><div><h4 className="font-bold text-white">No — Profile Only</h4><p className="text-xs text-white/50">Only visible on your profile.</p></div></button></div>
-            <button onClick={() => setShowSharePrompt(false)} className="w-full text-center text-white/40 text-sm font-semibold mt-4 py-2">Cancel</button>
-          </motion.div></>
+            <input id="upload-video-input" type="file" accept="video/*" className="hidden" onChange={e => { void onPick(e.target.files?.[0]); e.target.value = ""; }} />
+          </div>
         )}
-      </AnimatePresence>
+
+        {step === 2 && (
+          <div>
+            <h1 className="text-2xl font-black mb-1">Description</h1>
+            <p className="text-sm text-white/50 mb-6">Tell people what this video is about.</p>
+            <textarea value={description} onChange={e => setDescription(e.target.value)} rows={6} placeholder="Write a caption..." className="w-full bg-[#1c1c1e] border border-white/10 rounded-2xl p-4 text-white placeholder:text-white/30 outline-none focus:border-[#E53945] resize-none" autoFocus />
+          </div>
+        )}
+
+        {step === 3 && (
+          <div>
+            <h1 className="text-2xl font-black mb-1">Main category</h1>
+            <p className="text-sm text-white/50 mb-6">What kind of video is this?</p>
+            <div className="grid grid-cols-2 gap-3">
+              {MAIN_TYPES.map(t => (
+                <button key={t.id} onClick={() => setMainType(t.id)} className={`p-5 rounded-2xl border text-left transition ${mainType === t.id ? "bg-[#E53945]/15 border-[#E53945] text-white" : "bg-[#1c1c1e] border-white/10 text-white/60 hover:border-white/25"}`}>
+                  <span className="text-base font-bold">{t.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {step === 4 && (
+          <div>
+            <h1 className="text-2xl font-black mb-1">Sub-category</h1>
+            <p className="text-sm text-white/50 mb-6">Pick a topic, or type your own.</p>
+            <div className="flex flex-wrap gap-2 mb-5">
+              {SUB_CATEGORIES.map(c => (
+                <button key={c} onClick={() => { setSubCategory(c); setCustomCategory(""); }} className={`px-4 py-2 rounded-full border text-sm font-semibold transition ${subCategory === c ? "bg-[#E53945] border-[#E53945] text-white" : "bg-white/5 border-white/10 text-white/60 hover:border-white/25"}`}>{c}</button>
+              ))}
+            </div>
+            <div className="flex items-center gap-2 bg-[#1c1c1e] border border-white/10 rounded-xl px-4">
+              <input value={customCategory} onChange={e => { setCustomCategory(e.target.value); if (e.target.value) setSubCategory(""); }} placeholder="Or type your own category..." className="flex-1 bg-transparent py-3.5 text-white placeholder:text-white/30 outline-none" />
+              {customCategory && <button onClick={() => setCustomCategory("")} className="text-white/40"><X size={16} /></button>}
+            </div>
+          </div>
+        )}
+
+        {error && <p className="mt-5 text-sm text-red-400">{error}</p>}
+
+        {loading ? (
+          <div className="mt-8 bg-[#1c1c1e] border border-white/10 rounded-xl p-4">
+            <div className="flex justify-between text-sm mb-2"><span className="text-white/60">Uploading…</span><span className="font-bold">{progress}%</span></div>
+            <div className="h-2 bg-black rounded-full overflow-hidden"><div className="h-full bg-[#E53945] transition-all" style={{ width: progress + "%" }} /></div>
+          </div>
+        ) : (
+          <button onClick={next} className="mt-8 w-full bg-[#E53945] hover:bg-[#d12e39] text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition">
+            {step === 4 ? "Publish video" : "Continue"} <ChevronRight size={18} />
+          </button>
+        )}
+      </div>
       <MobileBottomNav />
     </main>
   );
 }
 
 export default function UploadPage() {
-  return (
-    <Suspense fallback={<div className="min-h-screen bg-[#0a0303] flex items-center justify-center"><div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" /></div>}>
-      <UploadContent />
-    </Suspense>
-  );
+  return <Suspense fallback={<div className="min-h-screen bg-[#09090B]" />}><UploadContent /></Suspense>;
 }

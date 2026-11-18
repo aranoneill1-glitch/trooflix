@@ -443,8 +443,6 @@ export default function Home() {
             <InstagramHomeFeed
               videos={videos}
               creators={creators}
-              categories={CATEGORIES}
-              onCategory={(cat) => { setActiveCategory(cat); setActiveTab("Home"); setDrawerOpen(false); }}
               onVideoSelect={handleCardSelect}
             />
           </div>

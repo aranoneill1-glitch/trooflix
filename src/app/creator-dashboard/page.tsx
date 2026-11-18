@@ -1099,42 +1099,11 @@ function CreatorDashboardContent() {
                       <Video className="text-[#E53945]" size={24} />
                     </div>
                     <div className="relative z-10">
-                      <h4 className="font-bold text-white text-base flex items-center gap-1.5">Upload Video {userTier !== "creator" && <Lock size={12} className="text-yellow-400" />}</h4>
-                      <p className="text-xs text-white/50">Publish a long-form video or long-video</p>
+                      <h4 className="font-bold text-white text-base">Upload Video</h4>
+                      <p className="text-xs text-white/50">Publish a video, podcast, film or documentary</p>
                     </div>
                   </Link>
 
-                  <Link 
-                    href="/creator-dashboard/upload?type=podcast" 
-                    onClick={() => setShowAddContentMenu(false)}
-                    className="group relative flex items-center gap-4 bg-white/[0.08] hover:bg-white/[0.12] border border-white/20 hover:border-blue-400/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
-                      <Mic className="text-blue-400" size={24} />
-                    </div>
-                    <div className="relative z-10">
-                      <h4 className="font-bold text-white text-base flex items-center gap-1.5">Upload Podcast {userTier !== "creator" && <Lock size={12} className="text-yellow-400" />}</h4>
-                      <p className="text-xs text-white/50">Publish a video or audio podcast episode</p>
-                    </div>
-                  </Link>
-
-                  <Link 
-                    href="/creator-dashboard/upload?type=short" 
-                    onClick={() => setShowAddContentMenu(false)}
-                    className="group relative flex items-center gap-4 bg-white/[0.08] hover:bg-white/[0.12] border border-white/20 hover:border-blue-400/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-blue-500/0 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
-                      <Play className="text-blue-400" size={24} />
-                    </div>
-                    <div className="relative z-10">
-                      <h4 className="font-bold text-white text-base">Upload Short</h4>
-                      <p className="text-xs text-white/50">Publish to the Shorts feed and your profile</p>
-                    </div>
-                  </Link>
-                  
                   <Link 
                     href={userTier === "creator" ? "/creator-dashboard/live" : "/upgrade?feature=go_live"}
                     onClick={() => setShowAddContentMenu(false)}
@@ -1161,7 +1130,7 @@ function CreatorDashboardContent() {
                       <Tag className="text-purple-400" size={24} />
                     </div>
                     <div className="relative z-10">
-                      <h4 className="font-bold text-white text-base flex items-center gap-1.5">Add an Item {userTier === "free" && <Lock size={12} className="text-yellow-400" />}</h4>
+                      <h4 className="font-bold text-white text-base flex items-center gap-1.5">Upload Merch {userTier === "free" && <Lock size={12} className="text-yellow-400" />}</h4>
                       <p className="text-xs text-white/50">Add an item to your store</p>
                     </div>
                   </Link>

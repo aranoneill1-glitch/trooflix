@@ -6,12 +6,12 @@ import { Bookmark, Headphones, Heart, MessageCircle, MoreHorizontal, Play, Send,
 import LikeButton from "@/components/LikeButton";
 import CommentSheet from "@/components/CommentSheet";
 import { GoldCoin } from "@/components/TipModal";
+import { ChevronDown, X as XIcon } from "lucide-react";
+import { MAIN_TYPES, SUB_CATEGORIES, normalizeMainType, type MainType } from "@/lib/videoTypes";
 
 type Props = {
   videos: any[];
   creators: any[];
-  categories: string[];
-  onCategory: (category: string) => void;
   onVideoSelect: (video: any) => void;
 };
 
@@ -129,16 +129,21 @@ function PostMedia({ video, onOpen, onLike, isActive }: { video: any; onOpen: ()
   );
 }
 
-export default function InstagramHomeFeed({ videos, creators, categories, onCategory, onVideoSelect }: Props) {
+export default function InstagramHomeFeed({ videos, creators, onVideoSelect }: Props) {
   const [commentCounts, setCommentCounts] = useState<Record<number, number>>({});
   const [sheetVideo, setSheetVideo] = useState<number | null>(null);
   const [saved, setSaved] = useState<number[]>([]);
   const [likedLocal, setLikedLocal] = useState<number[]>([]);
   const [activeId, setActiveId] = useState<number | null>(null);
   const postRefs = useRef<Map<number, HTMLElement>>(new Map());
+  const [activeType, setActiveType] = useState<MainType | null>(null);
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
 
   const posts: Post[] = useMemo(() => {
-    const usable = videos.filter((v: any) => (v.videoUrl || v.bitchuteUrl) && v.type?.toLowerCase() !== "tweet");
+    let usable = videos.filter((v: any) => (v.videoUrl || v.bitchuteUrl) && v.type?.toLowerCase() !== "tweet");
+    if (activeType) usable = usable.filter((v: any) => normalizeMainType(v) === activeType);
+    if (activeCategory) usable = usable.filter((v: any) => String(v.category || "") === activeCategory);
     return usable.slice().sort((a: any, b: any) => b.id - a.id).slice(0, 40).map((video: any) => {
       const creator = creators.find((c: any) =>
         (video.creatorId && c.id === video.creatorId) ||
@@ -146,7 +151,7 @@ export default function InstagramHomeFeed({ videos, creators, categories, onCate
       ) || null;
       return { video, creator, commentCount: commentCounts[video.id] || 0 };
     });
-  }, [videos, creators, commentCounts]);
+  }, [videos, creators, commentCounts, activeType, activeCategory]);
 
   useEffect(() => {
     const nodes = Array.from(postRefs.current.values());
@@ -181,18 +186,47 @@ export default function InstagramHomeFeed({ videos, creators, categories, onCate
 
   return (
     <div className="pb-24">
-      {/* Category circles — start below the fixed top bar */}
-      <div className="flex gap-3 overflow-x-auto scrollbar-hide px-3 pb-3 pt-[calc(env(safe-area-inset-top)+68px)] border-b border-white/[0.06]">
-        {categories.map((cat) => (
-          <button key={cat} onClick={() => { haptic(); onCategory(cat); }} className="flex w-[64px] shrink-0 flex-col items-center gap-1.5 active:opacity-70">
-            <span className="rounded-full bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] p-[2px]">
-              <span className="flex h-[54px] w-[54px] items-center justify-center rounded-full border-2 border-[#08090c] bg-[#1c1c1e] px-1 text-center text-[10px] font-bold leading-tight text-white">
-                {cat}
-              </span>
-            </span>
-            <span className="w-full truncate text-center text-[10px] text-white/60">Explore</span>
+      {/* Main-type pills + categories dropdown — below the fixed top bar */}
+      <div className="px-3 pb-3 pt-[calc(env(safe-area-inset-top)+68px)] border-b border-white/[0.06]">
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+          {MAIN_TYPES.map(t => (
+            <button
+              key={t.id}
+              onClick={() => { haptic(); setActiveType(prev => prev === t.id ? null : t.id); setActiveCategory(null); }}
+              className={`shrink-0 rounded-full border px-4 py-2 text-xs font-bold transition ${
+                activeType === t.id ? "bg-[#E53945] border-[#E53945] text-white" : "bg-white/5 border-white/10 text-white/60"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+          <button
+            onClick={() => { haptic(); setCategoriesOpen(v => !v); }}
+            className={`shrink-0 inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-xs font-bold transition ${activeCategory || categoriesOpen ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-white/60"}`}
+          >
+            Categories <ChevronDown size={13} className={categoriesOpen ? "rotate-180" : ""} />
           </button>
-        ))}
+        </div>
+
+        {categoriesOpen && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {SUB_CATEGORIES.map(c => (
+              <button
+                key={c}
+                onClick={() => { haptic(); setActiveCategory(prev => prev === c ? null : c); setActiveType(null); }}
+                className={`rounded-full border px-3 py-1.5 text-[11px] font-semibold transition ${activeCategory === c ? "bg-[#E53945] border-[#E53945] text-white" : "bg-white/5 border-white/10 text-white/60"}`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {(activeType || activeCategory) && (
+          <button onClick={() => { setActiveType(null); setActiveCategory(null); }} className="mt-3 inline-flex items-center gap-1 text-[11px] text-white/45">
+            <XIcon size={12} /> Clear filter
+          </button>
+        )}
       </div>
 
       {/* Posts */}
