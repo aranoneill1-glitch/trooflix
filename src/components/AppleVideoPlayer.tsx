@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { getCachedUser } from "@/lib/cache";
 import PremiumLockModal from "@/components/PremiumLockModal";
 import { createPortal } from "react-dom";
-import VideoIntro from "@/components/VideoIntro";
 import CustomVideoPlayer from "@/components/CustomVideoPlayer";
 
 interface AppleVideoPlayerProps {
@@ -25,7 +24,6 @@ interface AppleVideoPlayerProps {
 
 export default function AppleVideoPlayer({ src, onClose, poster, creatorId, isPremium }: AppleVideoPlayerProps) {
   const [mounted, setMounted] = useState(false);
-  const [showIntro, setShowIntro] = useState(true);
   const [userTier, setUserTier] = useState<"free" | "plus" | "creator">("free");
   const [premiumLock, setPremiumLock] = useState<{ creatorName: string; priceCents: number | null } | null>(null);
   const [premiumChecked, setPremiumChecked] = useState(!isPremium);
@@ -99,12 +97,6 @@ export default function AppleVideoPlayer({ src, onClose, poster, creatorId, isPr
   return createPortal(
     <div className="fixed inset-0 z-[9999] bg-black flex items-center justify-center">
       <CustomVideoPlayer src={src} poster={poster} onClose={onClose} userTier={userTier} isLongForm={true} />
-      
-      {showIntro && (
-        <div className="absolute inset-0 z-[10000]">
-          <VideoIntro onDone={() => setShowIntro(false)} />
-        </div>
-      )}
     </div>,
     document.body
   );

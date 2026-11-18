@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Bookmark, Headphones, Heart, MessageCircle, MoreHorizontal, Play, Send, ShoppingBag, Volume2, VolumeX } from "lucide-react";
+import { Headphones, Heart, Maximize2, MessageCircle, MoreHorizontal, Play, Send, ShoppingBag, Volume2, VolumeX } from "lucide-react";
 import LikeButton from "@/components/LikeButton";
 import CommentSheet from "@/components/CommentSheet";
 import { GoldCoin } from "@/components/TipModal";
@@ -325,7 +325,18 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
                   <GoldCoin size={23} />
                 </button>
                 <button onClick={() => { if (navigator.share) navigator.share({ title: video.title, url: window.location.href }).catch(() => {}); }} aria-label="Share" className="text-white active:opacity-60"><Send size={23} strokeWidth={1.7} /></button>
-                <button onClick={() => toggleSave(video.id)} aria-label="Save" className={`ml-auto active:opacity-60 ${saved.includes(video.id) ? "text-[#ffd93d]" : "text-white"}`}><Bookmark size={23} strokeWidth={1.7} fill={saved.includes(video.id) ? "currentColor" : "none"} /></button>
+                <button
+                  onClick={() => {
+                    const el = document.querySelector<HTMLElement>(`[data-post-id="${video.id}"] video`);
+                    if (!el) return;
+                    const req = (el as any).requestFullscreen || (el as any).webkitRequestFullscreen;
+                    if (req) req.call(el).catch(() => {});
+                  }}
+                  aria-label="Fullscreen"
+                  className="ml-auto text-white active:opacity-60"
+                >
+                  <Maximize2 size={23} strokeWidth={1.7} />
+                </button>
               </div>
 
               <div className="px-3 pt-1.5">
