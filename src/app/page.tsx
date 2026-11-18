@@ -46,6 +46,7 @@ import LikeButton from "@/components/LikeButton";
 import SearchResults from "@/components/SearchResults";
 import DirectoryHome from "@/components/DirectoryHome";
 import InstagramHomeFeed from "@/components/InstagramHomeFeed";
+import TipModal from "@/components/TipModal";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import TextOverlayRenderer from "@/components/TextOverlay";
 import CommentSheet from "@/components/CommentSheet";
@@ -495,6 +496,7 @@ export default function Home() {
         open={commentSheetVideoId !== null}
         onClose={() => setCommentSheetVideoId(null)}
       />
+      <TipModal />
 
       <AnimatePresence>
         {selected && <DetailModal item={selected} onClose={() => setSelected(null)} onPlay={handleInstantPlay} creators={creators} />}

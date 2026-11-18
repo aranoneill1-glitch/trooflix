@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Bookmark, Heart, MessageCircle, MoreHorizontal, Play, Send, Volume2, VolumeX } from "lucide-react";
+import { Bookmark, Gift, Heart, MessageCircle, MoreHorizontal, Play, Send, Volume2, VolumeX } from "lucide-react";
 import LikeButton from "@/components/LikeButton";
 import CommentSheet from "@/components/CommentSheet";
 
@@ -17,6 +17,8 @@ type Post = {
   creator: any;
   commentCount: number;
 };
+
+function haptic() { try { (navigator as any).vibrate?.(10); } catch {} }
 
 function formatCount(n: number) {
   if (n >= 1000000) return `${(n / 1000000).toFixed(1)}m`;
@@ -39,7 +41,7 @@ function PostMedia({ video, onOpen, onLike }: { video: any; onOpen: () => void; 
   const wrapRef = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
   const [playing, setPlaying] = useState(false);
-  const [muted, setMuted] = useState(true);
+  const [muted, setMuted] = useState(false);
   const lastTap = useRef(0);
 
   useEffect(() => {
@@ -54,8 +56,15 @@ function PostMedia({ video, onOpen, onLike }: { video: any; onOpen: () => void; 
   useEffect(() => {
     const v = ref.current;
     if (!v) return;
-    if (inView) v.play().then(() => setPlaying(true)).catch(() => {});
-    else { v.pause(); setPlaying(false); }
+    if (inView) {
+      // Browsers block autoplay with sound — fall back to muted, then let the
+      // user unmute with the speaker button (a real user gesture).
+      v.play().then(() => setPlaying(true)).catch(() => {
+        v.muted = true;
+        setMuted(true);
+        v.play().then(() => setPlaying(true)).catch(() => {});
+      });
+    } else { v.pause(); setPlaying(false); }
   }, [inView]);
 
   const src = video.videoUrl || video.bitchuteUrl;
@@ -179,7 +188,14 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect }: P
 
               <div className="flex items-center gap-4 px-3 pt-2.5">
                 <LikeButton videoId={video.id} size={24} showCount={false} />
-                <button onClick={() => setSheetVideo(video.id)} aria-label="Comments" className="text-white active:opacity-60"><MessageCircle size={24} strokeWidth={1.7} /></button>
+                <button onClick={() => { haptic(); setSheetVideo(video.id); }} aria-label="Comments" className="text-white active:opacity-60"><MessageCircle size={24} strokeWidth={1.7} /></button>
+                <button
+                  onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: video.creatorId || video.uploaderUserId, videoId: video.id } }))}
+                  aria-label="Tip creator"
+                  className="text-[#ffd93d] active:opacity-60"
+                >
+                  <Gift size={23} strokeWidth={1.7} />
+                </button>
                 <button onClick={() => { if (navigator.share) navigator.share({ title: video.title, url: window.location.href }).catch(() => {}); }} aria-label="Share" className="text-white active:opacity-60"><Send size={23} strokeWidth={1.7} /></button>
                 <button onClick={() => toggleSave(video.id)} aria-label="Save" className={`ml-auto active:opacity-60 ${saved.includes(video.id) ? "text-[#ffd93d]" : "text-white"}`}><Bookmark size={23} strokeWidth={1.7} fill={saved.includes(video.id) ? "currentColor" : "none"} /></button>
               </div>
