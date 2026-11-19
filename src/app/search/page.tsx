@@ -447,10 +447,10 @@ function SearchContent() {
               )}
             </div>
           ) : (
-            <div className="space-y-8 lg:space-y-12">
+            <div className="space-y-6 lg:space-y-8">
               {recentSearches.length > 0 && (
                 <section>
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between mb-3">
                     <h2 className="text-lg md:text-xl font-bold flex items-center gap-2"><Clock size={18} className="text-white/50" /> Recent searches</h2>
                     <button onClick={clearRecentSearches} className="text-xs md:text-sm font-bold text-white/50 hover:text-white transition">Clear</button>
                   </div>
@@ -465,114 +465,47 @@ function SearchContent() {
               )}
 
               <section>
-                <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-8">What would you like to watch?</h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
-                  {PRIMARY_CATEGORIES.map((cat) => (
-                    <Link key={cat.name} href={`/search/${encodeURIComponent(cat.name.toLowerCase().replace(/ & /g, "-").replace(/ /g, "-"))}`} className="group relative h-28 md:h-40 rounded-2xl overflow-hidden border border-white/10 block">
-                      <img src={cat.image} alt={cat.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
-                      <div className={`absolute inset-0 ${cat.color} mix-blend-multiply opacity-80 group-hover:opacity-60 transition-opacity`} />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                      <div className="absolute bottom-0 left-0 p-3 md:p-6 flex items-center justify-between w-full">
-                        <h3 className="text-lg md:text-2xl font-black text-white drop-shadow-lg">{cat.name}</h3>
-                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-4 group-hover:translate-x-0">
-                          <ChevronRight size={16} className="text-white" />
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
+                <div className="flex items-center justify-between mb-4 md:mb-6">
+                  <h2 className="text-xl md:text-2xl font-bold">Videos</h2>
                 </div>
-              </section>
-
-              <div className="w-full h-px bg-white/5" />
-
-              <section>
-                <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-8">Browse by category</h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
-                  {GENRE_CATEGORIES.map((cat) => (
-                    <Link key={cat.name} href={`/search/${encodeURIComponent(cat.name.toLowerCase().replace(/ & /g, "-").replace(/ /g, "-"))}`} className="group relative h-28 md:h-40 rounded-2xl overflow-hidden border border-white/10 block">
-                      <img src={cat.image} alt={cat.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" />
-                      <div className={`absolute inset-0 ${cat.color} mix-blend-multiply opacity-80 group-hover:opacity-60 transition-opacity`} />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                      <div className="absolute bottom-0 left-0 p-3 md:p-6 flex items-center justify-between w-full">
-                        <h3 className="text-lg md:text-2xl font-black text-white drop-shadow-lg">{cat.name}</h3>
-                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-4 group-hover:translate-x-0">
-                          <ChevronRight size={16} className="text-white" />
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </section>
-
-              {trendingDocs.length > 0 && (
-                <>
-                  <div className="w-full h-px bg-white/5" />
-                  <section>
-                    <div className="flex items-center justify-between mb-4 md:mb-6">
-                      <h2 className="text-xl md:text-2xl font-bold">Trending Documentaries</h2>
-                    </div>
-                    <div className="grid grid-cols-3 md:grid-cols-6 gap-3 md:gap-6">
-                      {trendingDocs.map((v) => (
-                        <Link key={v.id} href={`/watch/${v.id}`} className="group flex flex-col">
-                          <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-[#1c1c1e] mb-2 md:mb-3 border border-white/5 shadow-lg">
-                            <img src={v.posterUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy" />
-                          </div>
-                          <h3 className="text-xs md:text-sm font-bold text-white leading-tight line-clamp-2 group-hover:text-[#E53945] transition-colors">{v.title}</h3>
-                          <p className="text-[10px] md:text-xs text-white/50 mt-1">{v.year}</p>
-                        </Link>
-                      ))}
-                    </div>
-                  </section>
-                </>
-              )}
-
-              {popularPodcasts.length > 0 && (
-                <>
-                  <div className="w-full h-px bg-white/5" />
-                  <section>
-                    <div className="flex items-center justify-between mb-4 md:mb-6">
-                      <h2 className="text-xl md:text-2xl font-bold">Popular Podcasts</h2>
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-6">
-                      {popularPodcasts.map((v) => (
-                        <Link key={v.id} href={`/watch/${v.id}`} className="group flex flex-col bg-[#1c1c1e] rounded-2xl overflow-hidden border border-white/5 hover:border-white/20 transition-all hover:-translate-y-1">
-                          <div className="relative aspect-square overflow-hidden bg-[#09090B]">
-                            <img src={v.posterUrl || v.backdropUrl} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy" />
-                          </div>
-                          <div className="p-3 md:p-4">
-                            <h3 className="text-sm md:text-base font-bold text-white leading-tight line-clamp-1 group-hover:text-[#E53945] transition-colors">{v.title}</h3>
-                            <p className="text-[10px] md:text-xs text-white/50 mt-1 md:mt-2">{v.type} • {v.category}</p>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-                  </section>
-                </>
-              )}
-
-              {popularCreators.length > 0 && (
-                <>
-                  <div className="w-full h-px bg-white/5" />
-                  <section>
-                    <div className="flex items-center justify-between mb-4 md:mb-6">
-                      <h2 className="text-xl md:text-2xl font-bold">Popular Creators</h2>
-                    </div>
-                    <div className="grid grid-cols-4 md:grid-cols-8 gap-3 md:gap-4">
-                      {popularCreators.map((c) => (
-                        <Link key={c.user_id} href={`/profile/${c.username}`} className="flex flex-col items-center text-center group">
-                          <div className="w-16 h-16 md:w-24 md:h-24 rounded-full p-[2px] bg-[#E53945] group-hover:scale-105 transition-transform mb-2 md:mb-3">
-                            <div className="w-full h-full rounded-full border-2 border-[#09090B] overflow-hidden bg-[#1c1c1e]">
-                              {c.avatar_url ? <img src={c.avatar_url} alt={c.display_name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-lg md:text-2xl font-bold text-white">{(c.display_name || "?")[0]?.toUpperCase()}</div>}
+                {loading ? (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-5 animate-pulse">
+                    {[0,1,2,3,4,5,6,7,8,9].map(i => <div key={i} className="aspect-video rounded-xl bg-white/[0.06]" />)}
+                  </div>
+                ) : allVideos.filter(v => normalize(v.type) !== "tweet").length === 0 ? (
+                  <div className="text-center py-16 bg-[#1c1c1e] rounded-3xl border border-white/5">
+                    <p className="text-white/60 text-lg">No videos yet.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-5">
+                    {[...allVideos]
+                      .filter(v => normalize(v.type) !== "tweet")
+                      .sort((a: any, b: any) => {
+                        const at = a.createdAt ? new Date(a.createdAt).getTime() : Number(a.id) || 0;
+                        const bt = b.createdAt ? new Date(b.createdAt).getTime() : Number(b.id) || 0;
+                        return bt - at;
+                      })
+                      .map((video) => {
+                        const short = isShortVideo(video);
+                        const live = isLiveVideo(video);
+                        const href = short ? `/feed?reel=${video.id}` : `/watch/${video.id}`;
+                        return (
+                          <Link key={video.id} href={href} className="flex flex-col group">
+                            <div className={`relative ${short ? "aspect-[9/16]" : "aspect-video"} rounded-xl overflow-hidden bg-[#1c1c1e] mb-2 md:mb-3 border border-white/5 shadow-lg`}>
+                              <img src={video.posterUrl || video.backdropUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy" />
+                              <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition" />
+                              {live && <span className="absolute top-2 left-2 text-[10px] font-bold uppercase tracking-wider bg-[#E53945] text-white px-2 py-0.5 rounded-full">Live</span>}
+                              {short && <span className="absolute top-2 left-2 text-[10px] font-bold uppercase tracking-wider bg-black/60 text-white px-2 py-0.5 rounded-full border border-white/10">Short</span>}
+                              {isPodcastVideo(video) && !short && <span className="absolute top-2 left-2 text-[10px] font-bold uppercase tracking-wider bg-black/60 text-white px-2 py-0.5 rounded-full border border-white/10">Podcast</span>}
                             </div>
-                          </div>
-                          <h3 className="text-xs md:text-sm font-bold text-white group-hover:text-[#E53945] transition-colors truncate w-full">{c.display_name || c.username}</h3>
-                          <p className="text-[10px] md:text-xs text-white/50 mt-0.5 md:mt-1">Creator</p>
-                        </Link>
-                      ))}
-                    </div>
-                  </section>
-                </>
-              )}
+                            <span className="text-xs md:text-sm font-bold text-white leading-tight line-clamp-2 group-hover:text-[#E53945] transition-colors">{video.title}</span>
+                            <span className="text-[10px] md:text-xs text-white/50 mt-1">{video.type || "Video"}{video.category ? ` • ${video.category}` : ""}</span>
+                          </Link>
+                        );
+                      })}
+                  </div>
+                )}
+              </section>
             </div>
           )}
 
