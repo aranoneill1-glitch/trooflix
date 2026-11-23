@@ -1,14 +1,21 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Menu, Mic, Plus, RefreshCw, Search, Video, Radio, X, Play, Tag, ShoppingBag, Sparkles, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import UserMenu from "@/components/UserMenu";
 import NotificationBell from "@/components/NotificationBell";
 import PWAInstallButton from "@/components/PWAInstallButton";
 import { getCachedUser, getCachedVideos, getSyncCachedVideos, onVideosChange } from "@/lib/cache";
+
+function SearchParamsSync({ onQ }: { onQ: (q: string) => void }) {
+  const searchParams = useSearchParams();
+  const q = searchParams.get("q") || "";
+  useEffect(() => { onQ(q); }, [q, onQ]);
+  return null;
+}
 
 type Props = {
   onMenu?: () => void;
@@ -82,12 +89,16 @@ export default function TopBar({ onMenu }: Props) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  const syncSearchQ = useCallback((q: string) => {
+    if (window.location.pathname === "/search") setSearchQuery(q);
+  }, []);
+
   useEffect(() => {
-    if (!isSearchPage) {
-      setSearchOpen(false);
-      setSearchQuery("");
+    if (isSearchPage) {
+      setSearchOpen(true);
     } else {
       setSearchOpen(false);
+      setSearchQuery("");
     }
   }, [isSearchPage, pathname]);
 
@@ -97,6 +108,14 @@ export default function TopBar({ onMenu }: Props) {
       return () => clearTimeout(t);
     }
   }, [searchOpen]);
+
+  const updateSearch = (q: string) => {
+    setSearchQuery(q);
+    if (isSearchPage) {
+      const trimmed = q.trim();
+      router.replace(trimmed ? `/search?q=${encodeURIComponent(trimmed)}` : "/search", { scroll: false });
+    }
+  };
 
   const submitSearch = (q: string) => {
     const trimmed = q.trim();
@@ -115,6 +134,11 @@ export default function TopBar({ onMenu }: Props) {
 
   return (
     <>
+      {isSearchPage && (
+        <Suspense fallback={null}>
+          <SearchParamsSync onQ={syncSearchQ} />
+        </Suspense>
+      )}
       <div
         className="fixed top-0 left-0 lg:left-[72px] right-0 z-[200] bg-[#09090B]/35 backdrop-blur-xl"
         style={{ height: "env(safe-area-inset-top)", WebkitTransform: "translateZ(0)", transform: "translateZ(0)" }}
@@ -143,14 +167,14 @@ export default function TopBar({ onMenu }: Props) {
                 <input
                   ref={searchInputRef}
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => updateSearch(e.target.value)}
                   placeholder="Search Trooflix..."
                   className="w-full h-10 bg-white/[0.08] border border-white/10 rounded-full pl-9 pr-9 text-sm text-white placeholder:text-white/40 outline-none focus:outline-none focus:ring-0"
                 />
                 {searchQuery && (
                   <button
                     type="button"
-                    onClick={() => { setSearchQuery(""); searchInputRef.current?.focus(); }}
+                    onClick={() => { updateSearch(""); searchInputRef.current?.focus(); }}
                     className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10"
                     aria-label="Clear search"
                   >
@@ -198,7 +222,7 @@ export default function TopBar({ onMenu }: Props) {
               {!isSearchPage && (
                 <button
                   type="button"
-                  onClick={() => setSearchOpen(true)}
+                  onClick={() => { setSearchOpen(true); router.push("/search"); }}
                   className="w-9 h-9 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition"
                   aria-label="Search"
                 >

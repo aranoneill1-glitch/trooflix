@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useMemo, Suspense, useRef } from "react";
+import { useState, useEffect, useMemo, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Search, X, Play, User, TrendingUp, ChevronRight, Filter, Clock, Radio, Film, Mic, Clapperboard, Sparkles } from "lucide-react";
+import { Clock, Filter } from "lucide-react";
 import Link from "next/link";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import TopBar from "@/components/TopBar";
@@ -34,7 +34,6 @@ const GENRE_CATEGORIES = [
   { name: "Medicine", color: "bg-[#1DB954]/60", image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=600&auto=format&fit=crop" }
 ];
 
-const TRENDING_TAGS = ["History", "Politics", "Ancient Civilisations", "Technology", "Science & Health"];
 const RECENT_SEARCHES_KEY = "trooflix_recent_searches_v1";
 
 type FilterType = "all" | "creators" | "live" | "shorts" | "videos" | "podcasts";
@@ -111,14 +110,12 @@ function SearchContent() {
   const initialQuery = searchParams.get("q") || "";
 
   const [query, setQuery] = useState(initialQuery);
-  const [isFocused, setIsFocused] = useState(false);
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
 
   const [allVideos, setAllVideos] = useState<any[]>([]);
   const [allProfiles, setAllProfiles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     try {
@@ -174,7 +171,6 @@ function SearchContent() {
     } else {
       router.replace("/search");
     }
-    setIsFocused(false);
   };
 
   const searchTerms = useMemo(() => normalize(query).split(/\s+/).filter(Boolean), [query]);
@@ -237,18 +233,7 @@ function SearchContent() {
 
   const hasResults = (showCreators && filteredProfiles.length > 0) || (showVideos && filteredVideos.length > 0);
 
-  const suggestions = useMemo(() => {
-    if (searchTerms.length === 0) return [];
-    const out: { type: "creator" | "video"; label: string; sub?: string; href?: string; video?: any }[] = [];
-    for (const p of scoredProfiles.slice(0, 4)) {
-      out.push({ type: "creator", label: p.display_name || p.username || "Creator", sub: p.username ? `@${p.username}` : "Creator", href: `/profile/${p.username}` });
-    }
-    for (const v of scoredVideos.slice(0, 5)) {
-      const sub = isLiveVideo(v) ? "Live" : isShortVideo(v) ? "Short" : isPodcastVideo(v) ? "Podcast" : (v.type || "Video");
-      out.push({ type: "video", label: v.title || "Untitled", sub, video: v });
-    }
-    return out.slice(0, 8);
-  }, [scoredProfiles, scoredVideos, searchTerms.length]);
+  // suggestions removed (search input is in TopBar on /search)
 
   const trendingDocs = allVideos.filter(v => normalize(v.type) === "documentary").slice(0, 6);
   const popularPodcasts = allVideos.filter(v => isPodcastVideo(v)).slice(0, 5);
@@ -272,100 +257,7 @@ function SearchContent() {
       <div className="relative z-10">
         <div className="w-full max-w-[1600px] mx-auto px-4 lg:px-10 pt-[calc(env(safe-area-inset-top)+5rem)] lg:pt-32 pb-[calc(env(safe-area-inset-bottom)+80px)]">
 
-          <div className="flex flex-col items-center justify-center text-center mb-8 lg:mb-12 pt-0 lg:pt-6">
-
-            <div className="relative w-full max-w-4xl mx-auto mb-4 lg:mb-6">
-              <div className="absolute inset-y-0 left-0 pl-4 md:pl-6 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 md:h-6 md:w-6 text-white/50" />
-              </div>
-              <input
-                ref={inputRef}
-                type="text"
-                className="w-full bg-[#1c1c1e]/80 text-white font-medium text-base md:text-lg placeholder:text-white/40 rounded-full py-4 md:py-5 pl-12 md:pl-16 pr-24 border border-white/10 focus:outline-none focus:ring-2 focus:ring-[#E53945]/50 focus:border-[#E53945]/50 shadow-2xl transition-all"
-                placeholder="Search creators, live, shorts, videos, podcasts..."
-                value={query}
-                onFocus={() => setIsFocused(true)}
-                onBlur={() => setTimeout(() => setIsFocused(false), 120)}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") applySearch(query);
-                  if (e.key === "Escape") { setIsFocused(false); (e.target as HTMLInputElement).blur(); }
-                }}
-              />
-              <div className="absolute inset-y-0 right-0 pr-3 md:pr-4 flex items-center gap-2">
-                {query && (
-                  <button onClick={() => { setQuery(""); router.replace("/search"); inputRef.current?.focus(); }} className="bg-white/10 hover:bg-white/20 rounded-full p-1.5 transition" aria-label="Clear">
-                    <X className="h-4 w-4 text-white" />
-                  </button>
-                )}
-                <button onClick={() => applySearch(query)} className="bg-[#E53945] hover:bg-[#d12e39] text-white rounded-full px-4 py-2 text-sm font-bold transition">
-                  Search
-                </button>
-              </div>
-
-              {/* Suggestions / Recent dropdown */}
-              {isFocused && (query.trim().length > 0 || recentSearches.length > 0) && (
-                <div className="absolute top-full left-0 right-0 mt-3 bg-[#111114]/95 border border-white/10 rounded-2xl shadow-2xl overflow-hidden text-left z-20">
-                  {query.trim().length === 0 && recentSearches.length > 0 && (
-                    <div className="p-2">
-                      <div className="flex items-center justify-between px-3 py-2">
-                        <span className="text-xs font-bold uppercase tracking-wider text-white/40 flex items-center gap-2"><Clock size={13} /> Recent searches</span>
-                        <button onClick={clearRecentSearches} className="text-xs text-white/40 hover:text-white transition">Clear</button>
-                      </div>
-                      {recentSearches.map((term) => (
-                        <button key={term} onMouseDown={(e) => e.preventDefault()} onClick={() => applySearch(term)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition text-sm text-white/80">
-                          <Clock size={15} className="text-white/35" />
-                          <span className="truncate">{term}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-
-                  {query.trim().length > 0 && (
-                    <div className="p-2">
-                      <div className="px-3 py-2 text-xs font-bold uppercase tracking-wider text-white/40 flex items-center gap-2"><Sparkles size={13} /> Suggestions</div>
-                      {suggestions.length === 0 ? (
-                        <div className="px-3 py-3 text-sm text-white/50">No quick matches yet. Press Enter to search.</div>
-                      ) : suggestions.map((s, i) => (
-                        s.type === "creator" && s.href ? (
-                          <Link key={`${s.type}-${s.label}-${i}`} href={s.href} onMouseDown={() => saveRecentSearch(query)} onClick={() => setIsFocused(false)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition">
-                            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"><User size={14} className="text-white/70" /></div>
-                            <div className="min-w-0 flex-1">
-                              <div className="text-sm font-semibold text-white truncate">{s.label}</div>
-                              <div className="text-xs text-white/45 truncate">{s.sub}</div>
-                            </div>
-                            <span className="text-[10px] uppercase tracking-wider text-white/35">Creator</span>
-                          </Link>
-                        ) : (
-                          <button key={`${s.type}-${s.label}-${i}`} onMouseDown={(e) => e.preventDefault()} onClick={() => { saveRecentSearch(query); if (s.video) { setIsFocused(false); if (isShortVideo(s.video)) router.push(`/feed?reel=${s.video.id}`); else router.push(`/watch/${s.video.id}`); } else applySearch(s.label); }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition text-left">
-                            <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
-                              {s.sub === "Live" ? <Radio size={14} className="text-[#E53945]" /> : s.sub === "Short" ? <Clapperboard size={14} className="text-white/70" /> : s.sub === "Podcast" ? <Mic size={14} className="text-white/70" /> : <Film size={14} className="text-white/70" />}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <div className="text-sm font-semibold text-white truncate">{s.label}</div>
-                              <div className="text-xs text-white/45 truncate">{s.sub}</div>
-                            </div>
-                          </button>
-                        )
-                      ))}
-                      <button onMouseDown={(e) => e.preventDefault()} onClick={() => applySearch(query)} className="mt-1 w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition text-sm text-[#ff8f98] font-semibold">
-                        <Search size={15} /> Search for "{query}"
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <div className="flex flex-wrap justify-center items-center gap-2 md:gap-3 text-xs md:text-sm text-white/50">
-              <span className="flex items-center gap-1.5"><TrendingUp size={16} className="text-[#E53945]" /> Trending:</span>
-              {TRENDING_TAGS.map((tag) => (
-                <button key={tag} onClick={() => applySearch(tag)} className="hover:text-white transition">
-                  {tag}
-                </button>
-              ))}
-            </div>
-          </div>
+          {/* Search input lives in TopBar on /search */}
 
           {query.trim().length > 0 ? (
             <div className="w-full">
@@ -421,11 +313,11 @@ function SearchContent() {
                       <h3 className="text-sm font-bold text-white/40 uppercase tracking-wider mb-4">
                         {activeFilter === "live" ? "Live" : activeFilter === "shorts" ? "Shorts" : activeFilter === "podcasts" ? "Podcasts" : activeFilter === "videos" ? "Videos" : "Videos & Shorts"}
                       </h3>
-                      <div className={activeFilter === "shorts" ? "grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 md:gap-3" : "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-5"}>
+                      <div className={activeFilter === "shorts" ? "grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-1 md:gap-2" : "grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-1 md:gap-2"}>
                         {filteredVideos.map((video) => {
                           const short = isShortVideo(video);
                           const live = isLiveVideo(video);
-                          const href = short ? `/feed?reel=${video.id}` : `/watch/${video.id}`;
+                          const href = short ? `/feed?reel=${video.id}` : `/podcast/${video.id}`;
                           return (
                             <Link key={video.id} href={href} onClick={() => saveRecentSearch(query)} className="flex flex-col group">
                               <div className={`relative ${short ? "aspect-[9/16]" : "aspect-video"} rounded-xl overflow-hidden bg-[#1c1c1e] mb-2 md:mb-3 border border-white/5 shadow-lg`}>
@@ -465,19 +357,16 @@ function SearchContent() {
               )}
 
               <section>
-                <div className="flex items-center justify-between mb-4 md:mb-6">
-                  <h2 className="text-xl md:text-2xl font-bold">Videos</h2>
-                </div>
                 {loading ? (
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-5 animate-pulse">
-                    {[0,1,2,3,4,5,6,7,8,9].map(i => <div key={i} className="aspect-video rounded-xl bg-white/[0.06]" />)}
+                  <div className="grid grid-cols-3 gap-1 md:gap-2 animate-pulse">
+                    {[0,1,2,3,4,5,6,7,8,9,10,11].map(i => <div key={i} className="aspect-[3/4] bg-white/[0.06]" />)}
                   </div>
                 ) : allVideos.filter(v => normalize(v.type) !== "tweet").length === 0 ? (
-                  <div className="text-center py-16 bg-[#1c1c1e] rounded-3xl border border-white/5">
+                  <div className="text-center py-16">
                     <p className="text-white/60 text-lg">No videos yet.</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-5">
+                  <div className="grid grid-cols-3 gap-1 md:gap-2">
                     {[...allVideos]
                       .filter(v => normalize(v.type) !== "tweet")
                       .sort((a: any, b: any) => {
@@ -487,19 +376,10 @@ function SearchContent() {
                       })
                       .map((video) => {
                         const short = isShortVideo(video);
-                        const live = isLiveVideo(video);
-                        const href = short ? `/feed?reel=${video.id}` : `/watch/${video.id}`;
+                        const href = short ? `/feed?reel=${video.id}` : `/podcast/${video.id}`;
                         return (
-                          <Link key={video.id} href={href} className="flex flex-col group">
-                            <div className={`relative ${short ? "aspect-[9/16]" : "aspect-video"} rounded-xl overflow-hidden bg-[#1c1c1e] mb-2 md:mb-3 border border-white/5 shadow-lg`}>
-                              <img src={video.posterUrl || video.backdropUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy" />
-                              <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition" />
-                              {live && <span className="absolute top-2 left-2 text-[10px] font-bold uppercase tracking-wider bg-[#E53945] text-white px-2 py-0.5 rounded-full">Live</span>}
-                              {short && <span className="absolute top-2 left-2 text-[10px] font-bold uppercase tracking-wider bg-black/60 text-white px-2 py-0.5 rounded-full border border-white/10">Short</span>}
-                              {isPodcastVideo(video) && !short && <span className="absolute top-2 left-2 text-[10px] font-bold uppercase tracking-wider bg-black/60 text-white px-2 py-0.5 rounded-full border border-white/10">Podcast</span>}
-                            </div>
-                            <span className="text-xs md:text-sm font-bold text-white leading-tight line-clamp-2 group-hover:text-[#E53945] transition-colors">{video.title}</span>
-                            <span className="text-[10px] md:text-xs text-white/50 mt-1">{video.type || "Video"}{video.category ? ` • ${video.category}` : ""}</span>
+                          <Link key={video.id} href={href} className="relative aspect-[3/4] overflow-hidden bg-[#141418] block">
+                            <img src={video.posterUrl || video.backdropUrl} alt={video.title || ""} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
                           </Link>
                         );
                       })}

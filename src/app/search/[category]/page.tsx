@@ -109,7 +109,7 @@ export default function CategoryPage() {
             
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
               {videos.map((video) => (
-                <Link key={video.id} href={`/watch/${video.id}`} className="group cursor-pointer">
+                <Link key={video.id} href={`/podcast/${video.id}`} className="group cursor-pointer">
                   <div className="relative aspect-video rounded-xl overflow-hidden bg-[#1c1c1e] mb-2">
                     <img 
                       src={video.posterUrl || video.backdropUrl} 
