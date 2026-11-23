@@ -313,14 +313,14 @@ function SearchContent() {
                       <h3 className="text-sm font-bold text-white/40 uppercase tracking-wider mb-4">
                         {activeFilter === "live" ? "Live" : activeFilter === "shorts" ? "Shorts" : activeFilter === "podcasts" ? "Podcasts" : activeFilter === "videos" ? "Videos" : "Videos & Shorts"}
                       </h3>
-                      <div className={activeFilter === "shorts" ? "grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-1 md:gap-2" : "grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-1 md:gap-2"}>
+                      <div className={activeFilter === "shorts" ? "grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-[2px] -mx-4 lg:mx-0" : "grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-[2px] -mx-4 lg:mx-0"}>
                         {filteredVideos.map((video) => {
                           const short = isShortVideo(video);
                           const live = isLiveVideo(video);
                           const href = short ? `/feed?reel=${video.id}` : `/podcast/${video.id}`;
                           return (
                             <Link key={video.id} href={href} onClick={() => saveRecentSearch(query)} className="flex flex-col group">
-                              <div className={`relative ${short ? "aspect-[9/16]" : "aspect-video"} rounded-xl overflow-hidden bg-[#1c1c1e] mb-2 md:mb-3 border border-white/5 shadow-lg`}>
+                              <div className={`relative ${short ? "aspect-[3/5]" : "aspect-[3/5]"} rounded-none lg:rounded-xl overflow-hidden bg-[#1c1c1e] mb-2 md:mb-3 border-0 lg:border border-white/5 shadow-none lg:shadow-lg`}>
                                 <img src={video.posterUrl || video.backdropUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy" />
                                 <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition" />
                                 {live && <span className="absolute top-2 left-2 text-[10px] font-bold uppercase tracking-wider bg-[#E53945] text-white px-2 py-0.5 rounded-full">Live</span>}
@@ -356,17 +356,17 @@ function SearchContent() {
                 </section>
               )}
 
-              <section>
+              <section className="-mx-4 lg:mx-0">
                 {loading ? (
-                  <div className="grid grid-cols-3 gap-1 md:gap-2 animate-pulse">
-                    {[0,1,2,3,4,5,6,7,8,9,10,11].map(i => <div key={i} className="aspect-[3/4] bg-white/[0.06]" />)}
+                  <div className="grid grid-cols-3 gap-[2px] animate-pulse">
+                    {[0,1,2,3,4,5,6,7,8,9,10,11].map(i => <div key={i} className="aspect-[3/5] bg-white/[0.06]" />)}
                   </div>
                 ) : allVideos.filter(v => normalize(v.type) !== "tweet").length === 0 ? (
-                  <div className="text-center py-16">
+                  <div className="text-center py-16 px-4">
                     <p className="text-white/60 text-lg">No videos yet.</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-3 gap-1 md:gap-2">
+                  <div className="grid grid-cols-3 gap-[2px]">
                     {[...allVideos]
                       .filter(v => normalize(v.type) !== "tweet")
                       .sort((a: any, b: any) => {
@@ -378,7 +378,7 @@ function SearchContent() {
                         const short = isShortVideo(video);
                         const href = short ? `/feed?reel=${video.id}` : `/podcast/${video.id}`;
                         return (
-                          <Link key={video.id} href={href} className="relative aspect-[3/4] overflow-hidden bg-[#141418] block">
+                          <Link key={video.id} href={href} className="relative aspect-[3/5] overflow-hidden bg-[#141418] block">
                             <img src={video.posterUrl || video.backdropUrl} alt={video.title || ""} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
                           </Link>
                         );
