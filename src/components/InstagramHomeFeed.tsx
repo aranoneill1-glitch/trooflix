@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Headphones, Heart, Maximize2, MessageCircle, MoreHorizontal, Play, Send, ShoppingBag, Volume2, VolumeX } from "lucide-react";
 import LikeButton from "@/components/LikeButton";
 import CommentSheet from "@/components/CommentSheet";
+import ViewCount from "@/components/ViewCount";
 
 import { ChevronDown, X as XIcon } from "lucide-react";
 import { MAIN_TYPES, SUB_CATEGORIES, normalizeMainType, type MainType } from "@/lib/videoTypes";
@@ -395,7 +396,10 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
               </div>
 
               <div className="px-3 pt-1.5">
-                <p className="text-[13px] font-semibold text-white">{formatCount((video as any).likeCount || 0) || "0"} likes</p>
+                <div className="flex items-center gap-2 text-[13px] font-semibold text-white">
+                  <span>{formatCount((video as any).likeCount || 0) || "0"} likes</span>
+                  <ViewCount videoId={video.id} />
+                </div>
                 <p className="mt-1 text-[13px] leading-snug text-white/90">
                   <span className="font-semibold">{name}</span> {video.description || video.title}
                 </p>

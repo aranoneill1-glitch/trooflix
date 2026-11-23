@@ -78,11 +78,10 @@ export default function ViewCount({ videoId, showIcon = false }: { videoId: numb
   if (count === 0) return null;
 
   return (
-    <span className="flex items-center gap-1.5">
+    <span className="inline-flex items-center gap-1.5">
       {showIcon && <Eye size={14} />}
       <span>
-        {formatCount(count)}
-        {showIcon && <span className="ml-1">{count === 1 ? "view" : "views"}</span>}
+        {formatCount(count)} {count === 1 ? "view" : "views"}
       </span>
     </span>
   );
