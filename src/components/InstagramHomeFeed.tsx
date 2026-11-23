@@ -304,8 +304,8 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
           return (
             <React.Fragment key={video.id}>
             {index === 4 && (
-              <article className="px-4 py-6">
-                <Link href="/merchandise" className="block overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1c1c1e] to-[#0d0d10]">
+              <article className="py-4">
+                <Link href="/merchandise" className="block overflow-hidden border-y border-white/10 bg-gradient-to-br from-[#1c1c1e] to-[#0d0d10]">
                   <div className="relative aspect-[16/9] overflow-hidden">
                     <img src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=1200&auto=format&fit=crop" alt="Trooflix merch" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -324,8 +324,8 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
               </article>
             )}
             {index === 8 && (
-              <article className="px-4 py-6">
-                <Link href="/latest?category=Podcasts" className="block overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1c1c1e] to-[#0d0d10]">
+              <article className="py-4">
+                <Link href="/latest?category=Podcasts" className="block overflow-hidden border-y border-white/10 bg-gradient-to-br from-[#1c1c1e] to-[#0d0d10]">
                   <div className="relative aspect-[16/9] overflow-hidden">
                     <img src="https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=1200&auto=format&fit=crop" alt="Podcast studio" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
