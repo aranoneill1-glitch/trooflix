@@ -25,6 +25,8 @@ export default function TopBar({ onMenu }: Props) {
   const pathname = usePathname();
   const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const lastScrollY = useRef(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isCreator, setIsCreator] = useState(false);
   const [showCreateMenu, setShowCreateMenu] = useState(false);
@@ -84,10 +86,25 @@ export default function TopBar({ onMenu }: Props) {
   }, []);
   
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener("scroll", onScroll);
+    const onScroll = () => {
+      const y = window.scrollY;
+      setScrolled(y > 40);
+      if (pathname === "/" && !searchOpen) {
+        const delta = y - lastScrollY.current;
+        if (Math.abs(delta) > 8) {
+          if (delta > 0 && y > 80) setHidden(true);
+          else if (delta < 0) setHidden(false);
+          lastScrollY.current = y;
+        }
+      } else {
+        setHidden(false);
+        lastScrollY.current = y;
+      }
+    };
+    lastScrollY.current = window.scrollY;
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [pathname, searchOpen]);
 
   const syncSearchQ = useCallback((q: string) => {
     if (window.location.pathname === "/search") setSearchQuery(q);
@@ -140,14 +157,17 @@ export default function TopBar({ onMenu }: Props) {
         </Suspense>
       )}
       <div
-        className="fixed top-0 left-0 lg:left-[72px] right-0 z-[200] bg-[#09090B]/35 backdrop-blur-xl"
-        style={{ height: "env(safe-area-inset-top)", WebkitTransform: "translateZ(0)", transform: "translateZ(0)" }}
-        aria-hidden="true"
-      />
-      <nav
-        className="fixed left-0 lg:left-[72px] right-0 z-[200] flex items-center gap-3 px-4 md:px-6 h-[56px] pt-1 transition-colors duration-300 bg-[#09090B]/35 backdrop-blur-xl backdrop-saturate-150"
-        style={{ top: "env(safe-area-inset-top)", WebkitTransform: "translateZ(0)", transform: "translateZ(0)" }}
+        className="fixed top-0 left-0 lg:left-[72px] right-0 z-[200] transition-transform duration-300 ease-out"
+        style={{ transform: hidden ? "translateY(-100%)" : "translateY(0)", WebkitTransform: hidden ? "translateY(-100%)" : "translateY(0)" }}
       >
+        <div
+          className="bg-[#09090B]/35 backdrop-blur-xl"
+          style={{ height: "env(safe-area-inset-top)" }}
+          aria-hidden="true"
+        />
+        <nav
+          className="flex items-center gap-3 px-4 md:px-6 h-[56px] pt-1 transition-colors duration-300 bg-[#09090B]/35 backdrop-blur-xl backdrop-saturate-150"
+        >
         {searchOpen ? (
           <>
             <button
@@ -252,6 +272,7 @@ export default function TopBar({ onMenu }: Props) {
           </>
         )}
       </nav>
+      </div>
 
       {/* INSTAGRAM-STYLE SEARCH RESULTS GRID */}
       {searchOpen && !isSearchPage && (
