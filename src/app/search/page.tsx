@@ -255,7 +255,7 @@ function SearchContent() {
       <div className="fixed top-0 left-0 w-full h-[500px] bg-gradient-to-b from-[#1c1c1e]/50 to-transparent pointer-events-none z-0" />
 
       <div className="relative z-10">
-        <div className="w-full max-w-[1600px] mx-auto px-4 lg:px-10 pt-[calc(env(safe-area-inset-top)+5rem)] lg:pt-32 pb-[calc(env(safe-area-inset-bottom)+80px)]">
+        <div className="w-full max-w-[1600px] mx-auto px-4 lg:px-10 pt-[calc(env(safe-area-inset-top)+56px)] lg:pt-20 pb-[calc(env(safe-area-inset-bottom)+80px)]">
 
           {/* Search input lives in TopBar on /search */}
 
