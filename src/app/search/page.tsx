@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, Suspense } from "react";
+import { useState, useEffect, useMemo, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Clock, Filter } from "lucide-react";
 import Link from "next/link";
@@ -102,6 +102,38 @@ function scoreMatch(text: string, query: string, terms: string[]) {
   if (terms.length > 1 && allTerms) score += 12;
   if (!anyTerm && !t.includes(q)) return 0;
   return score;
+}
+
+function GridPreviewVideo({ src, poster }: { src: string; poster: string }) {
+  const ref = useRef<HTMLVideoElement | null>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const p = el.play();
+          if (p && typeof (p as any).catch === "function") (p as any).catch(() => {});
+        } else {
+          el.pause();
+        }
+      });
+    }, { threshold: 0.35 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return (
+    <video
+      ref={ref}
+      src={src}
+      poster={poster}
+      muted
+      loop
+      playsInline
+      preload="metadata"
+      className="absolute inset-0 h-full w-full object-cover"
+    />
+  );
 }
 
 function SearchContent() {
@@ -314,14 +346,21 @@ function SearchContent() {
                         {activeFilter === "live" ? "Live" : activeFilter === "shorts" ? "Shorts" : activeFilter === "podcasts" ? "Podcasts" : activeFilter === "videos" ? "Videos" : "Videos & Shorts"}
                       </h3>
                       <div className={activeFilter === "shorts" ? "grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-[2px] -mx-4 lg:mx-0" : "grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-[2px] -mx-4 lg:mx-0"}>
-                        {filteredVideos.map((video) => {
+                        {filteredVideos.map((video, i) => {
                           const short = isShortVideo(video);
                           const live = isLiveVideo(video);
                           const href = short ? `/feed?reel=${video.id}` : `/podcast/${video.id}`;
+                          const row = Math.floor(i / 3);
+                          const col = i % 3;
+                          const isPreview = (row % 2 === 0 ? col === 2 : col === 0) && Boolean(video.videoUrl);
                           return (
                             <Link key={video.id} href={href} onClick={() => saveRecentSearch(query)} className="flex flex-col group">
                               <div className={`relative ${short ? "aspect-[3/5]" : "aspect-[3/5]"} rounded-none lg:rounded-xl overflow-hidden bg-[#1c1c1e] mb-2 md:mb-3 border-0 lg:border border-white/5 shadow-none lg:shadow-lg`}>
-                                <img src={video.posterUrl || video.backdropUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy" />
+                                {isPreview ? (
+                                  <GridPreviewVideo src={video.videoUrl} poster={video.posterUrl || video.backdropUrl || ""} />
+                                ) : (
+                                  <img src={video.posterUrl || video.backdropUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy" />
+                                )}
                                 <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition" />
                                 {live && <span className="absolute top-2 left-2 text-[10px] font-bold uppercase tracking-wider bg-[#E53945] text-white px-2 py-0.5 rounded-full">Live</span>}
                                 {short && <span className="absolute top-2 left-2 text-[10px] font-bold uppercase tracking-wider bg-black/60 text-white px-2 py-0.5 rounded-full border border-white/10">Short</span>}
@@ -374,12 +413,19 @@ function SearchContent() {
                         const bt = b.createdAt ? new Date(b.createdAt).getTime() : Number(b.id) || 0;
                         return bt - at;
                       })
-                      .map((video) => {
+                      .map((video, i) => {
                         const short = isShortVideo(video);
                         const href = short ? `/feed?reel=${video.id}` : `/podcast/${video.id}`;
+                        const row = Math.floor(i / 3);
+                        const col = i % 3;
+                        const isPreview = (row % 2 === 0 ? col === 2 : col === 0) && Boolean(video.videoUrl);
                         return (
                           <Link key={video.id} href={href} className="relative aspect-[3/5] overflow-hidden bg-[#141418] block">
-                            <img src={video.posterUrl || video.backdropUrl} alt={video.title || ""} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+                            {isPreview ? (
+                              <GridPreviewVideo src={video.videoUrl} poster={video.posterUrl || video.backdropUrl || ""} />
+                            ) : (
+                              <img src={video.posterUrl || video.backdropUrl} alt={video.title || ""} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+                            )}
                           </Link>
                         );
                       })}
