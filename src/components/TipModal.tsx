@@ -94,7 +94,7 @@ export default function TipModal() {
       {isOpen && (
         <>
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[400] bg-black/50" onClick={() => status !== "loading" && setIsOpen(false)} />
-          <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 25, stiffness: 200 }} className="fixed bottom-0 left-0 right-0 z-[401] bg-white/10 border-t border-white/20 rounded-t-3xl p-6 pb-12 lg:max-w-sm lg:mx-auto lg:rounded-3xl lg:bottom-10 shadow-[0_20px_60px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.18)] backdrop-saturate-150 overflow-visible">
+          <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 25, stiffness: 200 }} className="fixed bottom-0 left-0 right-0 z-[401] bg-[#18181c]/95 backdrop-blur-2xl border-t border-white/15 rounded-t-3xl p-6 pb-12 lg:max-w-sm lg:mx-auto lg:rounded-3xl lg:bottom-10 shadow-[0_20px_60px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.1)] overflow-visible">
             
             {status === "success" ? (
               <div className="relative py-10 flex flex-col items-center justify-center text-center">
