@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ThumbsUp, MoreVertical, Trash2, Send, Image as ImageIcon, User } from "lucide-react";
+import { ThumbsUp, MoreVertical, Trash2, Send, Image as ImageIcon, User, Gift } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import GifPicker from "@/components/GifPicker";
 import VerifiedBadge from "@/components/VerifiedBadge";
@@ -405,6 +405,15 @@ export default function Comments({ videoId, onMetaChange, variant = "default", h
                         Reply
                       </button>
                     )}
+                    {user?.id !== c.user_id && (
+                      <button
+                        onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: c.user_id } }))}
+                        className="flex items-center gap-1 text-xs text-white/60 hover:text-[#D4AF37] transition font-semibold"
+                      >
+                        <Gift size={13} />
+                        Tip
+                      </button>
+                    )}
                   </div>
 
                   {/* Reply input */}
@@ -537,6 +546,15 @@ export default function Comments({ videoId, onMetaChange, variant = "default", h
                               <ThumbsUp size={12} fill={isLikedReply ? "currentColor" : "none"} />
                               {r.like_count > 0 && <span>{r.like_count}</span>}
                             </button>
+                            {user?.id !== r.user_id && (
+                              <button
+                                onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: r.user_id } }))}
+                                className="flex items-center gap-1 text-xs text-white/60 hover:text-[#D4AF37] transition font-semibold"
+                              >
+                                <Gift size={12} />
+                                Tip
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>

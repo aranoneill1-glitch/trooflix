@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ThumbsUp, MoreVertical, Trash2 } from "lucide-react";
+import { ThumbsUp, MoreVertical, Trash2, Gift } from "lucide-react";
 import { getCachedUser } from "@/lib/cache";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import ReportModal from "@/components/ReportModal";
@@ -236,6 +236,15 @@ export default function InlineComments({ videoId }: { videoId: number }) {
                 className="text-xs text-white/50 hover:text-white transition font-semibold"
               >
                 Reply
+              </button>
+            )}
+            {user?.id !== c.user_id && (
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: c.user_id } }))}
+                className="flex items-center gap-1 text-xs text-white/50 hover:text-[#D4AF37] transition font-semibold"
+              >
+                <Gift size={13} />
+                Tip
               </button>
             )}
           </div>
