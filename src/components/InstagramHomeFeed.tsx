@@ -377,11 +377,11 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
                   aria-label="Tip creator"
                   className="active:opacity-60 text-white"
                 >
-                  <svg width={23} height={23} viewBox="0 0 24 24" fill="none" aria-hidden="true" className="text-white/90">
-                    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
-                    <circle cx="12" cy="12" r="6.6" stroke="currentColor" strokeWidth="1.2" opacity="0.75" />
-                    <path d="M10.2 5.8L9.4 3.9M13.8 5.8L14.6 3.9M10.2 18.2L9.4 20.1M13.8 18.2L14.6 20.1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.9" />
-                    <text x="12" y="15" textAnchor="middle" fontSize="7.2" fontWeight="800" fill="currentColor" fontFamily="system-ui, -apple-system, sans-serif">TC</text>
+                  <svg width={24} height={24} viewBox="0 0 24 24" fill="none" aria-hidden="true" className="text-white">
+                    <circle cx="12" cy="12" r="9.5" stroke="currentColor" strokeWidth="1.9" />
+                    <circle cx="12" cy="12" r="7" stroke="currentColor" strokeWidth="1.2" opacity="0.75" />
+                    <path d="M10.1 5.4L9.2 3.3M13.9 5.4L14.8 3.3M10.1 18.6L9.2 20.7M13.9 18.6L14.8 20.7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.9" />
+                    <text x="12" y="15.2" textAnchor="middle" fontSize="7.6" fontWeight="800" fill="currentColor" fontFamily="system-ui, -apple-system, sans-serif">TC</text>
                   </svg>
                 </button>
                 <button onClick={() => { if (navigator.share) navigator.share({ title: video.title, url: window.location.href }).catch(() => {}); }} aria-label="Share" className="text-white active:opacity-60"><Send size={23} strokeWidth={1.7} /></button>
