@@ -12,7 +12,6 @@ import MobileBottomNav from "@/components/MobileBottomNav";
 import { createClient } from "@/utils/supabase/client";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import ShortPreviewFrame from "@/components/ShortPreviewFrame";
-import FavoriteButton from "@/components/FavoriteButton";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
 
 const InstagramIcon = ({ size = 16 }: { size?: number }) => (
@@ -451,7 +450,6 @@ export default function PublicProfilePage() {
                   >
                     <UserPlus size={16} /> {isFollowing ? "Following" : "Follow"}
                   </button>
-                  {resolvedCreatorId ? <FavoriteButton creatorId={Number(resolvedCreatorId)} size={20} className="ml-1" /> : null}
                 </div>
                 <p className="text-base text-white/50 mb-3">@{username}</p>
                 <div className="flex items-center gap-4 mb-4 flex-wrap">
@@ -538,7 +536,6 @@ export default function PublicProfilePage() {
                     >
                       <UserPlus size={16} /> {isFollowing ? "Following" : "Follow"}
                     </button>
-                    {resolvedCreatorId ? <FavoriteButton creatorId={Number(resolvedCreatorId)} size={20} className="ml-1" /> : null}
                   </div>
                   <p className="text-sm md:text-base text-white/50 mb-3">@{username}</p>
                   <div className="flex items-center gap-4 mb-4">

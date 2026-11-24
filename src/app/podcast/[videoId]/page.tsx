@@ -12,7 +12,6 @@ import VerifiedBadge from "@/components/VerifiedBadge";
 import TextOverlayRenderer from "@/components/TextOverlay";
 import LikeButton from "@/components/LikeButton";
 import SaveButton from "@/components/SaveButton";
-import FavoriteButton from "@/components/FavoriteButton";
 import ShareReelSheet from "@/components/ShareReelSheet";
 import ViewCount from "@/components/ViewCount";
 import { getCachedCreators, getCachedUser } from "@/lib/cache";
@@ -246,9 +245,6 @@ export default function WatchPage() {
               
               <div className="flex items-center gap-2 bg-white/10 hover:bg-white/20 rounded-full px-4 py-2 text-sm font-semibold transition cursor-pointer flex-shrink-0 [&>button]:bg-transparent [&>button]:border-none [&>button]:p-0">
                 <SaveButton videoId={video.id} variant="labeled" size={18} />
-              </div>
-              <div className="flex items-center gap-2 bg-white/10 hover:bg-white/20 rounded-full px-4 py-2 text-sm font-semibold transition cursor-pointer flex-shrink-0 [&>button]:bg-transparent [&>button]:border-none [&>button]:p-0">
-                <FavoriteButton videoId={video.id} size={18} showLabel />
               </div>
 
               <button

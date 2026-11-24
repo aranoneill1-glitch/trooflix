@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Home, Search, Plus, Heart, User } from "lucide-react";
+import { Home, Search, Plus, Wallet, User } from "lucide-react";
 import { getCachedUser } from "@/lib/cache";
 import { createClient } from "@/utils/supabase/client";
 
@@ -100,9 +100,9 @@ export default function MobileBottomNav() {
           <span className="text-[10px] font-medium text-white/70">Create</span>
         </button>
 
-        <Link href="/favorites" className="flex flex-col items-center justify-center gap-0 min-w-0 flex-1 pt-1.5 pb-0">
-          <Heart size={22} className={isActive("/favorites") ? "text-white" : "text-white/45"} />
-          <span className={`text-[10px] font-medium ${isActive("/favorites") ? "text-white" : "text-white/45"}`}>Favorites</span>
+        <Link href="/wallet" className="flex flex-col items-center justify-center gap-0 min-w-0 flex-1 pt-1.5 pb-0">
+          <Wallet size={22} className={isActive("/wallet") ? "text-white" : "text-white/45"} />
+          <span className={`text-[10px] font-medium ${isActive("/wallet") ? "text-white" : "text-white/45"}`}>Wallet</span>
         </Link>
 
         <Link href={profileHref} className="flex flex-col items-center justify-center gap-0 min-w-0 flex-1 pt-1.5 pb-0">

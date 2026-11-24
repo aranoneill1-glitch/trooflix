@@ -7,7 +7,6 @@ import { Headphones, Heart, Maximize2, MessageCircle, MoreHorizontal, Play, Send
 import LikeButton from "@/components/LikeButton";
 import CommentSheet from "@/components/CommentSheet";
 import ViewCount from "@/components/ViewCount";
-import FavoriteButton from "@/components/FavoriteButton";
 
 import { ChevronDown, X as XIcon } from "lucide-react";
 import { MAIN_TYPES, SUB_CATEGORIES, normalizeMainType, type MainType } from "@/lib/videoTypes";
@@ -394,7 +393,6 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
                     <text x="12" y="15.2" textAnchor="middle" fontSize="7.6" fontWeight="800" fill="currentColor" fontFamily="system-ui, -apple-system, sans-serif">TC</text>
                   </svg>
                 </button>
-                <FavoriteButton videoId={Number(video.id)} size={23} className="text-white active:opacity-60" />
                 <button onClick={() => { if (navigator.share) navigator.share({ title: video.title, url: window.location.href }).catch(() => {}); }} aria-label="Share" className="text-white active:opacity-60"><Send size={23} strokeWidth={1.7} /></button>
                 <button
                   onClick={() => { haptic(); openShortsPlayer(video.id); }}
