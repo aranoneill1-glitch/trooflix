@@ -452,6 +452,7 @@ function DesktopVideoShort({ video, isMuted, onSetActive, shouldLoad = true, ini
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isActive, setIsActive] = useState(false);
+  const [isLandscape, setIsLandscape] = useState(false);
   const onSetActiveRef = useRef(onSetActive);
   const isMutedRef = useRef(isMuted);
   const initialSeekRef = useRef(initialSeek);
@@ -577,7 +578,9 @@ function DesktopVideoShort({ video, isMuted, onSetActive, shouldLoad = true, ini
               playsInline
               muted={isMuted || !isActive}
               preload={shouldLoad ? "auto" : "none"}
-              onLoadedMetadata={() => {
+              onLoadedMetadata={(e) => {
+                const el = e.currentTarget;
+                if (el.videoWidth && el.videoHeight) setIsLandscape(el.videoWidth > el.videoHeight);
                 if (pendingInitialSeekRef.current) applyInitialSeekIfNeeded();
               }}
               onCanPlay={() => {
@@ -585,7 +588,7 @@ function DesktopVideoShort({ video, isMuted, onSetActive, shouldLoad = true, ini
                 const v = videoRef.current;
                 if (v && isActive && v.paused) v.play().catch(() => {});
               }}
-              className="w-full h-full object-cover cursor-pointer"
+              className={`w-full h-full ${isLandscape ? "object-contain bg-black" : "object-cover"} cursor-pointer`}
               onClick={handleVideoClick}
             />
             <AnimatePresence>
@@ -644,6 +647,7 @@ function MobileVideoShort({ video, creator, onViewCounted, isMuted, onToggleMute
   };
   const [isPlaying, setIsPlaying] = useState(false);
   const [isBuffering, setIsBuffering] = useState(false);
+  const [isLandscape, setIsLandscape] = useState(false);
   const [progress, setProgress] = useState(0);
   const progressBarRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -946,7 +950,9 @@ function MobileVideoShort({ video, creator, onViewCounted, isMuted, onToggleMute
           setShowError(false);
           setIsBuffering(false);
         }}
-        onLoadedMetadata={() => {
+        onLoadedMetadata={(e) => {
+          const el = e.currentTarget;
+          if (el.videoWidth && el.videoHeight) setIsLandscape(el.videoWidth > el.videoHeight);
           if (pendingInitialSeekRef.current) applyInitialSeekIfNeeded();
         }}
         onCanPlay={() => {
@@ -978,7 +984,7 @@ function MobileVideoShort({ video, creator, onViewCounted, isMuted, onToggleMute
             setShowError(true);
           }, 900);
         }}
-        className="w-full h-full object-cover cursor-pointer"
+        className={`w-full h-full ${isLandscape ? "object-contain bg-black" : "object-cover"} cursor-pointer`}
         onClick={handleVideoTap}
       />
 
