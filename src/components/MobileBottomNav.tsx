@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Home, Search, Plus, Wallet, User } from "lucide-react";
 import { getCachedUser } from "@/lib/cache";
 import { createClient } from "@/utils/supabase/client";
@@ -13,6 +13,8 @@ export default function MobileBottomNav() {
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [profileHref, setProfileHref] = useState("/login");
+  const [hidden, setHidden] = useState(false);
+  const lastScrollY = useRef(0);
 
   useEffect(() => {
     const handleOpen = () => setIsPlayerOpen(true);
@@ -62,6 +64,26 @@ export default function MobileBottomNav() {
     return () => { mounted = false; };
   }, []);
 
+  useEffect(() => {
+    const onScroll = () => {
+      const y = window.scrollY;
+      if (pathname === "/") {
+        const delta = y - lastScrollY.current;
+        if (Math.abs(delta) > 8) {
+          if (delta > 0 && y > 80) setHidden(true);
+          else if (delta < 0) setHidden(false);
+          lastScrollY.current = y;
+        }
+      } else {
+        setHidden(false);
+        lastScrollY.current = y;
+      }
+    };
+    lastScrollY.current = window.scrollY;
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [pathname]);
+
   if (isTVApp || isPlayerOpen) return null;
 
   const isActive = (path: string) => {
@@ -76,7 +98,10 @@ export default function MobileBottomNav() {
   if (isFeed) return null;
 
   return (
-    <nav className={`lg:hidden fixed inset-x-0 bottom-0 z-[250] bg-[#09090B]/35 backdrop-blur-xl backdrop-saturate-150`}>
+    <nav
+      className={`lg:hidden fixed inset-x-0 bottom-0 z-[250] bg-[#09090B]/35 backdrop-blur-xl backdrop-saturate-150 transition-transform duration-300 ease-out`}
+      style={{ transform: hidden ? "translateY(100%)" : "translateY(0)", WebkitTransform: hidden ? "translateY(100%)" : "translateY(0)" }}
+    >
       <div className={`flex items-center justify-around px-2 pt-1 ${isFeed ? "pb-[calc(env(safe-area-inset-bottom)+14px)]" : "pb-[calc(env(safe-area-inset-bottom)+8px)]"}`}>
         <Link href="/" className="flex flex-col items-center justify-center gap-0 min-w-0 flex-1 pt-1.5 pb-0">
           <Home size={22} className={isActive("/") ? "text-white" : "text-white/45"} />
