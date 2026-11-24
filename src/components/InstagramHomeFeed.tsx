@@ -371,8 +371,11 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
               />
 
               <div className="flex items-center gap-4 px-3 pt-2.5">
-                <LikeButton videoId={video.id} size={24} showCount={false} />
-                <button onClick={() => { haptic(); setSheetVideo(video.id); }} aria-label="Comments" className="text-white active:opacity-60"><MessageCircle size={24} strokeWidth={1.7} /></button>
+                <LikeButton videoId={video.id} size={24} showCount={true} />
+                <button onClick={() => { haptic(); setSheetVideo(video.id); }} aria-label="Comments" className="flex items-center gap-1.5 text-white active:opacity-60">
+                  <MessageCircle size={24} strokeWidth={1.7} />
+                  {commentCount > 0 && <span className="text-sm font-semibold tabular-nums">{commentCount.toLocaleString()}</span>}
+                </button>
                 <button
                   onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: video.creatorId || video.uploaderUserId, videoId: video.id } }))}
                   aria-label="Tip creator"
