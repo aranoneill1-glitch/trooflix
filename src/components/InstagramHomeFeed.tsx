@@ -54,7 +54,7 @@ if (typeof window !== "undefined") {
   try { feedMuted = localStorage.getItem("trooflix:feedMuted") !== "0"; } catch {}
 }
 
-function PostMedia({ video, onOpen, onLike, isActive, onRegister }: { video: any; onOpen: () => void; onLike: () => void; isActive: boolean; onRegister?: (id: number, el: HTMLVideoElement | null) => void }) {
+function PostMedia({ video, onOpen, onLike, isActive, onRegister, shouldLoad = true }: { video: any; onOpen: () => void; onLike: () => void; isActive: boolean; onRegister?: (id: number, el: HTMLVideoElement | null) => void; shouldLoad?: boolean }) {
   const ref = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
   const [userPaused, setUserPaused] = useState(false);
@@ -124,14 +124,14 @@ function PostMedia({ video, onOpen, onLike, isActive, onRegister }: { video: any
   return (
     <div className={`relative w-full ${isLandscape ? "aspect-video" : "aspect-[4/5]"} bg-black overflow-hidden`}>
       <img src={video.posterUrl || video.backdropUrl} alt="" className={`absolute inset-0 h-full w-full ${isLandscape ? "object-contain" : "object-cover"}`} loading="lazy" />
-      {src && (
+      {src && shouldLoad && (
         <video
           ref={ref}
           src={src}
           muted={muted}
           playsInline
           loop
-          preload="metadata"
+          preload={isActive ? "auto" : "metadata"}
           onLoadedMetadata={(e) => {
             const v = e.currentTarget;
             if (v.videoWidth && v.videoHeight) setIsLandscape(v.videoWidth > v.videoHeight);
@@ -226,6 +226,8 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
     });
   }, [videos, creators, commentCounts, activeType, activeCategory]);
 
+  const activeIndex = posts.findIndex((p) => p.video.id === activeId);
+
   useEffect(() => {
     const nodes = Array.from(postRefs.current.values());
     if (!nodes.length) return;
@@ -307,6 +309,7 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
         {posts.map(({ video, creator, commentCount }, index) => {
           const name = creator?.name || "Trooflix Creator";
           const avatar = creator?.photoUrl;
+          const shouldLoad = activeIndex === -1 ? index < 2 : Math.abs(index - activeIndex) <= 1;
           return (
             <React.Fragment key={video.id}>
             {index === 4 && (
@@ -370,6 +373,7 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
               <PostMedia
                 video={video}
                 isActive={activeId === video.id}
+                shouldLoad={shouldLoad}
                 onOpen={() => onVideoSelect(video)}
                 onLike={() => setLikedLocal(prev => prev.includes(video.id) ? prev : [...prev, video.id])}
                 onRegister={registerMedia}
