@@ -310,7 +310,7 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
           return (
             <React.Fragment key={video.id}>
             {index === 4 && (
-              <article className="py-4">
+              <article className="py-0">
                 <Link href="/merchandise" className="block overflow-hidden border-y border-white/10 bg-gradient-to-br from-[#1c1c1e] to-[#0d0d10]">
                   <div className="relative aspect-[16/9] overflow-hidden">
                     <img src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=1200&auto=format&fit=crop" alt="Trooflix merch" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
@@ -322,7 +322,7 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
                       <p className="text-sm font-bold text-white">Wear the movement</p>
                       <p className="text-xs text-white/50">Merch from your favourite creators.</p>
                     </div>
-                    <span className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-[#E53945] px-4 py-2 text-xs font-bold text-white">
+                    <span className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 px-4 py-2 text-xs font-bold text-white">
                       <ShoppingBag size={14} /> Visit store
                     </span>
                   </div>
@@ -330,7 +330,7 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
               </article>
             )}
             {index === 8 && (
-              <article className="py-4">
+              <article className="py-0">
                 <Link href="/latest?category=Podcasts" className="block overflow-hidden border-y border-white/10 bg-gradient-to-br from-[#1c1c1e] to-[#0d0d10]">
                   <div className="relative aspect-[16/9] overflow-hidden">
                     <img src="https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=1200&auto=format&fit=crop" alt="Podcast studio" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
@@ -342,7 +342,7 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
                       <p className="text-sm font-bold text-white">Listen to the voices</p>
                       <p className="text-xs text-white/50">Conversations worth your time.</p>
                     </div>
-                    <span className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-[#E53945] px-4 py-2 text-xs font-bold text-white">
+                    <span className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 px-4 py-2 text-xs font-bold text-white">
                       <Headphones size={14} /> Explore podcasts
                     </span>
                   </div>
