@@ -1094,28 +1094,26 @@ function MobileVideoShort({ video, creator, onViewCounted, isMuted, onToggleMute
           onPointerUp={handleDragEnd}
           onPointerCancel={handleDragEnd}
         >
-          {isDragging && (
-            <div
-              className="absolute bottom-6 -translate-x-1/2 pointer-events-none z-[260]"
-              style={{ left: `${Math.min(92, Math.max(8, scrubX))}%` }}
-            >
-              <div className="rounded-lg overflow-hidden border border-white/20 bg-black shadow-2xl w-[112px]">
-                <div className="relative w-full aspect-[9/16] bg-black">
-                  <video
-                    ref={previewVideoRef}
-                    src={shouldLoad ? videoSrc : undefined}
-                    muted
-                    playsInline
-                    preload="metadata"
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
-                </div>
-                <div className="text-[11px] font-semibold text-white text-center py-1 bg-black/90">
-                  {(() => { const s = Math.max(0, scrubTime || 0); const m = Math.floor(s/60); const sec = Math.floor(s%60); return `${m}:${String(sec).padStart(2,'0')}`; })()}
-                </div>
+          <div
+            className={`absolute bottom-6 -translate-x-1/2 pointer-events-none z-[260] transition-opacity duration-75 ${isDragging ? "opacity-100" : "opacity-0"}`}
+            style={{ left: `${Math.min(92, Math.max(8, scrubX))}%` }}
+          >
+            <div className="rounded-lg overflow-hidden border border-white/20 bg-black shadow-2xl w-[70px]">
+              <div className="relative w-full aspect-[9/16] bg-black">
+                <video
+                  ref={previewVideoRef}
+                  src={shouldLoad ? videoSrc : undefined}
+                  muted
+                  playsInline
+                  preload="auto"
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+              </div>
+              <div className="text-[10px] font-semibold text-white text-center py-0.5 bg-black/90">
+                {(() => { const s = Math.max(0, scrubTime || 0); const m = Math.floor(s/60); const sec = Math.floor(s%60); return `${m}:${String(sec).padStart(2,'0')}`; })()}
               </div>
             </div>
-          )}
+          </div>
           <div className="absolute top-1/2 -translate-y-1/2 left-0 h-[3px] bg-white/30 pointer-events-none w-full rounded-full" />
           <div className="absolute top-1/2 -translate-y-1/2 left-0 h-[3px] bg-white pointer-events-none rounded-full" style={{ width: `${progress}%` }} />
         </div>
