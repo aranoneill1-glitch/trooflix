@@ -203,6 +203,14 @@ export default function TopBar({ onMenu }: Props) {
               </div>
             </form>
             <div className="flex items-center gap-0.5 md:gap-1 shrink-0">
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new CustomEvent('open-notifications'))}
+                className="w-9 h-9 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition"
+                aria-label="Notifications"
+              >
+                <Bell size={18} />
+              </button>
               <div className="flex items-center gap-2">
                 <UserMenu />
               </div>

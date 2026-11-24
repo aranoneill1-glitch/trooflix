@@ -407,11 +407,8 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
                 </button>
               </div>
 
-              <div className="px-3 pt-1.5">
-                <div className="flex items-center gap-2 text-[13px] font-semibold text-white">
-                  <span>{formatCount((video as any).likeCount || 0) || "0"} likes</span>
-                  <ViewCount videoId={video.id} />
-                </div>
+              <div className="px-3 pt-1.5 text-[13px] font-semibold text-white">
+                <ViewCount videoId={video.id} />
                 <p className="mt-1 text-[13px] leading-snug text-white/90">
                   <span className="font-semibold">{name}</span> {video.description || video.title}
                 </p>

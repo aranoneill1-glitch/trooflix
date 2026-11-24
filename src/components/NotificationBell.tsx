@@ -181,7 +181,7 @@ export default function NotificationBell({ hideTrigger = false }: { hideTrigger?
         {isOpen && (
           <motion.div 
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
-            className="fixed top-[64px] left-0 right-0 bottom-0 z-[190] bg-[#0a0303] text-white flex flex-col overflow-hidden"
+            className="fixed top-[calc(env(safe-area-inset-top)+56px)] left-0 right-0 bottom-0 z-[210] bg-[#0a0303] text-white flex flex-col overflow-hidden"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-white/20 bg-white/[0.08] backdrop-saturate-150 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] shrink-0">
