@@ -59,6 +59,7 @@ function PostMedia({ video, onOpen, onLike, isActive, onRegister }: { video: any
   const [playing, setPlaying] = useState(false);
   const [userPaused, setUserPaused] = useState(false);
   const [muted, setMuted] = useState(feedMuted);
+  const [isLandscape, setIsLandscape] = useState(false);
   const lastTap = useRef(0);
 
   useEffect(() => {
@@ -121,8 +122,8 @@ function PostMedia({ video, onOpen, onLike, isActive, onRegister }: { video: any
   const src = video.videoUrl || video.bitchuteUrl;
 
   return (
-    <div className="relative w-full aspect-[4/5] bg-black overflow-hidden">
-      <img src={video.posterUrl || video.backdropUrl} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+    <div className={`relative w-full ${isLandscape ? "aspect-video" : "aspect-[4/5]"} bg-black overflow-hidden`}>
+      <img src={video.posterUrl || video.backdropUrl} alt="" className={`absolute inset-0 h-full w-full ${isLandscape ? "object-contain" : "object-cover"}`} loading="lazy" />
       {src && (
         <video
           ref={ref}
@@ -131,9 +132,13 @@ function PostMedia({ video, onOpen, onLike, isActive, onRegister }: { video: any
           playsInline
           loop
           preload="metadata"
+          onLoadedMetadata={(e) => {
+            const v = e.currentTarget;
+            if (v.videoWidth && v.videoHeight) setIsLandscape(v.videoWidth > v.videoHeight);
+          }}
           onPlaying={() => setPlaying(true)}
           onPause={() => setPlaying(false)}
-          className="absolute inset-0 h-full w-full object-cover"
+          className={`absolute inset-0 h-full w-full ${isLandscape ? "object-contain" : "object-cover"}`}
         />
       )}
       <button
