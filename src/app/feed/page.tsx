@@ -651,7 +651,10 @@ function MobileVideoShort({ video, creator, onViewCounted, isMuted, onToggleMute
   const [progress, setProgress] = useState(0);
   const progressBarRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [scrubTime, setScrubTime] = useState(0);
+  const [scrubX, setScrubX] = useState(0);
   const wasPlayingRef = useRef(false);
+  const previewVideoRef = useRef<HTMLVideoElement>(null);
   const [showPlayIcon, setShowPlayIcon] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -905,8 +908,14 @@ function MobileVideoShort({ video, creator, onViewCounted, isMuted, onToggleMute
     const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
     const percentage = (x / rect.width) * 100;
     setProgress(percentage);
+    setScrubX(percentage);
     if (videoRef.current.duration) {
-      videoRef.current.currentTime = (percentage / 100) * videoRef.current.duration;
+      const t = (percentage / 100) * videoRef.current.duration;
+      setScrubTime(t);
+      videoRef.current.currentTime = t;
+      if (previewVideoRef.current) {
+        try { previewVideoRef.current.currentTime = t; } catch {}
+      }
     }
   };
 
@@ -930,6 +939,12 @@ function MobileVideoShort({ video, creator, onViewCounted, isMuted, onToggleMute
       videoRef.current.play().catch(() => {});
     }
   };
+
+  useEffect(() => {
+    if (isDragging && previewVideoRef.current && isFinite(scrubTime)) {
+      try { previewVideoRef.current.currentTime = scrubTime; } catch {}
+    }
+  }, [isDragging, scrubTime]);
 
   return (
     <div className="relative w-full h-[100dvh] snap-start snap-always bg-black flex items-center justify-center overflow-hidden">
@@ -1079,7 +1094,30 @@ function MobileVideoShort({ video, creator, onViewCounted, isMuted, onToggleMute
           onPointerUp={handleDragEnd}
           onPointerCancel={handleDragEnd}
         >
-          <div className="absolute top-1/2 -translate-y-1/2 left-0 h-[2px] bg-white pointer-events-none" style={{ width: `${progress}%` }} />
+          {isDragging && (
+            <div
+              className="absolute bottom-6 -translate-x-1/2 pointer-events-none z-[260]"
+              style={{ left: `${Math.min(92, Math.max(8, scrubX))}%` }}
+            >
+              <div className="rounded-lg overflow-hidden border border-white/20 bg-black shadow-2xl w-[112px]">
+                <div className="relative w-full aspect-[9/16] bg-black">
+                  <video
+                    ref={previewVideoRef}
+                    src={shouldLoad ? videoSrc : undefined}
+                    muted
+                    playsInline
+                    preload="metadata"
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                </div>
+                <div className="text-[11px] font-semibold text-white text-center py-1 bg-black/90">
+                  {(() => { const s = Math.max(0, scrubTime || 0); const m = Math.floor(s/60); const sec = Math.floor(s%60); return `${m}:${String(sec).padStart(2,'0')}`; })()}
+                </div>
+              </div>
+            </div>
+          )}
+          <div className="absolute top-1/2 -translate-y-1/2 left-0 h-[3px] bg-white/30 pointer-events-none w-full rounded-full" />
+          <div className="absolute top-1/2 -translate-y-1/2 left-0 h-[3px] bg-white pointer-events-none rounded-full" style={{ width: `${progress}%` }} />
         </div>
       </div>
     </div>
