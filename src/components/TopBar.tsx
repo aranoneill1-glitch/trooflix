@@ -7,7 +7,6 @@ import { Menu, Mic, Plus, RefreshCw, Search, Video, Radio, X, Play, Tag, Shoppin
 import { motion, AnimatePresence } from "framer-motion";
 import UserMenu from "@/components/UserMenu";
 import NotificationBell from "@/components/NotificationBell";
-import PWAInstallButton from "@/components/PWAInstallButton";
 import { getCachedUser, getCachedVideos, getSyncCachedVideos, onVideosChange } from "@/lib/cache";
 
 function SearchParamsSync({ onQ }: { onQ: (q: string) => void }) {
@@ -237,8 +236,6 @@ export default function TopBar({ onMenu }: Props) {
             </Link>
 
             <div className="ml-auto flex items-center gap-0.5 md:gap-1">
-              <PWAInstallButton />
-
               {!isSearchPage && (
                 <button
                   type="button"
