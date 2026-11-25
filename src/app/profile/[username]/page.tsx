@@ -441,13 +441,6 @@ export default function PublicProfilePage() {
                   <h1 className="text-3xl xl:text-4xl font-black flex items-center gap-2 text-white">
                     {displayName} {(profile as any).verification_tick && (profile as any).verification_tick !== "none" && <VerifiedBadge size={22} variant={(profile as any).verification_tick as any} />}
                   </h1>
-                  <button
-                    onClick={handleFollow}
-                    disabled={isSubmittingFollow}
-                    className={`shrink-0 flex items-center justify-center gap-1.5 font-bold px-5 py-1.5 rounded-full transition shadow-lg text-sm ${isSubmittingFollow ? "opacity-50 cursor-wait" : isFollowing ? "bg-white/10 text-white border border-white/20" : "bg-white text-black hover:bg-gray-200"}`}
-                  >
-                    <UserPlus size={16} /> {isFollowing ? "Following" : "Follow"}
-                  </button>
                 </div>
                 <p className="text-base text-white/50 mb-3">@{username}</p>
                 <div className="flex items-center gap-4 mb-4 flex-wrap">
@@ -465,26 +458,26 @@ export default function PublicProfilePage() {
                   )}
                 </div>
                 <p className="text-sm text-white/70 leading-relaxed mb-5">{profile.bio || "No bio yet."}</p>
-                <div className="flex gap-3 w-full max-w-xl">
+                <div className="grid grid-cols-3 gap-2.5 w-full max-w-xl">
+                  <button
+                    onClick={handleFollow}
+                    disabled={isSubmittingFollow}
+                    className={`inline-flex items-center justify-center gap-2 font-bold px-4 py-2.5 rounded-full text-sm transition backdrop-blur-xl border ${isSubmittingFollow ? "opacity-50 cursor-wait" : isFollowing ? "bg-white/[0.08] text-white border-white/15 hover:bg-white/[0.12]" : "bg-white text-black border-white/20 hover:bg-white/90"}`}
+                  >
+                    <UserPlus size={16} /> {isFollowing ? "Following" : "Follow"}
+                  </button>
                   {isSubscribed ? (
-                    <>
-                      <button onClick={handleCancelSubscription} disabled={cancelLoading} className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-red-500/20 text-red-400 font-semibold px-5 py-2 rounded-full text-sm transition border border-red-500/30 disabled:opacity-50">
-                        <X size={16} /> {cancelLoading ? "Cancelling..." : "Subscribed"}
-                      </button>
-                      <Link href={`/messages/${profile.user_id}`} className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-semibold px-5 py-2 rounded-full text-sm transition border border-white/10">
-                        <MessageSquare size={16} /> Message
-                      </Link>
-                    </>
+                    <button onClick={handleCancelSubscription} disabled={cancelLoading} className="inline-flex items-center justify-center gap-2 bg-white/[0.08] hover:bg-red-500/15 text-red-400 font-bold px-4 py-2.5 rounded-full text-sm transition backdrop-blur-xl border border-red-500/25 disabled:opacity-50">
+                      <X size={16} /> {cancelLoading ? "..." : "Subscribed"}
+                    </button>
                   ) : (
-                    <>
-                      <button onClick={() => setShowSubscribeModal(true)} className="inline-flex items-center justify-center gap-2 bg-[#E53945] text-white font-semibold px-5 py-2 rounded-full text-sm hover:bg-[#d12e39] transition shadow-lg shadow-[#E53945]/20">
-                        <Star size={16} fill="currentColor" /> Subscribe
-                      </button>
-                      <button onClick={() => setShowSubscribeModal(true)} className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-semibold px-5 py-2 rounded-full text-sm transition border border-white/10">
-                        <MessageSquare size={16} /> Message
-                      </button>
-                    </>
+                    <button onClick={() => setShowSubscribeModal(true)} className="inline-flex items-center justify-center gap-2 bg-[#E53945]/90 hover:bg-[#E53945] text-white font-bold px-4 py-2.5 rounded-full text-sm transition backdrop-blur-xl border border-red-400/20 shadow-[0_8px_24px_rgba(229,57,69,0.28),inset_0_1px_0_rgba(255,255,255,0.16)]">
+                      <Star size={16} fill="currentColor" /> Subscribe
+                    </button>
                   )}
+                  <Link href={`/messages/${profile.user_id}`} className="inline-flex items-center justify-center gap-2 bg-white/[0.08] hover:bg-white/[0.12] text-white font-bold px-4 py-2.5 rounded-full text-sm transition backdrop-blur-xl border border-white/15">
+                    <MessageSquare size={16} /> Message
+                  </Link>
                 </div>
               </div>
 
@@ -527,13 +520,6 @@ export default function PublicProfilePage() {
                     <h1 className="text-2xl md:text-3xl font-black flex items-center gap-2 text-white">
                       {displayName} {(profile as any).verification_tick && (profile as any).verification_tick !== "none" && <VerifiedBadge size={20} variant={(profile as any).verification_tick as any} />}
                     </h1>
-                    <button
-                      onClick={handleFollow}
-                      disabled={isSubmittingFollow}
-                      className={`shrink-0 flex items-center justify-center gap-1.5 font-bold px-5 py-1.5 rounded-full transition shadow-lg text-sm ${isSubmittingFollow ? "opacity-50 cursor-wait" : isFollowing ? "bg-white/10 text-white border border-white/20" : "bg-white text-black hover:bg-gray-200"}`}
-                    >
-                      <UserPlus size={16} /> {isFollowing ? "Following" : "Follow"}
-                    </button>
                   </div>
                   <p className="text-sm md:text-base text-white/50 mb-3">@{username}</p>
                   <div className="flex items-center gap-4 mb-4">
@@ -553,26 +539,26 @@ export default function PublicProfilePage() {
                   <p className="text-sm text-white/60 leading-relaxed">{profile.bio || "No bio yet."}</p>
                 </div>
               </div>
-              <div className="flex gap-3 mb-8">
+              <div className="grid grid-cols-3 gap-2 mb-8">
+                <button
+                  onClick={handleFollow}
+                  disabled={isSubmittingFollow}
+                  className={`inline-flex items-center justify-center gap-1.5 font-bold px-3 py-2.5 rounded-full text-[13px] transition backdrop-blur-xl border ${isSubmittingFollow ? "opacity-50 cursor-wait" : isFollowing ? "bg-white/[0.08] text-white border-white/15 hover:bg-white/[0.12]" : "bg-white text-black border-white/20 hover:bg-white/90"}`}
+                >
+                  <UserPlus size={15} /> {isFollowing ? "Following" : "Follow"}
+                </button>
                 {isSubscribed ? (
-                  <>
-                    <button onClick={handleCancelSubscription} disabled={cancelLoading} className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-red-500/20 text-red-400 font-semibold px-5 py-2 rounded-full text-sm transition border border-red-500/30 disabled:opacity-50">
-                      <X size={16} /> {cancelLoading ? "Cancelling..." : "Subscribed"}
-                    </button>
-                    <Link href={`/messages/${profile.user_id}`} className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-semibold px-5 py-2 rounded-full text-sm transition border border-white/10">
-                      <MessageSquare size={16} /> Message
-                    </Link>
-                  </>
+                  <button onClick={handleCancelSubscription} disabled={cancelLoading} className="inline-flex items-center justify-center gap-1.5 bg-white/[0.08] hover:bg-red-500/15 text-red-400 font-bold px-3 py-2.5 rounded-full text-[13px] transition backdrop-blur-xl border border-red-500/25 disabled:opacity-50">
+                    <X size={15} /> {cancelLoading ? "..." : "Subscribed"}
+                  </button>
                 ) : (
-                  <>
-                    <button onClick={() => setShowSubscribeModal(true)} className="inline-flex items-center justify-center gap-2 bg-[#E53945] text-white font-semibold px-5 py-2 rounded-full text-sm hover:bg-[#d12e39] transition shadow-lg shadow-[#E53945]/20">
-                      <Star size={16} fill="currentColor" /> Subscribe
-                    </button>
-                    <button onClick={() => setShowSubscribeModal(true)} className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-semibold px-5 py-2 rounded-full text-sm transition border border-white/10">
-                      <MessageSquare size={16} /> Message
-                    </button>
-                  </>
+                  <button onClick={() => setShowSubscribeModal(true)} className="inline-flex items-center justify-center gap-1.5 bg-[#E53945]/90 hover:bg-[#E53945] text-white font-bold px-3 py-2.5 rounded-full text-[13px] transition backdrop-blur-xl border border-red-400/20 shadow-[0_8px_24px_rgba(229,57,69,0.28),inset_0_1px_0_rgba(255,255,255,0.16)]">
+                    <Star size={15} fill="currentColor" /> Subscribe
+                  </button>
                 )}
+                <Link href={`/messages/${profile.user_id}`} className="inline-flex items-center justify-center gap-1.5 bg-white/[0.08] hover:bg-white/[0.12] text-white font-bold px-3 py-2.5 rounded-full text-[13px] transition backdrop-blur-xl border border-white/15">
+                  <MessageSquare size={15} /> Message
+                </Link>
               </div>
             </div>
 {/* TABS & CONTENT */}
