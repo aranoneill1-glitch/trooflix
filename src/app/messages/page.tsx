@@ -1,10 +1,10 @@
 "use client";
 import { PhoneMissed, ArrowDownLeft, ArrowUpRight } from "lucide-react";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, Plus, CheckCheck } from "lucide-react";
+import { Search, Plus, CheckCheck, Trash2 } from "lucide-react";
 import { Phone as PhoneIcon } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
@@ -58,6 +58,96 @@ function timeLabel(iso: string): string {
   return d.toLocaleDateString([], { day: "2-digit", month: "2-digit", year: "2-digit" });
 }
 
+function SwipeableRow({
+  id,
+  isOpen,
+  onOpen,
+  onClose,
+  onDelete,
+  children,
+}: {
+  id: string;
+  isOpen: boolean;
+  onOpen: (id: string) => void;
+  onClose: () => void;
+  onDelete: (id: string) => void;
+  children: React.ReactNode;
+}) {
+  const startX = useRef(0);
+  const startY = useRef(0);
+  const dragging = useRef(false);
+  const [offset, setOffset] = useState(0);
+
+  useEffect(() => {
+    setOffset(isOpen ? -80 : 0);
+  }, [isOpen]);
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    const t = e.touches[0];
+    startX.current = t.clientX;
+    startY.current = t.clientY;
+    dragging.current = false;
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    const t = e.touches[0];
+    const dx = t.clientX - startX.current;
+    const dy = t.clientY - startY.current;
+    if (!dragging.current) {
+      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+      if (Math.abs(dy) > Math.abs(dx)) return;
+      dragging.current = true;
+      onOpen(id);
+    }
+    if (!dragging.current) return;
+    const base = isOpen ? -80 : 0;
+    const next = Math.min(0, Math.max(-96, base + dx));
+    setOffset(next);
+  };
+
+  const onTouchEnd = () => {
+    if (!dragging.current) return;
+    dragging.current = false;
+    if (offset < -48) {
+      setOffset(-80);
+      onOpen(id);
+    } else {
+      setOffset(0);
+      onClose();
+    }
+  };
+
+  return (
+    <div className="relative overflow-hidden border-b border-white/5">
+      <div className="absolute inset-y-0 right-0 w-20 bg-red-600 flex items-center justify-center">
+        <button
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(id); }}
+          className="w-full h-full flex items-center justify-center text-white"
+          aria-label="Delete chat"
+        >
+          <Trash2 size={20} />
+        </button>
+      </div>
+      <div
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        onClickCapture={(e) => {
+          if (isOpen) {
+            e.preventDefault();
+            e.stopPropagation();
+            onClose();
+          }
+        }}
+        style={{ transform: `translateX(${offset}px)`, transition: dragging.current ? "none" : "transform 0.2s ease-out" }}
+        className="relative bg-black"
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export default function MessagesInbox() {
   const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
@@ -73,6 +163,9 @@ export default function MessagesInbox() {
   const [callHistory, setCallHistory] = useState<any[]>([]);
   const [callsLoading, setCallsLoading] = useState(false);
   const [profileBackdrop, setProfileBackdrop] = useState<string>("");
+  const [hiddenChats, setHiddenChats] = useState<string[]>([]);
+  const [swipedChat, setSwipedChat] = useState<string | null>(null);
+  const hiddenLoadedRef = useRef(false);
 
   useEffect(() => {
     getCachedUser().then((user) => {
@@ -81,6 +174,11 @@ export default function MessagesInbox() {
         return;
       }
       setUserId(user.id);
+      try {
+        const raw = localStorage.getItem(`trooflix:hidden-chats:${user.id}`);
+        if (raw) setHiddenChats(JSON.parse(raw));
+      } catch {}
+      hiddenLoadedRef.current = true;
       fetch(`/api/profile?user_id=${user.id}`).then(r => r.json()).then(d => setProfileBackdrop(d.profile?.backdrop_url || "")).catch(() => {});
       loadInbox(user.id);
     });
@@ -91,6 +189,11 @@ export default function MessagesInbox() {
       ? { backgroundImage: `url(${profileBackdrop})`, backgroundSize: "cover", backgroundPosition: "center" }
       : { background: profileBackdrop }
     : null;
+
+  useEffect(() => {
+    if (!userId || !hiddenLoadedRef.current) return;
+    try { localStorage.setItem(`trooflix:hidden-chats:${userId}`, JSON.stringify(hiddenChats)); } catch {}
+  }, [hiddenChats, userId]);
 
   // --- Realtime: refresh inbox on every new incoming message ---
   useRealtimeDMs({
@@ -156,12 +259,18 @@ export default function MessagesInbox() {
     return () => clearTimeout(t);
   }, [query, userId]);
 
-  const visible =
+  const visible = (
     filter === "unread"
       ? conversations.filter((c) => c.unread_count > 0)
       : filter === "requests"
       ? conversations.filter((c) => !c.last_from_me && c.unread_count > 0)
-      : conversations;
+      : conversations
+  ).filter((c) => !hiddenChats.includes(c.other_user_id));
+
+  const deleteConversation = (otherUserId: string) => {
+    setHiddenChats((prev) => (prev.includes(otherUserId) ? prev : [...prev, otherUserId]));
+    setSwipedChat(null);
+  };
 
   const requestsCount = conversations.filter((c) => !c.last_from_me && c.unread_count > 0).length;
 
@@ -319,49 +428,57 @@ export default function MessagesInbox() {
               const unread = c.unread_count > 0;
 
               return (
-                <Link
+                <SwipeableRow
                   key={c.other_user_id}
-                  href={`/messages/${c.other_user_id}`}
-                  className="flex items-center gap-4 px-4 md:px-6 py-3.5 hover:bg-white/[0.06] active:bg-white/[0.08] transition border-b border-white/5"
+                  id={c.other_user_id}
+                  isOpen={swipedChat === c.other_user_id}
+                  onOpen={(id) => setSwipedChat(id)}
+                  onClose={() => setSwipedChat(null)}
+                  onDelete={deleteConversation}
                 >
-                  {/* Bigger avatar — 64px */}
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center overflow-hidden flex-shrink-0">
-                    {p?.avatar_url ? (
-                      <img src={p.avatar_url} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-white font-bold text-2xl">
-                        {(name[0] || "?").toUpperCase()}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Middle */}
-                  <div className="flex-1 min-w-0">
-                    <p
-                      className={`text-[16px] leading-tight truncate ${
-                        unread ? "font-bold text-white" : "font-medium text-white"
-                      }`}
-                    >
-                      {name}
-                    </p>
-                    <div className="flex items-center gap-1 text-[14px] text-white/55 truncate mt-0.5">
-                      {c.last_from_me && (
-                        <CheckCheck size={15} className="text-sky-400 flex-shrink-0" />
+                  <Link
+                    href={`/messages/${c.other_user_id}`}
+                    className="flex items-center gap-4 px-4 md:px-6 py-3.5 hover:bg-white/[0.06] active:bg-white/[0.08] transition"
+                  >
+                    {/* Bigger avatar — 64px */}
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center overflow-hidden flex-shrink-0">
+                      {p?.avatar_url ? (
+                        <img src={p.avatar_url} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-white font-bold text-2xl">
+                          {(name[0] || "?").toUpperCase()}
+                        </span>
                       )}
-                      <span className={`truncate ${unread ? "text-white/80" : ""}`}>
-                        {c.last_message}
-                      </span>
-                      <span className="text-white/40 flex-shrink-0">
-                        · {timeLabel(c.last_at)}
-                      </span>
                     </div>
-                  </div>
 
-                  {/* Blue unread dot (Instagram-style) */}
-                  {unread && (
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#3797f0] flex-shrink-0" />
-                  )}
-                </Link>
+                    {/* Middle */}
+                    <div className="flex-1 min-w-0">
+                      <p
+                        className={`text-[16px] leading-tight truncate ${
+                          unread ? "font-bold text-white" : "font-medium text-white"
+                        }`}
+                      >
+                        {name}
+                      </p>
+                      <div className="flex items-center gap-1 text-[14px] text-white/55 truncate mt-0.5">
+                        {c.last_from_me && (
+                          <CheckCheck size={15} className="text-sky-400 flex-shrink-0" />
+                        )}
+                        <span className={`truncate ${unread ? "text-white/80" : ""}`}>
+                          {c.last_message}
+                        </span>
+                        <span className="text-white/40 flex-shrink-0">
+                          · {timeLabel(c.last_at)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Blue unread dot (Instagram-style) */}
+                    {unread && (
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#3797f0] flex-shrink-0" />
+                    )}
+                  </Link>
+                </SwipeableRow>
               );
             })}
           </div>
