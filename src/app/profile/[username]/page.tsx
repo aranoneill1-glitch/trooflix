@@ -44,7 +44,7 @@ export default function PublicProfilePage() {
   const [loading, setLoading] = useState(true);
   
   const [activeContentTab, setActiveContentTab] = useState<"Videos" | "Audio" | "Premium" | "Shop">("Videos");
-  const [videoFilter, setVideoFilter] = useState<"all" | "shorts">("all");
+
   const [contentView, setContentView] = useState<"grid" | "list">("grid");
   const [activeVideoId, setActiveVideoId] = useState<number | null>(null);
   const [commentSheetVideoId, setCommentSheetVideoId] = useState<number | null>(null);
@@ -130,7 +130,6 @@ export default function PublicProfilePage() {
 
           if (hasLongVideos || hasShorts) {
             setActiveContentTab("Videos");
-            setVideoFilter(hasLongVideos ? "all" : "shorts");
           } else if (hasAudio) {
             setActiveContentTab("Audio");
           } else if (hasPremium) {
@@ -295,8 +294,7 @@ export default function PublicProfilePage() {
     }
     if (activeContentTab === "Videos") {
       if (type === "tweet" || isPremium || isAudio) return false;
-      if (videoFilter === "shorts") return isShort;
-      return !isShort; // All = long-form/videos (excluding shorts)
+      return true;
     }
     if (activeContentTab === "Premium") {
       return isPremium && type !== "tweet";
@@ -599,22 +597,7 @@ export default function PublicProfilePage() {
               </div>
             </div>
 
-            {activeContentTab === "Videos" && (
-              <div className="flex items-center gap-2 mb-5">
-                {([
-                  { id: "all", label: "All" },
-                  { id: "shorts", label: "Shorts" },
-                ] as const).map((pill) => (
-                  <button
-                    key={pill.id}
-                    onClick={() => setVideoFilter(pill.id)}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-bold border transition ${videoFilter === pill.id ? "bg-white text-black border-white" : "bg-white/5 text-white/70 border-white/10 hover:text-white hover:border-white/20"}`}
-                  >
-                    {pill.label}
-                  </button>
-                ))}
-              </div>
-            )}
+
 
             <div className="w-full">
               {activeContentTab === "Audio" && (
@@ -765,32 +748,20 @@ export default function PublicProfilePage() {
               {activeContentTab === "Videos" && (
                 <div className="w-full">
                   {filteredVideos.length === 0 ? (
-                    <div className="text-center py-20 text-white/50">{videoFilter === "shorts" ? "No Shorts yet." : "No videos found yet."}</div>
-                  ) : videoFilter === "shorts" ? (
-                    contentView === "grid" ? (
-                      <div className="-mx-4 sm:-mx-4 lg:mx-0 grid grid-cols-3 gap-[2px] pb-20 sm:gap-1 lg:grid-cols-6 lg:gap-3">
-                        {filteredVideos.map((video) => (
-                          <Link key={video.id} href={`/feed?creator_user_id=${encodeURIComponent(profile.user_id)}${resolvedCreatorId ? `&creator_id=${resolvedCreatorId}` : ""}&reel=${video.id}`} aria-label={`Watch ${video.title}`} className="group relative aspect-[3/4] overflow-hidden bg-[#111114] lg:rounded-xl lg:border lg:border-white/10 lg:shadow-lg">
-                            <ShortPreviewFrame src={video.videoUrl || video.bitchuteUrl} poster={video.posterUrl || video.backdropUrl} alt="" />
-                          </Link>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="flex flex-col gap-2 pb-20">
-                        {filteredVideos.map((video) => (
-                          <Link key={video.id} href={`/feed?creator_user_id=${encodeURIComponent(profile.user_id)}${resolvedCreatorId ? `&creator_id=${resolvedCreatorId}` : ""}&reel=${video.id}`} className="flex items-center gap-3 bg-[#1c1c1e] border border-white/10 hover:bg-[#242426] rounded-xl p-2 transition">
-                            <div className="relative w-14 aspect-[3/4] rounded-lg overflow-hidden shrink-0 bg-black">
-                              <ShortPreviewFrame src={video.videoUrl || video.bitchuteUrl} poster={video.posterUrl || video.backdropUrl} alt="" />
-                            </div>
-                            <span className="text-sm font-bold text-white truncate">{video.title}</span>
-                          </Link>
-                        ))}
-                      </div>
-                    )
+                    <div className="text-center py-20 text-white/50">No videos found yet.</div>
                   ) : contentView === "grid" ? (
                     <div className="-mx-4 sm:-mx-4 lg:mx-0 grid grid-cols-3 gap-[2px] pb-20 sm:gap-1 lg:grid-cols-6 lg:gap-3">
                       {filteredVideos.map((video) => {
-                        const isPodcast = String(video.type || "").toLowerCase() === "podcast";
+                        const type = String(video.type || "").toLowerCase();
+                        const isShort = type === "short" || type === "reel";
+                        const isPodcast = type === "podcast";
+                        if (isShort) {
+                          return (
+                            <Link key={video.id} href={`/feed?creator_user_id=${encodeURIComponent(profile.user_id)}${resolvedCreatorId ? `&creator_id=${resolvedCreatorId}` : ""}&reel=${video.id}`} aria-label={`Watch ${video.title}`} className="group relative aspect-[3/4] overflow-hidden bg-[#111114] lg:rounded-xl lg:border lg:border-white/10 lg:shadow-lg">
+                              <ShortPreviewFrame src={video.videoUrl || video.bitchuteUrl} poster={video.posterUrl || video.backdropUrl} alt="" />
+                            </Link>
+                          );
+                        }
                         return (
                           <div key={video.id} className="relative aspect-[3/4] overflow-hidden bg-[#111114] lg:rounded-xl lg:border lg:border-white/10 lg:shadow-lg cursor-pointer">
                             <img src={video.posterUrl || video.backdropUrl} alt="" loading="lazy" className="w-full h-full object-cover" />
@@ -804,7 +775,19 @@ export default function PublicProfilePage() {
                   ) : (
                     <div className="flex flex-col gap-2 pb-20">
                       {filteredVideos.map((video) => {
-                        const isPodcast = String(video.type || "").toLowerCase() === "podcast";
+                        const type = String(video.type || "").toLowerCase();
+                        const isShort = type === "short" || type === "reel";
+                        const isPodcast = type === "podcast";
+                        if (isShort) {
+                          return (
+                            <Link key={video.id} href={`/feed?creator_user_id=${encodeURIComponent(profile.user_id)}${resolvedCreatorId ? `&creator_id=${resolvedCreatorId}` : ""}&reel=${video.id}`} className="flex items-center gap-3 bg-[#1c1c1e] border border-white/10 hover:bg-[#242426] rounded-xl p-2 transition">
+                              <div className="relative w-14 aspect-[3/4] rounded-lg overflow-hidden shrink-0 bg-black">
+                                <ShortPreviewFrame src={video.videoUrl || video.bitchuteUrl} poster={video.posterUrl || video.backdropUrl} alt="" />
+                              </div>
+                              <span className="text-sm font-bold text-white truncate">{video.title}</span>
+                            </Link>
+                          );
+                        }
                         return (
                           <div key={video.id} className="flex items-center gap-3 bg-[#1c1c1e] border border-white/10 rounded-xl p-2 cursor-pointer hover:bg-[#242426] transition">
                             <div className="relative w-14 aspect-[3/4] rounded-lg overflow-hidden shrink-0 bg-black">
