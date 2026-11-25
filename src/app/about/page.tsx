@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Heart, Shield, Coins, Video, Radio, ShoppingBag, Star, MessageCircle, Wallet, Bell, Layers } from "lucide-react";
+import { Heart, Shield, Coins, Video, Radio, ShoppingBag, Star, MessageCircle, Wallet, Bell, Layers } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 
@@ -27,10 +27,6 @@ export default function AboutTrooflixPage() {
         <div className="absolute inset-x-0 top-16 h-80 bg-[radial-gradient(circle_at_top,rgba(229,57,69,0.22),transparent_55%)] pointer-events-none" />
         <div className="absolute top-0 right-0 w-72 h-72 bg-red-500/10 blur-3xl rounded-full pointer-events-none" />
         <div className="absolute top-64 left-[-6rem] w-72 h-72 bg-pink-500/10 blur-3xl rounded-full pointer-events-none" />
-
-        <Link href="/" className="relative inline-flex items-center gap-2 text-sm text-white/55 hover:text-white mb-10 transition">
-          <ArrowLeft size={16} /> Back
-        </Link>
 
         <div className="relative text-center max-w-3xl mx-auto mb-14">
           <div className="w-20 h-20 mx-auto rounded-full bg-red-500/12 border border-red-500/20 flex items-center justify-center mb-7 shadow-[0_12px_40px_rgba(229,57,69,0.18)]">

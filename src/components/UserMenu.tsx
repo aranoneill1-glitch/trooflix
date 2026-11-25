@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, LogOut, Settings, CreditCard, LayoutDashboard, MessageCircle, Bell, ShoppingBag, Wallet, Sparkles, Palette, Heart } from "lucide-react";
+import { User, LogOut, Settings, CreditCard, LayoutDashboard, MessageCircle, Bell, ShoppingBag, Wallet, Palette, Heart } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { getCachedUser, clearUserCache } from "@/lib/cache";
 import { motion, AnimatePresence } from "framer-motion";
@@ -220,18 +220,6 @@ export default function UserMenu() {
                 <Palette size={16} />
                 App Theme
               </Link>
-
-              {/* My Little Helper (AI assistant) */}
-              <button
-                onClick={() => {
-                  setIsOpen(false);
-                  document.dispatchEvent(new CustomEvent("open-trooflix-assistant"));
-                }}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition text-sm text-white/80 hover:text-white"
-              >
-                <Sparkles size={16} className="text-[#ff8a93]" />
-                My Little Helper
-              </button>
 
               <Link
                 href="/about"
