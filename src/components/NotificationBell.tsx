@@ -31,8 +31,13 @@ export default function NotificationBell({ hideTrigger = false }: { hideTrigger?
 
   useEffect(() => {
     const handleOpen = () => setIsOpen(true);
+    const handleToggle = () => setIsOpen(v => !v);
     window.addEventListener('open-notifications', handleOpen);
-    return () => window.removeEventListener('open-notifications', handleOpen);
+    window.addEventListener('toggle-notifications', handleToggle);
+    return () => {
+      window.removeEventListener('open-notifications', handleOpen);
+      window.removeEventListener('toggle-notifications', handleToggle);
+    };
   }, []);
 
   useEffect(() => {
@@ -183,15 +188,6 @@ export default function NotificationBell({ hideTrigger = false }: { hideTrigger?
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
             className="fixed top-[calc(env(safe-area-inset-top)+56px)] left-0 right-0 bottom-0 z-[210] bg-[#0a0303] text-white flex flex-col overflow-hidden"
           >
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-white/20 bg-white/[0.08] backdrop-saturate-150 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] shrink-0">
-              <button onClick={() => setIsOpen(false)} className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition">
-                <X size={20} />
-              </button>
-              <h1 className="text-xl font-bold tracking-tight">Notification center</h1>
-              <div className="w-10" /> {/* Spacer for symmetry */}
-            </div>
-
             {/* Segmented Control */}
             <div className="flex justify-center mt-6 shrink-0">
               <div className="flex bg-white/10 backdrop-saturate-150 p-1 rounded-full border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)]">

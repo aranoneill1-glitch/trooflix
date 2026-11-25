@@ -247,7 +247,7 @@ export default function TopBar({ onMenu }: Props) {
               {!isSearchPage && (
                 <button
                   type="button"
-                  onClick={() => window.dispatchEvent(new CustomEvent('open-notifications'))}
+                  onClick={() => window.dispatchEvent(new CustomEvent('toggle-notifications'))}
                   className="w-9 h-9 rounded-full flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition"
                   aria-label="Notifications"
                 >
