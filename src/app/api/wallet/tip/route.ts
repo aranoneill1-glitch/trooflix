@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireUser, assertSelf } from "@/lib/api-auth";
 import { createClient } from "@supabase/supabase-js";
+import { kv } from "@vercel/kv";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,7 @@ const supabaseAdmin = createClient(
 
 export async function POST(req: Request) {
   try {
-    const { senderId, receiverId, amount, description } = await req.json();
+    const { senderId, receiverId, amount, description, videoId, commentId } = await req.json();
 
     // Auth: verify the caller is the sender
     const auth = await requireUser();
@@ -42,17 +43,29 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Not enough credits. Please top up your balance." }, { status: 400 });
     }
 
+    const parsedVideoId = videoId !== null && videoId !== undefined && videoId !== "" ? Number(videoId) : null;
+    const safeVideoId = Number.isFinite(parsedVideoId) ? parsedVideoId : null;
+    const parsedCommentId = commentId !== null && commentId !== undefined && commentId !== "" ? String(commentId) : null;
+
     const { error } = await supabaseAdmin.rpc("transfer_coins", {
       p_sender_id: senderId,
       p_receiver_id: validReceiverId,
       p_amount: amount,
       p_type: "tip",
       p_description: description || "Tipped on a post",
-      p_video_id: null,
+      p_video_id: safeVideoId,
     });
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    // Track tip totals (coins tipped)
+    try {
+      if (safeVideoId !== null) await kv.incrbyfloat(`trooflix:tips:video:${safeVideoId}`, amount);
+      if (parsedCommentId) await kv.incrbyfloat(`trooflix:tips:comment:${parsedCommentId}`, amount);
+    } catch (e) {
+      console.warn("Tip count tracking failed:", e);
     }
 
     // Notify the receiver

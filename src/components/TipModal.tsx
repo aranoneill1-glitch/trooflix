@@ -37,6 +37,8 @@ const COIN_BURST = [
 export default function TipModal() {
   const [isOpen, setIsOpen] = useState(false);
   const [creatorId, setCreatorId] = useState<string | null>(null);
+  const [videoId, setVideoId] = useState<string | number | null>(null);
+  const [commentId, setCommentId] = useState<string | number | null>(null);
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [customAmount, setCustomAmount] = useState("");
@@ -47,6 +49,8 @@ export default function TipModal() {
       const cid = e.detail?.creatorId;
       if (!cid) return;
       setCreatorId(cid);
+      setVideoId(e.detail?.videoId ?? null);
+      setCommentId(e.detail?.commentId ?? null);
       setIsOpen(true);
       setStatus("idle");
       setErrorMsg("");
@@ -68,13 +72,13 @@ export default function TipModal() {
       const res = await fetch("/api/wallet/tip", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ senderId: user.id, receiverId: creatorId, amount })
+        body: JSON.stringify({ senderId: user.id, receiverId: creatorId, amount, videoId, commentId })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Tip failed");
       
       setStatus("success");
-      window.dispatchEvent(new Event("tip-sent"));
+      window.dispatchEvent(new CustomEvent("tip-sent", { detail: { videoId, commentId, amount } }));
       setTimeout(() => setIsOpen(false), 2600);
     } catch (e: any) {
       setStatus("error");

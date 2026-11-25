@@ -166,6 +166,7 @@ function PostMedia({ video, onOpen, onLike, isActive, onRegister, shouldLoad = t
 
 export default function InstagramHomeFeed({ videos, creators, onVideoSelect, showWelcome = false }: Props) {
   const [commentCounts, setCommentCounts] = useState<Record<number, number>>({});
+  const [tipCounts, setTipCounts] = useState<Record<string, number>>({});
   const [sheetVideo, setSheetVideo] = useState<number | null>(null);
   const [saved, setSaved] = useState<number[]>([]);
   const [likedLocal, setLikedLocal] = useState<number[]>([]);
@@ -255,6 +256,24 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
       .then(r => r.json())
       .then(d => setCommentCounts(d?.counts || {}))
       .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const ids = posts.map(p => p.video.id).filter(Boolean);
+    if (ids.length === 0) return;
+    fetch(`/api/tips/counts?videoIds=${ids.join(",")}`, { cache: "no-store" })
+      .then(r => r.json())
+      .then(d => setTipCounts(d?.videos || {}))
+      .catch(() => {});
+  }, [posts.map(p => p.video.id).join(",")]);
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      const { videoId, amount } = e.detail || {};
+      if (videoId) setTipCounts((prev) => ({ ...prev, [String(videoId)]: Number(prev[String(videoId)] || 0) + Number(amount || 0) }));
+    };
+    window.addEventListener("tip-sent", handler as any);
+    return () => window.removeEventListener("tip-sent", handler as any);
   }, []);
 
   const toggleSave = (id: number) => setSaved(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
@@ -388,7 +407,7 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
                 <button
                   onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: video.creatorId || video.uploaderUserId, videoId: video.id } }))}
                   aria-label="Tip creator"
-                  className="active:opacity-60 text-white"
+                  className="flex items-center gap-1.5 active:opacity-60 text-white"
                 >
                   <svg width={24} height={24} viewBox="0 0 24 24" fill="none" aria-hidden="true" className="text-white">
                     <circle cx="12" cy="12" r="9.5" stroke="currentColor" strokeWidth="1.9" />
@@ -396,6 +415,7 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
                     <path d="M10.1 5.4L9.2 3.3M13.9 5.4L14.8 3.3M10.1 18.6L9.2 20.7M13.9 18.6L14.8 20.7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.9" />
                     <text x="12" y="15.2" textAnchor="middle" fontSize="7.6" fontWeight="800" fill="currentColor" fontFamily="system-ui, -apple-system, sans-serif">TC</text>
                   </svg>
+                  {Number(tipCounts[String(video.id)] || 0) > 0 && <span className="text-sm font-semibold tabular-nums">{Number(tipCounts[String(video.id)] || 0).toLocaleString()}</span>}
                 </button>
                 <button onClick={() => { if (navigator.share) navigator.share({ title: video.title, url: window.location.href }).catch(() => {}); }} aria-label="Share" className="text-white active:opacity-60"><Send size={23} strokeWidth={1.7} /></button>
                 <button

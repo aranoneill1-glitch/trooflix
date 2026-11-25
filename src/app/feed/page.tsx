@@ -43,6 +43,7 @@ export default function ShortsFeedPage() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [viewCounts, setViewCounts] = useState<Record<number, number>>({});
   const [commentCounts, setCommentCounts] = useState<Record<number, number>>({});
+  const [tipCounts, setTipCounts] = useState<Record<string, number>>({});
   const [composerUser, setComposerUser] = useState<{ id: string; email: string } | null>(null);
   const [composerAvatar, setComposerAvatar] = useState<string | null>(null);
   const [commentText, setCommentText] = useState("");
@@ -110,6 +111,24 @@ export default function ShortsFeedPage() {
       .then(d => setCommentCounts(d?.counts || {}))
       .catch(() => {});
   }, [commentSheetVideoId]);
+
+  useEffect(() => {
+    const ids = videos.map(v => v.id).filter(Boolean);
+    if (ids.length === 0) return;
+    fetch(`/api/tips/counts?videoIds=${ids.join(",")}`, { cache: "no-store" })
+      .then(r => r.json())
+      .then(d => setTipCounts(d?.videos || {}))
+      .catch(() => {});
+  }, [videos.map(v => v.id).join(",")]);
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      const { videoId, amount } = e.detail || {};
+      if (videoId) setTipCounts((prev) => ({ ...prev, [String(videoId)]: Number(prev[String(videoId)] || 0) + Number(amount || 0) }));
+    };
+    window.addEventListener("tip-sent", handler as any);
+    return () => window.removeEventListener("tip-sent", handler as any);
+  }, []);
 
   useEffect(() => {
     const supabase = createClient();
@@ -332,7 +351,7 @@ export default function ShortsFeedPage() {
             <button
               onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: activeVideo.creatorId, videoId: activeVideo.id } }))}
               aria-label="Tip creator"
-              className="flex items-center justify-center min-w-0 flex-1 text-white hover:text-white/90 transition"
+              className="flex items-center justify-center gap-1.5 min-w-0 flex-1 text-white hover:text-white/90 transition"
             >
               <svg width={28} height={28} viewBox="0 0 24 24" fill="none" aria-hidden="true" className="text-white/90">
                 <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
@@ -340,6 +359,7 @@ export default function ShortsFeedPage() {
                 <path d="M10.2 5.8L9.4 3.9M13.8 5.8L14.6 3.9M10.2 18.2L9.4 20.1M13.8 18.2L14.6 20.1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.9" />
                 <text x="12" y="15" textAnchor="middle" fontSize="7.2" fontWeight="800" fill="currentColor" fontFamily="system-ui, -apple-system, sans-serif">TC</text>
               </svg>
+              {Number(tipCounts[String(activeVideo.id)] || 0) > 0 && <span className="text-[13px] font-extrabold tracking-tight">{Number(tipCounts[String(activeVideo.id)] || 0).toLocaleString()}</span>}
             </button>
 
             <div className="flex items-center justify-center gap-1.5 min-w-0 flex-1 text-white">
@@ -392,13 +412,14 @@ export default function ShortsFeedPage() {
             <button className="w-12 h-12 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition">
               <MessageCircle size={24}/>
             </button>
-            <button onClick={() => activeVideo && window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: activeVideo.creatorId, videoId: activeVideo.id } }))} className="w-12 h-12 flex items-center justify-center text-white hover:bg-white/10 rounded-full transition">
+            <button onClick={() => activeVideo && window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: activeVideo.creatorId, videoId: activeVideo.id } }))} className="flex flex-col items-center gap-1 text-white/90 hover:text-white transition">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
                 <circle cx="12" cy="12" r="6.6" stroke="currentColor" strokeWidth="1.2" opacity="0.75" />
                 <path d="M10.2 5.8L9.4 3.9M13.8 5.8L14.6 3.9M10.2 18.2L9.4 20.1M13.8 18.2L14.6 20.1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.9" />
                 <text x="12" y="15" textAnchor="middle" fontSize="7.2" fontWeight="800" fill="currentColor" fontFamily="system-ui, -apple-system, sans-serif">TC</text>
               </svg>
+              {activeVideo && Number(tipCounts[String(activeVideo.id)] || 0) > 0 && <span className="text-[11px] font-bold">{Number(tipCounts[String(activeVideo.id)] || 0).toLocaleString()}</span>}
             </button>
             <div className="flex flex-col items-center gap-1">
               {activeVideo && <LikeButton videoId={activeVideo.id} size={24} showCount={true} stacked={true} />}

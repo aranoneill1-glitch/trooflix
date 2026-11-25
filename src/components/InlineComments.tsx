@@ -35,6 +35,7 @@ function timeAgo(iso: string): string {
 
 export default function InlineComments({ videoId }: { videoId: number }) {
   const [comments, setComments] = useState<Comment[]>([]);
+  const [commentTipCounts, setCommentTipCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [newComment, setNewComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -85,6 +86,24 @@ export default function InlineComments({ videoId }: { videoId: number }) {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const ids = comments.map((c) => c.id).filter(Boolean);
+    if (ids.length === 0) return;
+    fetch(`/api/tips/counts?commentIds=${ids.join(",")}`, { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d) => setCommentTipCounts(d?.comments || {}))
+      .catch(() => {});
+  }, [comments.map((c) => c.id).join(",")]);
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      const { commentId, amount } = e.detail || {};
+      if (commentId) setCommentTipCounts((prev) => ({ ...prev, [String(commentId)]: Number(prev[String(commentId)] || 0) + Number(amount || 0) }));
+    };
+    window.addEventListener("tip-sent", handler as any);
+    return () => window.removeEventListener("tip-sent", handler as any);
+  }, []);
 
   const loadLikedIds = async () => {
     if (!user) return;
@@ -240,11 +259,11 @@ export default function InlineComments({ videoId }: { videoId: number }) {
             )}
             {user?.id !== c.user_id && (
               <button
-                onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: c.user_id } }))}
+                onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: c.user_id, commentId: c.id, videoId } }))}
                 className="flex items-center gap-1 text-xs text-white/50 hover:text-[#D4AF37] transition font-semibold"
               >
                 <Gift size={13} />
-                Tip
+                Tip{Number(commentTipCounts[String(c.id)] || 0) > 0 ? ` ${Number(commentTipCounts[String(c.id)] || 0).toLocaleString()}` : ""}
               </button>
             )}
           </div>
