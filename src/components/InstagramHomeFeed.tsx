@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Headphones, Heart, Maximize2, MessageCircle, MoreHorizontal, Play, Send, ShoppingBag, Volume2, VolumeX } from "lucide-react";
 import LikeButton from "@/components/LikeButton";
 import CommentSheet from "@/components/CommentSheet";
+import ReportModal from "@/components/ReportModal";
 import ViewCount from "@/components/ViewCount";
 
 import { ChevronDown, X as XIcon } from "lucide-react";
@@ -168,6 +169,7 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
   const [commentCounts, setCommentCounts] = useState<Record<number, number>>({});
   const [tipCounts, setTipCounts] = useState<Record<string, number>>({});
   const [sheetVideo, setSheetVideo] = useState<number | null>(null);
+  const [reportVideoId, setReportVideoId] = useState<number | null>(null);
   const [saved, setSaved] = useState<number[]>([]);
   const [likedLocal, setLikedLocal] = useState<number[]>([]);
   const [activeId, setActiveId] = useState<number | null>(null);
@@ -386,7 +388,7 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
                   <p className="truncate text-[13px] font-semibold text-white">{name}</p>
                   <p className="truncate text-[10px] text-white/45">{video.category || "Trooflix"}</p>
                 </div>
-                <button onClick={() => onVideoSelect(video)} aria-label="More" className="p-1 text-white/70"><MoreHorizontal size={20} /></button>
+                <button onClick={() => { haptic(); setReportVideoId(video.id); }} aria-label="More options" className="p-1 text-white/70 hover:text-white transition"><MoreHorizontal size={20} /></button>
               </header>
 
               <PostMedia
@@ -448,6 +450,7 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
       )}
 
       <CommentSheet videoId={sheetVideo} open={sheetVideo !== null} onClose={() => setSheetVideo(null)} />
+      <ReportModal open={reportVideoId !== null} onClose={() => setReportVideoId(null)} contentType="post" contentId={reportVideoId ?? 0} />
     </div>
   );
 }

@@ -22,7 +22,8 @@ export async function GET(req: Request) {
       .maybeSingle();
 
     if (error) throw error;
-    let creatorToolsUnlocked = data ? (await kv.get<string>(`trooflix:creator-tools-unlocked:${userId}`)) === "1" : false;
+    const hasRedTick = !!data && (data.verification_tick === "plus_red" || data.verification_tick === "creator_gold" || data.is_verified === true);
+    let creatorToolsUnlocked = data ? ((await kv.get<string>(`trooflix:creator-tools-unlocked:${userId}`)) === "1" || hasRedTick) : false;
     if (data && !creatorToolsUnlocked) {
       const { data: topup } = await supabaseAdmin
         .from("transactions")
@@ -36,6 +37,7 @@ export async function GET(req: Request) {
         try { await kv.set(`trooflix:creator-tools-unlocked:${userId}`, "1"); } catch {}
       }
     }
+    if (data && hasRedTick && !creatorToolsUnlocked) creatorToolsUnlocked = true;
     return NextResponse.json({ profile: data ? { ...data, creator_tools_unlocked: creatorToolsUnlocked } : null });
   } catch (e: any) {
     console.error("GET profile error:", e);
