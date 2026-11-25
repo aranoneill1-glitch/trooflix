@@ -102,7 +102,7 @@ export default function MobileBottomNav() {
       className={`lg:hidden fixed inset-x-0 bottom-0 z-[250] bg-[#09090B]/35 backdrop-blur-xl backdrop-saturate-150 transition-transform duration-300 ease-out`}
       style={{ transform: hidden ? "translateY(100%)" : "translateY(0)", WebkitTransform: hidden ? "translateY(100%)" : "translateY(0)" }}
     >
-      <div className={`flex items-center justify-around px-2 pt-1 ${isFeed ? "pb-[calc(env(safe-area-inset-bottom)+14px)]" : "pb-[calc(env(safe-area-inset-bottom)+8px)]"}`}>
+      <div className="flex items-center justify-around px-2 pt-1 pb-[calc(env(safe-area-inset-bottom)+16px)]">
         <Link href="/" className="flex flex-col items-center justify-center gap-0 min-w-0 flex-1 pt-1.5 pb-0">
           <Home size={22} className={isActive("/") ? "text-white" : "text-white/45"} />
           <span className={`text-[10px] font-medium ${isActive("/") ? "text-white" : "text-white/45"}`}>Home</span>
