@@ -192,7 +192,7 @@ export default function LoginPage() {
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
               placeholder="Email or @handle"
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 outline-none focus:border-red-600 transition placeholder:text-white/30"
+              className="w-full bg-white/[0.08] backdrop-blur-xl border border-white/15 rounded-2xl px-4 py-3.5 outline-none focus:border-red-500/70 focus:bg-white/[0.12] transition placeholder:text-white/35 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
               autoComplete="username"
               required
             />
@@ -201,39 +201,39 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 outline-none focus:border-red-600 transition placeholder:text-white/30"
+              className="w-full bg-white/[0.08] backdrop-blur-xl border border-white/15 rounded-2xl px-4 py-3.5 outline-none focus:border-red-500/70 focus:bg-white/[0.12] transition placeholder:text-white/35 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
               autoComplete="current-password"
               required
             />
 
             {error && (
-              <div className="bg-red-950/30 border border-red-600/40 rounded-lg px-4 py-2.5 text-sm text-red-300">
+              <div className="bg-red-500/10 backdrop-blur-xl border border-red-500/30 rounded-2xl px-4 py-3 text-sm text-red-200">
                 {error}
               </div>
             )}
 
-            <div className="flex justify-end">
+            <div className="flex justify-end pt-1">
               <Link href="/forgot-password" className="text-sm text-white/60 hover:text-white transition font-medium">
                 Forgot your password?
               </Link>
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-50 font-bold py-3 rounded-lg transition text-base"
-            >
-              {loading ? "Signing in…" : "Sign In"}
-            </button>
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-red-600/90 hover:bg-red-600 disabled:opacity-50 text-white font-bold py-3.5 rounded-full transition text-base backdrop-blur-xl border border-red-400/20 shadow-[0_8px_24px_rgba(229,57,69,0.35),inset_0_1px_0_rgba(255,255,255,0.18)]"
+              >
+                {loading ? "Signing in…" : "Sign In"}
+              </button>
+              <Link
+                href="/signup"
+                className="w-full bg-white/[0.08] hover:bg-white/[0.14] text-white font-bold py-3.5 rounded-full transition text-base text-center backdrop-blur-xl border border-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]"
+              >
+                Sign Up
+              </Link>
+            </div>
           </form>
-
-          <p className="text-sm text-white/50 mt-6">
-            New to Trooflix?{" "}
-            <Link href="/signup" className="text-white hover:underline font-semibold">
-              Sign up now
-            </Link>
-            .
-          </p>
 
           <p className="text-[11px] text-white/30 mt-6 leading-relaxed">
             This site is protected by reCAPTCHA and the Google{" "}

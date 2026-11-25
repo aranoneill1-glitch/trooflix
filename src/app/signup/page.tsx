@@ -88,7 +88,7 @@ export default function SignupPage() {
               value={handle}
               onChange={(e) => setHandle(e.target.value)}
               placeholder="@yourname"
-              className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl px-4 py-3.5 text-white outline-none focus:border-[#E53945] transition"
+              className="w-full bg-white/[0.08] backdrop-blur-xl border border-white/15 rounded-2xl px-4 py-3.5 text-white outline-none focus:border-red-500/70 focus:bg-white/[0.12] transition placeholder:text-white/35 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
               autoComplete="username"
             />
           </div>
@@ -99,7 +99,7 @@ export default function SignupPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl px-4 py-3.5 text-white outline-none focus:border-[#E53945] transition"
+              className="w-full bg-white/[0.08] backdrop-blur-xl border border-white/15 rounded-2xl px-4 py-3.5 text-white outline-none focus:border-red-500/70 focus:bg-white/[0.12] transition placeholder:text-white/35 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
               autoComplete="email"
             />
           </div>
@@ -110,7 +110,7 @@ export default function SignupPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="At least 6 characters"
-              className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl px-4 py-3.5 text-white outline-none focus:border-[#E53945] transition"
+              className="w-full bg-white/[0.08] backdrop-blur-xl border border-white/15 rounded-2xl px-4 py-3.5 text-white outline-none focus:border-red-500/70 focus:bg-white/[0.12] transition placeholder:text-white/35 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
               autoComplete="new-password"
             />
           </div>
@@ -120,18 +120,26 @@ export default function SignupPage() {
             <span>I agree to the <Link href="/terms" className="text-white/80 hover:underline">Terms</Link> and <Link href="/privacy" className="text-white/80 hover:underline">Privacy Policy</Link>.</span>
           </label>
 
-          {error && <p className="text-sm text-red-400">{error}</p>}
+          {error && <p className="text-sm text-red-300 bg-red-500/10 backdrop-blur-xl border border-red-500/30 rounded-2xl px-4 py-3">{error}</p>}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold py-4 rounded-xl transition shadow-lg shadow-[#E53945]/20"
-          >
-            {loading ? "Creating account..." : "Create account"}
-          </button>
+          <div className="grid grid-cols-2 gap-3 pt-2">
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-red-600/90 hover:bg-red-600 disabled:opacity-50 text-white font-bold py-3.5 rounded-full transition text-base backdrop-blur-xl border border-red-400/20 shadow-[0_8px_24px_rgba(229,57,69,0.35),inset_0_1px_0_rgba(255,255,255,0.18)]"
+            >
+              {loading ? "Creating..." : "Create Account"}
+            </button>
+            <Link
+              href="/login"
+              className="w-full bg-white/[0.08] hover:bg-white/[0.14] text-white font-bold py-3.5 rounded-full transition text-base text-center backdrop-blur-xl border border-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]"
+            >
+              Log In
+            </Link>
+          </div>
         </form>
 
-        <div className="mt-6 bg-white/[0.04] border border-white/10 rounded-xl p-4 flex items-start gap-3">
+        <div className="mt-6 bg-white/[0.06] backdrop-blur-xl border border-white/10 rounded-2xl p-4 flex items-start gap-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
           <div className="w-8 h-8 rounded-full bg-yellow-400/10 flex items-center justify-center shrink-0">
             <Lock size={14} className="text-yellow-400" />
           </div>
@@ -139,10 +147,6 @@ export default function SignupPage() {
             <span className="text-white/80 font-semibold">Creator tools:</span> Unlock Live, Shop, and Premium by buying any coin pack. Your coins go to creators, not us.
           </p>
         </div>
-
-        <p className="text-sm text-white/45 mt-6 text-center">
-          Already have an account? <Link href="/login" className="text-white hover:underline font-semibold">Log in</Link>
-        </p>
       </div>
     </main>
   );
