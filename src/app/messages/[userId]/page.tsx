@@ -478,7 +478,7 @@ export default function ThreadPage() {
             href={`/u/${otherId}`}
             className="flex items-center gap-3 flex-1 min-w-0"
           >
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center overflow-hidden flex-shrink-0">
+            <div className="w-10 h-10 rounded-full bg-[#E53945] flex items-center justify-center overflow-hidden flex-shrink-0">
               {other?.avatar_url ? (
                 <img src={other.avatar_url} alt="" className="w-full h-full object-cover" />
               ) : (
@@ -549,7 +549,7 @@ export default function ThreadPage() {
 
           {!loading && messages.length === 0 && (
             <div className="text-center py-16">
-              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center overflow-hidden">
+              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-[#E53945] flex items-center justify-center overflow-hidden">
                 {other?.avatar_url ? (
                   <img src={other.avatar_url} alt="" className="w-full h-full object-cover" />
                 ) : (

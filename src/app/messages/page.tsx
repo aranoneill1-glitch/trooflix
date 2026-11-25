@@ -458,7 +458,7 @@ export default function MessagesInbox() {
                     className="flex items-center gap-4 px-4 md:px-6 py-3.5 hover:bg-white/[0.06] active:bg-white/[0.08] transition"
                   >
                     {/* Bigger avatar — 64px */}
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center overflow-hidden flex-shrink-0">
+                    <div className="w-16 h-16 rounded-full bg-[#E53945] flex items-center justify-center overflow-hidden flex-shrink-0">
                       {p?.avatar_url ? (
                         <img src={p.avatar_url} alt="" className="w-full h-full object-cover" />
                       ) : (
@@ -544,7 +544,7 @@ export default function MessagesInbox() {
                     href={`/messages/${u.user_id}`}
                     className="flex items-center gap-3 px-4 py-3 hover:bg-white/10 transition border-b border-white/5"
                   >
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center overflow-hidden flex-shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-[#E53945] flex items-center justify-center overflow-hidden flex-shrink-0">
                       {u.avatar_url ? (
                         <img src={u.avatar_url} alt="" className="w-full h-full object-cover" />
                       ) : (
@@ -606,7 +606,7 @@ export default function MessagesInbox() {
                   const isIncoming = !c.isCaller;
                   return (
                     <div key={c.id} className="flex items-center gap-4 px-4 md:px-6 py-3.5 border-b border-white/5">
-                      <div className="w-14 h-14 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center overflow-hidden flex-shrink-0">
+                      <div className="w-14 h-14 rounded-full bg-[#E53945] flex items-center justify-center overflow-hidden flex-shrink-0">
                         {c.otherAvatar ? <img src={c.otherAvatar} alt="" className="w-full h-full object-cover" /> : <span className="text-white font-bold text-xl">{(c.otherName[0] || "?").toUpperCase()}</span>}
                       </div>
                       <div className="flex-1 min-w-0">

@@ -159,7 +159,7 @@ export default function UserMenu() {
             className="w-9 h-9 rounded-full object-cover border-2 border-transparent hover:border-white/30 transition-all"
           />
         ) : (
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#E53945] to-red-900 flex items-center justify-center text-white font-bold border-2 border-transparent hover:border-white/30 transition-all">
+          <div className="w-9 h-9 rounded-full overflow-hidden bg-[#E53945] flex items-center justify-center text-white font-bold border-2 border-transparent hover:border-white/30 transition-all">
             {(profile?.display_name || profile?.username || "U")[0].toUpperCase()}
           </div>
         )}

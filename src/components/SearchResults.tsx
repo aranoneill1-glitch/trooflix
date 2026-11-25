@@ -122,7 +122,7 @@ export default function SearchResults({
                       className="w-full h-full object-cover group-hover:scale-105 transition"
                     />
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-3xl font-black">
+                    <div className="w-full h-full bg-[#E53945] flex items-center justify-center text-3xl font-black text-white">
                       {c.name[0]?.toUpperCase() || "?"}
                     </div>
                   )}

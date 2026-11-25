@@ -379,7 +379,7 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
               <header className="flex items-center gap-2.5 px-3 py-2.5">
                 <Link href={creator?.slug ? `/profile/${creator.slug}` : "#"} className="h-8 w-8 shrink-0 overflow-hidden rounded-full bg-gradient-to-tr from-[#f09433] to-[#dc2743] p-[1.5px]">
                   <span className="block h-full w-full overflow-hidden rounded-full border-2 border-[#08090c]">
-                    {avatar ? <img src={avatar} alt="" className="h-full w-full object-cover" /> : <span className="flex h-full w-full items-center justify-center text-xs font-bold text-white">{name[0]}</span>}
+                    {avatar ? <img src={avatar} alt="" className="h-full w-full object-cover" /> : <span className="flex h-full w-full items-center justify-center bg-[#E53945] text-xs font-bold text-white">{name[0]}</span>}
                   </span>
                 </Link>
                 <div className="min-w-0 flex-1">

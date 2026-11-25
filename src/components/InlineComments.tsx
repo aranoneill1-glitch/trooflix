@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ThumbsUp, MoreVertical, Trash2, Gift } from "lucide-react";
+import { ThumbsUp, MoreVertical, Trash2 } from "lucide-react";
+import { GoldCoin } from "@/components/TipModal";
 import { getCachedUser } from "@/lib/cache";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import ReportModal from "@/components/ReportModal";
@@ -220,7 +221,7 @@ export default function InlineComments({ videoId }: { videoId: number }) {
     return (
       <div className={`flex gap-3 ${isReply ? "ml-12 mt-3" : ""}`}>
         <Link href={c.user_username ? `/u/${c.user_username}` : "#"} className="flex-shrink-0">
-          <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-sm font-bold">
+          <div className="w-10 h-10 rounded-full overflow-hidden bg-[#E53945] flex items-center justify-center text-sm font-bold text-white">
             {c.user_avatar ? (
               <img src={c.user_avatar} alt="" className="w-full h-full object-cover" />
             ) : (
@@ -262,8 +263,8 @@ export default function InlineComments({ videoId }: { videoId: number }) {
                 onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: c.user_id, commentId: c.id, videoId } }))}
                 className="flex items-center gap-1 text-xs text-white/50 hover:text-[#D4AF37] transition font-semibold"
               >
-                <Gift size={13} />
-                Tip{Number(commentTipCounts[String(c.id)] || 0) > 0 ? ` ${Number(commentTipCounts[String(c.id)] || 0).toLocaleString()}` : ""}
+                <GoldCoin size={16} />
+                {Number(commentTipCounts[String(c.id)] || 0) > 0 && <span>{Number(commentTipCounts[String(c.id)] || 0).toLocaleString()}</span>}
               </button>
             )}
           </div>

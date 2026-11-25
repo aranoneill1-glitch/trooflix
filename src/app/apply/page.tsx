@@ -229,7 +229,7 @@ export default function ApplyPage() {
                 Profile photo
               </label>
               <div className="flex items-center gap-4">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center overflow-hidden flex-shrink-0">
+                <div className="w-20 h-20 rounded-full bg-[#E53945] flex items-center justify-center overflow-hidden flex-shrink-0">
                   {photoUrl ? (
                     <img src={photoUrl} alt="" className="w-full h-full object-cover" />
                   ) : (

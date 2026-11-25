@@ -77,7 +77,7 @@ export default function MerchRow({ title, items }: { title: string; items: any[]
                   {item.creatorPhoto ? (
                     <img src={item.creatorPhoto} alt="" className="w-4 h-4 rounded-full object-cover border border-white/20" />
                   ) : (
-                    <div className="w-4 h-4 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-[8px] font-bold">
+                    <div className="w-4 h-4 rounded-full overflow-hidden bg-[#E53945] flex items-center justify-center text-[8px] font-bold text-white">
                       {item.creatorName?.[0]?.toUpperCase() || "?"}
                     </div>
                   )}

@@ -166,7 +166,7 @@ function VideoSlide({ video, index, isActive, author, muted, onToggleMute, onOpe
 
         <div className="flex-1 flex flex-col justify-end max-w-[75%] pointer-events-auto mb-2">
           <Link href={author.profileHref} className="flex items-center gap-2 mb-2 w-max">
-            <div className="w-11 h-11 rounded-full bg-gradient-to-br from-red-600 to-red-900 overflow-hidden flex-shrink-0 border border-white/20">
+            <div className="w-11 h-11 rounded-full bg-[#E53945] overflow-hidden flex-shrink-0 border border-white/20">
               {author.avatar ? (
                 <img src={author.avatar} alt="" className="w-full h-full object-cover" />
               ) : (

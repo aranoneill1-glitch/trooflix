@@ -145,7 +145,7 @@ export default function ApplicationsPage() {
             >
               <div className="flex items-start gap-4">
                 {/* Avatar */}
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center overflow-hidden flex-shrink-0">
+                <div className="w-16 h-16 rounded-full bg-[#E53945] flex items-center justify-center overflow-hidden flex-shrink-0">
                   {app.photo_url ? (
                     <img src={app.photo_url} alt="" className="w-full h-full object-cover" />
                   ) : (

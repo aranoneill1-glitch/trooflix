@@ -180,7 +180,7 @@ export default function ShareReelSheet({
                         className="w-10 h-10 rounded-full object-cover flex-shrink-0"
                       />
                     ) : (
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center font-bold flex-shrink-0">
+                      <div className="w-10 h-10 rounded-full overflow-hidden bg-[#E53945] flex items-center justify-center font-bold text-white flex-shrink-0">
                         {label(u)[0]?.toUpperCase() || "?"}
                       </div>
                     )}

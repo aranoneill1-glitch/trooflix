@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ThumbsUp, MoreVertical, Trash2, Send, Image as ImageIcon, User, Gift } from "lucide-react";
+import { ThumbsUp, MoreVertical, Trash2, Send, Image as ImageIcon, User } from "lucide-react";
+import { GoldCoin } from "@/components/TipModal";
 import { createClient } from "@/utils/supabase/client";
 import GifPicker from "@/components/GifPicker";
 import VerifiedBadge from "@/components/VerifiedBadge";
@@ -37,16 +38,8 @@ function timeAgo(iso: string): string {
   return new Date(iso).toLocaleDateString();
 }
 
-function avatarColor(email: string): string {
-  const colors = [
-    "#e11d48", "#dc2626", "#ea580c", "#d97706", "#65a30d",
-    "#059669", "#0891b2", "#2563eb", "#7c3aed", "#c026d3",
-  ];
-  let hash = 0;
-  for (let i = 0; i < email.length; i++) {
-    hash = (hash * 31 + email.charCodeAt(i)) >>> 0;
-  }
-  return colors[hash % colors.length];
+function avatarColor(_email: string): string {
+  return "#E53945";
 }
 
 function initial(email?: string) {
@@ -429,8 +422,8 @@ export default function Comments({ videoId, onMetaChange, variant = "default", h
                         onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: c.user_id, commentId: c.id, videoId } }))}
                         className="flex items-center gap-1 text-xs text-white/60 hover:text-[#D4AF37] transition font-semibold"
                       >
-                        <Gift size={13} />
-                        Tip{Number(commentTipCounts[String(c.id)] || 0) > 0 ? ` ${Number(commentTipCounts[String(c.id)] || 0).toLocaleString()}` : ""}
+                        <GoldCoin size={16} />
+                        {Number(commentTipCounts[String(c.id)] || 0) > 0 && <span>{Number(commentTipCounts[String(c.id)] || 0).toLocaleString()}</span>}
                       </button>
                     )}
                   </div>
@@ -442,11 +435,11 @@ export default function Comments({ videoId, onMetaChange, variant = "default", h
                       className="flex gap-3 mt-4"
                     >
                       <div
-                        className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 text-sm"
+                        className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-white font-bold flex-shrink-0 text-sm"
                         style={{ background: userAvatar ? "transparent" : avatarColor(user.email) }}
                       >
                         {userAvatar ? (
-                          <img src={userAvatar} alt="" className="w-full h-full object-cover rounded-xl" />
+                          <img src={userAvatar} alt="" className="w-full h-full object-cover" />
                         ) : (
                           initial(user.email)
                         )}
@@ -570,8 +563,8 @@ export default function Comments({ videoId, onMetaChange, variant = "default", h
                                 onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: r.user_id, commentId: r.id, videoId } }))}
                                 className="flex items-center gap-1 text-xs text-white/60 hover:text-[#D4AF37] transition font-semibold"
                               >
-                                <Gift size={12} />
-                                Tip{Number(commentTipCounts[String(r.id)] || 0) > 0 ? ` ${Number(commentTipCounts[String(r.id)] || 0).toLocaleString()}` : ""}
+                                <GoldCoin size={14} />
+                                {Number(commentTipCounts[String(r.id)] || 0) > 0 && <span>{Number(commentTipCounts[String(r.id)] || 0).toLocaleString()}</span>}
                               </button>
                             )}
                           </div>

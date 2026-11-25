@@ -223,7 +223,7 @@ export default function AdminUsersPage() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-red-600 to-red-900 flex items-center justify-center text-sm font-bold">
+                  <div className="w-full h-full bg-[#E53945] flex items-center justify-center text-sm font-bold text-white">
                     {(u.display_name || u.username || "?")[0]?.toUpperCase()}
                   </div>
                 )}

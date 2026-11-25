@@ -425,7 +425,7 @@ export default function PublicProfilePage() {
                     {profile.avatar_url ? (
                       <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-5xl font-bold">{displayName.charAt(0)}</div>
+                      <div className="w-full h-full flex items-center justify-center bg-[#E53945] text-white text-5xl font-bold">{displayName.charAt(0)}</div>
                     )}
                     {profile.is_live && (
                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
@@ -507,7 +507,7 @@ export default function PublicProfilePage() {
                       {profile.avatar_url ? (
                         <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-3xl font-bold">{displayName.charAt(0)}</div>
+                        <div className="w-full h-full flex items-center justify-center bg-[#E53945] text-white text-3xl font-bold">{displayName.charAt(0)}</div>
                       )}
                       {profile.is_live && (
                         <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
