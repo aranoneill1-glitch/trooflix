@@ -110,6 +110,11 @@ export async function POST(req: Request) {
         if (coins >= 5) {
           await kv.set(`trooflix:creator-tools-unlocked:${userId}`, "1");
         }
+        // Give red tick on coin purchase (don't overwrite gold creator tick)
+        const { data: tickProfile } = await supabaseAdmin.from("profiles").select("verification_tick").eq("user_id", userId).maybeSingle();
+        if (tickProfile?.verification_tick !== "creator_gold") {
+          await supabaseAdmin.from("profiles").update({ verification_tick: "plus_red", is_verified: true }).eq("user_id", userId);
+        }
         await markWebhookWorkDone(workKey);
         activeWorkKey = null;
       }
