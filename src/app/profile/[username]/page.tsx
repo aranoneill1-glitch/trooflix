@@ -470,20 +470,20 @@ export default function PublicProfilePage() {
                 <div className="flex gap-3 w-full max-w-xl">
                   {isSubscribed ? (
                     <>
-                      <button onClick={handleCancelSubscription} disabled={cancelLoading} className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-red-500/20 text-red-400 font-bold py-3 rounded-full transition border border-red-500/30 disabled:opacity-50">
-                        <X size={18} /> {cancelLoading ? "Cancelling..." : "Cancel Subscription"}
+                      <button onClick={handleCancelSubscription} disabled={cancelLoading} className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-red-500/20 text-red-400 font-semibold px-5 py-2 rounded-full text-sm transition border border-red-500/30 disabled:opacity-50">
+                        <X size={16} /> {cancelLoading ? "Cancelling..." : "Cancel Subscription"}
                       </button>
-                      <Link href={`/messages/${profile.user_id}`} className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-full transition border border-white/10">
-                        <MessageSquare size={18} /> Message
+                      <Link href={`/messages/${profile.user_id}`} className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-semibold px-5 py-2 rounded-full text-sm transition border border-white/10">
+                        <MessageSquare size={16} /> Message
                       </Link>
                     </>
                   ) : (
                     <>
-                      <button onClick={() => setShowSubscribeModal(true)} className="flex-1 flex items-center justify-center gap-2 bg-[#E53945] text-white font-bold py-3 rounded-full hover:bg-[#d12e39] transition shadow-lg shadow-[#E53945]/20">
-                        <Star size={18} fill="currentColor" /> Subscribe - {subscriptionPrice}
+                      <button onClick={() => setShowSubscribeModal(true)} className="inline-flex items-center justify-center gap-2 bg-[#E53945] text-white font-semibold px-5 py-2 rounded-full text-sm hover:bg-[#d12e39] transition shadow-lg shadow-[#E53945]/20">
+                        <Star size={16} fill="currentColor" /> Subscribe
                       </button>
-                      <button onClick={() => setShowSubscribeModal(true)} className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-full transition border border-white/10">
-                        <MessageSquare size={18} /> Subscribe to Message
+                      <button onClick={() => setShowSubscribeModal(true)} className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-semibold px-5 py-2 rounded-full text-sm transition border border-white/10">
+                        <MessageSquare size={16} /> Message
                       </button>
                     </>
                   )}
@@ -555,23 +555,23 @@ export default function PublicProfilePage() {
                   <p className="text-sm text-white/60 leading-relaxed">{profile.bio || "No bio yet."}</p>
                 </div>
               </div>
-              <div className="flex gap-3 mb-8 w-full">
+              <div className="flex gap-3 mb-8">
                 {isSubscribed ? (
                   <>
-                    <button onClick={handleCancelSubscription} disabled={cancelLoading} className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-red-500/20 text-red-400 font-bold py-3 rounded-full transition border border-red-500/30 disabled:opacity-50">
-                      <X size={18} /> {cancelLoading ? "Cancelling..." : "Cancel Subscription"}
+                    <button onClick={handleCancelSubscription} disabled={cancelLoading} className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-red-500/20 text-red-400 font-semibold px-5 py-2 rounded-full text-sm transition border border-red-500/30 disabled:opacity-50">
+                      <X size={16} /> {cancelLoading ? "Cancelling..." : "Cancel Subscription"}
                     </button>
-                    <Link href={`/messages/${profile.user_id}`} className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-full transition border border-white/10">
-                      <MessageSquare size={18} /> Message
+                    <Link href={`/messages/${profile.user_id}`} className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-semibold px-5 py-2 rounded-full text-sm transition border border-white/10">
+                      <MessageSquare size={16} /> Message
                     </Link>
                   </>
                 ) : (
                   <>
-                    <button onClick={() => setShowSubscribeModal(true)} className="flex-1 flex items-center justify-center gap-2 bg-[#E53945] text-white font-bold py-3 rounded-full hover:bg-[#d12e39] transition shadow-lg shadow-[#E53945]/20">
-                      <Star size={18} fill="currentColor" /> Subscribe - {subscriptionPrice}
+                    <button onClick={() => setShowSubscribeModal(true)} className="inline-flex items-center justify-center gap-2 bg-[#E53945] text-white font-semibold px-5 py-2 rounded-full text-sm hover:bg-[#d12e39] transition shadow-lg shadow-[#E53945]/20">
+                      <Star size={16} fill="currentColor" /> Subscribe
                     </button>
-                    <button onClick={() => setShowSubscribeModal(true)} className="flex-1 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold py-3 rounded-full transition border border-white/10">
-                      <MessageSquare size={18} /> Subscribe to Message
+                    <button onClick={() => setShowSubscribeModal(true)} className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-semibold px-5 py-2 rounded-full text-sm transition border border-white/10">
+                      <MessageSquare size={16} /> Message
                     </button>
                   </>
                 )}
