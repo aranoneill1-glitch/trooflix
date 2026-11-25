@@ -8,20 +8,9 @@ import { createClient } from "@/utils/supabase/client";
 import { getCachedUser, clearUserCache } from "@/lib/cache";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
+import { DEFAULT_APP_THEME_COLOR, extractThemeColor, getBackdropFromColor, applyAppTheme } from "@/lib/appTheme";
 
-const DEFAULT_COLOR = "#09090B";
-
-function getColorFromBackdrop(backdropUrl: string) {
-  if (!backdropUrl) return DEFAULT_COLOR;
-  const match = backdropUrl.match(/#(?:[0-9a-fA-F]{3,8})/);
-  return match ? match[0] : DEFAULT_COLOR;
-}
-
-function getBackdropFromColor(color: string) {
-  return color.toLowerCase() === DEFAULT_COLOR.toLowerCase()
-    ? ""
-    : `linear-gradient(to bottom, ${color}, #09090b)`;
-}
+const DEFAULT_COLOR = DEFAULT_APP_THEME_COLOR;
 
 export default function ProfileThemePage() {
   const router = useRouter();
@@ -49,7 +38,7 @@ export default function ProfileThemePage() {
         .single();
 
       if (data?.backdrop_url) {
-        setSelectedColor(getColorFromBackdrop(data.backdrop_url));
+        setSelectedColor(extractThemeColor(data.backdrop_url));
       } else {
         setSelectedColor(DEFAULT_COLOR);
       }
@@ -64,20 +53,23 @@ export default function ProfileThemePage() {
     setStatus({ type: "", message: "" });
 
     try {
+      const backdrop_url = getBackdropFromColor(selectedColor);
       const { error } = await supabase
         .from("profiles")
-        .update({
-          backdrop_url: getBackdropFromColor(selectedColor),
-        })
+        .update({ backdrop_url })
         .eq("user_id", userId);
 
       if (error) throw error;
 
-      setStatus({ type: "success", message: "Theme updated successfully!" });
+      try { localStorage.setItem("trooflix:app-theme-color", selectedColor); } catch {}
+      applyAppTheme(selectedColor);
+      window.dispatchEvent(new CustomEvent("app-theme-updated", { detail: { color: selectedColor, backdrop_url } }));
+
+      setStatus({ type: "success", message: "Theme updated across your account!" });
       clearUserCache();
       setTimeout(() => {
         router.push("/creator-dashboard");
-      }, 1500);
+      }, 1200);
     } catch (err: any) {
       setStatus({ type: "error", message: err.message || "Failed to save theme." });
     } finally {
@@ -108,10 +100,10 @@ export default function ProfileThemePage() {
 
         <div className="mb-5">
           <h1 className="text-2xl font-black tracking-tight mb-1 flex items-center gap-2">
-            <Palette size={22} className="text-white/70" /> Profile Theme
+            <Palette size={22} className="text-white/70" /> App Theme
           </h1>
           <p className="text-sm text-white/50">
-            Pick a color for your profile background.
+            Pick a color theme for your account. It applies across the site when you’re logged in.
           </p>
         </div>
 

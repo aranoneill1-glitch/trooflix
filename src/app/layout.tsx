@@ -11,6 +11,7 @@ import { SearchProvider } from "@/context/SearchContext";
 import CacheWarmer from "@/components/CacheWarmer";
 import DesktopSidebar from "@/components/DesktopSidebar";
 import PWAInstallPopup from "@/components/PWAInstallPopup"; // <-- Import
+import AppThemeProvider from "@/components/AppThemeProvider";
 
 const geist = Geist({ subsets: ["latin"] });
 
@@ -106,6 +107,7 @@ export default function RootLayout({
           }}
         />
         <SearchProvider>
+          <AppThemeProvider />
           <CacheWarmer />
           <TVNavigation />
           <DesktopSidebar />
