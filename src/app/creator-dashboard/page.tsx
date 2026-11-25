@@ -579,10 +579,10 @@ function CreatorDashboardContent() {
                   </div>
                   <p className="text-sm text-white/70 leading-relaxed mb-5">{profile?.bio || "No bio yet."}</p>
                   <div className="flex flex-wrap items-center gap-3">
-                    {userTier === "creator" ? (
+                    {creatorToolsUnlocked ? (
                       <Link href="/creator-dashboard/live" className="inline-flex items-center gap-2 rounded-full border border-[#E53945]/70 px-4 py-2 text-sm font-bold text-[#F06A72] transition hover:bg-[#E53945]/10"><Radio size={15} /> Go Live</Link>
                     ) : (
-                      <button onClick={() => { window.location.href = "/upgrade?feature=go_live"; }} className="inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm font-bold text-white/55 transition hover:bg-white/5"><Radio size={15} /> Go Live <Lock size={11} /></button>
+                      <Link href="/wallet?topup=true&unlock=creator-tools" className="inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm font-bold text-white/55 transition hover:bg-white/5"><Radio size={15} /> Go Live <Lock size={11} /></Link>
                     )}
                     <button onClick={() => profileFeatureInputRef.current?.click()} className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/20 px-4 py-2 text-sm font-bold text-white/80 transition hover:bg-white/10">
                       <Pencil size={14} /> {uploadingProfileFeature ? "Uploading..." : "Change featured"}
@@ -627,10 +627,10 @@ function CreatorDashboardContent() {
                 <div className="px-1">
                   <div className="flex items-center justify-between gap-3 mb-1">
                     <h1 className="text-2xl md:text-3xl font-black flex min-w-0 items-center gap-2 text-white"><Link href={`/profile/${username}`} className="hover:text-[#F06A72] transition-colors">{displayName}</Link> {profile?.verification_tick && profile.verification_tick !== "none" && <VerifiedBadge size={20} variant={profile.verification_tick as any} />}</h1>
-                    {userTier === "creator" ? (
+                    {creatorToolsUnlocked ? (
                       <Link href="/creator-dashboard/live" className="mr-2 inline-flex shrink-0 items-center gap-2 rounded-full border border-[#E53945]/70 px-3.5 py-2 text-xs font-bold text-[#F06A72] transition hover:bg-[#E53945]/10 sm:px-4 sm:text-sm"><Radio size={15} /> Go Live</Link>
                     ) : (
-                      <button onClick={() => { window.location.href = "/upgrade?feature=go_live"; }} className="mr-2 inline-flex shrink-0 items-center gap-2 rounded-full border border-white/20 px-3.5 py-2 text-xs font-bold text-white/55 transition hover:bg-white/5 sm:px-4 sm:text-sm"><Radio size={15} /> Go Live <Lock size={11} /></button>
+                      <Link href="/wallet?topup=true&unlock=creator-tools" className="mr-2 inline-flex shrink-0 items-center gap-2 rounded-full border border-white/20 px-3.5 py-2 text-xs font-bold text-white/55 transition hover:bg-white/5 sm:px-4 sm:text-sm"><Radio size={15} /> Go Live <Lock size={11} /></Link>
                     )}
                   </div>
                   <p className="text-sm md:text-base text-white/50 mb-3"><Link href={`/profile/${username}`} className="hover:text-white transition-colors">@{username}</Link></p>
