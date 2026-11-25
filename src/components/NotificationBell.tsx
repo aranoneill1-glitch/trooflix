@@ -218,7 +218,7 @@ export default function NotificationBell({ hideTrigger = false }: { hideTrigger?
             </div>
 
             {/* List */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-6 max-w-3xl mx-auto w-full">
+            <div className={`flex-1 overflow-y-auto w-full ${activeTab === "basket" ? "p-4 space-y-6 max-w-3xl mx-auto" : "py-2"}`}>
               {activeTab === "basket" ? (
                 <div className="space-y-4">
                   {basketItems.length === 0 ? (
@@ -272,8 +272,8 @@ export default function NotificationBell({ hideTrigger = false }: { hideTrigger?
                 </div>
               ) : (
                 Object.entries(grouped).map(([groupName, items]) => items.length > 0 && (
-                  <div key={groupName} className="space-y-3">
-                    <div className="flex justify-between items-end px-2">
+                  <div key={groupName}>
+                    <div className="flex justify-between items-end px-4 py-3">
                       <h3 className="text-sm font-bold text-white/40 uppercase tracking-wider">{groupName}</h3>
                       {groupName === "Today" && unreadCount > 0 && activeTab === "unread" && (
                         <button onClick={markAllRead} className="text-xs font-bold text-[#E53945] hover:text-[#d12e39]">Mark all read</button>
@@ -285,7 +285,7 @@ export default function NotificationBell({ hideTrigger = false }: { hideTrigger?
                         key={n.id}
                         href={(n.type === "purchase" ? "/orders?tab=sold" : n.type === "subscription" ? "/creator-dashboard/subscriptions" : (n.type === "like" || n.type === "comment") && n.post_id ? "/feed?reel=" + n.post_id : n.type === "follow" && n.actor_id ? "/profile/" + n.actor_id : "/notifications") as any}
                         onClick={() => setIsOpen(false)}
-                        className="bg-[#1c1c1e] border border-white/5 hover:border-white/10 hover:bg-white/[0.02] p-4 rounded-2xl flex items-start gap-4 transition-all group relative overflow-hidden block cursor-pointer"
+                        className="flex items-start gap-4 px-4 py-4 border-b border-white/10 hover:bg-white/[0.03] transition-colors relative overflow-hidden cursor-pointer"
                       >
                         <div className="w-10 h-10 rounded-full bg-[#0a0303] flex items-center justify-center shrink-0 border border-white/10 overflow-hidden">
                           {n.sender_avatar ? (
