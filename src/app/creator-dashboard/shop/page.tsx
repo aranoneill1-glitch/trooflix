@@ -307,37 +307,32 @@ function ManageShopContent() {
 
         ) : (
           
-          /* NORMAL ROW VIEW */
-          <div className="flex flex-col gap-3">
+          /* NORMAL GRID VIEW */
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-[2px] -mx-4 sm:mx-0">
             {products.map((product) => (
-              <div key={product.id} className="flex items-center gap-4 bg-[#1c1c1e] border border-white/10 rounded-2xl p-3 hover:border-white/20 transition-colors group">
-                
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden shrink-0 relative bg-black border border-white/5">
+              <div key={product.id} className="group relative bg-[#1c1c1e] overflow-hidden">
+                <div className="aspect-square relative bg-black">
                   {product.image_url ? (
-                    <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                    <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" loading="lazy" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-white/10"><ImageIcon size={24} /></div>
+                    <div className="w-full h-full flex items-center justify-center text-white/10"><ImageIcon size={28} /></div>
                   )}
-                </div>
-
-                <div className="flex-1 min-w-0 flex flex-col justify-center">
-                  <h3 className="text-base font-bold text-white truncate mb-0.5">{product.name}</h3>
-                  <p className="text-xs text-white/50 truncate mb-2">{product.description || "No description"}</p>
-                  <div className="flex items-center gap-3">
-                    <span className="text-emerald-400 font-bold text-sm">${(product.price_cents / 100).toFixed(2)}</span>
-                    <span className="text-[11px] font-semibold text-white/40 bg-white/5 px-2 py-0.5 rounded-md">{product.inventory_count} in stock</span>
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent p-2.5 pt-10">
+                    <h3 className="text-xs font-bold text-white truncate">{product.name}</h3>
+                    <div className="flex items-center justify-between gap-2 mt-0.5">
+                      <span className="text-[11px] font-bold text-emerald-400">${(product.price_cents / 100).toFixed(2)}</span>
+                      <span className="text-[10px] text-white/50">{product.inventory_count} in stock</span>
+                    </div>
+                  </div>
+                  <div className="absolute top-2 right-2 flex items-center gap-1.5">
+                    <button onClick={() => openModal(product)} className="p-1.5 bg-black/55 hover:bg-black/75 backdrop-blur-sm rounded-lg text-white transition" title="Edit">
+                      <Edit size={14} />
+                    </button>
+                    <button onClick={() => deleteProduct(product.id)} className="p-1.5 bg-black/55 hover:bg-red-500/80 backdrop-blur-sm rounded-lg text-white transition" title="Delete">
+                      <Trash2 size={14} />
+                    </button>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <button onClick={() => openModal(product)} className="p-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-white transition" title="Edit">
-                    <Edit size={18} />
-                  </button>
-                  <button onClick={() => deleteProduct(product.id)} className="p-2.5 bg-white/5 hover:bg-red-500/20 text-white/70 hover:text-red-500 rounded-xl transition" title="Delete">
-                    <Trash2 size={18} />
-                  </button>
-                </div>
-
               </div>
             ))}
           </div>
