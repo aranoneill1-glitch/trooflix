@@ -471,7 +471,7 @@ export default function PublicProfilePage() {
                   {isSubscribed ? (
                     <>
                       <button onClick={handleCancelSubscription} disabled={cancelLoading} className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-red-500/20 text-red-400 font-semibold px-5 py-2 rounded-full text-sm transition border border-red-500/30 disabled:opacity-50">
-                        <X size={16} /> {cancelLoading ? "Cancelling..." : "Cancel Subscription"}
+                        <X size={16} /> {cancelLoading ? "Cancelling..." : "Subscribed"}
                       </button>
                       <Link href={`/messages/${profile.user_id}`} className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-semibold px-5 py-2 rounded-full text-sm transition border border-white/10">
                         <MessageSquare size={16} /> Message
@@ -559,7 +559,7 @@ export default function PublicProfilePage() {
                 {isSubscribed ? (
                   <>
                     <button onClick={handleCancelSubscription} disabled={cancelLoading} className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-red-500/20 text-red-400 font-semibold px-5 py-2 rounded-full text-sm transition border border-red-500/30 disabled:opacity-50">
-                      <X size={16} /> {cancelLoading ? "Cancelling..." : "Cancel Subscription"}
+                      <X size={16} /> {cancelLoading ? "Cancelling..." : "Subscribed"}
                     </button>
                     <Link href={`/messages/${profile.user_id}`} className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-semibold px-5 py-2 rounded-full text-sm transition border border-white/10">
                       <MessageSquare size={16} /> Message
