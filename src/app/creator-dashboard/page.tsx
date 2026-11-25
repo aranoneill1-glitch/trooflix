@@ -42,21 +42,10 @@ function CreatorDashboardContent() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
 
-  const userTier: "free" | "plus" | "creator" = (() => {
-    if (!profile?.tier) return "free";
-    // Normalize legacy tier names
-    const raw = String(profile.tier).toLowerCase();
-    let normalized: "free" | "plus" | "creator";
-    if (raw === "creator" || raw === "creator" || raw === "pro") normalized = "creator";
-    else if (raw === "plus" || raw === "pass" || raw === "troopass") normalized = "plus";
-    else normalized = "free"; // "user", null, unknown → free
-    // Apply grace period expiry
-    if (normalized !== "free" && profile.plus_expires_at) {
-      if (new Date(profile.plus_expires_at) < new Date()) return "free";
-    }
-    return normalized;
-  })();
-  const isFreeTier = userTier === "free";
+  const creatorToolsUnlocked = !!profile?.creator_tools_unlocked;
+  // Legacy tier kept for compatibility during transition; all users get base features.
+  const userTier: "free" | "plus" | "creator" = creatorToolsUnlocked ? "creator" : "plus";
+  const isFreeTier = false;
   const [loading, setLoading] = useState(true);
   const [isDashboardView, setIsDashboardView] = useState(false);
   const [showMyTrooFlix, setShowMyTrooFlix] = useState(false);
@@ -548,12 +537,8 @@ function CreatorDashboardContent() {
           {(isDashboardView || showMyTrooFlix) && (
             <CreatorStudioNav
               active={showMyTrooFlix ? "mytrooflix" : "dashboard"}
-              dashboardLocked={userTier === "free"}
+              dashboardLocked={false}
               onViewChange={(section) => {
-                if (section === "dashboard" && userTier === "free") {
-                  window.location.href = "/upgrade?feature=dashboard";
-                  return;
-                }
                 setIsDashboardView(section === "dashboard");
                 setShowMyTrooFlix(section === "mytrooflix");
               }}
@@ -568,12 +553,8 @@ function CreatorDashboardContent() {
                 <CreatorStudioNav
                   active="profile"
                   className="mb-6"
-                  dashboardLocked={userTier === "free"}
+                  dashboardLocked={false}
                   onViewChange={(section) => {
-                    if (section === "dashboard" && userTier === "free") {
-                      window.location.href = "/upgrade?feature=dashboard";
-                      return;
-                    }
                     setIsDashboardView(section === "dashboard");
                     setShowMyTrooFlix(section === "mytrooflix");
                   }}
@@ -666,12 +647,8 @@ function CreatorDashboardContent() {
                 <CreatorStudioNav
                   active="profile"
                   className="mb-8"
-                  dashboardLocked={userTier === "free"}
+                  dashboardLocked={false}
                   onViewChange={(section) => {
-                    if (section === "dashboard" && userTier === "free") {
-                      window.location.href = "/upgrade?feature=dashboard";
-                      return;
-                    }
                     setIsDashboardView(section === "dashboard");
                     setShowMyTrooFlix(section === "mytrooflix");
                   }}
@@ -1139,9 +1116,9 @@ function CreatorDashboardContent() {
                   </Link>
 
                   <Link 
-                    href={userTier === "creator" ? "/creator-dashboard/live" : "/upgrade?feature=go_live"}
+                    href={creatorToolsUnlocked ? "/creator-dashboard/live" : "/wallet?topup=true&unlock=creator-tools"}
                     onClick={() => setShowAddContentMenu(false)}
-                    className={`group relative flex items-center gap-4 bg-white/[0.08] hover:bg-white/[0.12] border border-white/20 hover:border-[#E53945]/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] ${userTier !== "creator" ? "opacity-50" : ""}`}
+                    className={`group relative flex items-center gap-4 bg-white/[0.08] hover:bg-white/[0.12] border border-white/20 hover:border-[#E53945]/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] ${!creatorToolsUnlocked ? "opacity-60" : ""}`}
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent to-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="absolute inset-0 bg-gradient-to-r from-[#E53945]/0 via-[#E53945]/0 to-[#E53945]/5 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -1149,23 +1126,23 @@ function CreatorDashboardContent() {
                       <Radio className="text-[#E53945]" size={24} />
                     </div>
                     <div className="relative z-10">
-                      <h4 className="font-bold text-white text-base flex items-center gap-1.5">Go Live {userTier !== "creator" && <Lock size={12} className="text-yellow-400" />}</h4>
-                      <p className="text-xs text-white/50">Start a live stream with your fans</p>
+                      <h4 className="font-bold text-white text-base flex items-center gap-1.5">Go Live {!creatorToolsUnlocked && <Lock size={12} className="text-yellow-400" />}</h4>
+                      <p className="text-xs text-white/50">{creatorToolsUnlocked ? "Start a live stream with your fans" : "Buy $5 in coins to unlock"}</p>
                     </div>
                   </Link>
 
                   <Link 
-                    href={userTier !== "free" ? "/creator-dashboard/shop" : "/upgrade?feature=add_product"}
+                    href={creatorToolsUnlocked ? "/creator-dashboard/shop" : "/wallet?topup=true&unlock=creator-tools"}
                     onClick={() => setShowAddContentMenu(false)}
-                    className={`group relative flex items-center gap-4 bg-white/[0.08] hover:bg-white/[0.12] border border-white/20 hover:border-purple-400/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] ${userTier === "free" ? "opacity-50" : ""}`}
+                    className={`group relative flex items-center gap-4 bg-white/[0.08] hover:bg-white/[0.12] border border-white/20 hover:border-purple-400/30 p-4 rounded-2xl transition-all duration-300 overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] ${!creatorToolsUnlocked ? "opacity-60" : ""}`}
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center flex-shrink-0 shadow-[0_0_15px_rgba(168,85,247,0.2)]">
                       <Tag className="text-purple-400" size={24} />
                     </div>
                     <div className="relative z-10">
-                      <h4 className="font-bold text-white text-base flex items-center gap-1.5">Upload Merch {userTier === "free" && <Lock size={12} className="text-yellow-400" />}</h4>
-                      <p className="text-xs text-white/50">Add an item to your store</p>
+                      <h4 className="font-bold text-white text-base flex items-center gap-1.5">Upload Merch {!creatorToolsUnlocked && <Lock size={12} className="text-yellow-400" />}</h4>
+                      <p className="text-xs text-white/50">{creatorToolsUnlocked ? "Add an item to your store" : "Buy $5 in coins to unlock"}</p>
                     </div>
                   </Link>
 

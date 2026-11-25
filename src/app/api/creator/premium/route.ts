@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient as createServerClient } from "@supabase/supabase-js";
+import { hasCreatorToolsUnlocked } from "@/lib/creatorTools";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,7 @@ async function getCreatorForUser(userId: string) {
     .eq("user_id", userId)
     .maybeSingle();
 
-  if (!profile || profile.tier !== "creator") return null;
+  if (!profile) return null;
 
   const uuidHex = String(profile.user_id).replace(/-/g, "").slice(0, 12);
   const numericId = parseInt(uuidHex, 16) || 0;
@@ -28,8 +29,8 @@ async function getCreatorForUser(userId: string) {
     slug: profile.username || String(profile.user_id).slice(0, 8),
     photoUrl: profile.avatar_url || "",
     description: profile.bio || "",
-    isVerified: profile.is_verified ?? true,
-    verification_tick: profile.verification_tick || "creator_gold",
+    isVerified: profile.is_verified ?? false,
+    verification_tick: profile.verification_tick || "none",
     ownerUserId: profile.user_id,
     createdAt: profile.updated_at,
   };
@@ -86,6 +87,8 @@ export async function POST(req: Request) {
   try {
     const { userId, enabled, price_cents } = await req.json();
     if (!userId) return NextResponse.json({ error: "userId required" }, { status: 400 });
+    const unlocked = await hasCreatorToolsUnlocked(userId);
+    if (!unlocked) return NextResponse.json({ error: "Buy $5 in coins to unlock Creator Tools" }, { status: 403 });
 
     const priceCents = price_cents === null || price_cents === undefined
       ? null

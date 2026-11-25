@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, Check, DollarSign, Users, TrendingUp, Sparkles, Eye } from "lucide-react";
+import { ChevronLeft, Check, DollarSign, Users, TrendingUp, Sparkles, Eye, Lock } from "lucide-react";
 import { getCachedUser } from "@/lib/cache";
 
 type Stats = {
@@ -19,6 +19,7 @@ function dollars(cents: number | null | undefined) {
 export default function PremiumSettings() {
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [creatorToolsUnlocked, setCreatorToolsUnlocked] = useState(false);
   const [enabled, setEnabled] = useState(false);
   const [priceInput, setPriceInput] = useState("");
   const [stats, setStats] = useState<Stats>({
@@ -57,12 +58,16 @@ export default function PremiumSettings() {
   };
 
   useEffect(() => {
-    getCachedUser().then((user) => {
+    getCachedUser().then(async (user) => {
       if (!user) {
         setLoading(false);
         return;
       }
       setUserId(user.id);
+      try {
+        const p = await fetch(`/api/profile?user_id=${user.id}`).then(r => r.json());
+        setCreatorToolsUnlocked(!!p?.profile?.creator_tools_unlocked);
+      } catch {}
       load(user.id).finally(() => setLoading(false));
     });
   }, []);
@@ -135,6 +140,18 @@ export default function PremiumSettings() {
         </p>
       </div>
 
+      {!creatorToolsUnlocked ? (
+        <div className="max-w-xl bg-[#0f0f12] border border-white/10 rounded-2xl p-8 text-center">
+          <div className="w-14 h-14 rounded-full bg-yellow-400/10 flex items-center justify-center mx-auto mb-4">
+            <Lock size={28} className="text-yellow-400" />
+          </div>
+          <h2 className="text-xl font-bold mb-2">Unlock Creator Tools</h2>
+          <p className="text-white/55 text-sm mb-6">Buy $5 in coins to unlock Live, Shop, and Premium features.</p>
+          <Link href="/wallet?topup=true&unlock=creator-tools" className="inline-flex items-center gap-2 bg-[#E53945] hover:bg-[#d12e39] text-white font-bold px-6 py-3 rounded-xl transition">
+            Buy Coins to Unlock
+          </Link>
+        </div>
+      ) : (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         {/* LEFT COLUMN: Settings */}
@@ -304,6 +321,7 @@ export default function PremiumSettings() {
         </div>
 
       </div>
+      )}
     </div>
   );
 }

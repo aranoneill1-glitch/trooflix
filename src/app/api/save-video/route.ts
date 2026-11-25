@@ -18,56 +18,13 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    // ---- SERVER-SIDE TIER ENFORCEMENT ----
     const userId = body.uploaderUserId;
     if (!userId) return NextResponse.json({ error: "Missing uploaderUserId" }, { status: 400 });
-
-    const { data: profile } = await supabaseAdmin
-      .from("profiles")
-      .select("tier, plus_expires_at")
-      .eq("user_id", userId)
-      .maybeSingle();
-
-    let userTier = profile?.tier || "free";
-    const _rawTier = String(userTier).toLowerCase();
-    if (_rawTier === "podcaster" || _rawTier === "pro") userTier = "creator";
-    else if (_rawTier === "pass" || _rawTier === "troopass") userTier = "plus";
-    if (userTier === "podcaster" || userTier === "pro") userTier = "creator";
-    if ((userTier === "plus" || userTier === "creator") && profile?.plus_expires_at) {
-      if (new Date(profile.plus_expires_at) < new Date()) userTier = "free";
-    }
 
     // Accept a single video (body) or a batch (body.videos) so imports only
     // touch the DB once instead of once per file.
     const items: any[] = Array.isArray(body.videos) ? body.videos : [body];
     if (items.length === 0) return NextResponse.json({ error: "No videos provided" }, { status: 400 });
-
-    for (const item of items) {
-      const rawType = String(item.type || "long-video");
-      const uploadType = rawType.toLowerCase().trim();
-      const isTweet = uploadType === "tweet";
-      const isShort = ["short", "reel", "shorts", "reels"].includes(uploadType);
-      const isLongForm = !isTweet && !isShort;
-
-      if (isTweet && userTier !== "creator") {
-        return NextResponse.json({ error: "Only Creator tier can post Tweets. Upgrade required." }, { status: 403 });
-      }
-      if (isLongForm && userTier !== "creator") {
-        return NextResponse.json({ error: "Free accounts can only upload Shorts. Upgrade to Creator to upload videos, podcasts, films and documentaries." }, { status: 403 });
-      }
-      if (isShort) {
-        const durStr = String(item.duration || "0:00");
-        const parts = durStr.split(":");
-        const totalSeconds = (parseInt(parts[0]) || 0) * 60 + (parseInt(parts[1]) || 0);
-        if (userTier === "free" && totalSeconds > 600) {
-          return NextResponse.json({ error: "Free accounts can only upload Shorts up to 10 minutes. Upgrade to Creator for unlimited length." }, { status: 403 });
-        }
-        if (userTier === "plus" && totalSeconds > 1200) {
-          return NextResponse.json({ error: "Plus accounts can only upload Shorts up to 20 minutes. Upgrade to Creator for unlimited." }, { status: 403 });
-        }
-      }
-    }
-    // ---- END TIER ENFORCEMENT ----
 
     const getRes = await fetch(`${KV_URL}/get/${KEY}`, {
       headers: { Authorization: `Bearer ${KV_TOKEN}` }

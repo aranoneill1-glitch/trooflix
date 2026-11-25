@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient as createServerClient } from "@supabase/supabase-js";
+import { kv } from "@vercel/kv";
 
 const supabaseAdmin = createServerClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -21,7 +22,8 @@ export async function GET(req: Request) {
       .maybeSingle();
 
     if (error) throw error;
-    return NextResponse.json({ profile: data || null });
+    const creatorToolsUnlocked = data ? (await kv.get<string>(`trooflix:creator-tools-unlocked:${userId}`)) === "1" : false;
+    return NextResponse.json({ profile: data ? { ...data, creator_tools_unlocked: creatorToolsUnlocked } : null });
   } catch (e: any) {
     console.error("GET profile error:", e);
     return NextResponse.json({ profile: null });

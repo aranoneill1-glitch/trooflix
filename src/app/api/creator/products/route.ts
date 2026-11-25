@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient as createServerClient } from "@supabase/supabase-js";
+import { hasCreatorToolsUnlocked } from "@/lib/creatorTools";
 
 const supabaseAdmin = createServerClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -28,9 +29,12 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const { creatorId, name, description, price_cents, image_url, inventory_count, type } = await req.json();
+    const { creatorId, name, description, price_cents, image_url, inventory_count, type, userId } = await req.json();
     if (!creatorId || !name || !price_cents) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+    if (!userId || !(await hasCreatorToolsUnlocked(userId))) {
+      return NextResponse.json({ error: "Buy $5 in coins to unlock Creator Tools" }, { status: 403 });
     }
 
     const { data, error } = await supabaseAdmin
@@ -60,10 +64,13 @@ export async function PUT(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
-    const { name, description, price_cents, image_url, inventory_count, type } = await req.json();
+    const { name, description, price_cents, image_url, inventory_count, type, userId } = await req.json();
     
     if (!id || !name || !price_cents) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+    if (!userId || !(await hasCreatorToolsUnlocked(userId))) {
+      return NextResponse.json({ error: "Buy $5 in coins to unlock Creator Tools" }, { status: 403 });
     }
 
     const { data, error } = await supabaseAdmin
@@ -92,7 +99,11 @@ export async function DELETE(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
+    const userId = searchParams.get("userId");
     if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
+    if (!userId || !(await hasCreatorToolsUnlocked(userId))) {
+      return NextResponse.json({ error: "Buy $5 in coins to unlock Creator Tools" }, { status: 403 });
+    }
 
     const { error } = await supabaseAdmin
       .from("products")

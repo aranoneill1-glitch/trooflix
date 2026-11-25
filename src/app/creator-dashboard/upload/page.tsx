@@ -69,18 +69,11 @@ function UploadContent() {
   const [success, setSuccess] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
-  const [tier, setTier] = useState<"free" | "plus" | "creator">("free");
+  const [tier, setTier] = useState<"free" | "plus" | "creator">("creator");
 
   useEffect(() => {
     getCachedUser().then(async (u) => {
       if (!u) { router.replace("/login"); return; }
-      try {
-        const r = await fetch(`/api/profile?user_id=${u.id}`, { cache: "no-store" });
-        const d = await r.json();
-        const raw = String(d.profile?.tier || "free").toLowerCase();
-        if (["creator", "podcaster", "pro"].includes(raw)) setTier("creator");
-        else if (["plus", "pass", "troopass"].includes(raw)) setTier("plus");
-      } catch {}
     }).catch(() => router.replace("/login"));
   }, [router]);
 

@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { ChevronLeft, Plus, Trash2, Edit, ShoppingBag, Package, X, Image as ImageIcon, GripVertical, Save, ArrowUp, ArrowDown } from "lucide-react";
+import { ChevronLeft, Plus, Trash2, Edit, ShoppingBag, Package, X, Image as ImageIcon, GripVertical, Save, ArrowUp, ArrowDown, Lock } from "lucide-react";
 import { Reorder } from "framer-motion";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
@@ -27,9 +27,11 @@ function ManageShopContent() {
   const searchParams = useSearchParams();
   const editId = searchParams.get("edit");
   
+  const [userId, setUserId] = useState<string | null>(null);
   const [creatorId, setCreatorId] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [creatorToolsUnlocked, setCreatorToolsUnlocked] = useState<boolean | null>(null);
   const [isReordering, setIsReordering] = useState(false);
 
   // Form State
@@ -47,7 +49,13 @@ function ManageShopContent() {
   useEffect(() => {
     getCachedUser().then(async (user) => {
       if (!user) return;
-      
+      setUserId(user.id);
+      try {
+        const p = await fetch(`/api/profile?user_id=${user.id}`).then(r => r.json());
+        const unlocked = !!p?.profile?.creator_tools_unlocked;
+        setCreatorToolsUnlocked(unlocked);
+        if (!unlocked) { setLoading(false); return; }
+      } catch { setCreatorToolsUnlocked(false); setLoading(false); return; }
       const cr = await fetch(`/api/me/creator?user_id=${user.id}`).then(r => r.json());
       if (cr.creator) {
         setCreatorId(cr.creator.id);
@@ -144,6 +152,7 @@ function ManageShopContent() {
       const priceCents = Math.round(Number(price) * 100);
       const payload = {
         creatorId,
+        userId,
         name,
         description,
         price_cents: priceCents,
@@ -177,7 +186,7 @@ function ManageShopContent() {
   const deleteProduct = async (id: number) => {
     if (!confirm("Are you sure you want to delete this product?")) return;
     try {
-      const res = await fetch(`/api/creator/products?id=${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/creator/products?id=${id}&userId=${encodeURIComponent(userId || "")}`, { method: "DELETE" });
       if (res.ok && creatorId) {
         fetchProducts(creatorId);
       }
@@ -223,6 +232,23 @@ function ManageShopContent() {
       <div className="min-h-screen bg-[#09090B] flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" />
       </div>
+    );
+  }
+
+  if (creatorToolsUnlocked === false) {
+    return (
+      <main className="min-h-screen bg-[#09090B] text-white flex items-center justify-center p-6">
+        <div className="max-w-md w-full bg-[#1c1c1e] border border-white/10 rounded-2xl p-8 text-center">
+          <div className="w-14 h-14 rounded-full bg-yellow-400/10 flex items-center justify-center mx-auto mb-4">
+            <Lock size={28} className="text-yellow-400" />
+          </div>
+          <h1 className="text-xl font-bold mb-2">Unlock Creator Tools</h1>
+          <p className="text-white/55 text-sm mb-6">Buy $5 in coins to unlock Live, Shop, and Premium features.</p>
+          <Link href="/wallet?topup=true&unlock=creator-tools" className="inline-flex items-center gap-2 bg-[#E53945] hover:bg-[#d12e39] text-white font-bold px-6 py-3 rounded-xl transition">
+            Buy Coins to Unlock
+          </Link>
+        </div>
+      </main>
     );
   }
 

@@ -36,6 +36,7 @@ export default function GoLivePage() {
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);
   const [myProducts, setMyProducts] = useState<any[]>([]);
   const [liveVisibility, setLiveVisibility] = useState<"public" | "subscribers">("public");
+  const [creatorToolsUnlocked, setCreatorToolsUnlocked] = useState<boolean | null>(null);
 
   // Timer
   useEffect(() => {
@@ -75,8 +76,16 @@ export default function GoLivePage() {
     }
     setupCamera();
 
-    getCachedUser().then((u) => {
-      if (u) setUserId(u.id);
+    getCachedUser().then(async (u) => {
+      if (u) {
+        setUserId(u.id);
+        try {
+          const p = await fetch(`/api/profile?user_id=${u.id}`).then(r => r.json());
+          setCreatorToolsUnlocked(!!p?.profile?.creator_tools_unlocked);
+        } catch { setCreatorToolsUnlocked(false); }
+      } else {
+        setCreatorToolsUnlocked(false);
+      }
     });
 
     return () => {
@@ -432,6 +441,31 @@ export default function GoLivePage() {
       setLoading(false);
     }
   };
+
+  if (creatorToolsUnlocked === null) {
+    return (
+      <main className="h-[100dvh] bg-[#0a0a0a] text-white flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" />
+      </main>
+    );
+  }
+
+  if (!creatorToolsUnlocked) {
+    return (
+      <main className="min-h-[100dvh] bg-[#0a0a0a] text-white flex items-center justify-center p-6">
+        <div className="max-w-md w-full bg-[#1c1c1e] border border-white/10 rounded-2xl p-8 text-center">
+          <div className="w-14 h-14 rounded-full bg-yellow-400/10 flex items-center justify-center mx-auto mb-4">
+            <Lock size={28} className="text-yellow-400" />
+          </div>
+          <h1 className="text-xl font-bold mb-2">Unlock Creator Tools</h1>
+          <p className="text-white/55 text-sm mb-6">Buy $5 in coins to unlock Live, Shop, and Premium features.</p>
+          <a href="/wallet?topup=true&unlock=creator-tools" className="inline-flex items-center gap-2 bg-[#E53945] hover:bg-[#d12e39] text-white font-bold px-6 py-3 rounded-xl transition">
+            Buy Coins to Unlock
+          </a>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="h-[100dvh] bg-[#0a0a0a] text-white flex flex-col overflow-hidden">

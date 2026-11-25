@@ -2,6 +2,7 @@ import TipModal from "@/components/TipModal";
 import PushNotificationManager from "@/components/PushNotificationManager";
 import GlobalIncomingCall from "@/components/GlobalIncomingCall";
 import TrooflixAssistant from "@/components/TrooflixAssistant";
+import UnlockCreatorToolsPopup from "@/components/UnlockCreatorToolsPopup";
 import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
@@ -76,6 +77,7 @@ export default function RootLayout({
         
         <GlobalIncomingCall />
         <TipModal />
+        <UnlockCreatorToolsPopup />
         <script
           dangerouslySetInnerHTML={{
             __html: `
