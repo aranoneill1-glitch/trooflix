@@ -695,36 +695,11 @@ export default function PublicProfilePage() {
                         ))}
                       </Reorder.Group>
                     </div>
-                  ) : contentView === "grid" ? (
-                    <div className="grid grid-cols-3 gap-4">
-                      {localMerch.map((item) => (
-                        <div 
-                          key={item.id} 
-                          onMouseDown={() => startPress(item)}
-                          onMouseUp={cancelPress}
-                          onMouseLeave={cancelPress}
-                          onTouchStart={() => startPress(item)}
-                          onTouchEnd={cancelPress}
-                          onTouchMove={cancelPress}
-                          onContextMenu={(e) => { e.preventDefault(); setSelectedMerchItem(item); }}
-                          className="bg-[#1c1c1e] border border-white/10 rounded-xl overflow-hidden group cursor-pointer flex flex-col select-none relative z-10" 
-                          style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", userSelect: "none", WebkitTapHighlightColor: "transparent" }}
-                        >
-                          <div className="relative aspect-square pointer-events-none">
-                            <img src={item.image_url} alt={item.name} className="w-full h-full object-cover select-none pointer-events-none" style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", pointerEvents: "none" }} draggable={false} />
-                          </div>
-                          <div className="p-3 flex-1 flex flex-col justify-between text-left pointer-events-none">
-                            <h3 className="text-sm font-bold leading-tight line-clamp-2 text-white">{item.name}</h3>
-                            <p className="text-emerald-400 font-bold text-xs mt-2">${(item.price_cents / 100).toFixed(2)}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
                   ) : (
-                    <div className="flex flex-col gap-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-[2px] -mx-4 sm:mx-0 pb-20">
                       {localMerch.map((item) => (
-                        <div 
-                          key={item.id} 
+                        <div
+                          key={item.id}
                           onMouseDown={() => startPress(item)}
                           onMouseUp={cancelPress}
                           onMouseLeave={cancelPress}
@@ -732,12 +707,16 @@ export default function PublicProfilePage() {
                           onTouchEnd={cancelPress}
                           onTouchMove={cancelPress}
                           onContextMenu={(e) => { e.preventDefault(); setSelectedMerchItem(item); }}
-                          className="flex items-center gap-4 bg-[#1c1c1e] border border-white/10 rounded-2xl p-3 select-none relative z-10" 
+                          className="group relative bg-[#1c1c1e] overflow-hidden cursor-pointer select-none"
                           style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", userSelect: "none", WebkitTapHighlightColor: "transparent" }}
                         >
-                          <div className="w-20 h-20 rounded-lg overflow-hidden shrink-0 relative pointer-events-none"><img src={item.image_url} alt={item.name} className="w-full h-full object-cover select-none pointer-events-none" style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", pointerEvents: "none" }} draggable={false} /></div>
-                          <div className="flex-1 min-w-0 text-left pointer-events-none"><h3 className="text-sm font-bold text-white truncate">{item.name}</h3><p className="text-xs text-white/50 mt-1">Merch</p></div>
-                          <p className="text-emerald-400 font-bold text-sm shrink-0 pointer-events-none">${(item.price_cents / 100).toFixed(2)}</p>
+                          <div className="aspect-square relative bg-black">
+                            <img src={item.image_url} alt={item.name} className="w-full h-full object-cover select-none pointer-events-none" style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", pointerEvents: "none" }} draggable={false} />
+                            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent p-2.5 pt-10 pointer-events-none">
+                              <h3 className="text-xs font-bold text-white truncate">{item.name}</h3>
+                              <p className="text-[11px] font-bold text-emerald-400 mt-0.5">${(item.price_cents / 100).toFixed(2)}</p>
+                            </div>
+                          </div>
                         </div>
                       ))}
                     </div>

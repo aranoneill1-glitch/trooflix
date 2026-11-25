@@ -81,7 +81,7 @@ function CreatorDashboardContent() {
   
   const [contentView, setContentView] = useState<"grid" | "list">("grid");
   const [activeContentTab, setActiveContentTab] = useState<"Videos" | "Audio" | "Premium" | "Shop">("Videos");
-  const [videoFilter, setVideoFilter] = useState<"all" | "shorts">("all");
+
   const [creatorVideos, setCreatorVideos] = useState<any[]>([]);
   const [merch, setMerch] = useState<any[]>([]);
   const [videosLoading, setVideosLoading] = useState(true);
@@ -327,8 +327,7 @@ function CreatorDashboardContent() {
     }
     if (activeContentTab === "Videos") {
       if (type === "tweet" || isPremium || isAudio) return false;
-      if (videoFilter === "shorts") return isShort;
-      return !isShort;
+      return true;
     }
     if (activeContentTab === "Premium") {
       return isPremium && type !== "tweet";
@@ -696,22 +695,7 @@ function CreatorDashboardContent() {
                 </div>
               </div>
 
-              {activeContentTab === "Videos" && (
-                <div className="flex items-center gap-2 mb-5">
-                  {([
-                    { id: "all", label: "All" },
-                    { id: "shorts", label: "Shorts" },
-                  ] as const).map((pill) => (
-                    <button
-                      key={pill.id}
-                      onClick={() => setVideoFilter(pill.id)}
-                      className={`px-3.5 py-1.5 rounded-full text-xs font-bold border transition ${videoFilter === pill.id ? "bg-white text-black border-white" : "bg-white/5 text-white/70 border-white/10 hover:text-white hover:border-white/20"}`}
-                    >
-                      {pill.label}
-                    </button>
-                  ))}
-                </div>
-              )}
+
 
               {activeContentTab === "Audio" && (
                 <div className="w-full">
@@ -823,32 +807,20 @@ function CreatorDashboardContent() {
                   {videosLoading ? (
                     <div className="flex justify-center py-20"><div className="w-8 h-8 border-4 border-[#E53945]/30 border-t-[#E53945] rounded-full animate-spin" /></div>
                   ) : filteredVideos.length === 0 ? (
-                    <div className="text-center py-20 text-white/50">{videoFilter === "shorts" ? "No Shorts yet." : "No videos found yet."}</div>
-                  ) : videoFilter === "shorts" ? (
-                    contentView === "grid" ? (
-                      <div className="no-image-callout -mx-4 sm:-mx-4 lg:mx-0 grid grid-cols-3 gap-[2px] pb-20 sm:gap-1 lg:grid-cols-6 lg:gap-3">
-                        {filteredVideos.map((video) => (
-                          <Link key={video.id} href={`/feed?creator_user_id=${encodeURIComponent(user.id)}${video.creatorId ? `&creator_id=${video.creatorId}` : ""}&reel=${video.id}`} aria-label={`Watch ${video.title}`} onClick={(e) => handleVideoCardClick(e, video)} onContextMenu={(e) => { e.preventDefault(); setSelectedVideoAction(video); }} onPointerDown={() => startVideoPress(video)} onPointerUp={cancelVideoPress} onPointerLeave={cancelVideoPress} onPointerCancel={cancelVideoPress} className="group relative aspect-[3/4] overflow-hidden bg-[#111114] lg:rounded-xl lg:border lg:border-white/10 lg:shadow-lg">
-                            <ShortPreviewFrame src={video.videoUrl || video.bitchuteUrl} poster={video.posterUrl || video.backdropUrl} alt="" />
-                          </Link>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="no-image-callout flex flex-col gap-2 pb-20">
-                        {filteredVideos.map((video) => (
-                          <Link key={video.id} href={`/feed?creator_user_id=${encodeURIComponent(user.id)}${video.creatorId ? `&creator_id=${video.creatorId}` : ""}&reel=${video.id}`} onClick={(e) => handleVideoCardClick(e, video)} onContextMenu={(e) => { e.preventDefault(); setSelectedVideoAction(video); }} onPointerDown={() => startVideoPress(video)} onPointerUp={cancelVideoPress} onPointerLeave={cancelVideoPress} onPointerCancel={cancelVideoPress} className="flex items-center gap-3 bg-white/[0.06] border border-white/10 hover:bg-white/10 rounded-xl p-2 transition">
-                            <div className="relative w-14 aspect-[3/4] rounded-lg overflow-hidden shrink-0 bg-black">
-                              <ShortPreviewFrame src={video.videoUrl || video.bitchuteUrl} poster={video.posterUrl || video.backdropUrl} alt="" />
-                            </div>
-                            <span className="text-sm font-bold text-white truncate">{video.title}</span>
-                          </Link>
-                        ))}
-                      </div>
-                    )
+                    <div className="text-center py-20 text-white/50">No videos found yet.</div>
                   ) : contentView === "grid" ? (
                     <div className="no-image-callout -mx-4 sm:-mx-4 lg:mx-0 grid grid-cols-3 gap-[2px] pb-20 sm:gap-1 lg:grid-cols-6 lg:gap-3">
                       {filteredVideos.map((video) => {
-                        const isPodcast = String(video.type || "").toLowerCase() === "podcast";
+                        const type = String(video.type || "").toLowerCase();
+                        const isShort = type === "short" || type === "reel";
+                        const isPodcast = type === "podcast";
+                        if (isShort) {
+                          return (
+                            <Link key={video.id} href={`/feed?creator_user_id=${encodeURIComponent(user.id)}${video.creatorId ? `&creator_id=${video.creatorId}` : ""}&reel=${video.id}`} aria-label={`Watch ${video.title}`} onClick={(e) => handleVideoCardClick(e, video)} onContextMenu={(e) => { e.preventDefault(); setSelectedVideoAction(video); }} onPointerDown={() => startVideoPress(video)} onPointerUp={cancelVideoPress} onPointerLeave={cancelVideoPress} onPointerCancel={cancelVideoPress} className="group relative aspect-[3/4] overflow-hidden bg-[#111114] lg:rounded-xl lg:border lg:border-white/10 lg:shadow-lg">
+                              <ShortPreviewFrame src={video.videoUrl || video.bitchuteUrl} poster={video.posterUrl || video.backdropUrl} alt="" />
+                            </Link>
+                          );
+                        }
                         return (
                           <div key={video.id} onClick={(e) => handleVideoCardClick(e, video)} onContextMenu={(e) => { e.preventDefault(); setSelectedVideoAction(video); }} onPointerDown={() => startVideoPress(video)} onPointerUp={cancelVideoPress} onPointerLeave={cancelVideoPress} onPointerCancel={cancelVideoPress} className="relative aspect-[3/4] overflow-hidden bg-[#111114] lg:rounded-xl lg:border lg:border-white/10 lg:shadow-lg cursor-pointer">
                             <img src={video.posterUrl || video.backdropUrl} alt="" loading="lazy" className="w-full h-full object-cover" />
@@ -862,7 +834,19 @@ function CreatorDashboardContent() {
                   ) : (
                     <div className="no-image-callout flex flex-col gap-2 pb-20">
                       {filteredVideos.map((video) => {
-                        const isPodcast = String(video.type || "").toLowerCase() === "podcast";
+                        const type = String(video.type || "").toLowerCase();
+                        const isShort = type === "short" || type === "reel";
+                        const isPodcast = type === "podcast";
+                        if (isShort) {
+                          return (
+                            <Link key={video.id} href={`/feed?creator_user_id=${encodeURIComponent(user.id)}${video.creatorId ? `&creator_id=${video.creatorId}` : ""}&reel=${video.id}`} onClick={(e) => handleVideoCardClick(e, video)} onContextMenu={(e) => { e.preventDefault(); setSelectedVideoAction(video); }} onPointerDown={() => startVideoPress(video)} onPointerUp={cancelVideoPress} onPointerLeave={cancelVideoPress} onPointerCancel={cancelVideoPress} className="flex items-center gap-3 bg-white/[0.06] border border-white/10 hover:bg-white/10 rounded-xl p-2 transition">
+                              <div className="relative w-14 aspect-[3/4] rounded-lg overflow-hidden shrink-0 bg-black">
+                                <ShortPreviewFrame src={video.videoUrl || video.bitchuteUrl} poster={video.posterUrl || video.backdropUrl} alt="" />
+                              </div>
+                              <span className="text-sm font-bold text-white truncate">{video.title}</span>
+                            </Link>
+                          );
+                        }
                         return (
                           <div key={video.id} onClick={(e) => handleVideoCardClick(e, video)} onContextMenu={(e) => { e.preventDefault(); setSelectedVideoAction(video); }} onPointerDown={() => startVideoPress(video)} onPointerUp={cancelVideoPress} onPointerLeave={cancelVideoPress} onPointerCancel={cancelVideoPress} className="flex items-center gap-3 bg-white/[0.06] border border-white/10 rounded-xl p-2 cursor-pointer hover:bg-white/10 transition">
                             <div className="relative w-14 aspect-[3/4] rounded-lg overflow-hidden shrink-0 bg-black">
