@@ -383,7 +383,7 @@ export default function MessagesInbox() {
 
 
       {/* All / Unread / Requests sub-tabs */}
-      <div className={`border-b border-white/5 flex-shrink-0 ${activeTab === "messages" ? "" : "hidden"}`} style={{ background: "#000000" }}>
+      <div className={`border-b border-white/5 flex-shrink-0 ${activeTab === "messages" ? "" : "hidden"}`} style={{ background: profileBackdrop ? "rgba(0,0,0,0.25)" : "#000000" }}>
         <div className="max-w-3xl mx-auto grid grid-cols-3 gap-2 px-4 md:px-6 py-2.5">
           <button
             onClick={() => setFilter("all")}
@@ -417,7 +417,7 @@ export default function MessagesInbox() {
       </div>
 
       {/* Scrollable list - GREY BACKGROUND APPLIED HERE */}
-      <div className={`flex-1 overflow-y-auto pb-24 lg:pb-4 bg-black ${activeTab === "calls" ? "hidden" : ""}`}>
+      <div className={`flex-1 overflow-y-auto pb-24 lg:pb-4 ${profileBackdrop ? "bg-black/25" : "bg-black"} ${activeTab === "calls" ? "hidden" : ""}`}>
         <div className="max-w-3xl mx-auto">
         {loading && (
           <p className="text-white/50 py-12 text-center px-6">Loading…</p>
@@ -572,7 +572,7 @@ export default function MessagesInbox() {
     
       {/* ========== CALLS TAB CONTENT ========== */}
       {activeTab === "calls" && (
-        <div className="flex-1 overflow-y-auto pb-24 lg:pb-4 bg-black">
+        <div className={`flex-1 overflow-y-auto pb-24 lg:pb-4 ${profileBackdrop ? "bg-black/25" : "bg-black"}`}>
           <div className="max-w-3xl mx-auto">
             
             {/* Calls Sub-tabs */}
