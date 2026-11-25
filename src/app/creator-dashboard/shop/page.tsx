@@ -238,13 +238,13 @@ function ManageShopContent() {
   if (creatorToolsUnlocked === false) {
     return (
       <main className="min-h-screen bg-[#09090B] text-white flex items-center justify-center p-6">
-        <div className="max-w-md w-full bg-[#1c1c1e] border border-white/10 rounded-2xl p-8 text-center">
-          <div className="w-14 h-14 rounded-full bg-yellow-400/10 flex items-center justify-center mx-auto mb-4">
-            <Lock size={28} className="text-yellow-400" />
+        <div className="max-w-md w-full bg-white/[0.06] backdrop-blur-2xl border border-white/10 rounded-[28px] p-8 text-center shadow-[0_20px_60px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.08)]">
+          <div className="w-16 h-16 rounded-full bg-yellow-400/[0.12] flex items-center justify-center mx-auto mb-5 border border-yellow-400/20">
+            <Lock size={30} className="text-yellow-400" />
           </div>
-          <h1 className="text-xl font-bold mb-2">Unlock Creator Tools</h1>
-          <p className="text-white/55 text-sm mb-6">Drop $5 on coins to unlock Live, Shop, and Premium. The best part? Those coins go straight to your favorite creators — not us. Give a little, unlock a lot.</p>
-          <Link href="/wallet?topup=true&unlock=creator-tools" className="inline-flex items-center gap-2 bg-[#E53945] hover:bg-[#d12e39] text-white font-bold px-6 py-3 rounded-xl transition">
+          <h1 className="text-2xl font-black mb-2 tracking-tight">Unlock Creator Tools</h1>
+          <p className="text-white/60 text-sm mb-7 leading-relaxed">Buy any coin pack to unlock Live, Shop, and Premium. Your coins go straight to creators — not us.</p>
+          <Link href="/wallet?topup=true&unlock=creator-tools" className="inline-flex items-center gap-2 bg-[#E53945]/90 hover:bg-[#E53945] text-white font-bold px-7 py-3.5 rounded-full transition backdrop-blur-xl border border-red-400/20 shadow-[0_10px_30px_rgba(229,57,69,0.35),inset_0_1px_0_rgba(255,255,255,0.18)]">
             Buy Coins to Unlock
           </Link>
         </div>
@@ -253,152 +253,157 @@ function ManageShopContent() {
   }
 
   return (
-    <main className="min-h-screen bg-[#09090B] text-white pb-32 font-sans selection:bg-[#E53945]/30">
+    <main className="min-h-screen bg-[#09090B] text-white pb-32 font-sans selection:bg-[#E53945]/30 overflow-x-hidden">
       <TopBar />
 
-      <div className="max-w-5xl mx-auto px-4 pt-[calc(env(safe-area-inset-top)+6rem)] pb-6">
-        
-        <Link href="/creator-dashboard" className="inline-flex items-center gap-2 text-sm text-white/50 hover:text-white mb-8 transition">
+      <div className="max-w-6xl mx-auto px-4 pt-[calc(env(safe-area-inset-top)+6rem)] pb-6">
+        <Link href="/creator-dashboard" className="inline-flex items-center gap-2 text-sm text-white/55 hover:text-white mb-6 transition">
           <ChevronLeft size={16} /> Back to Dashboard
         </Link>
 
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-          <div>
-            <h1 className="text-3xl font-black tracking-tight mb-2 flex items-center gap-2">
-              Manage Shop <ShoppingBag className="text-[#E53945]" size={24} />
-            </h1>
-            <p className="text-sm text-white/50">Create and manage your merchandise inventory.</p>
-          </div>
-          <div className="flex gap-2">
-            {isReordering ? (
-              <>
-                <button onClick={() => { setIsReordering(false); fetchProducts(creatorId!); }} className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-sm font-bold transition">Cancel</button>
-                <button onClick={saveOrder} className="flex items-center gap-2 bg-[#E53945] hover:bg-[#d12e39] text-white font-bold px-6 py-2 rounded-xl transition shadow-lg shadow-[#E53945]/20">
-                  <Save size={18} /> Save Order
-                </button>
-              </>
-            ) : (
-              <>
-                <button onClick={() => setIsReordering(true)} className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white font-bold px-4 py-3 rounded-xl transition">
-                  <GripVertical size={18} /> Reorder
-                </button>
-                <button onClick={() => openModal()} className="flex items-center gap-2 bg-[#E53945] hover:bg-[#d12e39] text-white font-bold px-6 py-3 rounded-xl transition shadow-lg shadow-[#E53945]/20">
-                  <Plus size={18} /> Add Product
-                </button>
-              </>
-            )}
+        <div className="relative overflow-hidden rounded-[32px] border border-white/10 bg-white/[0.04] backdrop-blur-2xl shadow-[0_20px_80px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.08)] mb-8">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(229,57,69,0.22),transparent_35%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.08),transparent_30%)]" />
+          <div className="relative p-6 md:p-8 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.06] border border-white/10 text-[11px] font-bold uppercase tracking-[0.18em] text-white/60 mb-4">
+                <ShoppingBag size={13} className="text-[#ff6b75]" /> Creator Shop
+              </div>
+              <h1 className="text-3xl md:text-5xl font-black tracking-tight mb-3">Manage Shop</h1>
+              <p className="text-sm md:text-base text-white/60 max-w-xl">Design, organize, and sell your products with a cleaner storefront workflow.</p>
+              <div className="mt-5 flex flex-wrap gap-2">
+                <div className="px-3 py-1.5 rounded-full bg-black/20 border border-white/10 text-xs font-semibold text-white/70">{products.length} {products.length === 1 ? "product" : "products"}</div>
+                <div className="px-3 py-1.5 rounded-full bg-black/20 border border-white/10 text-xs font-semibold text-white/70">{products.reduce((sum, p) => sum + (p.inventory_count || 0), 0)} items in stock</div>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2 md:justify-end">
+              {isReordering ? (
+                <>
+                  <button onClick={() => { setIsReordering(false); fetchProducts(creatorId!); }} className="px-5 py-3 bg-white/[0.06] hover:bg-white/[0.1] border border-white/10 rounded-full text-sm font-bold transition backdrop-blur-xl">Cancel</button>
+                  <button onClick={saveOrder} className="flex items-center gap-2 bg-[#E53945]/90 hover:bg-[#E53945] text-white font-bold px-6 py-3 rounded-full transition border border-red-400/20 shadow-[0_10px_30px_rgba(229,57,69,0.35),inset_0_1px_0_rgba(255,255,255,0.18)]">
+                    <Save size={18} /> Save Order
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button onClick={() => setIsReordering(true)} className="flex items-center gap-2 bg-white/[0.06] hover:bg-white/[0.1] text-white font-bold px-5 py-3 rounded-full transition border border-white/10 backdrop-blur-xl">
+                    <GripVertical size={18} /> Reorder
+                  </button>
+                  <button onClick={() => openModal()} className="flex items-center gap-2 bg-[#E53945]/90 hover:bg-[#E53945] text-white font-bold px-6 py-3 rounded-full transition border border-red-400/20 shadow-[0_10px_30px_rgba(229,57,69,0.35),inset_0_1px_0_rgba(255,255,255,0.18)]">
+                    <Plus size={18} /> Add Product
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
         {products.length === 0 ? (
-          <div className="text-center py-24 bg-[#1c1c1e] border border-white/5 rounded-3xl">
-            <Package size={48} className="mx-auto text-white/10 mb-4" />
-            <h2 className="text-xl font-bold mb-2">No products yet</h2>
-            <p className="text-sm text-white/50 mb-6">Add your first product to start selling merch.</p>
-            <button onClick={() => openModal()} className="inline-flex items-center gap-2 bg-white text-black font-bold px-6 py-2.5 rounded-xl transition">
+          <div className="text-center py-20 md:py-28 bg-white/[0.04] border border-white/10 rounded-[32px] backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+            <div className="w-20 h-20 mx-auto rounded-full bg-white/[0.05] border border-white/10 flex items-center justify-center mb-5">
+              <Package size={34} className="text-white/35" />
+            </div>
+            <h2 className="text-2xl font-black mb-2 tracking-tight">Your shop is ready for its first drop</h2>
+            <p className="text-sm text-white/50 mb-7 max-w-sm mx-auto">Add a product, set your price, and start selling directly to your audience.</p>
+            <button onClick={() => openModal()} className="inline-flex items-center gap-2 bg-white text-black font-bold px-7 py-3.5 rounded-full transition hover:bg-white/90 shadow-[0_10px_30px_rgba(255,255,255,0.12)]">
               <Plus size={18} /> Create Product
             </button>
           </div>
         ) : isReordering ? (
-          
-          /* REORDER MODE (Vertical List for reliable mobile drag) */
           <Reorder.Group axis="y" values={products} onReorder={setProducts} className="flex flex-col gap-3">
             {products.map((product, index) => (
-              <Reorder.Item 
-                key={product.id} 
-                value={product} 
-                className="bg-[#1c1c1e] border border-white/10 rounded-2xl p-3 flex items-center gap-4 cursor-grab active:cursor-grabbing relative"
-                style={{ touchAction: "none" }} 
+              <Reorder.Item
+                key={product.id}
+                value={product}
+                className="bg-white/[0.05] backdrop-blur-xl border border-white/10 rounded-[24px] p-3 md:p-4 flex items-center gap-4 cursor-grab active:cursor-grabbing relative shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+                style={{ touchAction: "none" }}
               >
-                <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-black pointer-events-none">
-                  <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" draggable={false} />
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl overflow-hidden shrink-0 bg-black/40 border border-white/10 pointer-events-none">
+                  {product.image_url ? <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" draggable={false} /> : <div className="w-full h-full flex items-center justify-center text-white/20"><ImageIcon size={22} /></div>}
                 </div>
                 <div className="flex-1 min-w-0 pointer-events-none">
-                  <h3 className="font-bold text-sm truncate">{product.name}</h3>
-                  <p className="text-emerald-400 text-xs font-bold mt-1">${(product.price_cents / 100).toFixed(2)}</p>
+                  <h3 className="font-bold text-sm md:text-base truncate">{product.name}</h3>
+                  <p className="text-emerald-400 text-xs md:text-sm font-bold mt-1">${(product.price_cents / 100).toFixed(2)}</p>
+                  <p className="text-[11px] text-white/45 mt-1">{product.inventory_count} in stock</p>
                 </div>
-                
-                {/* Fail-safe Up/Down Arrows */}
-                <div className="flex flex-col gap-1 shrink-0">
-                  <button onClick={() => moveItem(index, -1)} disabled={index === 0} className="p-1 bg-white/5 hover:bg-white/10 rounded disabled:opacity-30 text-white">
+                <div className="flex flex-col gap-1.5 shrink-0">
+                  <button onClick={() => moveItem(index, -1)} disabled={index === 0} className="p-2 bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 rounded-xl disabled:opacity-30 text-white transition">
                     <ArrowUp size={16} />
                   </button>
-                  <button onClick={() => moveItem(index, 1)} disabled={index === products.length - 1} className="p-1 bg-white/5 hover:bg-white/10 rounded disabled:opacity-30 text-white">
+                  <button onClick={() => moveItem(index, 1)} disabled={index === products.length - 1} className="p-2 bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 rounded-xl disabled:opacity-30 text-white transition">
                     <ArrowDown size={16} />
                   </button>
                 </div>
               </Reorder.Item>
             ))}
           </Reorder.Group>
-
         ) : (
-          
-          /* NORMAL GRID VIEW */
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-[2px] -mx-4 sm:mx-0">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
             {products.map((product) => (
-              <div key={product.id} className="group relative bg-[#1c1c1e] overflow-hidden">
-                <div className="aspect-square relative bg-black">
+              <div key={product.id} className="group relative bg-white/[0.04] border border-white/10 rounded-[24px] overflow-hidden backdrop-blur-xl shadow-[0_10px_30px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.06)] transition duration-300 hover:-translate-y-0.5 hover:border-white/20">
+                <div className="aspect-square relative bg-black/30">
                   {product.image_url ? (
-                    <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" loading="lazy" />
+                    <img src={product.image_url} alt={product.name} className="w-full h-full object-cover transition duration-500 group-hover:scale-[1.03]" loading="lazy" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-white/10"><ImageIcon size={28} /></div>
+                    <div className="w-full h-full flex items-center justify-center text-white/15"><ImageIcon size={30} /></div>
                   )}
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent p-2.5 pt-10">
-                    <h3 className="text-xs font-bold text-white truncate">{product.name}</h3>
-                    <div className="flex items-center justify-between gap-2 mt-0.5">
-                      <span className="text-[11px] font-bold text-emerald-400">${(product.price_cents / 100).toFixed(2)}</span>
-                      <span className="text-[10px] text-white/50">{product.inventory_count} in stock</span>
-                    </div>
-                  </div>
-                  <div className="absolute top-2 right-2 flex items-center gap-1.5">
-                    <button onClick={() => openModal(product)} className="p-1.5 bg-black/55 hover:bg-black/75 backdrop-blur-sm rounded-lg text-white transition" title="Edit">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/0 to-black/0" />
+                  <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5">
+                    <button onClick={() => openModal(product)} className="p-2 bg-black/35 hover:bg-black/55 backdrop-blur-xl border border-white/10 rounded-full text-white transition" title="Edit">
                       <Edit size={14} />
                     </button>
-                    <button onClick={() => deleteProduct(product.id)} className="p-1.5 bg-black/55 hover:bg-red-500/80 backdrop-blur-sm rounded-lg text-white transition" title="Delete">
+                    <button onClick={() => deleteProduct(product.id)} className="p-2 bg-black/35 hover:bg-red-500/75 backdrop-blur-xl border border-white/10 rounded-full text-white transition" title="Delete">
                       <Trash2 size={14} />
                     </button>
+                  </div>
+                </div>
+                <div className="p-3.5">
+                  <h3 className="text-sm font-bold text-white truncate">{product.name}</h3>
+                  <div className="flex items-center justify-between gap-2 mt-1.5">
+                    <span className="text-sm font-black text-emerald-400">${(product.price_cents / 100).toFixed(2)}</span>
+                    <span className="text-[11px] text-white/45 font-medium">{product.inventory_count} in stock</span>
                   </div>
                 </div>
               </div>
             ))}
           </div>
         )}
-
       </div>
 
-      {/* FORM MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-[200] bg-black/80 flex items-center justify-center p-4">
-          <div className="bg-[#1c1c1e] border border-white/10 rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
-            
-            <div className="flex items-center justify-between p-6 border-b border-white/5">
-              <h2 className="text-xl font-bold">{editingId ? "Edit Product" : "Add New Product"}</h2>
-              <button onClick={() => setIsModalOpen(false)} className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition">
+        <div className="fixed inset-0 z-[200] bg-black/55 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setIsModalOpen(false)}>
+          <div className="bg-[#141418]/[0.92] backdrop-blur-2xl border border-white/10 rounded-t-[30px] sm:rounded-[30px] w-full max-w-lg overflow-hidden shadow-[0_24px_80px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.08)] animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.08]">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/40 mb-1">Shop</p>
+                <h2 className="text-xl font-black tracking-tight">{editingId ? "Edit Product" : "Add New Product"}</h2>
+              </div>
+              <button onClick={() => setIsModalOpen(false)} className="p-2.5 bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 rounded-full transition">
                 <X size={18} />
               </button>
             </div>
 
-            <form onSubmit={saveProduct} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
-              
+            <form onSubmit={saveProduct} className="p-6 space-y-5 max-h-[78vh] overflow-y-auto">
               <div>
                 <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 block">Product Image</label>
-                <div 
+                <div
                   onClick={() => fileInputRef.current?.click()}
-                  className={`w-full h-48 rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all relative overflow-hidden border-2 border-dashed ${imageUrl ? 'border-transparent' : 'border-white/10 hover:border-[#E53945] bg-black/40'}`}
+                  className={`w-full h-52 rounded-[24px] flex flex-col items-center justify-center cursor-pointer transition-all relative overflow-hidden border ${imageUrl ? 'border-white/10' : 'border-dashed border-white/15 hover:border-[#E53945]/60 bg-white/[0.03]'}`}
                 >
                   {imageUrl ? (
                     <>
                       <img src={imageUrl} alt="Preview" className="w-full h-full object-cover absolute inset-0" />
-                      <div className="absolute inset-0 bg-black/60 opacity-0 hover:opacity-100 flex flex-col items-center justify-center transition-opacity">
+                      <div className="absolute inset-0 bg-black/45 opacity-0 hover:opacity-100 flex flex-col items-center justify-center transition-opacity">
                         <ImageIcon size={24} className="text-white mb-2" />
                         <span className="text-sm font-bold text-white">Change Image</span>
                       </div>
                     </>
                   ) : (
                     <>
-                      <ImageIcon size={32} className="text-white/20 mb-2" />
-                      <span className="text-sm font-bold text-white/50">Click to upload image</span>
-                      <span className="text-[10px] text-white/30 mt-1">JPG, PNG or WEBP</span>
+                      <div className="w-14 h-14 rounded-full bg-white/[0.05] border border-white/10 flex items-center justify-center mb-3">
+                        <ImageIcon size={26} className="text-white/35" />
+                      </div>
+                      <span className="text-sm font-bold text-white/65">Click to upload image</span>
+                      <span className="text-[11px] text-white/35 mt-1">JPG, PNG or WEBP</span>
                     </>
                   )}
                 </div>
@@ -406,17 +411,18 @@ function ManageShopContent() {
               </div>
 
               <div>
+                <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 block">Product Type</label>
+                <div className="flex bg-white/[0.04] border border-white/10 rounded-2xl p-1 mb-4">
+                  <button type="button" onClick={() => setProductType("merch")} className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition ${productType === "merch" ? "bg-white text-black shadow-sm" : "text-white/55 hover:text-white"}`}>Merch</button>
+                  <button type="button" onClick={() => setProductType("book")} className={`flex-1 py-2.5 text-sm font-bold rounded-xl transition ${productType === "book" ? "bg-white text-black shadow-sm" : "text-white/55 hover:text-white"}`}>Book</button>
+                </div>
                 <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 block">Product Name</label>
-                <div className="flex bg-black/40 border border-white/10 rounded-xl p-1 mb-4">
-                    <button type="button" onClick={() => setProductType("merch")} className={`flex-1 py-2 text-sm font-bold rounded-lg transition ${productType === "merch" ? "bg-[#E53945] text-white" : "text-white/50 hover:text-white"}`}>Merch</button>
-                    <button type="button" onClick={() => setProductType("book")} className={`flex-1 py-2 text-sm font-bold rounded-lg transition ${productType === "book" ? "bg-[#E53945] text-white" : "text-white/50 hover:text-white"}`}>Book</button>
-                  </div>
-                  <input required type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Vintage Logo Tee" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#E53945] transition" />
+                <input required type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Vintage Logo Tee" className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3.5 text-white outline-none focus:border-[#E53945]/60 focus:bg-white/[0.07] transition" />
               </div>
 
               <div>
                 <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 block">Description</label>
-                <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe your product..." rows={3} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#E53945] transition resize-none" />
+                <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe your product..." rows={3} className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3.5 text-white outline-none focus:border-[#E53945]/60 focus:bg-white/[0.07] transition resize-none" />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -424,20 +430,19 @@ function ManageShopContent() {
                   <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 block">Price ($)</label>
                   <div className="relative">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 font-bold">$</span>
-                    <input required type="number" step="0.01" min="1" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="25.00" className="w-full bg-black/40 border border-white/10 rounded-xl pl-8 pr-4 py-3 text-white outline-none focus:border-[#E53945] transition" />
+                    <input required type="number" step="0.01" min="1" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="25.00" className="w-full bg-white/[0.04] border border-white/10 rounded-2xl pl-8 pr-4 py-3.5 text-white outline-none focus:border-[#E53945]/60 focus:bg-white/[0.07] transition" />
                   </div>
                 </div>
                 <div>
                   <label className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 block">Inventory</label>
-                  <input required type="number" min="0" value={inventory} onChange={(e) => setInventory(e.target.value)} placeholder="100" className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-[#E53945] transition" />
+                  <input required type="number" min="0" value={inventory} onChange={(e) => setInventory(e.target.value)} placeholder="100" className="w-full bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-3.5 text-white outline-none focus:border-[#E53945]/60 focus:bg-white/[0.07] transition" />
                 </div>
               </div>
 
-              <button type="submit" disabled={saving} className="w-full mt-4 bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold py-3.5 rounded-xl transition shadow-lg shadow-[#E53945]/20">
+              <button type="submit" disabled={saving} className="w-full mt-2 bg-[#E53945]/90 hover:bg-[#E53945] disabled:opacity-50 text-white font-bold py-4 rounded-full transition border border-red-400/20 shadow-[0_10px_30px_rgba(229,57,69,0.35),inset_0_1px_0_rgba(255,255,255,0.18)]">
                 {saving ? "Saving..." : "Save Product"}
               </button>
             </form>
-
           </div>
         </div>
       )}
