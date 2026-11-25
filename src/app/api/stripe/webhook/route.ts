@@ -106,8 +106,8 @@ export async function POST(req: Request) {
         }
         const { error: transactionError } = await supabaseAdmin.from("transactions").insert({ sender_id: null, receiver_id: userId, amount: coins, type: "topup", description: `Purchased ${coins} TrooCoins` });
         if (transactionError) throw transactionError;
-        // First $5+ coin purchase unlocks Creator Tools (Live, Shop, Premium)
-        if (coins >= 5) {
+        // Any coin purchase unlocks Creator Tools (Live, Shop, Premium)
+        if (coins > 0) {
           await kv.set(`trooflix:creator-tools-unlocked:${userId}`, "1");
         }
         // Give red tick on coin purchase (don't overwrite gold creator tick)

@@ -136,7 +136,7 @@ export default function SignupPage() {
             <Lock size={14} className="text-yellow-400" />
           </div>
           <p className="text-xs text-white/55 leading-relaxed">
-            <span className="text-white/80 font-semibold">Creator tools:</span> Unlock Live, Shop, and Premium by buying $5 in coins to tip other users.
+            <span className="text-white/80 font-semibold">Creator tools:</span> Unlock Live, Shop, and Premium by buying any coin pack. Your coins go to creators, not us.
           </p>
         </div>
 

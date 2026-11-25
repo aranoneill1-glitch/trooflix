@@ -34,7 +34,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
     if (!userId || !(await hasCreatorToolsUnlocked(userId))) {
-      return NextResponse.json({ error: "Buy $5 in coins to unlock Creator Tools" }, { status: 403 });
+      return NextResponse.json({ error: "Buy any coins to unlock Creator Tools" }, { status: 403 });
     }
 
     const { data, error } = await supabaseAdmin
@@ -70,7 +70,7 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
     if (!userId || !(await hasCreatorToolsUnlocked(userId))) {
-      return NextResponse.json({ error: "Buy $5 in coins to unlock Creator Tools" }, { status: 403 });
+      return NextResponse.json({ error: "Buy any coins to unlock Creator Tools" }, { status: 403 });
     }
 
     const { data, error } = await supabaseAdmin
@@ -102,7 +102,7 @@ export async function DELETE(req: Request) {
     const userId = searchParams.get("userId");
     if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
     if (!userId || !(await hasCreatorToolsUnlocked(userId))) {
-      return NextResponse.json({ error: "Buy $5 in coins to unlock Creator Tools" }, { status: 403 });
+      return NextResponse.json({ error: "Buy any coins to unlock Creator Tools" }, { status: 403 });
     }
 
     const { error } = await supabaseAdmin

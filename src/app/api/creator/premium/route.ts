@@ -88,7 +88,7 @@ export async function POST(req: Request) {
     const { userId, enabled, price_cents } = await req.json();
     if (!userId) return NextResponse.json({ error: "userId required" }, { status: 400 });
     const unlocked = await hasCreatorToolsUnlocked(userId);
-    if (!unlocked) return NextResponse.json({ error: "Buy $5 in coins to unlock Creator Tools" }, { status: 403 });
+    if (!unlocked) return NextResponse.json({ error: "Buy any coins to unlock Creator Tools" }, { status: 403 });
 
     const priceCents = price_cents === null || price_cents === undefined
       ? null

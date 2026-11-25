@@ -22,7 +22,20 @@ export async function GET(req: Request) {
       .maybeSingle();
 
     if (error) throw error;
-    const creatorToolsUnlocked = data ? (await kv.get<string>(`trooflix:creator-tools-unlocked:${userId}`)) === "1" : false;
+    let creatorToolsUnlocked = data ? (await kv.get<string>(`trooflix:creator-tools-unlocked:${userId}`)) === "1" : false;
+    if (data && !creatorToolsUnlocked) {
+      const { data: topup } = await supabaseAdmin
+        .from("transactions")
+        .select("id")
+        .eq("receiver_id", userId)
+        .eq("type", "topup")
+        .limit(1)
+        .maybeSingle();
+      if (topup) {
+        creatorToolsUnlocked = true;
+        try { await kv.set(`trooflix:creator-tools-unlocked:${userId}`, "1"); } catch {}
+      }
+    }
     return NextResponse.json({ profile: data ? { ...data, creator_tools_unlocked: creatorToolsUnlocked } : null });
   } catch (e: any) {
     console.error("GET profile error:", e);

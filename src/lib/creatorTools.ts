@@ -1,6 +1,6 @@
 import { kv } from "@vercel/kv";
 
-export const CREATOR_TOOLS_COIN_UNLOCK_USD = 5;
+export const CREATOR_TOOLS_COIN_UNLOCK_USD = 0; // any coin purchase unlocks
 
 export async function hasCreatorToolsUnlocked(userId: string): Promise<boolean> {
   if (!userId) return false;

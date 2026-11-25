@@ -32,7 +32,7 @@ export default function UnlockCreatorToolsPopup() {
           <Lock size={22} className="text-yellow-400" />
         </div>
         <h2 className="text-xl font-black mb-2">Welcome to Trooflix</h2>
-        <p className="text-sm text-white/60 mb-6">Unlock Shop, Live, and Premium by buying $5 in coins to tip other users.</p>
+        <p className="text-sm text-white/60 mb-6">Buy any coin pack to unlock Shop, Live, and Premium. Your coins go to creators, not us.</p>
         <div className="flex gap-3">
           <Link href="/wallet?topup=true&unlock=creator-tools" onClick={close} className="flex-1 text-center bg-[#E53945] hover:bg-[#d12e39] text-white font-bold py-3 rounded-xl transition">
             Buy Coins
