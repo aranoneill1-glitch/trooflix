@@ -106,7 +106,14 @@ function scoreMatch(text: string, query: string, terms: string[]) {
 
 function GridPreviewVideo({ src, poster }: { src: string; poster: string }) {
   const ref = useRef<HTMLVideoElement | null>(null);
+  const [failed, setFailed] = useState(false);
+
   useEffect(() => {
+    setFailed(false);
+  }, [src, poster]);
+
+  useEffect(() => {
+    if (failed) return;
     const el = ref.current;
     if (!el) return;
     const obs = new IntersectionObserver((entries) => {
@@ -121,16 +128,28 @@ function GridPreviewVideo({ src, poster }: { src: string; poster: string }) {
     }, { threshold: 0.35 });
     obs.observe(el);
     return () => obs.disconnect();
-  }, []);
+  }, [failed, src]);
+
+  if (failed || !src) {
+    return poster ? (
+      <img src={poster} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+    ) : (
+      <div className="absolute inset-0 h-full w-full bg-black" />
+    );
+  }
+
+  const previewSrc = src.includes("#") ? src : `${src}#t=0.001`;
+
   return (
     <video
       ref={ref}
-      src={src}
+      src={previewSrc}
       poster={poster}
       muted
       loop
       playsInline
       preload="metadata"
+      onError={() => setFailed(true)}
       className="absolute inset-0 h-full w-full object-cover"
     />
   );
