@@ -70,48 +70,59 @@ function SwipeableRow({
   isOpen: boolean;
   onOpen: (id: string) => void;
   onClose: () => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: string) => void | Promise<void>;
   children: React.ReactNode;
 }) {
   const startX = useRef(0);
   const startY = useRef(0);
-  const dragging = useRef(false);
+  const startOffset = useRef(0);
+  const draggingRef = useRef(false);
+  const offsetRef = useRef(0);
   const [offset, setOffset] = useState(0);
+  const [dragging, setDragging] = useState(false);
 
   useEffect(() => {
-    setOffset(isOpen ? -80 : 0);
+    const next = isOpen ? -80 : 0;
+    offsetRef.current = next;
+    setOffset(next);
   }, [isOpen]);
 
   const onTouchStart = (e: React.TouchEvent) => {
     const t = e.touches[0];
     startX.current = t.clientX;
     startY.current = t.clientY;
-    dragging.current = false;
+    startOffset.current = isOpen ? -80 : 0;
+    draggingRef.current = false;
+    setDragging(false);
   };
 
   const onTouchMove = (e: React.TouchEvent) => {
     const t = e.touches[0];
     const dx = t.clientX - startX.current;
     const dy = t.clientY - startY.current;
-    if (!dragging.current) {
+    if (!draggingRef.current) {
       if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
       if (Math.abs(dy) > Math.abs(dx)) return;
-      dragging.current = true;
+      draggingRef.current = true;
+      setDragging(true);
       onOpen(id);
     }
-    if (!dragging.current) return;
-    const base = isOpen ? -80 : 0;
-    const next = Math.min(0, Math.max(-96, base + dx));
+    const next = Math.min(0, Math.max(-96, startOffset.current + dx));
+    offsetRef.current = next;
     setOffset(next);
   };
 
   const onTouchEnd = () => {
-    if (!dragging.current) return;
-    dragging.current = false;
-    if (offset < -48) {
+    if (!draggingRef.current && !isOpen) return;
+    const shouldOpen = offsetRef.current < -40;
+    draggingRef.current = false;
+    setDragging(false);
+    if (shouldOpen) {
+      offsetRef.current = -80;
       setOffset(-80);
       onOpen(id);
     } else {
+      offsetRef.current = 0;
       setOffset(0);
       onClose();
     }
@@ -132,14 +143,15 @@ function SwipeableRow({
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
+        onTouchCancel={onTouchEnd}
         onClickCapture={(e) => {
-          if (isOpen) {
+          if (isOpen && !draggingRef.current) {
             e.preventDefault();
             e.stopPropagation();
             onClose();
           }
         }}
-        style={{ transform: `translateX(${offset}px)`, transition: dragging.current ? "none" : "transform 0.2s ease-out" }}
+        style={{ transform: `translateX(${offset}px)`, transition: dragging ? "none" : "transform 0.2s ease-out", touchAction: "pan-y" }}
         className="relative bg-black"
       >
         {children}
@@ -267,9 +279,14 @@ export default function MessagesInbox() {
       : conversations
   ).filter((c) => !hiddenChats.includes(c.other_user_id));
 
-  const deleteConversation = (otherUserId: string) => {
+  const deleteConversation = async (otherUserId: string) => {
     setHiddenChats((prev) => (prev.includes(otherUserId) ? prev : [...prev, otherUserId]));
+    setConversations((prev) => prev.filter((c) => c.other_user_id !== otherUserId));
     setSwipedChat(null);
+    if (!userId) return;
+    try {
+      await fetch(`/api/dm?userId=${encodeURIComponent(userId)}&otherUserId=${encodeURIComponent(otherUserId)}`, { method: "DELETE" });
+    } catch {}
   };
 
   const requestsCount = conversations.filter((c) => !c.last_from_me && c.unread_count > 0).length;

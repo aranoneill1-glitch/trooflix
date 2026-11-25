@@ -146,6 +146,24 @@ export async function DELETE(req: Request) {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
     const userId = searchParams.get("userId");
+    const otherUserId = searchParams.get("otherUserId");
+
+    if (userId && otherUserId && !id) {
+      const { error: e1 } = await supabaseAdmin
+        .from("direct_messages")
+        .delete()
+        .eq("sender_id", userId)
+        .eq("receiver_id", otherUserId);
+      if (e1) throw e1;
+      const { error: e2 } = await supabaseAdmin
+        .from("direct_messages")
+        .delete()
+        .eq("sender_id", otherUserId)
+        .eq("receiver_id", userId);
+      if (e2) throw e2;
+      return NextResponse.json({ ok: true });
+    }
+
     if (!id || !userId) return NextResponse.json({ error: "Missing data" }, { status: 400 });
     const { data: existing } = await supabaseAdmin.from("direct_messages").select("sender_id").eq("id", Number(id)).maybeSingle();
     if (!existing || existing.sender_id !== userId) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
