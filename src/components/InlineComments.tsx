@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ThumbsUp, MoreVertical, Trash2 } from "lucide-react";
-import { GoldCoin } from "@/components/TipModal";
 import { getCachedUser } from "@/lib/cache";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import ReportModal from "@/components/ReportModal";
@@ -263,7 +262,12 @@ export default function InlineComments({ videoId }: { videoId: number }) {
                 onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: c.user_id, commentId: c.id, videoId } }))}
                 className="flex items-center gap-1 text-xs text-white/50 hover:text-[#D4AF37] transition font-semibold"
               >
-                <GoldCoin size={16} />
+                <svg width={16} height={16} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9.5" stroke="currentColor" strokeWidth="1.9" />
+                  <circle cx="12" cy="12" r="7" stroke="currentColor" strokeWidth="1.2" opacity="0.75" />
+                  <path d="M10.1 5.4L9.2 3.3M13.9 5.4L14.8 3.3M10.1 18.6L9.2 20.7M13.9 18.6L14.8 20.7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.9" />
+                  <text x="12" y="15.2" textAnchor="middle" fontSize="7.6" fontWeight="800" fill="currentColor" fontFamily="system-ui, -apple-system, sans-serif">TC</text>
+                </svg>
                 {Number(commentTipCounts[String(c.id)] || 0) > 0 && <span>{Number(commentTipCounts[String(c.id)] || 0).toLocaleString()}</span>}
               </button>
             )}
