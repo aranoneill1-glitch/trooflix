@@ -339,9 +339,9 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
                   <div className="relative aspect-[16/9] overflow-hidden">
                     <img src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=1200&auto=format&fit=crop" alt="Trooflix merch" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
-                    <div className="absolute inset-x-0 bottom-0 p-4 flex items-end justify-between gap-3">
-                      <span className="text-2xl font-black tracking-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.55)]">Creators Market</span>
-                      <span className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-white/[0.14] backdrop-blur-xl border border-white/20 px-4 py-2 text-xs font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_8px_24px_rgba(0,0,0,0.25)]">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-4 text-center">
+                      <span className="text-3xl font-black tracking-tight text-white drop-shadow-[0_2px_16px_rgba(0,0,0,0.6)]">Creators Market</span>
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.14] backdrop-blur-xl border border-white/20 px-5 py-2.5 text-xs font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_8px_24px_rgba(0,0,0,0.25)]">
                         <ShoppingBag size={14} /> Visit store
                       </span>
                     </div>
@@ -355,9 +355,9 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
                   <div className="relative aspect-[16/9] overflow-hidden">
                     <img src="https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=1200&auto=format&fit=crop" alt="Podcast studio" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
-                    <div className="absolute inset-x-0 bottom-0 p-4 flex items-end justify-between gap-3">
-                      <span className="text-2xl font-black tracking-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.55)]">Podcasts</span>
-                      <span className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-white/[0.14] backdrop-blur-xl border border-white/20 px-4 py-2 text-xs font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_8px_24px_rgba(0,0,0,0.25)]">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-4 text-center">
+                      <span className="text-3xl font-black tracking-tight text-white drop-shadow-[0_2px_16px_rgba(0,0,0,0.6)]">Podcasts</span>
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.14] backdrop-blur-xl border border-white/20 px-5 py-2.5 text-xs font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_8px_24px_rgba(0,0,0,0.25)]">
                         <Headphones size={14} /> Explore
                       </span>
                     </div>
