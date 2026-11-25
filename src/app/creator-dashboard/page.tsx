@@ -1127,7 +1127,7 @@ function CreatorDashboardContent() {
                     </div>
                     <div className="relative z-10">
                       <h4 className="font-bold text-white text-base flex items-center gap-1.5">Go Live {!creatorToolsUnlocked && <Lock size={12} className="text-yellow-400" />}</h4>
-                      <p className="text-xs text-white/50">{creatorToolsUnlocked ? "Start a live stream with your fans" : "Buy $5 in coins to unlock"}</p>
+                      <p className="text-xs text-white/50">{creatorToolsUnlocked ? "Start a live stream with your fans" : "Unlock with $5 in coins — goes to creators, not us"}</p>
                     </div>
                   </Link>
 
@@ -1142,7 +1142,7 @@ function CreatorDashboardContent() {
                     </div>
                     <div className="relative z-10">
                       <h4 className="font-bold text-white text-base flex items-center gap-1.5">Upload Merch {!creatorToolsUnlocked && <Lock size={12} className="text-yellow-400" />}</h4>
-                      <p className="text-xs text-white/50">{creatorToolsUnlocked ? "Add an item to your store" : "Buy $5 in coins to unlock"}</p>
+                      <p className="text-xs text-white/50">{creatorToolsUnlocked ? "Add an item to your store" : "Unlock with $5 in coins — goes to creators, not us"}</p>
                     </div>
                   </Link>
 

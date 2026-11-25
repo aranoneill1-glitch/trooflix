@@ -458,7 +458,7 @@ export default function GoLivePage() {
             <Lock size={28} className="text-yellow-400" />
           </div>
           <h1 className="text-xl font-bold mb-2">Unlock Creator Tools</h1>
-          <p className="text-white/55 text-sm mb-6">Buy $5 in coins to unlock Live, Shop, and Premium features.</p>
+          <p className="text-white/55 text-sm mb-6">Drop $5 on coins to unlock Live, Shop, and Premium. The best part? Those coins go straight to your favorite creators — not us. Give a little, unlock a lot.</p>
           <a href="/wallet?topup=true&unlock=creator-tools" className="inline-flex items-center gap-2 bg-[#E53945] hover:bg-[#d12e39] text-white font-bold px-6 py-3 rounded-xl transition">
             Buy Coins to Unlock
           </a>
