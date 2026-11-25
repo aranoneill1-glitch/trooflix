@@ -335,40 +335,32 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
             <React.Fragment key={video.id}>
             {index === 4 && (
               <article className="py-0">
-                <Link href="/merchandise" className="block overflow-hidden border-y border-white/10 bg-gradient-to-br from-[#1c1c1e] to-[#0d0d10]">
+                <Link href="/merchandise" className="block overflow-hidden border-y border-white/10">
                   <div className="relative aspect-[16/9] overflow-hidden">
                     <img src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=1200&auto=format&fit=crop" alt="Trooflix merch" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                    <span className="absolute bottom-3 left-4 text-xl font-black tracking-tight text-white">Creators Market</span>
-                  </div>
-                  <div className="flex items-center justify-between gap-3 p-4">
-                    <div className="min-w-0">
-                      <p className="text-sm font-bold text-white">Wear the movement</p>
-                      <p className="text-xs text-white/50">Merch from your favourite creators.</p>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
+                    <div className="absolute inset-x-0 bottom-0 p-4 flex items-end justify-between gap-3">
+                      <span className="text-2xl font-black tracking-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.55)]">Creators Market</span>
+                      <span className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-white/[0.14] backdrop-blur-xl border border-white/20 px-4 py-2 text-xs font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_8px_24px_rgba(0,0,0,0.25)]">
+                        <ShoppingBag size={14} /> Visit store
+                      </span>
                     </div>
-                    <span className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 px-4 py-2 text-xs font-bold text-white">
-                      <ShoppingBag size={14} /> Visit store
-                    </span>
                   </div>
                 </Link>
               </article>
             )}
             {index === 8 && (
               <article className="py-0">
-                <Link href="/latest?category=Podcasts" className="block overflow-hidden border-y border-white/10 bg-gradient-to-br from-[#1c1c1e] to-[#0d0d10]">
+                <Link href="/latest?category=Podcasts" className="block overflow-hidden border-y border-white/10">
                   <div className="relative aspect-[16/9] overflow-hidden">
                     <img src="https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=1200&auto=format&fit=crop" alt="Podcast studio" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                    <span className="absolute bottom-3 left-4 text-xl font-black tracking-tight text-white">Podcasts</span>
-                  </div>
-                  <div className="flex items-center justify-between gap-3 p-4">
-                    <div className="min-w-0">
-                      <p className="text-sm font-bold text-white">Listen to the voices</p>
-                      <p className="text-xs text-white/50">Conversations worth your time.</p>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
+                    <div className="absolute inset-x-0 bottom-0 p-4 flex items-end justify-between gap-3">
+                      <span className="text-2xl font-black tracking-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.55)]">Podcasts</span>
+                      <span className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-white/[0.14] backdrop-blur-xl border border-white/20 px-4 py-2 text-xs font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_8px_24px_rgba(0,0,0,0.25)]">
+                        <Headphones size={14} /> Explore
+                      </span>
                     </div>
-                    <span className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 px-4 py-2 text-xs font-bold text-white">
-                      <Headphones size={14} /> Explore podcasts
-                    </span>
                   </div>
                 </Link>
               </article>
