@@ -177,7 +177,9 @@ export default function NotificationBell({ hideTrigger = false }: { hideTrigger?
         <button onClick={() => setIsOpen(true)} className="relative p-2 text-white/70 hover:text-white transition">
           <Bell size={22} />
           {unreadCount > 0 && (
-            <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-[#E53945] rounded-full border-2 border-[#0a0303]" />
+            <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-[#E53945] text-white text-[10px] font-bold rounded-full flex items-center justify-center border border-[#09090B] leading-none">
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </span>
           )}
         </button>
       )}
