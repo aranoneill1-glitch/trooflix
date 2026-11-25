@@ -681,7 +681,7 @@ export default function PublicProfilePage() {
                       </Reorder.Group>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 pb-20">
+                    <div className="-mx-4 sm:-mx-4 lg:mx-0 grid grid-cols-3 gap-[2px] pb-20 sm:gap-1 lg:grid-cols-6 lg:gap-3">
                       {localMerch.map((item) => (
                         <div
                           key={item.id}
@@ -692,15 +692,13 @@ export default function PublicProfilePage() {
                           onTouchEnd={cancelPress}
                           onTouchMove={cancelPress}
                           onContextMenu={(e) => { e.preventDefault(); setSelectedMerchItem(item); }}
-                          className="group relative bg-white/[0.04] border border-white/10 rounded-[22px] overflow-hidden cursor-pointer select-none backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition hover:border-white/20"
+                          className="group relative aspect-square overflow-hidden bg-[#111114] lg:rounded-xl lg:border lg:border-white/10 cursor-pointer select-none"
                           style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", userSelect: "none", WebkitTapHighlightColor: "transparent" }}
                         >
-                          <div className="aspect-square relative bg-black/30">
-                            <img src={item.image_url} alt={item.name} className="w-full h-full object-cover select-none pointer-events-none transition duration-500 group-hover:scale-[1.03]" style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", pointerEvents: "none" }} draggable={false} />
-                            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent p-3 pt-12 pointer-events-none">
-                              <h3 className="text-xs font-bold text-white truncate">{item.name}</h3>
-                              <p className="text-[11px] font-bold text-emerald-400 mt-0.5">${(item.price_cents / 100).toFixed(2)}</p>
-                            </div>
+                          <img src={item.image_url} alt={item.name} className="w-full h-full object-cover select-none pointer-events-none" style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", pointerEvents: "none" }} draggable={false} />
+                          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent p-2 pt-8 pointer-events-none">
+                            <h3 className="text-[10px] sm:text-xs font-bold text-white truncate">{item.name}</h3>
+                            <p className="text-[10px] font-bold text-emerald-400">${(item.price_cents / 100).toFixed(2)}</p>
                           </div>
                         </div>
                       ))}

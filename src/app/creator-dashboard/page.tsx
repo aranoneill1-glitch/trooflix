@@ -754,7 +754,7 @@ function CreatorDashboardContent() {
                   {merch.length === 0 ? (
                     <div className="text-center py-12 bg-white/[0.08] backdrop-saturate-150 border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] rounded-2xl"><ShoppingBag size={32} className="mx-auto text-white/20 mb-3" /><p className="text-white/50 text-sm">No products available yet.</p></div>
                   ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 pb-20">
+                    <div className="-mx-4 sm:-mx-4 lg:mx-0 grid grid-cols-3 gap-[2px] pb-20 sm:gap-1 lg:grid-cols-6 lg:gap-3">
                       {merch.map((item) => (
                         <div
                           key={item.id}
@@ -762,19 +762,17 @@ function CreatorDashboardContent() {
                           onPointerUp={cancelPress}
                           onPointerLeave={cancelPress}
                           onContextMenu={(e) => { e.preventDefault(); setSelectedMerchItem(item); }}
-                          className="group relative bg-white/[0.04] border border-white/10 rounded-[22px] overflow-hidden cursor-pointer backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition hover:border-white/20"
+                          className="group relative aspect-square overflow-hidden bg-[#111114] lg:rounded-xl lg:border lg:border-white/10 cursor-pointer"
                           style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none" }}
                         >
-                          <div className="aspect-square relative bg-black/30">
-                            <img src={item.image_url} alt={item.name} className="w-full h-full object-cover pointer-events-none transition duration-500 group-hover:scale-[1.03]" loading="lazy" />
-                            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent p-3 pt-12 pointer-events-none">
-                              <h3 className="text-xs font-bold text-white truncate">{item.name}</h3>
-                              <p className="text-[11px] font-bold text-emerald-400 mt-0.5">${(item.price_cents / 100).toFixed(2)}</p>
-                            </div>
-                            <button onClick={(e) => { e.stopPropagation(); setSelectedMerchItem(item); }} className="absolute top-2 right-2 p-2 bg-black/35 hover:bg-black/55 backdrop-blur-xl border border-white/10 rounded-full text-white z-20">
-                              <MoreVertical size={14} />
-                            </button>
+                          <img src={item.image_url} alt={item.name} className="w-full h-full object-cover pointer-events-none" loading="lazy" />
+                          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent p-2 pt-8 pointer-events-none">
+                            <h3 className="text-[10px] sm:text-xs font-bold text-white truncate">{item.name}</h3>
+                            <p className="text-[10px] font-bold text-emerald-400">${(item.price_cents / 100).toFixed(2)}</p>
                           </div>
+                          <button onClick={(e) => { e.stopPropagation(); setSelectedMerchItem(item); }} className="absolute top-1.5 right-1.5 p-1.5 bg-black/45 hover:bg-black/65 backdrop-blur-sm border border-white/10 rounded-full text-white z-20">
+                            <MoreVertical size={12} />
+                          </button>
                         </div>
                       ))}
                     </div>
