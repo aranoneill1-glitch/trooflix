@@ -641,17 +641,14 @@ export default function PublicProfilePage() {
                   {filteredVideos.length === 0 ? (
                     <div className="text-center py-20 text-white/50">No premium content yet.</div>
                   ) : contentView === "grid" ? (
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="-mx-4 sm:-mx-4 lg:mx-0 grid grid-cols-3 gap-[2px] pb-20 sm:gap-1 lg:grid-cols-6 lg:gap-3">
                       {filteredVideos.map((video) => (
-                        <div key={video.id} className="bg-[#1c1c1e] border border-white/10 rounded-2xl overflow-hidden group cursor-pointer relative">
-                          <div className="relative aspect-square">
-                            <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-40" />
-                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40]">
-                              <Lock size={24} className="text-[#E53945] mb-2" />
-                              <span className="text-[10px] font-bold text-white uppercase tracking-wider">Premium</span>
-                            </div>
+                        <div key={video.id} className="relative aspect-[3/4] overflow-hidden bg-[#111114] lg:rounded-xl lg:border lg:border-white/10 lg:shadow-lg cursor-pointer group">
+                          <img src={video.posterUrl || video.backdropUrl} alt={video.title} className="w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-500" />
+                          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/30">
+                            <Lock size={20} className="text-[#E53945] mb-1.5" />
+                            <span className="text-[10px] font-bold text-white uppercase tracking-wider">Premium</span>
                           </div>
-                          <div className="p-3 text-left opacity-50"><h3 className="text-sm font-bold leading-tight line-clamp-1">{video.title}</h3></div>
                         </div>
                       ))}
                     </div>
