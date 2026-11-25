@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, LogOut, Settings, CreditCard, LayoutDashboard, MessageCircle, Bell, ShoppingBag, Wallet, Sparkles, Palette, Heart, X } from "lucide-react";
+import { User, LogOut, Settings, CreditCard, LayoutDashboard, MessageCircle, Bell, ShoppingBag, Wallet, Sparkles, Palette, Heart } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { getCachedUser, clearUserCache } from "@/lib/cache";
 import { motion, AnimatePresence } from "framer-motion";
@@ -15,7 +15,6 @@ export default function UserMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loggingOut, setLoggingOut] = useState(false);
-  const [showAbout, setShowAbout] = useState(false);
   const [pushEnabled, setPushEnabled] = useState(false);
   const [pushBusy, setPushBusy] = useState(false);
   const [pushSupported, setPushSupported] = useState(true);
@@ -234,13 +233,14 @@ export default function UserMenu() {
                 My Little Helper
               </button>
 
-              <button
-                onClick={() => { setIsOpen(false); setShowAbout(true); }}
+              <Link
+                href="/about"
+                onClick={() => setIsOpen(false)}
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition text-sm text-white/80 hover:text-white"
               >
                 <Heart size={16} className="text-red-400" />
                 About Trooflix
-              </button>
+              </Link>
 
               <div className="h-px bg-white/5 my-1" />
 
@@ -287,38 +287,6 @@ export default function UserMenu() {
         )}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {showAbout && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[10000] bg-black/60 backdrop-blur-sm flex items-center justify-center p-5"
-            onClick={() => setShowAbout(false)}
-          >
-            <motion.div
-              initial={{ opacity: 0, y: 16, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 16, scale: 0.98 }}
-              transition={{ type: "spring", damping: 28, stiffness: 320 }}
-              className="w-full max-w-md bg-[#141418]/[0.92] backdrop-blur-2xl border border-white/10 rounded-[30px] p-7 shadow-[0_24px_80px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.08)] relative"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button onClick={() => setShowAbout(false)} className="absolute top-4 right-4 p-2 rounded-full bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 text-white/70 hover:text-white transition" aria-label="Close">
-                <X size={18} />
-              </button>
-              <div className="w-14 h-14 rounded-full bg-red-500/12 border border-red-500/20 flex items-center justify-center mb-5">
-                <Heart size={26} className="text-red-400" fill="currentColor" />
-              </div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/40 mb-2">About Trooflix</p>
-              <h2 className="text-2xl font-black tracking-tight text-white mb-4">Built for you</h2>
-              <p className="text-[15px] leading-relaxed text-white/72">
-                We built this platform for you to have total freedom of speech, and the possibility of being rewarded for the hard work you put into creating content. We&apos;re blending many different platforms into one unique place, so you have everything you need, all in one spot.
-              </p>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
