@@ -65,7 +65,7 @@ export default function PremiumSettings() {
       }
       setUserId(user.id);
       try {
-        const p = await fetch(`/api/profile?user_id=${user.id}`).then(r => r.json());
+        const p = await fetch(`/api/profile?user_id=${user.id}`, { cache: "no-store" }).then(r => r.json());
         setCreatorToolsUnlocked(!!p?.profile?.creator_tools_unlocked);
       } catch {}
       load(user.id).finally(() => setLoading(false));

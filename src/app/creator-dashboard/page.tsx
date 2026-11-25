@@ -98,15 +98,16 @@ function CreatorDashboardContent() {
           .catch(() => {});
         
         // Fast parallel fetch for primary data
-        const [profResult, crResult, allVideos, allProducts] = await Promise.all([
+        const [profResult, crResult, allVideos, allProducts, profileApi] = await Promise.all([
           supabase.from("profiles").select("*").eq("user_id", u.id).single(),
           fetch(`/api/me/creator?user_id=${u.id}`).then(r => r.json()).catch(() => ({})),
           getCachedVideos().catch(() => []),
           getCachedProducts().catch(() => []),
+          fetch(`/api/profile?user_id=${u.id}`, { cache: "no-store" }).then(r => r.json()).catch(() => null),
         ]);
 
         const prof = profResult.data;
-        if (prof) setProfile(prof);
+        if (prof) setProfile({ ...prof, creator_tools_unlocked: !!profileApi?.profile?.creator_tools_unlocked || prof.verification_tick === "plus_red" || prof.verification_tick === "creator_gold" || prof.is_verified === true });
 
         const myVideos = Array.isArray(allVideos) ? allVideos.filter((v: any) => 
           String(v.uploaderUserId) === String(u.id)
@@ -698,10 +699,10 @@ function CreatorDashboardContent() {
                       ))}
                     </div>
                   ) : (
-                    <div className="flex flex-col gap-2 pb-20">
+                    <div className="flex flex-col gap-2.5 pb-20">
                       {filteredVideos.map((video) => (
-                        <div key={video.id} onClick={(e) => handleVideoCardClick(e, video)} onContextMenu={(e) => { e.preventDefault(); setSelectedVideoAction(video); }} onPointerDown={() => startVideoPress(video)} onPointerUp={cancelVideoPress} onPointerLeave={cancelVideoPress} onPointerCancel={cancelVideoPress} className="flex items-center gap-3 bg-white/[0.06] border border-white/10 rounded-xl p-3 cursor-pointer hover:bg-white/10 transition">
-                          <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-black/40 flex items-center justify-center">
+                        <div key={video.id} onClick={(e) => handleVideoCardClick(e, video)} onContextMenu={(e) => { e.preventDefault(); setSelectedVideoAction(video); }} onPointerDown={() => startVideoPress(video)} onPointerUp={cancelVideoPress} onPointerLeave={cancelVideoPress} onPointerCancel={cancelVideoPress} className="flex items-center gap-3 bg-white/[0.05] backdrop-blur-xl border border-white/10 rounded-2xl p-3 cursor-pointer hover:bg-white/[0.08] transition shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+                          <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 bg-black/40 border border-white/10 flex items-center justify-center">
                             {video.posterUrl || video.backdropUrl ? <img src={video.posterUrl || video.backdropUrl} alt="" className="w-full h-full object-cover" /> : <Music size={16} className="text-white/40" />}
                           </div>
                           <div className="min-w-0 flex-1">
@@ -731,14 +732,16 @@ function CreatorDashboardContent() {
                       ))}
                     </div>
                   ) : (
-                    <div className="no-image-callout flex flex-col gap-2 pb-20">
+                    <div className="no-image-callout flex flex-col gap-2.5 pb-20">
                       {filteredVideos.map((video) => (
-                        <div key={video.id} onClick={(e) => handleVideoCardClick(e, video)} onContextMenu={(e) => { e.preventDefault(); setSelectedVideoAction(video); }} onPointerDown={() => startVideoPress(video)} onPointerUp={cancelVideoPress} onPointerLeave={cancelVideoPress} onPointerCancel={cancelVideoPress} className="flex items-center gap-3 bg-white/[0.06] border border-white/10 rounded-xl p-2 cursor-pointer hover:bg-white/10 transition">
-                          <div className="relative w-14 aspect-[3/4] rounded-lg overflow-hidden shrink-0 bg-black">
+                        <div key={video.id} onClick={(e) => handleVideoCardClick(e, video)} onContextMenu={(e) => { e.preventDefault(); setSelectedVideoAction(video); }} onPointerDown={() => startVideoPress(video)} onPointerUp={cancelVideoPress} onPointerLeave={cancelVideoPress} onPointerCancel={cancelVideoPress} className="flex items-center gap-3 bg-white/[0.05] backdrop-blur-xl border border-white/10 rounded-2xl p-3 cursor-pointer hover:bg-white/[0.08] transition shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+                          <div className="relative w-14 aspect-[3/4] rounded-xl overflow-hidden shrink-0 bg-black/40 border border-white/10">
                             <img src={video.posterUrl || video.backdropUrl} alt="" className="w-full h-full object-cover" />
                           </div>
                           <span className="text-sm font-bold text-white truncate flex-1 min-w-0">{video.title}</span>
-                          <Lock size={14} className="text-[#D4AF37] shrink-0" />
+                          <div className="w-8 h-8 rounded-full bg-[#D4AF37]/12 border border-[#D4AF37]/20 flex items-center justify-center shrink-0">
+                            <Lock size={14} className="text-[#D4AF37]" />
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -751,7 +754,7 @@ function CreatorDashboardContent() {
                   {merch.length === 0 ? (
                     <div className="text-center py-12 bg-white/[0.08] backdrop-saturate-150 border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.14)] rounded-2xl"><ShoppingBag size={32} className="mx-auto text-white/20 mb-3" /><p className="text-white/50 text-sm">No products available yet.</p></div>
                   ) : (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-[2px] -mx-4 sm:mx-0 pb-20">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 pb-20">
                       {merch.map((item) => (
                         <div
                           key={item.id}
@@ -759,16 +762,16 @@ function CreatorDashboardContent() {
                           onPointerUp={cancelPress}
                           onPointerLeave={cancelPress}
                           onContextMenu={(e) => { e.preventDefault(); setSelectedMerchItem(item); }}
-                          className="group relative bg-[#1c1c1e] overflow-hidden cursor-pointer"
+                          className="group relative bg-white/[0.04] border border-white/10 rounded-[22px] overflow-hidden cursor-pointer backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition hover:border-white/20"
                           style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none" }}
                         >
-                          <div className="aspect-square relative bg-black">
-                            <img src={item.image_url} alt={item.name} className="w-full h-full object-cover pointer-events-none" loading="lazy" />
-                            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent p-2.5 pt-10 pointer-events-none">
+                          <div className="aspect-square relative bg-black/30">
+                            <img src={item.image_url} alt={item.name} className="w-full h-full object-cover pointer-events-none transition duration-500 group-hover:scale-[1.03]" loading="lazy" />
+                            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent p-3 pt-12 pointer-events-none">
                               <h3 className="text-xs font-bold text-white truncate">{item.name}</h3>
                               <p className="text-[11px] font-bold text-emerald-400 mt-0.5">${(item.price_cents / 100).toFixed(2)}</p>
                             </div>
-                            <button onClick={(e) => { e.stopPropagation(); setSelectedMerchItem(item); }} className="absolute top-2 right-2 p-1.5 bg-black/55 hover:bg-black/75 backdrop-blur-sm rounded-lg text-white z-20">
+                            <button onClick={(e) => { e.stopPropagation(); setSelectedMerchItem(item); }} className="absolute top-2 right-2 p-2 bg-black/35 hover:bg-black/55 backdrop-blur-xl border border-white/10 rounded-full text-white z-20">
                               <MoreVertical size={14} />
                             </button>
                           </div>
@@ -809,15 +812,15 @@ function CreatorDashboardContent() {
                       })}
                     </div>
                   ) : (
-                    <div className="no-image-callout flex flex-col gap-2 pb-20">
+                    <div className="no-image-callout flex flex-col gap-2.5 pb-20">
                       {filteredVideos.map((video) => {
                         const type = String(video.type || "").toLowerCase();
                         const isShort = type === "short" || type === "reel";
                         const isPodcast = type === "podcast";
                         if (isShort) {
                           return (
-                            <Link key={video.id} href={`/feed?creator_user_id=${encodeURIComponent(user.id)}${video.creatorId ? `&creator_id=${video.creatorId}` : ""}&reel=${video.id}`} onClick={(e) => handleVideoCardClick(e, video)} onContextMenu={(e) => { e.preventDefault(); setSelectedVideoAction(video); }} onPointerDown={() => startVideoPress(video)} onPointerUp={cancelVideoPress} onPointerLeave={cancelVideoPress} onPointerCancel={cancelVideoPress} className="flex items-center gap-3 bg-white/[0.06] border border-white/10 hover:bg-white/10 rounded-xl p-2 transition">
-                              <div className="relative w-14 aspect-[3/4] rounded-lg overflow-hidden shrink-0 bg-black">
+                            <Link key={video.id} href={`/feed?creator_user_id=${encodeURIComponent(user.id)}${video.creatorId ? `&creator_id=${video.creatorId}` : ""}&reel=${video.id}`} onClick={(e) => handleVideoCardClick(e, video)} onContextMenu={(e) => { e.preventDefault(); setSelectedVideoAction(video); }} onPointerDown={() => startVideoPress(video)} onPointerUp={cancelVideoPress} onPointerLeave={cancelVideoPress} onPointerCancel={cancelVideoPress} className="flex items-center gap-3 bg-white/[0.05] backdrop-blur-xl border border-white/10 hover:bg-white/[0.08] rounded-2xl p-3 transition shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+                              <div className="relative w-14 aspect-[3/4] rounded-xl overflow-hidden shrink-0 bg-black/40 border border-white/10">
                                 <ShortPreviewFrame src={video.videoUrl || video.bitchuteUrl} poster={video.posterUrl || video.backdropUrl} alt="" />
                               </div>
                               <span className="text-sm font-bold text-white truncate">{video.title}</span>
@@ -825,12 +828,14 @@ function CreatorDashboardContent() {
                           );
                         }
                         return (
-                          <div key={video.id} onClick={(e) => handleVideoCardClick(e, video)} onContextMenu={(e) => { e.preventDefault(); setSelectedVideoAction(video); }} onPointerDown={() => startVideoPress(video)} onPointerUp={cancelVideoPress} onPointerLeave={cancelVideoPress} onPointerCancel={cancelVideoPress} className="flex items-center gap-3 bg-white/[0.06] border border-white/10 rounded-xl p-2 cursor-pointer hover:bg-white/10 transition">
-                            <div className="relative w-14 aspect-[3/4] rounded-lg overflow-hidden shrink-0 bg-black">
+                          <div key={video.id} onClick={(e) => handleVideoCardClick(e, video)} onContextMenu={(e) => { e.preventDefault(); setSelectedVideoAction(video); }} onPointerDown={() => startVideoPress(video)} onPointerUp={cancelVideoPress} onPointerLeave={cancelVideoPress} onPointerCancel={cancelVideoPress} className="flex items-center gap-3 bg-white/[0.05] backdrop-blur-xl border border-white/10 rounded-2xl p-3 cursor-pointer hover:bg-white/[0.08] transition shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+                            <div className="relative w-14 aspect-[3/4] rounded-xl overflow-hidden shrink-0 bg-black/40 border border-white/10">
                               <img src={video.posterUrl || video.backdropUrl} alt="" className="w-full h-full object-cover" />
                             </div>
                             <span className="text-sm font-bold text-white truncate flex-1 min-w-0">{video.title}</span>
-                            {isPodcast ? <Mic size={14} className="text-white/60 shrink-0" /> : <Film size={14} className="text-white/60 shrink-0" />}
+                            <div className="w-8 h-8 rounded-full bg-white/[0.06] border border-white/10 flex items-center justify-center shrink-0 text-white/60">
+                              {isPodcast ? <Mic size={14} /> : <Film size={14} />}
+                            </div>
                           </div>
                         );
                       })}

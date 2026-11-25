@@ -80,7 +80,7 @@ export default function GoLivePage() {
       if (u) {
         setUserId(u.id);
         try {
-          const p = await fetch(`/api/profile?user_id=${u.id}`).then(r => r.json());
+          const p = await fetch(`/api/profile?user_id=${u.id}`, { cache: "no-store" }).then(r => r.json());
           setCreatorToolsUnlocked(!!p?.profile?.creator_tools_unlocked);
         } catch { setCreatorToolsUnlocked(false); }
       } else {

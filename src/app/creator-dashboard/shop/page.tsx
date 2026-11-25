@@ -51,7 +51,7 @@ function ManageShopContent() {
       if (!user) return;
       setUserId(user.id);
       try {
-        const p = await fetch(`/api/profile?user_id=${user.id}`).then(r => r.json());
+        const p = await fetch(`/api/profile?user_id=${user.id}`, { cache: "no-store" }).then(r => r.json());
         const unlocked = !!p?.profile?.creator_tools_unlocked;
         setCreatorToolsUnlocked(unlocked);
         if (!unlocked) { setLoading(false); return; }
