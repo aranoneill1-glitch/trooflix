@@ -1201,6 +1201,21 @@ function CreatorDashboardContent() {
                     </div>
                   </button>
 
+                  <Link
+                    href="/creator-dashboard/theme"
+                    onClick={() => setShowAvatarMenu(false)}
+                    className="group relative flex items-center gap-4 bg-white/[0.08] hover:bg-white/[0.12] border border-white/20 p-4 rounded-2xl transition-all duration-300 overflow-hidden text-left"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center border border-white/10">
+                      <Palette size={20} className="text-purple-300" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold">Change Theme</h4>
+                      <p className="text-xs text-white/50">Customize your profile look</p>
+                    </div>
+                    <ChevronRight size={18} className="ml-auto text-white/40" />
+                  </Link>
+
                   {profile?.avatar_url && (
                     <button 
                       onClick={handleRemoveAvatar}
