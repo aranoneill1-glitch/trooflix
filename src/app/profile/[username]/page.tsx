@@ -12,7 +12,6 @@ import MobileBottomNav from "@/components/MobileBottomNav";
 import { createClient } from "@/utils/supabase/client";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import ShortPreviewFrame from "@/components/ShortPreviewFrame";
-import AppleVideoPlayer from "@/components/AppleVideoPlayer";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
 
 const InstagramIcon = ({ size = 16 }: { size?: number }) => (
@@ -50,7 +49,6 @@ export default function PublicProfilePage() {
   const [contentView, setContentView] = useState<"grid" | "list">("grid");
   const [activeVideoId, setActiveVideoId] = useState<number | null>(null);
   const [commentSheetVideoId, setCommentSheetVideoId] = useState<number | null>(null);
-  const [playingVideo, setPlayingVideo] = useState<any>(null);
   const [likedVideos, setLikedVideos] = useState<Record<number, boolean>>({});
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [localMerch, setLocalMerch] = useState<any[]>([]);
@@ -598,67 +596,32 @@ export default function PublicProfilePage() {
                   <div className="py-20 text-center text-white/50">No reshares yet.</div>
                 ) : contentView === "grid" ? (
                   <div className="-mx-4 sm:-mx-4 lg:mx-0 grid grid-cols-3 gap-[2px] pb-20 sm:gap-1 lg:grid-cols-6 lg:gap-3">
-                    {filteredVideos.map((video) => {
-                      const type = String(video.type || "").toLowerCase();
-                      const isShort = type === "short" || type === "reel";
-                      if (isShort) {
-                        return (
-                          <Link key={video.id} href={`/feed?reel=${video.id}`} onContextMenu={(e) => e.preventDefault()} className="relative aspect-[3/4] overflow-hidden bg-[#111114] lg:rounded-xl lg:border lg:border-white/10 lg:shadow-lg group select-none">
-                            {video.posterUrl || video.backdropUrl ? (
-                              <img src={video.posterUrl || video.backdropUrl} alt={video.title || ""} loading="lazy" draggable={false} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none" />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center bg-black/40"><Repeat2 size={24} className="text-white/30" /></div>
-                            )}
-                            <div className="absolute top-2 left-2 p-1.5 rounded-lg bg-black/60 backdrop-blur-sm border border-white/10 text-white shadow-md" title="Reshared">
-                              <Repeat2 size={13} />
-                            </div>
-                          </Link>
-                        );
-                      }
-                      return (
-                        <button key={video.id} type="button" onClick={() => setPlayingVideo(video)} onContextMenu={(e) => e.preventDefault()} className="relative aspect-[3/4] overflow-hidden bg-[#111114] lg:rounded-xl lg:border lg:border-white/10 lg:shadow-lg group select-none text-left">
-                          {video.posterUrl || video.backdropUrl ? (
-                            <img src={video.posterUrl || video.backdropUrl} alt={video.title || ""} loading="lazy" draggable={false} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-black/40"><Repeat2 size={24} className="text-white/30" /></div>
-                          )}
-                          <div className="absolute top-2 left-2 p-1.5 rounded-lg bg-black/60 backdrop-blur-sm border border-white/10 text-white shadow-md" title="Reshared">
-                            <Repeat2 size={13} />
-                          </div>
-                        </button>
-                      );
-                    })}
+                    {filteredVideos.map((video) => (
+                      <Link key={video.id} href={`/feed?reel=${video.id}`} onContextMenu={(e) => e.preventDefault()} className="relative aspect-[3/4] overflow-hidden bg-[#111114] lg:rounded-xl lg:border lg:border-white/10 lg:shadow-lg group select-none">
+                        {video.posterUrl || video.backdropUrl ? (
+                          <img src={video.posterUrl || video.backdropUrl} alt={video.title || ""} loading="lazy" draggable={false} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-black/40"><Repeat2 size={24} className="text-white/30" /></div>
+                        )}
+                        <div className="absolute top-2 left-2 p-1.5 rounded-lg bg-black/60 backdrop-blur-sm border border-white/10 text-white shadow-md" title="Reshared">
+                          <Repeat2 size={13} />
+                        </div>
+                      </Link>
+                    ))}
                   </div>
                 ) : (
                   <div className="flex flex-col gap-2.5 pb-20">
-                    {filteredVideos.map((video) => {
-                      const type = String(video.type || "").toLowerCase();
-                      const isShort = type === "short" || type === "reel";
-                      if (isShort) {
-                        return (
-                          <Link key={video.id} href={`/feed?reel=${video.id}`} onContextMenu={(e) => e.preventDefault()} className="flex items-center gap-3 bg-white/[0.05] backdrop-blur-xl border border-white/10 rounded-2xl p-3 hover:bg-white/[0.08] transition shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] select-none">
-                            <div className="relative w-14 aspect-[3/4] rounded-xl overflow-hidden shrink-0 bg-black/40 border border-white/10">
-                              {video.posterUrl || video.backdropUrl ? <img src={video.posterUrl || video.backdropUrl} alt="" draggable={false} className="w-full h-full object-cover pointer-events-none" /> : <div className="w-full h-full flex items-center justify-center"><Repeat2 size={16} className="text-white/40" /></div>}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <div className="text-sm font-bold text-white truncate">{video.title}</div>
-                              <div className="text-[11px] text-white/45">Reshared</div>
-                            </div>
-                          </Link>
-                        );
-                      }
-                      return (
-                        <button key={video.id} type="button" onClick={() => setPlayingVideo(video)} onContextMenu={(e) => e.preventDefault()} className="w-full flex items-center gap-3 bg-white/[0.05] backdrop-blur-xl border border-white/10 rounded-2xl p-3 hover:bg-white/[0.08] transition shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] select-none text-left">
-                          <div className="relative w-14 aspect-[3/4] rounded-xl overflow-hidden shrink-0 bg-black/40 border border-white/10">
-                            {video.posterUrl || video.backdropUrl ? <img src={video.posterUrl || video.backdropUrl} alt="" draggable={false} className="w-full h-full object-cover pointer-events-none" /> : <div className="w-full h-full flex items-center justify-center"><Repeat2 size={16} className="text-white/40" /></div>}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="text-sm font-bold text-white truncate">{video.title}</div>
-                            <div className="text-[11px] text-white/45">Reshared</div>
-                          </div>
-                        </button>
-                      );
-                    })}
+                    {filteredVideos.map((video) => (
+                      <Link key={video.id} href={`/feed?reel=${video.id}`} onContextMenu={(e) => e.preventDefault()} className="flex items-center gap-3 bg-white/[0.05] backdrop-blur-xl border border-white/10 rounded-2xl p-3 hover:bg-white/[0.08] transition shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] select-none">
+                        <div className="relative w-14 aspect-[3/4] rounded-xl overflow-hidden shrink-0 bg-black/40 border border-white/10">
+                          {video.posterUrl || video.backdropUrl ? <img src={video.posterUrl || video.backdropUrl} alt="" draggable={false} className="w-full h-full object-cover pointer-events-none" /> : <div className="w-full h-full flex items-center justify-center"><Repeat2 size={16} className="text-white/40" /></div>}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="text-sm font-bold text-white truncate">{video.title}</div>
+                          <div className="text-[11px] text-white/45">Reshared</div>
+                        </div>
+                      </Link>
+                    ))}
                   </div>
                 )
               )}
@@ -810,17 +773,6 @@ export default function PublicProfilePage() {
             </div>
           </div>
         </div>
-
-        {playingVideo && (
-          <AppleVideoPlayer
-            src={playingVideo.videoUrl || playingVideo.bitchuteUrl || ""}
-            title={playingVideo.title}
-            poster={playingVideo.posterUrl || playingVideo.backdropUrl}
-            onClose={() => setPlayingVideo(null)}
-            creatorId={playingVideo.creatorId}
-            isPremium={playingVideo.visibility === "premium"}
-          />
-        )}
 
         <CommentSheet
           videoId={commentSheetVideoId}
