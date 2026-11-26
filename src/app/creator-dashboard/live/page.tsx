@@ -542,7 +542,7 @@ export default function GoLivePage() {
 
         <div className="absolute inset-x-0 top-0 z-20 pt-[calc(env(safe-area-inset-top)+12px)] px-4 pb-10 bg-gradient-to-b from-black/70 via-black/20 to-transparent">
           <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-2.5 bg-black/25 backdrop-blur-xl border border-white/10 rounded-full px-3 py-1.5">
+            <div className="flex items-center gap-2.5 bg-black/45 border border-white/10 rounded-full px-3 py-1.5">
               {isLive ? (
                 <>
                   <span className="w-2 h-2 rounded-full bg-[#E53945] animate-pulse" />
@@ -558,11 +558,11 @@ export default function GoLivePage() {
             </div>
             <div className="flex items-center gap-2">
               {guestConnected && (
-                <div className="bg-green-500/20 backdrop-blur-xl border border-green-500/40 text-green-300 text-[11px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                <div className="bg-green-500/25 border border-green-500/40 text-green-300 text-[11px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5">
                   <UserCheck size={13} /> {connectedGuestName || "Guest"}
                 </div>
               )}
-              <button onClick={() => (isLive ? stopStream() : router.push("/creator-dashboard"))} className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white/90" aria-label="Close">
+              <button onClick={() => (isLive ? stopStream() : router.push("/creator-dashboard"))} className="w-10 h-10 rounded-full bg-black/45 border border-white/10 flex items-center justify-center text-white/90" aria-label="Close">
                 <X size={18} />
               </button>
             </div>
