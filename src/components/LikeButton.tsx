@@ -106,11 +106,13 @@ export default function LikeButton({
   size = 20,
   showCount = true,
   stacked = false,
+  tone = "dark",
 }: {
   videoId: number;
   size?: number;
   showCount?: boolean;
   stacked?: boolean;
+  tone?: "dark" | "light";
 }) {
   const [liked, setLiked] = useState(false);
   const [count, setCountState] = useState<number>(0);
@@ -293,19 +295,23 @@ export default function LikeButton({
     </div>
   );
 
+  const idleColor = tone === "light" ? "text-black/85" : "text-white";
+  const idleCountColor = tone === "light" ? "text-black/80" : "text-white/90";
+  const idleInlineColor = tone === "light" ? "text-black/80 hover:text-black" : "text-white/80 hover:text-white";
+
   if (stacked) {
     return (
       <button
         onClick={toggle}
         className={`flex flex-col items-center justify-center gap-0.5 transition ${
-          liked ? "text-red-500" : "text-white"
+          liked ? "text-red-500" : idleColor
         }`}
         style={{ minHeight: size + 20 }}
         title={liked ? "Unlike" : "Like"}
       >
         {renderAnimatedHeart()}
         {showCount && (
-          <span className="text-[11px] font-semibold tabular-nums text-white/90 leading-none h-3">
+          <span className={`text-[11px] font-semibold tabular-nums ${idleCountColor} leading-none h-3`}>
             {count > 0 ? count.toLocaleString() : "\u00A0"}
           </span>
         )}
@@ -317,7 +323,7 @@ export default function LikeButton({
     <button
       onClick={toggle}
       className={`flex items-center gap-1.5 transition ${
-        liked ? "text-red-500" : "text-white/80 hover:text-white"
+        liked ? "text-red-500" : idleInlineColor
       }`}
       title={liked ? "Unlike" : "Like"}
     >

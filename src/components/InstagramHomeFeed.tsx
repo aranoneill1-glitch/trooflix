@@ -325,9 +325,9 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
   const toggleSave = (id: number) => setSaved(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
 
   return (
-    <div className="pb-24">
+    <div className="pb-24 bg-white text-black">
       {/* Main-type pills + categories dropdown — below the fixed top bar */}
-      <div className="pb-3 border-b border-white/[0.06] pt-[calc(env(safe-area-inset-top)+68px)]">
+      <div className="pb-3 border-b border-black/10 pt-[calc(env(safe-area-inset-top)+68px)]">
         <div className="relative">
           <div className="flex gap-2 overflow-x-auto scrollbar-hide px-3 pr-10">
             {MAIN_TYPES.map(t => (
@@ -335,7 +335,7 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
                 key={t.id}
                 onClick={() => { haptic(); setActiveType(prev => prev === t.id ? null : t.id); setActiveCategory(null); }}
                 className={`shrink-0 rounded-full border px-4 py-2 text-[13px] font-medium transition ${
-                  activeType === t.id ? "bg-[#E53945] border-[#E53945] text-white" : "bg-white/5 border-white/10 text-white/60"
+                  activeType === t.id ? "bg-[#E53945] border-[#E53945] text-white" : "bg-black/[0.04] border-black/10 text-black/60"
                 }`}
               >
                 {t.label}
@@ -343,12 +343,12 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
             ))}
             <button
               onClick={() => { haptic(); setCategoriesOpen(v => !v); }}
-              className={`shrink-0 inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-[13px] font-medium transition ${activeCategory || categoriesOpen ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-white/60"}`}
+              className={`shrink-0 inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-[13px] font-medium transition ${activeCategory || categoriesOpen ? "bg-black text-white border-black" : "bg-black/[0.04] border-black/10 text-black/60"}`}
             >
               Categories <ChevronDown size={13} className={categoriesOpen ? "rotate-180" : ""} />
             </button>
           </div>
-          <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-[#09090B] to-transparent" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-white to-transparent" />
         </div>
 
         {categoriesOpen && (
@@ -357,7 +357,7 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
               <button
                 key={c}
                 onClick={() => { haptic(); setActiveCategory(prev => prev === c ? null : c); setActiveType(null); }}
-                className={`rounded-full border px-3 py-1.5 text-[11px] font-semibold transition ${activeCategory === c ? "bg-[#E53945] border-[#E53945] text-white" : "bg-white/5 border-white/10 text-white/60"}`}
+                className={`rounded-full border px-3 py-1.5 text-[11px] font-semibold transition ${activeCategory === c ? "bg-[#E53945] border-[#E53945] text-white" : "bg-black/[0.04] border-black/10 text-black/60"}`}
               >
                 {c}
               </button>
@@ -366,14 +366,14 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
         )}
 
         {(activeType || activeCategory) && (
-          <button onClick={() => { setActiveType(null); setActiveCategory(null); }} className="mt-3 mx-3 inline-flex items-center gap-1 text-[11px] text-white/45">
+          <button onClick={() => { setActiveType(null); setActiveCategory(null); }} className="mt-3 mx-3 inline-flex items-center gap-1 text-[11px] text-black/45">
             <XIcon size={12} /> Clear filter
           </button>
         )}
       </div>
 
       {/* Posts */}
-      <div className="divide-y divide-white/[0.06]">
+      <div className="divide-y divide-black/[0.08]">
         {posts.map(({ video, creator, commentCount }, index) => {
           const name = creator?.name || "Trooflix Creator";
           const avatar = creator?.photoUrl;
@@ -382,7 +382,7 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
             <React.Fragment key={video.id}>
             {index === 4 && (
               <article className="py-0">
-                <Link href="/merchandise" className="block overflow-hidden border-y border-white/10">
+                <Link href="/merchandise" className="block overflow-hidden border-y border-black/10">
                   <div className="relative aspect-[16/9] overflow-hidden">
                     <img src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=1200&auto=format&fit=crop" alt="Trooflix merch" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
@@ -398,7 +398,7 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
             )}
             {index === 8 && (
               <article className="py-0">
-                <Link href="/latest?category=Podcasts" className="block overflow-hidden border-y border-white/10">
+                <Link href="/latest?category=Podcasts" className="block overflow-hidden border-y border-black/10">
                   <div className="relative aspect-[16/9] overflow-hidden">
                     <img src="https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=1200&auto=format&fit=crop" alt="Podcast studio" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
@@ -419,15 +419,15 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
             >
               <header className="flex items-center gap-2.5 px-3 py-2.5">
                 <Link href={creator?.slug ? `/profile/${creator.slug}` : "#"} className="h-8 w-8 shrink-0 overflow-hidden rounded-full bg-gradient-to-tr from-[#f09433] to-[#dc2743] p-[1.5px]">
-                  <span className="block h-full w-full overflow-hidden rounded-full border-2 border-[#08090c]">
+                  <span className="block h-full w-full overflow-hidden rounded-full border-2 border-white">
                     {avatar ? <img src={avatar} alt="" className="h-full w-full object-cover" /> : <span className="flex h-full w-full items-center justify-center bg-[#E53945] text-xs font-bold text-white">{name[0]}</span>}
                   </span>
                 </Link>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[15px] font-semibold text-white/95">{name}</p>
-                  <p className="truncate text-[11px] font-medium text-white/55">{video.category || "Trooflix"}</p>
+                  <p className="truncate text-[15px] font-semibold text-black/90">{name}</p>
+                  <p className="truncate text-[11px] font-medium text-black/55">{video.category || "Trooflix"}</p>
                 </div>
-                <button onClick={() => { haptic(); setReportVideoId(video.id); }} aria-label="More options" className="p-1 text-white/70 hover:text-white transition"><MoreHorizontal size={20} /></button>
+                <button onClick={() => { haptic(); setReportVideoId(video.id); }} aria-label="More options" className="p-1 text-black/45 hover:text-black transition"><MoreHorizontal size={20} /></button>
               </header>
 
               <PostMedia
@@ -440,17 +440,17 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
               />
 
               <div className="flex items-center gap-4 px-3 pt-2.5">
-                <LikeButton videoId={video.id} size={24} showCount={true} />
-                <button onClick={() => { haptic(); setSheetVideo(video.id); }} aria-label="Comments" className="flex items-center gap-1.5 text-white active:opacity-60">
+                <LikeButton videoId={video.id} size={24} showCount={true} tone="light" />
+                <button onClick={() => { haptic(); setSheetVideo(video.id); }} aria-label="Comments" className="flex items-center gap-1.5 text-black/85 active:opacity-60">
                   <MessageCircle size={24} strokeWidth={1.7} />
                   {commentCount > 0 && <span className="text-sm font-semibold tabular-nums">{commentCount.toLocaleString()}</span>}
                 </button>
                 <button
                   onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: video.creatorId || video.uploaderUserId, videoId: video.id } }))}
                   aria-label="Tip creator"
-                  className="flex items-center gap-1.5 active:opacity-60 text-white"
+                  className="flex items-center gap-1.5 active:opacity-60 text-black/85"
                 >
-                  <svg width={24} height={24} viewBox="0 0 24 24" fill="none" aria-hidden="true" className="text-white">
+                  <svg width={24} height={24} viewBox="0 0 24 24" fill="none" aria-hidden="true" className="text-black/85">
                     <circle cx="12" cy="12" r="9.5" stroke="currentColor" strokeWidth="1.9" />
                     <circle cx="12" cy="12" r="7" stroke="currentColor" strokeWidth="1.2" opacity="0.75" />
                     <path d="M10.1 5.4L9.2 3.3M13.9 5.4L14.8 3.3M10.1 18.6L9.2 20.7M13.9 18.6L14.8 20.7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.9" />
@@ -458,15 +458,15 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
                   </svg>
                   {Number(tipCounts[String(video.id)] || 0) > 0 && <span className="text-sm font-semibold tabular-nums">{Number(tipCounts[String(video.id)] || 0).toLocaleString()}</span>}
                 </button>
-                <button onClick={() => toggleRepost(video.id)} aria-label={repostedIds.includes(video.id) ? "Remove reshare" : "Reshare"} className={`flex items-center gap-1.5 active:opacity-60 transition ${repostedIds.includes(video.id) ? "text-[#22c55e]" : "text-white"}`}>
+                <button onClick={() => toggleRepost(video.id)} aria-label={repostedIds.includes(video.id) ? "Remove reshare" : "Reshare"} className={`flex items-center gap-1.5 active:opacity-60 transition ${repostedIds.includes(video.id) ? "text-[#22c55e]" : "text-black/85"}`}>
                   <Repeat2 size={23} strokeWidth={1.8} />
                   {Number(repostCounts[String(video.id)] || 0) > 0 && <span className="text-sm font-semibold tabular-nums">{Number(repostCounts[String(video.id)] || 0).toLocaleString()}</span>}
                 </button>
-                <button onClick={() => { if (navigator.share) navigator.share({ title: video.title, url: window.location.href }).catch(() => {}); }} aria-label="Share" className="text-white active:opacity-60"><Send size={23} strokeWidth={1.7} /></button>
+                <button onClick={() => { if (navigator.share) navigator.share({ title: video.title, url: window.location.href }).catch(() => {}); }} aria-label="Share" className="text-black/85 active:opacity-60"><Send size={23} strokeWidth={1.7} /></button>
                 <button
                   onClick={() => { haptic(); openShortsPlayer(video.id); }}
                   aria-label="Open shorts player"
-                  className="ml-auto text-white active:opacity-60"
+                  className="ml-auto text-black/85 active:opacity-60"
                 >
                   <Maximize2 size={23} strokeWidth={1.7} />
                 </button>
@@ -474,13 +474,13 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
 
               <div className="px-3 pt-1.5">
                 <ViewCount videoId={video.id} />
-                <p className="mt-1 text-[15px] leading-[1.35] text-white">
-                  <span className="font-semibold">{name}</span> {video.description || video.title}
+                <p className="mt-1 text-[15px] leading-[1.35] text-black/90">
+                  <span className="font-semibold text-black">{name}</span> {video.description || video.title}
                 </p>
                 {commentCount > 0 && (
-                  <button onClick={() => setSheetVideo(video.id)} className="mt-1 text-[13px] font-medium text-white/60">View all {commentCount} comments</button>
+                  <button onClick={() => setSheetVideo(video.id)} className="mt-1 text-[13px] font-medium text-black/50">View all {commentCount} comments</button>
                 )}
-                <p className="mt-1 text-[11px] font-medium uppercase tracking-wide text-white/50">{timeAgo(video.createdAt)}</p>
+                <p className="mt-1 text-[11px] font-medium uppercase tracking-wide text-black/45">{timeAgo(video.createdAt)}</p>
               </div>
             </article>
             </React.Fragment>
@@ -489,7 +489,7 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
       </div>
 
       {posts.length === 0 && (
-        <p className="py-20 text-center text-sm text-white/40">No posts yet.</p>
+        <p className="py-20 text-center text-sm text-black/40">No posts yet.</p>
       )}
 
       <CommentSheet videoId={sheetVideo} open={sheetVideo !== null} onClose={() => setSheetVideo(null)} />
