@@ -3,7 +3,7 @@ import { getCachedUser } from "@/lib/cache";
 
 import { useEffect, useState , useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { CreditCard, Wallet, UserPlus, MessageSquare, CheckCircle2, LayoutGrid, List, ShoppingBag, Star, Lock, GripVertical, X, Film, Mic, Video, Music } from "lucide-react";
+import { CreditCard, Wallet, UserPlus, MessageSquare, CheckCircle2, LayoutGrid, List, ShoppingBag, Star, Lock, GripVertical, X, Film, Mic, Video, Music, Repeat2 } from "lucide-react";
 import CommentSheet from "@/components/CommentSheet";
 import Comments from "@/components/Comments";
 import Link from "next/link";
@@ -40,10 +40,11 @@ export default function PublicProfilePage() {
   const [profile, setProfile] = useState<any>(null);
   const [profileFeature, setProfileFeature] = useState<any>(null);
   const [videos, setVideos] = useState<any[]>([]);
+  const [resharedVideos, setResharedVideos] = useState<any[]>([]);
   const [merch, setMerch] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
-  const [activeContentTab, setActiveContentTab] = useState<"Videos" | "Audio" | "Premium" | "Shop">("Videos");
+  const [activeContentTab, setActiveContentTab] = useState<"Videos" | "Reshares" | "Premium" | "Shop">("Videos");
 
   const [contentView, setContentView] = useState<"grid" | "list">("grid");
   const [activeVideoId, setActiveVideoId] = useState<number | null>(null);
@@ -110,28 +111,34 @@ export default function PublicProfilePage() {
       } catch (err) {}
 
       try {
-        const videosRes = await fetch("/api/videos", { cache: "no-store" });
+        const [videosRes, repostsRes] = await Promise.all([
+          fetch("/api/videos", { cache: "no-store" }),
+          fetch(`/api/reposts?user_id=${encodeURIComponent(profileData.user_id)}`, { cache: "no-store" }),
+        ]);
         const allVideos = await videosRes.json();
+        const repostData = await repostsRes.json().catch(() => ({ ids: [] }));
+        const repostIds = new Set((repostData?.ids || []).map((id: any) => Number(id)));
         if (Array.isArray(allVideos)) {
           const creatorVideos = allVideos.filter((v: any) => {
-              // Ensure both values exist before comparing to prevent null === null leaks
               const matchesUploader = v.uploaderUserId && String(v.uploaderUserId) === String(profileData.user_id);
               const matchesCreator = creatorId && v.creatorId && String(v.creatorId) === String(creatorId);
               return matchesUploader || matchesCreator;
             });
           setVideos(creatorVideos);
-          const isAudioType = (v: any) => ["audio", "music", "audiobook", "song", "track", "podcast-audio"].includes(String(v.type || "").toLowerCase());
+          const reshared = allVideos.filter((v: any) => repostIds.has(Number(v.id)) && String(v.type || "").toLowerCase() !== "tweet");
+          setResharedVideos(reshared);
+
           const isShortType = (v: any) => ["short", "reel"].includes(String(v.type || "").toLowerCase());
           const isPremiumType = (v: any) => v.visibility === "premium" && String(v.type || "").toLowerCase() !== "tweet";
-          const hasAudio = creatorVideos.some((v: any) => isAudioType(v) && !isPremiumType(v));
-          const hasLongVideos = creatorVideos.some((v: any) => !isAudioType(v) && !isShortType(v) && !isPremiumType(v) && String(v.type || "").toLowerCase() !== "tweet");
+          const hasLongVideos = creatorVideos.some((v: any) => !isShortType(v) && !isPremiumType(v) && String(v.type || "").toLowerCase() !== "tweet");
           const hasShorts = creatorVideos.some((v: any) => isShortType(v) && !isPremiumType(v));
           const hasPremium = creatorVideos.some((v: any) => isPremiumType(v));
+          const hasReshares = reshared.length > 0;
 
           if (hasLongVideos || hasShorts) {
             setActiveContentTab("Videos");
-          } else if (hasAudio) {
-            setActiveContentTab("Audio");
+          } else if (hasReshares) {
+            setActiveContentTab("Reshares");
           } else if (hasPremium) {
             setActiveContentTab("Premium");
           } else {
@@ -283,15 +290,13 @@ export default function PublicProfilePage() {
     : null;
   const subscriptionPrice = profile.premium_price_cents ? (profile.premium_price_cents / 100).toFixed(2) : "3.99";
 
-  const filteredVideos = videos.filter(v => {
+  const filteredVideos = activeContentTab === "Reshares"
+    ? resharedVideos
+    : videos.filter(v => {
     const type = (v.type || "").toLowerCase();
     const isAudio = ["audio", "music", "audiobook", "song", "track", "podcast-audio"].includes(type);
-    const isShort = type === "short" || type === "reel";
     const isPremium = v.visibility === "premium";
 
-    if (activeContentTab === "Audio") {
-      return isAudio && !isPremium;
-    }
     if (activeContentTab === "Videos") {
       if (type === "tweet" || isPremium || isAudio) return false;
       return true;
@@ -564,7 +569,7 @@ export default function PublicProfilePage() {
 {/* TABS & CONTENT */}
             <div className="flex items-center justify-between border-b border-white/10 mb-4">
               <div className="flex items-center gap-6 sm:gap-8">
-                {(["Videos", "Audio", "Premium", "Shop"] as const).map((tab) => {
+                {(["Videos", "Reshares", "Premium", "Shop"] as const).map((tab) => {
                   const active = activeContentTab === tab;
                   return (
                     <button
@@ -586,38 +591,47 @@ export default function PublicProfilePage() {
 
 
             <div className="w-full">
-              {activeContentTab === "Audio" && (
+              {activeContentTab === "Reshares" && (
                 filteredVideos.length === 0 ? (
-                  <div className="py-20 text-center text-white/50">No audio yet.</div>
+                  <div className="py-20 text-center text-white/50">No reshares yet.</div>
                 ) : contentView === "grid" ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 pb-20">
-                    {filteredVideos.map((video) => (
-                      <div key={video.id} className="bg-[#1c1c1e] border border-white/10 rounded-2xl overflow-hidden">
-                        <div className="relative aspect-square bg-black/40">
+                  <div className="-mx-4 sm:-mx-4 lg:mx-0 grid grid-cols-3 gap-[2px] pb-20 sm:gap-1 lg:grid-cols-6 lg:gap-3">
+                    {filteredVideos.map((video) => {
+                      const type = String(video.type || "").toLowerCase();
+                      const isShort = type === "short" || type === "reel";
+                      const href = isShort ? `/feed?reel=${video.id}` : `/podcast/${video.id}`;
+                      return (
+                        <Link key={video.id} href={href} className="relative aspect-[3/4] overflow-hidden bg-[#111114] lg:rounded-xl lg:border lg:border-white/10 lg:shadow-lg group">
                           {video.posterUrl || video.backdropUrl ? (
-                            <img src={video.posterUrl || video.backdropUrl} alt="" className="w-full h-full object-cover" />
+                            <img src={video.posterUrl || video.backdropUrl} alt={video.title || ""} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center"><Music size={28} className="text-white/30" /></div>
+                            <div className="w-full h-full flex items-center justify-center bg-black/40"><Repeat2 size={24} className="text-white/30" /></div>
                           )}
-                          <div className="absolute top-2 left-2 p-1.5 rounded-lg bg-black/60 border border-white/10 text-white"><Music size={13} /></div>
-                        </div>
-                        <div className="p-3"><h3 className="text-sm font-bold text-white line-clamp-2">{video.title}</h3><p className="text-[11px] text-white/45 mt-1 capitalize">{String(video.type || "audio")}</p></div>
-                      </div>
-                    ))}
+                          <div className="absolute top-2 left-2 p-1.5 rounded-lg bg-black/60 backdrop-blur-sm border border-white/10 text-white shadow-md" title="Reshared">
+                            <Repeat2 size={13} />
+                          </div>
+                        </Link>
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="flex flex-col gap-2.5 pb-20">
-                    {filteredVideos.map((video) => (
-                      <div key={video.id} className="flex items-center gap-3 bg-white/[0.05] backdrop-blur-xl border border-white/10 rounded-2xl p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-                        <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 bg-black/40 border border-white/10 flex items-center justify-center">
-                          {video.posterUrl || video.backdropUrl ? <img src={video.posterUrl || video.backdropUrl} alt="" className="w-full h-full object-cover" /> : <Music size={16} className="text-white/40" />}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="text-sm font-bold text-white truncate">{video.title}</div>
-                          <div className="text-[11px] text-white/45 capitalize">{String(video.type || "audio")}</div>
-                        </div>
-                      </div>
-                    ))}
+                    {filteredVideos.map((video) => {
+                      const type = String(video.type || "").toLowerCase();
+                      const isShort = type === "short" || type === "reel";
+                      const href = isShort ? `/feed?reel=${video.id}` : `/podcast/${video.id}`;
+                      return (
+                        <Link key={video.id} href={href} className="flex items-center gap-3 bg-white/[0.05] backdrop-blur-xl border border-white/10 rounded-2xl p-3 hover:bg-white/[0.08] transition shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+                          <div className="relative w-14 aspect-[3/4] rounded-xl overflow-hidden shrink-0 bg-black/40 border border-white/10">
+                            {video.posterUrl || video.backdropUrl ? <img src={video.posterUrl || video.backdropUrl} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Repeat2 size={16} className="text-white/40" /></div>}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="text-sm font-bold text-white truncate">{video.title}</div>
+                            <div className="text-[11px] text-white/45">Reshared</div>
+                          </div>
+                        </Link>
+                      );
+                    })}
                   </div>
                 )
               )}

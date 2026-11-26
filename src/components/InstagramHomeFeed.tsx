@@ -3,11 +3,12 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Headphones, Heart, Maximize2, MessageCircle, MoreHorizontal, Play, Send, ShoppingBag, Volume2, VolumeX } from "lucide-react";
+import { Headphones, Heart, Maximize2, MessageCircle, MoreHorizontal, Play, Repeat2, Send, ShoppingBag, Volume2, VolumeX } from "lucide-react";
 import LikeButton from "@/components/LikeButton";
 import CommentSheet from "@/components/CommentSheet";
 import ReportModal from "@/components/ReportModal";
 import ViewCount from "@/components/ViewCount";
+import { getCachedUser } from "@/lib/cache";
 
 import { ChevronDown, X as XIcon } from "lucide-react";
 import { MAIN_TYPES, SUB_CATEGORIES, normalizeMainType, type MainType } from "@/lib/videoTypes";
@@ -168,6 +169,8 @@ function PostMedia({ video, onOpen, onLike, isActive, onRegister, shouldLoad = t
 export default function InstagramHomeFeed({ videos, creators, onVideoSelect, showWelcome = false }: Props) {
   const [commentCounts, setCommentCounts] = useState<Record<number, number>>({});
   const [tipCounts, setTipCounts] = useState<Record<string, number>>({});
+  const [repostedIds, setRepostedIds] = useState<number[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [sheetVideo, setSheetVideo] = useState<number | null>(null);
   const [reportVideoId, setReportVideoId] = useState<number | null>(null);
   const [saved, setSaved] = useState<number[]>([]);
@@ -277,6 +280,38 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
     window.addEventListener("tip-sent", handler as any);
     return () => window.removeEventListener("tip-sent", handler as any);
   }, []);
+
+  useEffect(() => {
+    getCachedUser().then(async (u) => {
+      if (!u?.id) return;
+      setCurrentUserId(u.id);
+      try {
+        const res = await fetch(`/api/reposts?user_id=${encodeURIComponent(u.id)}`, { cache: "no-store" });
+        const data = await res.json();
+        if (Array.isArray(data?.ids)) setRepostedIds(data.ids.map((id: any) => Number(id)));
+      } catch {}
+    });
+  }, []);
+
+  const toggleRepost = async (postId: number) => {
+    if (!currentUserId) { window.location.href = "/login"; return; }
+    haptic();
+    const was = repostedIds.includes(postId);
+    setRepostedIds((prev) => was ? prev.filter((id) => id !== postId) : [...prev, postId]);
+    try {
+      const res = await fetch("/api/reposts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: currentUserId, postId }),
+      });
+      const data = await res.json();
+      if (typeof data?.reposted === "boolean") {
+        setRepostedIds((prev) => data.reposted ? (prev.includes(postId) ? prev : [...prev, postId]) : prev.filter((id) => id !== postId));
+      }
+    } catch {
+      setRepostedIds((prev) => was ? [...prev, postId] : prev.filter((id) => id !== postId));
+    }
+  };
 
   const toggleSave = (id: number) => setSaved(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
 
@@ -413,6 +448,9 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
                     <text x="12" y="15.2" textAnchor="middle" fontSize="7.6" fontWeight="800" fill="currentColor" fontFamily="system-ui, -apple-system, sans-serif">TC</text>
                   </svg>
                   {Number(tipCounts[String(video.id)] || 0) > 0 && <span className="text-sm font-semibold tabular-nums">{Number(tipCounts[String(video.id)] || 0).toLocaleString()}</span>}
+                </button>
+                <button onClick={() => toggleRepost(video.id)} aria-label={repostedIds.includes(video.id) ? "Remove reshare" : "Reshare"} className={`active:opacity-60 transition ${repostedIds.includes(video.id) ? "text-[#22c55e]" : "text-white"}`}>
+                  <Repeat2 size={23} strokeWidth={1.8} />
                 </button>
                 <button onClick={() => { if (navigator.share) navigator.share({ title: video.title, url: window.location.href }).catch(() => {}); }} aria-label="Share" className="text-white active:opacity-60"><Send size={23} strokeWidth={1.7} /></button>
                 <button
