@@ -9,10 +9,12 @@ import { getCachedUser } from "@/lib/cache";
 import GuestCoStream from "./GuestCoStream";
 
 type FloatingReaction = { id: number; emoji: string; x: number; scale: number; duration: number };
+type FloatingComment = { id: string; display_name: string; avatar_url: string | null; message: string; type?: string; metadata?: any; createdAt: number };
 
 export default function LivePlayer({ whepUrl, liveInputId }: { whepUrl?: string, liveInputId: string }) {
   const [viewers] = useState(Math.floor(Math.random() * 500) + 42);
   const [reactions, setReactions] = useState<FloatingReaction[]>([]);
+  const [floatingComments, setFloatingComments] = useState<FloatingComment[]>([]);
   
   const [requestedToJoin, setRequestedToJoin] = useState(false);
   const [isApprovedGuest, setIsApprovedGuest] = useState(false);
@@ -49,6 +51,35 @@ export default function LivePlayer({ whepUrl, liveInputId }: { whepUrl?: string,
 
     return () => { if (channel) supabase.removeChannel(channel); };
   }, [liveInputId, isApprovedGuest]);
+
+  useEffect(() => {
+    if (!liveInputId) return;
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`live_floating_${liveInputId}_${Date.now()}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "live_chat_messages", filter: `live_input_id=eq.${liveInputId}` },
+        (payload) => {
+          const msg = payload.new as any;
+          const item: FloatingComment = {
+            id: String(msg.id || Date.now()),
+            display_name: msg.display_name || "User",
+            avatar_url: msg.avatar_url || null,
+            message: msg.message || "",
+            type: msg.type,
+            metadata: msg.metadata,
+            createdAt: Date.now(),
+          };
+          setFloatingComments((prev) => [...prev.slice(-12), item]);
+          setTimeout(() => {
+            setFloatingComments((prev) => prev.filter((m) => m.id !== item.id));
+          }, 4200);
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [liveInputId]);
 
   const requestToJoin = async () => {
     if (!liveInputId) return;
@@ -120,6 +151,37 @@ export default function LivePlayer({ whepUrl, liveInputId }: { whepUrl?: string,
           <div className="bg-black/40 border border-white/10 text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
             <Eye size={14} /> {viewers}
           </div>
+        </div>
+
+        <div className="absolute bottom-0 left-0 w-[75%] max-w-[340px] h-[40%] p-3 sm:p-4 flex flex-col justify-end gap-2 overflow-hidden pointer-events-none z-20">
+          <AnimatePresence initial={false}>
+            {floatingComments.slice(-4).map((c) => (
+              <motion.div
+                key={c.id}
+                initial={{ opacity: 0, y: 18, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -24, scale: 0.98 }}
+                transition={{ duration: 0.28, ease: "easeOut" }}
+                className="max-w-full"
+              >
+                <div className="inline-flex max-w-full items-start gap-2 rounded-2xl bg-black/35 backdrop-blur-sm border border-white/10 px-3 py-2 shadow-lg">
+                  {c.avatar_url ? (
+                    <img src={c.avatar_url} alt="" className="w-6 h-6 rounded-full object-cover shrink-0 mt-0.5 border border-white/15" />
+                  ) : (
+                    <div className="w-6 h-6 rounded-full bg-[#E53945] flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-bold text-white">
+                      {c.display_name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-bold text-white/80 leading-tight truncate">{c.display_name}</p>
+                    <p className="text-[13px] text-white leading-snug break-words [overflow-wrap:anywhere]">
+                      {c.type === "tip" && c.metadata?.amount ? `Sent a $${c.metadata.amount} tip!` : c.message}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
 
         <AnimatePresence>
