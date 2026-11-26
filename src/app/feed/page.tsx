@@ -61,8 +61,12 @@ export default function ShortsFeedPage() {
       const next = /viewport-fit=cover/.test(prev) ? prev : (prev ? `${prev}, viewport-fit=cover` : "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover");
       meta.setAttribute("content", next);
     }
+    const sb = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+    const prevSb = sb?.getAttribute("content") || "";
+    if (sb) sb.setAttribute("content", "black-translucent");
     return () => {
       if (meta) meta.setAttribute("content", prev);
+      if (sb) sb.setAttribute("content", prevSb);
     };
   }, []);
 
@@ -304,7 +308,7 @@ export default function ShortsFeedPage() {
       </Link>
       
       {/* MOBILE VIEW */}
-      <div className="lg:hidden w-full h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide relative bg-black pb-[calc(env(safe-area-inset-bottom,0px)+44px)]">
+      <div className="lg:hidden w-full h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide relative bg-black pb-[62px]">
         {videos.map((video, index) => {
           const creator = creators.find((c) => String(c.id) === String(video.creatorId)) || null;
           return (
@@ -337,7 +341,7 @@ export default function ShortsFeedPage() {
 
       {/* Shared mobile bottom action bar (always visible) */}
       {activeVideo && (
-        <div className="lg:hidden fixed inset-x-0 bottom-0 z-[260] pointer-events-auto bg-black px-4 pb-[calc(env(safe-area-inset-bottom,0px)+8px)] pt-3">
+        <div className="lg:hidden fixed inset-x-0 bottom-0 z-[260] pointer-events-auto bg-black px-4 pb-[18px] pt-3">
           <div className="mx-auto flex w-full max-w-[420px] items-center justify-around px-2 py-1">
             <button
               onClick={toggleMute}
@@ -1118,7 +1122,7 @@ function MobileVideoShort({ video, creator, onViewCounted, isMuted, onToggleMute
 
       </div>
 
-      <div className={`absolute left-0 right-0 bottom-[calc(env(safe-area-inset-bottom,0px)+56px)] lg:bottom-[85px] z-[255] pointer-events-none px-0 lg:px-4 transition-opacity duration-150 ${isActive ? "opacity-100" : "opacity-0"}`}>
+      <div className={`absolute left-0 right-0 bottom-[74px] lg:bottom-[85px] z-[255] pointer-events-none px-0 lg:px-4 transition-opacity duration-150 ${isActive ? "opacity-100" : "opacity-0"}`}>
         <div 
           ref={progressBarRef}
           className="relative w-full h-[3px] bg-transparent cursor-pointer touch-none py-3 -my-3 pointer-events-auto"
