@@ -575,8 +575,8 @@ export default function GoLivePage() {
       {/* Mobile FaceTime-style layout */}
       {!isDesktop && (
       <div className="absolute inset-0">
-        <video ref={videoRef} autoPlay muted playsInline className="absolute inset-0 w-full h-full object-cover" style={{ transform: "none" }} />
-        {isLive && <video ref={canvasPreviewRef} autoPlay muted playsInline className="absolute inset-0 w-full h-full object-cover z-10 bg-black" />}
+        <video ref={videoRef} autoPlay muted playsInline className="absolute inset-0 w-full h-full object-cover" style={{ transform: isFrontCamera && !isScreenSharing ? "scaleX(-1)" : "none" }} />
+        {isLive && <video ref={canvasPreviewRef} autoPlay muted playsInline className="absolute inset-0 w-full h-full object-cover z-10 bg-black" style={{ transform: "none" }} />}
 
         <div className="absolute inset-x-0 top-0 z-20 pt-[calc(env(safe-area-inset-top)+12px)] px-4 pb-10 bg-gradient-to-b from-black/70 via-black/20 to-transparent">
           <div className="flex items-start justify-between gap-3">
@@ -694,9 +694,9 @@ export default function GoLivePage() {
       <div className="flex flex-1 flex-col lg:flex-row w-full overflow-hidden">
         <div className="flex-1 relative bg-black flex items-center justify-center p-4 lg:p-6 pb-24 lg:pb-6">
           <div className="relative w-full h-full rounded-3xl overflow-hidden bg-[#0f0f12] shadow-2xl border border-white/10">
-            <video autoPlay muted playsInline className="w-full h-full object-cover absolute inset-0" style={{ transform: "none" }} ref={(el) => { if (el) { (videoRef as any).current = el; if (stream && el.srcObject !== stream) el.srcObject = stream; } }} />
+            <video autoPlay muted playsInline className="w-full h-full object-cover absolute inset-0" style={{ transform: isFrontCamera && !isScreenSharing ? "scaleX(-1)" : "none" }} ref={(el) => { if (el) { (videoRef as any).current = el; if (stream && el.srcObject !== stream) el.srcObject = stream; } }} />
             {isLive && (
-              <video ref={canvasPreviewRef} autoPlay muted playsInline className="w-full h-full object-cover absolute inset-0 z-10 bg-black" />
+              <video ref={canvasPreviewRef} autoPlay muted playsInline className="w-full h-full object-cover absolute inset-0 z-10 bg-black" style={{ transform: "none" }} />
             )}
 
             <div className="absolute top-4 left-4 z-20 flex items-center gap-3 bg-black/40 px-3 py-1.5 rounded-full border border-white/10 shadow-lg">
