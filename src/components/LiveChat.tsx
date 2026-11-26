@@ -177,6 +177,11 @@ export default function LiveChat({ liveInputId, className = "h-full" }: { liveIn
                       <p className="text-xs font-bold text-[#D4AF37]">{msg.display_name} tipped ${msg.metadata.amount}!</p>
                     </div>
                   </div>
+                ) : msg.type === "like" ? (
+                  <div className="inline-flex items-center gap-2 bg-[#E53945]/10 border border-[#E53945]/20 rounded-full px-3 py-1.5 w-max max-w-full">
+                    <span className="text-sm">❤️</span>
+                    <p className="text-xs font-semibold text-white/85">{msg.display_name} liked the stream</p>
+                  </div>
                 ) : (
                   <div className="text-[13px] text-white/90 break-words leading-relaxed bg-[#26262b] px-3 py-2 rounded-2xl rounded-tl-sm w-max max-w-full">
                     {msg.message}

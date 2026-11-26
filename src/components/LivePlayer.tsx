@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Eye, Share2, Loader2, Heart, MessageCircle, X, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Stream } from "@cloudflare/stream-react";
@@ -28,6 +28,24 @@ export default function LivePlayer({ liveInputId, creatorId, creatorName, creato
   const [isConnecting, setIsConnecting] = useState(true);
   const [showChat, setShowChat] = useState(false);
   const [liked, setLiked] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
+  const lastLikeSentRef = useRef(0);
+  const chatScrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (chatScrollRef.current) chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+  }, [floatingComments, showChat]);
+
+  useEffect(() => {
+    getCachedUser().then(async (u) => {
+      if (!u) return;
+      setUser(u);
+      const supabase = createClient();
+      const { data } = await supabase.from("profiles").select("display_name, avatar_url, username").eq("user_id", u.id).single();
+      if (data) setProfile(data);
+    });
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsConnecting(false), 3000);
@@ -53,10 +71,7 @@ export default function LivePlayer({ liveInputId, creatorId, creatorName, creato
             metadata: msg.metadata,
             createdAt: Date.now(),
           };
-          setFloatingComments((prev) => [...prev.slice(-12), item]);
-          setTimeout(() => {
-            setFloatingComments((prev) => prev.filter((m) => m.id !== item.id));
-          }, 4200);
+          setFloatingComments((prev) => [...prev.slice(-99), item]);
         }
       )
       .subscribe();
@@ -72,10 +87,25 @@ export default function LivePlayer({ liveInputId, creatorId, creatorName, creato
     setTimeout(() => setReactions((prev) => prev.filter((r) => r.id !== id)), 2600);
   };
 
-  const handleLike = () => {
+  const handleLike = async () => {
     setLiked(true);
     spawnReaction("❤️");
     setTimeout(() => setLiked(false), 350);
+
+    if (!user) return;
+    const now = Date.now();
+    if (now - lastLikeSentRef.current < 8000) return;
+    lastLikeSentRef.current = now;
+    const supabase = createClient();
+    const displayName = profile?.display_name || profile?.username || user.email?.split("@")[0] || "User";
+    await supabase.from("live_chat_messages").insert({
+      live_input_id: liveInputId,
+      user_id: user.id,
+      display_name: displayName,
+      avatar_url: profile?.avatar_url || null,
+      message: "liked the stream",
+      type: "like",
+    });
   };
 
   const openTip = () => {
@@ -127,35 +157,26 @@ export default function LivePlayer({ liveInputId, creatorId, creatorName, creato
         </div>
       </div>
 
-      <div className="absolute bottom-[calc(env(safe-area-inset-bottom)+96px)] left-0 w-[78%] max-w-[360px] h-[40%] px-4 flex flex-col justify-end gap-2 overflow-hidden pointer-events-none z-20">
-        <AnimatePresence initial={false}>
-          {floatingComments.slice(-5).map((c) => (
-            <motion.div
-              key={c.id}
-              initial={{ opacity: 0, y: 18, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -24, scale: 0.98 }}
-              transition={{ duration: 0.28, ease: "easeOut" }}
-              className="max-w-full"
-            >
-              <div className="inline-flex max-w-full items-start gap-2 rounded-2xl bg-black/35 backdrop-blur-sm border border-white/10 px-3 py-2 shadow-lg">
-                {c.avatar_url ? (
-                  <img src={c.avatar_url} alt="" className="w-6 h-6 rounded-full object-cover shrink-0 mt-0.5 border border-white/15" />
-                ) : (
-                  <div className="w-6 h-6 rounded-full bg-[#E53945] flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-bold text-white">
-                    {c.display_name.charAt(0).toUpperCase()}
-                  </div>
-                )}
-                <div className="min-w-0">
-                  <p className="text-[11px] font-bold text-white/80 leading-tight truncate">{c.display_name}</p>
-                  <p className="text-[13px] text-white leading-snug break-words [overflow-wrap:anywhere]">
-                    {c.type === "tip" && c.metadata?.amount ? `Sent a $${c.metadata.amount} tip!` : c.message}
-                  </p>
+      <div ref={chatScrollRef} className="absolute bottom-[calc(env(safe-area-inset-bottom)+96px)] left-0 w-[78%] max-w-[360px] h-[40%] px-4 overflow-y-auto pointer-events-auto z-20 space-y-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {floatingComments.map((c) => (
+          <div key={c.id} className="max-w-full animate-in fade-in slide-in-from-bottom-2 duration-200">
+            <div className="inline-flex max-w-full items-start gap-2 rounded-2xl bg-black/35 backdrop-blur-sm border border-white/10 px-3 py-2 shadow-lg">
+              {c.avatar_url ? (
+                <img src={c.avatar_url} alt="" className="w-6 h-6 rounded-full object-cover shrink-0 mt-0.5 border border-white/15" />
+              ) : (
+                <div className="w-6 h-6 rounded-full bg-[#E53945] flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-bold text-white">
+                  {c.display_name.charAt(0).toUpperCase()}
                 </div>
+              )}
+              <div className="min-w-0">
+                <p className="text-[11px] font-bold text-white/80 leading-tight truncate">{c.display_name}</p>
+                <p className="text-[13px] text-white leading-snug break-words [overflow-wrap:anywhere]">
+                  {c.type === "tip" && c.metadata?.amount ? `Sent a $${c.metadata.amount} tip!` : c.type === "like" ? "❤️ liked the stream" : c.message}
+                </p>
               </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
+            </div>
+          </div>
+        ))}
       </div>
 
       <div className="absolute right-3 bottom-[calc(env(safe-area-inset-bottom)+110px)] z-30 flex flex-col items-center gap-3">

@@ -14,6 +14,7 @@ export default function GoLivePage() {
   const guestVideoRef = useRef<HTMLVideoElement>(null);
   const guestAudioRef = useRef<HTMLAudioElement>(null);
   const canvasPreviewRef = useRef<HTMLVideoElement>(null);
+  const chatScrollRef = useRef<HTMLDivElement>(null);
   const canvasStreamRef = useRef<MediaStream | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const destRef = useRef<MediaStreamAudioDestinationNode | null>(null);
@@ -61,13 +62,16 @@ export default function GoLivePage() {
         (payload) => {
           const msg = payload.new as any;
           const item = { id: String(msg.id || Date.now()), display_name: msg.display_name || "User", avatar_url: msg.avatar_url || null, message: msg.message || "", type: msg.type, metadata: msg.metadata };
-          setFloatingComments((prev) => [...prev.slice(-12), item]);
-          setTimeout(() => setFloatingComments((prev) => prev.filter((m) => m.id !== item.id)), 4200);
+          setFloatingComments((prev) => [...prev.slice(-99), item]);
         }
       )
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [isLive, liveInputId]);
+
+  useEffect(() => {
+    if (chatScrollRef.current) chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+  }, [floatingComments]);
 
   // Timer
   useEffect(() => {
@@ -630,20 +634,18 @@ export default function GoLivePage() {
           </div>
         )}
 
-        <div className="absolute bottom-[170px] left-0 w-[78%] max-w-[340px] h-[40%] px-4 flex flex-col justify-end gap-2 overflow-hidden pointer-events-none z-20">
-          <AnimatePresence initial={false}>
-            {floatingComments.slice(-4).map((c) => (
-              <motion.div key={c.id} initial={{ opacity: 0, y: 18, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -24, scale: 0.98 }} transition={{ duration: 0.28, ease: "easeOut" }} className="max-w-full">
-                <div className="inline-flex max-w-full items-start gap-2 rounded-2xl bg-black/35 backdrop-blur-sm border border-white/10 px-3 py-2 shadow-lg">
-                  {c.avatar_url ? <img src={c.avatar_url} alt="" className="w-6 h-6 rounded-full object-cover shrink-0 mt-0.5 border border-white/15" /> : <div className="w-6 h-6 rounded-full bg-[#E53945] flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-bold text-white">{String(c.display_name || "U").charAt(0).toUpperCase()}</div>}
-                  <div className="min-w-0">
-                    <p className="text-[11px] font-bold text-white/80 leading-tight truncate">{c.display_name}</p>
-                    <p className="text-[13px] text-white leading-snug break-words [overflow-wrap:anywhere]">{c.type === "tip" && c.metadata?.amount ? `Sent a $${c.metadata.amount} tip!` : c.message}</p>
-                  </div>
+        <div ref={chatScrollRef} className="absolute bottom-[170px] left-0 w-[78%] max-w-[340px] h-[40%] px-4 overflow-y-auto pointer-events-auto z-20 space-y-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {floatingComments.map((c) => (
+            <div key={c.id} className="max-w-full animate-in fade-in slide-in-from-bottom-2 duration-200">
+              <div className="inline-flex max-w-full items-start gap-2 rounded-2xl bg-black/35 backdrop-blur-sm border border-white/10 px-3 py-2 shadow-lg">
+                {c.avatar_url ? <img src={c.avatar_url} alt="" className="w-6 h-6 rounded-full object-cover shrink-0 mt-0.5 border border-white/15" /> : <div className="w-6 h-6 rounded-full bg-[#E53945] flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-bold text-white">{String(c.display_name || "U").charAt(0).toUpperCase()}</div>}
+                <div className="min-w-0">
+                  <p className="text-[11px] font-bold text-white/80 leading-tight truncate">{c.display_name}</p>
+                  <p className="text-[13px] text-white leading-snug break-words [overflow-wrap:anywhere]">{c.type === "tip" && c.metadata?.amount ? `Sent a $${c.metadata.amount} tip!` : c.type === "like" ? "❤️ liked the stream" : c.message}</p>
                 </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
+              </div>
+            </div>
+          ))}
         </div>
 
         <div className="absolute inset-x-0 bottom-0 z-30 px-4 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-16 bg-gradient-to-t from-black/85 via-black/45 to-transparent">
