@@ -325,8 +325,8 @@ export default function ShortsFeedPage() {
 
       {/* Shared mobile bottom action bar (always visible) */}
       {activeVideo && (
-        <div className="lg:hidden fixed inset-x-0 bottom-0 z-[260] pointer-events-auto px-4 pb-[calc(env(safe-area-inset-bottom)+18px)] pt-2">
-          <div className="mx-auto flex w-[86%] max-w-[340px] items-center justify-around rounded-full border border-white/20 bg-white/10 px-3 py-2 backdrop-blur-2xl backdrop-saturate-150 shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
+        <div className="lg:hidden fixed inset-x-0 bottom-0 z-[260] pointer-events-auto bg-black px-4 pb-[calc(env(safe-area-inset-bottom)+18px)] pt-3">
+          <div className="mx-auto flex w-full max-w-[420px] items-center justify-around px-2 py-1">
             <button
               onClick={toggleMute}
               aria-label={isMuted ? "Unmute reel" : "Mute reel"}
