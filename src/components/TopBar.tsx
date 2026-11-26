@@ -229,7 +229,7 @@ export default function TopBar({ onMenu }: Props) {
             )}
 
             {/* LOGO */}
-            <Link href="/" className="text-[20px] md:text-[22px] font-black tracking-[-0.06em] shrink-0 leading-none" style={{ fontFamily: "inherit" }}>
+            <Link href="/" className="text-[20px] md:text-[22px] font-[750] tracking-[-0.06em] shrink-0 leading-none" style={{ fontFamily: "inherit" }}>
               {isMessagesPage ? (
                 <>
                   <span className="text-white">TROO</span>

@@ -105,12 +105,12 @@ export default function MobileBottomNav() {
       <div className="flex items-center justify-around px-2 pt-1 pb-[calc(env(safe-area-inset-bottom)+16px)]">
         <Link href="/" className="flex flex-col items-center justify-center gap-0 min-w-0 flex-1 pt-1.5 pb-0">
           <Home size={22} className={isActive("/") ? "text-white" : "text-white/45"} />
-          <span className={`text-[10px] font-medium ${isActive("/") ? "text-white" : "text-white/45"}`}>Home</span>
+          <span className={`text-[11px] font-medium ${isActive("/") ? "text-white" : "text-white/45"}`}>Home</span>
         </Link>
 
         <Link href="/search" className="flex flex-col items-center justify-center gap-0 min-w-0 flex-1 pt-1.5 pb-0">
           <Search size={22} strokeWidth={1.7} className={isActive("/search") ? "text-white" : "text-white/45"} />
-          <span className={`text-[10px] font-medium ${isActive("/search") ? "text-white" : "text-white/45"}`}>Search</span>
+          <span className={`text-[11px] font-medium ${isActive("/search") ? "text-white" : "text-white/45"}`}>Search</span>
         </Link>
 
         <button
@@ -122,12 +122,12 @@ export default function MobileBottomNav() {
           <div className="w-7 h-7 rounded-full bg-white/[0.08] border border-white/15 flex items-center justify-center">
             <Plus size={18} className="text-white" />
           </div>
-          <span className="text-[10px] font-medium text-white/70">Create</span>
+          <span className="text-[11px] font-medium text-white/70">Create</span>
         </button>
 
         <Link href="/wallet" className="flex flex-col items-center justify-center gap-0 min-w-0 flex-1 pt-1.5 pb-0">
           <Wallet size={22} className={isActive("/wallet") ? "text-white" : "text-white/45"} />
-          <span className={`text-[10px] font-medium ${isActive("/wallet") ? "text-white" : "text-white/45"}`}>Wallet</span>
+          <span className={`text-[11px] font-medium ${isActive("/wallet") ? "text-white" : "text-white/45"}`}>Wallet</span>
         </Link>
 
         <Link href={profileHref} className="flex flex-col items-center justify-center gap-0 min-w-0 flex-1 pt-1.5 pb-0">
@@ -138,7 +138,7 @@ export default function MobileBottomNav() {
               <User size={13} className={profileActive ? "text-white" : "text-white/55"} />
             )}
           </div>
-          <span className={`text-[10px] font-medium ${profileActive ? "text-white" : "text-white/45"}`}>Profile</span>
+          <span className={`text-[11px] font-medium ${profileActive ? "text-white" : "text-white/45"}`}>Profile</span>
         </Link>
       </div>
     </nav>

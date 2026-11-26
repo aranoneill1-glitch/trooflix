@@ -290,7 +290,7 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
               <button
                 key={t.id}
                 onClick={() => { haptic(); setActiveType(prev => prev === t.id ? null : t.id); setActiveCategory(null); }}
-                className={`shrink-0 rounded-full border px-4 py-2 text-xs font-bold transition ${
+                className={`shrink-0 rounded-full border px-4 py-2 text-[13px] font-medium transition ${
                   activeType === t.id ? "bg-[#E53945] border-[#E53945] text-white" : "bg-white/5 border-white/10 text-white/60"
                 }`}
               >
@@ -299,7 +299,7 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
             ))}
             <button
               onClick={() => { haptic(); setCategoriesOpen(v => !v); }}
-              className={`shrink-0 inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-xs font-bold transition ${activeCategory || categoriesOpen ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-white/60"}`}
+              className={`shrink-0 inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-[13px] font-medium transition ${activeCategory || categoriesOpen ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-white/60"}`}
             >
               Categories <ChevronDown size={13} className={categoriesOpen ? "rotate-180" : ""} />
             </button>
@@ -380,8 +380,8 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
                   </span>
                 </Link>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[13px] font-semibold text-white">{name}</p>
-                  <p className="truncate text-[10px] text-white/45">{video.category || "Trooflix"}</p>
+                  <p className="truncate text-[15px] font-semibold text-white/95">{name}</p>
+                  <p className="truncate text-[11px] font-medium text-white/55">{video.category || "Trooflix"}</p>
                 </div>
                 <button onClick={() => { haptic(); setReportVideoId(video.id); }} aria-label="More options" className="p-1 text-white/70 hover:text-white transition"><MoreHorizontal size={20} /></button>
               </header>
@@ -424,15 +424,15 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
                 </button>
               </div>
 
-              <div className="px-3 pt-1.5 text-[13px] font-semibold text-white">
+              <div className="px-3 pt-1.5">
                 <ViewCount videoId={video.id} />
-                <p className="mt-1 text-[13px] leading-snug text-white/90">
+                <p className="mt-1 text-[15px] leading-[1.35] text-white">
                   <span className="font-semibold">{name}</span> {video.description || video.title}
                 </p>
                 {commentCount > 0 && (
-                  <button onClick={() => setSheetVideo(video.id)} className="mt-1 text-[12px] text-white/40">View all {commentCount} comments</button>
+                  <button onClick={() => setSheetVideo(video.id)} className="mt-1 text-[13px] font-medium text-white/60">View all {commentCount} comments</button>
                 )}
-                <p className="mt-1 text-[10px] uppercase tracking-wide text-white/30">{timeAgo(video.createdAt)}</p>
+                <p className="mt-1 text-[11px] font-medium uppercase tracking-wide text-white/50">{timeAgo(video.createdAt)}</p>
               </div>
             </article>
             </React.Fragment>
