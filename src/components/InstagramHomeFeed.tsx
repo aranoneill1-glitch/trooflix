@@ -283,29 +283,32 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
   return (
     <div className="pb-24">
       {/* Main-type pills + categories dropdown — below the fixed top bar */}
-      <div className="px-3 pb-3 border-b border-white/[0.06] pt-[calc(env(safe-area-inset-top)+68px)]">
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide">
-          {MAIN_TYPES.map(t => (
+      <div className="pb-3 border-b border-white/[0.06] pt-[calc(env(safe-area-inset-top)+68px)]">
+        <div className="relative">
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide px-3 pr-10">
+            {MAIN_TYPES.map(t => (
+              <button
+                key={t.id}
+                onClick={() => { haptic(); setActiveType(prev => prev === t.id ? null : t.id); setActiveCategory(null); }}
+                className={`shrink-0 rounded-full border px-4 py-2 text-xs font-bold transition ${
+                  activeType === t.id ? "bg-[#E53945] border-[#E53945] text-white" : "bg-white/5 border-white/10 text-white/60"
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
             <button
-              key={t.id}
-              onClick={() => { haptic(); setActiveType(prev => prev === t.id ? null : t.id); setActiveCategory(null); }}
-              className={`shrink-0 rounded-full border px-4 py-2 text-xs font-bold transition ${
-                activeType === t.id ? "bg-[#E53945] border-[#E53945] text-white" : "bg-white/5 border-white/10 text-white/60"
-              }`}
+              onClick={() => { haptic(); setCategoriesOpen(v => !v); }}
+              className={`shrink-0 inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-xs font-bold transition ${activeCategory || categoriesOpen ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-white/60"}`}
             >
-              {t.label}
+              Categories <ChevronDown size={13} className={categoriesOpen ? "rotate-180" : ""} />
             </button>
-          ))}
-          <button
-            onClick={() => { haptic(); setCategoriesOpen(v => !v); }}
-            className={`shrink-0 inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-xs font-bold transition ${activeCategory || categoriesOpen ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-white/60"}`}
-          >
-            Categories <ChevronDown size={13} className={categoriesOpen ? "rotate-180" : ""} />
-          </button>
+          </div>
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-[#09090B] to-transparent" />
         </div>
 
         {categoriesOpen && (
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="mt-3 flex flex-wrap gap-2 px-3">
             {SUB_CATEGORIES.map(c => (
               <button
                 key={c}
@@ -319,7 +322,7 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
         )}
 
         {(activeType || activeCategory) && (
-          <button onClick={() => { setActiveType(null); setActiveCategory(null); }} className="mt-3 inline-flex items-center gap-1 text-[11px] text-white/45">
+          <button onClick={() => { setActiveType(null); setActiveCategory(null); }} className="mt-3 mx-3 inline-flex items-center gap-1 text-[11px] text-white/45">
             <XIcon size={12} /> Clear filter
           </button>
         )}

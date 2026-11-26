@@ -132,9 +132,9 @@ function GridPreviewVideo({ src, poster }: { src: string; poster: string }) {
 
   if (failed || !src) {
     return poster ? (
-      <img src={poster} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+      <img src={poster} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} />
     ) : (
-      <div className="absolute inset-0 h-full w-full bg-black" />
+      <div className="absolute inset-0 h-full w-full bg-gradient-to-br from-white/[0.06] to-black" />
     );
   }
 
@@ -270,13 +270,15 @@ function SearchContent() {
   const videosResults = useMemo(() => scoredVideos.filter(v => !isLiveVideo(v) && !isShortVideo(v)), [scoredVideos]);
 
   const filteredProfiles = scoredProfiles;
+  const hasDisplayMedia = (v: any) => Boolean(v?.posterUrl || v?.backdropUrl || v?.videoUrl);
   const filteredVideos = useMemo(() => {
-    if (activeFilter === "all") return scoredVideos;
-    if (activeFilter === "live") return liveResults;
-    if (activeFilter === "shorts") return shortsResults;
-    if (activeFilter === "podcasts") return podcastsResults;
-    if (activeFilter === "videos") return videosResults;
-    return [];
+    const base =
+      activeFilter === "all" ? scoredVideos :
+      activeFilter === "live" ? liveResults :
+      activeFilter === "shorts" ? shortsResults :
+      activeFilter === "podcasts" ? podcastsResults :
+      activeFilter === "videos" ? videosResults : [];
+    return base.filter(hasDisplayMedia);
   }, [activeFilter, scoredVideos, liveResults, shortsResults, podcastsResults, videosResults]);
 
   const showCreators = activeFilter === "all" || activeFilter === "creators";
@@ -372,13 +374,16 @@ function SearchContent() {
                           const row = Math.floor(i / 3);
                           const col = i % 3;
                           const isPreview = (row % 2 === 0 ? col === 2 : col === 0) && Boolean(video.videoUrl);
+                          const thumb = video.posterUrl || video.backdropUrl || "";
                           return (
                             <Link key={video.id} href={href} onClick={() => saveRecentSearch(query)} className="flex flex-col group">
-                              <div className={`relative ${short ? "aspect-[3/5]" : "aspect-[3/5]"} rounded-none lg:rounded-xl overflow-hidden bg-[#1c1c1e] mb-2 md:mb-3 border-0 lg:border border-white/5 shadow-none lg:shadow-lg`}>
+                              <div className="relative aspect-[3/5] rounded-none lg:rounded-xl overflow-hidden bg-[#1c1c1e] mb-2 md:mb-3 border-0 lg:border border-white/5 shadow-none lg:shadow-lg">
                                 {isPreview ? (
-                                  <GridPreviewVideo src={video.videoUrl} poster={video.posterUrl || video.backdropUrl || ""} />
+                                  <GridPreviewVideo src={video.videoUrl} poster={thumb} />
+                                ) : thumb ? (
+                                  <img src={thumb} alt="" className="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} />
                                 ) : (
-                                  <img src={video.posterUrl || video.backdropUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy" />
+                                  <GridPreviewVideo src={video.videoUrl} poster="" />
                                 )}
                                 <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition" />
                                 {live && <span className="absolute top-2 left-2 text-[10px] font-bold uppercase tracking-wider bg-[#E53945] text-white px-2 py-0.5 rounded-full">Live</span>}
@@ -426,7 +431,7 @@ function SearchContent() {
                 ) : (
                   <div className="grid grid-cols-3 gap-[2px]">
                     {[...allVideos]
-                      .filter(v => normalize(v.type) !== "tweet")
+                      .filter(v => normalize(v.type) !== "tweet" && hasDisplayMedia(v))
                       .sort((a: any, b: any) => {
                         const at = a.createdAt ? new Date(a.createdAt).getTime() : Number(a.id) || 0;
                         const bt = b.createdAt ? new Date(b.createdAt).getTime() : Number(b.id) || 0;
@@ -438,12 +443,15 @@ function SearchContent() {
                         const row = Math.floor(i / 3);
                         const col = i % 3;
                         const isPreview = (row % 2 === 0 ? col === 2 : col === 0) && Boolean(video.videoUrl);
+                        const thumb = video.posterUrl || video.backdropUrl || "";
                         return (
                           <Link key={video.id} href={href} className="relative aspect-[3/5] overflow-hidden bg-[#141418] block">
                             {isPreview ? (
-                              <GridPreviewVideo src={video.videoUrl} poster={video.posterUrl || video.backdropUrl || ""} />
+                              <GridPreviewVideo src={video.videoUrl} poster={thumb} />
+                            ) : thumb ? (
+                              <img src={thumb} alt={video.title || ""} className="absolute inset-0 h-full w-full object-cover" loading="lazy" onError={(e) => { e.currentTarget.style.display = "none"; }} />
                             ) : (
-                              <img src={video.posterUrl || video.backdropUrl} alt={video.title || ""} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+                              <GridPreviewVideo src={video.videoUrl} poster="" />
                             )}
                           </Link>
                         );
