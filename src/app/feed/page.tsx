@@ -292,7 +292,7 @@ export default function ShortsFeedPage() {
       </Link>
       
       {/* MOBILE VIEW */}
-      <div className="lg:hidden w-full h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide relative bg-black pb-[calc(env(safe-area-inset-bottom)+62px)]">
+      <div className="lg:hidden w-full h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide relative bg-black">
         {videos.map((video, index) => {
           const creator = creators.find((c) => String(c.id) === String(video.creatorId)) || null;
           return (
@@ -323,52 +323,7 @@ export default function ShortsFeedPage() {
         />
       </div>
 
-      {/* Shared mobile bottom action bar (always visible) */}
-      {activeVideo && (
-        <div className="lg:hidden fixed inset-x-0 bottom-0 z-[260] pointer-events-auto px-4 pb-[calc(env(safe-area-inset-bottom)+18px)] pt-2">
-          <div className="mx-auto flex w-[86%] max-w-[340px] items-center justify-around rounded-full border border-white/20 bg-white/10 px-3 py-2 backdrop-blur-2xl backdrop-saturate-150 shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
-            <button
-              onClick={toggleMute}
-              aria-label={isMuted ? "Unmute reel" : "Mute reel"}
-              className="flex items-center justify-center min-w-0 flex-1 text-white hover:text-white/90 transition"
-            >
-              {isMuted ? <VolumeX size={26} strokeWidth={2.2} /> : <Volume2 size={26} strokeWidth={2.2} />}
-            </button>
 
-            <div className="flex items-center justify-center min-w-0 flex-1 text-white">
-              <LikeButton key={activeVideo.id} videoId={activeVideo.id} size={28} showCount={true} stacked={false} />
-            </div>
-
-            <button
-              onClick={() => setCommentSheetVideoId(activeVideo.id)}
-              aria-label="Open comments"
-              className="flex items-center justify-center gap-1.5 min-w-0 flex-1 text-white hover:text-white/90 transition"
-            >
-              <MessageCircle size={28} strokeWidth={2.2} className="text-white/90" />
-              <span className="text-[13px] font-extrabold tracking-tight">{(commentCounts[activeVideo.id] ?? (commentCounts as any)[String(activeVideo.id)] ?? 0) || 0}</span>
-            </button>
-
-            <button
-              onClick={() => window.dispatchEvent(new CustomEvent("open-tip-modal", { detail: { creatorId: activeVideo.creatorId, videoId: activeVideo.id } }))}
-              aria-label="Tip creator"
-              className="flex items-center justify-center gap-1.5 min-w-0 flex-1 text-white hover:text-white/90 transition"
-            >
-              <svg width={28} height={28} viewBox="0 0 24 24" fill="none" aria-hidden="true" className="text-white/90">
-                <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
-                <circle cx="12" cy="12" r="6.6" stroke="currentColor" strokeWidth="1.2" opacity="0.75" />
-                <path d="M10.2 5.8L9.4 3.9M13.8 5.8L14.6 3.9M10.2 18.2L9.4 20.1M13.8 18.2L14.6 20.1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.9" />
-                <text x="12" y="15" textAnchor="middle" fontSize="7.2" fontWeight="800" fill="currentColor" fontFamily="system-ui, -apple-system, sans-serif">TC</text>
-              </svg>
-              {Number(tipCounts[String(activeVideo.id)] || 0) > 0 && <span className="text-[13px] font-extrabold tracking-tight">{Number(tipCounts[String(activeVideo.id)] || 0).toLocaleString()}</span>}
-            </button>
-
-            <div className="flex items-center justify-center gap-1.5 min-w-0 flex-1 text-white">
-              <Eye size={28} strokeWidth={2.2} className="text-white/90" />
-              <span className="text-[13px] font-extrabold tracking-tight">{(viewCounts[activeVideo.id] ?? Number((activeVideo as any).views || 0)) || 0}</span>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* DESKTOP VIEW */}
       <div className="hidden lg:flex w-full h-full items-center bg-[#050505] overflow-hidden">
@@ -1106,7 +1061,7 @@ function MobileVideoShort({ video, creator, onViewCounted, isMuted, onToggleMute
 
       </div>
 
-      <div className={`absolute left-0 right-0 bottom-[calc(env(safe-area-inset-bottom)+74px)] lg:bottom-[85px] z-[255] pointer-events-none px-0 lg:px-4 transition-opacity duration-150 ${isActive ? "opacity-100" : "opacity-0"}`}>
+      <div className={`absolute left-0 right-0 bottom-[calc(env(safe-area-inset-bottom)+12px)] lg:bottom-[85px] z-[255] pointer-events-none px-0 lg:px-4 transition-opacity duration-150 ${isActive ? "opacity-100" : "opacity-0"}`}>
         <div 
           ref={progressBarRef}
           className="relative w-full h-[3px] bg-transparent cursor-pointer touch-none py-3 -my-3 pointer-events-auto"
