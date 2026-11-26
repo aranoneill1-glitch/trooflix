@@ -96,7 +96,7 @@ export default function GoLivePage() {
     async function setupCamera() {
       try {
         const mediaStream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "user" },
+          video: { facingMode: "user", width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30, max: 30 } },
           audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
         });
         setStream(mediaStream);
@@ -192,7 +192,7 @@ export default function GoLivePage() {
     if (!stream || isScreenSharing) return;
     try {
       const nextFacing = isFrontCamera ? "environment" : "user";
-      const camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: nextFacing }, audio: false });
+      const camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: nextFacing, width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30, max: 30 } }, audio: false });
       const newTrack = camStream.getVideoTracks()[0];
       const oldTrack = stream.getVideoTracks()[0];
       const audioTrack = stream.getAudioTracks()[0];
@@ -220,7 +220,7 @@ export default function GoLivePage() {
         setIsScreenSharing(true);
         screenTrack.onended = () => toggleScreenShare();
       } else {
-        const camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+        const camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30, max: 30 } }, audio: false });
         const camTrack = camStream.getVideoTracks()[0];
         const audioTrack = stream.getAudioTracks()[0];
         const newStream = new MediaStream([camTrack, audioTrack]);
@@ -408,8 +408,8 @@ export default function GoLivePage() {
 
       const isMobile = window.innerWidth < 768;
       const canvas = document.createElement("canvas");
-      canvas.width = isMobile ? 720 : 1280;
-      canvas.height = isMobile ? 1280 : 720;
+      canvas.width = isMobile ? 1080 : 1920;
+      canvas.height = isMobile ? 1920 : 1080;
       const ctx = canvas.getContext("2d")!;
 
       const draw = () => {
@@ -418,17 +418,17 @@ export default function GoLivePage() {
         const isGuestHere = guestConnectedRef.current;
         if (isMobile) {
           if (isGuestHere) {
-            if (videoRef.current) drawVideoCover(videoRef.current, 0, 0, 720, 640, ctx);
-            if (guestVideoRef.current && guestVideoRef.current.srcObject) drawVideoCover(guestVideoRef.current, 0, 640, 720, 640, ctx);
+            if (videoRef.current) drawVideoCover(videoRef.current, 0, 0, 1080, 960, ctx);
+            if (guestVideoRef.current && guestVideoRef.current.srcObject) drawVideoCover(guestVideoRef.current, 0, 960, 1080, 960, ctx);
           } else {
-            if (videoRef.current) drawVideoCover(videoRef.current, 0, 0, 720, 1280, ctx);
+            if (videoRef.current) drawVideoCover(videoRef.current, 0, 0, 1080, 1920, ctx);
           }
         } else {
           if (isGuestHere) {
-            if (videoRef.current) drawVideoCover(videoRef.current, 0, 0, 640, 720, ctx);
-            if (guestVideoRef.current && guestVideoRef.current.srcObject) drawVideoCover(guestVideoRef.current, 640, 0, 640, 720, ctx);
+            if (videoRef.current) drawVideoCover(videoRef.current, 0, 0, 960, 1080, ctx);
+            if (guestVideoRef.current && guestVideoRef.current.srcObject) drawVideoCover(guestVideoRef.current, 960, 0, 960, 1080, ctx);
           } else {
-            if (videoRef.current) drawVideoCover(videoRef.current, 0, 0, 1280, 720, ctx);
+            if (videoRef.current) drawVideoCover(videoRef.current, 0, 0, 1920, 1080, ctx);
           }
         }
         requestAnimationFrame(draw);
@@ -457,6 +457,19 @@ export default function GoLivePage() {
 
       const pc = new RTCPeerConnection({ iceServers, bundlePolicy: "max-bundle" });
       finalStream.getTracks().forEach((track) => pc.addTrack(track, finalStream));
+
+      const videoSender = pc.getSenders().find((s) => s.track?.kind === "video");
+      if (videoSender) {
+        try {
+          if (videoSender.track) (videoSender.track as any).contentHint = "motion";
+          const params = videoSender.getParameters();
+          if (!params.encodings || params.encodings.length === 0) params.encodings = [{}];
+          params.encodings[0].maxBitrate = 6_000_000;
+          params.encodings[0].maxFramerate = 30;
+          (params as any).degradationPreference = "maintain-resolution";
+          await videoSender.setParameters(params);
+        } catch (e) { console.warn("Failed to set video bitrate", e); }
+      }
 
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
