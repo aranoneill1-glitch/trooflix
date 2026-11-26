@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getCachedUser } from "@/lib/cache";
 import { createClient } from "@/utils/supabase/client";
-import { Mic, MicOff, Video, VideoOff, Radio, StopCircle, Monitor, MonitorOff, UserCheck, PictureInPicture, ShoppingBag, X, Globe, Lock, Loader2 } from "lucide-react";
+import { Mic, MicOff, Video, VideoOff, Radio, StopCircle, Monitor, MonitorOff, UserCheck, PictureInPicture, ShoppingBag, X, Globe, Lock, Loader2, SwitchCamera, MessageCircle } from "lucide-react";
 import LiveChat from "@/components/LiveChat";
 
 export default function GoLivePage() {
@@ -37,6 +37,16 @@ export default function GoLivePage() {
   const [myProducts, setMyProducts] = useState<any[]>([]);
   const [liveVisibility, setLiveVisibility] = useState<"public" | "subscribers">("public");
   const [creatorToolsUnlocked, setCreatorToolsUnlocked] = useState<boolean | null>(null);
+  const [showMobileChat, setShowMobileChat] = useState(false);
+  const [isFrontCamera, setIsFrontCamera] = useState(true);
+  const [isDesktop, setIsDesktop] = useState(() => typeof window !== "undefined" ? window.matchMedia("(min-width: 1024px)").matches : false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const apply = () => setIsDesktop(mq.matches);
+    mq.addEventListener?.("change", apply);
+    return () => mq.removeEventListener?.("change", apply);
+  }, []);
 
   // Timer
   useEffect(() => {
@@ -154,6 +164,25 @@ export default function GoLivePage() {
         videoTrack.enabled = !videoTrack.enabled;
         setIsVideoOff(!videoTrack.enabled);
       }
+    }
+  };
+
+  const flipCamera = async () => {
+    if (!stream || isScreenSharing) return;
+    try {
+      const nextFacing = isFrontCamera ? "environment" : "user";
+      const camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: nextFacing }, audio: false });
+      const newTrack = camStream.getVideoTracks()[0];
+      const oldTrack = stream.getVideoTracks()[0];
+      const audioTrack = stream.getAudioTracks()[0];
+      if (oldTrack) oldTrack.stop();
+      const newStream = new MediaStream([newTrack, ...(audioTrack ? [audioTrack] : [])]);
+      setStream(newStream);
+      if (videoRef.current) videoRef.current.srcObject = newStream;
+      setIsFrontCamera(!isFrontCamera);
+      setIsVideoOff(false);
+    } catch (err) {
+      console.error("Flip camera failed:", err);
     }
   };
 
@@ -468,8 +497,7 @@ export default function GoLivePage() {
   }
 
   return (
-    <main className="h-[100dvh] bg-[#0a0a0a] text-white flex flex-col overflow-hidden">
-      
+    <main className="h-[100dvh] bg-black text-white relative overflow-hidden lg:flex lg:flex-col lg:bg-[#0a0a0a]">
       <video ref={guestVideoRef} autoPlay playsInline style={{ position: "absolute", width: "1px", height: "1px", opacity: 0.01, pointerEvents: "none", top: "-9999px", left: "-9999px" }} muted />
       <audio ref={guestAudioRef} autoPlay className="hidden" />
 
@@ -506,20 +534,119 @@ export default function GoLivePage() {
         </div>
       )}
 
-      {/* Main Content Layout */}
-      <div className="flex-1 flex flex-col lg:flex-row w-full overflow-hidden">
-        
-        {/* Left Side: Video Preview */}
+      {/* Mobile FaceTime-style layout */}
+      {!isDesktop && (
+      <div className="absolute inset-0">
+        <video ref={videoRef} autoPlay muted playsInline className="absolute inset-0 w-full h-full object-cover" style={{ transform: "none" }} />
+        {isLive && <video ref={canvasPreviewRef} autoPlay muted playsInline className="absolute inset-0 w-full h-full object-cover z-10 bg-black" />}
+
+        <div className="absolute inset-x-0 top-0 z-20 pt-[calc(env(safe-area-inset-top)+12px)] px-4 pb-10 bg-gradient-to-b from-black/70 via-black/20 to-transparent">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-2.5 bg-black/25 backdrop-blur-xl border border-white/10 rounded-full px-3 py-1.5">
+              {isLive ? (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-[#E53945] animate-pulse" />
+                  <span className="text-[11px] font-bold uppercase tracking-wide text-white">Live</span>
+                  <span className="text-[11px] font-medium text-white/70 tabular-nums">{formatTime(streamTime)}</span>
+                </>
+              ) : (
+                <>
+                  <span className="w-2 h-2 rounded-full bg-white/60" />
+                  <span className="text-[11px] font-bold uppercase tracking-wide text-white/80">Preview</span>
+                </>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              {guestConnected && (
+                <div className="bg-green-500/20 backdrop-blur-xl border border-green-500/40 text-green-300 text-[11px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                  <UserCheck size={13} /> {connectedGuestName || "Guest"}
+                </div>
+              )}
+              <button onClick={() => (isLive ? stopStream() : router.push("/creator-dashboard"))} className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-xl border border-white/10 flex items-center justify-center text-white/90" aria-label="Close">
+                <X size={18} />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {joinRequest && (
+          <div className="absolute top-[calc(env(safe-area-inset-top)+72px)] left-4 right-4 z-30 bg-[#1c1c1e]/95 backdrop-blur-xl border border-[#E53945]/30 p-4 rounded-2xl shadow-2xl">
+            <div className="flex items-center gap-3 mb-3">
+              {joinRequest.viewer_avatar ? (
+                <img src={joinRequest.viewer_avatar} alt="" className="w-9 h-9 rounded-full object-cover border border-white/20" />
+              ) : (
+                <div className="w-9 h-9 rounded-full bg-[#E53945] flex items-center justify-center text-sm font-bold text-white">{joinRequest.viewer_name.charAt(0).toUpperCase()}</div>
+              )}
+              <p className="text-sm font-bold"><span className="text-[#E53945]">{joinRequest.viewer_name}</span> wants to join!</p>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => handleJoinResponse("approved")} className="flex-1 bg-green-500 text-white font-bold py-2 rounded-full text-sm">Approve</button>
+              <button onClick={() => handleJoinResponse("denied")} className="flex-1 bg-red-500/20 text-red-400 font-bold py-2 rounded-full text-sm border border-red-500/20">Deny</button>
+            </div>
+          </div>
+        )}
+
+        {showMobileChat && isLive && liveInputId && (
+          <div className="absolute inset-x-0 bottom-0 z-40 h-[55dvh] bg-[#111114]/95 backdrop-blur-2xl border-t border-white/10 rounded-t-[28px] overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+              <h3 className="text-sm font-bold">Live Chat</h3>
+              <button onClick={() => setShowMobileChat(false)} className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"><X size={16} /></button>
+            </div>
+            <LiveChat liveInputId={liveInputId} className="flex-1 min-h-0" />
+          </div>
+        )}
+
+        <div className="absolute inset-x-0 bottom-0 z-30 px-4 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-16 bg-gradient-to-t from-black/85 via-black/45 to-transparent">
+          <div className="flex items-center justify-center gap-2 mb-3">
+            <button onClick={() => setLiveVisibility("public")} className={`px-3 py-1.5 rounded-full text-[11px] font-bold border backdrop-blur-xl transition ${liveVisibility === "public" ? "bg-white/15 border-white/25 text-white" : "bg-black/20 border-white/10 text-white/60"}`}>
+              <span className="inline-flex items-center gap-1"><Globe size={12} /> Everyone</span>
+            </button>
+            <button onClick={() => setLiveVisibility("subscribers")} className={`px-3 py-1.5 rounded-full text-[11px] font-bold border backdrop-blur-xl transition ${liveVisibility === "subscribers" ? "bg-[#D4AF37]/20 border-[#D4AF37]/40 text-[#D4AF37]" : "bg-black/20 border-white/10 text-white/60"}`}>
+              <span className="inline-flex items-center gap-1"><Lock size={12} /> Subs</span>
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between gap-2">
+            <button onClick={toggleMute} className={`w-12 h-12 rounded-full flex items-center justify-center border backdrop-blur-xl transition ${isMuted ? "bg-red-500/25 border-red-400/40 text-red-300" : "bg-white/12 border-white/15 text-white"}`} aria-label={isMuted ? "Unmute" : "Mute"}>
+              {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
+            </button>
+            <button onClick={toggleVideo} className={`w-12 h-12 rounded-full flex items-center justify-center border backdrop-blur-xl transition ${isVideoOff ? "bg-red-500/25 border-red-400/40 text-red-300" : "bg-white/12 border-white/15 text-white"}`} aria-label={isVideoOff ? "Turn camera on" : "Turn camera off"}>
+              {isVideoOff ? <VideoOff size={20} /> : <Video size={20} />}
+            </button>
+
+            {!isLive ? (
+              <button onClick={startStream} disabled={loading} className="flex-1 max-w-[180px] h-14 rounded-full bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-60 text-white font-bold text-[15px] flex items-center justify-center gap-2 shadow-[0_12px_30px_rgba(229,57,69,0.45)] border border-red-300/20">
+                {loading ? <Loader2 size={20} className="animate-spin" /> : <Radio size={20} />}
+                {loading ? "Starting..." : "Go Live"}
+              </button>
+            ) : (
+              <button onClick={stopStream} disabled={loading} className="flex-1 max-w-[180px] h-14 rounded-full bg-white/15 hover:bg-white/20 disabled:opacity-60 text-red-400 font-bold text-[15px] flex items-center justify-center gap-2 backdrop-blur-xl border border-white/15">
+                {loading ? <Loader2 size={20} className="animate-spin" /> : <StopCircle size={20} />}
+                {loading ? "Stopping..." : "End Live"}
+              </button>
+            )}
+
+            <button onClick={flipCamera} className="w-12 h-12 rounded-full flex items-center justify-center bg-white/12 border border-white/15 text-white backdrop-blur-xl transition" aria-label="Flip camera">
+              <SwitchCamera size={20} />
+            </button>
+            <button onClick={() => isLive && liveInputId ? setShowMobileChat(v => !v) : openProductMenu()} className={`w-12 h-12 rounded-full flex items-center justify-center border backdrop-blur-xl transition ${isLive ? "bg-white/12 border-white/15 text-white" : "bg-[#E53945]/20 border-[#E53945]/30 text-[#E53945]"}`} aria-label={isLive ? "Chat" : "Products"}>
+              {isLive ? <MessageCircle size={20} /> : <ShoppingBag size={20} />}
+            </button>
+          </div>
+        </div>
+      </div>
+      )}
+
+      {/* Desktop layout */}
+      {isDesktop && (
+      <div className="flex flex-1 flex-col lg:flex-row w-full overflow-hidden">
         <div className="flex-1 relative bg-black flex items-center justify-center p-4 lg:p-6 pb-24 lg:pb-6">
-          
           <div className="relative w-full h-full rounded-3xl overflow-hidden bg-[#0f0f12] shadow-2xl border border-white/10">
-            <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-cover absolute inset-0" style={{ transform: "none" }} />
-            
+            <video autoPlay muted playsInline className="w-full h-full object-cover absolute inset-0" style={{ transform: "none" }} ref={(el) => { if (el) { (videoRef as any).current = el; if (stream && el.srcObject !== stream) el.srcObject = stream; } }} />
             {isLive && (
               <video ref={canvasPreviewRef} autoPlay muted playsInline className="w-full h-full object-cover absolute inset-0 z-10 bg-black" />
             )}
 
-            {/* Top Left Overlay */}
             <div className="absolute top-4 left-4 z-20 flex items-center gap-3 bg-black/40 px-3 py-1.5 rounded-full border border-white/10 shadow-lg">
               <div className="w-8 h-8 rounded-full bg-[#E53945] flex items-center justify-center text-sm font-bold text-white border border-white/20">
                 {isLive ? "L" : "P"}
@@ -535,15 +662,13 @@ export default function GoLivePage() {
               </div>
             </div>
 
-            {/* Guest Connected Overlay */}
             {guestConnected && (
               <div className="absolute top-4 right-4 z-20 bg-green-500/20 border border-green-500/50 text-green-400 text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-2 shadow-lg">
                 <UserCheck size={14} /> {connectedGuestName || "Guest"} Connected
               </div>
             )}
 
-            {/* Floating Bottom Controls (Desktop) */}
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 hidden lg:flex items-center gap-3 bg-black/60 border border-white/10 p-2 rounded-full shadow-2xl">
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 bg-black/60 border border-white/10 p-2 rounded-full shadow-2xl">
               <button onClick={toggleMute} className={`w-12 h-12 rounded-full flex items-center justify-center transition ${isMuted ? "bg-red-500/20 text-red-500" : "bg-white/10 hover:bg-white/20 text-white"}`}>
                 {isMuted ? <MicOff size={20} /> : <Mic size={20} />}
               </button>
@@ -560,8 +685,6 @@ export default function GoLivePage() {
                 <ShoppingBag size={20} />
               </button>
               <div className="w-px h-8 bg-white/20 mx-1" />
-              
-              {/* Visibility Toggle */}
               <div className="flex bg-black/50 border border-white/10 rounded-full p-1 shadow-inner">
                 <button onClick={() => setLiveVisibility("public")} className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-full transition ${liveVisibility === "public" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}>
                   <Globe size={14} /> <span className="hidden sm:inline">Everyone</span>
@@ -570,9 +693,7 @@ export default function GoLivePage() {
                   <Lock size={14} /> <span className="hidden sm:inline">Subs Only</span>
                 </button>
               </div>
-
               <div className="w-px h-8 bg-white/20 mx-1" />
-
               {!isLive ? (
                 <button onClick={startStream} disabled={loading} className="bg-[#E53945] hover:bg-[#d12e39] text-white font-bold px-6 py-2.5 rounded-full transition flex items-center gap-2">
                   <Radio size={18} /> {loading ? "Starting..." : "Go Live"}
@@ -584,10 +705,8 @@ export default function GoLivePage() {
               )}
             </div>
           </div>
-
         </div>
 
-        {/* Right Side: Chat */}
         <div className="w-full lg:w-[380px] h-[40vh] lg:h-full flex flex-col shrink-0">
           {isLive && liveInputId ? (
              <>
@@ -619,8 +738,8 @@ export default function GoLivePage() {
             </div>
           )}
         </div>
-
       </div>
+      )}
     </main>
   );
 }
