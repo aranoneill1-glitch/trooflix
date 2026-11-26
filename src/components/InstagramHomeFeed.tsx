@@ -374,11 +374,6 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
               className="pb-3"
             >
               <header className="flex items-center gap-2.5 px-3 py-2.5">
-                <Link href={creator?.slug ? `/profile/${creator.slug}` : "#"} className="h-8 w-8 shrink-0 overflow-hidden rounded-full bg-gradient-to-tr from-[#f09433] to-[#dc2743] p-[1.5px]">
-                  <span className="block h-full w-full overflow-hidden rounded-full border-2 border-[#08090c]">
-                    {avatar ? <img src={avatar} alt="" className="h-full w-full object-cover" /> : <span className="flex h-full w-full items-center justify-center bg-[#E53945] text-xs font-bold text-white">{name[0]}</span>}
-                  </span>
-                </Link>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-[15px] font-semibold text-white/95">{name}</p>
                   <p className="truncate text-[11px] font-medium text-white/55">{video.category || "Trooflix"}</p>
@@ -386,14 +381,21 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
                 <button onClick={() => { haptic(); setReportVideoId(video.id); }} aria-label="More options" className="p-1 text-white/70 hover:text-white transition"><MoreHorizontal size={20} /></button>
               </header>
 
-              <PostMedia
-                video={video}
-                isActive={activeId === video.id}
-                shouldLoad={shouldLoad}
-                onOpen={() => onVideoSelect(video)}
-                onLike={() => setLikedLocal(prev => prev.includes(video.id) ? prev : [...prev, video.id])}
-                onRegister={registerMedia}
-              />
+              <div className="relative">
+                <PostMedia
+                  video={video}
+                  isActive={activeId === video.id}
+                  shouldLoad={shouldLoad}
+                  onOpen={() => onVideoSelect(video)}
+                  onLike={() => setLikedLocal(prev => prev.includes(video.id) ? prev : [...prev, video.id])}
+                  onRegister={registerMedia}
+                />
+                <Link href={creator?.slug ? `/profile/${creator.slug}` : "#"} className="absolute left-3 top-3 z-20 h-9 w-9 overflow-hidden rounded-full bg-gradient-to-tr from-[#f09433] to-[#dc2743] p-[1.5px] shadow-[0_4px_16px_rgba(0,0,0,0.45)]" aria-label={`${name} profile`}>
+                  <span className="block h-full w-full overflow-hidden rounded-full border-2 border-black/40">
+                    {avatar ? <img src={avatar} alt="" className="h-full w-full object-cover" /> : <span className="flex h-full w-full items-center justify-center bg-[#E53945] text-xs font-bold text-white">{name[0]}</span>}
+                  </span>
+                </Link>
+              </div>
 
               <div className="flex items-center gap-4 px-3 pt-2.5">
                 <LikeButton videoId={video.id} size={24} showCount={true} />
