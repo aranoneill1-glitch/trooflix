@@ -685,8 +685,8 @@ function CreatorDashboardContent() {
                   ) : contentView === "grid" ? (
                     <div className="no-image-callout -mx-4 sm:-mx-4 lg:mx-0 grid grid-cols-3 gap-[2px] pb-20 sm:gap-1 lg:grid-cols-6 lg:gap-3">
                       {filteredVideos.map((video) => (
-                        <div key={video.id} onClick={(e) => handleVideoCardClick(e, video)} onContextMenu={(e) => { e.preventDefault(); setSelectedVideoAction(video); }} onPointerDown={() => startVideoPress(video)} onPointerUp={cancelVideoPress} onPointerLeave={cancelVideoPress} onPointerCancel={cancelVideoPress} className="relative aspect-[3/4] overflow-hidden bg-[#111114] lg:rounded-xl lg:border lg:border-white/10 lg:shadow-lg cursor-pointer">
-                          {video.posterUrl || video.backdropUrl ? <img src={video.posterUrl || video.backdropUrl} alt="" loading="lazy" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center bg-black/40"><Repeat2 size={24} className="text-white/30" /></div>}
+                        <div key={video.id} onClick={(e) => handleVideoCardClick(e, video)} onContextMenu={(e) => e.preventDefault()} className="relative aspect-[3/4] overflow-hidden bg-[#111114] lg:rounded-xl lg:border lg:border-white/10 lg:shadow-lg cursor-pointer select-none">
+                          {video.posterUrl || video.backdropUrl ? <img src={video.posterUrl || video.backdropUrl} alt="" loading="lazy" draggable={false} className="w-full h-full object-cover pointer-events-none" /> : <div className="w-full h-full flex items-center justify-center bg-black/40"><Repeat2 size={24} className="text-white/30" /></div>}
                           <div className="absolute top-2 left-2 p-1.5 rounded-lg bg-black/60 backdrop-blur-sm border border-white/10 text-white shadow-md" title="Reshared">
                             <Repeat2 size={13} />
                           </div>
@@ -696,9 +696,9 @@ function CreatorDashboardContent() {
                   ) : (
                     <div className="flex flex-col gap-2.5 pb-20">
                       {filteredVideos.map((video) => (
-                        <div key={video.id} onClick={(e) => handleVideoCardClick(e, video)} onContextMenu={(e) => { e.preventDefault(); setSelectedVideoAction(video); }} onPointerDown={() => startVideoPress(video)} onPointerUp={cancelVideoPress} onPointerLeave={cancelVideoPress} onPointerCancel={cancelVideoPress} className="flex items-center gap-3 bg-white/[0.05] backdrop-blur-xl border border-white/10 rounded-2xl p-3 cursor-pointer hover:bg-white/[0.08] transition shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+                        <div key={video.id} onClick={(e) => handleVideoCardClick(e, video)} onContextMenu={(e) => e.preventDefault()} className="flex items-center gap-3 bg-white/[0.05] backdrop-blur-xl border border-white/10 rounded-2xl p-3 cursor-pointer hover:bg-white/[0.08] transition shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] select-none">
                           <div className="relative w-14 aspect-[3/4] rounded-xl overflow-hidden shrink-0 bg-black/40 border border-white/10">
-                            {video.posterUrl || video.backdropUrl ? <img src={video.posterUrl || video.backdropUrl} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Repeat2 size={16} className="text-white/40" /></div>}
+                            {video.posterUrl || video.backdropUrl ? <img src={video.posterUrl || video.backdropUrl} alt="" draggable={false} className="w-full h-full object-cover pointer-events-none" /> : <div className="w-full h-full flex items-center justify-center"><Repeat2 size={16} className="text-white/40" /></div>}
                           </div>
                           <div className="min-w-0 flex-1">
                             <div className="text-sm font-bold text-white truncate">{video.title}</div>

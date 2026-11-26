@@ -29,12 +29,31 @@ async function findPostOwner(videoId: number): Promise<string | null> {
 }
 
 // GET /api/reposts?user_id=X  → list of post IDs the user has reposted
+// GET /api/reposts?post_ids=1,2,3 → counts per post
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get("user_id");
-    if (!userId) return NextResponse.json({ ids: [] });
+    const postIdsParam = searchParams.get("post_ids") || searchParams.get("videoIds");
 
+    if (postIdsParam) {
+      const postIds = postIdsParam.split(",").map((s) => Number(s.trim())).filter((n) => Number.isFinite(n) && n > 0);
+      if (postIds.length === 0) return NextResponse.json({ counts: {} });
+      const { data, error } = await supabaseAdmin
+        .from("reposts")
+        .select("post_id")
+        .in("post_id", postIds);
+      if (error) throw error;
+      const counts: Record<string, number> = {};
+      for (const id of postIds) counts[String(id)] = 0;
+      for (const row of data || []) {
+        const k = String((row as any).post_id);
+        counts[k] = (counts[k] || 0) + 1;
+      }
+      return NextResponse.json({ counts });
+    }
+
+    if (!userId) return NextResponse.json({ ids: [] });
     const { data, error } = await supabaseAdmin
       .from("reposts")
       .select("post_id")
@@ -44,6 +63,8 @@ export async function GET(req: Request) {
     return NextResponse.json({ ids: (data || []).map((r: any) => Number(r.post_id)) });
   } catch (e: any) {
     console.error("GET reposts error:", e);
+    const { searchParams } = new URL(req.url);
+    if (searchParams.get("post_ids") || searchParams.get("videoIds")) return NextResponse.json({ counts: {} });
     return NextResponse.json({ ids: [] });
   }
 }

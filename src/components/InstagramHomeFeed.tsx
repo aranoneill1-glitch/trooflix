@@ -169,6 +169,7 @@ function PostMedia({ video, onOpen, onLike, isActive, onRegister, shouldLoad = t
 export default function InstagramHomeFeed({ videos, creators, onVideoSelect, showWelcome = false }: Props) {
   const [commentCounts, setCommentCounts] = useState<Record<number, number>>({});
   const [tipCounts, setTipCounts] = useState<Record<string, number>>({});
+  const [repostCounts, setRepostCounts] = useState<Record<string, number>>({});
   const [repostedIds, setRepostedIds] = useState<number[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [sheetVideo, setSheetVideo] = useState<number | null>(null);
@@ -270,6 +271,10 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
       .then(r => r.json())
       .then(d => setTipCounts(d?.videos || {}))
       .catch(() => {});
+    fetch(`/api/reposts?post_ids=${ids.join(",")}`, { cache: "no-store" })
+      .then(r => r.json())
+      .then(d => setRepostCounts(d?.counts || {}))
+      .catch(() => {});
   }, [posts.map(p => p.video.id).join(",")]);
 
   useEffect(() => {
@@ -296,8 +301,10 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
   const toggleRepost = async (postId: number) => {
     if (!currentUserId) { window.location.href = "/login"; return; }
     haptic();
+    const key = String(postId);
     const was = repostedIds.includes(postId);
     setRepostedIds((prev) => was ? prev.filter((id) => id !== postId) : [...prev, postId]);
+    setRepostCounts((prev) => ({ ...prev, [key]: Math.max(0, Number(prev[key] || 0) + (was ? -1 : 1)) }));
     try {
       const res = await fetch("/api/reposts", {
         method: "POST",
@@ -307,9 +314,11 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
       const data = await res.json();
       if (typeof data?.reposted === "boolean") {
         setRepostedIds((prev) => data.reposted ? (prev.includes(postId) ? prev : [...prev, postId]) : prev.filter((id) => id !== postId));
+        setRepostCounts((prev) => ({ ...prev, [key]: Math.max(0, Number(prev[key] || 0) + (data.reposted === was ? (was ? -1 : 1) : 0)) }));
       }
     } catch {
       setRepostedIds((prev) => was ? [...prev, postId] : prev.filter((id) => id !== postId));
+      setRepostCounts((prev) => ({ ...prev, [key]: Math.max(0, Number(prev[key] || 0) + (was ? 1 : -1)) }));
     }
   };
 
@@ -449,8 +458,9 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
                   </svg>
                   {Number(tipCounts[String(video.id)] || 0) > 0 && <span className="text-sm font-semibold tabular-nums">{Number(tipCounts[String(video.id)] || 0).toLocaleString()}</span>}
                 </button>
-                <button onClick={() => toggleRepost(video.id)} aria-label={repostedIds.includes(video.id) ? "Remove reshare" : "Reshare"} className={`active:opacity-60 transition ${repostedIds.includes(video.id) ? "text-[#22c55e]" : "text-white"}`}>
+                <button onClick={() => toggleRepost(video.id)} aria-label={repostedIds.includes(video.id) ? "Remove reshare" : "Reshare"} className={`flex items-center gap-1.5 active:opacity-60 transition ${repostedIds.includes(video.id) ? "text-[#22c55e]" : "text-white"}`}>
                   <Repeat2 size={23} strokeWidth={1.8} />
+                  {Number(repostCounts[String(video.id)] || 0) > 0 && <span className="text-sm font-semibold tabular-nums">{Number(repostCounts[String(video.id)] || 0).toLocaleString()}</span>}
                 </button>
                 <button onClick={() => { if (navigator.share) navigator.share({ title: video.title, url: window.location.href }).catch(() => {}); }} aria-label="Share" className="text-white active:opacity-60"><Send size={23} strokeWidth={1.7} /></button>
                 <button
