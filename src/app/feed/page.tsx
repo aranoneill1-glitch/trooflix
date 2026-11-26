@@ -55,6 +55,18 @@ export default function ShortsFeedPage() {
   const videoContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const meta = document.querySelector('meta[name="viewport"]');
+    const prev = meta?.getAttribute("content") || "";
+    if (meta) {
+      const next = /viewport-fit=cover/.test(prev) ? prev : (prev ? `${prev}, viewport-fit=cover` : "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover");
+      meta.setAttribute("content", next);
+    }
+    return () => {
+      if (meta) meta.setAttribute("content", prev);
+    };
+  }, []);
+
+  useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const requestedReelId = params.get("reel");
     const requestedCreatorUserId = params.get("creator_user_id");
