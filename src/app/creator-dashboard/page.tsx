@@ -631,6 +631,17 @@ function CreatorDashboardContent() {
                   <div className="text-left"><span className="font-black text-white block text-3xl xl:text-4xl">{creatorVideos.length}</span> <span className="text-white/50 text-xs uppercase tracking-wider font-semibold">Posts</span></div>
                 </div>
               </div>
+              <div className="lg:hidden">
+                <StudioWidgets
+                  active="profile"
+                  className="mb-6"
+                  dashboardLocked={false}
+                  onViewChange={(section) => {
+                    setIsDashboardView(section === "dashboard");
+                    setShowMyTrooFlix(false);
+                  }}
+                />
+              </div>
               <div className="flex flex-col mb-6 w-full lg:hidden">
                 <div className="flex items-center gap-4 w-full mb-4">
                   
@@ -682,18 +693,6 @@ function CreatorDashboardContent() {
                   </div>
                   <p className="text-sm text-white/60 leading-relaxed">{profile?.bio || "No bio yet."}</p>
                 </div>
-              </div>
-
-              <div className="lg:hidden">
-                <StudioWidgets
-                  active="profile"
-                  className="mb-8"
-                  dashboardLocked={false}
-                  onViewChange={(section) => {
-                    setIsDashboardView(section === "dashboard");
-                    setShowMyTrooFlix(false);
-                  }}
-                />
               </div>
 
               <div className="flex items-center justify-between border-b border-white/10 mb-4">
