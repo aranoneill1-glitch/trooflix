@@ -120,8 +120,9 @@ export default function GoLivePage() {
   }, [guestConnected]);
 
   useEffect(() => {
-    if (stream && videoRef.current && videoRef.current.srcObject !== stream) {
-      videoRef.current.srcObject = stream;
+    if (stream && videoRef.current) {
+      if (videoRef.current.srcObject !== stream) videoRef.current.srcObject = stream;
+      videoRef.current.play().catch(() => {});
     }
   }, [stream]);
 
@@ -133,7 +134,10 @@ export default function GoLivePage() {
           audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
         });
         setStream(mediaStream);
-        if (videoRef.current) videoRef.current.srcObject = mediaStream;
+        if (videoRef.current) {
+          videoRef.current.srcObject = mediaStream;
+          videoRef.current.play().catch(() => {});
+        }
       } catch (err) {
         alert("Please allow camera and microphone access.");
       }
@@ -473,6 +477,11 @@ export default function GoLivePage() {
         audioCtx.createMediaStreamSource(new MediaStream([track])).connect(destRef.current!);
       });
 
+      if (videoRef.current) {
+        if (videoRef.current.srcObject !== stream) videoRef.current.srcObject = stream;
+        await videoRef.current.play().catch(() => {});
+      }
+
       const isMobile = window.innerWidth < 768;
       const canvas = document.createElement("canvas");
       canvas.width = isMobile ? 1080 : 1920;
@@ -639,7 +648,7 @@ export default function GoLivePage() {
       {!isDesktop && (
       <div className="absolute inset-0">
         <video ref={videoRef} autoPlay muted playsInline className="absolute inset-0 w-full h-full object-cover" style={{ transform: isFrontCamera && !isScreenSharing ? "scaleX(-1)" : "none" }} />
-        {isLive && <video ref={canvasPreviewRef} autoPlay muted playsInline className="absolute inset-0 w-full h-full object-cover z-10 bg-black" style={{ transform: "none" }} />}
+        {isLive && (guestConnected || isScreenSharing) && <video ref={canvasPreviewRef} autoPlay muted playsInline className="absolute inset-0 w-full h-full object-cover z-10 bg-black" style={{ transform: "none" }} />}
 
         <div className="absolute inset-x-0 top-0 z-20 pt-[calc(env(safe-area-inset-top)+12px)] px-4 pb-10 bg-gradient-to-b from-black/70 via-black/20 to-transparent">
           <div className="flex items-start justify-between gap-3">
@@ -811,7 +820,7 @@ export default function GoLivePage() {
         <div className="flex-1 relative bg-black flex items-center justify-center p-4 lg:p-6 pb-24 lg:pb-6">
           <div className="relative w-full h-full rounded-3xl overflow-hidden bg-[#0f0f12] shadow-2xl border border-white/10">
             <video autoPlay muted playsInline className="w-full h-full object-cover absolute inset-0" style={{ transform: isFrontCamera && !isScreenSharing ? "scaleX(-1)" : "none" }} ref={(el) => { if (el) { (videoRef as any).current = el; if (stream && el.srcObject !== stream) el.srcObject = stream; } }} />
-            {isLive && (
+            {isLive && (guestConnected || isScreenSharing) && (
               <video ref={canvasPreviewRef} autoPlay muted playsInline className="w-full h-full object-cover absolute inset-0 z-10 bg-black" style={{ transform: "none" }} />
             )}
 
