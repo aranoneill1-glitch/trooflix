@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Eye, Share2, Loader2, Heart, MessageCircle, X, ArrowLeft } from "lucide-react";
+import { Eye, Share2, Loader2, Heart, MessageCircle, X, ArrowLeft, Video } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Stream } from "@cloudflare/stream-react";
 import { createClient } from "@/utils/supabase/client";
@@ -30,8 +31,12 @@ export default function LivePlayer({ liveInputId, creatorId, creatorName, creato
   const [liked, setLiked] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
+  const [joinStatus, setJoinStatus] = useState<"idle" | "pending" | "approved" | "denied">("idle");
+  const [joining, setJoining] = useState(false);
   const lastLikeSentRef = useRef(0);
   const chatScrollRef = useRef<HTMLDivElement>(null);
+  const searchParams = useSearchParams();
+  const invitedToJoin = searchParams.get("invite") === "1";
 
   useEffect(() => {
     if (chatScrollRef.current) chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
@@ -78,6 +83,79 @@ export default function LivePlayer({ liveInputId, creatorId, creatorName, creato
     return () => { supabase.removeChannel(channel); };
   }, [liveInputId]);
 
+  useEffect(() => {
+    if (!liveInputId || !user?.id) return;
+    const supabase = createClient();
+    let channel: any;
+
+    const checkExisting = async () => {
+      const { data } = await supabase
+        .from("stream_join_requests")
+        .select("id,status")
+        .eq("live_input_id", liveInputId)
+        .eq("viewer_user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1);
+      const row = data?.[0];
+      if (row?.status === "pending" || row?.status === "approved" || row?.status === "denied") {
+        setJoinStatus(row.status);
+      }
+    };
+    checkExisting();
+
+    channel = supabase
+      .channel(`my_join_req_${liveInputId}_${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "stream_join_requests", filter: `live_input_id=eq.${liveInputId}` },
+        (payload) => {
+          const row: any = payload.new;
+          if (!row || row.viewer_user_id !== user.id) return;
+          if (row.status === "pending" || row.status === "approved" || row.status === "denied") {
+            setJoinStatus(row.status);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => { if (channel) supabase.removeChannel(channel); };
+  }, [liveInputId, user?.id]);
+
+  const requestJoin = async () => {
+    if (!user?.id || !liveInputId || joining || joinStatus === "pending" || joinStatus === "approved") return;
+    setJoining(true);
+    try {
+      const supabase = createClient();
+      const displayName = profile?.display_name || profile?.username || user.email?.split("@")[0] || "User";
+      const avatarUrl = profile?.avatar_url || null;
+      const { data: existing } = await supabase
+        .from("stream_join_requests")
+        .select("id")
+        .eq("live_input_id", liveInputId)
+        .eq("viewer_user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (existing?.id) {
+        await supabase.from("stream_join_requests").update({ status: "pending", viewer_name: displayName, viewer_avatar: avatarUrl }).eq("id", existing.id);
+      } else {
+        await supabase.from("stream_join_requests").insert({
+          live_input_id: liveInputId,
+          viewer_user_id: user.id,
+          viewer_name: displayName,
+          viewer_avatar: avatarUrl,
+          status: "pending",
+        });
+      }
+      setJoinStatus("pending");
+    } catch (e) {
+      console.error("Join request failed", e);
+      alert("Could not request to join. Please try again.");
+    } finally {
+      setJoining(false);
+    }
+  };
+
   const spawnReaction = (emoji: string) => {
     const id = Date.now() + Math.random();
     const x = Math.random() * 50 - 25;
@@ -120,6 +198,8 @@ export default function LivePlayer({ liveInputId, creatorId, creatorName, creato
       <div className="absolute inset-0 bg-black [&_iframe]:!w-full [&_iframe]:!h-full [&_video]:!w-full [&_video]:!h-full [&_.stream-player]:!h-full [&_.stream-player]:!w-full">
         <Stream src={liveInputId} controls autoplay muted />
       </div>
+
+      {joinStatus === "approved" && <GuestCoStream roomId={liveInputId} />}
 
       {isConnecting && (
         <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/80 pointer-events-none">
@@ -193,6 +273,22 @@ export default function LivePlayer({ liveInputId, creatorId, creatorName, creato
           </div>
           <span className="text-[11px] font-semibold text-white/85">Chat</span>
         </button>
+
+        {(invitedToJoin || joinStatus !== "idle") && creatorId !== user?.id && (
+          <button
+            onClick={requestJoin}
+            disabled={joining || joinStatus === "pending" || joinStatus === "approved"}
+            className="flex flex-col items-center gap-1"
+            aria-label="Join live"
+          >
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center border backdrop-blur-xl transition ${joinStatus === "approved" ? "bg-green-500/30 border-green-500/50 text-green-300" : joinStatus === "pending" ? "bg-yellow-500/20 border-yellow-500/40 text-yellow-300" : "bg-[#E53945]/25 border-[#E53945]/40 text-white"}`}>
+              <Video size={22} />
+            </div>
+            <span className="text-[11px] font-semibold text-white/85">
+              {joinStatus === "approved" ? "Live" : joinStatus === "pending" ? "Waiting" : joinStatus === "denied" ? "Retry" : "Join"}
+            </span>
+          </button>
+        )}
 
         <button onClick={openTip} className="flex flex-col items-center gap-1" aria-label="Tip">
           <div className="w-12 h-12 rounded-full flex items-center justify-center bg-black/30 border border-white/10 text-white backdrop-blur-xl">

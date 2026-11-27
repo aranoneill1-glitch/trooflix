@@ -26,7 +26,7 @@ export async function POST(req: Request) {
       actor_id: hostUserId,
       type: "system",
       title,
-      message: `${message}${hostUsername ? ` Tap to watch: /live/${hostUsername}` : ""}`,
+      message: `${message}${hostUsername ? ` Tap to watch: /live/${hostUsername}?invite=1` : ""}`,
       post_id: null,
     });
 

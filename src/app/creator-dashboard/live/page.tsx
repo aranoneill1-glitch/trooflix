@@ -120,6 +120,12 @@ export default function GoLivePage() {
   }, [guestConnected]);
 
   useEffect(() => {
+    if (stream && videoRef.current && videoRef.current.srcObject !== stream) {
+      videoRef.current.srcObject = stream;
+    }
+  }, [stream]);
+
+  useEffect(() => {
     async function setupCamera() {
       try {
         const mediaStream = await navigator.mediaDevices.getUserMedia({
@@ -190,10 +196,18 @@ export default function GoLivePage() {
   }, [isLive, liveInputId]);
 
   useEffect(() => {
-    if (isLive && canvasPreviewRef.current && canvasStreamRef.current) {
-      canvasPreviewRef.current.srcObject = canvasStreamRef.current;
-      canvasPreviewRef.current.play().catch(e => console.error("Canvas play failed", e));
-    }
+    if (!isLive) return;
+    const attach = () => {
+      if (canvasPreviewRef.current && canvasStreamRef.current) {
+        if (canvasPreviewRef.current.srcObject !== canvasStreamRef.current) {
+          canvasPreviewRef.current.srcObject = canvasStreamRef.current;
+        }
+        canvasPreviewRef.current.play().catch(() => {});
+      }
+    };
+    attach();
+    const t = setInterval(attach, 500);
+    return () => clearInterval(t);
   }, [isLive]);
 
   const toggleMute = () => {
@@ -478,8 +492,8 @@ export default function GoLivePage() {
           }
         } else {
           if (isGuestHere) {
-            if (videoRef.current) drawVideoCover(videoRef.current, 0, 0, 960, 1080, ctx);
-            if (guestVideoRef.current && guestVideoRef.current.srcObject) drawVideoCover(guestVideoRef.current, 960, 0, 960, 1080, ctx);
+            if (videoRef.current) drawVideoCover(videoRef.current, 0, 0, 1920, 540, ctx);
+            if (guestVideoRef.current && guestVideoRef.current.srcObject) drawVideoCover(guestVideoRef.current, 0, 540, 1920, 540, ctx);
           } else {
             if (videoRef.current) drawVideoCover(videoRef.current, 0, 0, 1920, 1080, ctx);
           }

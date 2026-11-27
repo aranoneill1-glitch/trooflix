@@ -1,6 +1,7 @@
 import TipModal from "@/components/TipModal";
 import PushNotificationManager from "@/components/PushNotificationManager";
 import GlobalIncomingCall from "@/components/GlobalIncomingCall";
+import GlobalLiveInvite from "@/components/GlobalLiveInvite";
 import TrooflixAssistant from "@/components/TrooflixAssistant";
 import UnlockCreatorToolsPopup from "@/components/UnlockCreatorToolsPopup";
 import type { Metadata, Viewport } from "next";
@@ -77,6 +78,7 @@ export default function RootLayout({
       <body className={`${geist.className} antialiased`}>
         
         <GlobalIncomingCall />
+        <GlobalLiveInvite />
         <TipModal />
         <UnlockCreatorToolsPopup />
         <script
