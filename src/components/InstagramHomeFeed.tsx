@@ -346,7 +346,7 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
   return (
     <div className="pb-24">
       <div className="pt-[calc(env(safe-area-inset-top)+64px)] pb-2">
-        <StudioWidgets active="mytrooflix" compact className="mb-1" />
+        <StudioWidgets active="mytrooflix" className="mb-1" />
       </div>
       {/* Main-type pills + categories dropdown — below the fixed top bar */}
       <div className="pb-3 border-b border-white/[0.06]">
