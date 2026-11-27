@@ -16,7 +16,7 @@ export default function GuestCoStream({ roomId, localVideoRef }: { roomId: strin
     let remoteSet = false;
     let closed = false;
     let signalPoll: any = null;
-    let lastSignalId = 0;
+    const seenSignals = new Set<string>();
 
     const setupGuest = async () => {
       try {
@@ -106,11 +106,12 @@ export default function GuestCoStream({ roomId, localVideoRef }: { roomId: strin
               .from("webrtc_signals")
               .select("id,sender_id,type,payload")
               .eq("room_id", roomId)
-              .gt("id", lastSignalId)
-              .order("id", { ascending: true })
-              .limit(50);
+              .order("created_at", { ascending: true })
+              .limit(100);
             for (const signal of data || []) {
-              if (typeof signal.id === "number") lastSignalId = Math.max(lastSignalId, signal.id);
+              const sid = String(signal.id);
+              if (seenSignals.has(sid)) continue;
+              seenSignals.add(sid);
               if (!signal || signal.sender_id === user.id) continue;
               if (signal.type === "offer") await handleOffer(signal.payload);
               else if (signal.type === "candidate") {

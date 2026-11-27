@@ -497,18 +497,19 @@ export default function GoLivePage() {
         }
       });
 
-    let lastSignalId = 0;
+    const seenSignals = new Set<string>();
     const pollSignals = async () => {
       try {
         const { data } = await supabase
           .from("webrtc_signals")
           .select("id,sender_id,type,payload")
           .eq("room_id", liveInputId)
-          .gt("id", lastSignalId)
-          .order("id", { ascending: true })
-          .limit(50);
+          .order("created_at", { ascending: true })
+          .limit(100);
         for (const signal of data || []) {
-          if (typeof signal.id === "number") lastSignalId = Math.max(lastSignalId, signal.id);
+          const sid = String(signal.id);
+          if (seenSignals.has(sid)) continue;
+          seenSignals.add(sid);
           if (!signal || signal.sender_id === "host") continue;
           if (signal.type === "answer") {
             if (remoteSet) continue;
