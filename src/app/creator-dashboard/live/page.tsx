@@ -33,6 +33,7 @@ export default function GoLivePage() {
   const [liveInputId, setLiveInputId] = useState<string | null>(null);
   const [joinRequest, setJoinRequest] = useState<any>(null);
   const [guestConnected, setGuestConnected] = useState(false);
+  const [guestPending, setGuestPending] = useState(false);
   const [connectedGuestName, setConnectedGuestName] = useState("");
   const [connectedGuestAvatar, setConnectedGuestAvatar] = useState<string | null>(null);
   const [connectedGuestUserId, setConnectedGuestUserId] = useState<string | null>(null);
@@ -119,8 +120,8 @@ export default function GoLivePage() {
   };
 
   useEffect(() => {
-    guestConnectedRef.current = guestConnected;
-  }, [guestConnected]);
+    guestConnectedRef.current = guestConnected || guestPending;
+  }, [guestConnected, guestPending]);
 
   useEffect(() => {
     if (stream && videoRef.current) {
@@ -390,9 +391,10 @@ export default function GoLivePage() {
     let remoteSet = false;
 
     pc.onconnectionstatechange = () => {
-      if (pc.connectionState === "connected") setGuestConnected(true);
+      if (pc.connectionState === "connected") { setGuestConnected(true); setGuestPending(false); }
       if (pc.connectionState === "disconnected" || pc.connectionState === "failed" || pc.connectionState === "closed") {
         setGuestConnected(false);
+        setGuestPending(false);
         setConnectedGuestName("");
         setConnectedGuestAvatar(null);
         setConnectedGuestUserId(null);
@@ -413,6 +415,7 @@ export default function GoLivePage() {
         guestVideoRef.current.srcObject = event.streams[0];
         guestVideoRef.current.play().catch(e => console.error("Video play failed", e));
         setGuestConnected(true);
+        setGuestPending(false);
       }
       if (event.track.kind === "audio") {
         if (guestAudioRef.current) {
@@ -478,6 +481,7 @@ export default function GoLivePage() {
       setConnectedGuestName(joinRequest.viewer_name);
       setConnectedGuestAvatar(joinRequest.viewer_avatar || null);
       setConnectedGuestUserId(joinRequest.viewer_user_id || null);
+      setGuestPending(true);
       await connectGuest(joinRequest.viewer_user_id);
     }
     setJoinRequest(null);
@@ -698,8 +702,8 @@ export default function GoLivePage() {
       {!isDesktop && (
       <div className="absolute inset-0">
         <video ref={videoRef} autoPlay muted playsInline className="absolute inset-0 w-full h-full object-cover" style={{ transform: isFrontCamera && !isScreenSharing ? "scaleX(-1)" : "none" }} />
-        {isLive && (guestConnected || isScreenSharing) && <video ref={canvasPreviewRef} autoPlay muted playsInline className="absolute inset-0 w-full h-full object-cover z-10 bg-black" style={{ transform: "none" }} />}
-        {isLive && guestConnected && (
+        {isLive && (guestConnected || guestPending || isScreenSharing) && <video ref={canvasPreviewRef} autoPlay muted playsInline className="absolute inset-0 w-full h-full object-cover z-10 bg-black" style={{ transform: "none" }} />}
+        {isLive && (guestConnected || guestPending) && (
           <div className="absolute left-4 top-[52%] z-30 pointer-events-none">
             <div className="pointer-events-auto flex items-center gap-2 bg-black/45 backdrop-blur-md border border-white/10 rounded-full pl-1 pr-2 py-1">
               <div className="w-8 h-8 rounded-full overflow-hidden bg-white/10 border border-white/15 shrink-0">
@@ -892,10 +896,10 @@ export default function GoLivePage() {
         <div className="flex-1 relative bg-black flex items-center justify-center p-4 lg:p-6 pb-24 lg:pb-6">
           <div className="relative w-full h-full rounded-3xl overflow-hidden bg-[#0f0f12] shadow-2xl border border-white/10">
             <video autoPlay muted playsInline className="w-full h-full object-cover absolute inset-0" style={{ transform: isFrontCamera && !isScreenSharing ? "scaleX(-1)" : "none" }} ref={(el) => { if (el) { (videoRef as any).current = el; if (stream && el.srcObject !== stream) el.srcObject = stream; } }} />
-            {isLive && (guestConnected || isScreenSharing) && (
+            {isLive && (guestConnected || guestPending || isScreenSharing) && (
               <video ref={canvasPreviewRef} autoPlay muted playsInline className="w-full h-full object-cover absolute inset-0 z-10 bg-black" style={{ transform: "none" }} />
             )}
-            {isLive && guestConnected && (
+            {isLive && (guestConnected || guestPending) && (
               <div className="absolute left-4 top-[52%] z-30 pointer-events-none">
                 <div className="pointer-events-auto flex items-center gap-2 bg-black/45 backdrop-blur-md border border-white/10 rounded-full pl-1 pr-2 py-1">
                   <div className="w-8 h-8 rounded-full overflow-hidden bg-white/10 border border-white/15 shrink-0">
