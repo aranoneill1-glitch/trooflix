@@ -769,7 +769,7 @@ export default function GoLivePage() {
         {isLive && (guestConnected || guestPending || isScreenSharing) && <video ref={canvasPreviewRef} autoPlay muted playsInline className="absolute inset-0 w-full h-full object-cover z-10 bg-black" style={{ transform: "none" }} />}
 
 
-        <div className="absolute inset-x-0 top-0 z-20 pt-[calc(env(safe-area-inset-top)+12px)] px-4">
+        <div className="absolute inset-x-0 top-0 z-20 pt-[calc(env(safe-area-inset-top)+52px)] px-4">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-2.5 rounded-full px-3 py-1.5">
               {isLive ? (
@@ -885,7 +885,10 @@ export default function GoLivePage() {
         </div>
 
         <div className="absolute inset-x-0 bottom-0 z-30 px-4 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-16 bg-gradient-to-t from-black/85 via-black/45 to-transparent">
-          <div className="flex items-center justify-center mb-3">
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <button onClick={() => (isLive ? stopStream() : router.push("/creator-dashboard"))} className="w-11 h-11 rounded-full flex items-center justify-center bg-black/35 border border-white/15 text-white/90 backdrop-blur-xl" aria-label="Close">
+              <X size={18} />
+            </button>
             <button
               onClick={() => setLiveVisibility(v => v === "public" ? "subscribers" : "public")}
               className={`px-3 py-1.5 rounded-full text-[11px] font-bold border backdrop-blur-xl transition inline-flex items-center gap-1.5 ${liveVisibility === "subscribers" ? "bg-[#D4AF37]/20 border-[#D4AF37]/40 text-[#D4AF37]" : "bg-white/12 border-white/15 text-white"}`}
@@ -893,12 +896,6 @@ export default function GoLivePage() {
             >
               <Eye size={13} />
               <span>{liveVisibility === "public" ? "Everyone" : "Subscribers"}</span>
-            </button>
-          </div>
-
-          <div className="flex items-center justify-between gap-2 mb-3">
-            <button onClick={() => (isLive ? stopStream() : router.push("/creator-dashboard"))} className="w-11 h-11 rounded-full flex items-center justify-center bg-black/35 border border-white/15 text-white/90 backdrop-blur-xl" aria-label="Close">
-              <X size={18} />
             </button>
             {isLive ? (
               <button onClick={() => { setShowInviteSheet(true); setShowMobileChat(false); }} className="w-11 h-11 rounded-full flex items-center justify-center bg-black/35 border border-white/15 text-white/90 backdrop-blur-xl" aria-label="Invite participant">
