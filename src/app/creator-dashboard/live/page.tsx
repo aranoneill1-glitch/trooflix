@@ -428,8 +428,8 @@ export default function GoLivePage() {
         localCand += 1;
         setGuestDebug(`ans:${remoteSet ? "y" : "n"} ic:${localCand}/${remoteCand}`);
         supabase.from("webrtc_signals").insert({
-          call_id: liveInputId, sender_id: "host", recipient_id: guestUserId, signal_type: "candidate", signal_data: event.candidate
-        }).then();
+          call_id: liveInputId, sender_id: userId, recipient_id: guestUserId, signal_type: "candidate", signal_data: event.candidate
+        }).then(({ error }) => { if (error) setGuestDebug(`err:${error.message.slice(0,30)}`); });
       }
     };
 
@@ -454,12 +454,12 @@ export default function GoLivePage() {
 
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
-    await supabase.from("webrtc_signals").insert({ call_id: liveInputId, sender_id: "host", recipient_id: guestUserId, signal_type: "offer", signal_data: offer });
+    await supabase.from("webrtc_signals").insert({ call_id: liveInputId, sender_id: userId, recipient_id: guestUserId, signal_type: "offer", signal_data: offer });
 
     const channel = supabase.channel(`webrtc_host_${liveInputId}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "webrtc_signals", filter: `call_id=eq.${liveInputId}` }, async (payload) => {
         const signal = payload.new;
-        if (!signal || signal.sender_id === "host") return;
+        if (!signal || signal.sender_id === userId) return;
 
         if (signal.signal_type === "answer") {
           if (remoteSet) return;
@@ -484,7 +484,7 @@ export default function GoLivePage() {
             .order("created_at", { ascending: false }).limit(1);
           if (data && data.length > 0 && !remoteSet) {
             const answer = data[0];
-            if (answer.sender_id !== "host") {
+            if (answer.sender_id !== userId) {
               await pc.setRemoteDescription(new RTCSessionDescription(answer.signal_data));
               remoteSet = true;
               setGuestDebug(`ans:y ic:${localCand}/${remoteCand}`);
@@ -510,7 +510,7 @@ export default function GoLivePage() {
           const sid = String(signal.id);
           if (seenSignals.has(sid)) continue;
           seenSignals.add(sid);
-          if (!signal || signal.sender_id === "host") continue;
+          if (!signal || signal.sender_id === userId) continue;
           if (signal.signal_type === "answer") {
             if (remoteSet) continue;
             await pc.setRemoteDescription(new RTCSessionDescription(signal.signal_data));
