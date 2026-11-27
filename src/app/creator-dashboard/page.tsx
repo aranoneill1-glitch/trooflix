@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { 
   Video, CheckCircle2, MessageSquare, Eye, Star, Pencil, 
-  ShoppingBag, LayoutDashboard, LayoutGrid, List, Package, Palette, Camera, Trash2, X, Radio, Inbox, Plus, Play, Lock, Shield, CreditCard, Mic, Film, Music, Image as ImageIcon, Loader2, Repeat2
+  ShoppingBag, LayoutDashboard, LayoutGrid, List, Package, Palette, Camera, Trash2, X, Radio, Inbox, Plus, Play, Lock, Shield, CreditCard, Mic, Film, Music, Image as ImageIcon, Loader2, Repeat2, BarChart3, Settings, UserCog
 } from "lucide-react";
 
 import TopBar from "@/components/TopBar";
@@ -114,6 +114,7 @@ function CreatorDashboardContent() {
   const [showMyTrooFlix, setShowMyTrooFlix] = useState(false);
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
   const [showAddContentMenu, setShowAddContentMenu] = useState(false);
+  const [showAccountType, setShowAccountType] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [profileFeature, setProfileFeature] = useState<any>(null);
   const [uploadingProfileFeature, setUploadingProfileFeature] = useState(false);
@@ -904,213 +905,59 @@ function CreatorDashboardContent() {
 
           {isDashboardView && !showMyTrooFlix && !isFreeTier && (
       <>
-        {/* DESKTOP BENTO BOX */}
-        <div className="hidden lg:block animate-in fade-in duration-300 max-w-6xl mx-auto">
-          <div className="grid grid-cols-3 gap-6">
-            
-            {/* 1. Add */}
-            <button onClick={() => setShowAddContentMenu(true)} className="bg-white/[0.03] border border-white/10 rounded-3xl hover:bg-white/[0.08] p-6 group hover:border-green-500/50 transition-all duration-300 text-left relative overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-              <div className="w-12 h-12 rounded-2xl bg-green-500/20 flex items-center justify-center mb-6">
-                <Plus className="text-green-400" size={24} />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">Add</h3>
-              <p className="text-sm text-white/50">Upload a new video, short, or tweet.</p>
-            </button>
-
-            {/* 2. Manage */}
-            <Link href="/creator-dashboard/manage-content" className="bg-white/[0.03] border border-white/10 rounded-3xl hover:bg-white/[0.08] p-6 group hover:border-[#E53945]/50 transition-all duration-300 relative overflow-hidden flex flex-col justify-between shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-              <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full blur-3xl -mr-10 -mt-10" />
-              <div>
-                <div className="flex items-center justify-between mb-6">
-                  <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center">
-                    <Video className="text-white" size={24} />
+        <div className="animate-in fade-in duration-300 max-w-5xl mx-auto">
+          <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-6 gap-x-3 gap-y-6 sm:gap-x-4 sm:gap-y-7 px-1">
+            {[
+              { id: "add", label: "Add", icon: Plus, from: "#34D399", to: "#059669", onClick: () => setShowAddContentMenu(true) },
+              { id: "manage", label: "Manage", icon: Video, from: "#FF7A59", to: "#E53945", href: "/creator-dashboard/manage-content" },
+              { id: "import", label: "Import", icon: Download, from: "#F87171", to: "#DC2626", href: "/creator-dashboard/import" },
+              { id: "edit-profile", label: "Edit Profile", icon: Pencil, from: "#60A5FA", to: "#2563EB", href: "/creator-dashboard/settings" },
+              { id: "theme", label: "Theme", icon: Palette, from: "#C084FC", to: "#7C3AED", href: "/creator-dashboard/theme" },
+              { id: "shop", label: "Shop", icon: ShoppingBag, from: "#FBBF24", to: "#D97706", href: "/creator-dashboard/shop" },
+              { id: "orders", label: "Orders", icon: Package, from: "#38BDF8", to: "#0284C7", href: "/creator-dashboard/orders" },
+              { id: "subs", label: "Subs", icon: Star, from: "#FACC15", to: "#CA8A04", href: "/creator-dashboard/subscriptions" },
+              { id: "settings", label: "Settings", icon: Settings, from: "#94A3B8", to: "#475569", href: "/creator-dashboard/account-settings" },
+              { id: "analytics", label: "Analytics", icon: BarChart3, from: "#FB7185", to: "#E11D48", href: "/creator-dashboard/analytics" },
+              { id: "account-type", label: "Account", icon: UserCog, from: "#A78BFA", to: "#6D28D9", onClick: () => setShowAccountType(true) },
+            ].map((item) => {
+              const Icon = item.icon;
+              const inner = (
+                <>
+                  <div
+                    className="relative mx-auto flex h-[62px] w-[62px] sm:h-[68px] sm:w-[68px] items-center justify-center rounded-[22px] shadow-[0_8px_24px_rgba(0,0,0,0.35)] transition-transform duration-200 hover:scale-[1.04] active:scale-[0.98]"
+                    style={{ background: `linear-gradient(160deg, ${item.from}, ${item.to})` }}
+                  >
+                    <Icon size={30} className="text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.25)]" strokeWidth={1.8} />
                   </div>
-                  <span className="bg-white/10 text-white text-xs font-bold px-3 py-1 rounded-full">{creatorVideos.length} Posts</span>
-                </div>
-                <h3 className="text-xl font-bold text-white mb-2">Manage</h3>
-                <p className="text-sm text-white/50">Edit, delete, or reorder your videos and long-videos.</p>
-              </div>
-              <div className="flex items-center text-sm font-bold text-white group-hover:text-[#E53945] transition-colors mt-6">Open Dashboard <ChevronRight size={16} className="ml-1" /></div>
-            </Link>
-
-            {/* 3. Import */}
-            <Link href="/creator-dashboard/import" className="bg-white/[0.03] border border-white/10 rounded-3xl hover:bg-white/[0.08] p-6 group hover:border-[#E53945]/50 transition-all duration-300 relative overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-[#E53945]/10 rounded-full blur-3xl -mr-10 -mt-10 group-hover:bg-[#E53945]/20 transition-colors" />
-              <div className="w-12 h-12 rounded-2xl bg-[#E53945]/20 flex items-center justify-center mb-6">
-                <Download className="text-[#E53945]" size={24} />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">Import</h3>
-              <p className="text-sm text-white/50 mb-6">Bring your entire back-catalog to Trooflix seamlessly.</p>
-              <div className="flex items-center text-sm font-bold text-[#E53945]">Open Tool <ChevronRight size={16} className="ml-1" /></div>
-            </Link>
-
-            <Link href="/creator-dashboard/settings" className="bg-white/[0.03] border border-white/10 rounded-3xl hover:bg-white/[0.08] p-6 group hover:border-blue-500/50 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-              <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center mb-6">
-                <Pencil className="text-blue-400" size={24} />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">Edit Profile</h3>
-              <p className="text-sm text-white/50">Update your bio, links, and profile picture.</p>
-            </Link>
-
-            <Link href="/creator-dashboard/theme" className="bg-white/[0.03] border border-white/10 rounded-3xl hover:bg-white/[0.08] p-6 group hover:border-purple-500/50 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-              <div className="w-12 h-12 rounded-2xl bg-purple-500/20 flex items-center justify-center mb-6">
-                <Palette className="text-purple-400" size={24} />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">Profile Theme</h3>
-              <p className="text-sm text-white/50">Customize your page with colors and gradients.</p>
-            </Link>
-
-            <Link href="/creator-dashboard/shop" className="bg-white/[0.03] border border-white/10 rounded-3xl hover:bg-white/[0.08] p-6 group hover:border-yellow-500/50 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-              <div className="w-12 h-12 rounded-2xl bg-yellow-500/20 flex items-center justify-center mb-6">
-                <ShoppingBag className="text-yellow-400" size={24} />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">Manage Shop</h3>
-              <p className="text-sm text-white/50">Add merch, books, and manage your inventory.</p>
-            </Link>
-
-            <Link href="/creator-dashboard/orders" className="bg-white/[0.03] border border-white/10 rounded-3xl hover:bg-white/[0.08] p-6 group hover:border-blue-500/50 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-              <div className="w-12 h-12 rounded-2xl bg-blue-500/20 flex items-center justify-center mb-6">
-                <Package className="text-blue-400" size={24} />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">Manage Orders</h3>
-              <p className="text-sm text-white/50">Track shipments and update tracking numbers.</p>
-            </Link>
-
-            <Link href="/creator-dashboard/subscriptions" className="bg-white/[0.03] border border-white/10 rounded-3xl hover:bg-white/[0.08] p-6 group hover:border-[#D4AF37]/50 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-              <div className="w-12 h-12 rounded-2xl bg-[#D4AF37]/20 flex items-center justify-center mb-6">
-                <Star className="text-[#D4AF37]" size={24} />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">Subscriptions</h3>
-              <p className="text-sm text-white/50">Manage your premium tiers and pricing.</p>
-            </Link>
-
-            <Link href="/creator-dashboard/security-billing" className="col-span-full bg-white/[0.03] border border-white/10 rounded-3xl hover:bg-white/[0.08] p-6 group hover:border-white/30 transition-all duration-300 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center shrink-0">
-                  <Shield className="text-white/70" size={24} />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-white">Security & Billing</h3>
-                  <p className="text-sm text-white/50">Update password, manage subscription and payouts.</p>
-                </div>
-              </div>
-              <ChevronRight className="text-white/30 group-hover:text-white transition-colors shrink-0 hidden md:block" />
-            </Link>
+                  <span className="mt-2 block text-center text-[11px] font-semibold tracking-tight text-white/80">{item.label}</span>
+                </>
+              );
+              if (item.onClick) {
+                return <button key={item.id} type="button" onClick={item.onClick} className="flex flex-col items-center">{inner}</button>;
+              }
+              return <Link key={item.id} href={item.href || "#"} className="flex flex-col items-center">{inner}</Link>;
+            })}
           </div>
         </div>
 
-        {/* MOBILE OLD LIST */}
-        <div className="lg:hidden animate-in fade-in duration-300 space-y-8 max-w-4xl mx-auto">
-          <section>
-            <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">Profile</h2>
-            <div className="grid grid-cols-2 gap-3 w-full max-w-2xl">
-              <Link
-                href="/creator-dashboard/settings"
-                className="bg-white/5 border border-white/20 hover:bg-white/10 active:scale-95 p-4 rounded-2xl flex flex-col items-center justify-center gap-2.5 text-center transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
-              >
-                <div className="w-11 h-11 rounded-xl bg-blue-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Pencil className="text-blue-400" size={22} />
-                </div>
-                <span className="text-sm font-bold text-white group-hover:text-white/90">Edit Profile</span>
-              </Link>
-
-              <Link
-                href="/creator-dashboard/theme"
-                className="bg-white/5 border border-white/20 hover:bg-white/10 active:scale-95 p-4 rounded-2xl flex flex-col items-center justify-center gap-2.5 text-center transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
-              >
-                <div className="w-11 h-11 rounded-xl bg-purple-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Palette className="text-purple-400" size={22} />
-                </div>
-                <span className="text-sm font-bold text-white group-hover:text-white/90">Profile Theme</span>
-              </Link>
+        {showAccountType && (
+          <div className="fixed inset-0 z-[400] bg-black/70 flex items-center justify-center p-4" onClick={() => setShowAccountType(false)}>
+            <div className="bg-[#141416] border border-white/10 rounded-3xl w-full max-w-sm p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+              <h2 className="text-xl font-black text-white mb-1">Account Type</h2>
+              <p className="text-sm text-white/55 mb-5">Your current account status.</p>
+              <div className="bg-white/5 border border-white/10 rounded-2xl p-4 mb-5">
+                <p className="text-xs text-white/45 uppercase tracking-wider font-bold mb-1">Status</p>
+                <p className="text-lg font-bold text-white">{creatorToolsUnlocked ? "Creator" : "Free"}</p>
+              </div>
+              {creatorToolsUnlocked ? (
+                <Link href="/creator-dashboard/subscriptions" onClick={() => setShowAccountType(false)} className="block w-full text-center bg-white/10 hover:bg-white/15 border border-white/10 text-white font-bold py-3 rounded-xl transition">Manage / Downgrade</Link>
+              ) : (
+                <Link href="/upgrade" onClick={() => setShowAccountType(false)} className="block w-full text-center bg-[#E53945] hover:bg-[#d12e39] text-white font-bold py-3 rounded-xl transition">Upgrade</Link>
+              )}
+              <button onClick={() => setShowAccountType(false)} className="w-full mt-3 text-sm font-semibold text-white/55 hover:text-white transition">Close</button>
             </div>
-          </section>
-
-          <section>
-            <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">Content</h2>
-            <div className="grid grid-cols-3 gap-3 w-full max-w-2xl">
-              <button 
-                type="button"
-                onClick={() => setShowAddContentMenu(true)} 
-                className="bg-white/5 border border-white/20 hover:bg-white/10 active:scale-95 p-4 rounded-2xl flex flex-col items-center justify-center gap-2.5 text-center transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
-              >
-                <div className="w-11 h-11 rounded-xl bg-[#E53945]/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Plus className="text-[#E53945]" size={22} />
-                </div>
-                <span className="text-sm font-bold text-white group-hover:text-white/90">Add</span>
-              </button>
-
-              <Link 
-                href="/creator-dashboard/manage-content" 
-                className="bg-white/5 border border-white/20 hover:bg-white/10 active:scale-95 p-4 rounded-2xl flex flex-col items-center justify-center gap-2.5 text-center transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
-              >
-                <div className="w-11 h-11 rounded-xl bg-[#E53945]/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Video className="text-[#E53945]" size={22} />
-                </div>
-                <span className="text-sm font-bold text-white group-hover:text-white/90">Manage</span>
-              </Link>
-
-              <Link 
-                href="/creator-dashboard/import" 
-                className="bg-white/5 border border-white/20 hover:bg-white/10 active:scale-95 p-4 rounded-2xl flex flex-col items-center justify-center gap-2.5 text-center transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
-              >
-                <div className="w-11 h-11 rounded-xl bg-[#E53945]/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Download className="text-[#E53945]" size={22} />
-                </div>
-                <span className="text-sm font-bold text-white group-hover:text-white/90">Import</span>
-              </Link>
-            </div>
-          </section>
-
-          <section>
-            <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">Marketplace</h2>
-            <div className="grid grid-cols-2 gap-3 w-full max-w-2xl">
-              <Link
-                href="/creator-dashboard/shop"
-                className="bg-white/5 border border-white/20 hover:bg-white/10 active:scale-95 p-4 rounded-2xl flex flex-col items-center justify-center gap-2.5 text-center transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
-              >
-                <div className="w-11 h-11 rounded-xl bg-yellow-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <ShoppingBag className="text-yellow-400" size={22} />
-                </div>
-                <span className="text-sm font-bold text-white group-hover:text-white/90">Manage Shop</span>
-              </Link>
-
-              <Link
-                href="/creator-dashboard/orders"
-                className="bg-white/5 border border-white/20 hover:bg-white/10 active:scale-95 p-4 rounded-2xl flex flex-col items-center justify-center gap-2.5 text-center transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
-              >
-                <div className="w-11 h-11 rounded-xl bg-blue-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Package className="text-blue-400" size={22} />
-                </div>
-                <span className="text-sm font-bold text-white group-hover:text-white/90">Manage Orders</span>
-              </Link>
-            </div>
-          </section>
-
-          <section>
-            <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">Subscriptions</h2>
-            <div className="flex flex-col gap-2 w-full max-w-2xl">
-              <Link href="/creator-dashboard/subscriptions" className="bg-white/5 border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-                <div className="flex items-center gap-4"><Star className="text-[#E53945]" size={20} /><span className="text-sm font-bold text-white group-hover:text-white/90">Manage Subscription</span></div>
-                <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
-              </Link>
-            </div>
-          </section>
-
-          <section>
-            <h2 className="text-[10px] font-bold tracking-[0.25em] text-white/40 mb-3 uppercase">Security & Billing</h2>
-            <div className="flex flex-col gap-2 w-full max-w-2xl">
-              <Link href="/creator-dashboard/security-billing" className="bg-white/5 border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-                <div className="flex items-center gap-4"><Shield className="text-[#E53945]" size={20} /><span className="text-sm font-bold text-white group-hover:text-white/90">Change Password</span></div>
-                <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
-              </Link>
-              <Link href="/creator-dashboard/security-billing" className="bg-white/5 border border-white/20 hover:bg-white/10 p-4 rounded-xl flex items-center justify-between transition-all group shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-                <div className="flex items-center gap-4"><CreditCard className="text-[#D4AF37]" size={20} /><span className="text-sm font-bold text-white group-hover:text-white/90">Billing</span></div>
-                <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 transition-colors" />
-              </Link>
-            </div>
-          </section>
-        </div>
+          </div>
+        )}
       </>
     )}
 

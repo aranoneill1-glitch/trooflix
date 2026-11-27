@@ -17,7 +17,7 @@ export async function GET(req: Request) {
 
     const { data, error } = await supabaseAdmin
       .from("profiles")
-      .select("user_id, avatar_url, backdrop_url, display_name, username, bio, is_verified, verification_tick, tier, has_pass, pass_expires_at, stripe_subscription_id, subscription_status, updated_at, instagram_handle, x_handle")
+      .select("user_id, avatar_url, backdrop_url, display_name, username, bio, is_verified, verification_tick, tier, has_pass, pass_expires_at, stripe_subscription_id, subscription_status, updated_at, instagram_handle, x_handle, is_hidden")
       .eq("user_id", userId)
       .maybeSingle();
 
@@ -48,7 +48,7 @@ export async function GET(req: Request) {
 // POST /api/profile — { userId, avatarUrl?, displayName? }
 export async function POST(req: Request) {
   try {
-    const { userId, avatarUrl, backdropUrl, displayName, bio, instagramHandle, xHandle } = await req.json();
+    const { userId, avatarUrl, backdropUrl, displayName, bio, instagramHandle, xHandle, isHidden } = await req.json();
     if (!userId) {
       return NextResponse.json({ error: "userId required" }, { status: 400 });
     }
@@ -69,6 +69,7 @@ export async function POST(req: Request) {
     if (bio !== undefined) payload.bio = typeof bio === "string" ? bio.slice(0, 300) : null;
     if (instagramHandle !== undefined) payload.instagram_handle = instagramHandle;
     if (xHandle !== undefined) payload.x_handle = xHandle;
+    if (isHidden !== undefined) payload.is_hidden = !!isHidden;
 
     if (existing) {
       const { data, error } = await supabaseAdmin

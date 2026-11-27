@@ -174,6 +174,7 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [sheetVideo, setSheetVideo] = useState<number | null>(null);
   const [reportVideoId, setReportVideoId] = useState<number | null>(null);
+  const [postMenu, setPostMenu] = useState<{ videoId: number; targetUserId: string | null; creatorName: string } | null>(null);
   const [saved, setSaved] = useState<number[]>([]);
   const [likedLocal, setLikedLocal] = useState<number[]>([]);
   const [activeId, setActiveId] = useState<number | null>(null);
@@ -324,6 +325,23 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
 
   const toggleSave = (id: number) => setSaved(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
 
+  const handleBlockUser = async () => {
+    if (!postMenu?.targetUserId) return;
+    if (!currentUserId) { window.location.href = "/login"; return; }
+    if (!confirm(`Block ${postMenu.creatorName || "this user"}? You won't see their content.`)) return;
+    try {
+      const res = await fetch("/api/users/block", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ blockerId: currentUserId, blockedId: postMenu.targetUserId }),
+      });
+      if (!res.ok) throw new Error("Failed to block user");
+      setPostMenu(null);
+    } catch {
+      alert("Could not block user. Please try again.");
+    }
+  };
+
   return (
     <div className="pb-24">
       {/* Main-type pills + categories dropdown — below the fixed top bar */}
@@ -427,7 +445,7 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
                   <p className="truncate text-[15px] font-semibold text-white/95">{name}</p>
                   <p className="truncate text-[11px] font-medium text-white/55">{video.category || "Trooflix"}</p>
                 </div>
-                <button onClick={() => { haptic(); setReportVideoId(video.id); }} aria-label="More options" className="p-1 text-white/70 hover:text-white transition"><MoreHorizontal size={20} /></button>
+                <button onClick={() => { haptic(); setPostMenu({ videoId: video.id, targetUserId: video.uploaderUserId || (creator as any)?.ownerUserId || (creator as any)?.user_id || null, creatorName: name }); }} aria-label="More options" className="p-1 text-white/70 hover:text-white transition"><MoreHorizontal size={20} /></button>
               </header>
 
               <PostMedia
@@ -493,6 +511,30 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
       )}
 
       <CommentSheet videoId={sheetVideo} open={sheetVideo !== null} onClose={() => setSheetVideo(null)} />
+      {postMenu && (
+        <div className="fixed inset-0 z-[600] bg-black/60 flex items-end sm:items-center justify-center" onClick={() => setPostMenu(null)}>
+          <div className="w-full sm:max-w-sm bg-[#141416] border border-white/10 rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="px-4 py-3 border-b border-white/10">
+              <p className="text-sm font-semibold text-white">Post options</p>
+              <p className="text-xs text-white/45 truncate">{postMenu.creatorName}</p>
+            </div>
+            <button
+              onClick={() => { setReportVideoId(postMenu.videoId); setPostMenu(null); }}
+              className="w-full text-left px-4 py-3.5 text-sm font-medium text-white hover:bg-white/5 transition border-b border-white/10"
+            >
+              Report
+            </button>
+            <button
+              onClick={handleBlockUser}
+              disabled={!postMenu.targetUserId || postMenu.targetUserId === currentUserId}
+              className="w-full text-left px-4 py-3.5 text-sm font-medium text-[#FF5A5F] hover:bg-white/5 transition disabled:opacity-40"
+            >
+              Block user
+            </button>
+            <button onClick={() => setPostMenu(null)} className="w-full text-center px-4 py-3.5 text-sm font-semibold text-white/70 hover:bg-white/5 transition border-t border-white/10">Cancel</button>
+          </div>
+        </div>
+      )}
       <ReportModal open={reportVideoId !== null} onClose={() => setReportVideoId(null)} contentType="post" contentId={reportVideoId ?? 0} />
     </div>
   );

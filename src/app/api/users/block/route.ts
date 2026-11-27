@@ -42,3 +42,41 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: String(e) }, { status: 500 });
   }
 }
+
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const blockerId = searchParams.get("blockerId");
+    if (!blockerId) return NextResponse.json({ users: [] });
+
+    const { data, error } = await supabaseAdmin
+      .from("blocked_users")
+      .select("blocked_id, created_at")
+      .eq("blocker_id", blockerId)
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    const ids = (data || []).map((r: any) => r.blocked_id);
+    if (ids.length === 0) return NextResponse.json({ users: [] });
+
+    const { data: profiles } = await supabaseAdmin
+      .from("profiles")
+      .select("user_id, username, display_name, avatar_url")
+      .in("user_id", ids);
+
+    const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
+    const users = ids.map((id: string) => {
+      const p = profileMap.get(id);
+      return {
+        userId: id,
+        username: p?.username || "user",
+        displayName: p?.display_name || p?.username || "User",
+        avatarUrl: p?.avatar_url || null,
+      };
+    });
+
+    return NextResponse.json({ users });
+  } catch (e: any) {
+    return NextResponse.json({ error: String(e) }, { status: 500 });
+  }
+}
