@@ -15,11 +15,21 @@ export async function GET(req: Request) {
     const userId = searchParams.get("user_id");
     if (!userId) return NextResponse.json({ profile: null });
 
-    const { data, error } = await supabaseAdmin
+    let { data, error } = await supabaseAdmin
       .from("profiles")
       .select("user_id, avatar_url, backdrop_url, display_name, username, bio, is_verified, verification_tick, tier, has_pass, pass_expires_at, stripe_subscription_id, subscription_status, updated_at, instagram_handle, x_handle, is_hidden")
       .eq("user_id", userId)
       .maybeSingle();
+
+    if (error && String(error.message || "").includes("is_hidden")) {
+      const retry = await supabaseAdmin
+        .from("profiles")
+        .select("user_id, avatar_url, backdrop_url, display_name, username, bio, is_verified, verification_tick, tier, has_pass, pass_expires_at, stripe_subscription_id, subscription_status, updated_at, instagram_handle, x_handle")
+        .eq("user_id", userId)
+        .maybeSingle();
+      data = retry.data as any;
+      error = retry.error as any;
+    }
 
     if (error) throw error;
     const hasRedTick = !!data && (data.verification_tick === "plus_red" || data.verification_tick === "creator_gold" || data.is_verified === true);
@@ -71,24 +81,20 @@ export async function POST(req: Request) {
     if (xHandle !== undefined) payload.x_handle = xHandle;
     if (isHidden !== undefined) payload.is_hidden = !!isHidden;
 
-    if (existing) {
-      const { data, error } = await supabaseAdmin
-        .from("profiles")
-        .update(payload)
-        .eq("user_id", userId)
-        .select()
-        .single();
-      if (error) throw error;
-      return NextResponse.json({ ok: true, profile: data });
-    } else {
-      const { data, error } = await supabaseAdmin
-        .from("profiles")
-        .insert(payload)
-        .select()
-        .single();
-      if (error) throw error;
-      return NextResponse.json({ ok: true, profile: data });
+    const writeProfile = async (body: any) => {
+      if (existing) {
+        return await supabaseAdmin.from("profiles").update(body).eq("user_id", userId).select().single();
+      }
+      return await supabaseAdmin.from("profiles").insert(body).select().single();
+    };
+
+    let { data, error } = await writeProfile(payload);
+    if (error && "is_hidden" in payload && String(error.message || "").includes("is_hidden")) {
+      const { is_hidden, ...rest } = payload;
+      ({ data, error } = await writeProfile(rest));
     }
+    if (error) throw error;
+    return NextResponse.json({ ok: true, profile: data });
   } catch (e: any) {
     console.error("POST profile error:", e);
     return NextResponse.json({ error: e.message || String(e) }, { status: 500 });
