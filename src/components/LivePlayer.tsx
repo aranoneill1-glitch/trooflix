@@ -180,6 +180,7 @@ export default function LivePlayer({ liveInputId, creatorId, creatorName, creato
       }
     };
     checkExisting();
+    const poll = setInterval(checkExisting, 3000);
 
     channel = supabase
       .channel(`my_join_req_${liveInputId}_${user.id}`)
@@ -196,7 +197,7 @@ export default function LivePlayer({ liveInputId, creatorId, creatorName, creato
       )
       .subscribe();
 
-    return () => { if (channel) supabase.removeChannel(channel); };
+    return () => { clearInterval(poll); if (channel) supabase.removeChannel(channel); };
   }, [liveInputId, user?.id]);
 
   const requestJoin = async () => {
