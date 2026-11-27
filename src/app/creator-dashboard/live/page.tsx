@@ -34,6 +34,9 @@ export default function GoLivePage() {
   const [joinRequest, setJoinRequest] = useState<any>(null);
   const [guestConnected, setGuestConnected] = useState(false);
   const [connectedGuestName, setConnectedGuestName] = useState("");
+  const [connectedGuestAvatar, setConnectedGuestAvatar] = useState<string | null>(null);
+  const [connectedGuestUserId, setConnectedGuestUserId] = useState<string | null>(null);
+  const [isFollowingGuest, setIsFollowingGuest] = useState(false);
   const [showProductMenu, setShowProductMenu] = useState(false);
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);
   const [myProducts, setMyProducts] = useState<any[]>([]);
@@ -125,6 +128,14 @@ export default function GoLivePage() {
       videoRef.current.play().catch(() => {});
     }
   }, [stream]);
+
+  useEffect(() => {
+    if (!connectedGuestUserId || !userId) { setIsFollowingGuest(false); return; }
+    fetch(`/api/user-follows?user_id=${encodeURIComponent(userId)}&target_id=${encodeURIComponent(connectedGuestUserId)}`, { cache: "no-store" })
+      .then(r => r.json())
+      .then(d => setIsFollowingGuest(!!d?.following))
+      .catch(() => setIsFollowingGuest(false));
+  }, [connectedGuestUserId, userId]);
 
   useEffect(() => {
     async function setupCamera() {
@@ -382,6 +393,9 @@ export default function GoLivePage() {
       if (pc.connectionState === "connected") setGuestConnected(true);
       if (pc.connectionState === "disconnected" || pc.connectionState === "failed" || pc.connectionState === "closed") {
         setGuestConnected(false);
+        setConnectedGuestName("");
+        setConnectedGuestAvatar(null);
+        setConnectedGuestUserId(null);
         if (guestVideoRef.current) guestVideoRef.current.srcObject = null;
       }
     };
@@ -461,9 +475,26 @@ export default function GoLivePage() {
     await supabase.from("stream_join_requests").update({ status }).eq("id", joinRequest.id);
     if (status === "approved") {
       setConnectedGuestName(joinRequest.viewer_name);
+      setConnectedGuestAvatar(joinRequest.viewer_avatar || null);
+      setConnectedGuestUserId(joinRequest.viewer_user_id || null);
       await connectGuest(joinRequest.viewer_user_id);
     }
     setJoinRequest(null);
+  };
+
+  const toggleFollowGuest = async () => {
+    if (!userId || !connectedGuestUserId) return;
+    const next = !isFollowingGuest;
+    setIsFollowingGuest(next);
+    try {
+      await fetch("/api/user-follows", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ followerId: userId, followingId: connectedGuestUserId }),
+      });
+    } catch {
+      setIsFollowingGuest(!next);
+    }
   };
 
   const drawVideoCover = (video: HTMLVideoElement, x: number, y: number, w: number, h: number, ctx: CanvasRenderingContext2D) => {
@@ -667,6 +698,28 @@ export default function GoLivePage() {
       <div className="absolute inset-0">
         <video ref={videoRef} autoPlay muted playsInline className="absolute inset-0 w-full h-full object-cover" style={{ transform: isFrontCamera && !isScreenSharing ? "scaleX(-1)" : "none" }} />
         {isLive && (guestConnected || isScreenSharing) && <video ref={canvasPreviewRef} autoPlay muted playsInline className="absolute inset-0 w-full h-full object-cover z-10 bg-black" style={{ transform: "none" }} />}
+        {isLive && guestConnected && (
+          <div className="absolute left-4 top-[52%] z-30 pointer-events-none">
+            <div className="pointer-events-auto flex items-center gap-2 bg-black/45 backdrop-blur-md border border-white/10 rounded-full pl-1 pr-2 py-1">
+              <div className="w-8 h-8 rounded-full overflow-hidden bg-white/10 border border-white/15 shrink-0">
+                {connectedGuestAvatar ? (
+                  <img src={connectedGuestAvatar} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-xs font-bold text-white">{(connectedGuestName || "G").charAt(0).toUpperCase()}</div>
+                )}
+              </div>
+              <span className="text-xs font-bold text-white max-w-[110px] truncate">{connectedGuestName || "Guest"}</span>
+              {connectedGuestUserId && connectedGuestUserId !== userId && (
+                <button
+                  onClick={toggleFollowGuest}
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition ${isFollowingGuest ? "bg-white/15 text-white border border-white/15" : "bg-[#E53945] text-white"}`}
+                >
+                  {isFollowingGuest ? "Following" : "Follow"}
+                </button>
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="absolute inset-x-0 top-0 z-20 pt-[calc(env(safe-area-inset-top)+12px)] px-4 pb-10 bg-gradient-to-b from-black/70 via-black/20 to-transparent">
           <div className="flex items-start justify-between gap-3">
@@ -840,6 +893,28 @@ export default function GoLivePage() {
             <video autoPlay muted playsInline className="w-full h-full object-cover absolute inset-0" style={{ transform: isFrontCamera && !isScreenSharing ? "scaleX(-1)" : "none" }} ref={(el) => { if (el) { (videoRef as any).current = el; if (stream && el.srcObject !== stream) el.srcObject = stream; } }} />
             {isLive && (guestConnected || isScreenSharing) && (
               <video ref={canvasPreviewRef} autoPlay muted playsInline className="w-full h-full object-cover absolute inset-0 z-10 bg-black" style={{ transform: "none" }} />
+            )}
+            {isLive && guestConnected && (
+              <div className="absolute left-4 top-[52%] z-30 pointer-events-none">
+                <div className="pointer-events-auto flex items-center gap-2 bg-black/45 backdrop-blur-md border border-white/10 rounded-full pl-1 pr-2 py-1">
+                  <div className="w-8 h-8 rounded-full overflow-hidden bg-white/10 border border-white/15 shrink-0">
+                    {connectedGuestAvatar ? (
+                      <img src={connectedGuestAvatar} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-xs font-bold text-white">{(connectedGuestName || "G").charAt(0).toUpperCase()}</div>
+                    )}
+                  </div>
+                  <span className="text-xs font-bold text-white max-w-[110px] truncate">{connectedGuestName || "Guest"}</span>
+                  {connectedGuestUserId && connectedGuestUserId !== userId && (
+                    <button
+                      onClick={toggleFollowGuest}
+                      className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition ${isFollowingGuest ? "bg-white/15 text-white border border-white/15" : "bg-[#E53945] text-white"}`}
+                    >
+                      {isFollowingGuest ? "Following" : "Follow"}
+                    </button>
+                  )}
+                </div>
+              </div>
             )}
 
             <div className="absolute top-4 left-4 z-20 flex items-center gap-3 bg-black/40 px-3 py-1.5 rounded-full border border-white/10 shadow-lg">

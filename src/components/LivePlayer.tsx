@@ -34,6 +34,8 @@ export default function LivePlayer({ liveInputId, creatorId, creatorName, creato
   const [joinStatus, setJoinStatus] = useState<"idle" | "pending" | "approved" | "denied">("idle");
   const [joining, setJoining] = useState(false);
   const [streamEnded, setStreamEnded] = useState(false);
+  const [guestInfo, setGuestInfo] = useState<{ userId: string; name: string; avatar: string | null } | null>(null);
+  const [isFollowingGuest, setIsFollowingGuest] = useState(false);
   const lastLikeSentRef = useRef(0);
   const chatScrollRef = useRef<HTMLDivElement>(null);
   const searchParams = useSearchParams();
@@ -74,6 +76,60 @@ export default function LivePlayer({ liveInputId, creatorId, creatorName, creato
     const t = setInterval(check, 8000);
     return () => { cancelled = true; clearInterval(t); };
   }, [creatorId]);
+
+  useEffect(() => {
+    if (!liveInputId) return;
+    const supabase = createClient();
+    let cancelled = false;
+    const checkGuest = async () => {
+      try {
+        const { data } = await supabase
+          .from("stream_join_requests")
+          .select("viewer_user_id, viewer_name, viewer_avatar, status")
+          .eq("live_input_id", liveInputId)
+          .eq("status", "approved")
+          .order("created_at", { ascending: false })
+          .limit(1);
+        const row = data?.[0];
+        if (cancelled) return;
+        if (row?.viewer_user_id) {
+          setGuestInfo({ userId: row.viewer_user_id, name: row.viewer_name || "Guest", avatar: row.viewer_avatar || null });
+        } else {
+          setGuestInfo(null);
+        }
+      } catch {}
+    };
+    checkGuest();
+    const t = setInterval(checkGuest, 8000);
+    const channel = supabase
+      .channel(`guest_overlay_${liveInputId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "stream_join_requests", filter: `live_input_id=eq.${liveInputId}` }, () => { checkGuest(); })
+      .subscribe();
+    return () => { cancelled = true; clearInterval(t); supabase.removeChannel(channel); };
+  }, [liveInputId]);
+
+  useEffect(() => {
+    if (!guestInfo?.userId || !user?.id) { setIsFollowingGuest(false); return; }
+    fetch(`/api/user-follows?user_id=${encodeURIComponent(user.id)}&target_id=${encodeURIComponent(guestInfo.userId)}`, { cache: "no-store" })
+      .then(r => r.json())
+      .then(d => setIsFollowingGuest(!!d?.following))
+      .catch(() => setIsFollowingGuest(false));
+  }, [guestInfo?.userId, user?.id]);
+
+  const toggleFollowGuest = async () => {
+    if (!user?.id || !guestInfo?.userId) return;
+    const next = !isFollowingGuest;
+    setIsFollowingGuest(next);
+    try {
+      await fetch("/api/user-follows", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ followerId: user.id, followingId: guestInfo.userId }),
+      });
+    } catch {
+      setIsFollowingGuest(!next);
+    }
+  };
 
   useEffect(() => {
     if (!liveInputId) return;
@@ -234,6 +290,29 @@ export default function LivePlayer({ liveInputId, creatorId, creatorName, creato
           <h2 className="text-2xl font-black text-white mb-2">This live stream has now ended</h2>
           <p className="text-white/55 mb-6 max-w-sm">Thanks for watching. You can head back to explore more live streams and creators.</p>
           <Link href="/" className="px-5 py-3 rounded-full bg-[#E53945] text-white font-bold hover:bg-[#d12e39] transition">Back to Home</Link>
+        </div>
+      )}
+
+      {guestInfo && !streamEnded && (
+        <div className="absolute left-4 top-[52%] z-20 pointer-events-none">
+          <div className="pointer-events-auto flex items-center gap-2 bg-black/45 backdrop-blur-md border border-white/10 rounded-full pl-1 pr-2 py-1">
+            <div className="w-8 h-8 rounded-full overflow-hidden bg-white/10 border border-white/15 shrink-0">
+              {guestInfo.avatar ? (
+                <img src={guestInfo.avatar} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-xs font-bold text-white">{(guestInfo.name || "G").charAt(0).toUpperCase()}</div>
+              )}
+            </div>
+            <span className="text-xs font-bold text-white max-w-[110px] truncate">{guestInfo.name || "Guest"}</span>
+            {guestInfo.userId && guestInfo.userId !== user?.id && (
+              <button
+                onClick={toggleFollowGuest}
+                className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition ${isFollowingGuest ? "bg-white/15 text-white border border-white/15" : "bg-[#E53945] text-white"}`}
+              >
+                {isFollowingGuest ? "Following" : "Follow"}
+              </button>
+            )}
+          </div>
         </div>
       )}
 
