@@ -32,18 +32,30 @@ export default function StudioWidgets({
           const locked = item.id === "dashboard" && dashboardLocked;
           const inner = (
             <>
-              <div
-                className={`relative mx-auto flex ${compact ? "h-[46px] w-[46px] rounded-[16px]" : "h-[62px] w-[62px] sm:h-[68px] sm:w-[68px] rounded-[22px]"} items-center justify-center shadow-[0_8px_24px_rgba(0,0,0,0.35)] transition-transform duration-200 ${selected ? "scale-[1.04] ring-2 ring-white/70 ring-offset-2 ring-offset-[#09090B]" : "hover:scale-[1.03]"}`}
-                style={{ background: `linear-gradient(160deg, ${item.from}, ${item.to})` }}
-              >
-                <Icon size={compact ? 22 : 30} className="text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.25)]" strokeWidth={1.8} />
-                {locked && (
-                  <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/70 border border-white/20">
-                    <Lock size={10} className="text-white/80" />
-                  </span>
-                )}
+              <div className="relative mx-auto">
+                <div
+                  className="absolute inset-0 rounded-[24px] blur-xl opacity-40"
+                  style={{ background: `linear-gradient(160deg, ${item.from}, ${item.to})` }}
+                />
+                <div
+                  className={`relative mx-auto flex ${compact ? "h-[48px] w-[48px] rounded-[18px]" : "h-[64px] w-[64px] sm:h-[72px] sm:w-[72px] rounded-[24px]"} items-center justify-center transition-all duration-300 ${selected ? "scale-[1.03]" : "hover:scale-[1.04] active:scale-[0.97]"}`}
+                  style={{
+                    background: `linear-gradient(180deg, ${item.from}, ${item.to})`,
+                    boxShadow: `0 10px 30px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.28), inset 0 -1px 0 rgba(0,0,0,0.12)`,
+                  }}
+                >
+                  <div className="pointer-events-none absolute inset-0 rounded-[inherit] bg-[linear-gradient(180deg,rgba(255,255,255,0.22),rgba(255,255,255,0.06)_28%,rgba(255,255,255,0)_55%)]" />
+                  <div className="pointer-events-none absolute inset-[1px] rounded-[inherit] border border-white/10" />
+                  <Icon size={compact ? 22 : 30} className="relative text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.25)]" strokeWidth={1.9} />
+                  {selected && <div className="pointer-events-none absolute -inset-[3px] rounded-[27px] border border-white/35" />}
+                  {locked && (
+                    <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/70 border border-white/20">
+                      <Lock size={10} className="text-white/80" />
+                    </span>
+                  )}
+                </div>
               </div>
-              <span className={`${compact ? "mt-1.5 text-[10px]" : "mt-2 text-[11px]"} block text-center font-semibold tracking-tight ${selected ? "text-white" : "text-white/70"}`}>
+              <span className={`${compact ? "mt-1.5 text-[10px]" : "mt-2.5 text-[11px] sm:text-[12px]"} block text-center font-medium tracking-[-0.01em] ${selected ? "text-white" : "text-white/65"}`}>
                 {item.label}
               </span>
             </>
