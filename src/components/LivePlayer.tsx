@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Eye, Share2, Loader2, Heart, MessageCircle, X, ArrowLeft, Video } from "lucide-react";
+import { Eye, Share2, Loader2, Heart, MessageCircle, X, ArrowLeft, Video, Radio } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Stream } from "@cloudflare/stream-react";
@@ -33,6 +33,7 @@ export default function LivePlayer({ liveInputId, creatorId, creatorName, creato
   const [profile, setProfile] = useState<any>(null);
   const [joinStatus, setJoinStatus] = useState<"idle" | "pending" | "approved" | "denied">("idle");
   const [joining, setJoining] = useState(false);
+  const [streamEnded, setStreamEnded] = useState(false);
   const lastLikeSentRef = useRef(0);
   const chatScrollRef = useRef<HTMLDivElement>(null);
   const searchParams = useSearchParams();
@@ -56,6 +57,23 @@ export default function LivePlayer({ liveInputId, creatorId, creatorName, creato
     const timer = setTimeout(() => setIsConnecting(false), 3000);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (!creatorId) return;
+    let cancelled = false;
+    const check = async () => {
+      try {
+        const res = await fetch(`/api/profile?user_id=${encodeURIComponent(creatorId)}`, { cache: "no-store" });
+        const data = await res.json();
+        const p = data?.profile;
+        const live = !!p?.is_live && !!p?.live_input_id;
+        if (!cancelled && !live) setStreamEnded(true);
+      } catch {}
+    };
+    check();
+    const t = setInterval(check, 8000);
+    return () => { cancelled = true; clearInterval(t); };
+  }, [creatorId]);
 
   useEffect(() => {
     if (!liveInputId) return;
@@ -201,10 +219,21 @@ export default function LivePlayer({ liveInputId, creatorId, creatorName, creato
 
       {joinStatus === "approved" && <GuestCoStream roomId={liveInputId} />}
 
-      {isConnecting && (
+      {isConnecting && !streamEnded && (
         <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/80 pointer-events-none">
           <Loader2 className="animate-spin text-[#E53945] mb-3" size={40} />
           <p className="text-white font-bold text-lg">Connecting...</p>
+        </div>
+      )}
+
+      {streamEnded && (
+        <div className="absolute inset-0 z-[60] flex flex-col items-center justify-center bg-black/85 px-6 text-center">
+          <div className="w-16 h-16 rounded-full bg-white/10 border border-white/15 flex items-center justify-center mb-4">
+            <Radio size={28} className="text-white/70" />
+          </div>
+          <h2 className="text-2xl font-black text-white mb-2">This live stream has now ended</h2>
+          <p className="text-white/55 mb-6 max-w-sm">Thanks for watching. You can head back to explore more live streams and creators.</p>
+          <Link href="/" className="px-5 py-3 rounded-full bg-[#E53945] text-white font-bold hover:bg-[#d12e39] transition">Back to Home</Link>
         </div>
       )}
 
