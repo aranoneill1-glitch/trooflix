@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { Eye, LayoutDashboard, Lock, MessageCircle, Play, Wallet } from "lucide-react";
+import { Eye, LayoutDashboard, Lock, MessageCircle, Wallet } from "lucide-react";
 
 export type CreatorStudioSection = "profile" | "dashboard" | "mytrooflix" | "bank" | "chat";
 
 type Props = {
   active: CreatorStudioSection;
-  onViewChange?: (section: Extract<CreatorStudioSection, "profile" | "dashboard" | "mytrooflix">) => void;
+  onViewChange?: (section: Extract<CreatorStudioSection, "profile" | "dashboard">) => void;
   dashboardLocked?: boolean;
   className?: string;
 };
@@ -15,7 +15,6 @@ type Props = {
 const tabs = [
   { id: "profile", label: "Profile", icon: Eye },
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { id: "mytrooflix", label: "MyTrooFlix", icon: Play },
   { id: "bank", label: "TrooBank", icon: Wallet, href: "/wallet" },
   { id: "chat", label: "TrooChat", icon: MessageCircle, href: "/messages" },
 ] as const;
@@ -37,13 +36,13 @@ export default function CreatorStudioNav({ active, onViewChange, dashboardLocked
               <span className="whitespace-nowrap">{tab.label}</span>
             </>
           );
-          const viewId = tab.id === "profile" || tab.id === "dashboard" || tab.id === "mytrooflix";
+          const viewId = tab.id === "profile" || tab.id === "dashboard";
           const href = viewId ? `/creator-dashboard?studioTab=${tab.id}` : tab.href;
 
             return (
               <span key={tab.id} className="contents">
                 {viewId && onViewChange ? (
-                  <button type="button" onClick={() => onViewChange(tab.id as Extract<CreatorStudioSection, "profile" | "dashboard" | "mytrooflix">)} aria-pressed={selected} className={className}>
+                  <button type="button" onClick={() => onViewChange(tab.id as "profile" | "dashboard")} aria-pressed={selected} className={className}>
                     {label}
                   </button>
                 ) : (
