@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { getCachedUser } from "@/lib/cache";
 import { createClient } from "@/utils/supabase/client";
-import { Mic, MicOff, Video, VideoOff, Radio, StopCircle, Monitor, MonitorOff, UserCheck, PictureInPicture, ShoppingBag, X, Globe, Lock, Loader2, SwitchCamera, MessageCircle } from "lucide-react";
+import { Mic, MicOff, Video, VideoOff, Radio, StopCircle, Monitor, MonitorOff, UserCheck, PictureInPicture, ShoppingBag, X, Globe, Lock, Loader2, SwitchCamera, MessageCircle, UserPlus, Search } from "lucide-react";
 import LiveChat from "@/components/LiveChat";
 
 export default function GoLivePage() {
@@ -43,6 +43,12 @@ export default function GoLivePage() {
   const [isFrontCamera, setIsFrontCamera] = useState(true);
   const [isDesktop, setIsDesktop] = useState(() => typeof window !== "undefined" ? window.matchMedia("(min-width: 1024px)").matches : false);
   const [floatingComments, setFloatingComments] = useState<any[]>([]);
+  const [showInviteSheet, setShowInviteSheet] = useState(false);
+  const [inviteQuery, setInviteQuery] = useState("");
+  const [inviteResults, setInviteResults] = useState<any[]>([]);
+  const [inviteSearching, setInviteSearching] = useState(false);
+  const [inviteSending, setInviteSending] = useState<string | null>(null);
+  const [hostProfile, setHostProfile] = useState<{ username?: string; display_name?: string } | null>(null);
 
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 1024px)");
@@ -72,6 +78,23 @@ export default function GoLivePage() {
   useEffect(() => {
     if (chatScrollRef.current) chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
   }, [floatingComments]);
+
+  useEffect(() => {
+    if (!showInviteSheet) return;
+    const q = inviteQuery.trim();
+    if (q.length < 2) { setInviteResults([]); return; }
+    const t = setTimeout(async () => {
+      setInviteSearching(true);
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`, { cache: "no-store" });
+        const data = await res.json();
+        const users = Array.isArray(data?.users) ? data.users.filter((u: any) => u.user_id !== userId) : [];
+        setInviteResults(users);
+      } catch { setInviteResults([]); }
+      finally { setInviteSearching(false); }
+    }, 250);
+    return () => clearTimeout(t);
+  }, [showInviteSheet, inviteQuery, userId]);
 
   // Timer
   useEffect(() => {
@@ -117,6 +140,7 @@ export default function GoLivePage() {
         try {
           const p = await fetch(`/api/profile?user_id=${u.id}`, { cache: "no-store" }).then(r => r.json());
           setCreatorToolsUnlocked(!!p?.profile?.creator_tools_unlocked);
+          setHostProfile({ username: p?.profile?.username, display_name: p?.profile?.display_name || p?.profile?.username });
         } catch { setCreatorToolsUnlocked(false); }
       } else {
         setCreatorToolsUnlocked(false);
@@ -271,6 +295,31 @@ export default function GoLivePage() {
       console.error("Failed to fetch products", e);
     } finally {
       setIsLoadingProducts(false);
+    }
+  };
+
+  const sendInvite = async (targetUser: any) => {
+    if (!userId || !targetUser?.user_id) return;
+    setInviteSending(targetUser.user_id);
+    try {
+      const res = await fetch("/api/live/invite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          hostUserId: userId,
+          hostName: hostProfile?.display_name || hostProfile?.username || "Someone",
+          hostUsername: hostProfile?.username || "",
+          invitedUserId: targetUser.user_id,
+          liveInputId,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error || "Failed to invite");
+      setInviteResults((prev) => prev.map((u) => u.user_id === targetUser.user_id ? { ...u, invited: true } : u));
+    } catch (e: any) {
+      alert(e?.message || "Could not send invite.");
+    } finally {
+      setInviteSending(null);
     }
   };
 
@@ -600,6 +649,11 @@ export default function GoLivePage() {
                   <UserCheck size={13} /> {connectedGuestName || "Guest"}
                 </div>
               )}
+              {isLive && (
+                <button onClick={() => { setShowInviteSheet(true); setShowMobileChat(false); }} className="w-10 h-10 rounded-full bg-black/45 border border-white/10 flex items-center justify-center text-white/90" aria-label="Invite participant">
+                  <UserPlus size={18} />
+                </button>
+              )}
               <button onClick={() => (isLive ? stopStream() : router.push("/creator-dashboard"))} className="w-10 h-10 rounded-full bg-black/45 border border-white/10 flex items-center justify-center text-white/90" aria-label="Close">
                 <X size={18} />
               </button>
@@ -631,6 +685,54 @@ export default function GoLivePage() {
               <button onClick={() => setShowMobileChat(false)} className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"><X size={16} /></button>
             </div>
             <LiveChat liveInputId={liveInputId} className="flex-1 min-h-0" />
+          </div>
+        )}
+
+        {showInviteSheet && isLive && (
+          <div className="absolute inset-x-0 bottom-0 z-40 h-[55dvh] bg-[#111114]/95 backdrop-blur-2xl border-t border-white/10 rounded-t-[28px] overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+              <h3 className="text-sm font-bold">Invite to Live</h3>
+              <button onClick={() => { setShowInviteSheet(false); setInviteQuery(""); setInviteResults([]); }} className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"><X size={16} /></button>
+            </div>
+            <div className="p-4 border-b border-white/10">
+              <div className="relative">
+                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
+                <input
+                  value={inviteQuery}
+                  onChange={(e) => setInviteQuery(e.target.value)}
+                  placeholder="Search users to invite..."
+                  className="w-full h-11 bg-white/[0.06] border border-white/10 rounded-xl pl-9 pr-3 text-sm text-white placeholder:text-white/40 outline-none focus:border-white/20"
+                />
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto p-3 space-y-2">
+              {inviteQuery.trim().length < 2 ? (
+                <p className="text-sm text-white/45 text-center py-8">Type at least 2 characters to search.</p>
+              ) : inviteSearching ? (
+                <p className="text-sm text-white/45 text-center py-8">Searching...</p>
+              ) : inviteResults.length === 0 ? (
+                <p className="text-sm text-white/45 text-center py-8">No users found.</p>
+              ) : inviteResults.map((u) => (
+                <div key={u.user_id} className="flex items-center justify-between gap-3 bg-white/[0.04] border border-white/10 rounded-xl p-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-full bg-white/10 overflow-hidden shrink-0">
+                      {u.avatar_url ? <img src={u.avatar_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-sm font-bold text-white/70">{String(u.display_name || u.username || "U").charAt(0).toUpperCase()}</div>}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-white truncate">{u.display_name || u.username || "User"}</p>
+                      <p className="text-xs text-white/45 truncate">@{u.username}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => sendInvite(u)}
+                    disabled={!!u.invited || inviteSending === u.user_id}
+                    className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold transition ${u.invited ? "bg-green-500/20 text-green-300 border border-green-500/30" : "bg-[#E53945] text-white hover:bg-[#d12e39] disabled:opacity-60"}`}
+                  >
+                    {u.invited ? "Invited" : inviteSending === u.user_id ? "..." : "Invite"}
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -681,7 +783,7 @@ export default function GoLivePage() {
             <button onClick={flipCamera} className="w-12 h-12 rounded-full flex items-center justify-center bg-white/12 border border-white/15 text-white backdrop-blur-xl transition" aria-label="Flip camera">
               <SwitchCamera size={20} />
             </button>
-            <button onClick={() => isLive && liveInputId ? setShowMobileChat(v => !v) : openProductMenu()} className={`w-12 h-12 rounded-full flex items-center justify-center border backdrop-blur-xl transition ${isLive ? "bg-white/12 border-white/15 text-white" : "bg-[#E53945]/20 border-[#E53945]/30 text-[#E53945]"}`} aria-label={isLive ? "Chat" : "Products"}>
+            <button onClick={() => { if (isLive && liveInputId) { setShowMobileChat(v => !v); setShowInviteSheet(false); } else { openProductMenu(); } }} className={`w-12 h-12 rounded-full flex items-center justify-center border backdrop-blur-xl transition ${isLive ? "bg-white/12 border-white/15 text-white" : "bg-[#E53945]/20 border-[#E53945]/30 text-[#E53945]"}`} aria-label={isLive ? "Chat" : "Products"}>
               {isLive ? <MessageCircle size={20} /> : <ShoppingBag size={20} />}
             </button>
           </div>
