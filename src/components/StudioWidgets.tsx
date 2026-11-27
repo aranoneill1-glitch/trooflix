@@ -15,8 +15,8 @@ export default function StudioWidgets({
   className?: string;
 }) {
   const items = [
-    { id: "profile" as const, label: "Profile", icon: Eye, from: "#5B8DEF", to: "#2D5BE3" },
-    { id: "dashboard" as const, label: "Dashboard", icon: LayoutDashboard, from: "#FF7A59", to: "#E53945" },
+    { id: "profile" as const, label: "Profile", icon: Eye, from: "#5B8DEF", to: "#2D5BE3", href: "/creator-dashboard?studioTab=profile" },
+    { id: "dashboard" as const, label: "Dashboard", icon: LayoutDashboard, from: "#FF7A59", to: "#E53945", href: "/creator-dashboard?studioTab=dashboard" },
     { id: "bank" as const, label: "TrooBank", icon: Wallet, from: "#43D17A", to: "#1FA855", href: "/wallet" },
     { id: "chat" as const, label: "TrooChat", icon: MessageCircle, from: "#5BC8F5", to: "#2A9FD6", href: "/messages" },
   ];
