@@ -8,7 +8,7 @@ import { Search, Plus, CheckCheck, Trash2 } from "lucide-react";
 import { Phone as PhoneIcon } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import CreatorStudioNav from "@/components/CreatorStudioNav";
+import StudioWidgets from "@/components/StudioWidgets";
 import { createClient } from "@/utils/supabase/client";
 import { useRealtimeDMs } from "@/hooks/useRealtimeDMs";
 import { getCachedUser } from "@/lib/cache";
@@ -349,7 +349,7 @@ export default function MessagesInbox() {
         style={{ background: profileBackdrop ? "rgba(0,0,0,0.25)" : "#000000",}}
       >
         
-              <div className="mx-auto w-full max-w-5xl px-4 md:px-6"><CreatorStudioNav active="chat" className="mb-3" /></div>
+              <div className="mx-auto w-full max-w-5xl px-4 md:px-6"><StudioWidgets active="chat" className="mb-3" /></div>
 
 <div className="max-w-3xl mx-auto flex items-center justify-between px-4 md:px-6 py-3">
           

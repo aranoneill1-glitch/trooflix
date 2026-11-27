@@ -20,7 +20,7 @@ import VerifiedBadge from "@/components/VerifiedBadge";
 import { getCachedUser } from "@/lib/cache";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import CreatorStudioNav from "@/components/CreatorStudioNav";
+import StudioWidgets from "@/components/StudioWidgets";
 import { motion, AnimatePresence } from "framer-motion";
 
 type Message = {
@@ -461,7 +461,7 @@ export default function ThreadPage() {
       <div className="relative z-10 flex flex-col h-full overflow-hidden">
       <TopBar />
       <div className={`flex-shrink-0 border-b border-white/5 px-3 pt-8 md:px-6 ${profileBackdrop ? "bg-black/20" : "bg-black"}`}>
-        <div className="mx-auto w-full max-w-5xl"><CreatorStudioNav active="chat" className="mb-2" /></div>
+        <div className="mx-auto w-full max-w-5xl"><StudioWidgets active="chat" className="mb-2" /></div>
       </div>
       {/* Header — white bar */}
       <header className={`flex-shrink-0 border-b border-white/10 ${profileBackdrop ? "bg-black/20" : "bg-black"}`}>

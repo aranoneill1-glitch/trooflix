@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import CreatorStudioNav from "@/components/CreatorStudioNav";
+import StudioWidgets from "@/components/StudioWidgets";
 import { Wallet, Plus, ArrowDownRight, ArrowUpRight, ArrowUp, ArrowDown, X, CheckCircle2, Building2, Bitcoin, Send, AlertTriangle, ShieldCheck, ChevronRight } from "lucide-react";
 import { getCachedUser } from "@/lib/cache";
 import { motion, AnimatePresence } from "framer-motion";
@@ -162,7 +162,7 @@ export default function WalletPage() {
       <div className="max-w-4xl mx-auto px-4 md:px-6 pt-[calc(env(safe-area-inset-top)+76px)]">
         
         {/* NEW LAYOUT */}
-    <CreatorStudioNav active="bank" className="mb-8" />
+    <StudioWidgets active="bank" className="mb-8" />
 
     <div className="mb-12 flex flex-col items-center text-center">
       <p className="text-[11px] font-bold tracking-[0.2em] text-white/40 uppercase mb-2">Available Balance</p>
