@@ -73,37 +73,48 @@ export default function GlobalLiveInvite() {
   return (
     <AnimatePresence>
       {invite && (
-        <motion.div
-          initial={{ opacity: 0, y: -24, scale: 0.98 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -24, scale: 0.98 }}
-          className="fixed top-4 left-4 right-4 z-[10006] max-w-md mx-auto bg-gradient-to-br from-[#1c1c1e] to-[#0a0303] border border-[#E53945]/30 rounded-2xl shadow-2xl overflow-hidden"
-        >
-          <div className="p-4 flex items-center gap-3">
-            <div className="w-14 h-14 rounded-full overflow-hidden bg-[#1c1c1e] shrink-0 border border-white/20">
-              {invite.fromAvatar ? (
-                <img src={invite.fromAvatar} alt={invite.fromName} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-xl font-black text-white">
-                  {invite.fromName.charAt(0).toUpperCase()}
-                </div>
-              )}
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[10006] bg-black/55"
+            onClick={decline}
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.92, y: 16 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.92, y: 16 }}
+            className="fixed left-1/2 top-1/2 z-[10007] w-[min(92vw,420px)] -translate-x-1/2 -translate-y-1/2 bg-gradient-to-br from-[#1c1c1e] to-[#0a0303] border border-[#E53945]/30 rounded-3xl shadow-2xl overflow-hidden"
+          >
+            <div className="p-6 text-center">
+              <div className="mx-auto mb-4 w-20 h-20 rounded-full overflow-hidden bg-[#1c1c1e] border border-white/20">
+                {invite.fromAvatar ? (
+                  <img src={invite.fromAvatar} alt={invite.fromName} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-2xl font-black text-white">
+                    {invite.fromName.charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-[#E53945] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 mb-2">
+                <Radio size={12} className="animate-pulse" /> Live Invite
+              </p>
+              <p className="text-xl font-black text-white leading-tight">
+                {invite.fromName} is inviting you to go live
+              </p>
+              <p className="text-sm text-white/55 mt-2">Tap join to enter their live stream.</p>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs text-[#E53945] font-bold uppercase tracking-wider flex items-center gap-1.5"><Radio size={12} className="animate-pulse" /> Live invite</p>
-              <p className="text-sm font-bold text-white truncate">{invite.fromName}</p>
-              <p className="text-xs text-white/55 truncate">is inviting you to join their live stream</p>
+            <div className="flex border-t border-white/10">
+              <button onClick={decline} className="flex-1 py-4 flex items-center justify-center gap-2 text-red-400 font-bold hover:bg-red-500/10 transition">
+                <PhoneOff size={18} /> Decline
+              </button>
+              <button onClick={accept} className="flex-1 py-4 flex items-center justify-center gap-2 bg-green-600 text-white font-bold hover:bg-green-500 transition">
+                <Phone size={18} /> Join
+              </button>
             </div>
-          </div>
-          <div className="flex border-t border-white/10">
-            <button onClick={decline} className="flex-1 py-3.5 flex items-center justify-center gap-2 text-red-400 font-bold hover:bg-red-500/10 transition">
-              <PhoneOff size={18} /> Decline
-            </button>
-            <button onClick={accept} className="flex-1 py-3.5 flex items-center justify-center gap-2 bg-green-600 text-white font-bold hover:bg-green-500 transition">
-              <Phone size={18} /> Join
-            </button>
-          </div>
-        </motion.div>
+          </motion.div>
+        </>
       )}
     </AnimatePresence>
   );
