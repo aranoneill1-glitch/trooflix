@@ -17,11 +17,11 @@ export default function StudioWidgets({
   compact?: boolean;
 }) {
   const items = [
-    { id: "profile" as const, label: "Profile", icon: Eye, accent: "#7EA2FF", href: "/creator-dashboard?studioTab=profile" },
-    { id: "dashboard" as const, label: "Dashboard", icon: LayoutDashboard, accent: "#FF8A7A", href: "/creator-dashboard?studioTab=dashboard" },
-    { id: "bank" as const, label: "TrooBank", icon: Wallet, accent: "#6DD3A0", href: "/wallet" },
-    { id: "chat" as const, label: "TrooChat", icon: MessageCircle, accent: "#7BCBFF", href: "/messages" },
-    { id: "shop" as const, label: "Shop", icon: ShoppingBag, accent: "#F0B35A", href: "/shop" },
+    { id: "profile" as const, label: "Profile", icon: Eye, from: "#4F8CFF", to: "#2563EB", href: "/creator-dashboard?studioTab=profile" },
+    { id: "dashboard" as const, label: "Dashboard", icon: LayoutDashboard, from: "#FF6B6B", to: "#E53945", href: "/creator-dashboard?studioTab=dashboard" },
+    { id: "bank" as const, label: "TrooBank", icon: Wallet, from: "#34C759", to: "#1F9D55", href: "/wallet" },
+    { id: "chat" as const, label: "TrooChat", icon: MessageCircle, from: "#38BDF8", to: "#0EA5E9", href: "/messages" },
+    { id: "shop" as const, label: "Shop", icon: ShoppingBag, from: "#FFB340", to: "#F97316", href: "/shop" },
   ];
 
   return (
@@ -34,30 +34,29 @@ export default function StudioWidgets({
           const inner = (
             <>
               <div
-                className={`relative mx-auto flex ${compact ? "h-[46px] w-[46px] rounded-[14px]" : "h-[60px] w-[60px] sm:h-[66px] sm:w-[66px] rounded-[18px]"} items-center justify-center transition-all duration-200 ${selected ? "bg-white/[0.1] border-white/[0.18]" : "bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.07] hover:border-white/[0.14]"} border backdrop-blur-sm active:scale-[0.97]`}
+                className={`relative mx-auto flex ${compact ? "h-[50px] w-[50px] rounded-[16px]" : "h-[62px] w-[62px] sm:h-[68px] sm:w-[68px] rounded-[20px]"} items-center justify-center transition-all duration-200 ${selected ? "scale-[1.03]" : "hover:scale-[1.03]"} active:scale-[0.97]`}
                 style={{
+                  background: `linear-gradient(180deg, ${item.from} 0%, ${item.to} 100%)`,
                   boxShadow: selected
-                    ? `0 8px 24px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.08), 0 0 0 1px ${item.accent}33`
-                    : "0 4px 16px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.05)",
+                    ? `0 10px 24px ${item.to}55, 0 4px 10px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -1px 0 rgba(0,0,0,0.12)`
+                    : `0 8px 20px rgba(0,0,0,0.22), 0 2px 6px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.32), inset 0 -1px 0 rgba(0,0,0,0.1)`,
                 }}
               >
-                <div
-                  className="pointer-events-none absolute inset-0 rounded-[inherit] opacity-[0.12]"
-                  style={{ background: `radial-gradient(120% 120% at 50% 0%, ${item.accent}, transparent 65%)` }}
-                />
+                <div className="pointer-events-none absolute inset-0 rounded-[inherit] bg-[linear-gradient(180deg,rgba(255,255,255,0.28),rgba(255,255,255,0.08)_35%,rgba(255,255,255,0)_60%)]" />
+                <div className="pointer-events-none absolute inset-[1px] rounded-[inherit] border border-white/15" />
                 <Icon
-                  size={compact ? 20 : 26}
-                  className="relative"
-                  strokeWidth={1.8}
-                  style={{ color: selected ? item.accent : "rgba(255,255,255,0.82)" }}
+                  size={compact ? 22 : 28}
+                  className="relative text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.2)]"
+                  strokeWidth={1.9}
                 />
+                {selected && <div className="pointer-events-none absolute -inset-[2px] rounded-[22px] border border-white/25" />}
                 {locked && (
-                  <span className="absolute -right-1 -top-1 flex h-4.5 w-4.5 min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#141414] border border-white/15">
-                    <Lock size={9} className="text-white/70" />
+                  <span className="absolute -right-1 -top-1 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-black/55 border border-white/20 backdrop-blur-sm">
+                    <Lock size={9} className="text-white/85" />
                   </span>
                 )}
               </div>
-              <span className={`${compact ? "mt-1.5 text-[10px]" : "mt-2 text-[11px] sm:text-[12px]"} block text-center font-medium tracking-[-0.01em] ${selected ? "text-white/95" : "text-white/55"}`}>
+              <span className={`${compact ? "mt-1.5 text-[10px]" : "mt-2 text-[11px] sm:text-[12px]"} block text-center font-medium tracking-[-0.01em] ${selected ? "text-white" : "text-white/70"}`}>
                 {item.label}
               </span>
             </>
