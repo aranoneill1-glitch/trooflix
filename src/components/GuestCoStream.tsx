@@ -32,9 +32,19 @@ export default function GuestCoStream({ roomId, localVideoRef }: { roomId: strin
           localVideoRef.current.play().catch(() => {});
         }
 
-        const pc = new RTCPeerConnection({
-          iceServers: [{ urls: "stun:stun.cloudflare.com:3478" }, { urls: "stun:stun.l.google.com:19302" }]
-        });
+        let iceServers: RTCIceServer[] = [
+          { urls: "stun:stun.cloudflare.com:3478" },
+          { urls: "stun:stun.l.google.com:19302" },
+        ];
+        try {
+          const turnRes = await fetch("/api/live/turn-credentials");
+          if (turnRes.ok) {
+            const turnData = await turnRes.json();
+            if (Array.isArray(turnData.iceServers)) iceServers = turnData.iceServers;
+          }
+        } catch {}
+
+        const pc = new RTCPeerConnection({ iceServers });
         pcRef.current = pc;
 
         stream.getTracks().forEach((track) => pc.addTrack(track, stream));

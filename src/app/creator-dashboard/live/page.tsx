@@ -713,7 +713,10 @@ export default function GoLivePage() {
                   <div className="w-full h-full flex items-center justify-center text-xs font-bold text-white">{(connectedGuestName || "G").charAt(0).toUpperCase()}</div>
                 )}
               </div>
-              <span className="text-xs font-bold text-white max-w-[110px] truncate">{connectedGuestName || "Guest"}</span>
+              <div className="min-w-0">
+                <span className="text-xs font-bold text-white max-w-[110px] truncate block">{connectedGuestName || "Guest"}</span>
+                {guestPending && !guestConnected && <span className="text-[10px] text-white/60 block">Connecting...</span>}
+              </div>
               {connectedGuestUserId && connectedGuestUserId !== userId && (
                 <button
                   onClick={toggleFollowGuest}
@@ -909,7 +912,10 @@ export default function GoLivePage() {
                       <div className="w-full h-full flex items-center justify-center text-xs font-bold text-white">{(connectedGuestName || "G").charAt(0).toUpperCase()}</div>
                     )}
                   </div>
-                  <span className="text-xs font-bold text-white max-w-[110px] truncate">{connectedGuestName || "Guest"}</span>
+                  <div className="min-w-0">
+                <span className="text-xs font-bold text-white max-w-[110px] truncate block">{connectedGuestName || "Guest"}</span>
+                {guestPending && !guestConnected && <span className="text-[10px] text-white/60 block">Connecting...</span>}
+              </div>
                   {connectedGuestUserId && connectedGuestUserId !== userId && (
                     <button
                       onClick={toggleFollowGuest}
