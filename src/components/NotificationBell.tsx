@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { Bell, X, Trash2, CheckCircle2, Heart, MessageCircle, UserPlus, ShoppingBag, Plus, Minus, Settings, Repeat, Star } from "lucide-react";
+import { Bell, X, Trash2, CheckCircle2, Heart, MessageCircle, UserPlus, ShoppingBag, Plus, Minus, Settings, Repeat, Star, Radio } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createClient } from "@/utils/supabase/client";
 import { getCachedUser } from "@/lib/cache";
@@ -21,6 +22,7 @@ type Notification = {
 };
 
 export default function NotificationBell({ hideTrigger = false }: { hideTrigger?: boolean }) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"unread" | "all" | "basket">("all");
   const [basketItems, setBasketItems] = useState<any[]>([]);
@@ -287,8 +289,8 @@ export default function NotificationBell({ hideTrigger = false }: { hideTrigger?
                           if ((n.type === "like" || n.type === "comment") && n.post_id) return "/feed?reel=" + n.post_id;
                           if (n.type === "follow" && n.actor_id) return "/profile/" + n.actor_id;
                           if (n.type === "system" && n.title === "Live invite") {
-                            const livePath = n.message?.match(/\/live\/[A-Za-z0-9_.-]+/)?.[0];
-                            if (livePath) return livePath;
+                            const livePath = n.message?.match(/\/live\/[A-Za-z0-9_.-]+(?:\?invite=1)?/)?.[0];
+                            if (livePath) return livePath.includes("?") ? livePath : `${livePath}?invite=1`;
                             if (n.actor_id) return "/profile/" + n.actor_id;
                           }
                           return "/notifications";
@@ -325,6 +327,18 @@ export default function NotificationBell({ hideTrigger = false }: { hideTrigger?
                             <span className="text-xs text-white/40 shrink-0">{formatTime(n.created_at)}</span>
                           </div>
                           <p className="text-sm text-white/50 mt-1 line-clamp-2 leading-relaxed">{n.message}</p>
+                          {n.type === "system" && n.title === "Live invite" && (() => {
+                            const livePath = n.message?.match(/\/live\/[A-Za-z0-9_.-]+(?:\?invite=1)?/)?.[0];
+                            const href = livePath ? (livePath.includes("?") ? livePath : `${livePath}?invite=1`) : (n.actor_id ? `/profile/${n.actor_id}` : "/notifications");
+                            return (
+                              <button
+                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsOpen(false); router.push(href as any); }}
+                                className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#E53945] text-white text-xs font-bold hover:bg-[#d12e39] transition"
+                              >
+                                <Radio size={12} /> Join Live
+                              </button>
+                            );
+                          })()}
                         </div>
 
                         <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); deleteNotification(n.id); }} className="absolute right-4 bottom-4 p-2 text-white/20 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
