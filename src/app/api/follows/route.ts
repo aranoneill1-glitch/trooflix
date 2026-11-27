@@ -19,6 +19,45 @@ export async function GET(req: Request) {
     // Mode 1: Get count + isFollowing for a specific creator
     if (creatorId) {
       const targetId = Number(creatorId);
+      const list = searchParams.get("list");
+
+      if (list === "followers" || list === "subscribers") {
+        if (list === "followers") {
+          const { data: rows, error } = await supabaseAdmin
+            .from("follows")
+            .select("follower_id, created_at")
+            .eq("creator_id", targetId)
+            .order("created_at", { ascending: false })
+            .limit(200);
+          if (error) throw error;
+          const ids = (rows || []).map((r: any) => r.follower_id).filter(Boolean);
+          const { data: profiles } = ids.length ? await supabaseAdmin.from("profiles").select("user_id, username, display_name, avatar_url").in("user_id", ids) : { data: [] as any[] };
+          const map = new Map((profiles || []).map((p: any) => [p.user_id, p]));
+          const users = ids.map((id: string) => {
+            const p = map.get(id);
+            return { userId: id, username: p?.username || "user", displayName: p?.display_name || p?.username || "User", avatarUrl: p?.avatar_url || null };
+          });
+          return NextResponse.json({ users });
+        }
+
+        const { data: rows, error } = await supabaseAdmin
+          .from("creator_subscriptions")
+          .select("subscriber_user_id, created_at, status")
+          .eq("creator_id", targetId)
+          .eq("status", "active")
+          .order("created_at", { ascending: false })
+          .limit(200);
+        if (error) throw error;
+        const ids = (rows || []).map((r: any) => r.subscriber_user_id).filter(Boolean);
+        const { data: profiles } = ids.length ? await supabaseAdmin.from("profiles").select("user_id, username, display_name, avatar_url").in("user_id", ids) : { data: [] as any[] };
+        const map = new Map((profiles || []).map((p: any) => [p.user_id, p]));
+        const users = ids.map((id: string) => {
+          const p = map.get(id);
+          return { userId: id, username: p?.username || "user", displayName: p?.display_name || p?.username || "User", avatarUrl: p?.avatar_url || null };
+        });
+        return NextResponse.json({ users });
+      }
+
       const { count } = await supabaseAdmin.from("follows").select("*", { count: "exact", head: true }).eq("creator_id", targetId);
       
       let isFollowing = false;

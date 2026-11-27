@@ -92,6 +92,10 @@ function CreatorDashboardContent() {
   const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
   const [followerCount, setFollowerCount] = useState(0);
   const [subscriberCount, setSubscriberCount] = useState(0);
+  const [creatorId, setCreatorId] = useState<number | null>(null);
+  const [peopleModal, setPeopleModal] = useState<"followers" | "subscribers" | null>(null);
+  const [peopleList, setPeopleList] = useState<any[]>([]);
+  const [peopleLoading, setPeopleLoading] = useState(false);
 
   useEffect(() => {
     getCachedUser().then(async (u) => {
@@ -144,6 +148,7 @@ function CreatorDashboardContent() {
         }
 
         if (targetCreatorId && !isNaN(targetCreatorId)) {
+          setCreatorId(targetCreatorId);
           try {
             const followRes = await fetch(`/api/follows?creator_id=${targetCreatorId}`);
             const followData = await followRes.json();
@@ -163,6 +168,22 @@ function CreatorDashboardContent() {
       }
     });
   }, [supabase]);
+
+  const openPeopleModal = async (type: "followers" | "subscribers") => {
+    if (!creatorId) return;
+    setPeopleModal(type);
+    setPeopleLoading(true);
+    setPeopleList([]);
+    try {
+      const res = await fetch(`/api/follows?creator_id=${creatorId}&list=${type}`, { cache: "no-store" });
+      const data = await res.json();
+      setPeopleList(Array.isArray(data?.users) ? data.users : []);
+    } catch {
+      setPeopleList([]);
+    } finally {
+      setPeopleLoading(false);
+    }
+  };
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -599,8 +620,14 @@ function CreatorDashboardContent() {
                 </div>
 
                 <div className="flex flex-col gap-6 lg:pl-4">
-                  <div className="text-left"><span className="font-black text-white block text-3xl xl:text-4xl">{formatNumber(followerCount)}</span> <span className="text-white/50 text-xs uppercase tracking-wider font-semibold">Followers</span></div>
-                  <div className="text-left"><span className="font-black text-white block text-3xl xl:text-4xl">{formatNumber(subscriberCount)}</span> <span className="text-white/50 text-xs uppercase tracking-wider font-semibold">Subscribers</span></div>
+                  <button type="button" onClick={() => openPeopleModal("followers")} className="text-left hover:opacity-80 transition-opacity">
+                    <span className="font-black text-white block text-3xl xl:text-4xl">{formatNumber(followerCount)}</span>
+                    <span className="text-white/50 text-xs uppercase tracking-wider font-semibold">Followers</span>
+                  </button>
+                  <button type="button" onClick={() => openPeopleModal("subscribers")} className="text-left hover:opacity-80 transition-opacity">
+                    <span className="font-black text-white block text-3xl xl:text-4xl">{formatNumber(subscriberCount)}</span>
+                    <span className="text-white/50 text-xs uppercase tracking-wider font-semibold">Subscribers</span>
+                  </button>
                   <div className="text-left"><span className="font-black text-white block text-3xl xl:text-4xl">{creatorVideos.length}</span> <span className="text-white/50 text-xs uppercase tracking-wider font-semibold">Posts</span></div>
                 </div>
               </div>
@@ -626,8 +653,14 @@ function CreatorDashboardContent() {
                   </div>
 
                   <div className="flex-1 flex justify-around md:justify-start md:gap-8 px-2">
-                    <div className="text-center md:text-left"><span className="font-bold text-white block text-xl">{formatNumber(followerCount)}</span> <span className="text-white/50 text-[11px] uppercase tracking-wider">Followers</span></div>
-                    <div className="text-center md:text-left"><span className="font-bold text-white block text-xl">{formatNumber(subscriberCount)}</span> <span className="text-white/50 text-[11px] uppercase tracking-wider">Subscribers</span></div>
+                    <button type="button" onClick={() => openPeopleModal("followers")} className="text-center md:text-left hover:opacity-80 transition-opacity">
+                      <span className="font-bold text-white block text-xl">{formatNumber(followerCount)}</span>
+                      <span className="text-white/50 text-[11px] uppercase tracking-wider">Followers</span>
+                    </button>
+                    <button type="button" onClick={() => openPeopleModal("subscribers")} className="text-center md:text-left hover:opacity-80 transition-opacity">
+                      <span className="font-bold text-white block text-xl">{formatNumber(subscriberCount)}</span>
+                      <span className="text-white/50 text-[11px] uppercase tracking-wider">Subscribers</span>
+                    </button>
                     <div className="text-center md:text-left"><span className="font-bold text-white block text-xl">{creatorVideos.length}</span> <span className="text-white/50 text-[11px] uppercase tracking-wider">Posts</span></div>
                   </div>
                 </div>
@@ -1104,6 +1137,65 @@ function CreatorDashboardContent() {
                 {uploadingAvatar && (
                   <p className="text-center text-sm text-[#E53945] font-bold mt-4 animate-pulse">Uploading...</p>
                 )}
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {peopleModal && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                onClick={() => setPeopleModal(null)}
+                className="fixed inset-0 z-[300] bg-black/75"
+              />
+              <motion.div
+                initial={{ y: "100%", opacity: 0.98 }} animate={{ y: 0, opacity: 1 }} exit={{ y: "100%", opacity: 0.98 }} transition={{ type: "spring", damping: 28, stiffness: 260 }}
+                className="fixed bottom-0 left-0 right-0 z-[301] bg-[#1c1c1e] backdrop-blur-2xl rounded-t-3xl border-t border-white/15 p-5 pb-10 shadow-[0_-20px_60px_rgba(0,0,0,0.75)] max-h-[80vh] overflow-hidden flex flex-col md:max-w-md md:mx-auto md:rounded-3xl md:bottom-10 md:border"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold text-white">{peopleModal === "followers" ? "Followers" : "Subscribers"}</h3>
+                  <button onClick={() => setPeopleModal(null)} className="p-2 bg-white/10 hover:bg-white/15 rounded-full transition border border-white/10">
+                    <X size={18} />
+                  </button>
+                </div>
+
+                <div className="overflow-y-auto -mx-1 px-1 min-h-0 flex-1">
+                  {peopleLoading ? (
+                    <div className="py-10 text-center text-white/50 text-sm">Loading...</div>
+                  ) : peopleList.length === 0 ? (
+                    <div className="py-10 text-center text-white/50 text-sm">
+                      {peopleModal === "followers" ? "No followers yet." : "No subscribers yet."}
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {peopleList.map((p) => (
+                        <Link
+                          key={p.userId}
+                          href={`/profile/${p.username}`}
+                          onClick={() => setPeopleModal(null)}
+                          className="flex items-center gap-3 p-3 rounded-2xl hover:bg-white/[0.06] transition border border-transparent hover:border-white/10"
+                        >
+                          <div className="w-11 h-11 rounded-full bg-white/10 overflow-hidden shrink-0 border border-white/10">
+                            {p.avatarUrl ? (
+                              <img src={p.avatarUrl} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-sm font-bold text-white/70">
+                                {String(p.displayName || p.username || "U").charAt(0).toUpperCase()}
+                              </div>
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-semibold text-white truncate">{p.displayName || p.username}</p>
+                            <p className="text-xs text-white/45 truncate">@{p.username}</p>
+                          </div>
+                          <ChevronRight size={16} className="text-white/30 shrink-0" />
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </motion.div>
             </>
           )}
