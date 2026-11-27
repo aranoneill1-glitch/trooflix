@@ -17,59 +17,52 @@ export default function StudioWidgets({
   compact?: boolean;
 }) {
   const items = [
-    { id: "profile" as const, label: "Profile", icon: Eye, bg: "linear-gradient(160deg,#5AA2FF 0%,#2F6BFF 45%,#1D4ED8 100%)", glow: "rgba(59,130,246,0.45)" , href: "/creator-dashboard?studioTab=profile" },
-    { id: "dashboard" as const, label: "Dashboard", icon: LayoutDashboard, bg: "linear-gradient(160deg,#FF7A7A 0%,#FF4D5A 45%,#E11D48 100%)", glow: "rgba(244,63,94,0.45)", href: "/creator-dashboard?studioTab=dashboard" },
-    { id: "bank" as const, label: "TrooBank", icon: Wallet, bg: "linear-gradient(160deg,#4ADE80 0%,#34C759 45%,#16A34A 100%)", glow: "rgba(34,197,94,0.42)", href: "/wallet" },
-    { id: "chat" as const, label: "TrooChat", icon: MessageCircle, bg: "linear-gradient(160deg,#67D6FF 0%,#38BDF8 45%,#0284C7 100%)", glow: "rgba(56,189,248,0.42)", href: "/messages" },
+    {
+      id: "profile" as const, label: "Profile", icon: Eye, href: "/creator-dashboard?studioTab=profile",
+      background: "linear-gradient(180deg, #5BA3FF 0%, #2B6DE8 100%)",
+      boxShadow: "0 10px 28px rgba(43, 109, 232, 0.35), 0 4px 10px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(0,0,0,0.15)",
+    },
+    {
+      id: "dashboard" as const, label: "Dashboard", icon: LayoutDashboard, href: "/creator-dashboard?studioTab=dashboard",
+      background: "linear-gradient(180deg, #FF6B6B 0%, #E53945 100%)",
+      boxShadow: "0 10px 28px rgba(229, 57, 69, 0.35), 0 4px 10px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(0,0,0,0.15)",
+    },
+    {
+      id: "bank" as const, label: "TrooBank", icon: Wallet, href: "/wallet",
+      background: "linear-gradient(180deg, #34C759 0%, #1F9D55 100%)",
+      boxShadow: "0 10px 28px rgba(31, 157, 85, 0.35), 0 4px 10px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(0,0,0,0.15)",
+    },
+    {
+      id: "chat" as const, label: "TrooChat", icon: MessageCircle, href: "/messages",
+      background: "linear-gradient(180deg, #38BDF8 0%, #0EA5E9 100%)",
+      boxShadow: "0 10px 28px rgba(14, 165, 233, 0.35), 0 4px 10px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(0,0,0,0.15)",
+    },
   ];
 
   return (
     <div className={className}>
-      <style>{`
-        @keyframes widget-float { 0%,100%{ transform: translateY(0px) } 50%{ transform: translateY(-1px) } }
-        @keyframes widget-shine { 0%{ transform: translateX(-140%) rotate(18deg); opacity:0 } 15%{opacity:.35} 45%{opacity:.12} 60%{opacity:0} 100%{ transform: translateX(180%) rotate(18deg); opacity:0 } }
-        @keyframes widget-ambient { 0%,100%{ transform: scale(1) translate(0,0); opacity:.55 } 50%{ transform: scale(1.15) translate(4%,-4%); opacity:.75 } }
-      `}</style>
-      <div className={`grid grid-cols-4 ${compact ? "gap-3 max-w-[320px]" : "gap-3 sm:gap-5 max-w-md"} mx-auto`}>
-        {items.map((item, i) => {
+      <div className={`grid grid-cols-4 ${compact ? "gap-3 max-w-[320px]" : "gap-4 sm:gap-5 max-w-lg"} mx-auto`}>
+        {items.map((item) => {
           const Icon = item.icon;
           const selected = active === item.id;
           const locked = item.id === "dashboard" && dashboardLocked;
           const inner = (
             <>
-              <div
-                className={`relative mx-auto flex ${compact ? "h-[54px] w-[54px] rounded-[17px]" : "h-[64px] w-[64px] sm:h-[72px] sm:w-[72px] rounded-[22px]"} items-center justify-center transition-all duration-300 ${selected ? "scale-[1.04]" : "hover:scale-[1.04]"} active:scale-[0.97]`}
-                style={{
-                  background: item.bg,
-                  boxShadow: `0 12px 28px ${item.glow}, 0 4px 10px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.38), inset 0 -1px 0 rgba(0,0,0,0.12)`,
-                  animation: `widget-float ${4.8 + i * 0.35}s ease-in-out infinite`,
-                }}
-              >
-                <div className="pointer-events-none absolute inset-0 rounded-[inherit] overflow-hidden">
-                  <div
-                    className="absolute -top-[30%] -left-[10%] w-[70%] h-[70%] rounded-full blur-xl"
-                    style={{ background: "rgba(255,255,255,0.35)", animation: `widget-ambient ${5.5 + i * 0.4}s ease-in-out infinite` }}
-                  />
-                  <div
-                    className="absolute top-0 -left-[60%] w-[45%] h-full bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.55),transparent)]"
-                    style={{ animation: `widget-shine ${5.2 + i * 0.6}s ease-in-out ${i * 0.45}s infinite` }}
-                  />
+              <div className={`relative mx-auto flex ${compact ? "h-[56px] w-[56px] rounded-[20px]" : "h-[64px] w-[64px] sm:h-[70px] sm:w-[70px] rounded-[22px]"} items-center justify-center transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-[1.05] active:scale-[0.96] group`}>
+                <div className="absolute inset-0 rounded-[inherit]" style={{ background: item.background, boxShadow: item.boxShadow }} />
+                <div className="pointer-events-none absolute inset-0 rounded-[inherit] bg-gradient-to-b from-white/35 via-white/10 to-transparent" />
+                <div className="pointer-events-none absolute inset-[0.5px] rounded-[inherit] border border-white/20" />
+                <div className="relative z-10 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.25)]">
+                  <Icon size={compact ? 24 : 30} strokeWidth={1.9} />
                 </div>
-                <div className="pointer-events-none absolute inset-0 rounded-[inherit] bg-[linear-gradient(180deg,rgba(255,255,255,0.3),rgba(255,255,255,0.06)_34%,rgba(0,0,0,0)_58%,rgba(0,0,0,0.06)_100%)]" />
-                <div className="pointer-events-none absolute inset-[1px] rounded-[inherit] border border-white/20" />
-                <Icon
-                  size={compact ? 24 : 30}
-                  className="relative text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.22)]"
-                  strokeWidth={1.9}
-                />
-                {selected && <div className="pointer-events-none absolute -inset-[2px] rounded-[24px] border border-white/30" />}
+                {selected && <div className="pointer-events-none absolute -inset-[2px] rounded-[24px] border border-white/35" />}
                 {locked && (
-                  <span className="absolute -right-1 -top-1 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-black/55 border border-white/20 backdrop-blur-sm">
+                  <span className="absolute -right-1 -top-1 z-20 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-black/55 border border-white/20 backdrop-blur-sm">
                     <Lock size={9} className="text-white/85" />
                   </span>
                 )}
               </div>
-              <span className={`${compact ? "mt-2 text-[10px]" : "mt-2.5 text-[11px] sm:text-[12px]"} block text-center font-medium tracking-[-0.01em] ${selected ? "text-white" : "text-white/72"}`}>
+              <span className={`mt-2.5 block text-center text-[11px] sm:text-[12px] font-medium tracking-tight ${selected ? "text-white" : "text-white/90"}`}>
                 {item.label}
               </span>
             </>
