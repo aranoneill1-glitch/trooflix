@@ -853,6 +853,7 @@ function CreatorDashboardContent() {
                 { id: "add", label: "Add", icon: Plus, from: "#34D399", to: "#059669", onClick: () => setShowAddContentMenu(true) },
                 { id: "manage", label: "Manage", icon: Video, from: "#FF7A59", to: "#E53945", href: "/creator-dashboard/manage-content" },
                 { id: "import", label: "Import", icon: Download, from: "#F87171", to: "#DC2626", href: "/creator-dashboard/import" },
+                { id: "analytics", label: "Analytics", icon: BarChart3, from: "#FB7185", to: "#E11D48", href: "/creator-dashboard/analytics" },
               ],
             },
             {
@@ -869,7 +870,6 @@ function CreatorDashboardContent() {
                 { id: "settings", label: "Settings", icon: Settings, from: "#94A3B8", to: "#475569", href: "/creator-dashboard/account-settings" },
                 { id: "edit-profile", label: "Edit Profile", icon: Pencil, from: "#60A5FA", to: "#2563EB", href: "/creator-dashboard/settings" },
                 { id: "theme", label: "Theme", icon: Palette, from: "#C084FC", to: "#7C3AED", href: "/creator-dashboard/theme" },
-                { id: "analytics", label: "Analytics", icon: BarChart3, from: "#FB7185", to: "#E11D48", href: "/creator-dashboard/analytics" },
                 { id: "account-type", label: "Account", icon: UserCog, from: "#A78BFA", to: "#6D28D9", onClick: () => setShowAccountType(true) },
               ],
             },
