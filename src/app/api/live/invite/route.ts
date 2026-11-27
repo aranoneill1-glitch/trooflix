@@ -24,9 +24,9 @@ export async function POST(req: Request) {
     const { error } = await supabaseAdmin.from("notifications").insert({
       user_id: invitedUserId,
       actor_id: hostUserId,
-      type: "live_invite",
+      type: "system",
       title,
-      message,
+      message: `${message}${hostUsername ? ` Tap to watch: /live/${hostUsername}` : ""}`,
       post_id: null,
     });
 

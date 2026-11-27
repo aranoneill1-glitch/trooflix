@@ -281,7 +281,18 @@ export default function NotificationBell({ hideTrigger = false }: { hideTrigger?
                     {items.map(n => (
                       <Link
                         key={n.id}
-                        href={(n.type === "purchase" ? "/orders?tab=sold" : n.type === "subscription" ? "/creator-dashboard/subscriptions" : (n.type === "like" || n.type === "comment") && n.post_id ? "/feed?reel=" + n.post_id : n.type === "follow" && n.actor_id ? "/profile/" + n.actor_id : "/notifications") as any}
+                        href={(() => {
+                          if (n.type === "purchase") return "/orders?tab=sold";
+                          if (n.type === "subscription") return "/creator-dashboard/subscriptions";
+                          if ((n.type === "like" || n.type === "comment") && n.post_id) return "/feed?reel=" + n.post_id;
+                          if (n.type === "follow" && n.actor_id) return "/profile/" + n.actor_id;
+                          if (n.type === "system" && n.title === "Live invite") {
+                            const livePath = n.message?.match(/\/live\/[A-Za-z0-9_.-]+/)?.[0];
+                            if (livePath) return livePath;
+                            if (n.actor_id) return "/profile/" + n.actor_id;
+                          }
+                          return "/notifications";
+                        })() as any}
                         onClick={() => setIsOpen(false)}
                         className="flex items-start gap-4 px-4 py-4 border-b border-white/10 hover:bg-white/[0.03] transition-colors relative overflow-hidden cursor-pointer"
                       >
