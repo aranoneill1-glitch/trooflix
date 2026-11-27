@@ -875,7 +875,7 @@ function CreatorDashboardContent() {
             },
           ].map((section) => (
             <section key={section.title}>
-              <h2 className="text-[11px] font-bold tracking-[0.2em] text-white/45 uppercase mb-3 px-1">{section.title}</h2>
+              <h2 className="text-[11px] font-bold tracking-[0.2em] text-white uppercase mb-3 px-1">{section.title}</h2>
               <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-6 gap-x-3 gap-y-6 sm:gap-x-4 sm:gap-y-7 px-1">
                 {section.items.map((item) => {
                   const Icon = item.icon;
