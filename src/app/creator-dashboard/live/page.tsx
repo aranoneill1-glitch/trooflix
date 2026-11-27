@@ -379,9 +379,19 @@ export default function GoLivePage() {
     if (hostPcRef.current) hostPcRef.current.close();
     await supabase.from("webrtc_signals").delete().eq("room_id", liveInputId);
 
-    const pc = new RTCPeerConnection({
-      iceServers: [{ urls: "stun:stun.cloudflare.com:3478" }, { urls: "stun:stun.l.google.com:19302" }]
-    });
+    let iceServers: RTCIceServer[] = [
+      { urls: "stun:stun.cloudflare.com:3478" },
+      { urls: "stun:stun.l.google.com:19302" },
+    ];
+    try {
+      const turnRes = await fetch("/api/live/turn-credentials");
+      if (turnRes.ok) {
+        const turnData = await turnRes.json();
+        if (Array.isArray(turnData.iceServers)) iceServers = turnData.iceServers;
+      }
+    } catch {}
+
+    const pc = new RTCPeerConnection({ iceServers });
     hostPcRef.current = pc;
     
     pc.addTransceiver("video", { direction: "recvonly" });
