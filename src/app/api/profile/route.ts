@@ -17,14 +17,14 @@ export async function GET(req: Request) {
 
     let { data, error } = await supabaseAdmin
       .from("profiles")
-      .select("user_id, avatar_url, backdrop_url, display_name, username, bio, is_verified, verification_tick, tier, has_pass, pass_expires_at, stripe_subscription_id, subscription_status, updated_at, instagram_handle, x_handle, is_hidden")
+      .select("user_id, avatar_url, backdrop_url, display_name, username, bio, is_verified, verification_tick, tier, has_pass, pass_expires_at, stripe_subscription_id, subscription_status, updated_at, instagram_handle, x_handle, is_hidden, is_live, live_input_id, live_playback_url, live_visibility")
       .eq("user_id", userId)
       .maybeSingle();
 
     if (error && String(error.message || "").includes("is_hidden")) {
       const retry = await supabaseAdmin
         .from("profiles")
-        .select("user_id, avatar_url, backdrop_url, display_name, username, bio, is_verified, verification_tick, tier, has_pass, pass_expires_at, stripe_subscription_id, subscription_status, updated_at, instagram_handle, x_handle")
+        .select("user_id, avatar_url, backdrop_url, display_name, username, bio, is_verified, verification_tick, tier, has_pass, pass_expires_at, stripe_subscription_id, subscription_status, updated_at, instagram_handle, x_handle, is_live, live_input_id, live_playback_url, live_visibility")
         .eq("user_id", userId)
         .maybeSingle();
       data = retry.data as any;

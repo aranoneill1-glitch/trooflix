@@ -68,8 +68,11 @@ export default function LivePlayer({ liveInputId, creatorId, creatorName, creato
         const res = await fetch(`/api/profile?user_id=${encodeURIComponent(creatorId)}`, { cache: "no-store" });
         const data = await res.json();
         const p = data?.profile;
-        const live = !!p?.is_live && !!p?.live_input_id;
-        if (!cancelled && !live) setStreamEnded(true);
+        if (!cancelled && p) {
+          if (p.is_live === false || p.live_input_id === null || p.live_input_id === "") {
+            setStreamEnded(true);
+          }
+        }
       } catch {}
     };
     check();
