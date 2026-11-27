@@ -418,9 +418,10 @@ export default function GoLivePage() {
     const channel = supabase.channel(`webrtc_host_${liveInputId}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "webrtc_signals", filter: `room_id=eq.${liveInputId}` }, async (payload) => {
         const signal = payload.new;
-        if (signal.sender_id === "host") return;
+        if (!signal || signal.sender_id === "host") return;
 
         if (signal.type === "answer") {
+          if (remoteSet) return;
           await pc.setRemoteDescription(new RTCSessionDescription(signal.payload));
           remoteSet = true;
           while (iceQueue.length > 0) {
@@ -432,7 +433,24 @@ export default function GoLivePage() {
           else iceQueue.push(signal.payload);
         }
       })
-      .subscribe();
+      .subscribe(async (status) => {
+        if (status === "SUBSCRIBED") {
+          const { data } = await supabase.from("webrtc_signals")
+            .select("*").eq("room_id", liveInputId).eq("type", "answer")
+            .order("created_at", { ascending: false }).limit(1);
+          if (data && data.length > 0 && !remoteSet) {
+            const answer = data[0];
+            if (answer.sender_id !== "host") {
+              await pc.setRemoteDescription(new RTCSessionDescription(answer.payload));
+              remoteSet = true;
+              while (iceQueue.length > 0) {
+                const candidate = iceQueue.shift();
+                if (candidate) await pc.addIceCandidate(new RTCIceCandidate(candidate)).catch(console.error);
+              }
+            }
+          }
+        }
+      });
 
     return channel;
   };
@@ -608,8 +626,8 @@ export default function GoLivePage() {
 
   return (
     <main className="h-[100dvh] bg-black text-white relative overflow-hidden lg:flex lg:flex-col lg:bg-[#0a0a0a]">
-      <video ref={guestVideoRef} autoPlay playsInline style={{ position: "absolute", width: "1px", height: "1px", opacity: 0.01, pointerEvents: "none", top: "-9999px", left: "-9999px" }} muted />
-      <audio ref={guestAudioRef} autoPlay className="hidden" />
+      <video ref={guestVideoRef} autoPlay playsInline muted style={{ position: "absolute", width: "320px", height: "180px", opacity: 0, pointerEvents: "none", top: 0, left: 0, zIndex: -1 }} />
+      <audio ref={guestAudioRef} autoPlay style={{ position: "absolute", width: 1, height: 1, opacity: 0, pointerEvents: "none", top: 0, left: 0 }} />
 
       {showProductMenu && (
         <div className="fixed inset-0 z-[9999] bg-black/80 flex items-center justify-center p-4">
