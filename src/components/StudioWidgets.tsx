@@ -8,11 +8,13 @@ export default function StudioWidgets({
   onViewChange,
   dashboardLocked = false,
   className = "mb-6",
+  compact = false,
 }: {
   active: "profile" | "dashboard" | "mytrooflix" | "bank" | "chat";
   onViewChange?: (section: "profile" | "dashboard") => void;
   dashboardLocked?: boolean;
   className?: string;
+  compact?: boolean;
 }) {
   const items = [
     { id: "profile" as const, label: "Profile", icon: Eye, from: "#5B8DEF", to: "#2D5BE3", href: "/creator-dashboard?studioTab=profile" },
@@ -23,7 +25,7 @@ export default function StudioWidgets({
 
   return (
     <div className={className}>
-      <div className="grid grid-cols-4 gap-3 sm:gap-4 max-w-md mx-auto">
+      <div className={`grid grid-cols-4 ${compact ? "gap-2 max-w-[320px]" : "gap-3 sm:gap-4 max-w-md"} mx-auto`}>
         {items.map((item) => {
           const Icon = item.icon;
           const selected = active === item.id;
@@ -31,17 +33,17 @@ export default function StudioWidgets({
           const inner = (
             <>
               <div
-                className={`relative mx-auto flex h-[62px] w-[62px] sm:h-[68px] sm:w-[68px] items-center justify-center rounded-[22px] shadow-[0_8px_24px_rgba(0,0,0,0.35)] transition-transform duration-200 ${selected ? "scale-[1.04] ring-2 ring-white/70 ring-offset-2 ring-offset-[#09090B]" : "hover:scale-[1.03]"}`}
+                className={`relative mx-auto flex ${compact ? "h-[46px] w-[46px] rounded-[16px]" : "h-[62px] w-[62px] sm:h-[68px] sm:w-[68px] rounded-[22px]"} items-center justify-center shadow-[0_8px_24px_rgba(0,0,0,0.35)] transition-transform duration-200 ${selected ? "scale-[1.04] ring-2 ring-white/70 ring-offset-2 ring-offset-[#09090B]" : "hover:scale-[1.03]"}`}
                 style={{ background: `linear-gradient(160deg, ${item.from}, ${item.to})` }}
               >
-                <Icon size={30} className="text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.25)]" strokeWidth={1.8} />
+                <Icon size={compact ? 22 : 30} className="text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.25)]" strokeWidth={1.8} />
                 {locked && (
                   <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/70 border border-white/20">
                     <Lock size={10} className="text-white/80" />
                   </span>
                 )}
               </div>
-              <span className={`mt-2 block text-center text-[11px] font-semibold tracking-tight ${selected ? "text-white" : "text-white/70"}`}>
+              <span className={`${compact ? "mt-1.5 text-[10px]" : "mt-2 text-[11px]"} block text-center font-semibold tracking-tight ${selected ? "text-white" : "text-white/70"}`}>
                 {item.label}
               </span>
             </>

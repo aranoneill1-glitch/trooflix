@@ -8,6 +8,7 @@ import LikeButton from "@/components/LikeButton";
 import CommentSheet from "@/components/CommentSheet";
 import ReportModal from "@/components/ReportModal";
 import ViewCount from "@/components/ViewCount";
+import StudioWidgets from "@/components/StudioWidgets";
 import { getCachedUser } from "@/lib/cache";
 
 import { ChevronDown, X as XIcon } from "lucide-react";
@@ -344,8 +345,11 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
 
   return (
     <div className="pb-24">
+      <div className="pt-[calc(env(safe-area-inset-top)+64px)] pb-2">
+        <StudioWidgets active="mytrooflix" compact className="mb-1" />
+      </div>
       {/* Main-type pills + categories dropdown — below the fixed top bar */}
-      <div className="pb-3 border-b border-white/[0.06] pt-[calc(env(safe-area-inset-top)+68px)]">
+      <div className="pb-3 border-b border-white/[0.06]">
         <div className="relative">
           <div className="flex gap-2 overflow-x-auto scrollbar-hide px-3 pr-10">
             {MAIN_TYPES.map(t => (
