@@ -116,6 +116,7 @@ export default function WatchLivePage() {
     <LivePlayer
       liveInputId={profile.live_input_id}
       creatorId={profile.creator_id || profile.user_id}
+      hostUserId={profile.user_id}
       creatorName={profile.display_name || username}
       creatorAvatar={profile.avatar_url}
       username={username}

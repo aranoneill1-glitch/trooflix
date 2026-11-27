@@ -20,9 +20,10 @@ type Props = {
   creatorName?: string;
   creatorAvatar?: string | null;
   username?: string;
+  hostUserId?: string | null;
 };
 
-export default function LivePlayer({ liveInputId, creatorId, creatorName, creatorAvatar, username }: Props) {
+export default function LivePlayer({ liveInputId, creatorId, creatorName, creatorAvatar, username, hostUserId }: Props) {
   const [viewers] = useState(Math.floor(Math.random() * 500) + 42);
   const [reactions, setReactions] = useState<FloatingReaction[]>([]);
   const [floatingComments, setFloatingComments] = useState<FloatingComment[]>([]);
@@ -291,7 +292,7 @@ export default function LivePlayer({ liveInputId, creatorId, creatorName, creato
         </div>
       )}
 
-      {joinStatus === "approved" && <GuestCoStream roomId={liveInputId} localVideoRef={guestLocalVideoRef} />}
+      {joinStatus === "approved" && <GuestCoStream roomId={liveInputId} hostUserId={hostUserId || creatorId || undefined} localVideoRef={guestLocalVideoRef} />}
 
       {isConnecting && !streamEnded && (
         <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/80 pointer-events-none">

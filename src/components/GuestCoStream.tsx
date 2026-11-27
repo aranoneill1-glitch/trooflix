@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { getCachedUser } from "@/lib/cache";
 
-export default function GuestCoStream({ roomId, localVideoRef }: { roomId: string; localVideoRef?: React.RefObject<HTMLVideoElement | null> }) {
+export default function GuestCoStream({ roomId, hostUserId, localVideoRef }: { roomId: string; hostUserId?: string; localVideoRef?: React.RefObject<HTMLVideoElement | null> }) {
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
@@ -58,7 +58,7 @@ export default function GuestCoStream({ roomId, localVideoRef }: { roomId: strin
         pc.onicecandidate = (event) => {
           if (event.candidate) {
             supabase.from("webrtc_signals").insert({
-              call_id: roomId, sender_id: user.id, recipient_id: "host", signal_type: "candidate", signal_data: event.candidate
+              call_id: roomId, sender_id: user.id, recipient_id: hostUserId || user.id, signal_type: "candidate", signal_data: event.candidate
             }).then();
           }
         };
@@ -76,7 +76,7 @@ export default function GuestCoStream({ roomId, localVideoRef }: { roomId: strin
           const answer = await pc.createAnswer();
           await pc.setLocalDescription(answer);
           await supabase.from("webrtc_signals").insert({
-            call_id: roomId, sender_id: user.id, recipient_id: "host", signal_type: "answer", signal_data: answer
+            call_id: roomId, sender_id: user.id, recipient_id: hostUserId || user.id, signal_type: "answer", signal_data: answer
           });
         };
 
