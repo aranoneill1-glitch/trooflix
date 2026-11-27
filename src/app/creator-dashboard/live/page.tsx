@@ -721,7 +721,7 @@ export default function GoLivePage() {
           </div>
         )}
 
-        <div className="absolute inset-x-0 top-0 z-20 pt-[calc(env(safe-area-inset-top)+12px)] px-4 pb-10 bg-gradient-to-b from-black/70 via-black/20 to-transparent">
+        <div className="absolute inset-x-0 top-0 z-20 pt-[calc(env(safe-area-inset-top)+12px)] px-4 pb-10">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-2.5 bg-black/45 border border-white/10 rounded-full px-3 py-1.5">
               {isLive ? (
