@@ -278,7 +278,7 @@ export default function LivePlayer({ liveInputId, creatorId, creatorName, creato
       {joinStatus === "approved" ? (
         <div className="absolute inset-0 flex flex-col bg-black">
           <div className="relative flex-1 min-h-0 bg-black [&_iframe]:!w-full [&_iframe]:!h-full [&_video]:!w-full [&_video]:!h-full [&_.stream-player]:!h-full [&_.stream-player]:!w-full">
-            <Stream src={liveInputId} controls autoplay muted />
+            <Stream src={liveInputId} controls autoplay />
             <div className="absolute top-3 left-3 z-10 bg-black/45 backdrop-blur-md border border-white/10 rounded-full px-3 py-1 text-[11px] font-bold text-white">Host</div>
           </div>
           <div className="relative flex-1 min-h-0 bg-[#111] border-t border-white/10">
@@ -288,7 +288,7 @@ export default function LivePlayer({ liveInputId, creatorId, creatorName, creato
         </div>
       ) : (
         <div className="absolute inset-0 bg-black [&_iframe]:!w-full [&_iframe]:!h-full [&_video]:!w-full [&_video]:!h-full [&_.stream-player]:!h-full [&_.stream-player]:!w-full">
-          <Stream src={liveInputId} controls autoplay muted />
+          <Stream src={liveInputId} controls autoplay />
         </div>
       )}
 
@@ -312,28 +312,7 @@ export default function LivePlayer({ liveInputId, creatorId, creatorName, creato
         </div>
       )}
 
-      {guestInfo && !streamEnded && (
-        <div className="absolute left-4 top-[52%] z-20 pointer-events-none">
-          <div className="pointer-events-auto flex items-center gap-2 bg-black/45 backdrop-blur-md border border-white/10 rounded-full pl-1 pr-2 py-1">
-            <div className="w-8 h-8 rounded-full overflow-hidden bg-white/10 border border-white/15 shrink-0">
-              {guestInfo.avatar ? (
-                <img src={guestInfo.avatar} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-xs font-bold text-white">{(guestInfo.name || "G").charAt(0).toUpperCase()}</div>
-              )}
-            </div>
-            <span className="text-xs font-bold text-white max-w-[110px] truncate">{guestInfo.name || "Guest"}</span>
-            {guestInfo.userId && guestInfo.userId !== user?.id && (
-              <button
-                onClick={toggleFollowGuest}
-                className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition ${isFollowingGuest ? "bg-white/15 text-white border border-white/15" : "bg-[#E53945] text-white"}`}
-              >
-                {isFollowingGuest ? "Following" : "Follow"}
-              </button>
-            )}
-          </div>
-        </div>
-      )}
+
 
       <div className="absolute inset-x-0 top-0 z-30 pt-[calc(env(safe-area-inset-top)+12px)] px-4 pb-16 bg-gradient-to-b from-black/70 via-black/20 to-transparent">
         <div className="flex items-center justify-between gap-3">

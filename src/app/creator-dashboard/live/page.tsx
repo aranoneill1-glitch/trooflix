@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { getCachedUser } from "@/lib/cache";
 import { createClient } from "@/utils/supabase/client";
-import { Mic, MicOff, Video, VideoOff, Radio, StopCircle, Monitor, MonitorOff, UserCheck, PictureInPicture, ShoppingBag, X, Globe, Lock, Loader2, SwitchCamera, MessageCircle, UserPlus, Search } from "lucide-react";
+import { Mic, MicOff, Video, VideoOff, Radio, StopCircle, Monitor, MonitorOff, UserCheck, PictureInPicture, ShoppingBag, X, Globe, Lock, Loader2, SwitchCamera, MessageCircle, UserPlus, Search, Eye } from "lucide-react";
 import LiveChat from "@/components/LiveChat";
 
 export default function GoLivePage() {
@@ -767,35 +767,11 @@ export default function GoLivePage() {
       <div className="absolute inset-0">
         <video ref={videoRef} autoPlay muted playsInline className="absolute inset-0 w-full h-full object-cover" style={{ transform: isFrontCamera && !isScreenSharing ? "scaleX(-1)" : "none" }} />
         {isLive && (guestConnected || guestPending || isScreenSharing) && <video ref={canvasPreviewRef} autoPlay muted playsInline className="absolute inset-0 w-full h-full object-cover z-10 bg-black" style={{ transform: "none" }} />}
-        {isLive && (guestConnected || guestPending) && (
-          <div className="absolute left-4 top-[52%] z-30 pointer-events-none">
-            <div className="pointer-events-auto flex items-center gap-2 bg-black/45 backdrop-blur-md border border-white/10 rounded-full pl-1 pr-2 py-1">
-              <div className="w-8 h-8 rounded-full overflow-hidden bg-white/10 border border-white/15 shrink-0">
-                {connectedGuestAvatar ? (
-                  <img src={connectedGuestAvatar} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-xs font-bold text-white">{(connectedGuestName || "G").charAt(0).toUpperCase()}</div>
-                )}
-              </div>
-              <div className="min-w-0">
-                <span className="text-xs font-bold text-white max-w-[110px] truncate block">{connectedGuestName || "Guest"}</span>
-                {guestPending && !guestConnected && <span className="text-[10px] text-white/60 block">{guestConnState ? `Connecting (${guestConnState})` : "Connecting..."}{guestDebug ? ` ${guestDebug}` : ""}</span>}
-              </div>
-              {connectedGuestUserId && connectedGuestUserId !== userId && (
-                <button
-                  onClick={toggleFollowGuest}
-                  className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition ${isFollowingGuest ? "bg-white/15 text-white border border-white/15" : "bg-[#E53945] text-white"}`}
-                >
-                  {isFollowingGuest ? "Following" : "Follow"}
-                </button>
-              )}
-            </div>
-          </div>
-        )}
 
-        <div className="absolute inset-x-0 top-0 z-20 pt-[calc(env(safe-area-inset-top)+12px)] px-4 pb-10">
+
+        <div className="absolute inset-x-0 top-0 z-20 pt-[calc(env(safe-area-inset-top)+12px)] px-4">
           <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-2.5 bg-black/45 border border-white/10 rounded-full px-3 py-1.5">
+            <div className="flex items-center gap-2.5 rounded-full px-3 py-1.5">
               {isLive ? (
                 <>
                   <span className="w-2 h-2 rounded-full bg-[#E53945] animate-pulse" />
@@ -909,12 +885,14 @@ export default function GoLivePage() {
         </div>
 
         <div className="absolute inset-x-0 bottom-0 z-30 px-4 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-16 bg-gradient-to-t from-black/85 via-black/45 to-transparent">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <button onClick={() => setLiveVisibility("public")} className={`px-3 py-1.5 rounded-full text-[11px] font-bold border backdrop-blur-xl transition ${liveVisibility === "public" ? "bg-white/15 border-white/25 text-white" : "bg-black/20 border-white/10 text-white/60"}`}>
-              <span className="inline-flex items-center gap-1"><Globe size={12} /> Everyone</span>
-            </button>
-            <button onClick={() => setLiveVisibility("subscribers")} className={`px-3 py-1.5 rounded-full text-[11px] font-bold border backdrop-blur-xl transition ${liveVisibility === "subscribers" ? "bg-[#D4AF37]/20 border-[#D4AF37]/40 text-[#D4AF37]" : "bg-black/20 border-white/10 text-white/60"}`}>
-              <span className="inline-flex items-center gap-1"><Lock size={12} /> Subs</span>
+          <div className="flex items-center justify-center mb-3">
+            <button
+              onClick={() => setLiveVisibility(v => v === "public" ? "subscribers" : "public")}
+              className={`px-3 py-1.5 rounded-full text-[11px] font-bold border backdrop-blur-xl transition inline-flex items-center gap-1.5 ${liveVisibility === "subscribers" ? "bg-[#D4AF37]/20 border-[#D4AF37]/40 text-[#D4AF37]" : "bg-white/12 border-white/15 text-white"}`}
+              aria-label={liveVisibility === "public" ? "Visible to everyone" : "Visible to subscribers"}
+            >
+              <Eye size={13} />
+              <span>{liveVisibility === "public" ? "Everyone" : "Subscribers"}</span>
             </button>
           </div>
 
@@ -969,31 +947,7 @@ export default function GoLivePage() {
             {isLive && (guestConnected || guestPending || isScreenSharing) && (
               <video ref={canvasPreviewRef} autoPlay muted playsInline className="w-full h-full object-cover absolute inset-0 z-10 bg-black" style={{ transform: "none" }} />
             )}
-            {isLive && (guestConnected || guestPending) && (
-              <div className="absolute left-4 top-[52%] z-30 pointer-events-none">
-                <div className="pointer-events-auto flex items-center gap-2 bg-black/45 backdrop-blur-md border border-white/10 rounded-full pl-1 pr-2 py-1">
-                  <div className="w-8 h-8 rounded-full overflow-hidden bg-white/10 border border-white/15 shrink-0">
-                    {connectedGuestAvatar ? (
-                      <img src={connectedGuestAvatar} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-xs font-bold text-white">{(connectedGuestName || "G").charAt(0).toUpperCase()}</div>
-                    )}
-                  </div>
-                  <div className="min-w-0">
-                <span className="text-xs font-bold text-white max-w-[110px] truncate block">{connectedGuestName || "Guest"}</span>
-                {guestPending && !guestConnected && <span className="text-[10px] text-white/60 block">{guestConnState ? `Connecting (${guestConnState})` : "Connecting..."}{guestDebug ? ` ${guestDebug}` : ""}</span>}
-              </div>
-                  {connectedGuestUserId && connectedGuestUserId !== userId && (
-                    <button
-                      onClick={toggleFollowGuest}
-                      className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition ${isFollowingGuest ? "bg-white/15 text-white border border-white/15" : "bg-[#E53945] text-white"}`}
-                    >
-                      {isFollowingGuest ? "Following" : "Follow"}
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
+
 
             <div className="absolute top-4 left-4 z-20 flex items-center gap-3 bg-black/40 px-3 py-1.5 rounded-full border border-white/10 shadow-lg">
               <div className="w-8 h-8 rounded-full bg-[#E53945] flex items-center justify-center text-sm font-bold text-white border border-white/20">
@@ -1033,14 +987,14 @@ export default function GoLivePage() {
                 <ShoppingBag size={20} />
               </button>
               <div className="w-px h-8 bg-white/20 mx-1" />
-              <div className="flex bg-black/50 border border-white/10 rounded-full p-1 shadow-inner">
-                <button onClick={() => setLiveVisibility("public")} className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-full transition ${liveVisibility === "public" ? "bg-white/10 text-white shadow-sm" : "text-white/50 hover:text-white"}`}>
-                  <Globe size={14} /> <span className="hidden sm:inline">Everyone</span>
-                </button>
-                <button onClick={() => setLiveVisibility("subscribers")} className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-full transition ${liveVisibility === "subscribers" ? "bg-[#D4AF37]/20 text-[#D4AF37] shadow-sm" : "text-white/50 hover:text-white"}`}>
-                  <Lock size={14} /> <span className="hidden sm:inline">Subs Only</span>
-                </button>
-              </div>
+              <button
+                onClick={() => setLiveVisibility(v => v === "public" ? "subscribers" : "public")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-full border transition ${liveVisibility === "subscribers" ? "bg-[#D4AF37]/20 border-[#D4AF37]/40 text-[#D4AF37]" : "bg-white/10 border-white/10 text-white"}`}
+                aria-label={liveVisibility === "public" ? "Visible to everyone" : "Visible to subscribers"}
+              >
+                <Eye size={14} />
+                <span>{liveVisibility === "public" ? "Everyone" : "Subscribers"}</span>
+              </button>
               <div className="w-px h-8 bg-white/20 mx-1" />
               {!isLive ? (
                 <button onClick={startStream} disabled={loading} className="bg-[#E53945] hover:bg-[#d12e39] text-white font-bold px-6 py-2.5 rounded-full transition flex items-center gap-2">
