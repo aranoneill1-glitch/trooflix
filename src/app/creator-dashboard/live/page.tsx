@@ -35,6 +35,7 @@ export default function GoLivePage() {
   const [guestConnected, setGuestConnected] = useState(false);
   const [guestPending, setGuestPending] = useState(false);
   const [guestConnState, setGuestConnState] = useState<string>("");
+  const [guestDebug, setGuestDebug] = useState<string>("");
   const [connectedGuestName, setConnectedGuestName] = useState("");
   const [connectedGuestAvatar, setConnectedGuestAvatar] = useState<string | null>(null);
   const [connectedGuestUserId, setConnectedGuestUserId] = useState<string | null>(null);
@@ -400,6 +401,8 @@ export default function GoLivePage() {
 
     let iceQueue: RTCIceCandidateInit[] = [];
     let remoteSet = false;
+    let localCand = 0;
+    let remoteCand = 0;
 
     pc.onconnectionstatechange = () => {
       setGuestConnState(pc.connectionState || "");
@@ -416,6 +419,8 @@ export default function GoLivePage() {
 
     pc.onicecandidate = (event) => {
       if (event.candidate) {
+        localCand += 1;
+        setGuestDebug(`ans:${remoteSet ? "y" : "n"} ic:${localCand}/${remoteCand}`);
         supabase.from("webrtc_signals").insert({
           room_id: liveInputId, sender_id: "host", type: "candidate", payload: event.candidate
         }).then();
@@ -454,11 +459,14 @@ export default function GoLivePage() {
           if (remoteSet) return;
           await pc.setRemoteDescription(new RTCSessionDescription(signal.payload));
           remoteSet = true;
+          setGuestDebug(`ans:y ic:${localCand}/${remoteCand}`);
           while (iceQueue.length > 0) {
             const candidate = iceQueue.shift();
             if (candidate) await pc.addIceCandidate(new RTCIceCandidate(candidate)).catch(console.error);
           }
         } else if (signal.type === "candidate") {
+          remoteCand += 1;
+          setGuestDebug(`ans:${remoteSet ? "y" : "n"} ic:${localCand}/${remoteCand}`);
           if (remoteSet) await pc.addIceCandidate(new RTCIceCandidate(signal.payload)).catch(console.error);
           else iceQueue.push(signal.payload);
         }
@@ -473,6 +481,7 @@ export default function GoLivePage() {
             if (answer.sender_id !== "host") {
               await pc.setRemoteDescription(new RTCSessionDescription(answer.payload));
               remoteSet = true;
+              setGuestDebug(`ans:y ic:${localCand}/${remoteCand}`);
               while (iceQueue.length > 0) {
                 const candidate = iceQueue.shift();
                 if (candidate) await pc.addIceCandidate(new RTCIceCandidate(candidate)).catch(console.error);
@@ -495,6 +504,7 @@ export default function GoLivePage() {
       setConnectedGuestUserId(joinRequest.viewer_user_id || null);
       setGuestPending(true);
       setGuestConnState("connecting");
+      setGuestDebug("");
       await connectGuest(joinRequest.viewer_user_id);
     }
     setJoinRequest(null);
@@ -728,7 +738,7 @@ export default function GoLivePage() {
               </div>
               <div className="min-w-0">
                 <span className="text-xs font-bold text-white max-w-[110px] truncate block">{connectedGuestName || "Guest"}</span>
-                {guestPending && !guestConnected && <span className="text-[10px] text-white/60 block">{guestConnState ? `Connecting (${guestConnState})` : "Connecting..."}</span>}
+                {guestPending && !guestConnected && <span className="text-[10px] text-white/60 block">{guestConnState ? `Connecting (${guestConnState})` : "Connecting..."}{guestDebug ? ` ${guestDebug}` : ""}</span>}
               </div>
               {connectedGuestUserId && connectedGuestUserId !== userId && (
                 <button
@@ -927,7 +937,7 @@ export default function GoLivePage() {
                   </div>
                   <div className="min-w-0">
                 <span className="text-xs font-bold text-white max-w-[110px] truncate block">{connectedGuestName || "Guest"}</span>
-                {guestPending && !guestConnected && <span className="text-[10px] text-white/60 block">{guestConnState ? `Connecting (${guestConnState})` : "Connecting..."}</span>}
+                {guestPending && !guestConnected && <span className="text-[10px] text-white/60 block">{guestConnState ? `Connecting (${guestConnState})` : "Connecting..."}{guestDebug ? ` ${guestDebug}` : ""}</span>}
               </div>
                   {connectedGuestUserId && connectedGuestUserId !== userId && (
                     <button
