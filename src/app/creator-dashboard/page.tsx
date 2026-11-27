@@ -845,39 +845,59 @@ function CreatorDashboardContent() {
 
           {isDashboardView && !showMyTrooFlix && !isFreeTier && (
       <>
-        <div className="animate-in fade-in duration-300 max-w-5xl mx-auto">
-          <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-6 gap-x-3 gap-y-6 sm:gap-x-4 sm:gap-y-7 px-1">
-            {[
-              { id: "add", label: "Add", icon: Plus, from: "#34D399", to: "#059669", onClick: () => setShowAddContentMenu(true) },
-              { id: "manage", label: "Manage", icon: Video, from: "#FF7A59", to: "#E53945", href: "/creator-dashboard/manage-content" },
-              { id: "import", label: "Import", icon: Download, from: "#F87171", to: "#DC2626", href: "/creator-dashboard/import" },
-              { id: "edit-profile", label: "Edit Profile", icon: Pencil, from: "#60A5FA", to: "#2563EB", href: "/creator-dashboard/settings" },
-              { id: "theme", label: "Theme", icon: Palette, from: "#C084FC", to: "#7C3AED", href: "/creator-dashboard/theme" },
-              { id: "shop", label: "Shop", icon: ShoppingBag, from: "#FBBF24", to: "#D97706", href: "/creator-dashboard/shop" },
-              { id: "orders", label: "Orders", icon: Package, from: "#38BDF8", to: "#0284C7", href: "/creator-dashboard/orders" },
-              { id: "subs", label: "Subs", icon: Star, from: "#FACC15", to: "#CA8A04", href: "/creator-dashboard/subscriptions" },
-              { id: "settings", label: "Settings", icon: Settings, from: "#94A3B8", to: "#475569", href: "/creator-dashboard/account-settings" },
-              { id: "analytics", label: "Analytics", icon: BarChart3, from: "#FB7185", to: "#E11D48", href: "/creator-dashboard/analytics" },
-              { id: "account-type", label: "Account", icon: UserCog, from: "#A78BFA", to: "#6D28D9", onClick: () => setShowAccountType(true) },
-            ].map((item) => {
-              const Icon = item.icon;
-              const inner = (
-                <>
-                  <div
-                    className="relative mx-auto flex h-[62px] w-[62px] sm:h-[68px] sm:w-[68px] items-center justify-center rounded-[22px] shadow-[0_8px_24px_rgba(0,0,0,0.35)] transition-transform duration-200 hover:scale-[1.04] active:scale-[0.98]"
-                    style={{ background: `linear-gradient(160deg, ${item.from}, ${item.to})` }}
-                  >
-                    <Icon size={30} className="text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.25)]" strokeWidth={1.8} />
-                  </div>
-                  <span className="mt-2 block text-center text-[11px] font-semibold tracking-tight text-white/80">{item.label}</span>
-                </>
-              );
-              if (item.onClick) {
-                return <button key={item.id} type="button" onClick={item.onClick} className="flex flex-col items-center">{inner}</button>;
-              }
-              return <Link key={item.id} href={item.href || "#"} className="flex flex-col items-center">{inner}</Link>;
-            })}
-          </div>
+        <div className="animate-in fade-in duration-300 max-w-5xl mx-auto space-y-8">
+          {[
+            {
+              title: "Content",
+              items: [
+                { id: "add", label: "Add", icon: Plus, from: "#34D399", to: "#059669", onClick: () => setShowAddContentMenu(true) },
+                { id: "manage", label: "Manage", icon: Video, from: "#FF7A59", to: "#E53945", href: "/creator-dashboard/manage-content" },
+                { id: "import", label: "Import", icon: Download, from: "#F87171", to: "#DC2626", href: "/creator-dashboard/import" },
+              ],
+            },
+            {
+              title: "Merchandise & Subscriptions",
+              items: [
+                { id: "shop", label: "Shop", icon: ShoppingBag, from: "#FBBF24", to: "#D97706", href: "/creator-dashboard/shop" },
+                { id: "orders", label: "Orders", icon: Package, from: "#38BDF8", to: "#0284C7", href: "/creator-dashboard/orders" },
+                { id: "subs", label: "Subs", icon: Star, from: "#FACC15", to: "#CA8A04", href: "/creator-dashboard/subscriptions" },
+              ],
+            },
+            {
+              title: "Settings & Profile",
+              items: [
+                { id: "settings", label: "Settings", icon: Settings, from: "#94A3B8", to: "#475569", href: "/creator-dashboard/account-settings" },
+                { id: "edit-profile", label: "Edit Profile", icon: Pencil, from: "#60A5FA", to: "#2563EB", href: "/creator-dashboard/settings" },
+                { id: "theme", label: "Theme", icon: Palette, from: "#C084FC", to: "#7C3AED", href: "/creator-dashboard/theme" },
+                { id: "analytics", label: "Analytics", icon: BarChart3, from: "#FB7185", to: "#E11D48", href: "/creator-dashboard/analytics" },
+                { id: "account-type", label: "Account", icon: UserCog, from: "#A78BFA", to: "#6D28D9", onClick: () => setShowAccountType(true) },
+              ],
+            },
+          ].map((section) => (
+            <section key={section.title}>
+              <h2 className="text-[11px] font-bold tracking-[0.2em] text-white/45 uppercase mb-3 px-1">{section.title}</h2>
+              <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-6 gap-x-3 gap-y-6 sm:gap-x-4 sm:gap-y-7 px-1">
+                {section.items.map((item) => {
+                  const Icon = item.icon;
+                  const inner = (
+                    <>
+                      <div
+                        className="relative mx-auto flex h-[62px] w-[62px] sm:h-[68px] sm:w-[68px] items-center justify-center rounded-[22px] shadow-[0_8px_24px_rgba(0,0,0,0.35)] transition-transform duration-200 hover:scale-[1.04] active:scale-[0.98]"
+                        style={{ background: `linear-gradient(160deg, ${item.from}, ${item.to})` }}
+                      >
+                        <Icon size={30} className="text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.25)]" strokeWidth={1.8} />
+                      </div>
+                      <span className="mt-2 block text-center text-[11px] font-semibold tracking-tight text-white/80">{item.label}</span>
+                    </>
+                  );
+                  if (item.onClick) {
+                    return <button key={item.id} type="button" onClick={item.onClick} className="flex flex-col items-center">{inner}</button>;
+                  }
+                  return <Link key={item.id} href={item.href || "#"} className="flex flex-col items-center">{inner}</Link>;
+                })}
+              </div>
+            </section>
+          ))}
         </div>
 
         {showAccountType && (
