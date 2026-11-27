@@ -378,7 +378,11 @@ export default function GoLivePage() {
     if (liveInputId === null) return;
     const supabase = createClient();
     
-    if (hostPcRef.current) hostPcRef.current.close();
+    if (hostPcRef.current) {
+      const oldPoll = (hostPcRef.current as any).__signalPoll;
+      if (oldPoll) clearInterval(oldPoll);
+      hostPcRef.current.close();
+    }
     await supabase.from("webrtc_signals").delete().eq("room_id", liveInputId);
 
     let iceServers: RTCIceServer[] = [
@@ -408,6 +412,8 @@ export default function GoLivePage() {
       setGuestConnState(pc.connectionState || "");
       if (pc.connectionState === "connected") { setGuestConnected(true); setGuestPending(false); }
       if (pc.connectionState === "disconnected" || pc.connectionState === "failed" || pc.connectionState === "closed") {
+        const poll = (pc as any).__signalPoll;
+        if (poll) clearInterval(poll);
         setGuestConnected(false);
         setGuestPending(false);
         setConnectedGuestName("");
@@ -490,6 +496,40 @@ export default function GoLivePage() {
           }
         }
       });
+
+    let lastSignalId = 0;
+    const pollSignals = async () => {
+      try {
+        const { data } = await supabase
+          .from("webrtc_signals")
+          .select("id,sender_id,type,payload")
+          .eq("room_id", liveInputId)
+          .gt("id", lastSignalId)
+          .order("id", { ascending: true })
+          .limit(50);
+        for (const signal of data || []) {
+          if (typeof signal.id === "number") lastSignalId = Math.max(lastSignalId, signal.id);
+          if (!signal || signal.sender_id === "host") continue;
+          if (signal.type === "answer") {
+            if (remoteSet) continue;
+            await pc.setRemoteDescription(new RTCSessionDescription(signal.payload));
+            remoteSet = true;
+            setGuestDebug(`ans:y ic:${localCand}/${remoteCand}`);
+            while (iceQueue.length > 0) {
+              const candidate = iceQueue.shift();
+              if (candidate) await pc.addIceCandidate(new RTCIceCandidate(candidate)).catch(console.error);
+            }
+          } else if (signal.type === "candidate") {
+            remoteCand += 1;
+            setGuestDebug(`ans:${remoteSet ? "y" : "n"} ic:${localCand}/${remoteCand}`);
+            if (remoteSet) await pc.addIceCandidate(new RTCIceCandidate(signal.payload)).catch(console.error);
+            else iceQueue.push(signal.payload);
+          }
+        }
+      } catch {}
+    };
+    const signalPoll = setInterval(pollSignals, 2000);
+    (pc as any).__signalPoll = signalPoll;
 
     return channel;
   };
