@@ -34,6 +34,7 @@ export default function GoLivePage() {
   const [joinRequest, setJoinRequest] = useState<any>(null);
   const [guestConnected, setGuestConnected] = useState(false);
   const [guestPending, setGuestPending] = useState(false);
+  const [guestConnState, setGuestConnState] = useState<string>("");
   const [connectedGuestName, setConnectedGuestName] = useState("");
   const [connectedGuestAvatar, setConnectedGuestAvatar] = useState<string | null>(null);
   const [connectedGuestUserId, setConnectedGuestUserId] = useState<string | null>(null);
@@ -401,6 +402,7 @@ export default function GoLivePage() {
     let remoteSet = false;
 
     pc.onconnectionstatechange = () => {
+      setGuestConnState(pc.connectionState || "");
       if (pc.connectionState === "connected") { setGuestConnected(true); setGuestPending(false); }
       if (pc.connectionState === "disconnected" || pc.connectionState === "failed" || pc.connectionState === "closed") {
         setGuestConnected(false);
@@ -492,6 +494,7 @@ export default function GoLivePage() {
       setConnectedGuestAvatar(joinRequest.viewer_avatar || null);
       setConnectedGuestUserId(joinRequest.viewer_user_id || null);
       setGuestPending(true);
+      setGuestConnState("connecting");
       await connectGuest(joinRequest.viewer_user_id);
     }
     setJoinRequest(null);
@@ -672,8 +675,8 @@ export default function GoLivePage() {
 
   return (
     <main className="h-[100dvh] bg-black text-white relative overflow-hidden lg:flex lg:flex-col lg:bg-[#0a0a0a]">
-      <video ref={guestVideoRef} autoPlay playsInline muted style={{ position: "absolute", width: "320px", height: "180px", opacity: 0, pointerEvents: "none", top: 0, left: 0, zIndex: -1 }} />
-      <audio ref={guestAudioRef} autoPlay style={{ position: "absolute", width: 1, height: 1, opacity: 0, pointerEvents: "none", top: 0, left: 0 }} />
+      <video ref={guestVideoRef} autoPlay playsInline muted style={{ position: "absolute", width: "160px", height: "90px", opacity: 0.01, pointerEvents: "none", bottom: 0, right: 0, zIndex: 1 }} />
+      <audio ref={guestAudioRef} autoPlay />
 
       {showProductMenu && (
         <div className="fixed inset-0 z-[9999] bg-black/80 flex items-center justify-center p-4">
@@ -725,7 +728,7 @@ export default function GoLivePage() {
               </div>
               <div className="min-w-0">
                 <span className="text-xs font-bold text-white max-w-[110px] truncate block">{connectedGuestName || "Guest"}</span>
-                {guestPending && !guestConnected && <span className="text-[10px] text-white/60 block">Connecting...</span>}
+                {guestPending && !guestConnected && <span className="text-[10px] text-white/60 block">{guestConnState ? `Connecting (${guestConnState})` : "Connecting..."}</span>}
               </div>
               {connectedGuestUserId && connectedGuestUserId !== userId && (
                 <button
@@ -924,7 +927,7 @@ export default function GoLivePage() {
                   </div>
                   <div className="min-w-0">
                 <span className="text-xs font-bold text-white max-w-[110px] truncate block">{connectedGuestName || "Guest"}</span>
-                {guestPending && !guestConnected && <span className="text-[10px] text-white/60 block">Connecting...</span>}
+                {guestPending && !guestConnected && <span className="text-[10px] text-white/60 block">{guestConnState ? `Connecting (${guestConnState})` : "Connecting..."}</span>}
               </div>
                   {connectedGuestUserId && connectedGuestUserId !== userId && (
                     <button
