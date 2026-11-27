@@ -58,7 +58,7 @@ export default function GuestCoStream({ roomId, localVideoRef }: { roomId: strin
         pc.onicecandidate = (event) => {
           if (event.candidate) {
             supabase.from("webrtc_signals").insert({
-              room_id: roomId, sender_id: user.id, type: "candidate", payload: event.candidate
+              call_id: roomId, sender_id: user.id, recipient_id: "host", signal_type: "candidate", signal_data: event.candidate
             }).then();
           }
         };
@@ -76,27 +76,27 @@ export default function GuestCoStream({ roomId, localVideoRef }: { roomId: strin
           const answer = await pc.createAnswer();
           await pc.setLocalDescription(answer);
           await supabase.from("webrtc_signals").insert({
-            room_id: roomId, sender_id: user.id, type: "answer", payload: answer
+            call_id: roomId, sender_id: user.id, recipient_id: "host", signal_type: "answer", signal_data: answer
           });
         };
 
         channel = supabase.channel(`webrtc_${roomId}_${user.id}`)
-          .on("postgres_changes", { event: "INSERT", schema: "public", table: "webrtc_signals", filter: `room_id=eq.${roomId}` }, async (payload) => {
-            const signal = payload.new;
+          .on("postgres_changes", { event: "INSERT", schema: "public", table: "webrtc_signals", filter: `call_id=eq.${roomId}` }, async (payload) => {
+            const signal = payload.new as any;
             if (!signal || signal.sender_id === user.id) return;
 
-            if (signal.type === "offer") await handleOffer(signal.payload);
-            else if (signal.type === "candidate") {
-              if (remoteSet) await pc.addIceCandidate(new RTCIceCandidate(signal.payload)).catch(console.error);
-              else iceQueue.push(signal.payload);
+            if (signal.signal_type === "offer") await handleOffer(signal.signal_data);
+            else if (signal.signal_type === "candidate") {
+              if (remoteSet) await pc.addIceCandidate(new RTCIceCandidate(signal.signal_data)).catch(console.error);
+              else iceQueue.push(signal.signal_data);
             }
           })
           .subscribe(async (status) => {
             if (status === "SUBSCRIBED") {
               const { data } = await supabase.from("webrtc_signals")
-                .select("*").eq("room_id", roomId).eq("type", "offer")
+                .select("*").eq("call_id", roomId).eq("signal_type", "offer")
                 .order("created_at", { ascending: false }).limit(1);
-              if (data && data.length > 0) await handleOffer(data[0].payload);
+              if (data && data.length > 0) await handleOffer((data[0] as any).signal_data);
             }
           });
 
@@ -104,19 +104,19 @@ export default function GuestCoStream({ roomId, localVideoRef }: { roomId: strin
           try {
             const { data } = await supabase
               .from("webrtc_signals")
-              .select("id,sender_id,type,payload")
-              .eq("room_id", roomId)
+              .select("id,sender_id,signal_type,signal_data")
+              .eq("call_id", roomId)
               .order("created_at", { ascending: true })
               .limit(100);
-            for (const signal of data || []) {
+            for (const signal of (data || []) as any[]) {
               const sid = String(signal.id);
               if (seenSignals.has(sid)) continue;
               seenSignals.add(sid);
               if (!signal || signal.sender_id === user.id) continue;
-              if (signal.type === "offer") await handleOffer(signal.payload);
-              else if (signal.type === "candidate") {
-                if (remoteSet) await pc.addIceCandidate(new RTCIceCandidate(signal.payload)).catch(console.error);
-                else iceQueue.push(signal.payload);
+              if (signal.signal_type === "offer") await handleOffer(signal.signal_data);
+              else if (signal.signal_type === "candidate") {
+                if (remoteSet) await pc.addIceCandidate(new RTCIceCandidate(signal.signal_data)).catch(console.error);
+                else iceQueue.push(signal.signal_data);
               }
             }
           } catch {}

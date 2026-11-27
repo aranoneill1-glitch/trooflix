@@ -383,7 +383,7 @@ export default function GoLivePage() {
       if (oldPoll) clearInterval(oldPoll);
       hostPcRef.current.close();
     }
-    await supabase.from("webrtc_signals").delete().eq("room_id", liveInputId);
+    await supabase.from("webrtc_signals").delete().eq("call_id", liveInputId);
 
     let iceServers: RTCIceServer[] = [
       { urls: "stun:stun.cloudflare.com:3478" },
@@ -428,7 +428,7 @@ export default function GoLivePage() {
         localCand += 1;
         setGuestDebug(`ans:${remoteSet ? "y" : "n"} ic:${localCand}/${remoteCand}`);
         supabase.from("webrtc_signals").insert({
-          room_id: liveInputId, sender_id: "host", type: "candidate", payload: event.candidate
+          call_id: liveInputId, sender_id: "host", recipient_id: guestUserId, signal_type: "candidate", signal_data: event.candidate
         }).then();
       }
     };
@@ -454,38 +454,38 @@ export default function GoLivePage() {
 
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
-    await supabase.from("webrtc_signals").insert({ room_id: liveInputId, sender_id: "host", type: "offer", payload: offer });
+    await supabase.from("webrtc_signals").insert({ call_id: liveInputId, sender_id: "host", recipient_id: guestUserId, signal_type: "offer", signal_data: offer });
 
     const channel = supabase.channel(`webrtc_host_${liveInputId}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "webrtc_signals", filter: `room_id=eq.${liveInputId}` }, async (payload) => {
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "webrtc_signals", filter: `call_id=eq.${liveInputId}` }, async (payload) => {
         const signal = payload.new;
         if (!signal || signal.sender_id === "host") return;
 
-        if (signal.type === "answer") {
+        if (signal.signal_type === "answer") {
           if (remoteSet) return;
-          await pc.setRemoteDescription(new RTCSessionDescription(signal.payload));
+          await pc.setRemoteDescription(new RTCSessionDescription(signal.signal_data));
           remoteSet = true;
           setGuestDebug(`ans:y ic:${localCand}/${remoteCand}`);
           while (iceQueue.length > 0) {
             const candidate = iceQueue.shift();
             if (candidate) await pc.addIceCandidate(new RTCIceCandidate(candidate)).catch(console.error);
           }
-        } else if (signal.type === "candidate") {
+        } else if (signal.signal_type === "candidate") {
           remoteCand += 1;
           setGuestDebug(`ans:${remoteSet ? "y" : "n"} ic:${localCand}/${remoteCand}`);
-          if (remoteSet) await pc.addIceCandidate(new RTCIceCandidate(signal.payload)).catch(console.error);
-          else iceQueue.push(signal.payload);
+          if (remoteSet) await pc.addIceCandidate(new RTCIceCandidate(signal.signal_data)).catch(console.error);
+          else iceQueue.push(signal.signal_data);
         }
       })
       .subscribe(async (status) => {
         if (status === "SUBSCRIBED") {
           const { data } = await supabase.from("webrtc_signals")
-            .select("*").eq("room_id", liveInputId).eq("type", "answer")
+            .select("*").eq("call_id", liveInputId).eq("signal_type", "answer")
             .order("created_at", { ascending: false }).limit(1);
           if (data && data.length > 0 && !remoteSet) {
             const answer = data[0];
             if (answer.sender_id !== "host") {
-              await pc.setRemoteDescription(new RTCSessionDescription(answer.payload));
+              await pc.setRemoteDescription(new RTCSessionDescription(answer.signal_data));
               remoteSet = true;
               setGuestDebug(`ans:y ic:${localCand}/${remoteCand}`);
               while (iceQueue.length > 0) {
@@ -502,8 +502,8 @@ export default function GoLivePage() {
       try {
         const { data } = await supabase
           .from("webrtc_signals")
-          .select("id,sender_id,type,payload")
-          .eq("room_id", liveInputId)
+          .select("id,sender_id,signal_type,signal_data")
+          .eq("call_id", liveInputId)
           .order("created_at", { ascending: true })
           .limit(100);
         for (const signal of data || []) {
@@ -511,20 +511,20 @@ export default function GoLivePage() {
           if (seenSignals.has(sid)) continue;
           seenSignals.add(sid);
           if (!signal || signal.sender_id === "host") continue;
-          if (signal.type === "answer") {
+          if (signal.signal_type === "answer") {
             if (remoteSet) continue;
-            await pc.setRemoteDescription(new RTCSessionDescription(signal.payload));
+            await pc.setRemoteDescription(new RTCSessionDescription(signal.signal_data));
             remoteSet = true;
             setGuestDebug(`ans:y ic:${localCand}/${remoteCand}`);
             while (iceQueue.length > 0) {
               const candidate = iceQueue.shift();
               if (candidate) await pc.addIceCandidate(new RTCIceCandidate(candidate)).catch(console.error);
             }
-          } else if (signal.type === "candidate") {
+          } else if (signal.signal_type === "candidate") {
             remoteCand += 1;
             setGuestDebug(`ans:${remoteSet ? "y" : "n"} ic:${localCand}/${remoteCand}`);
-            if (remoteSet) await pc.addIceCandidate(new RTCIceCandidate(signal.payload)).catch(console.error);
-            else iceQueue.push(signal.payload);
+            if (remoteSet) await pc.addIceCandidate(new RTCIceCandidate(signal.signal_data)).catch(console.error);
+            else iceQueue.push(signal.signal_data);
           }
         }
       } catch {}
