@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { getCachedUser } from "@/lib/cache";
 
-export default function GuestCoStream({ roomId }: { roomId: string }) {
+export default function GuestCoStream({ roomId, localVideoRef }: { roomId: string; localVideoRef?: React.RefObject<HTMLVideoElement | null> }) {
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
@@ -27,6 +27,10 @@ export default function GuestCoStream({ roomId }: { roomId: string }) {
         });
         if (closed) { stream.getTracks().forEach(t => t.stop()); return; }
         streamRef.current = stream;
+        if (localVideoRef?.current) {
+          localVideoRef.current.srcObject = stream;
+          localVideoRef.current.play().catch(() => {});
+        }
 
         const pc = new RTCPeerConnection({
           iceServers: [{ urls: "stun:stun.cloudflare.com:3478" }, { urls: "stun:stun.l.google.com:19302" }]

@@ -38,6 +38,7 @@ export default function LivePlayer({ liveInputId, creatorId, creatorName, creato
   const [isFollowingGuest, setIsFollowingGuest] = useState(false);
   const lastLikeSentRef = useRef(0);
   const chatScrollRef = useRef<HTMLDivElement>(null);
+  const guestLocalVideoRef = useRef<HTMLVideoElement>(null);
   const searchParams = useSearchParams();
   const invitedToJoin = searchParams.get("invite") === "1";
 
@@ -272,11 +273,24 @@ export default function LivePlayer({ liveInputId, creatorId, creatorName, creato
 
   return (
     <div className="relative h-[100dvh] w-full bg-black overflow-hidden text-white">
-      <div className="absolute inset-0 bg-black [&_iframe]:!w-full [&_iframe]:!h-full [&_video]:!w-full [&_video]:!h-full [&_.stream-player]:!h-full [&_.stream-player]:!w-full">
-        <Stream src={liveInputId} controls autoplay muted />
-      </div>
+      {joinStatus === "approved" ? (
+        <div className="absolute inset-0 flex flex-col bg-black">
+          <div className="relative flex-1 min-h-0 bg-black [&_iframe]:!w-full [&_iframe]:!h-full [&_video]:!w-full [&_video]:!h-full [&_.stream-player]:!h-full [&_.stream-player]:!w-full">
+            <Stream src={liveInputId} controls autoplay muted />
+            <div className="absolute top-3 left-3 z-10 bg-black/45 backdrop-blur-md border border-white/10 rounded-full px-3 py-1 text-[11px] font-bold text-white">Host</div>
+          </div>
+          <div className="relative flex-1 min-h-0 bg-[#111] border-t border-white/10">
+            <video ref={guestLocalVideoRef} autoPlay muted playsInline className="absolute inset-0 w-full h-full object-cover" />
+            <div className="absolute top-3 left-3 z-10 bg-black/45 backdrop-blur-md border border-white/10 rounded-full px-3 py-1 text-[11px] font-bold text-white">You</div>
+          </div>
+        </div>
+      ) : (
+        <div className="absolute inset-0 bg-black [&_iframe]:!w-full [&_iframe]:!h-full [&_video]:!w-full [&_video]:!h-full [&_.stream-player]:!h-full [&_.stream-player]:!w-full">
+          <Stream src={liveInputId} controls autoplay muted />
+        </div>
+      )}
 
-      {joinStatus === "approved" && <GuestCoStream roomId={liveInputId} />}
+      {joinStatus === "approved" && <GuestCoStream roomId={liveInputId} localVideoRef={guestLocalVideoRef} />}
 
       {isConnecting && !streamEnded && (
         <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/80 pointer-events-none">

@@ -412,6 +412,7 @@ export default function GoLivePage() {
       if (event.track.kind === "video" && guestVideoRef.current) {
         guestVideoRef.current.srcObject = event.streams[0];
         guestVideoRef.current.play().catch(e => console.error("Video play failed", e));
+        setGuestConnected(true);
       }
       if (event.track.kind === "audio") {
         if (guestAudioRef.current) {
