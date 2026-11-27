@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Eye, LayoutDashboard, Lock, MessageCircle, Wallet } from "lucide-react";
+import { Eye, LayoutDashboard, Lock, MessageCircle, ShoppingBag, Wallet } from "lucide-react";
 
 export default function StudioWidgets({
   active,
@@ -10,7 +10,7 @@ export default function StudioWidgets({
   className = "mb-6",
   compact = false,
 }: {
-  active: "profile" | "dashboard" | "mytrooflix" | "bank" | "chat";
+  active: "profile" | "dashboard" | "mytrooflix" | "bank" | "chat" | "shop";
   onViewChange?: (section: "profile" | "dashboard") => void;
   dashboardLocked?: boolean;
   className?: string;
@@ -21,11 +21,12 @@ export default function StudioWidgets({
     { id: "dashboard" as const, label: "Dashboard", icon: LayoutDashboard, from: "#FF7A59", to: "#E53945", href: "/creator-dashboard?studioTab=dashboard" },
     { id: "bank" as const, label: "TrooBank", icon: Wallet, from: "#43D17A", to: "#1FA855", href: "/wallet" },
     { id: "chat" as const, label: "TrooChat", icon: MessageCircle, from: "#5BC8F5", to: "#2A9FD6", href: "/messages" },
+    { id: "shop" as const, label: "Shop", icon: ShoppingBag, from: "#F5A623", to: "#E67E22", href: "/shop" },
   ];
 
   return (
     <div className={className}>
-      <div className={`grid grid-cols-4 ${compact ? "gap-2 max-w-[320px]" : "gap-3 sm:gap-4 max-w-md"} mx-auto`}>
+      <div className={`grid grid-cols-5 ${compact ? "gap-1.5 max-w-[360px]" : "gap-2 sm:gap-3 max-w-lg"} mx-auto`}>
         {items.map((item) => {
           const Icon = item.icon;
           const selected = active === item.id;
