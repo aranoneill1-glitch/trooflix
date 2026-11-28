@@ -30,8 +30,8 @@ export default function StudioWidgets({
   const items = [
     {
       id: "profile" as const, label: "Profile", icon: Eye, href: "/creator-dashboard?studioTab=profile",
-      background: "linear-gradient(180deg, #2A1215 0%, #1A0D0F 45%, #12090A 100%)",
-      boxShadow: "0 10px 28px rgba(229, 57, 69, 0.22), 0 4px 10px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.4)",
+      background: "linear-gradient(180deg, #111111 0%, #000000 100%)",
+      boxShadow: "0 10px 28px rgba(0,0,0,0.45), 0 4px 10px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.4)",
       accent: "#E53945",
     },
     {
@@ -42,14 +42,14 @@ export default function StudioWidgets({
     },
     {
       id: "bank" as const, label: "TrooBank", icon: Wallet, href: "/wallet",
-      background: "linear-gradient(180deg, #2A1215 0%, #1A0D0F 45%, #12090A 100%)",
-      boxShadow: "0 10px 28px rgba(229, 57, 69, 0.22), 0 4px 10px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.4)",
+      background: "linear-gradient(180deg, #111111 0%, #000000 100%)",
+      boxShadow: "0 10px 28px rgba(0,0,0,0.45), 0 4px 10px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.4)",
       accent: "#E53945",
     },
     {
       id: "chat" as const, label: "TrooChat", icon: MessageCircle, href: "/messages",
-      background: "linear-gradient(180deg, #2A1215 0%, #1A0D0F 45%, #12090A 100%)",
-      boxShadow: "0 10px 28px rgba(229, 57, 69, 0.22), 0 4px 10px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.4)",
+      background: "linear-gradient(180deg, #111111 0%, #000000 100%)",
+      boxShadow: "0 10px 28px rgba(0,0,0,0.45), 0 4px 10px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.4)",
       accent: "#E53945",
     },
   ];
