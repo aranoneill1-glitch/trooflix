@@ -10,7 +10,7 @@ import ReportModal from "@/components/ReportModal";
 import ViewCount from "@/components/ViewCount";
 import { getCachedUser } from "@/lib/cache";
 
-import { ChevronDown, X as XIcon } from "lucide-react";
+import { X as XIcon } from "lucide-react";
 import { MAIN_TYPES, SUB_CATEGORIES, normalizeMainType, type MainType } from "@/lib/videoTypes";
 
 type Props = {
@@ -175,6 +175,26 @@ const TYPE_IMAGES: Record<string, string> = {
   other: "https://images.unsplash.com/photo-1492724441997-5dc865305da7?q=80&w=600&auto=format&fit=crop",
 };
 
+const CATEGORY_IMAGES: Record<string, { image: string; bg: string }> = {
+  "History": { image: "https://img.icons8.com/3d-fluency/94/scroll.png", bg: "from-amber-500/30 to-orange-700/30" },
+  "Science & Technology": { image: "https://img.icons8.com/3d-fluency/94/robot-2.png", bg: "from-cyan-500/30 to-blue-700/30" },
+  "Politics & Geopolitics": { image: "https://img.icons8.com/3d-fluency/94/globe-showing-europe-africa.png", bg: "from-blue-500/30 to-indigo-700/30" },
+  "War & Conflict": { image: "https://img.icons8.com/3d-fluency/94/shield.png", bg: "from-red-500/30 to-stone-700/30" },
+  "True Crime & Justice": { image: "https://img.icons8.com/3d-fluency/94/detective.png", bg: "from-slate-500/30 to-zinc-700/30" },
+  "Conspiracy & Mystery": { image: "https://img.icons8.com/3d-fluency/94/flying-saucer.png", bg: "from-purple-500/30 to-violet-700/30" },
+  "Society & Culture": { image: "https://img.icons8.com/3d-fluency/94/theatre-mask.png", bg: "from-pink-500/30 to-rose-700/30" },
+  "Business & Finance": { image: "https://img.icons8.com/3d-fluency/94/bullish.png", bg: "from-emerald-500/30 to-green-700/30" },
+  "Environment & Nature": { image: "https://img.icons8.com/3d-fluency/94/deciduous-tree.png", bg: "from-green-500/30 to-emerald-700/30" },
+  "Religion & Spirituality": { image: "https://img.icons8.com/3d-fluency/94/dove.png", bg: "from-sky-500/30 to-indigo-700/30" },
+  "Ancient Civilisation": { image: "https://img.icons8.com/3d-fluency/94/great-pyramid.png", bg: "from-yellow-500/30 to-amber-700/30" },
+  "Comedy": { image: "https://img.icons8.com/3d-fluency/94/clown-face.png", bg: "from-yellow-400/30 to-orange-600/30" },
+  "News": { image: "https://img.icons8.com/3d-fluency/94/newspaper.png", bg: "from-slate-400/30 to-blue-700/30" },
+  "Gaming": { image: "https://img.icons8.com/3d-fluency/94/game-controller.png", bg: "from-violet-500/30 to-fuchsia-700/30" },
+  "Medicine": { image: "https://img.icons8.com/3d-fluency/94/stethoscope.png", bg: "from-teal-500/30 to-cyan-700/30" },
+  "Independent Film": { image: "https://img.icons8.com/3d-fluency/94/clapperboard.png", bg: "from-rose-500/30 to-red-700/30" },
+  "Books": { image: "https://img.icons8.com/3d-fluency/94/books.png", bg: "from-orange-500/30 to-amber-700/30" },
+};
+
 export default function InstagramHomeFeed({ videos, creators, onVideoSelect, showWelcome = false }: Props) {
   const [commentCounts, setCommentCounts] = useState<Record<number, number>>({});
   const [tipCounts, setTipCounts] = useState<Record<string, number>>({});
@@ -190,7 +210,6 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
   const postRefs = useRef<Map<number, HTMLElement>>(new Map());
   const [activeType, setActiveType] = useState<MainType | null>(null);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const [categoriesOpen, setCategoriesOpen] = useState(false);
   const mediaRefs = useRef<Map<number, HTMLVideoElement | null>>(new Map());
   const registerMedia = React.useCallback((id: number, el: HTMLVideoElement | null) => {
     if (el) mediaRefs.current.set(id, el);
@@ -354,7 +373,7 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
   return (
     <div className="pb-24">
       <div className="pt-[calc(env(safe-area-inset-top)+76px)] pb-2" />
-      {/* Main-type pills + categories dropdown — below the fixed top bar */}
+      {/* Main-type pills + category widgets — below the fixed top bar */}
       <div className="pb-3 border-b border-white/[0.06]">
         <div className="relative">
           <div className="flex gap-2 overflow-x-auto scrollbar-hide px-3 pr-10">
@@ -372,31 +391,35 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
                 <span className="relative z-10 drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]">{t.label}</span>
               </button>
             ))}
-            <button
-              onClick={() => { haptic(); setCategoriesOpen(v => !v); }}
-              className={`relative shrink-0 overflow-hidden inline-flex items-center gap-1.5 rounded-2xl border px-5 py-3 text-[13px] font-semibold transition-all duration-200 ${(activeCategory || categoriesOpen) ? "border-white/30 text-white" : "border-white/10 text-white/90 hover:border-white/20"}`}
-            >
-              <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=600&auto=format&fit=crop" alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
-              <div className={`absolute inset-0 ${(activeCategory || categoriesOpen) ? "bg-black/35" : "bg-black/50"}`} />
-              <span className="relative z-10 inline-flex items-center gap-1.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]">Categories <ChevronDown size={13} className={categoriesOpen ? "rotate-180" : ""} /></span>
-            </button>
+
           </div>
           <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-black to-transparent" />
         </div>
 
-        {categoriesOpen && (
-          <div className="mt-3 flex flex-wrap gap-2 px-3">
-            {SUB_CATEGORIES.map(c => (
+        <div className="mt-3 flex gap-3 overflow-x-auto scrollbar-hide px-3 pb-1">
+          {SUB_CATEGORIES.map(c => {
+            const active = activeCategory === c;
+            const cat = CATEGORY_IMAGES[c] || CATEGORY_IMAGES["News"];
+            return (
               <button
                 key={c}
                 onClick={() => { haptic(); setActiveCategory(prev => prev === c ? null : c); setActiveType(null); }}
-                className={`rounded-xl border px-3 py-2 text-[11px] font-semibold transition ${activeCategory === c ? "bg-[#E53945] border-[#E53945] text-white shadow-[0_6px_18px_rgba(229,57,69,0.25)]" : "bg-white/[0.06] border-white/10 text-white/75 hover:bg-white/[0.1]"}`}
+                className="shrink-0 flex flex-col items-center gap-2 w-[76px]"
               >
-                {c}
+                <div className={`w-[72px] h-[72px] rounded-2xl overflow-hidden border-2 transition-all duration-200 bg-gradient-to-br ${cat.bg} ${active ? "border-[#E53945] shadow-[0_8px_24px_rgba(229,57,69,0.35)] scale-[1.03]" : "border-white/10 hover:border-white/25"}`}>
+                  <img
+                    src={cat.image}
+                    alt={c}
+                    className="w-full h-full object-contain p-2.5 drop-shadow-[0_4px_10px_rgba(0,0,0,0.35)]"
+                    loading="lazy"
+                    onError={(e) => { e.currentTarget.style.opacity = "0"; }}
+                  />
+                </div>
+                <span className={`text-[10px] leading-tight text-center font-medium line-clamp-2 ${active ? "text-white" : "text-white/70"}`}>{c}</span>
               </button>
-            ))}
-          </div>
-        )}
+            );
+          })}
+        </div>
 
         {(activeType || activeCategory) && (
           <button onClick={() => { setActiveType(null); setActiveCategory(null); }} className="mt-3 mx-3 inline-flex items-center gap-1 text-[11px] text-white/45">
