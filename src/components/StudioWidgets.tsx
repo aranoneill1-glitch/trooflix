@@ -86,18 +86,26 @@ export default function StudioWidgets({
 
   return (
     <div className={className}>
+      <style>{`
+        @keyframes widget-shine { 0%{transform:translateX(-140%) skewX(-18deg);opacity:0} 15%{opacity:.22} 45%{opacity:.08} 100%{transform:translateX(180%) skewX(-18deg);opacity:0} }
+        @keyframes widget-breathe { 0%,100%{opacity:.35; transform:scale(1)} 50%{opacity:.7; transform:scale(1.08)} }
+      `}</style>
       <div className={`grid grid-cols-4 ${compact ? "gap-3 max-w-[320px]" : "gap-4 sm:gap-5 max-w-lg"} mx-auto`}>
-        {items.map((item) => {
+        {items.map((item, i) => {
           const Icon = item.icon;
           const selected = active === item.id;
           const locked = item.id === "dashboard" && dashboardLocked;
           const inner = (
             <>
-              <div className={`relative mx-auto flex ${compact ? "h-[56px] w-[56px] rounded-[20px]" : "h-[64px] w-[64px] sm:h-[70px] sm:w-[70px] rounded-[22px]"} items-center justify-center transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-[1.05] active:scale-[0.96] group`}>
-                <div className="absolute inset-0 rounded-[inherit]" style={{ background: item.background, boxShadow: item.boxShadow }} />
+              <div className={`relative mx-auto flex ${compact ? "h-[56px] w-[56px] rounded-[20px]" : "h-[64px] w-[64px] sm:h-[70px] sm:w-[70px] rounded-[22px]"} items-center justify-center overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-[1.05] active:scale-[0.96] group`} style={{ boxShadow: `${item.boxShadow}, 0 0 24px rgba(229,57,69,${selected ? 0.18 : 0.08})` }}>
+                <div className="absolute inset-0 rounded-[inherit]" style={{ background: item.background }} />
+                <div className="pointer-events-none absolute -bottom-4 -right-4 w-16 h-16 rounded-full bg-[#E53945]/20 blur-xl" style={{ animation: `widget-breathe ${3.8 + i * 0.4}s ease-in-out ${i * 0.25}s infinite` }} />
+                <div className="pointer-events-none absolute inset-0 rounded-[inherit] overflow-hidden">
+                  <div className="absolute top-0 -left-[60%] w-[45%] h-full bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.22),transparent)]" style={{ animation: `widget-shine ${4.8 + i * 0.5}s ease-in-out ${i * 0.6}s infinite` }} />
+                </div>
                 <div className="pointer-events-none absolute inset-0 rounded-[inherit] bg-gradient-to-b from-white/20 via-white/5 to-transparent" />
                 <div className="pointer-events-none absolute inset-[0.5px] rounded-[inherit] border border-white/10" />
-                <div className="pointer-events-none absolute inset-0 rounded-[inherit]" style={{ boxShadow: `inset 0 0 0 1px ${item.accent}22` }} />
+                <div className="pointer-events-none absolute inset-0 rounded-[inherit]" style={{ boxShadow: `inset 0 0 0 1px rgba(229,57,69,0.12)` }} />
                 <div className="relative z-10 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]" style={{ color: item.accent }}>
                   <Icon size={compact ? 24 : 30} strokeWidth={1.9} />
                 </div>
