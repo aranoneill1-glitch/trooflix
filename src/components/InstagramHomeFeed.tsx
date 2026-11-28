@@ -409,7 +409,7 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
       </div>
 
       {/* Posts */}
-      <div className="divide-y divide-white/[0.06]">
+      <div className="space-y-3 px-3 py-3">
         {posts.map(({ video, creator, commentCount }, index) => {
           const name = creator?.name || "Trooflix Creator";
           const avatar = creator?.photoUrl;
@@ -417,8 +417,8 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
           return (
             <React.Fragment key={video.id}>
             {index === 4 && (
-              <article className="py-0">
-                <Link href="/merchandise" className="block overflow-hidden border-y border-white/10">
+              <article className="overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03]">
+                <Link href="/merchandise" className="block overflow-hidden">
                   <div className="relative aspect-[16/9] overflow-hidden">
                     <img src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=1200&auto=format&fit=crop" alt="Trooflix merch" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
@@ -433,8 +433,8 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
               </article>
             )}
             {index === 8 && (
-              <article className="py-0">
-                <Link href="/latest?category=Podcasts" className="block overflow-hidden border-y border-white/10">
+              <article className="overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03]">
+                <Link href="/latest?category=Podcasts" className="block overflow-hidden">
                   <div className="relative aspect-[16/9] overflow-hidden">
                     <img src="https://images.unsplash.com/photo-1590602847861-f357a9332bbc?q=80&w=1200&auto=format&fit=crop" alt="Podcast studio" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
@@ -451,7 +451,7 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
             <article
               data-post-id={video.id}
               ref={(el) => { if (el) postRefs.current.set(video.id, el); else postRefs.current.delete(video.id); }}
-              className="pb-3"
+              className="overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03] pb-3"
             >
               <header className="flex items-center gap-2.5 px-3 py-2.5">
                 <Link href={creator?.slug ? `/profile/${creator.slug}` : "#"} className="h-8 w-8 shrink-0 overflow-hidden rounded-full bg-gradient-to-tr from-[#f09433] to-[#dc2743] p-[1.5px]">
