@@ -870,18 +870,20 @@ export default function GoLivePage() {
           </div>
         )}
 
-        <div ref={chatScrollRef} className="absolute bottom-[170px] left-0 w-[78%] max-w-[340px] h-[40%] px-4 overflow-y-auto pointer-events-auto z-20 space-y-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {floatingComments.map((c) => (
-            <div key={c.id} className="max-w-full animate-in fade-in slide-in-from-bottom-2 duration-200">
-              <div className="inline-flex max-w-full items-start gap-2 rounded-2xl bg-black/35 backdrop-blur-sm border border-white/10 px-3 py-2 shadow-lg">
-                {c.avatar_url ? <img src={c.avatar_url} alt="" className="w-6 h-6 rounded-full object-cover shrink-0 mt-0.5 border border-white/15" /> : <div className="w-6 h-6 rounded-full bg-[#E53945] flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-bold text-white">{String(c.display_name || "U").charAt(0).toUpperCase()}</div>}
-                <div className="min-w-0">
-                  <p className="text-[11px] font-bold text-white/80 leading-tight truncate">{c.display_name}</p>
-                  <p className="text-[13px] text-white leading-snug break-words [overflow-wrap:anywhere]">{c.type === "tip" && c.metadata?.amount ? `Sent a $${c.metadata.amount} tip!` : c.type === "like" ? "❤️ liked the stream" : c.message}</p>
+        <div ref={chatScrollRef} className="absolute bottom-[170px] left-0 w-[78%] max-w-[340px] h-[40%] px-4 overflow-y-auto pointer-events-auto z-20 flex flex-col [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="mt-auto space-y-2">
+            {floatingComments.map((c) => (
+              <div key={c.id} className="max-w-full animate-in fade-in slide-in-from-bottom-2 duration-200">
+                <div className="flex max-w-full items-start gap-2">
+                  {c.avatar_url ? <img src={c.avatar_url} alt="" className="w-6 h-6 rounded-full object-cover shrink-0 mt-0.5 border border-white/15" /> : <div className="w-6 h-6 rounded-full bg-[#E53945] flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-bold text-white">{String(c.display_name || "U").charAt(0).toUpperCase()}</div>}
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-bold text-white/85 leading-tight truncate drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">{c.display_name}</p>
+                    <p className="text-[13px] text-white leading-snug break-words [overflow-wrap:anywhere] drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">{c.type === "tip" && c.metadata?.amount ? `Sent a $${c.metadata.amount} tip!` : c.type === "like" ? "❤️ liked the stream" : c.message}</p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
         <div className="absolute inset-x-0 bottom-0 z-30 px-4 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-16 bg-gradient-to-t from-black/85 via-black/45 to-transparent">

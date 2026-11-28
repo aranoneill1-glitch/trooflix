@@ -343,26 +343,28 @@ export default function LivePlayer({ liveInputId, creatorId, creatorName, creato
         </div>
       </div>
 
-      <div ref={chatScrollRef} className="absolute bottom-[calc(env(safe-area-inset-bottom)+96px)] left-0 w-[78%] max-w-[360px] h-[40%] px-4 overflow-y-auto pointer-events-auto z-20 space-y-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {floatingComments.map((c) => (
-          <div key={c.id} className="max-w-full animate-in fade-in slide-in-from-bottom-2 duration-200">
-            <div className="inline-flex max-w-full items-start gap-2 rounded-2xl bg-black/35 backdrop-blur-sm border border-white/10 px-3 py-2 shadow-lg">
-              {c.avatar_url ? (
-                <img src={c.avatar_url} alt="" className="w-6 h-6 rounded-full object-cover shrink-0 mt-0.5 border border-white/15" />
-              ) : (
-                <div className="w-6 h-6 rounded-full bg-[#E53945] flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-bold text-white">
-                  {c.display_name.charAt(0).toUpperCase()}
+      <div ref={chatScrollRef} className="absolute bottom-[calc(env(safe-area-inset-bottom)+96px)] left-0 w-[78%] max-w-[360px] h-[40%] px-4 overflow-y-auto pointer-events-auto z-20 flex flex-col [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="mt-auto space-y-2">
+          {floatingComments.map((c) => (
+            <div key={c.id} className="max-w-full animate-in fade-in slide-in-from-bottom-2 duration-200">
+              <div className="flex max-w-full items-start gap-2">
+                {c.avatar_url ? (
+                  <img src={c.avatar_url} alt="" className="w-6 h-6 rounded-full object-cover shrink-0 mt-0.5 border border-white/15" />
+                ) : (
+                  <div className="w-6 h-6 rounded-full bg-[#E53945] flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-bold text-white">
+                    {c.display_name.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <div className="min-w-0">
+                  <p className="text-[11px] font-bold text-white/85 leading-tight truncate drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">{c.display_name}</p>
+                  <p className="text-[13px] text-white leading-snug break-words [overflow-wrap:anywhere] drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                    {c.type === "tip" && c.metadata?.amount ? `Sent a $${c.metadata.amount} tip!` : c.type === "like" ? "❤️ liked the stream" : c.message}
+                  </p>
                 </div>
-              )}
-              <div className="min-w-0">
-                <p className="text-[11px] font-bold text-white/80 leading-tight truncate">{c.display_name}</p>
-                <p className="text-[13px] text-white leading-snug break-words [overflow-wrap:anywhere]">
-                  {c.type === "tip" && c.metadata?.amount ? `Sent a $${c.metadata.amount} tip!` : c.type === "like" ? "❤️ liked the stream" : c.message}
-                </p>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       <div className="absolute right-3 bottom-[calc(env(safe-area-inset-bottom)+110px)] z-30 flex flex-col items-center gap-3">
