@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Eye, Lock, MessageCircle, Wallet } from "lucide-react";
+import { Eye, Lock, MessageCircle } from "lucide-react";
 
 function DashboardHeartIcon({ size = 24, className, style }: { size?: number; strokeWidth?: number; className?: string; style?: React.CSSProperties }) {
   return (
@@ -10,6 +10,16 @@ function DashboardHeartIcon({ size = 24, className, style }: { size?: number; st
       <rect width="7" height="5" x="14" y="3" rx="1.5" fill="#FFFFFF" />
       <rect width="7" height="5" x="3" y="16" rx="1.5" fill="#FFFFFF" />
       <path d="M20.8 14.6c-.8-.8-2.1-.8-2.9 0l-.4.4-.4-.4c-.8-.8-2.1-.8-2.9 0-.8.8-.8 2.1 0 2.9l3.3 3.3 3.3-3.3c.8-.8.8-2.1 0-2.9Z" fill="#E53945" />
+    </svg>
+  );
+}
+
+function TrooBankIcon({ size = 24, className, style }: { size?: number; strokeWidth?: number; className?: string; style?: React.CSSProperties }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h11A2.5 2.5 0 0 1 20 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5v-9Z" fill="#FFFFFF" />
+      <path d="M14 10h6v4h-6a2 2 0 1 1 0-4Z" fill="#111111" />
+      <circle cx="15.5" cy="12" r="1.1" fill="#E53945" />
     </svg>
   );
 }
@@ -41,10 +51,10 @@ export default function StudioWidgets({
       accent: "#FFFFFF",
     },
     {
-      id: "bank" as const, label: "TrooBank", icon: Wallet, href: "/wallet",
+      id: "bank" as const, label: "TrooBank", icon: TrooBankIcon, href: "/wallet",
       background: "linear-gradient(180deg, #111111 0%, #000000 100%)",
       boxShadow: "0 10px 28px rgba(0,0,0,0.45), 0 4px 10px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.4)",
-      accent: "#E53945",
+      accent: "#FFFFFF",
     },
     {
       id: "chat" as const, label: "TrooChat", icon: MessageCircle, href: "/messages",
