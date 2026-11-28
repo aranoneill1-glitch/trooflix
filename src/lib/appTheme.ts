@@ -63,7 +63,7 @@ function hslToHex(h: number, s: number, l: number) {
   return rgbToHex(r, g, b);
 }
 
-export type ThemePattern = "none" | "grain" | "mesh" | "grid" | "dots" | "diagonal";
+export type ThemePattern = "none" | "grain" | "mesh" | "grid" | "dots" | "diagonal" | "chat";
 
 export const THEME_PATTERNS: { id: ThemePattern; label: string }[] = [
   { id: "none", label: "Clean" },
@@ -72,6 +72,7 @@ export const THEME_PATTERNS: { id: ThemePattern; label: string }[] = [
   { id: "grid", label: "Grid" },
   { id: "dots", label: "Dots" },
   { id: "diagonal", label: "Diagonal" },
+  { id: "chat", label: "Chat" },
 ];
 
 export function parseThemeBackdrop(backdropUrl?: string | null): { color: string; pattern: ThemePattern } {
@@ -134,6 +135,11 @@ export function getThemeBackdropStyle(backdropUrl?: string | null): CSSPropertie
   }
   if (pattern === "diagonal") {
     return { backgroundColor: color, backgroundImage: `repeating-linear-gradient(135deg, rgba(255,255,255,0.05) 0, rgba(255,255,255,0.05) 1px, transparent 1px, transparent 14px), ${base}` };
+  }
+  if (pattern === "chat") {
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'><g fill='none' stroke='rgba(255,255,255,0.055)' stroke-width='1.8'><rect x='18' y='20' width='34' height='22' rx='7'/><path d='M28 42l6-5' stroke-linecap='round'/><rect x='118' y='24' width='38' height='24' rx='8'/><path d='M132 48l5-5' stroke-linecap='round'/><circle cx='52' cy='92' r='10'/><path d='M47 92h10M52 87v10' stroke-linecap='round'/><rect x='108' y='102' width='30' height='20' rx='7'/><path d='M118 122l5-4' stroke-linecap='round'/><path d='M24 132l8-8 8 8-8 8z'/><circle cx='146' cy='148' r='6'/></g></svg>`;
+    const uri = `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+    return { backgroundColor: color, backgroundImage: `${uri}, ${base}`, backgroundSize: "180px 180px, auto" };
   }
   return { background: backdropUrl.startsWith("{") ? base : backdropUrl };
 }
