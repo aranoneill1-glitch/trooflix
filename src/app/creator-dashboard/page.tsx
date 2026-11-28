@@ -598,10 +598,19 @@ function CreatorDashboardContent() {
                   </div>
                   <p className="text-sm text-white/70 leading-relaxed mb-5">{profile?.bio || "No bio yet."}</p>
                   <div className="flex flex-wrap items-center gap-3">
+                    <style>{`@keyframes go-live-shine{0%{transform:translateX(-140%) skewX(-18deg);opacity:0}20%{opacity:.35}50%{opacity:.12}100%{transform:translateX(180%) skewX(-18deg);opacity:0}} @keyframes go-live-pulse{0%,100%{box-shadow:0 8px 24px rgba(229,57,69,0.28),0 0 0 1px rgba(229,57,69,0.35),inset 0 1px 0 rgba(255,255,255,0.08)}50%{box-shadow:0 10px 30px rgba(229,57,69,0.42),0 0 0 1px rgba(229,57,69,0.5),inset 0 1px 0 rgba(255,255,255,0.1)}}`}</style>
                     {creatorToolsUnlocked ? (
-                      <Link href="/creator-dashboard/live" className="inline-flex items-center gap-2 rounded-full border border-[#E53945]/70 px-4 py-2 text-sm font-bold text-[#F06A72] transition hover:bg-[#E53945]/10"><Radio size={15} /> Go Live</Link>
+                      <Link href="/creator-dashboard/live" className="group relative inline-flex items-center gap-2 overflow-hidden rounded-full border border-[#E53945]/40 bg-[linear-gradient(180deg,#141414_0%,#000000_100%)] px-4 py-2 text-sm font-bold text-white transition-all duration-300 hover:scale-[1.03] active:scale-[0.98]" style={{ animation: "go-live-pulse 2.8s ease-in-out infinite" }}>
+                        <span className="pointer-events-none absolute inset-y-0 -left-1/2 w-1/3 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.28),transparent)]" style={{ animation: "go-live-shine 3.2s ease-in-out infinite" }} />
+                        <span className="relative inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#E53945]/20 text-[#E53945]"><Radio size={13} /></span>
+                        <span className="relative">Go Live</span>
+                      </Link>
                     ) : (
-                      <Link href="/wallet?topup=true&unlock=creator-tools" className="inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm font-bold text-white/55 transition hover:bg-white/5"><Radio size={15} /> Go Live <Lock size={11} /></Link>
+                      <Link href="/wallet?topup=true&unlock=creator-tools" className="group relative inline-flex items-center gap-2 overflow-hidden rounded-full border border-white/10 bg-[linear-gradient(180deg,#141414_0%,#000000_100%)] px-4 py-2 text-sm font-bold text-white/60 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]">
+                        <span className="relative inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/10 text-white/60"><Radio size={13} /></span>
+                        <span className="relative">Go Live</span>
+                        <Lock size={11} className="relative text-white/45" />
+                      </Link>
                     )}
                     <button onClick={() => profileFeatureInputRef.current?.click()} className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/20 px-4 py-2 text-sm font-bold text-white/80 transition hover:bg-white/10">
                       <Pencil size={14} /> {uploadingProfileFeature ? "Uploading..." : "Change featured"}
@@ -670,10 +679,19 @@ function CreatorDashboardContent() {
                 <div className="px-1">
                   <div className="flex items-center justify-between gap-3 mb-1">
                     <h1 className="text-2xl md:text-3xl font-black flex min-w-0 items-center gap-2 text-white"><Link href={`/profile/${username}`} className="hover:text-[#F06A72] transition-colors">{displayName}</Link> {profile?.verification_tick && profile.verification_tick !== "none" && <VerifiedBadge size={20} variant={profile.verification_tick as any} />}</h1>
+                    <style>{`@keyframes go-live-shine{0%{transform:translateX(-140%) skewX(-18deg);opacity:0}20%{opacity:.35}50%{opacity:.12}100%{transform:translateX(180%) skewX(-18deg);opacity:0}} @keyframes go-live-pulse{0%,100%{box-shadow:0 8px 24px rgba(229,57,69,0.28),0 0 0 1px rgba(229,57,69,0.35),inset 0 1px 0 rgba(255,255,255,0.08)}50%{box-shadow:0 10px 30px rgba(229,57,69,0.42),0 0 0 1px rgba(229,57,69,0.5),inset 0 1px 0 rgba(255,255,255,0.1)}}`}</style>
                     {creatorToolsUnlocked ? (
-                      <Link href="/creator-dashboard/live" className="mr-2 inline-flex shrink-0 items-center gap-2 rounded-full border border-[#E53945]/70 px-3.5 py-2 text-xs font-bold text-[#F06A72] transition hover:bg-[#E53945]/10 sm:px-4 sm:text-sm"><Radio size={15} /> Go Live</Link>
+                      <Link href="/creator-dashboard/live" className="group relative mr-2 inline-flex shrink-0 items-center gap-2 overflow-hidden rounded-full border border-[#E53945]/40 bg-[linear-gradient(180deg,#141414_0%,#000000_100%)] px-3.5 py-2 text-xs font-bold text-white transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] sm:px-4 sm:text-sm" style={{ animation: "go-live-pulse 2.8s ease-in-out infinite" }}>
+                        <span className="pointer-events-none absolute inset-y-0 -left-1/2 w-1/3 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.28),transparent)]" style={{ animation: "go-live-shine 3.2s ease-in-out infinite" }} />
+                        <span className="relative inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#E53945]/20 text-[#E53945]"><Radio size={13} /></span>
+                        <span className="relative">Go Live</span>
+                      </Link>
                     ) : (
-                      <Link href="/wallet?topup=true&unlock=creator-tools" className="mr-2 inline-flex shrink-0 items-center gap-2 rounded-full border border-white/20 px-3.5 py-2 text-xs font-bold text-white/55 transition hover:bg-white/5 sm:px-4 sm:text-sm"><Radio size={15} /> Go Live <Lock size={11} /></Link>
+                      <Link href="/wallet?topup=true&unlock=creator-tools" className="group relative mr-2 inline-flex shrink-0 items-center gap-2 overflow-hidden rounded-full border border-white/10 bg-[linear-gradient(180deg,#141414_0%,#000000_100%)] px-3.5 py-2 text-xs font-bold text-white/60 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] sm:px-4 sm:text-sm">
+                        <span className="relative inline-flex h-5 w-5 items-center justify-center rounded-full bg-white/10 text-white/60"><Radio size={13} /></span>
+                        <span className="relative">Go Live</span>
+                        <Lock size={11} className="relative text-white/45" />
+                      </Link>
                     )}
                   </div>
                   <p className="text-sm md:text-base text-white/50 mb-3"><Link href={`/profile/${username}`} className="hover:text-white transition-colors">@{username}</Link></p>
