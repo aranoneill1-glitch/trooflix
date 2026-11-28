@@ -63,26 +63,109 @@ function hslToHex(h: number, s: number, l: number) {
   return rgbToHex(r, g, b);
 }
 
-export type ThemePattern = "none" | "grain" | "mesh" | "grid" | "dots" | "diagonal" | "chat" | "aurora" | "sunset" | "midnight" | "rose" | "ocean" | "ember" | "citynight" | "beach" | "mountains" | "neoncity";
+export type ThemePattern = "none" | string;
 
-export const THEME_PATTERNS: { id: ThemePattern; label: string }[] = [
-  { id: "none", label: "Clean" },
-  { id: "aurora", label: "Aurora" },
-  { id: "sunset", label: "Sunset" },
-  { id: "midnight", label: "Midnight" },
-  { id: "rose", label: "Rose" },
-  { id: "ocean", label: "Ocean" },
-  { id: "ember", label: "Ember" },
-  { id: "citynight", label: "City Night" },
-  { id: "beach", label: "Beach" },
-  { id: "mountains", label: "Mountains" },
-  { id: "neoncity", label: "Neon City" },
-  { id: "grain", label: "Grain" },
-  { id: "mesh", label: "Mesh" },
-  { id: "grid", label: "Grid" },
-  { id: "dots", label: "Dots" },
-  { id: "diagonal", label: "Diagonal" },
-  { id: "chat", label: "Chat" },
+export const THEME_PATTERNS: { id: string; label: string; image: string }[] = [
+  { id: "none", label: "Clean", image: "" },
+  { id: "citynight", label: "City Night", image: "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?q=80&w=1600&auto=format&fit=crop" },
+  { id: "neoncity", label: "Neon City", image: "https://images.unsplash.com/photo-1542051841857-5f90071e7989?q=80&w=1600&auto=format&fit=crop" },
+  { id: "beach", label: "Beach", image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1600&auto=format&fit=crop" },
+  { id: "mountains", label: "Mountains", image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=1600&auto=format&fit=crop" },
+  { id: "sunset", label: "Sunset", image: "https://images.unsplash.com/photo-1472120435266-53107fd0c44a?q=80&w=1600&auto=format&fit=crop" },
+  { id: "forest", label: "Forest", image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=1600&auto=format&fit=crop" },
+  { id: "desert", label: "Desert", image: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?q=80&w=1600&auto=format&fit=crop" },
+  { id: "ocean", label: "Ocean", image: "https://images.unsplash.com/photo-1505118380757-91f5f5632de0?q=80&w=1600&auto=format&fit=crop" },
+  { id: "space", label: "Space", image: "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?q=80&w=1600&auto=format&fit=crop" },
+  { id: "stars", label: "Stars", image: "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?q=80&w=1600&auto=format&fit=crop" },
+  { id: "aurora", label: "Aurora", image: "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?q=80&w=1600&auto=format&fit=crop" },
+  { id: "clouds", label: "Clouds", image: "https://images.unsplash.com/photo-1499346030926-9a72daac6c63?q=80&w=1600&auto=format&fit=crop" },
+  { id: "storm", label: "Storm", image: "https://images.unsplash.com/photo-1500673922987-e212871fec22?q=80&w=1600&auto=format&fit=crop" },
+  { id: "waterfall", label: "Waterfall", image: "https://images.unsplash.com/photo-1433086966358-54859d0ed716?q=80&w=1600&auto=format&fit=crop" },
+  { id: "lake", label: "Lake", image: "https://images.unsplash.com/photo-1439066615861-d1af74d74000?q=80&w=1600&auto=format&fit=crop" },
+  { id: "canyon", label: "Canyon", image: "https://images.unsplash.com/photo-1474044159687-1ee9f3a51722?q=80&w=1600&auto=format&fit=crop" },
+  { id: "road", label: "Open Road", image: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=1600&auto=format&fit=crop" },
+  { id: "bridge", label: "Bridge", image: "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?q=80&w=1600&auto=format&fit=crop" },
+  { id: "skyline", label: "Skyline", image: "https://images.unsplash.com/photo-1514565131-fce0801e5785?q=80&w=1600&auto=format&fit=crop" },
+  { id: "tokyo", label: "Tokyo", image: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?q=80&w=1600&auto=format&fit=crop" },
+  { id: "newyork", label: "New York", image: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?q=80&w=1600&auto=format&fit=crop" },
+  { id: "london", label: "London", image: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?q=80&w=1600&auto=format&fit=crop" },
+  { id: "dubai", label: "Dubai", image: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?q=80&w=1600&auto=format&fit=crop" },
+  { id: "paris", label: "Paris", image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?q=80&w=1600&auto=format&fit=crop" },
+  { id: "rome", label: "Rome", image: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?q=80&w=1600&auto=format&fit=crop" },
+  { id: "santorini", label: "Santorini", image: "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?q=80&w=1600&auto=format&fit=crop" },
+  { id: "bali", label: "Bali", image: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?q=80&w=1600&auto=format&fit=crop" },
+  { id: "maldives", label: "Maldives", image: "https://images.unsplash.com/photo-1514282401047-d79a71a590e8?q=80&w=1600&auto=format&fit=crop" },
+  { id: "iceland", label: "Iceland", image: "https://images.unsplash.com/photo-1476610182048-b716b8518aae?q=80&w=1600&auto=format&fit=crop" },
+  { id: "alps", label: "Alps", image: "https://images.unsplash.com/photo-1465056836041-7f43ac27dcb5?q=80&w=1600&auto=format&fit=crop" },
+  { id: "autumn", label: "Autumn", image: "https://images.unsplash.com/photo-1477414348463-c0eb7f1359b6?q=80&w=1600&auto=format&fit=crop" },
+  { id: "winter", label: "Winter", image: "https://images.unsplash.com/photo-1483664852095-d6cc6870702d?q=80&w=1600&auto=format&fit=crop" },
+  { id: "spring", label: "Spring", image: "https://images.unsplash.com/photo-1490750967868-88aa4486c946?q=80&w=1600&auto=format&fit=crop" },
+  { id: "rain", label: "Rain", image: "https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?q=80&w=1600&auto=format&fit=crop" },
+  { id: "fog", label: "Fog", image: "https://images.unsplash.com/photo-1485236715568-ddc5ee6ca227?q=80&w=1600&auto=format&fit=crop" },
+  { id: "sunrise", label: "Sunrise", image: "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?q=80&w=1600&auto=format&fit=crop" },
+  { id: "moon", label: "Moon", image: "https://images.unsplash.com/photo-1509773896068-7fd415d91e2e?q=80&w=1600&auto=format&fit=crop" },
+  { id: "galaxy", label: "Galaxy", image: "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=1600&auto=format&fit=crop" },
+  { id: "nebula", label: "Nebula", image: "https://images.unsplash.com/photo-1465101162946-4377e57745c3?q=80&w=1600&auto=format&fit=crop" },
+  { id: "volcano", label: "Volcano", image: "https://images.unsplash.com/photo-1462332420958-a05d1e002413?q=80&w=1600&auto=format&fit=crop" },
+  { id: "cliffs", label: "Cliffs", image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1600&auto=format&fit=crop" },
+  { id: "dunes", label: "Dunes", image: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=1600&auto=format&fit=crop" },
+  { id: "jungle", label: "Jungle", image: "https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1600&auto=format&fit=crop" },
+  { id: "lavender", label: "Lavender", image: "https://images.unsplash.com/photo-1499002238440-d264edd596ec?q=80&w=1600&auto=format&fit=crop" },
+  { id: "cherryblossom", label: "Cherry Blossom", image: "https://images.unsplash.com/photo-1522383225653-ed111181a951?q=80&w=1600&auto=format&fit=crop" },
+  { id: "roses", label: "Roses", image: "https://images.unsplash.com/photo-1496062031456-07b8f162a322?q=80&w=1600&auto=format&fit=crop" },
+  { id: "palm", label: "Palm Trees", image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1600&auto=format&fit=crop" },
+  { id: "waves", label: "Waves", image: "https://images.unsplash.com/photo-1505144808419-1957a94ca61e?q=80&w=1600&auto=format&fit=crop" },
+  { id: "underwater", label: "Underwater", image: "https://images.unsplash.com/photo-1518837695005-2083093ee35b?q=80&w=1600&auto=format&fit=crop" },
+  { id: "coral", label: "Coral Reef", image: "https://images.unsplash.com/photo-1546026423-cc4642628d2b?q=80&w=1600&auto=format&fit=crop" },
+  { id: "safari", label: "Safari", image: "https://images.unsplash.com/photo-1516426122078-c23e76319801?q=80&w=1600&auto=format&fit=crop" },
+  { id: "horses", label: "Horses", image: "https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?q=80&w=1600&auto=format&fit=crop" },
+  { id: "wolf", label: "Wolf", image: "https://images.unsplash.com/photo-1474511320723-9a56873867b5?q=80&w=1600&auto=format&fit=crop" },
+  { id: "lion", label: "Lion", image: "https://images.unsplash.com/photo-1614027164847-1b28cfe1df60?q=80&w=1600&auto=format&fit=crop" },
+  { id: "eagle", label: "Eagle", image: "https://images.unsplash.com/photo-1611689342806-0863700ce1e4?q=80&w=1600&auto=format&fit=crop" },
+  { id: "cat", label: "Cat", image: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?q=80&w=1600&auto=format&fit=crop" },
+  { id: "dog", label: "Dog", image: "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?q=80&w=1600&auto=format&fit=crop" },
+  { id: "car", label: "Sports Car", image: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=1600&auto=format&fit=crop" },
+  { id: "motorcycle", label: "Motorcycle", image: "https://images.unsplash.com/photo-1558981806-ec527fa84c39?q=80&w=1600&auto=format&fit=crop" },
+  { id: "supercar", label: "Supercar", image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1600&auto=format&fit=crop" },
+  { id: "vintage", label: "Vintage Car", image: "https://images.unsplash.com/photo-1459603677915-a62079ffd002?q=80&w=1600&auto=format&fit=crop" },
+  { id: "sneakers", label: "Sneakers", image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=1600&auto=format&fit=crop" },
+  { id: "fashion", label: "Fashion", image: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=1600&auto=format&fit=crop" },
+  { id: "studio", label: "Studio", image: "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?q=80&w=1600&auto=format&fit=crop" },
+  { id: "vinyl", label: "Vinyl", image: "https://images.unsplash.com/photo-1461360370896-922624d12aa1?q=80&w=1600&auto=format&fit=crop" },
+  { id: "guitar", label: "Guitar", image: "https://images.unsplash.com/photo-1510915361894-db8b60106cb1?q=80&w=1600&auto=format&fit=crop" },
+  { id: "piano", label: "Piano", image: "https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?q=80&w=1600&auto=format&fit=crop" },
+  { id: "concert", label: "Concert", image: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?q=80&w=1600&auto=format&fit=crop" },
+  { id: "dj", label: "DJ", image: "https://images.unsplash.com/photo-1571266028243-e4733b0f0bb1?q=80&w=1600&auto=format&fit=crop" },
+  { id: "basketball", label: "Basketball", image: "https://images.unsplash.com/photo-1546519638-68e109498ffc?q=80&w=1600&auto=format&fit=crop" },
+  { id: "football", label: "Football", image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=1600&auto=format&fit=crop" },
+  { id: "boxing", label: "Boxing", image: "https://images.unsplash.com/photo-1549719386-74dfcbf7dbed?q=80&w=1600&auto=format&fit=crop" },
+  { id: "gym", label: "Gym", image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1600&auto=format&fit=crop" },
+  { id: "skate", label: "Skate", image: "https://images.unsplash.com/photo-1520045892732-304bc3ac5d8e?q=80&w=1600&auto=format&fit=crop" },
+  { id: "surf", label: "Surf", image: "https://images.unsplash.com/photo-1502680390469-be75c86b636f?q=80&w=1600&auto=format&fit=crop" },
+  { id: "snowboard", label: "Snowboard", image: "https://images.unsplash.com/photo-1478700485868-972b69dc3fc4?q=80&w=1600&auto=format&fit=crop" },
+  { id: "gaming", label: "Gaming", image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1600&auto=format&fit=crop" },
+  { id: "arcade", label: "Arcade", image: "https://images.unsplash.com/photo-1511882150382-421056c89033?q=80&w=1600&auto=format&fit=crop" },
+  { id: "tech", label: "Tech", image: "https://images.unsplash.com/photo-1518770660439-4636190af475?q=80&w=1600&auto=format&fit=crop" },
+  { id: "code", label: "Code", image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?q=80&w=1600&auto=format&fit=crop" },
+  { id: "abstract1", label: "Abstract Red", image: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?q=80&w=1600&auto=format&fit=crop" },
+  { id: "abstract2", label: "Abstract Dark", image: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=1600&auto=format&fit=crop" },
+  { id: "abstract3", label: "Abstract Paint", image: "https://images.unsplash.com/photo-1549490349-8643362247b5?q=80&w=1600&auto=format&fit=crop" },
+  { id: "abstract4", label: "Abstract Neon", image: "https://images.unsplash.com/photo-1563089145-599997674d42?q=80&w=1600&auto=format&fit=crop" },
+  { id: "smoke", label: "Smoke", image: "https://images.unsplash.com/photo-1509114397022-ed747cca3f65?q=80&w=1600&auto=format&fit=crop" },
+  { id: "fire", label: "Fire", image: "https://images.unsplash.com/photo-1474631245212-32dc3c8310c6?q=80&w=1600&auto=format&fit=crop" },
+  { id: "lightning", label: "Lightning", image: "https://images.unsplash.com/photo-1461511669078-d46bf351cd6e?q=80&w=1600&auto=format&fit=crop" },
+  { id: "bokeh", label: "Bokeh", image: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1600&auto=format&fit=crop" },
+  { id: "cinema", label: "Cinema", image: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=1600&auto=format&fit=crop" },
+  { id: "film", label: "Film Set", image: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=1600&auto=format&fit=crop" },
+  { id: "camera", label: "Camera", image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1600&auto=format&fit=crop" },
+  { id: "books", label: "Books", image: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=1600&auto=format&fit=crop" },
+  { id: "coffee", label: "Coffee", image: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=1600&auto=format&fit=crop" },
+  { id: "food", label: "Food", image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1600&auto=format&fit=crop" },
+  { id: "architecture", label: "Architecture", image: "https://images.unsplash.com/photo-1487958449943-2429e8be8625?q=80&w=1600&auto=format&fit=crop" },
+  { id: "minimal", label: "Minimal", image: "https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?q=80&w=1600&auto=format&fit=crop" },
+  { id: "darkmarble", label: "Dark Marble", image: "https://images.unsplash.com/photo-1550684376-efcbd6e3f031?q=80&w=1600&auto=format&fit=crop" },
+  { id: "concrete", label: "Concrete", image: "https://images.unsplash.com/photo-1558591710-4b4a1ae0f04d?q=80&w=1600&auto=format&fit=crop" },
+  { id: "luxury", label: "Luxury", image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=1600&auto=format&fit=crop" },
 ];
 
 export function parseThemeBackdrop(backdropUrl?: string | null): { color: string; pattern: ThemePattern } {
@@ -131,55 +214,9 @@ export function getThemeBackdropStyle(backdropUrl?: string | null): CSSPropertie
   if (backdropUrl.startsWith("http")) return { backgroundImage: `url(${backdropUrl})`, backgroundSize: "cover", backgroundPosition: "center" };
   const { color, pattern } = parseThemeBackdrop(backdropUrl);
   const base = `linear-gradient(to bottom, ${color}, #09090b)`;
-  if (pattern === "grain") {
-    return { backgroundColor: color, backgroundImage: `${base}, radial-gradient(rgba(255,255,255,0.08) 0.7px, transparent 0.7px)`, backgroundSize: "auto, 4px 4px" };
-  }
-  if (pattern === "mesh") {
-    return { backgroundColor: color, backgroundImage: `radial-gradient(at 20% 20%, ${color}cc 0px, transparent 50%), radial-gradient(at 80% 0%, rgba(229,57,69,0.25) 0px, transparent 45%), radial-gradient(at 50% 80%, rgba(255,255,255,0.06) 0px, transparent 50%), linear-gradient(to bottom, ${color}, #09090b)` };
-  }
-  if (pattern === "grid") {
-    return { backgroundColor: color, backgroundImage: `linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px), ${base}`, backgroundSize: "28px 28px, 28px 28px, auto" };
-  }
-  if (pattern === "dots") {
-    return { backgroundColor: color, backgroundImage: `radial-gradient(rgba(255,255,255,0.12) 1px, transparent 1px), ${base}`, backgroundSize: "18px 18px, auto" };
-  }
-  if (pattern === "diagonal") {
-    return { backgroundColor: color, backgroundImage: `repeating-linear-gradient(135deg, rgba(255,255,255,0.05) 0, rgba(255,255,255,0.05) 1px, transparent 1px, transparent 14px), ${base}` };
-  }
-  if (pattern === "aurora") {
-    return { backgroundColor: "#071018", backgroundImage: `radial-gradient(at 15% 20%, rgba(0,255,170,0.28) 0px, transparent 45%), radial-gradient(at 80% 15%, rgba(88,101,242,0.32) 0px, transparent 45%), radial-gradient(at 60% 75%, rgba(229,57,69,0.18) 0px, transparent 45%), linear-gradient(180deg, #09121a 0%, #05070d 100%)` };
-  }
-  if (pattern === "sunset") {
-    return { backgroundColor: "#1a0b10", backgroundImage: `radial-gradient(at 20% 10%, rgba(255,140,66,0.38) 0px, transparent 45%), radial-gradient(at 80% 20%, rgba(229,57,69,0.35) 0px, transparent 45%), radial-gradient(at 50% 90%, rgba(120,40,200,0.25) 0px, transparent 50%), linear-gradient(180deg, #2a0f14 0%, #09090b 100%)` };
-  }
-  if (pattern === "midnight") {
-    return { backgroundColor: "#070714", backgroundImage: `radial-gradient(at 25% 20%, rgba(88,101,242,0.28) 0px, transparent 45%), radial-gradient(at 75% 70%, rgba(139,92,246,0.22) 0px, transparent 45%), radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(180deg, #0b0b1a 0%, #050508 100%)`, backgroundSize: "auto, auto, 26px 26px, auto" };
-  }
-  if (pattern === "rose") {
-    return { backgroundColor: "#18080e", backgroundImage: `radial-gradient(at 20% 20%, rgba(255,105,180,0.25) 0px, transparent 45%), radial-gradient(at 80% 30%, rgba(229,57,69,0.28) 0px, transparent 45%), radial-gradient(at 50% 85%, rgba(255,255,255,0.05) 0px, transparent 45%), linear-gradient(180deg, #1d0a12 0%, #09090b 100%)` };
-  }
-  if (pattern === "ocean") {
-    return { backgroundColor: "#06131a", backgroundImage: `radial-gradient(at 20% 15%, rgba(56,189,248,0.3) 0px, transparent 45%), radial-gradient(at 80% 25%, rgba(14,165,233,0.22) 0px, transparent 45%), radial-gradient(at 50% 85%, rgba(0,255,170,0.1) 0px, transparent 45%), linear-gradient(180deg, #081923 0%, #05090b 100%)` };
-  }
-  if (pattern === "ember") {
-    return { backgroundColor: "#140806", backgroundImage: `radial-gradient(at 30% 15%, rgba(229,57,69,0.38) 0px, transparent 45%), radial-gradient(at 75% 30%, rgba(255,120,50,0.22) 0px, transparent 45%), radial-gradient(at 50% 90%, rgba(120,20,20,0.25) 0px, transparent 50%), linear-gradient(180deg, #1a0908 0%, #09090b 100%)` };
-  }
-  if (pattern === "citynight") {
-    return { backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.25), rgba(0,0,0,0.55)), url(https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?q=80&w=1600&auto=format&fit=crop)`, backgroundSize: "cover", backgroundPosition: "center" };
-  }
-  if (pattern === "beach") {
-    return { backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.5)), url(https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1600&auto=format&fit=crop)`, backgroundSize: "cover", backgroundPosition: "center" };
-  }
-  if (pattern === "mountains") {
-    return { backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.55)), url(https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=1600&auto=format&fit=crop)`, backgroundSize: "cover", backgroundPosition: "center" };
-  }
-  if (pattern === "neoncity") {
-    return { backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.55)), url(https://images.unsplash.com/photo-1542051841857-5f90071e7989?q=80&w=1600&auto=format&fit=crop)`, backgroundSize: "cover", backgroundPosition: "center" };
-  }
-  if (pattern === "chat") {
-    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'><g fill='none' stroke='rgba(255,255,255,0.055)' stroke-width='1.8'><rect x='18' y='20' width='34' height='22' rx='7'/><path d='M28 42l6-5' stroke-linecap='round'/><rect x='118' y='24' width='38' height='24' rx='8'/><path d='M132 48l5-5' stroke-linecap='round'/><circle cx='52' cy='92' r='10'/><path d='M47 92h10M52 87v10' stroke-linecap='round'/><rect x='108' y='102' width='30' height='20' rx='7'/><path d='M118 122l5-4' stroke-linecap='round'/><path d='M24 132l8-8 8 8-8 8z'/><circle cx='146' cy='148' r='6'/></g></svg>`;
-    const uri = `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
-    return { backgroundColor: color, backgroundImage: `${uri}, ${base}`, backgroundSize: "180px 180px, auto" };
+  const preset = THEME_PATTERNS.find((p) => p.id === pattern && p.image);
+  if (preset?.image) {
+    return { backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.18), rgba(0,0,0,0.45)), url(${preset.image})`, backgroundSize: "cover", backgroundPosition: "center" };
   }
   return { background: backdropUrl.startsWith("{") ? base : backdropUrl };
 }
