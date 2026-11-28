@@ -381,7 +381,7 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
               <span className="relative z-10 inline-flex items-center gap-1.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]">Categories <ChevronDown size={13} className={categoriesOpen ? "rotate-180" : ""} /></span>
             </button>
           </div>
-          <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-[#09090B] to-transparent" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-black to-transparent" />
         </div>
 
         {categoriesOpen && (
