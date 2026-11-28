@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, Palette, Check } from "lucide-react";
+import { ChevronLeft, Palette, Check, ImagePlus, Loader2 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { getCachedUser, clearUserCache } from "@/lib/cache";
 import TopBar from "@/components/TopBar";
@@ -19,14 +19,17 @@ export default function ProfileThemePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [status, setStatus] = useState({ type: "", message: "" });
 
   const [userId, setUserId] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState(DEFAULT_COLOR);
   const [selectedPattern, setSelectedPattern] = useState<ThemePattern>("none");
+  const [customImage, setCustomImage] = useState<string>("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const latestRef = useRef({ color: DEFAULT_COLOR, pattern: "none" as ThemePattern });
+  const latestRef = useRef({ color: DEFAULT_COLOR, pattern: "none" as ThemePattern, customImage: "" });
 
   useEffect(() => {
     getCachedUser().then(async (user) => {
@@ -43,14 +46,23 @@ export default function ProfileThemePage() {
         .single();
 
       if (data?.backdrop_url) {
-        const parsed = parseThemeBackdrop(data.backdrop_url);
-        setSelectedColor(parsed.color);
-        setSelectedPattern(parsed.pattern);
-        latestRef.current = { color: parsed.color, pattern: parsed.pattern };
+        if (data.backdrop_url.startsWith("http") && !THEME_PATTERNS.some(p => p.image === data.backdrop_url)) {
+          setCustomImage(data.backdrop_url);
+          setSelectedColor(DEFAULT_COLOR);
+          setSelectedPattern("none");
+          latestRef.current = { color: DEFAULT_COLOR, pattern: "none", customImage: data.backdrop_url };
+        } else {
+          const parsed = parseThemeBackdrop(data.backdrop_url);
+          setSelectedColor(parsed.color);
+          setSelectedPattern(parsed.pattern);
+          setCustomImage("");
+          latestRef.current = { color: parsed.color, pattern: parsed.pattern, customImage: "" };
+        }
       } else {
         setSelectedColor(DEFAULT_COLOR);
         setSelectedPattern("none");
-        latestRef.current = { color: DEFAULT_COLOR, pattern: "none" };
+        setCustomImage("");
+        latestRef.current = { color: DEFAULT_COLOR, pattern: "none", customImage: "" };
       }
 
       setLoading(false);
@@ -61,14 +73,14 @@ export default function ProfileThemePage() {
     };
   }, [router, supabase]);
 
-  const persistTheme = async (color: string, pattern: ThemePattern) => {
-    if (!userId) return;
+  const persistTheme = async (color: string, pattern: ThemePattern, customImageUrl = "", goBack = false) => {
+    if (!userId) return false;
     setSaving(true);
     setSaved(false);
     setStatus({ type: "", message: "" });
 
     try {
-      const backdrop_url = getBackdropFromColor(color, pattern);
+      const backdrop_url = customImageUrl || getBackdropFromColor(color, pattern);
       const { error } = await supabase
         .from("profiles")
         .update({ backdrop_url })
@@ -76,46 +88,94 @@ export default function ProfileThemePage() {
 
       if (error) throw error;
 
-      try { localStorage.setItem("trooflix:app-theme-color", color); } catch {}
-      applyAppTheme(color);
-      window.dispatchEvent(new CustomEvent("app-theme-updated", { detail: { color, backdrop_url } }));
+      try { localStorage.setItem("trooflix:app-theme-color", customImageUrl ? DEFAULT_COLOR : color); } catch {}
+      applyAppTheme(customImageUrl ? DEFAULT_COLOR : color);
+      window.dispatchEvent(new CustomEvent("app-theme-updated", { detail: { color: customImageUrl ? DEFAULT_COLOR : color, backdrop_url } }));
       clearUserCache();
       setSaved(true);
+      if (goBack) {
+        router.push("/creator-dashboard");
+        return true;
+      }
       if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
       savedTimerRef.current = setTimeout(() => setSaved(false), 1500);
+      return true;
     } catch (err: any) {
       setStatus({ type: "error", message: err.message || "Failed to save theme." });
+      return false;
     } finally {
       setSaving(false);
     }
   };
 
-  const scheduleSave = (color: string, pattern: ThemePattern, immediate = false) => {
-    latestRef.current = { color, pattern };
+  const scheduleSave = (color: string, pattern: ThemePattern, customImageUrl = "", immediate = false) => {
+    latestRef.current = { color, pattern, customImage: customImageUrl };
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     if (immediate) {
-      persistTheme(color, pattern);
+      void persistTheme(color, pattern, customImageUrl);
       return;
     }
     saveTimerRef.current = setTimeout(() => {
-      persistTheme(latestRef.current.color, latestRef.current.pattern);
+      const l = latestRef.current;
+      void persistTheme(l.color, l.pattern, l.customImage);
     }, 350);
   };
 
   const onColorChange = (color: string) => {
     setSelectedColor(color);
-    scheduleSave(color, selectedPattern, false);
+    setCustomImage("");
+    scheduleSave(color, selectedPattern, "", false);
   };
 
-  const onPatternSelect = (pattern: ThemePattern) => {
+  const onPatternSelect = async (pattern: ThemePattern) => {
     setSelectedPattern(pattern);
-    scheduleSave(selectedColor, pattern, true);
+    setCustomImage("");
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    await persistTheme(selectedColor, pattern, "", true);
   };
 
-  const onReset = () => {
+  const onReset = async () => {
     setSelectedColor(DEFAULT_COLOR);
     setSelectedPattern("none");
-    scheduleSave(DEFAULT_COLOR, "none", true);
+    setCustomImage("");
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    await persistTheme(DEFAULT_COLOR, "none", "", true);
+  };
+
+  const uploadCustomImage = async (file: File) => {
+    if (!userId) return;
+    setUploading(true);
+    setStatus({ type: "", message: "" });
+    try {
+      const presign = await fetch("/api/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          filename: file.name,
+          contentType: file.type || "image/jpeg",
+          folder: "theme-backgrounds",
+        }),
+      });
+      if (!presign.ok) throw new Error("Upload failed");
+      const { signedUrl, publicUrl } = await presign.json();
+      const put = await fetch(signedUrl, {
+        method: "PUT",
+        headers: { "Content-Type": file.type || "image/jpeg" },
+        body: file,
+      });
+      if (!put.ok) throw new Error("Upload failed");
+
+      setCustomImage(publicUrl);
+      setSelectedPattern("none");
+      setSelectedColor(DEFAULT_COLOR);
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      await persistTheme(DEFAULT_COLOR, "none", publicUrl, true);
+    } catch (e: any) {
+      setStatus({ type: "error", message: e?.message || "Couldn't upload image." });
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   };
 
   if (loading) {
@@ -142,36 +202,69 @@ export default function ProfileThemePage() {
             <Palette size={22} className="text-white/70" /> App Theme
           </h1>
           <p className="text-sm text-white/50">
-            Choose your own theme. Pick a color and background — it applies automatically across the site when you’re logged in.
+            Pick a background theme or upload your own image. It applies automatically across the site when you’re logged in.
           </p>
         </div>
 
         <div className="mb-8">
           <p className="text-xs font-bold text-white/50 uppercase tracking-wider mb-3">Choose your own theme</p>
-          <div className="flex flex-col items-center justify-center gap-3 py-4 rounded-2xl border border-white/10 bg-white/[0.02]">
-            <div
-              className="relative w-36 h-36 sm:w-40 sm:h-40 rounded-full border border-white/20 shadow-[0_12px_40px_rgba(0,0,0,0.45)] overflow-hidden"
-              style={{ background: selectedColor }}
-            >
-              <input
-                type="color"
-                value={selectedColor}
-                onChange={(e) => onColorChange(e.target.value)}
-                aria-label="Choose profile theme color"
-                className="absolute inset-0 w-full h-full cursor-pointer opacity-0"
-              />
-            </div>
-            <p className="text-xs text-white/50">Tap to choose your color</p>
-            <p className="text-sm font-semibold tracking-wide text-white/90">
-              {selectedColor.toUpperCase()}
-            </p>
+          <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) uploadCustomImage(f);
+              }}
+            />
             <button
               type="button"
-              onClick={onReset}
-              className="text-xs font-semibold text-white/60 hover:text-white transition underline underline-offset-4"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading || saving}
+              className="w-full flex items-center gap-4 text-left group"
             >
-              Reset to default
+              <div className="w-20 h-20 rounded-2xl border border-white/15 bg-white/[0.04] overflow-hidden flex items-center justify-center shrink-0">
+                {customImage ? (
+                  <img src={customImage} alt="Custom theme" className="w-full h-full object-cover" />
+                ) : uploading ? (
+                  <Loader2 size={24} className="text-white/60 animate-spin" />
+                ) : (
+                  <ImagePlus size={24} className="text-white/60 group-hover:text-white transition" />
+                )}
+              </div>
+              <div className="min-w-0">
+                <p className="font-bold text-white">{uploading ? "Uploading..." : "Upload your own image"}</p>
+                <p className="text-sm text-white/50 mt-0.5">Use any photo as your Trooflix background theme.</p>
+              </div>
             </button>
+
+            <div className="mt-4 pt-4 border-t border-white/10 flex items-center gap-4">
+              <div
+                className="relative w-14 h-14 rounded-full border border-white/20 overflow-hidden shrink-0"
+                style={{ background: selectedColor }}
+              >
+                <input
+                  type="color"
+                  value={selectedColor}
+                  onChange={(e) => onColorChange(e.target.value)}
+                  aria-label="Choose theme color"
+                  className="absolute inset-0 w-full h-full cursor-pointer opacity-0"
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-white/90">Theme color</p>
+                <p className="text-xs text-white/45">{selectedColor.toUpperCase()} · tap circle to change</p>
+              </div>
+              <button
+                type="button"
+                onClick={onReset}
+                className="text-xs font-semibold text-white/60 hover:text-white transition underline underline-offset-4 shrink-0"
+              >
+                Reset
+              </button>
+            </div>
           </div>
         </div>
 
@@ -179,12 +272,12 @@ export default function ProfileThemePage() {
           <div className="flex items-center justify-between mb-3">
             <p className="text-xs font-bold text-white/50 uppercase tracking-wider">Background Themes</p>
             <div className="text-xs font-medium text-white/50 h-4 flex items-center gap-1">
-              {saving ? "Saving..." : saved ? <><Check size={13} className="text-emerald-400" /><span className="text-emerald-400">Applied</span></> : null}
+              {saving && !uploading ? "Applying..." : saved ? <><Check size={13} className="text-emerald-400" /><span className="text-emerald-400">Applied</span></> : null}
             </div>
           </div>
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
             {THEME_PATTERNS.map((p) => {
-              const active = selectedPattern === p.id;
+              const active = !customImage && selectedPattern === p.id;
               return (
                 <button
                   key={p.id}
