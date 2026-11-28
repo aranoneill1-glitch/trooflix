@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ChevronLeft, Palette, Check, ImagePlus, Loader2 } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { getCachedUser, clearUserCache } from "@/lib/cache";
+import { apiFetch } from "@/lib/api-fetch";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { DEFAULT_APP_THEME_COLOR, getBackdropFromColor, applyAppTheme, parseThemeBackdrop, THEME_PATTERNS, getThemeBackdropStyle, type ThemePattern } from "@/lib/appTheme";
@@ -148,7 +149,7 @@ export default function ProfileThemePage() {
     setStatus({ type: "", message: "" });
     try {
       const contentType = file.type || "image/jpeg";
-      const presign = await fetch("/api/upload", {
+      const presign = await apiFetch("/api/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
