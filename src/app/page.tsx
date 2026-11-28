@@ -59,6 +59,7 @@ import {
   getSyncCachedCreators, 
   getSyncCachedProducts 
 } from "@/lib/cache";
+import { getThemeBackdropStyle } from "@/lib/appTheme";
 
 type Chapter = { title: string; time: number };
 
@@ -113,6 +114,7 @@ export default function Home() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [authResolved, setAuthResolved] = useState(false);
+  const [profileBackdrop, setProfileBackdrop] = useState("");
   const [followedCreatorIds, setFollowedCreatorIds] = useState<number[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [allUsers, setAllUsers] = useState<any[]>([]);
@@ -175,6 +177,12 @@ export default function Home() {
             .then((r) => r.json())
             .then((d) => setFollowedCreatorIds(d.ids || []))
             .catch(() => {});
+          fetch(`/api/profile?user_id=${u.id}`)
+            .then((r) => r.json())
+            .then((d) => setProfileBackdrop(d.profile?.backdrop_url || ""))
+            .catch(() => {});
+        } else {
+          setProfileBackdrop("");
         }
       })
       .catch(() => {})
@@ -330,11 +338,18 @@ export default function Home() {
     }
   };
 
+  const themeBgStyle = profileBackdrop ? getThemeBackdropStyle(profileBackdrop) : null;
+
   return (
     <>
-        <main className="min-h-screen bg-black text-white overflow-x-hidden pb-20 lg:pb-0 relative">
-{/* Subtle ambient background gradient */}
-      <div className="fixed top-0 left-0 w-full h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/[0.05] via-transparent to-transparent pointer-events-none z-0" />
+        <main className={`min-h-screen text-white overflow-x-hidden pb-20 lg:pb-0 relative ${themeBgStyle ? "bg-transparent" : "bg-black"}`}>
+      {themeBgStyle ? (
+        <div className="fixed inset-0 z-0" style={themeBgStyle as any}>
+          <div className="absolute inset-0 bg-black/45" />
+        </div>
+      ) : (
+        <div className="fixed top-0 left-0 w-full h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/[0.05] via-transparent to-transparent pointer-events-none z-0" />
+      )}
       
       <TopBar />
       
