@@ -147,20 +147,24 @@ export default function ProfileThemePage() {
     setUploading(true);
     setStatus({ type: "", message: "" });
     try {
+      const contentType = file.type || "image/jpeg";
       const presign = await fetch("/api/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          filename: file.name,
-          contentType: file.type || "image/jpeg",
+          filename: file.name || `theme-${Date.now()}.jpg`,
+          contentType,
           folder: "theme-backgrounds",
         }),
       });
-      if (!presign.ok) throw new Error("Upload failed");
-      const { signedUrl, publicUrl } = await presign.json();
+      const presignData = await presign.json().catch(() => ({}));
+      if (!presign.ok) throw new Error(presignData?.error || "Upload failed");
+      const { signedUrl, publicUrl } = presignData;
+      if (!signedUrl || !publicUrl) throw new Error("Upload failed");
+
       const put = await fetch(signedUrl, {
         method: "PUT",
-        headers: { "Content-Type": file.type || "image/jpeg" },
+        headers: { "Content-Type": contentType },
         body: file,
       });
       if (!put.ok) throw new Error("Upload failed");
@@ -171,7 +175,8 @@ export default function ProfileThemePage() {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
       await persistTheme(DEFAULT_COLOR, "none", publicUrl, true);
     } catch (e: any) {
-      setStatus({ type: "error", message: e?.message || "Couldn't upload image." });
+      console.error("Theme image upload failed:", e);
+      setStatus({ type: "error", message: e?.message || "Couldn't upload image. Please try again." });
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -209,22 +214,17 @@ export default function ProfileThemePage() {
         <div className="mb-8">
           <p className="text-xs font-bold text-white/50 uppercase tracking-wider mb-3">Choose your own theme</p>
           <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) uploadCustomImage(f);
-              }}
-            />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading || saving}
-              className="w-full flex items-center gap-4 text-left group"
-            >
+            <div className={`relative flex items-center gap-4 text-left group ${uploading || saving ? "opacity-60 pointer-events-none" : ""}`}>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/gif"
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) void uploadCustomImage(f);
+                }}
+              />
               <div className="w-20 h-20 rounded-2xl border border-white/15 bg-white/[0.04] overflow-hidden flex items-center justify-center shrink-0">
                 {customImage ? (
                   <img src={customImage} alt="Custom theme" className="w-full h-full object-cover" />
@@ -238,7 +238,7 @@ export default function ProfileThemePage() {
                 <p className="font-bold text-white">{uploading ? "Uploading..." : "Upload your own image"}</p>
                 <p className="text-sm text-white/50 mt-0.5">Use any photo as your Trooflix background theme.</p>
               </div>
-            </button>
+            </div>
 
             <div className="mt-4 pt-4 border-t border-white/10 flex items-center gap-4">
               <div
