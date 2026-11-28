@@ -85,8 +85,6 @@ export default function ProfileThemePage() {
     );
   }
 
-  const previewBackground = getBackdropFromColor(selectedColor) || DEFAULT_COLOR;
-
   return (
     <main className="min-h-screen bg-[#09090B] text-white pb-28 font-sans selection:bg-[#E53945]/30">
       <TopBar />
@@ -107,40 +105,30 @@ export default function ProfileThemePage() {
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center sm:items-start justify-center gap-6 sm:gap-10">
-          <div className="flex flex-col items-center gap-3">
-            <div
-              className="relative w-36 h-36 sm:w-40 sm:h-40 rounded-full border border-white/20 shadow-[0_12px_40px_rgba(0,0,0,0.45)] overflow-hidden"
-              style={{ background: selectedColor }}
-            >
-              <input
-                type="color"
-                value={selectedColor}
-                onChange={(e) => setSelectedColor(e.target.value)}
-                aria-label="Choose profile theme color"
-                className="absolute inset-0 w-full h-full cursor-pointer opacity-0"
-              />
-            </div>
-            <p className="text-xs text-white/50">Tap to choose</p>
-            <p className="text-sm font-semibold tracking-wide text-white/90">
-              {selectedColor.toUpperCase()}
-            </p>
-            <button
-              type="button"
-              onClick={() => setSelectedColor(DEFAULT_COLOR)}
-              className="text-xs font-semibold text-white/60 hover:text-white transition underline underline-offset-4"
-            >
-              Reset to default
-            </button>
-          </div>
-
-          <div className="w-full sm:flex-1 max-w-sm">
-            <p className="text-xs font-bold text-white/50 uppercase tracking-wider mb-2 text-center sm:text-left">Preview</p>
-            <div
-              className="h-24 sm:h-40 rounded-2xl border border-white/10 overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.35)]"
-              style={{ background: previewBackground }}
+        <div className="flex flex-col items-center justify-center gap-3 py-4">
+          <div
+            className="relative w-36 h-36 sm:w-40 sm:h-40 rounded-full border border-white/20 shadow-[0_12px_40px_rgba(0,0,0,0.45)] overflow-hidden"
+            style={{ background: selectedColor }}
+          >
+            <input
+              type="color"
+              value={selectedColor}
+              onChange={(e) => setSelectedColor(e.target.value)}
+              aria-label="Choose profile theme color"
+              className="absolute inset-0 w-full h-full cursor-pointer opacity-0"
             />
           </div>
+          <p className="text-xs text-white/50">Tap to choose</p>
+          <p className="text-sm font-semibold tracking-wide text-white/90">
+            {selectedColor.toUpperCase()}
+          </p>
+          <button
+            type="button"
+            onClick={() => setSelectedColor(DEFAULT_COLOR)}
+            className="text-xs font-semibold text-white/60 hover:text-white transition underline underline-offset-4"
+          >
+            Reset to default
+          </button>
         </div>
 
         {status.message && (
