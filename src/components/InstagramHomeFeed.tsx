@@ -345,8 +345,14 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
 
   return (
     <div className="pb-24">
-      <div className="pt-[calc(env(safe-area-inset-top)+76px)] pb-2">
-        <StudioWidgets active="mytrooflix" className="mb-6" />
+      <div className="pt-[calc(env(safe-area-inset-top)+76px)] pb-2 px-4">
+        <div className="mx-auto max-w-lg rounded-[28px] border border-white/[0.08] bg-white/[0.04] backdrop-blur-xl p-4 shadow-[0_8px_32px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.06)]">
+          <div className="flex items-center justify-between mb-4 px-1">
+            <span className="text-[13px] font-semibold tracking-tight text-white/90">Studio</span>
+            <span className="text-[11px] font-medium text-white/35">Quick Access</span>
+          </div>
+          <StudioWidgets active="mytrooflix" className="mb-0" />
+        </div>
       </div>
       {/* Main-type pills + categories dropdown — below the fixed top bar */}
       <div className="pb-3 border-b border-white/[0.06]">
