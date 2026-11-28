@@ -159,8 +159,8 @@ export default function UserMenu() {
             className="w-9 h-9 rounded-full object-cover border-2 border-transparent hover:border-white/30 transition-all"
           />
         ) : (
-          <div className="w-9 h-9 rounded-full overflow-hidden bg-[#E53945] flex items-center justify-center text-white font-bold border-2 border-transparent hover:border-white/30 transition-all">
-            {(profile?.display_name || profile?.username || "U")[0].toUpperCase()}
+          <div className="w-9 h-9 rounded-full overflow-hidden bg-white/10 flex items-center justify-center text-white/70 border-2 border-white/10 hover:border-white/30 transition-all">
+            <User size={18} />
           </div>
         )}
       </button>

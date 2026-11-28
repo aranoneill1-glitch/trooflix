@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, Camera, Save, User, AtSign, AlignLeft, ArrowLeft, ImagePlus, Loader2, Palette, Check } from "lucide-react";
+import { ChevronLeft, Camera, Save, User, AtSign, AlignLeft, ArrowLeft, ImagePlus, Loader2, Palette, Check, Sparkles, ChevronDown } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { getCachedUser, clearUserCache } from "@/lib/cache";
 import { apiFetch } from "@/lib/api-fetch";
@@ -43,6 +43,7 @@ function ProfileSettingsContent() {
   const [selectedPattern, setSelectedPattern] = useState<ThemePattern>("none");
   const [customThemeImage, setCustomThemeImage] = useState("");
   const [uploadingTheme, setUploadingTheme] = useState(false);
+  const [themeOpen, setThemeOpen] = useState(false);
   const themeFileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -202,17 +203,18 @@ function ProfileSettingsContent() {
 
         {/* ONBOARDING BANNER (only shows during signup) */}
         {isOnboarding && (
-          <div className="mb-6 bg-white/[0.08] backdrop-saturate-150 border border-white/20 rounded-2xl p-5 shadow-[0_12px_40px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.14)] animate-in fade-in slide-in-from-top-4 duration-500">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-full bg-[#E53945]/20 border border-white/10 flex items-center justify-center shrink-0 text-2xl">
-                👋
+          <div className="mb-6 relative overflow-hidden rounded-[28px] border border-white/15 bg-white/[0.06] backdrop-blur-xl p-6 shadow-[0_20px_60px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.12)]">
+            <div className="absolute -top-16 -right-10 h-40 w-40 rounded-full bg-[#E53945]/20 blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-16 -left-10 h-36 w-36 rounded-full bg-orange-500/10 blur-3xl pointer-events-none" />
+            <div className="relative">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#E53945]/30 bg-[#E53945]/10 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-[#ff8a93] mb-4">
+                <Sparkles size={13} />
+                Welcome to Trooflix
               </div>
-              <div className="flex-1">
-                <h2 className="text-lg font-black text-white mb-1">Welcome to Trooflix!</h2>
-                <p className="text-sm text-white/70 leading-relaxed">
-                  Let's set up your profile — add a photo, bio, and social handles so people can find you. Once you save, you'll be taken to your dashboard.
-                </p>
-              </div>
+              <h2 className="text-2xl font-black tracking-tight text-white mb-2">Let’s make it yours.</h2>
+              <p className="text-sm text-white/60 leading-relaxed max-w-xl">
+                Add your photo, bio, and pick a theme so your profile feels like you from the moment you arrive.
+              </p>
             </div>
           </div>
         )}
@@ -234,7 +236,7 @@ function ProfileSettingsContent() {
           <div className="flex flex-col items-center justify-center py-8 border-b border-white/10 bg-white/[0.02]">
             <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
               <div className="w-28 h-28 rounded-full overflow-hidden border-2 border-white/25 bg-white/5 relative z-10 flex items-center justify-center shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
-                {avatarUrl ? <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" /> : <div className="text-3xl font-black text-white/30">{displayName.charAt(0) || "?"}</div>}
+                {avatarUrl ? <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center bg-white/[0.06]"><User size={42} className="text-white/35" /></div>}
               </div>
               <div className="absolute inset-0 z-20 rounded-full bg-black/45] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <Camera size={24} className="text-white" />
@@ -276,48 +278,65 @@ function ProfileSettingsContent() {
 
           {/* Theme Section */}
           <div className="px-5 py-5 border-t border-white/10">
-            <div className="flex items-center gap-2 mb-1">
-              <Palette size={16} className="text-white/70" />
-              <h3 className="text-sm font-bold text-white">Personalize your theme</h3>
-            </div>
-            <p className="text-xs text-white/45 mb-4">Pick a background theme or upload your own image.</p>
-
-            <div className={`relative mb-4 rounded-2xl border border-white/10 bg-white/[0.03] p-3 flex items-center gap-3 ${uploadingTheme ? "opacity-60 pointer-events-none" : ""}`}>
-              <input
-                ref={themeFileRef}
-                type="file"
-                accept="image/png,image/jpeg,image/webp,image/gif"
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                onChange={(e) => { const f = e.target.files?.[0]; if (f) void uploadThemeImage(f); }}
-              />
-              <div className="w-14 h-14 rounded-xl border border-white/15 bg-white/[0.04] overflow-hidden flex items-center justify-center shrink-0">
-                {customThemeImage ? <img src={customThemeImage} alt="Custom theme" className="w-full h-full object-cover" /> : uploadingTheme ? <Loader2 size={18} className="text-white/60 animate-spin" /> : <ImagePlus size={18} className="text-white/60" />}
+            <button
+              type="button"
+              onClick={() => setThemeOpen(v => !v)}
+              className="w-full flex items-center justify-between gap-3 text-left"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center shrink-0">
+                  <Palette size={18} className="text-white/70" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-sm font-bold text-white">Personalize your theme</h3>
+                  <p className="text-xs text-white/45 truncate">
+                    {customThemeImage ? "Custom image selected" : (THEME_PATTERNS.find(p => p.id === selectedPattern)?.label || "Clean")}
+                  </p>
+                </div>
               </div>
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-white">{uploadingTheme ? "Uploading..." : "Upload your own image"}</p>
-                <p className="text-[11px] text-white/45">Custom background for your profile</p>
-              </div>
-            </div>
+              <ChevronDown size={18} className={`text-white/50 transition-transform ${themeOpen ? "rotate-180" : ""}`} />
+            </button>
 
-            <div className="grid grid-cols-4 sm:grid-cols-6 gap-2.5">
-              {THEME_PATTERNS.map((p) => {
-                const active = !customThemeImage && selectedPattern === p.id;
-                return (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => onSelectTheme(p.id)}
-                    className="flex flex-col items-center gap-1.5"
-                  >
-                    <div
-                      className={`w-full aspect-square rounded-xl border overflow-hidden transition ${active ? "border-[#E53945] ring-2 ring-[#E53945]/30" : "border-white/10 hover:border-white/25"}`}
-                      style={getThemeBackdropStyle(getBackdropFromColor(selectedColor, p.id) || (p.id === "none" ? `linear-gradient(to bottom, ${selectedColor}, #09090b)` : JSON.stringify({ __trooflixTheme: true, v: 1, color: selectedColor, pattern: p.id })))}
-                    />
-                    <span className={`text-[10px] font-medium leading-tight text-center ${active ? "text-white" : "text-white/55"}`}>{p.label}</span>
-                  </button>
-                );
-              })}
-            </div>
+            {themeOpen && (
+              <div className="mt-4">
+                <div className={`relative mb-4 rounded-2xl border border-white/10 bg-white/[0.03] p-3 flex items-center gap-3 ${uploadingTheme ? "opacity-60 pointer-events-none" : ""}`}>
+                  <input
+                    ref={themeFileRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/gif"
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                    onChange={(e) => { const f = e.target.files?.[0]; if (f) void uploadThemeImage(f); }}
+                  />
+                  <div className="w-14 h-14 rounded-xl border border-white/15 bg-white/[0.04] overflow-hidden flex items-center justify-center shrink-0">
+                    {customThemeImage ? <img src={customThemeImage} alt="Custom theme" className="w-full h-full object-cover" /> : uploadingTheme ? <Loader2 size={18} className="text-white/60 animate-spin" /> : <ImagePlus size={18} className="text-white/60" />}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-white">{uploadingTheme ? "Uploading..." : "Upload your own image"}</p>
+                    <p className="text-[11px] text-white/45">Custom background for your profile</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-4 sm:grid-cols-6 gap-2.5 max-h-72 overflow-y-auto pr-1">
+                  {THEME_PATTERNS.map((p) => {
+                    const active = !customThemeImage && selectedPattern === p.id;
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => onSelectTheme(p.id)}
+                        className="flex flex-col items-center gap-1.5"
+                      >
+                        <div
+                          className={`w-full aspect-square rounded-xl border overflow-hidden transition ${active ? "border-[#E53945] ring-2 ring-[#E53945]/30" : "border-white/10 hover:border-white/25"}`}
+                          style={getThemeBackdropStyle(getBackdropFromColor(selectedColor, p.id) || (p.id === "none" ? `linear-gradient(to bottom, ${selectedColor}, #09090b)` : JSON.stringify({ __trooflixTheme: true, v: 1, color: selectedColor, pattern: p.id })))}
+                        />
+                        <span className={`text-[10px] font-medium leading-tight text-center ${active ? "text-white" : "text-white/55"}`}>{p.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Status Message */}
@@ -329,9 +348,16 @@ function ProfileSettingsContent() {
 
           {/* Save Button */}
           <div className="p-5 pt-4">
-            <button type="submit" disabled={saving} className="w-full flex items-center justify-center gap-2 bg-[#E53945] hover:bg-[#d12e39] disabled:opacity-50 text-white font-bold py-3.5 rounded-2xl transition-all shadow-[0_10px_30px_rgba(229,57,69,0.35)]">
-              <Save size={18} />
-              {saving ? "Saving..." : "Save Changes"}
+            <button
+              type="submit"
+              disabled={saving}
+              className="group relative w-full overflow-hidden flex items-center justify-center gap-2.5 rounded-2xl border border-white/20 bg-white/[0.10] hover:bg-white/[0.16] disabled:opacity-50 text-white font-bold py-4 transition-all shadow-[0_12px_40px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.18)] backdrop-blur-xl"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-[#E53945]/20 via-white/5 to-[#E53945]/20 opacity-80 pointer-events-none" />
+              <span className="relative flex items-center justify-center w-7 h-7 rounded-full bg-white/15 border border-white/20">
+                <Check size={15} className="text-white" />
+              </span>
+              <span className="relative">{saving ? "Saving..." : "Save Changes"}</span>
             </button>
           </div>
         </form>
