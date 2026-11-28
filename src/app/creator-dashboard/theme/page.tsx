@@ -136,7 +136,7 @@ export default function ProfileThemePage() {
         </div>
 
         <div className="mt-8">
-          <p className="text-xs font-bold text-white/50 uppercase tracking-wider mb-3">Texture / Pattern</p>
+          <p className="text-xs font-bold text-white/50 uppercase tracking-wider mb-3">Background Themes</p>
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
             {THEME_PATTERNS.map((p) => {
               const active = selectedPattern === p.id;

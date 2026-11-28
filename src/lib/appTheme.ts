@@ -63,10 +63,16 @@ function hslToHex(h: number, s: number, l: number) {
   return rgbToHex(r, g, b);
 }
 
-export type ThemePattern = "none" | "grain" | "mesh" | "grid" | "dots" | "diagonal" | "chat";
+export type ThemePattern = "none" | "grain" | "mesh" | "grid" | "dots" | "diagonal" | "chat" | "aurora" | "sunset" | "midnight" | "rose" | "ocean" | "ember";
 
 export const THEME_PATTERNS: { id: ThemePattern; label: string }[] = [
   { id: "none", label: "Clean" },
+  { id: "aurora", label: "Aurora" },
+  { id: "sunset", label: "Sunset" },
+  { id: "midnight", label: "Midnight" },
+  { id: "rose", label: "Rose" },
+  { id: "ocean", label: "Ocean" },
+  { id: "ember", label: "Ember" },
   { id: "grain", label: "Grain" },
   { id: "mesh", label: "Mesh" },
   { id: "grid", label: "Grid" },
@@ -135,6 +141,24 @@ export function getThemeBackdropStyle(backdropUrl?: string | null): CSSPropertie
   }
   if (pattern === "diagonal") {
     return { backgroundColor: color, backgroundImage: `repeating-linear-gradient(135deg, rgba(255,255,255,0.05) 0, rgba(255,255,255,0.05) 1px, transparent 1px, transparent 14px), ${base}` };
+  }
+  if (pattern === "aurora") {
+    return { backgroundColor: "#071018", backgroundImage: `radial-gradient(at 15% 20%, rgba(0,255,170,0.28) 0px, transparent 45%), radial-gradient(at 80% 15%, rgba(88,101,242,0.32) 0px, transparent 45%), radial-gradient(at 60% 75%, rgba(229,57,69,0.18) 0px, transparent 45%), linear-gradient(180deg, #09121a 0%, #05070d 100%)` };
+  }
+  if (pattern === "sunset") {
+    return { backgroundColor: "#1a0b10", backgroundImage: `radial-gradient(at 20% 10%, rgba(255,140,66,0.38) 0px, transparent 45%), radial-gradient(at 80% 20%, rgba(229,57,69,0.35) 0px, transparent 45%), radial-gradient(at 50% 90%, rgba(120,40,200,0.25) 0px, transparent 50%), linear-gradient(180deg, #2a0f14 0%, #09090b 100%)` };
+  }
+  if (pattern === "midnight") {
+    return { backgroundColor: "#070714", backgroundImage: `radial-gradient(at 25% 20%, rgba(88,101,242,0.28) 0px, transparent 45%), radial-gradient(at 75% 70%, rgba(139,92,246,0.22) 0px, transparent 45%), radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(180deg, #0b0b1a 0%, #050508 100%)`, backgroundSize: "auto, auto, 26px 26px, auto" };
+  }
+  if (pattern === "rose") {
+    return { backgroundColor: "#18080e", backgroundImage: `radial-gradient(at 20% 20%, rgba(255,105,180,0.25) 0px, transparent 45%), radial-gradient(at 80% 30%, rgba(229,57,69,0.28) 0px, transparent 45%), radial-gradient(at 50% 85%, rgba(255,255,255,0.05) 0px, transparent 45%), linear-gradient(180deg, #1d0a12 0%, #09090b 100%)` };
+  }
+  if (pattern === "ocean") {
+    return { backgroundColor: "#06131a", backgroundImage: `radial-gradient(at 20% 15%, rgba(56,189,248,0.3) 0px, transparent 45%), radial-gradient(at 80% 25%, rgba(14,165,233,0.22) 0px, transparent 45%), radial-gradient(at 50% 85%, rgba(0,255,170,0.1) 0px, transparent 45%), linear-gradient(180deg, #081923 0%, #05090b 100%)` };
+  }
+  if (pattern === "ember") {
+    return { backgroundColor: "#140806", backgroundImage: `radial-gradient(at 30% 15%, rgba(229,57,69,0.38) 0px, transparent 45%), radial-gradient(at 75% 30%, rgba(255,120,50,0.22) 0px, transparent 45%), radial-gradient(at 50% 90%, rgba(120,20,20,0.25) 0px, transparent 50%), linear-gradient(180deg, #1a0908 0%, #09090b 100%)` };
   }
   if (pattern === "chat") {
     const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'><g fill='none' stroke='rgba(255,255,255,0.055)' stroke-width='1.8'><rect x='18' y='20' width='34' height='22' rx='7'/><path d='M28 42l6-5' stroke-linecap='round'/><rect x='118' y='24' width='38' height='24' rx='8'/><path d='M132 48l5-5' stroke-linecap='round'/><circle cx='52' cy='92' r='10'/><path d='M47 92h10M52 87v10' stroke-linecap='round'/><rect x='108' y='102' width='30' height='20' rx='7'/><path d='M118 122l5-4' stroke-linecap='round'/><path d='M24 132l8-8 8 8-8 8z'/><circle cx='146' cy='148' r='6'/></g></svg>`;
