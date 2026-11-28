@@ -19,7 +19,7 @@ function InstagramIcon({ size = 24, className = "" }: { size?: number; className
     </svg>
   );
 }
-import { unzipSync } from "fflate";
+import { Unzip, UnzipInflate } from "fflate";
 import { createClient } from "@/utils/supabase/client";
 import { getCachedUser } from "@/lib/cache";
 import { r2MultipartUpload } from "@/lib/r2Upload";
@@ -235,9 +235,14 @@ export default function ImportPage() {
 
   const startImport = async () => {
     if (!file || !source) return;
+    const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (isMobileDevice && file.size > 1.5 * 1024 * 1024 * 1024) {
+      const proceed = window.confirm("This export is very large for mobile and may fail due to memory limits. For best results, use a desktop. Continue anyway?");
+      if (!proceed) return;
+    }
     setProcessing(true);
-    setProgress(5);
-    setStatus(`Unzipping ${source === "youtube" ? "YouTube Takeout" : "Instagram"} file in browser...`);
+    setProgress(2);
+    setStatus(`Preparing ${source === "youtube" ? "YouTube Takeout" : "Instagram"} export...`);
 
     try {
       const user = await getCachedUser();
@@ -245,17 +250,93 @@ export default function ImportPage() {
       const { data: { session } } = await createClient().auth.getSession();
       const token = session?.access_token;
 
-      const arrayBuffer = await file.arrayBuffer();
-      const uint8 = new Uint8Array(arrayBuffer);
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      const captionMap = new Map<string, string>();
+      const captionPromises: Promise<void>[] = [];
+      const records: any[] = [];
+      let failed = 0;
+      let completed = 0;
+      let totalVideos = 0;
+      let processedVideos = 0;
 
-      setProgress(15);
-      setStatus("Reading zip contents...");
-      const unzipped = unzipSync(uint8);
+      const isVideoKey = (key: string) => {
+        const lower = key.toLowerCase();
+        if (!(lower.endsWith(".mp4") || lower.endsWith(".mov") || lower.endsWith(".m4v"))) return false;
+        if (srcIsYouTube(lower, source)) return key.includes("YouTube and YouTube Music/videos/");
+        return true;
+      };
+      function srcIsYouTube(lower: string, src: Source) { return src === "youtube"; }
 
-      const videoKeys = getVideoEntries(unzipped, source);
-      const captionMap = source === "instagram" ? buildCaptionMap(unzipped) : new Map<string, string>();
+      const isCaptionJson = (key: string) => {
+        const lower = key.toLowerCase();
+        return lower.endsWith(".json") && /(content|post|reel|stor|caption|media)/.test(lower);
+      };
 
-      if (videoKeys.length === 0) {
+      // First pass: stream zip, collect caption JSONs and count videos. Store video entries as pending blobs.
+      setStatus("Scanning zip contents...");
+      const pendingVideos: { key: string; fileName: string }[] = [];
+      const videoBlobs = new Map<string, Blob>();
+
+      await new Promise<void>((resolve, reject) => {
+        const uz = new Unzip();
+        uz.register(UnzipInflate);
+        uz.onfile = (f) => {
+          const name = f.name;
+          const wantVideo = isVideoKey(name);
+          const wantJson = source === "instagram" && isCaptionJson(name);
+          if (!wantVideo && !wantJson) { f.ondata = () => {}; return; }
+          const chunks: Uint8Array[] = [];
+          f.ondata = (err, data, final) => {
+            if (err) { reject(err); return; }
+            if (data && data.length) chunks.push(data);
+            if (final) {
+              const blob = new Blob(chunks as BlobPart[]);
+              if (wantJson) {
+                captionPromises.push(blob.text().then((txt) => {
+                  try {
+                    const parsed = JSON.parse(txt);
+                    const visit = (node: any, inherited?: string) => {
+                      if (!node) return;
+                      if (Array.isArray(node)) { node.forEach((n) => visit(n, inherited)); return; }
+                      if (typeof node !== "object") return;
+                      const own = typeof node.title === "string" && node.title.trim() ? node.title : typeof node.caption === "string" && node.caption.trim() ? node.caption : "";
+                      const caption = own || inherited || "";
+                      const uri = typeof node.uri === "string" ? node.uri : "";
+                      if (caption && uri) { const n = (uri.split("/").pop() || "").toLowerCase(); if (n && !captionMap.has(n)) captionMap.set(n, caption.trim()); }
+                      Object.values(node).forEach((child) => visit(child, caption));
+                    };
+                    visit(parsed);
+                  } catch {}
+                }).catch(() => {}));
+              } else if (wantVideo) {
+                videoBlobs.set(name, blob);
+                pendingVideos.push({ key: name, fileName: name.split("/").pop() || "video.mp4" });
+                totalVideos = pendingVideos.length;
+                setStatus(`Found ${totalVideos} video${totalVideos === 1 ? "" : "s"}...`);
+              }
+            }
+          };
+        };
+
+        const reader = file.stream().getReader();
+        let bytesRead = 0;
+        const totalBytes = file.size || 1;
+        const pump = () => {
+          reader.read().then(({ done, value }) => {
+            if (done) { try { uz.push(new Uint8Array(0), true); } catch (e) { reject(e); return; } resolve(); return; }
+            if (value) {
+              bytesRead += value.length;
+              try { uz.push(value, false); } catch (e) { reject(e); return; }
+              setProgress(Math.min(20, Math.round((bytesRead / totalBytes) * 20)));
+            }
+            pump();
+          }).catch(reject);
+        };
+        pump();
+      });
+      await Promise.all(captionPromises);
+
+      if (pendingVideos.length === 0) {
         throw new Error(
           source === "youtube"
             ? "No .mp4 files found. Did you select .mp4 as the format in Google Takeout?"
@@ -263,26 +344,18 @@ export default function ImportPage() {
         );
       }
 
-      const total = videoKeys.length;
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      const concurrency = Math.min(isMobile ? 2 : 3, total);
-      const records: any[] = [];
-      const perFileProgress: number[] = new Array(total).fill(0);
-      let completed = 0;
-      let failed = 0;
-      let cursor = 0;
+      const total = pendingVideos.length;
+      setStatus(`Importing ${total} video${total === 1 ? "" : "s"}...`);
 
-      const processOne = async (index: number) => {
+      for (let index = 0; index < pendingVideos.length; index++) {
+        const { key, fileName } = pendingVideos[index];
         try {
-          const key = videoKeys[index];
-          const videoData = unzipped[key];
-          const fileName = key.split("/").pop() || "video.mp4";
           const caption = captionMap.get(fileName.toLowerCase()) || "";
           const meta = getTitleAndType(key, source, caption);
           const ext = (fileName.split(".").pop() || "mp4").toLowerCase();
           const mime = ext === "mov" ? "video/quicktime" : ext === "m4v" ? "video/x-m4v" : "video/mp4";
-
-          const blob = new Blob([videoData], { type: mime });
+          const blob = videoBlobs.get(key);
+          if (!blob) { failed++; continue; }
           const videoFile = new File([blob], fileName, { type: mime });
 
           let thumbUrl: string | null = null;
@@ -294,9 +367,9 @@ export default function ImportPage() {
           const upload = await r2MultipartUpload(videoFile, {
             folder: "videos",
             onProgress: (p) => {
-              perFileProgress[index] = p;
-              const sum = perFileProgress.reduce((a, b) => a + b, 0);
-              setProgress(Math.min(99, Math.round(15 + (sum / total) * 80)));
+              const base = 20 + (completed / total) * 75;
+              const slice = (1 / total) * 75;
+              setProgress(Math.min(99, Math.round(base + slice * (p / 100))));
             },
           });
 
@@ -312,22 +385,15 @@ export default function ImportPage() {
             feed_visible: false,
           });
         } catch (err) {
-          console.error("Import failed for", videoKeys[index], err);
+          console.error("Import failed for", key, err);
           failed++;
         } finally {
           completed++;
+          processedVideos = completed;
+          videoBlobs.delete(key); // release memory
           setStatus(`Processed ${completed} of ${total}`);
         }
-      };
-
-      // Several files in flight at once; each file's two uploads are parallel too.
-      const workers = Array.from({ length: concurrency }, async () => {
-        while (cursor < total) {
-          const index = cursor++;
-          await processOne(index);
-        }
-      });
-      await Promise.all(workers);
+      }
 
       if (records.length > 0) {
         setStatus("Saving your library...");
