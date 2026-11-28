@@ -18,6 +18,7 @@ import { useRealtimeDMs } from "@/hooks/useRealtimeDMs";
 import GifPicker from "@/components/GifPicker";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import { getCachedUser } from "@/lib/cache";
+import { getThemeBackdropStyle } from "@/lib/appTheme";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import StudioWidgets from "@/components/StudioWidgets";
@@ -122,11 +123,7 @@ export default function ThreadPage() {
       .catch(() => {});
   }, [me]);
 
-  const bgStyle = profileBackdrop
-    ? profileBackdrop.startsWith("http")
-      ? { backgroundImage: `url(${profileBackdrop})`, backgroundSize: "cover", backgroundPosition: "center" }
-      : { background: profileBackdrop }
-    : null;
+  const bgStyle = profileBackdrop ? getThemeBackdropStyle(profileBackdrop) : null;
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {

@@ -6,6 +6,7 @@ import MobileBottomNav from "@/components/MobileBottomNav";
 import StudioWidgets from "@/components/StudioWidgets";
 import { Wallet, Plus, ArrowDownRight, ArrowUpRight, ArrowUp, ArrowDown, X, CheckCircle2, Building2, Bitcoin, Send, AlertTriangle, ShieldCheck, ChevronRight } from "lucide-react";
 import { getCachedUser } from "@/lib/cache";
+import { getThemeBackdropStyle } from "@/lib/appTheme";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function WalletPage() {
@@ -75,11 +76,7 @@ export default function WalletPage() {
 
   useEffect(() => { fetchWallet(); }, []);
 
-  const bgStyle = profileBackdrop
-    ? profileBackdrop.startsWith("http")
-      ? { backgroundImage: `url(${profileBackdrop})`, backgroundSize: "cover", backgroundPosition: "center" }
-      : { background: profileBackdrop }
-    : null;
+  const bgStyle = profileBackdrop ? getThemeBackdropStyle(profileBackdrop) : null;
 
   useEffect(() => {
     if (sendUsername.length < 2) { setSendSearchResults([]); return; }

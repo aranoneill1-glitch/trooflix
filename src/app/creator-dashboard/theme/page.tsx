@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, Save, Palette } from "lucide-react";
+import { ChevronLeft, Palette, Check } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { getCachedUser, clearUserCache } from "@/lib/cache";
 import TopBar from "@/components/TopBar";
@@ -18,11 +18,15 @@ export default function ProfileThemePage() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [status, setStatus] = useState({ type: "", message: "" });
 
   const [userId, setUserId] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState(DEFAULT_COLOR);
   const [selectedPattern, setSelectedPattern] = useState<ThemePattern>("none");
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const latestRef = useRef({ color: DEFAULT_COLOR, pattern: "none" as ThemePattern });
 
   useEffect(() => {
     getCachedUser().then(async (user) => {
@@ -42,22 +46,29 @@ export default function ProfileThemePage() {
         const parsed = parseThemeBackdrop(data.backdrop_url);
         setSelectedColor(parsed.color);
         setSelectedPattern(parsed.pattern);
+        latestRef.current = { color: parsed.color, pattern: parsed.pattern };
       } else {
         setSelectedColor(DEFAULT_COLOR);
         setSelectedPattern("none");
+        latestRef.current = { color: DEFAULT_COLOR, pattern: "none" };
       }
 
       setLoading(false);
     });
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+    };
   }, [router, supabase]);
 
-  const saveTheme = async () => {
+  const persistTheme = async (color: string, pattern: ThemePattern) => {
     if (!userId) return;
     setSaving(true);
+    setSaved(false);
     setStatus({ type: "", message: "" });
 
     try {
-      const backdrop_url = getBackdropFromColor(selectedColor, selectedPattern);
+      const backdrop_url = getBackdropFromColor(color, pattern);
       const { error } = await supabase
         .from("profiles")
         .update({ backdrop_url })
@@ -65,20 +76,46 @@ export default function ProfileThemePage() {
 
       if (error) throw error;
 
-      try { localStorage.setItem("trooflix:app-theme-color", selectedColor); } catch {}
-      applyAppTheme(selectedColor);
-      window.dispatchEvent(new CustomEvent("app-theme-updated", { detail: { color: selectedColor, backdrop_url } }));
-
-      setStatus({ type: "success", message: "Theme updated across your account!" });
+      try { localStorage.setItem("trooflix:app-theme-color", color); } catch {}
+      applyAppTheme(color);
+      window.dispatchEvent(new CustomEvent("app-theme-updated", { detail: { color, backdrop_url } }));
       clearUserCache();
-      setTimeout(() => {
-        router.push("/creator-dashboard");
-      }, 1200);
+      setSaved(true);
+      if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+      savedTimerRef.current = setTimeout(() => setSaved(false), 1500);
     } catch (err: any) {
       setStatus({ type: "error", message: err.message || "Failed to save theme." });
     } finally {
       setSaving(false);
     }
+  };
+
+  const scheduleSave = (color: string, pattern: ThemePattern, immediate = false) => {
+    latestRef.current = { color, pattern };
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    if (immediate) {
+      persistTheme(color, pattern);
+      return;
+    }
+    saveTimerRef.current = setTimeout(() => {
+      persistTheme(latestRef.current.color, latestRef.current.pattern);
+    }, 350);
+  };
+
+  const onColorChange = (color: string) => {
+    setSelectedColor(color);
+    scheduleSave(color, selectedPattern, false);
+  };
+
+  const onPatternSelect = (pattern: ThemePattern) => {
+    setSelectedPattern(pattern);
+    scheduleSave(selectedColor, pattern, true);
+  };
+
+  const onReset = () => {
+    setSelectedColor(DEFAULT_COLOR);
+    setSelectedPattern("none");
+    scheduleSave(DEFAULT_COLOR, "none", true);
   };
 
   if (loading) {
@@ -105,38 +142,46 @@ export default function ProfileThemePage() {
             <Palette size={22} className="text-white/70" /> App Theme
           </h1>
           <p className="text-sm text-white/50">
-            Pick a color and texture theme for your account. It applies across the site when you’re logged in.
+            Choose your own theme. Pick a color and background — it applies automatically across the site when you’re logged in.
           </p>
         </div>
 
-        <div className="flex flex-col items-center justify-center gap-3 py-4">
-          <div
-            className="relative w-36 h-36 sm:w-40 sm:h-40 rounded-full border border-white/20 shadow-[0_12px_40px_rgba(0,0,0,0.45)] overflow-hidden"
-            style={{ background: selectedColor }}
-          >
-            <input
-              type="color"
-              value={selectedColor}
-              onChange={(e) => setSelectedColor(e.target.value)}
-              aria-label="Choose profile theme color"
-              className="absolute inset-0 w-full h-full cursor-pointer opacity-0"
-            />
+        <div className="mb-8">
+          <p className="text-xs font-bold text-white/50 uppercase tracking-wider mb-3">Choose your own theme</p>
+          <div className="flex flex-col items-center justify-center gap-3 py-4 rounded-2xl border border-white/10 bg-white/[0.02]">
+            <div
+              className="relative w-36 h-36 sm:w-40 sm:h-40 rounded-full border border-white/20 shadow-[0_12px_40px_rgba(0,0,0,0.45)] overflow-hidden"
+              style={{ background: selectedColor }}
+            >
+              <input
+                type="color"
+                value={selectedColor}
+                onChange={(e) => onColorChange(e.target.value)}
+                aria-label="Choose profile theme color"
+                className="absolute inset-0 w-full h-full cursor-pointer opacity-0"
+              />
+            </div>
+            <p className="text-xs text-white/50">Tap to choose your color</p>
+            <p className="text-sm font-semibold tracking-wide text-white/90">
+              {selectedColor.toUpperCase()}
+            </p>
+            <button
+              type="button"
+              onClick={onReset}
+              className="text-xs font-semibold text-white/60 hover:text-white transition underline underline-offset-4"
+            >
+              Reset to default
+            </button>
           </div>
-          <p className="text-xs text-white/50">Tap to choose</p>
-          <p className="text-sm font-semibold tracking-wide text-white/90">
-            {selectedColor.toUpperCase()}
-          </p>
-          <button
-            type="button"
-            onClick={() => { setSelectedColor(DEFAULT_COLOR); setSelectedPattern("none"); }}
-            className="text-xs font-semibold text-white/60 hover:text-white transition underline underline-offset-4"
-          >
-            Reset to default
-          </button>
         </div>
 
         <div className="mt-8">
-          <p className="text-xs font-bold text-white/50 uppercase tracking-wider mb-3">Background Themes</p>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs font-bold text-white/50 uppercase tracking-wider">Background Themes</p>
+            <div className="text-xs font-medium text-white/50 h-4 flex items-center gap-1">
+              {saving ? "Saving..." : saved ? <><Check size={13} className="text-emerald-400" /><span className="text-emerald-400">Applied</span></> : null}
+            </div>
+          </div>
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
             {THEME_PATTERNS.map((p) => {
               const active = selectedPattern === p.id;
@@ -144,7 +189,7 @@ export default function ProfileThemePage() {
                 <button
                   key={p.id}
                   type="button"
-                  onClick={() => setSelectedPattern(p.id)}
+                  onClick={() => onPatternSelect(p.id)}
                   className={`group flex flex-col items-center gap-2`}
                 >
                   <div
@@ -169,14 +214,6 @@ export default function ProfileThemePage() {
             {status.message}
           </div>
         )}
-
-        <button
-          onClick={saveTheme}
-          disabled={saving}
-          className="w-full mt-5 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 border border-white/20 disabled:opacity-50 text-white font-bold py-3.5 rounded-2xl transition-all shadow-[0_8px_32px_rgba(0,0,0,0.25)]"
-        >
-          <Save size={18} /> {saving ? "Saving Theme…" : "Save Theme"}
-        </button>
       </div>
       <MobileBottomNav />
     </main>

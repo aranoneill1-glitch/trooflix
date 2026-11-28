@@ -12,6 +12,7 @@ import StudioWidgets from "@/components/StudioWidgets";
 import { createClient } from "@/utils/supabase/client";
 import { useRealtimeDMs } from "@/hooks/useRealtimeDMs";
 import { getCachedUser } from "@/lib/cache";
+import { getThemeBackdropStyle } from "@/lib/appTheme";
 
 type Conversation = {
   other_user_id: string;
@@ -196,11 +197,7 @@ export default function MessagesInbox() {
     });
   }, [router]);
 
-  const bgStyle = profileBackdrop
-    ? profileBackdrop.startsWith("http")
-      ? { backgroundImage: `url(${profileBackdrop})`, backgroundSize: "cover", backgroundPosition: "center" }
-      : { background: profileBackdrop }
-    : null;
+  const bgStyle = profileBackdrop ? getThemeBackdropStyle(profileBackdrop) : null;
 
   useEffect(() => {
     if (!userId || !hiddenLoadedRef.current) return;
