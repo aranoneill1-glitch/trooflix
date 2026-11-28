@@ -578,17 +578,7 @@ function CreatorDashboardContent() {
 
           {!isDashboardView && !showMyTrooFlix && (
             <div className="animate-in fade-in duration-300">
-              <div className="hidden lg:block">
-                <StudioWidgets
-                  active="profile"
-                  className="mb-6"
-                  dashboardLocked={false}
-                  onViewChange={(section) => {
-                    setIsDashboardView(section === "dashboard");
-                    setShowMyTrooFlix(false);
-                  }}
-                />
-              </div>
+             
               <div className="hidden lg:grid lg:grid-cols-3 lg:gap-10 lg:items-start mb-8 w-full">
                 <div className="flex items-start justify-start">
                   <div onClick={() => setShowAvatarMenu(true)} className="w-44 h-44 xl:w-56 xl:h-56 rounded-full p-[4px] bg-gradient-to-tr from-[#E53945] to-orange-500 shrink-0 cursor-pointer group relative">
@@ -617,6 +607,17 @@ function CreatorDashboardContent() {
                       <Pencil size={14} /> {uploadingProfileFeature ? "Uploading..." : "Change featured"}
                     </button>
                   </div>
+                  <div className="mt-6">
+                    <StudioWidgets
+                      active="profile"
+                      className="mb-0"
+                      dashboardLocked={false}
+                      onViewChange={(section) => {
+                        setIsDashboardView(section === "dashboard");
+                        setShowMyTrooFlix(false);
+                      }}
+                    />
+                  </div>
                 </div>
 
                 <div className="flex flex-col gap-6 lg:pl-4">
@@ -631,17 +632,7 @@ function CreatorDashboardContent() {
                   <div className="text-left"><span className="font-black text-white block text-3xl xl:text-4xl">{creatorVideos.length}</span> <span className="text-white/50 text-xs uppercase tracking-wider font-semibold">Posts</span></div>
                 </div>
               </div>
-              <div className="lg:hidden">
-                <StudioWidgets
-                  active="profile"
-                  className="mb-6"
-                  dashboardLocked={false}
-                  onViewChange={(section) => {
-                    setIsDashboardView(section === "dashboard");
-                    setShowMyTrooFlix(false);
-                  }}
-                />
-              </div>
+             
               <div className="flex flex-col mb-6 w-full lg:hidden">
                 <div className="flex items-center gap-4 w-full mb-4">
                   
@@ -692,6 +683,17 @@ function CreatorDashboardContent() {
                     <a href="#" className="flex items-center gap-1.5 text-white/60 hover:text-white transition-colors"><XIcon size={14} /><span className="text-xs font-semibold">{profile?.x_handle || "@x"}</span></a>
                   </div>
                   <p className="text-sm text-white/60 leading-relaxed">{profile?.bio || "No bio yet."}</p>
+                  <div className="mt-5">
+                    <StudioWidgets
+                      active="profile"
+                      className="mb-0"
+                      dashboardLocked={false}
+                      onViewChange={(section) => {
+                        setIsDashboardView(section === "dashboard");
+                        setShowMyTrooFlix(false);
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
 
