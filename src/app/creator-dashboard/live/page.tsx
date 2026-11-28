@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { getCachedUser } from "@/lib/cache";
 import { createClient } from "@/utils/supabase/client";
-import { Mic, MicOff, Video, VideoOff, Radio, StopCircle, Monitor, MonitorOff, UserCheck, PictureInPicture, ShoppingBag, X, Globe, Lock, Loader2, SwitchCamera, MessageCircle, UserPlus, Search, Eye } from "lucide-react";
+import { Mic, MicOff, Video, VideoOff, Radio, StopCircle, Monitor, MonitorOff, UserCheck, PictureInPicture, ShoppingBag, X, Globe, Lock, Loader2, SwitchCamera, MessageCircle, UserPlus, Search, Eye, MoreHorizontal } from "lucide-react";
 import LiveChat from "@/components/LiveChat";
 
 export default function GoLivePage() {
@@ -50,6 +50,7 @@ export default function GoLivePage() {
   const [isDesktop, setIsDesktop] = useState(() => typeof window !== "undefined" ? window.matchMedia("(min-width: 1024px)").matches : false);
   const [floatingComments, setFloatingComments] = useState<any[]>([]);
   const [showInviteSheet, setShowInviteSheet] = useState(false);
+  const [showLiveMoreMenu, setShowLiveMoreMenu] = useState(false);
   const [inviteQuery, setInviteQuery] = useState("");
   const [inviteResults, setInviteResults] = useState<any[]>([]);
   const [inviteSearching, setInviteSearching] = useState(false);
@@ -551,6 +552,26 @@ export default function GoLivePage() {
     setJoinRequest(null);
   };
 
+  const removeJoinedGuest = () => {
+    const pc = hostPcRef.current;
+    if (pc) {
+      const poll = (pc as any).__signalPoll;
+      if (poll) clearInterval(poll);
+      pc.close();
+      hostPcRef.current = null;
+    }
+    setGuestConnected(false);
+    setGuestPending(false);
+    setGuestConnState("");
+    setGuestDebug("");
+    setConnectedGuestName("");
+    setConnectedGuestAvatar(null);
+    setConnectedGuestUserId(null);
+    setIsFollowingGuest(false);
+    if (guestVideoRef.current) guestVideoRef.current.srcObject = null;
+    setShowLiveMoreMenu(false);
+  };
+
   const toggleFollowGuest = async () => {
     if (!userId || !connectedGuestUserId) return;
     const next = !isFollowingGuest;
@@ -887,6 +908,15 @@ export default function GoLivePage() {
         </div>
 
         <div className="absolute inset-x-0 bottom-0 z-30 px-4 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-16 bg-gradient-to-t from-black/85 via-black/45 to-transparent">
+          {showLiveMoreMenu && isLive && (
+            <div className="absolute bottom-full right-4 mb-2 w-56 rounded-2xl bg-[#1c1c1e]/95 backdrop-blur-xl border border-white/10 shadow-2xl overflow-hidden z-50">
+              <button onClick={() => { setShowLiveMoreMenu(false); openProductMenu(); }} className="w-full px-4 py-3 text-left text-sm font-semibold text-white hover:bg-white/5 flex items-center gap-3"><ShoppingBag size={16} className="text-[#E53945]" /> Add Product</button>
+              <button onClick={() => { setShowLiveMoreMenu(false); setShowInviteSheet(true); }} className="w-full px-4 py-3 text-left text-sm font-semibold text-white hover:bg-white/5 flex items-center gap-3 border-t border-white/5"><UserPlus size={16} className="text-white/70" /> Invite Party</button>
+              <button onClick={removeJoinedGuest} disabled={!guestConnected && !guestPending} className="w-full px-4 py-3 text-left text-sm font-semibold text-white hover:bg-white/5 flex items-center gap-3 border-t border-white/5 disabled:opacity-40"><UserCheck size={16} className="text-white/70" /> Remove Joined Party</button>
+              <button onClick={() => { setLiveVisibility(v => v === "public" ? "subscribers" : "public"); }} className="w-full px-4 py-3 text-left text-sm font-semibold text-white hover:bg-white/5 flex items-center gap-3 border-t border-white/5"><Eye size={16} className="text-white/70" /> Who can see: {liveVisibility === "public" ? "Everyone" : "Subscribers"}</button>
+              <button onClick={() => { setShowLiveMoreMenu(false); setShowMobileChat(true); }} className="w-full px-4 py-3 text-left text-sm font-semibold text-white hover:bg-white/5 flex items-center gap-3 border-t border-white/5"><MessageCircle size={16} className="text-white/70" /> Chat</button>
+            </div>
+          )}
           <div className="flex items-center justify-between gap-2 mb-3">
             <button onClick={() => (isLive ? stopStream() : router.push("/creator-dashboard"))} className="w-11 h-11 rounded-full flex items-center justify-center bg-black/35 border border-white/15 text-white/90 backdrop-blur-xl" aria-label="Close">
               <X size={18} />
@@ -929,8 +959,8 @@ export default function GoLivePage() {
             <button onClick={flipCamera} className="w-12 h-12 rounded-full flex items-center justify-center bg-white/12 border border-white/15 text-white backdrop-blur-xl transition" aria-label="Flip camera">
               <SwitchCamera size={20} />
             </button>
-            <button onClick={() => { if (isLive && liveInputId) { setShowMobileChat(v => !v); setShowInviteSheet(false); } else { openProductMenu(); } }} className={`w-12 h-12 rounded-full flex items-center justify-center border backdrop-blur-xl transition ${isLive ? "bg-white/12 border-white/15 text-white" : "bg-[#E53945]/20 border-[#E53945]/30 text-[#E53945]"}`} aria-label={isLive ? "Chat" : "Products"}>
-              {isLive ? <MessageCircle size={20} /> : <ShoppingBag size={20} />}
+            <button onClick={() => { if (isLive) { setShowLiveMoreMenu(v => !v); setShowMobileChat(false); setShowInviteSheet(false); } else { openProductMenu(); } }} className={`w-12 h-12 rounded-full flex items-center justify-center border backdrop-blur-xl transition ${isLive ? "bg-white/12 border-white/15 text-white" : "bg-[#E53945]/20 border-[#E53945]/30 text-[#E53945]"}`} aria-label={isLive ? "More options" : "Products"}>
+              {isLive ? <MoreHorizontal size={20} /> : <ShoppingBag size={20} />}
             </button>
           </div>
         </div>
