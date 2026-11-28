@@ -464,24 +464,33 @@ export default function PublicProfilePage() {
                 </div>
                 <p className="text-sm text-white/70 leading-relaxed mb-5">{profile.bio || "No bio yet."}</p>
                 <div className="grid grid-cols-3 gap-2.5 w-full max-w-xl">
+                  <style>{`@keyframes profile-btn-shine{0%{transform:translateX(-140%) skewX(-18deg);opacity:0}20%{opacity:.35}50%{opacity:.12}100%{transform:translateX(180%) skewX(-18deg);opacity:0}} @keyframes profile-btn-pulse{0%,100%{box-shadow:0 8px 24px rgba(229,57,69,0.22),0 0 0 1px rgba(229,57,69,0.3),inset 0 1px 0 rgba(255,255,255,0.08)}50%{box-shadow:0 10px 30px rgba(229,57,69,0.36),0 0 0 1px rgba(229,57,69,0.45),inset 0 1px 0 rgba(255,255,255,0.1)}}`}</style>
                   <button
                     onClick={handleFollow}
                     disabled={isSubmittingFollow}
-                    className={`inline-flex items-center justify-center gap-2 font-bold px-4 py-2.5 rounded-full text-sm transition backdrop-blur-xl border ${isSubmittingFollow ? "opacity-50 cursor-wait" : isFollowing ? "bg-white/[0.08] text-white border-white/15 hover:bg-white/[0.12]" : "bg-white text-black border-white/20 hover:bg-white/90"}`}
+                    className={`group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full border bg-[linear-gradient(180deg,#141414_0%,#000000_100%)] px-4 py-2.5 text-sm font-bold text-white transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] ${isSubmittingFollow ? "opacity-50 cursor-wait" : "border-[#E53945]/35"}`}
+                    style={!isSubmittingFollow ? { animation: "profile-btn-pulse 2.8s ease-in-out infinite" } : undefined}
                   >
-                    <UserPlus size={16} /> {isFollowing ? "Following" : "Follow"}
+                    <span className="pointer-events-none absolute inset-y-0 -left-1/2 w-1/3 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.22),transparent)]" style={{ animation: "profile-btn-shine 3.2s ease-in-out infinite" }} />
+                    <span className="relative inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#E53945]/20 text-[#E53945]"><UserPlus size={13} /></span>
+                    <span className="relative">{isFollowing ? "Following" : "Follow"}</span>
                   </button>
                   {isSubscribed ? (
-                    <button onClick={handleCancelSubscription} disabled={cancelLoading} className="inline-flex items-center justify-center gap-2 bg-white/[0.08] hover:bg-red-500/15 text-red-400 font-bold px-4 py-2.5 rounded-full text-sm transition backdrop-blur-xl border border-red-500/25 disabled:opacity-50">
-                      <X size={16} /> {cancelLoading ? "..." : "Subscribed"}
+                    <button onClick={handleCancelSubscription} disabled={cancelLoading} className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full border border-red-500/30 bg-[linear-gradient(180deg,#141414_0%,#000000_100%)] px-4 py-2.5 text-sm font-bold text-red-400 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50">
+                      <span className="relative inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-500/15 text-red-400"><X size={13} /></span>
+                      <span className="relative">{cancelLoading ? "..." : "Subscribed"}</span>
                     </button>
                   ) : (
-                    <button onClick={() => setShowSubscribeModal(true)} className="inline-flex items-center justify-center gap-2 bg-[#E53945]/90 hover:bg-[#E53945] text-white font-bold px-4 py-2.5 rounded-full text-sm transition backdrop-blur-xl border border-red-400/20 shadow-[0_8px_24px_rgba(229,57,69,0.28),inset_0_1px_0_rgba(255,255,255,0.16)]">
-                      <Star size={16} fill="currentColor" /> Subscribe
+                    <button onClick={() => setShowSubscribeModal(true)} className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full border border-[#E53945]/35 bg-[linear-gradient(180deg,#141414_0%,#000000_100%)] px-4 py-2.5 text-sm font-bold text-white transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]" style={{ animation: "profile-btn-pulse 2.8s ease-in-out infinite" }}>
+                      <span className="pointer-events-none absolute inset-y-0 -left-1/2 w-1/3 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.22),transparent)]" style={{ animation: "profile-btn-shine 3.2s ease-in-out infinite" }} />
+                      <span className="relative inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#E53945]/20 text-[#E53945]"><Star size={13} fill="currentColor" /></span>
+                      <span className="relative">Subscribe</span>
                     </button>
                   )}
-                  <Link href={`/messages/${profile.user_id}`} className="inline-flex items-center justify-center gap-2 bg-white/[0.08] hover:bg-white/[0.12] text-white font-bold px-4 py-2.5 rounded-full text-sm transition backdrop-blur-xl border border-white/15">
-                    <MessageSquare size={16} /> Message
+                  <Link href={`/messages/${profile.user_id}`} className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full border border-[#E53945]/35 bg-[linear-gradient(180deg,#141414_0%,#000000_100%)] px-4 py-2.5 text-sm font-bold text-white transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]" style={{ animation: "profile-btn-pulse 2.8s ease-in-out infinite" }}>
+                    <span className="pointer-events-none absolute inset-y-0 -left-1/2 w-1/3 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.22),transparent)]" style={{ animation: "profile-btn-shine 3.2s ease-in-out infinite" }} />
+                    <span className="relative inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#E53945]/20 text-[#E53945]"><MessageSquare size={13} /></span>
+                    <span className="relative">Message</span>
                   </Link>
                 </div>
               </div>
@@ -545,24 +554,33 @@ export default function PublicProfilePage() {
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-2 mb-8">
+                <style>{`@keyframes profile-btn-shine{0%{transform:translateX(-140%) skewX(-18deg);opacity:0}20%{opacity:.35}50%{opacity:.12}100%{transform:translateX(180%) skewX(-18deg);opacity:0}} @keyframes profile-btn-pulse{0%,100%{box-shadow:0 8px 24px rgba(229,57,69,0.22),0 0 0 1px rgba(229,57,69,0.3),inset 0 1px 0 rgba(255,255,255,0.08)}50%{box-shadow:0 10px 30px rgba(229,57,69,0.36),0 0 0 1px rgba(229,57,69,0.45),inset 0 1px 0 rgba(255,255,255,0.1)}}`}</style>
                 <button
                   onClick={handleFollow}
                   disabled={isSubmittingFollow}
-                  className={`inline-flex items-center justify-center gap-1.5 font-bold px-3 py-2.5 rounded-full text-[13px] transition backdrop-blur-xl border ${isSubmittingFollow ? "opacity-50 cursor-wait" : isFollowing ? "bg-white/[0.08] text-white border-white/15 hover:bg-white/[0.12]" : "bg-white text-black border-white/20 hover:bg-white/90"}`}
+                  className={`group relative inline-flex items-center justify-center gap-1.5 overflow-hidden rounded-full border bg-[linear-gradient(180deg,#141414_0%,#000000_100%)] px-3 py-2.5 text-[13px] font-bold text-white transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] ${isSubmittingFollow ? "opacity-50 cursor-wait" : "border-[#E53945]/35"}`}
+                  style={!isSubmittingFollow ? { animation: "profile-btn-pulse 2.8s ease-in-out infinite" } : undefined}
                 >
-                  <UserPlus size={15} /> {isFollowing ? "Following" : "Follow"}
+                  <span className="pointer-events-none absolute inset-y-0 -left-1/2 w-1/3 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.22),transparent)]" style={{ animation: "profile-btn-shine 3.2s ease-in-out infinite" }} />
+                  <span className="relative inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#E53945]/20 text-[#E53945]"><UserPlus size={12} /></span>
+                  <span className="relative">{isFollowing ? "Following" : "Follow"}</span>
                 </button>
                 {isSubscribed ? (
-                  <button onClick={handleCancelSubscription} disabled={cancelLoading} className="inline-flex items-center justify-center gap-1.5 bg-white/[0.08] hover:bg-red-500/15 text-red-400 font-bold px-3 py-2.5 rounded-full text-[13px] transition backdrop-blur-xl border border-red-500/25 disabled:opacity-50">
-                    <X size={15} /> {cancelLoading ? "..." : "Subscribed"}
+                  <button onClick={handleCancelSubscription} disabled={cancelLoading} className="group relative inline-flex items-center justify-center gap-1.5 overflow-hidden rounded-full border border-red-500/30 bg-[linear-gradient(180deg,#141414_0%,#000000_100%)] px-3 py-2.5 text-[13px] font-bold text-red-400 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50">
+                    <span className="relative inline-flex h-5 w-5 items-center justify-center rounded-full bg-red-500/15 text-red-400"><X size={12} /></span>
+                    <span className="relative">{cancelLoading ? "..." : "Subscribed"}</span>
                   </button>
                 ) : (
-                  <button onClick={() => setShowSubscribeModal(true)} className="inline-flex items-center justify-center gap-1.5 bg-[#E53945]/90 hover:bg-[#E53945] text-white font-bold px-3 py-2.5 rounded-full text-[13px] transition backdrop-blur-xl border border-red-400/20 shadow-[0_8px_24px_rgba(229,57,69,0.28),inset_0_1px_0_rgba(255,255,255,0.16)]">
-                    <Star size={15} fill="currentColor" /> Subscribe
+                  <button onClick={() => setShowSubscribeModal(true)} className="group relative inline-flex items-center justify-center gap-1.5 overflow-hidden rounded-full border border-[#E53945]/35 bg-[linear-gradient(180deg,#141414_0%,#000000_100%)] px-3 py-2.5 text-[13px] font-bold text-white transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]" style={{ animation: "profile-btn-pulse 2.8s ease-in-out infinite" }}>
+                    <span className="pointer-events-none absolute inset-y-0 -left-1/2 w-1/3 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.22),transparent)]" style={{ animation: "profile-btn-shine 3.2s ease-in-out infinite" }} />
+                    <span className="relative inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#E53945]/20 text-[#E53945]"><Star size={12} fill="currentColor" /></span>
+                    <span className="relative">Subscribe</span>
                   </button>
                 )}
-                <Link href={`/messages/${profile.user_id}`} className="inline-flex items-center justify-center gap-1.5 bg-white/[0.08] hover:bg-white/[0.12] text-white font-bold px-3 py-2.5 rounded-full text-[13px] transition backdrop-blur-xl border border-white/15">
-                  <MessageSquare size={15} /> Message
+                <Link href={`/messages/${profile.user_id}`} className="group relative inline-flex items-center justify-center gap-1.5 overflow-hidden rounded-full border border-[#E53945]/35 bg-[linear-gradient(180deg,#141414_0%,#000000_100%)] px-3 py-2.5 text-[13px] font-bold text-white transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]" style={{ animation: "profile-btn-pulse 2.8s ease-in-out infinite" }}>
+                  <span className="pointer-events-none absolute inset-y-0 -left-1/2 w-1/3 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.22),transparent)]" style={{ animation: "profile-btn-shine 3.2s ease-in-out infinite" }} />
+                  <span className="relative inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#E53945]/20 text-[#E53945]"><MessageSquare size={12} /></span>
+                  <span className="relative">Message</span>
                 </Link>
               </div>
             </div>
