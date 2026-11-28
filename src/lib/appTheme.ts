@@ -63,7 +63,7 @@ function hslToHex(h: number, s: number, l: number) {
   return rgbToHex(r, g, b);
 }
 
-export type ThemePattern = "none" | "grain" | "mesh" | "grid" | "dots" | "diagonal" | "chat" | "aurora" | "sunset" | "midnight" | "rose" | "ocean" | "ember";
+export type ThemePattern = "none" | "grain" | "mesh" | "grid" | "dots" | "diagonal" | "chat" | "aurora" | "sunset" | "midnight" | "rose" | "ocean" | "ember" | "citynight" | "beach" | "mountains" | "neoncity";
 
 export const THEME_PATTERNS: { id: ThemePattern; label: string }[] = [
   { id: "none", label: "Clean" },
@@ -73,6 +73,10 @@ export const THEME_PATTERNS: { id: ThemePattern; label: string }[] = [
   { id: "rose", label: "Rose" },
   { id: "ocean", label: "Ocean" },
   { id: "ember", label: "Ember" },
+  { id: "citynight", label: "City Night" },
+  { id: "beach", label: "Beach" },
+  { id: "mountains", label: "Mountains" },
+  { id: "neoncity", label: "Neon City" },
   { id: "grain", label: "Grain" },
   { id: "mesh", label: "Mesh" },
   { id: "grid", label: "Grid" },
@@ -159,6 +163,18 @@ export function getThemeBackdropStyle(backdropUrl?: string | null): CSSPropertie
   }
   if (pattern === "ember") {
     return { backgroundColor: "#140806", backgroundImage: `radial-gradient(at 30% 15%, rgba(229,57,69,0.38) 0px, transparent 45%), radial-gradient(at 75% 30%, rgba(255,120,50,0.22) 0px, transparent 45%), radial-gradient(at 50% 90%, rgba(120,20,20,0.25) 0px, transparent 50%), linear-gradient(180deg, #1a0908 0%, #09090b 100%)` };
+  }
+  if (pattern === "citynight") {
+    return { backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.25), rgba(0,0,0,0.55)), url(https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?q=80&w=1600&auto=format&fit=crop)`, backgroundSize: "cover", backgroundPosition: "center" };
+  }
+  if (pattern === "beach") {
+    return { backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.5)), url(https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1600&auto=format&fit=crop)`, backgroundSize: "cover", backgroundPosition: "center" };
+  }
+  if (pattern === "mountains") {
+    return { backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.55)), url(https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=1600&auto=format&fit=crop)`, backgroundSize: "cover", backgroundPosition: "center" };
+  }
+  if (pattern === "neoncity") {
+    return { backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.55)), url(https://images.unsplash.com/photo-1542051841857-5f90071e7989?q=80&w=1600&auto=format&fit=crop)`, backgroundSize: "cover", backgroundPosition: "center" };
   }
   if (pattern === "chat") {
     const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'><g fill='none' stroke='rgba(255,255,255,0.055)' stroke-width='1.8'><rect x='18' y='20' width='34' height='22' rx='7'/><path d='M28 42l6-5' stroke-linecap='round'/><rect x='118' y='24' width='38' height='24' rx='8'/><path d='M132 48l5-5' stroke-linecap='round'/><circle cx='52' cy='92' r='10'/><path d='M47 92h10M52 87v10' stroke-linecap='round'/><rect x='108' y='102' width='30' height='20' rx='7'/><path d='M118 122l5-4' stroke-linecap='round'/><path d='M24 132l8-8 8 8-8 8z'/><circle cx='146' cy='148' r='6'/></g></svg>`;
