@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { Eye, Lock, MessageCircle, Wallet } from "lucide-react";
 
-function DashboardHeartIcon({ size = 24, strokeWidth = 1.9, className, style }: { size?: number; strokeWidth?: number; className?: string; style?: React.CSSProperties }) {
+function DashboardHeartIcon({ size = 24, className, style }: { size?: number; strokeWidth?: number; className?: string; style?: React.CSSProperties }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
-      <rect width="7" height="9" x="3" y="3" rx="1" />
-      <rect width="7" height="5" x="14" y="3" rx="1" />
-      <rect width="7" height="5" x="3" y="16" rx="1" />
-      <path d="M20.8 14.6c-.8-.8-2.1-.8-2.9 0l-.4.4-.4-.4c-.8-.8-2.1-.8-2.9 0-.8.8-.8 2.1 0 2.9l3.3 3.3 3.3-3.3c.8-.8.8-2.1 0-2.9Z" />
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" className={className} style={style}>
+      <rect width="7" height="9" x="3" y="3" rx="1.5" fill="#FFFFFF" />
+      <rect width="7" height="5" x="14" y="3" rx="1.5" fill="#FFFFFF" />
+      <rect width="7" height="5" x="3" y="16" rx="1.5" fill="#FFFFFF" />
+      <path d="M20.8 14.6c-.8-.8-2.1-.8-2.9 0l-.4.4-.4-.4c-.8-.8-2.1-.8-2.9 0-.8.8-.8 2.1 0 2.9l3.3 3.3 3.3-3.3c.8-.8.8-2.1 0-2.9Z" fill="#E53945" />
     </svg>
   );
 }
@@ -36,8 +36,8 @@ export default function StudioWidgets({
     },
     {
       id: "dashboard" as const, label: "Dashboard", icon: DashboardHeartIcon, href: "/creator-dashboard?studioTab=dashboard",
-      background: "linear-gradient(180deg, #E53945 0%, #C62828 55%, #8E1B1B 100%)",
-      boxShadow: "0 10px 28px rgba(229, 57, 69, 0.4), 0 4px 10px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.28), inset 0 -1px 0 rgba(0,0,0,0.18)",
+      background: "linear-gradient(180deg, #111111 0%, #000000 100%)",
+      boxShadow: "0 10px 28px rgba(0,0,0,0.45), 0 4px 10px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.4)",
       accent: "#FFFFFF",
     },
     {
