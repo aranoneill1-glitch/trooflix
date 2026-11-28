@@ -1,3 +1,5 @@
+import type { CSSProperties } from "react";
+
 export const DEFAULT_APP_THEME_COLOR = "#09090B";
 
 function clamp(n: number, min: number, max: number) {
@@ -61,20 +63,79 @@ function hslToHex(h: number, s: number, l: number) {
   return rgbToHex(r, g, b);
 }
 
+export type ThemePattern = "none" | "grain" | "mesh" | "grid" | "dots" | "diagonal";
+
+export const THEME_PATTERNS: { id: ThemePattern; label: string }[] = [
+  { id: "none", label: "Clean" },
+  { id: "grain", label: "Grain" },
+  { id: "mesh", label: "Mesh" },
+  { id: "grid", label: "Grid" },
+  { id: "dots", label: "Dots" },
+  { id: "diagonal", label: "Diagonal" },
+];
+
+export function parseThemeBackdrop(backdropUrl?: string | null): { color: string; pattern: ThemePattern } {
+  if (!backdropUrl) return { color: DEFAULT_APP_THEME_COLOR, pattern: "none" };
+  if (backdropUrl.startsWith("{")) {
+    try {
+      const p = JSON.parse(backdropUrl);
+      if (p?.__trooflixTheme) {
+        const color = extractThemeColor(p.color || DEFAULT_APP_THEME_COLOR);
+        const pattern = THEME_PATTERNS.some(t => t.id === p.pattern) ? p.pattern as ThemePattern : "none";
+        return { color, pattern };
+      }
+    } catch {}
+  }
+  return { color: extractThemeColor(backdropUrl), pattern: "none" };
+}
+
 export function extractThemeColor(backdropUrl?: string | null): string {
   if (!backdropUrl) return DEFAULT_APP_THEME_COLOR;
+  if (backdropUrl.startsWith("{")) {
+    try { const p = JSON.parse(backdropUrl); if (p?.color) return extractThemeColor(String(p.color)); } catch {}
+  }
   const match = backdropUrl.match(/#(?:[0-9a-fA-F]{3,8})/);
   const hex = match ? match[0] : DEFAULT_APP_THEME_COLOR;
   const rgb = hexToRgb(hex);
   return rgb ? rgbToHex(rgb.r, rgb.g, rgb.b) : DEFAULT_APP_THEME_COLOR;
 }
 
+export function extractThemePattern(backdropUrl?: string | null): ThemePattern {
+  return parseThemeBackdrop(backdropUrl).pattern;
+}
+
 export function isDefaultThemeColor(color: string) {
   return extractThemeColor(color).toLowerCase() === DEFAULT_APP_THEME_COLOR.toLowerCase();
 }
 
-export function getBackdropFromColor(color: string) {
-  return isDefaultThemeColor(color) ? "" : `linear-gradient(to bottom, ${color}, #09090b)`;
+export function getBackdropFromColor(color: string, pattern: ThemePattern = "none") {
+  const c = extractThemeColor(color);
+  if (isDefaultThemeColor(c) && pattern === "none") return "";
+  if (pattern === "none") return `linear-gradient(to bottom, ${c}, #09090b)`;
+  return JSON.stringify({ __trooflixTheme: true, v: 1, color: c, pattern });
+}
+
+export function getThemeBackdropStyle(backdropUrl?: string | null): CSSProperties {
+  if (!backdropUrl) return { background: "#09090B" };
+  if (backdropUrl.startsWith("http")) return { backgroundImage: `url(${backdropUrl})`, backgroundSize: "cover", backgroundPosition: "center" };
+  const { color, pattern } = parseThemeBackdrop(backdropUrl);
+  const base = `linear-gradient(to bottom, ${color}, #09090b)`;
+  if (pattern === "grain") {
+    return { backgroundColor: color, backgroundImage: `${base}, radial-gradient(rgba(255,255,255,0.08) 0.7px, transparent 0.7px)`, backgroundSize: "auto, 4px 4px" };
+  }
+  if (pattern === "mesh") {
+    return { backgroundColor: color, backgroundImage: `radial-gradient(at 20% 20%, ${color}cc 0px, transparent 50%), radial-gradient(at 80% 0%, rgba(229,57,69,0.25) 0px, transparent 45%), radial-gradient(at 50% 80%, rgba(255,255,255,0.06) 0px, transparent 50%), linear-gradient(to bottom, ${color}, #09090b)` };
+  }
+  if (pattern === "grid") {
+    return { backgroundColor: color, backgroundImage: `linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px), ${base}`, backgroundSize: "28px 28px, 28px 28px, auto" };
+  }
+  if (pattern === "dots") {
+    return { backgroundColor: color, backgroundImage: `radial-gradient(rgba(255,255,255,0.12) 1px, transparent 1px), ${base}`, backgroundSize: "18px 18px, auto" };
+  }
+  if (pattern === "diagonal") {
+    return { backgroundColor: color, backgroundImage: `repeating-linear-gradient(135deg, rgba(255,255,255,0.05) 0, rgba(255,255,255,0.05) 1px, transparent 1px, transparent 14px), ${base}` };
+  }
+  return { background: backdropUrl.startsWith("{") ? base : backdropUrl };
 }
 
 export function buildAppThemeVars(color: string) {

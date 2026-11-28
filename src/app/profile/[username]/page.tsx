@@ -1,5 +1,6 @@
 "use client";
 import { getCachedUser } from "@/lib/cache";
+import { getThemeBackdropStyle, parseThemeBackdrop } from "@/lib/appTheme";
 
 import { useEffect, useState , useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -307,11 +308,7 @@ export default function PublicProfilePage() {
     return true;
   });
 
-  const bgStyle = profile.backdrop_url
-    ? profile.backdrop_url.startsWith("http")
-      ? { backgroundImage: `url(${profile.backdrop_url})`, backgroundSize: "cover", backgroundPosition: "center" }
-      : { background: profile.backdrop_url }
-    : { background: "#09090B" };
+  const bgStyle = getThemeBackdropStyle(profile.backdrop_url);
 
   const heroMedia =
     profileFeature?.mode === "custom" && profileFeature.mediaType === "video"
@@ -406,7 +403,7 @@ export default function PublicProfilePage() {
           ) : heroMedia?.type === "image" ? (
             <img src={heroMedia.src} alt="" className="absolute inset-0 h-full w-full object-cover" />
           ) : profile.backdrop_url && !profile.backdrop_url.startsWith("http") ? (
-            <div className="absolute inset-0" style={{ background: profile.backdrop_url }} />
+            <div className="absolute inset-0" style={getThemeBackdropStyle(profile.backdrop_url)} />
           ) : (
             <div className="absolute inset-0 bg-[#09090B]" />
           )}

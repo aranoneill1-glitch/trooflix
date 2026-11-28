@@ -8,7 +8,7 @@ import { createClient } from "@/utils/supabase/client";
 import { getCachedUser, clearUserCache } from "@/lib/cache";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
-import { DEFAULT_APP_THEME_COLOR, extractThemeColor, getBackdropFromColor, applyAppTheme } from "@/lib/appTheme";
+import { DEFAULT_APP_THEME_COLOR, getBackdropFromColor, applyAppTheme, parseThemeBackdrop, THEME_PATTERNS, getThemeBackdropStyle, type ThemePattern } from "@/lib/appTheme";
 
 const DEFAULT_COLOR = DEFAULT_APP_THEME_COLOR;
 
@@ -22,6 +22,7 @@ export default function ProfileThemePage() {
 
   const [userId, setUserId] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState(DEFAULT_COLOR);
+  const [selectedPattern, setSelectedPattern] = useState<ThemePattern>("none");
 
   useEffect(() => {
     getCachedUser().then(async (user) => {
@@ -38,9 +39,12 @@ export default function ProfileThemePage() {
         .single();
 
       if (data?.backdrop_url) {
-        setSelectedColor(extractThemeColor(data.backdrop_url));
+        const parsed = parseThemeBackdrop(data.backdrop_url);
+        setSelectedColor(parsed.color);
+        setSelectedPattern(parsed.pattern);
       } else {
         setSelectedColor(DEFAULT_COLOR);
+        setSelectedPattern("none");
       }
 
       setLoading(false);
@@ -53,7 +57,7 @@ export default function ProfileThemePage() {
     setStatus({ type: "", message: "" });
 
     try {
-      const backdrop_url = getBackdropFromColor(selectedColor);
+      const backdrop_url = getBackdropFromColor(selectedColor, selectedPattern);
       const { error } = await supabase
         .from("profiles")
         .update({ backdrop_url })
@@ -101,7 +105,7 @@ export default function ProfileThemePage() {
             <Palette size={22} className="text-white/70" /> App Theme
           </h1>
           <p className="text-sm text-white/50">
-            Pick a color theme for your account. It applies across the site when you’re logged in.
+            Pick a color and texture theme for your account. It applies across the site when you’re logged in.
           </p>
         </div>
 
@@ -124,11 +128,34 @@ export default function ProfileThemePage() {
           </p>
           <button
             type="button"
-            onClick={() => setSelectedColor(DEFAULT_COLOR)}
+            onClick={() => { setSelectedColor(DEFAULT_COLOR); setSelectedPattern("none"); }}
             className="text-xs font-semibold text-white/60 hover:text-white transition underline underline-offset-4"
           >
             Reset to default
           </button>
+        </div>
+
+        <div className="mt-8">
+          <p className="text-xs font-bold text-white/50 uppercase tracking-wider mb-3">Texture / Pattern</p>
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+            {THEME_PATTERNS.map((p) => {
+              const active = selectedPattern === p.id;
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => setSelectedPattern(p.id)}
+                  className={`group flex flex-col items-center gap-2`}
+                >
+                  <div
+                    className={`w-full aspect-square rounded-2xl border overflow-hidden transition ${active ? "border-[#E53945] ring-2 ring-[#E53945]/30" : "border-white/10 hover:border-white/25"}`}
+                    style={getThemeBackdropStyle(getBackdropFromColor(selectedColor, p.id) || (p.id === "none" ? `linear-gradient(to bottom, ${selectedColor}, #09090b)` : JSON.stringify({ __trooflixTheme: true, v: 1, color: selectedColor, pattern: p.id })))}
+                  />
+                  <span className={`text-[11px] font-medium ${active ? "text-white" : "text-white/55"}`}>{p.label}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {status.message && (

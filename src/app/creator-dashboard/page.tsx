@@ -13,6 +13,7 @@ import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import { getCachedUser, clearUserCache, getCachedVideos, getCachedProducts, invalidateVideosCache } from "@/lib/cache";
+import { getThemeBackdropStyle } from "@/lib/appTheme";
 import { createClient } from "@/utils/supabase/client";
 import MyTrooFlixContent from "@/components/MyTrooFlixContent";
 import StudioWidgets from "@/components/StudioWidgets";
@@ -359,11 +360,7 @@ function CreatorDashboardContent() {
     return num.toString();
   };
 
-  const bgStyle = profile?.backdrop_url
-    ? profile.backdrop_url.startsWith("http")
-      ? { backgroundImage: `url(${profile.backdrop_url})`, backgroundSize: "cover", backgroundPosition: "center" }
-      : { background: profile.backdrop_url }
-    : { background: "#09090B" };
+  const bgStyle = getThemeBackdropStyle(profile?.backdrop_url);
 
   const heroMedia =
     profileFeature?.mode === "custom" && profileFeature.mediaType === "video"
@@ -552,7 +549,7 @@ function CreatorDashboardContent() {
             ) : heroMedia?.type === "image" ? (
               <img src={heroMedia.src} alt="" className="absolute inset-0 h-full w-full object-cover" />
             ) : profile?.backdrop_url && !profile.backdrop_url.startsWith("http") ? (
-              <div className="absolute inset-0" style={{ background: profile.backdrop_url }} />
+              <div className="absolute inset-0" style={getThemeBackdropStyle(profile.backdrop_url)} />
             ) : (
               <div className="absolute inset-0 bg-[#09090B]" />
             )}
