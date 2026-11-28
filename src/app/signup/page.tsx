@@ -61,7 +61,7 @@ export default function SignupPage() {
 
       clearUserCache();
       try { localStorage.setItem("trooflix:show-unlock-popup", "1"); } catch {}
-      router.push("/");
+      router.push("/creator-dashboard/settings?onboarding=1");
       router.refresh();
     } catch (err: any) {
       setError(err.message || "Signup failed. Please try again.");

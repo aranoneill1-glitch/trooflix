@@ -3,9 +3,11 @@
 import { useEffect, useState, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, Camera, Save, User, AtSign, AlignLeft, ArrowLeft } from "lucide-react";
+import { ChevronLeft, Camera, Save, User, AtSign, AlignLeft, ArrowLeft, ImagePlus, Loader2, Palette, Check } from "lucide-react";
 import { createClient } from "@/utils/supabase/client";
 import { getCachedUser, clearUserCache } from "@/lib/cache";
+import { apiFetch } from "@/lib/api-fetch";
+import { DEFAULT_APP_THEME_COLOR, getBackdropFromColor, applyAppTheme, parseThemeBackdrop, THEME_PATTERNS, getThemeBackdropStyle, type ThemePattern } from "@/lib/appTheme";
 import TopBar from "@/components/TopBar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 
@@ -37,6 +39,11 @@ function ProfileSettingsContent() {
   const [avatarUrl, setAvatarUrl] = useState("");
   const [backdropUrl, setBackdropUrl] = useState(""); 
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [selectedColor, setSelectedColor] = useState(DEFAULT_APP_THEME_COLOR);
+  const [selectedPattern, setSelectedPattern] = useState<ThemePattern>("none");
+  const [customThemeImage, setCustomThemeImage] = useState("");
+  const [uploadingTheme, setUploadingTheme] = useState(false);
+  const themeFileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     getCachedUser().then(async (user) => {
@@ -51,7 +58,18 @@ function ProfileSettingsContent() {
         setXHandle(data.x_handle || "");
         setBio(data.bio || "");
         setAvatarUrl(data.avatar_url || "");
-        setBackdropUrl(data.backdrop_url || "");
+        const bu = data.backdrop_url || "";
+        setBackdropUrl(bu);
+        if (bu && bu.startsWith("http") && !THEME_PATTERNS.some(p => p.image === bu)) {
+          setCustomThemeImage(bu);
+          setSelectedColor(DEFAULT_APP_THEME_COLOR);
+          setSelectedPattern("none");
+        } else if (bu) {
+          const parsed = parseThemeBackdrop(bu);
+          setSelectedColor(parsed.color);
+          setSelectedPattern(parsed.pattern);
+          setCustomThemeImage("");
+        }
       }
       setLoading(false);
     });
@@ -62,6 +80,50 @@ function ProfileSettingsContent() {
       const file = e.target.files[0];
       setAvatarFile(file);
       setAvatarUrl(URL.createObjectURL(file));
+    }
+  };
+
+  const onSelectTheme = (pattern: ThemePattern) => {
+    setSelectedPattern(pattern);
+    setCustomThemeImage("");
+    const nextBackdrop = getBackdropFromColor(selectedColor, pattern);
+    setBackdropUrl(nextBackdrop);
+    applyAppTheme(selectedColor);
+  };
+
+  const onThemeColorChange = (color: string) => {
+    setSelectedColor(color);
+    if (customThemeImage) return;
+    const nextBackdrop = getBackdropFromColor(color, selectedPattern);
+    setBackdropUrl(nextBackdrop);
+    applyAppTheme(color);
+  };
+
+  const uploadThemeImage = async (file: File) => {
+    setUploadingTheme(true);
+    try {
+      const contentType = file.type || "image/jpeg";
+      const presign = await apiFetch("/api/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filename: file.name || `theme-${Date.now()}.jpg`, contentType, folder: "theme-backgrounds" }),
+      });
+      const presignData = await presign.json().catch(() => ({}));
+      if (!presign.ok) throw new Error(presignData?.error || "Upload failed");
+      const { signedUrl, publicUrl } = presignData;
+      if (!signedUrl || !publicUrl) throw new Error("Upload failed");
+      const put = await fetch(signedUrl, { method: "PUT", headers: { "Content-Type": contentType }, body: file });
+      if (!put.ok) throw new Error("Upload failed");
+      setCustomThemeImage(publicUrl);
+      setSelectedPattern("none");
+      setSelectedColor(DEFAULT_APP_THEME_COLOR);
+      setBackdropUrl(publicUrl);
+      applyAppTheme(DEFAULT_APP_THEME_COLOR);
+    } catch (e: any) {
+      setStatus({ type: "error", message: e?.message || "Couldn't upload theme image." });
+    } finally {
+      setUploadingTheme(false);
+      if (themeFileRef.current) themeFileRef.current.value = "";
     }
   };
 
@@ -111,6 +173,10 @@ function ProfileSettingsContent() {
 
       if (error) throw error;
 
+      const themeColor = customThemeImage ? DEFAULT_APP_THEME_COLOR : selectedColor;
+      try { localStorage.setItem("trooflix:app-theme-color", themeColor); } catch {}
+      applyAppTheme(themeColor);
+      window.dispatchEvent(new CustomEvent("app-theme-updated", { detail: { color: themeColor, backdrop_url: backdropUrl } }));
       setStatus({ type: "success", message: "Profile updated successfully!" });
       clearUserCache();
       setTimeout(() => { router.push("/creator-dashboard"); }, 1500);
@@ -205,6 +271,52 @@ function ProfileSettingsContent() {
             <div className="flex items-center justify-between gap-4 px-5 py-4">
               <label className="text-sm font-semibold text-white/85 w-28 shrink-0">X (Twitter)</label>
               <input type="text" value={xHandle} onChange={(e) => setXHandle(e.target.value)} placeholder="@username" className="flex-1 bg-white/[0.04] border border-white/10 focus:border-white/25 focus:bg-white/[0.07] rounded-xl px-3 py-2.5 text-sm text-white outline-none placeholder:text-white/35 text-right transition" />
+            </div>
+          </div>
+
+          {/* Theme Section */}
+          <div className="px-5 py-5 border-t border-white/10">
+            <div className="flex items-center gap-2 mb-1">
+              <Palette size={16} className="text-white/70" />
+              <h3 className="text-sm font-bold text-white">Personalize your theme</h3>
+            </div>
+            <p className="text-xs text-white/45 mb-4">Pick a background theme or upload your own image.</p>
+
+            <div className={`relative mb-4 rounded-2xl border border-white/10 bg-white/[0.03] p-3 flex items-center gap-3 ${uploadingTheme ? "opacity-60 pointer-events-none" : ""}`}>
+              <input
+                ref={themeFileRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/gif"
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) void uploadThemeImage(f); }}
+              />
+              <div className="w-14 h-14 rounded-xl border border-white/15 bg-white/[0.04] overflow-hidden flex items-center justify-center shrink-0">
+                {customThemeImage ? <img src={customThemeImage} alt="Custom theme" className="w-full h-full object-cover" /> : uploadingTheme ? <Loader2 size={18} className="text-white/60 animate-spin" /> : <ImagePlus size={18} className="text-white/60" />}
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-white">{uploadingTheme ? "Uploading..." : "Upload your own image"}</p>
+                <p className="text-[11px] text-white/45">Custom background for your profile</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-4 sm:grid-cols-6 gap-2.5">
+              {THEME_PATTERNS.map((p) => {
+                const active = !customThemeImage && selectedPattern === p.id;
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => onSelectTheme(p.id)}
+                    className="flex flex-col items-center gap-1.5"
+                  >
+                    <div
+                      className={`w-full aspect-square rounded-xl border overflow-hidden transition ${active ? "border-[#E53945] ring-2 ring-[#E53945]/30" : "border-white/10 hover:border-white/25"}`}
+                      style={getThemeBackdropStyle(getBackdropFromColor(selectedColor, p.id) || (p.id === "none" ? `linear-gradient(to bottom, ${selectedColor}, #09090b)` : JSON.stringify({ __trooflixTheme: true, v: 1, color: selectedColor, pattern: p.id })))}
+                    />
+                    <span className={`text-[10px] font-medium leading-tight text-center ${active ? "text-white" : "text-white/55"}`}>{p.label}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
