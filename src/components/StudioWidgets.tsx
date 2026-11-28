@@ -60,26 +60,26 @@ export default function StudioWidgets({
   const items = [
     {
       id: "profile" as const, label: "Profile", icon: ProfileIcon, href: "/creator-dashboard?studioTab=profile",
-      image: "https://images.unsplash.com/photo-1492724441997-5dc865305da7?q=80&w=600&auto=format&fit=crop",
-      boxShadow: "0 10px 28px rgba(0,0,0,0.45), 0 4px 10px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(0,0,0,0.4)",
+      background: "linear-gradient(180deg, #111111 0%, #000000 100%)",
+      boxShadow: "0 10px 28px rgba(0,0,0,0.45), 0 4px 10px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.4)",
       accent: "#FFFFFF",
     },
     {
       id: "dashboard" as const, label: "Dashboard", icon: DashboardHeartIcon, href: "/creator-dashboard?studioTab=dashboard",
-      image: "https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=600&auto=format&fit=crop",
-      boxShadow: "0 10px 28px rgba(229,57,69,0.22), 0 4px 10px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(0,0,0,0.4)",
+      background: "linear-gradient(180deg, #111111 0%, #000000 100%)",
+      boxShadow: "0 10px 28px rgba(0,0,0,0.45), 0 4px 10px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.4)",
       accent: "#FFFFFF",
     },
     {
       id: "bank" as const, label: "TrooBank", icon: TrooBankIcon, href: "/wallet",
-      image: "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?q=80&w=600&auto=format&fit=crop",
-      boxShadow: "0 10px 28px rgba(0,0,0,0.45), 0 4px 10px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(0,0,0,0.4)",
+      background: "linear-gradient(180deg, #111111 0%, #000000 100%)",
+      boxShadow: "0 10px 28px rgba(0,0,0,0.45), 0 4px 10px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.4)",
       accent: "#FFFFFF",
     },
     {
       id: "chat" as const, label: "TrooChat", icon: TrooChatIcon, href: "/messages",
-      image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=600&auto=format&fit=crop",
-      boxShadow: "0 10px 28px rgba(0,0,0,0.45), 0 4px 10px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(0,0,0,0.4)",
+      background: "linear-gradient(180deg, #111111 0%, #000000 100%)",
+      boxShadow: "0 10px 28px rgba(0,0,0,0.45), 0 4px 10px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.4)",
       accent: "#FFFFFF",
     },
   ];
@@ -93,13 +93,12 @@ export default function StudioWidgets({
           const locked = item.id === "dashboard" && dashboardLocked;
           const inner = (
             <>
-              <div className={`relative mx-auto flex ${compact ? "h-[56px] w-[56px] rounded-[20px]" : "h-[64px] w-[64px] sm:h-[70px] sm:w-[70px] rounded-[22px]"} items-center justify-center overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-[1.05] active:scale-[0.96] group`} style={{ boxShadow: item.boxShadow }}>
-                <img src={item.image} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
-                <div className="absolute inset-0 bg-black/45" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-black/20" />
+              <div className={`relative mx-auto flex ${compact ? "h-[56px] w-[56px] rounded-[20px]" : "h-[64px] w-[64px] sm:h-[70px] sm:w-[70px] rounded-[22px]"} items-center justify-center transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-[1.05] active:scale-[0.96] group`}>
+                <div className="absolute inset-0 rounded-[inherit]" style={{ background: item.background, boxShadow: item.boxShadow }} />
                 <div className="pointer-events-none absolute inset-0 rounded-[inherit] bg-gradient-to-b from-white/20 via-white/5 to-transparent" />
-                <div className="pointer-events-none absolute inset-[0.5px] rounded-[inherit] border border-white/15" />
-                <div className="relative z-10 drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]" style={{ color: item.accent }}>
+                <div className="pointer-events-none absolute inset-[0.5px] rounded-[inherit] border border-white/10" />
+                <div className="pointer-events-none absolute inset-0 rounded-[inherit]" style={{ boxShadow: `inset 0 0 0 1px ${item.accent}22` }} />
+                <div className="relative z-10 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]" style={{ color: item.accent }}>
                   <Icon size={compact ? 24 : 30} strokeWidth={1.9} />
                 </div>
                 {selected && <div className="pointer-events-none absolute -inset-[2px] rounded-[24px] border border-[#E53945]/60" />}
