@@ -27,6 +27,7 @@ export default function GoLivePage() {
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [streamTime, setStreamTime] = useState(0);
+  const [viewerCount, setViewerCount] = useState(0);
   
   const [loading, setLoading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -55,7 +56,7 @@ export default function GoLivePage() {
   const [inviteResults, setInviteResults] = useState<any[]>([]);
   const [inviteSearching, setInviteSearching] = useState(false);
   const [inviteSending, setInviteSending] = useState<string | null>(null);
-  const [hostProfile, setHostProfile] = useState<{ username?: string; display_name?: string } | null>(null);
+  const [hostProfile, setHostProfile] = useState<{ username?: string; display_name?: string; avatar_url?: string | null } | null>(null);
 
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 1024px)");
@@ -114,6 +115,21 @@ export default function GoLivePage() {
     return () => clearInterval(interval);
   }, [isLive]);
 
+  useEffect(() => {
+    if (!isLive || !liveInputId) { setViewerCount(0); return; }
+    const supabase = createClient();
+    const channel = supabase.channel(`live-viewers:${liveInputId}`, { config: { presence: { key: userId || "host" } } });
+    channel.on("presence", { event: "sync" }, () => {
+      const state = channel.presenceState();
+      const count = Object.values(state).reduce((acc: number, arr: any) => acc + (Array.isArray(arr) ? arr.length : 0), 0);
+      setViewerCount(count);
+    });
+    channel.subscribe(async (status) => {
+      if (status === "SUBSCRIBED") await channel.track({ role: "host", userId: userId || "host" });
+    });
+    return () => { supabase.removeChannel(channel); };
+  }, [isLive, liveInputId, userId]);
+
   const formatTime = (secs: number) => {
     const h = Math.floor(secs / 3600);
     const m = Math.floor((secs % 3600) / 60);
@@ -165,7 +181,7 @@ export default function GoLivePage() {
         try {
           const p = await fetch(`/api/profile?user_id=${u.id}`, { cache: "no-store" }).then(r => r.json());
           setCreatorToolsUnlocked(!!p?.profile?.creator_tools_unlocked);
-          setHostProfile({ username: p?.profile?.username, display_name: p?.profile?.display_name || p?.profile?.username });
+          setHostProfile({ username: p?.profile?.username, display_name: p?.profile?.display_name || p?.profile?.username, avatar_url: p?.profile?.avatar_url || null });
         } catch { setCreatorToolsUnlocked(false); }
       } else {
         setCreatorToolsUnlocked(false);
@@ -791,27 +807,31 @@ export default function GoLivePage() {
 
 
         <div className="absolute inset-x-0 top-0 z-20 pt-[calc(env(safe-area-inset-top)+52px)] px-4">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-2.5 rounded-full px-3 py-1.5">
-              {isLive ? (
-                <>
-                  <span className="w-2 h-2 rounded-full bg-[#E53945] animate-pulse" />
-                  <span className="text-[11px] font-bold uppercase tracking-wide text-white">Live</span>
-                  <span className="text-[11px] font-medium text-white/70 tabular-nums">{formatTime(streamTime)}</span>
-                </>
-              ) : (
-                <>
-                  <span className="w-2 h-2 rounded-full bg-white/60" />
-                  <span className="text-[11px] font-bold uppercase tracking-wide text-white/80">Preview</span>
-                </>
-              )}
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-9 h-9 rounded-full overflow-hidden bg-white/10 border border-white/15 shrink-0">
+                {hostProfile?.avatar_url ? (
+                  <img src={hostProfile.avatar_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-xs font-bold text-white">{String(hostProfile?.display_name || hostProfile?.username || "U").charAt(0).toUpperCase()}</div>
+                )}
+              </div>
+              <span className="text-sm font-bold text-white truncate drop-shadow-[0_1px_2px_rgba(0,0,0,0.7)]">{hostProfile?.display_name || hostProfile?.username || "Host"}</span>
             </div>
-            <div className="flex items-center gap-2">
-              {guestConnected && (
-                <div className="bg-green-500/25 border border-green-500/40 text-green-300 text-[11px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5">
-                  <UserCheck size={13} /> {connectedGuestName || "Guest"}
-                </div>
+            <div className="flex items-center gap-2 shrink-0">
+              {isLive && (
+                <>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#E53945] text-[11px] font-bold uppercase tracking-wide text-white">
+                    <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> Live
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-black/35 border border-white/10 text-[11px] font-semibold text-white">
+                    <Eye size={12} /> {viewerCount}
+                  </span>
+                </>
               )}
+              <button onClick={() => (isLive ? stopStream() : router.push("/creator-dashboard"))} className="w-9 h-9 rounded-full bg-black/35 border border-white/10 flex items-center justify-center text-white/90 backdrop-blur-xl" aria-label="Close">
+                <X size={16} />
+              </button>
             </div>
           </div>
         </div>

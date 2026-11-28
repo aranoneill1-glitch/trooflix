@@ -85,6 +85,17 @@ export default function LivePlayer({ liveInputId, creatorId, creatorName, creato
   useEffect(() => {
     if (!liveInputId) return;
     const supabase = createClient();
+    const key = user?.id || `anon-${Math.random().toString(36).slice(2)}`;
+    const channel = supabase.channel(`live-viewers:${liveInputId}`, { config: { presence: { key } } });
+    channel.subscribe(async (status) => {
+      if (status === "SUBSCRIBED") await channel.track({ role: "viewer", userId: user?.id || null });
+    });
+    return () => { supabase.removeChannel(channel); };
+  }, [liveInputId, user?.id]);
+
+  useEffect(() => {
+    if (!liveInputId) return;
+    const supabase = createClient();
     let cancelled = false;
     const checkGuest = async () => {
       try {
