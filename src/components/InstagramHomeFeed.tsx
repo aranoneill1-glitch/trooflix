@@ -167,6 +167,15 @@ function PostMedia({ video, onOpen, onLike, isActive, onRegister, shouldLoad = t
   );
 }
 
+const TYPE_IMAGES: Record<string, string> = {
+  podcast: "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?q=80&w=600&auto=format&fit=crop",
+  documentary: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=600&auto=format&fit=crop",
+  film: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=600&auto=format&fit=crop",
+  short: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=600&auto=format&fit=crop",
+  live: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=600&auto=format&fit=crop",
+  other: "https://images.unsplash.com/photo-1492724441997-5dc865305da7?q=80&w=600&auto=format&fit=crop",
+};
+
 export default function InstagramHomeFeed({ videos, creators, onVideoSelect, showWelcome = false }: Props) {
   const [commentCounts, setCommentCounts] = useState<Record<number, number>>({});
   const [tipCounts, setTipCounts] = useState<Record<string, number>>({});
@@ -362,18 +371,23 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
               <button
                 key={t.id}
                 onClick={() => { haptic(); setActiveType(prev => prev === t.id ? null : t.id); setActiveCategory(null); }}
-                className={`shrink-0 rounded-full border px-4 py-2 text-[13px] font-medium transition ${
-                  activeType === t.id ? "bg-[#E53945] border-[#E53945] text-white" : "bg-white/5 border-white/10 text-white/60"
+                className={`relative shrink-0 overflow-hidden rounded-2xl border px-5 py-3 min-w-[112px] text-[13px] font-semibold transition-all duration-200 ${
+                  activeType === t.id ? "border-[#E53945]/70 text-white shadow-[0_8px_24px_rgba(229,57,69,0.28)] scale-[1.02]" : "border-white/10 text-white/90 hover:border-white/20"
                 }`}
               >
-                {t.label}
+                <img src={TYPE_IMAGES[t.id] || TYPE_IMAGES.other} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+                <div className={`absolute inset-0 ${activeType === t.id ? "bg-black/35" : "bg-black/45"}`} />
+                <div className={`absolute inset-0 ${activeType === t.id ? "bg-gradient-to-t from-[#E53945]/45 via-transparent to-black/10" : "bg-gradient-to-t from-black/35 via-transparent to-black/10"}`} />
+                <span className="relative z-10 drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]">{t.label}</span>
               </button>
             ))}
             <button
               onClick={() => { haptic(); setCategoriesOpen(v => !v); }}
-              className={`shrink-0 inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-[13px] font-medium transition ${activeCategory || categoriesOpen ? "bg-white text-black border-white" : "bg-white/5 border-white/10 text-white/60"}`}
+              className={`relative shrink-0 overflow-hidden inline-flex items-center gap-1.5 rounded-2xl border px-5 py-3 text-[13px] font-semibold transition-all duration-200 ${(activeCategory || categoriesOpen) ? "border-white/30 text-white" : "border-white/10 text-white/90 hover:border-white/20"}`}
             >
-              Categories <ChevronDown size={13} className={categoriesOpen ? "rotate-180" : ""} />
+              <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=600&auto=format&fit=crop" alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+              <div className={`absolute inset-0 ${(activeCategory || categoriesOpen) ? "bg-black/35" : "bg-black/50"}`} />
+              <span className="relative z-10 inline-flex items-center gap-1.5 drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]">Categories <ChevronDown size={13} className={categoriesOpen ? "rotate-180" : ""} /></span>
             </button>
           </div>
           <div className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-[#09090B] to-transparent" />
@@ -385,7 +399,7 @@ export default function InstagramHomeFeed({ videos, creators, onVideoSelect, sho
               <button
                 key={c}
                 onClick={() => { haptic(); setActiveCategory(prev => prev === c ? null : c); setActiveType(null); }}
-                className={`rounded-full border px-3 py-1.5 text-[11px] font-semibold transition ${activeCategory === c ? "bg-[#E53945] border-[#E53945] text-white" : "bg-white/5 border-white/10 text-white/60"}`}
+                className={`rounded-xl border px-3 py-2 text-[11px] font-semibold transition ${activeCategory === c ? "bg-[#E53945] border-[#E53945] text-white shadow-[0_6px_18px_rgba(229,57,69,0.25)]" : "bg-white/[0.06] border-white/10 text-white/75 hover:bg-white/[0.1]"}`}
               >
                 {c}
               </button>
