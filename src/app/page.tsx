@@ -345,7 +345,7 @@ export default function Home() {
         <main className={`min-h-screen text-white overflow-x-hidden pb-20 lg:pb-0 relative ${themeBgStyle ? "bg-transparent" : "bg-black"}`}>
       {themeBgStyle ? (
         <div className="fixed inset-0 z-0" style={themeBgStyle as any}>
-          <div className="absolute inset-0 bg-black/70" />
+          <div className="absolute inset-0 bg-black/80" />
         </div>
       ) : (
         <div className="fixed top-0 left-0 w-full h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/[0.05] via-transparent to-transparent pointer-events-none z-0" />
